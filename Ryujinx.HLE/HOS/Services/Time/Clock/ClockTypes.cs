@@ -16,13 +16,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public ulong ToSeconds()
         {
-            return NanoSeconds * 1000000000;
+            return NanoSeconds / 1000000000;
         }
 
         public static TimeSpanType FromTicks(ulong ticks, ulong frequency)
         {
-            return new TimeSpanType((ticks * 1000) / frequency);
+            return new TimeSpanType(ticks * 1000000000 / frequency);
         }
+
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -31,4 +32,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public ulong        TimePoint;
         public UInt128      ClockSourceId;
     }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct SystemClockContext
+    {
+        public ulong                Offset;
+        public SteadyClockTimePoint SteadyTimePoint;
+    }
+
+
 }

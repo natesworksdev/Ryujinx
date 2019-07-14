@@ -1,5 +1,6 @@
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Services.Time.Clock;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time
@@ -19,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardUserSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardUserSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(SystemClockType.User));
+            MakeObject(context, new ISystemClock(StandardUserSystemClockCore.Instance));
 
             return ResultCode.Success;
         }
@@ -28,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardNetworkSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardNetworkSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(SystemClockType.Network));
+            MakeObject(context, new ISystemClock(StandardNetworkSystemClockCore.Instance));
 
             return ResultCode.Success;
         }
@@ -55,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardLocalSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardLocalSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(SystemClockType.Local));
+            MakeObject(context, new ISystemClock(StandardLocalSystemClockCore.Instance));
 
             return ResultCode.Success;
         }
@@ -81,6 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // CalculateMonotonicSystemClockBaseTimePoint(nn::time::SystemClockContext) -> u64
         public ResultCode CalculateMonotonicSystemClockBaseTimePoint(ServiceCtx context)
         {
+            // TODO: reimplement this
             long timeOffset              = (long)(DateTime.UtcNow - StartupDate).TotalSeconds;
             long systemClockContextEpoch = context.RequestData.ReadInt64();
 

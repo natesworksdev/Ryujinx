@@ -40,8 +40,15 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
                 ClockSourceId = _clockSourceId
             };
 
-            result.TimePoint = _internalOffset.ToSeconds() + TimeSpanType.FromTicks(thread.Context.ThreadState.CntpctEl0, thread.Context.ThreadState.CntfrqEl0).ToSeconds();
+            TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.ThreadState.CntpctEl0, thread.Context.ThreadState.CntfrqEl0);
+
+            result.TimePoint = _internalOffset.ToSeconds() + ticksTimeSpan.ToSeconds();
             return result;
+        }
+
+        public UInt128 GetClockSourceId()
+        {
+            return _clockSourceId;
         }
 
         public SteadyClockTimePoint GetCurrentTimePoint(KThread thread)

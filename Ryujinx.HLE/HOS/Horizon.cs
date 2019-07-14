@@ -200,7 +200,7 @@ namespace Ryujinx.HLE.HOS
             // NOTE: Now we set the default internal offset of the steady clock like Nintendo does... even if it's strange this is accurate.
             // TODO: use bpc:r and set:sys (and set external clock source id from settings)
             DateTime UnixEpoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-            SteadyClockCore.Instance.SetInternalOffset(new TimeSpanType(((ulong)(DateTime.Now.ToUniversalTime() - UnixEpoch).TotalSeconds) * 1000));
+            SteadyClockCore.Instance.SetInternalOffset(new TimeSpanType(((ulong)(DateTime.Now.ToUniversalTime() - UnixEpoch).TotalSeconds) * 1000000000));
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
