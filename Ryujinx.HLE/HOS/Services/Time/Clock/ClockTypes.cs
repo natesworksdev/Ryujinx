@@ -1,11 +1,10 @@
 ﻿using Ryujinx.HLE.Utilities;
-using System;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     [StructLayout(LayoutKind.Sequential)]
-    public struct TimeSpanType
+    struct TimeSpanType
     {
         public ulong NanoSeconds;
 
@@ -26,14 +25,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct SteadyClockTimePoint
+    struct SteadyClockTimePoint
     {
         public ulong   TimePoint;
         public UInt128 ClockSourceId;
     }
 
     [StructLayout(LayoutKind.Sequential)]
-    public struct SystemClockContext
+    struct SystemClockContext
     {
         public ulong                Offset;
         public SteadyClockTimePoint SteadyTimePoint;
