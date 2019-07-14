@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int ZcullGetInfo(ServiceCtx context)
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int ZbcSetTable(ServiceCtx context)
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int GetCharacteristics(ServiceCtx context)
@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int GetTpcMasks(ServiceCtx context)
@@ -149,7 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int GetActiveSlotMask(ServiceCtx context)
@@ -165,7 +165,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int GetGpuTime(ServiceCtx context)
@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvGpuGpu
 
             context.Memory.WriteInt64(outputPosition, GetPTimerNanoSeconds());
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static long GetPTimerNanoSeconds()

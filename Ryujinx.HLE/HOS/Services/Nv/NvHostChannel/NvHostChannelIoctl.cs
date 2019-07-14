@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             // TODO: Relocation, waitchecks, etc.
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int GetSyncpoint(ServiceCtx context)
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int GetWaitBase(ServiceCtx context)
@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int MapBuffer(ServiceCtx context)
@@ -122,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
                 {
                     Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{handle:x8}!");
 
-                    return NvResult.InvalidInput;
+                    return NvError.InvalidInput;
                 }
 
                 lock (map)
@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
                 }
             }
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int UnmapBuffer(ServiceCtx context)
@@ -157,7 +157,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
                 {
                     Logger.PrintWarning(LogClass.ServiceNv, $"Invalid handle 0x{handle:x8}!");
 
-                    return NvResult.InvalidInput;
+                    return NvError.InvalidInput;
                 }
 
                 lock (map)
@@ -171,7 +171,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
                 }
             }
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int SetUserData(ServiceCtx context)
@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int SetNvMap(ServiceCtx context)
@@ -191,7 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int SetTimeout(ServiceCtx context)
@@ -200,7 +200,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             GetChannel(context).Timeout = context.Memory.ReadInt32(inputPosition);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int SubmitGpfifo(ServiceCtx context)
@@ -224,7 +224,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int AllocObjCtx(ServiceCtx context)
@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int ZcullBind(ServiceCtx context)
@@ -244,7 +244,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int SetErrorNotifier(ServiceCtx context)
@@ -254,7 +254,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int SetPriority(ServiceCtx context)
@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int AllocGpfifoEx2(ServiceCtx context)
@@ -274,7 +274,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             Logger.PrintStub(LogClass.ServiceNv);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static int KickoffPbWithAttr(ServiceCtx context)
@@ -298,7 +298,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvHostChannel
 
             MemoryHelper.Write(context.Memory, outputPosition, args);
 
-            return NvResult.Success;
+            return NvError.Success;
         }
 
         private static void PushGpfifo(ServiceCtx context, NvGpuVmm vmm, long gpfifo)
