@@ -18,8 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetCurrentTime() -> nn::time::PosixTime
         public ResultCode GetCurrentTime(ServiceCtx context)
         {
-            SteadyClockCore steadyClockCore = _clockCore.GetSteadyClockCore();
-
+            SteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(context.Thread);
 
             ResultCode result = _clockCore.GetSystemClockContext(context.Thread, out SystemClockContext clockContext);
@@ -50,10 +49,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 return ResultCode.PermissionDenied;
             }
 
-            ulong posixTime = context.RequestData.ReadUInt64();
-
-            SteadyClockCore steadyClockCore = _clockCore.GetSteadyClockCore();
-
+            ulong                posixTime        = context.RequestData.ReadUInt64();
+            SteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(context.Thread);
 
             SystemClockContext clockContext = new SystemClockContext()

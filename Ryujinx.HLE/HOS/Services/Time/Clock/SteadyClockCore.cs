@@ -43,6 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.ThreadState.CntpctEl0, thread.Context.ThreadState.CntfrqEl0);
 
             result.TimePoint = _internalOffset.ToSeconds() + ticksTimeSpan.ToSeconds();
+
             return result;
         }
 

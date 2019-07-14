@@ -23,14 +23,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             return new TimeSpanType(ticks * 1000000000 / frequency);
         }
-
     }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct SteadyClockTimePoint
     {
-        public ulong        TimePoint;
-        public UInt128      ClockSourceId;
+        public ulong   TimePoint;
+        public UInt128 ClockSourceId;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -39,6 +38,4 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public ulong                Offset;
         public SteadyClockTimePoint SteadyTimePoint;
     }
-
-
 }

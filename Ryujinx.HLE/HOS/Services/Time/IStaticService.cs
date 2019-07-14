@@ -5,19 +5,6 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    [Flags]
-    enum TimePermissions
-    {
-        LocalSystemClockWritableMask   = 0x1,
-        UserSystemClockWritableMask    = 0x2,
-        NetworkSystemClockWritableMask = 0x4,
-        UnknwonPermissionMask          = 0x8,
-
-        User   = 0,
-        Applet = LocalSystemClockWritableMask | UserSystemClockWritableMask | UnknwonPermissionMask,
-        System = NetworkSystemClockWritableMask
-    }
-
     [Service("time:a", TimePermissions.Applet)]
     [Service("time:s", TimePermissions.System)]
     [Service("time:u", TimePermissions.User)]

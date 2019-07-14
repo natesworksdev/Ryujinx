@@ -5,7 +5,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
 {
     class ISteadyClock : IpcService
     {
-
         [Command(0)]
         // GetCurrentTimePoint() -> nn::time::SteadyClockTimePoint
         public ResultCode GetCurrentTimePoint(ServiceCtx context)
