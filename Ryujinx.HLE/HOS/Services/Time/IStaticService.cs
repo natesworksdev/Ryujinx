@@ -78,6 +78,24 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return ResultCode.Success;
         }
 
+        [Command(100)]
+        // IsStandardUserSystemClockAutomaticCorrectionEnabled() -> bool
+        public ResultCode IsStandardUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
+        {
+            context.ResponseData.Write(StandardUserSystemClockCore.Instance.IsAutomaticCorrectionEnabled());
+
+            return ResultCode.Success;
+        }
+
+        [Command(101)]
+        // SetStandardUserSystemClockAutomaticCorrectionEnabled(b8)
+        public ResultCode SetStandardUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
+        {
+            bool autoCorrectionEnabled = context.RequestData.ReadBoolean();
+
+            return StandardUserSystemClockCore.Instance.SetAutomaticCorrectionEnabled(context.Thread, autoCorrectionEnabled);
+        }
+
         [Command(300)] // 4.0.0+
         // CalculateMonotonicSystemClockBaseTimePoint(nn::time::SystemClockContext) -> u64
         public ResultCode CalculateMonotonicSystemClockBaseTimePoint(ServiceCtx context)

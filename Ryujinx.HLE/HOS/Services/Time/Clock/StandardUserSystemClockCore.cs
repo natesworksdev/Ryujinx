@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             if (_autoCorrectionEnabled != autoCorrectionEnabled && _networkSystemClockCore.IsClockSetup(thread))
             {
                 result = _networkSystemClockCore.GetSystemClockContext(thread, out SystemClockContext context);
-               
+
                 if (result == 0)
                 {
                     _localSystemClockCore.SetSystemClockContext(context);
