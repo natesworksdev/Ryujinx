@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             if (ServiceConfiguration.IgnoreMissingServices || serviceExists)
             {
-                ResultCode result = 0;
+                ResultCode result = ResultCode.Success;
 
                 context.ResponseData.BaseStream.Seek(_isDomain ? 0x20 : 0x10, SeekOrigin.Begin);
 
