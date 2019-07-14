@@ -6,10 +6,12 @@ namespace Ryujinx.HLE.HOS.Services.Time
     class ISystemClock : IpcService
     {
         private SystemClockCore _clockCore;
+        private bool            _writePermission;
 
-        public ISystemClock(SystemClockCore clockCore)
+        public ISystemClock(SystemClockCore clockCore, bool writePermission)
         {
-            _clockCore = clockCore;
+            _clockCore       = clockCore;
+            _writePermission = writePermission;
         }
 
         [Command(0)]
@@ -43,6 +45,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetCurrentTime(nn::time::PosixTime)
         public ResultCode SetCurrentTime(ServiceCtx context)
         {
+            if (!_writePermission)
+            {
+                return ResultCode.PermissionDenied;
+            }
+
             ulong posixTime = context.RequestData.ReadUInt64();
 
             SteadyClockCore steadyClockCore = _clockCore.GetSteadyClockCore();
@@ -83,6 +90,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetSystemClockContext(nn::time::SystemClockContext)
         public ResultCode SetSystemClockContext(ServiceCtx context)
         {
+            if (!_writePermission)
+            {
+                return ResultCode.PermissionDenied;
+            }
+
             SystemClockContext clockContext = context.RequestData.ReadStruct<SystemClockContext>();
 
             ResultCode result = _clockCore.SetSystemClockContext(clockContext);

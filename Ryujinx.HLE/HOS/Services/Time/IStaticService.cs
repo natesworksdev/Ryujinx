@@ -5,22 +5,40 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    [Service("time:a")]
-    [Service("time:s")]
-    [Service("time:u")]
+    [Flags]
+    enum TimePermissions
+    {
+        LocalSystemClockWritableMask   = 0x1,
+        UserSystemClockWritableMask    = 0x2,
+        NetworkSystemClockWritableMask = 0x4,
+        UnknwonPermissionMask          = 0x8,
+
+        User   = 0,
+        Applet = LocalSystemClockWritableMask | UserSystemClockWritableMask | UnknwonPermissionMask,
+        System = NetworkSystemClockWritableMask
+    }
+
+    [Service("time:a", TimePermissions.Applet)]
+    [Service("time:s", TimePermissions.System)]
+    [Service("time:u", TimePermissions.User)]
     class IStaticService : IpcService
     {
+        private TimePermissions _permissions;
+
         private int _timeSharedMemoryNativeHandle = 0;
 
         private static readonly DateTime StartupDate = DateTime.UtcNow;
 
-        public IStaticService(ServiceCtx context) { }
+        public IStaticService(ServiceCtx context, TimePermissions permissions)
+        {
+            _permissions = permissions;
+        }
 
         [Command(0)]
         // GetStandardUserSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardUserSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(StandardUserSystemClockCore.Instance));
+            MakeObject(context, new ISystemClock(StandardUserSystemClockCore.Instance, (_permissions & TimePermissions.UserSystemClockWritableMask) != 0));
 
             return ResultCode.Success;
         }
@@ -29,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardNetworkSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardNetworkSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(StandardNetworkSystemClockCore.Instance));
+            MakeObject(context, new ISystemClock(StandardNetworkSystemClockCore.Instance, (_permissions & TimePermissions.NetworkSystemClockWritableMask) != 0));
 
             return ResultCode.Success;
         }
@@ -56,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardLocalSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardLocalSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(StandardLocalSystemClockCore.Instance));
+            MakeObject(context, new ISystemClock(StandardLocalSystemClockCore.Instance, (_permissions & TimePermissions.LocalSystemClockWritableMask) != 0));
 
             return ResultCode.Success;
         }
@@ -91,6 +109,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // SetStandardUserSystemClockAutomaticCorrectionEnabled(b8)
         public ResultCode SetStandardUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
+            if ((_permissions & TimePermissions.UserSystemClockWritableMask) == 0)
+            {
+                return ResultCode.PermissionDenied;
+            }
+
             bool autoCorrectionEnabled = context.RequestData.ReadBoolean();
 
             return StandardUserSystemClockCore.Instance.SetAutomaticCorrectionEnabled(context.Thread, autoCorrectionEnabled);
