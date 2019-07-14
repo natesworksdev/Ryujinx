@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             context = new SystemClockContext();
 
-            if (result == 0)
+            if (result == ResultCode.Success)
             {
                 return _localSystemClockCore.GetSystemClockContext(thread, out context);
             }
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             {
                 result = _networkSystemClockCore.GetSystemClockContext(thread, out SystemClockContext context);
 
-                if (result == 0)
+                if (result == ResultCode.Success)
                 {
                     _localSystemClockCore.SetSystemClockContext(context);
                 }
@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             ResultCode result = ApplyAutomaticCorrection(thread, autoCorrectionEnabled);
 
-            if (result == 0)
+            if (result == ResultCode.Success)
             {
                 _autoCorrectionEnabled = autoCorrectionEnabled;
             }
