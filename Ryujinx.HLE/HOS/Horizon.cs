@@ -201,6 +201,13 @@ namespace Ryujinx.HLE.HOS
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
             SteadyClockCore.Instance.ConfigureSetupValue();
 
+            if (Services.Set.NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
+            {
+                TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
+
+                StandardNetworkSystemClockCore.Instance.SetStandardNetworkClockSufficientAccuracy(standardNetworkClockSufficientAccuracy);
+            }
+
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)

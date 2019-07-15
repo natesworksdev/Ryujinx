@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class SteadyClockCore
     {
-        private ulong        _setupValue;
+        private long         _setupValue;
         private ResultCode   _setupResultCode;
         private bool         _isRtcResetDetected;
         private TimeSpanType _testOffset;
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
                 if (result == ResultCode.Success)
                 {
-                    _setupValue = rtcValue;
+                    _setupValue = (long)rtcValue;
                     break;
                 }
 
