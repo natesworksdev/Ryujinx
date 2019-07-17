@@ -11,7 +11,7 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitAluHelper
     {
-        public static void EmitAdcsCCheck(EmitterContext context, Operand n, Operand d)
+        public static void EmitAdcsCCheck(ArmEmitterContext context, Operand n, Operand d)
         {
             //C = (Rd == Rn && CIn) || Rd < Rn
             Operand cIn = GetFlag(PState.CFlag);
@@ -20,16 +20,16 @@ namespace ARMeilleure.Instructions
 
             cOut = context.BitwiseOr(cOut, context.ICompareLessUI(d, n));
 
-            context.Copy(GetFlag(PState.CFlag), cOut);
+            SetFlag(context, PState.CFlag, cOut);
         }
 
-        public static void EmitAddsCCheck(EmitterContext context, Operand n, Operand d)
+        public static void EmitAddsCCheck(ArmEmitterContext context, Operand n, Operand d)
         {
             //C = Rd < Rn
-            context.Copy(GetFlag(PState.CFlag), context.ICompareLessUI(d, n));
+            SetFlag(context, PState.CFlag, context.ICompareLessUI(d, n));
         }
 
-        public static void EmitAddsVCheck(EmitterContext context, Operand n, Operand m, Operand d)
+        public static void EmitAddsVCheck(ArmEmitterContext context, Operand n, Operand m, Operand d)
         {
             //V = (Rd ^ Rn) & ~(Rn ^ Rm) < 0
             Operand vOut = context.BitwiseExclusiveOr(d, n);
@@ -38,10 +38,10 @@ namespace ARMeilleure.Instructions
 
             vOut = context.ICompareLess(vOut, Const(vOut.Type, 0));
 
-            context.Copy(GetFlag(PState.VFlag), vOut);
+            SetFlag(context, PState.VFlag, vOut);
         }
 
-        public static void EmitSbcsCCheck(EmitterContext context, Operand n, Operand m)
+        public static void EmitSbcsCCheck(ArmEmitterContext context, Operand n, Operand m)
         {
             //C = (Rn == Rm && CIn) || Rn > Rm
             Operand cIn = GetFlag(PState.CFlag);
@@ -50,16 +50,16 @@ namespace ARMeilleure.Instructions
 
             cOut = context.BitwiseOr(cOut, context.ICompareGreaterUI(n, m));
 
-            context.Copy(GetFlag(PState.CFlag), cOut);
+            SetFlag(context, PState.CFlag, cOut);
         }
 
-        public static void EmitSubsCCheck(EmitterContext context, Operand n, Operand m)
+        public static void EmitSubsCCheck(ArmEmitterContext context, Operand n, Operand m)
         {
             //C = Rn >= Rm
-            context.Copy(GetFlag(PState.CFlag), context.ICompareGreaterOrEqualUI(n, m));
+            SetFlag(context, PState.CFlag, context.ICompareGreaterOrEqualUI(n, m));
         }
 
-        public static void EmitSubsVCheck(EmitterContext context, Operand n, Operand m, Operand d)
+        public static void EmitSubsVCheck(ArmEmitterContext context, Operand n, Operand m, Operand d)
         {
             //V = (Rd ^ Rn) & (Rn ^ Rm) < 0
             Operand vOut = context.BitwiseExclusiveOr(d, n);
@@ -68,10 +68,10 @@ namespace ARMeilleure.Instructions
 
             vOut = context.ICompareLess(vOut, Const(vOut.Type, 0));
 
-            context.Copy(GetFlag(PState.VFlag), vOut);
+            SetFlag(context, PState.VFlag, vOut);
         }
 
-        public static Operand GetAluN(EmitterContext context)
+        public static Operand GetAluN(ArmEmitterContext context)
         {
             if (context.CurrOp is IOpCodeAlu op)
             {
@@ -94,7 +94,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand GetAluM(EmitterContext context, bool setCarry = true)
+        public static Operand GetAluM(ArmEmitterContext context, bool setCarry = true)
         {
             switch (context.CurrOp)
             {
@@ -103,7 +103,7 @@ namespace ARMeilleure.Instructions
                 {
                     if (op.SetFlags && op.IsRotated)
                     {
-                        context.Copy(GetFlag(PState.CFlag), Const((uint)op.Immediate >> 31));
+                        SetFlag(context, PState.CFlag, Const((uint)op.Immediate >> 31));
                     }
 
                     return Const(op.Immediate);
@@ -160,7 +160,7 @@ namespace ARMeilleure.Instructions
         }
 
         //ARM32 helpers.
-        private static Operand GetMShiftedByImmediate(EmitterContext context, OpCode32AluRsImm op, bool setCarry)
+        private static Operand GetMShiftedByImmediate(ArmEmitterContext context, OpCode32AluRsImm op, bool setCarry)
         {
             Operand m = GetIntA32(context, op.Rm);
 
@@ -201,7 +201,7 @@ namespace ARMeilleure.Instructions
             return m;
         }
 
-        private static Operand GetLslC(EmitterContext context, Operand m, bool setCarry, int shift)
+        private static Operand GetLslC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift > 32)
             {
@@ -224,14 +224,14 @@ namespace ARMeilleure.Instructions
 
                     cOut = context.BitwiseAnd(cOut, Const(1));
 
-                    context.Copy(GetFlag(PState.CFlag), cOut);
+                    SetFlag(context, PState.CFlag, cOut);
                 }
 
                 return context.ShiftLeft(m, Const(shift));
             }
         }
 
-        private static Operand GetLsrC(EmitterContext context, Operand m, bool setCarry, int shift)
+        private static Operand GetLsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift > 32)
             {
@@ -257,17 +257,17 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand GetShiftByMoreThan32(EmitterContext context, bool setCarry)
+        private static Operand GetShiftByMoreThan32(ArmEmitterContext context, bool setCarry)
         {
             if (setCarry)
             {
-                context.Copy(GetFlag(PState.CFlag), Const(0));;
+                SetFlag(context, PState.CFlag, Const(0));;
             }
 
             return Const(0);
         }
 
-        private static Operand GetAsrC(EmitterContext context, Operand m, bool setCarry, int shift)
+        private static Operand GetAsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift >= 32)
             {
@@ -291,7 +291,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand GetRorC(EmitterContext context, Operand m, bool setCarry, int shift)
+        private static Operand GetRorC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             shift &= 0x1f;
 
@@ -305,7 +305,7 @@ namespace ARMeilleure.Instructions
             return m;
         }
 
-        private static Operand GetRrxC(EmitterContext context, Operand m, bool setCarry)
+        private static Operand GetRrxC(ArmEmitterContext context, Operand m, bool setCarry)
         {
             //Rotate right by 1 with carry.
             Operand cIn = context.Copy(GetFlag(PState.CFlag));
@@ -322,23 +322,23 @@ namespace ARMeilleure.Instructions
             return m;
         }
 
-        private static void SetCarryMLsb(EmitterContext context, Operand m)
+        private static void SetCarryMLsb(ArmEmitterContext context, Operand m)
         {
-            context.Copy(GetFlag(PState.CFlag), context.BitwiseAnd(m, Const(1)));
+            SetFlag(context, PState.CFlag, context.BitwiseAnd(m, Const(1)));
         }
 
-        private static void SetCarryMMsb(EmitterContext context, Operand m)
+        private static void SetCarryMMsb(ArmEmitterContext context, Operand m)
         {
-            context.Copy(GetFlag(PState.CFlag), context.ShiftRightUI(m, Const(31)));
+            SetFlag(context, PState.CFlag, context.ShiftRightUI(m, Const(31)));
         }
 
-        private static void SetCarryMShrOut(EmitterContext context, Operand m, int shift)
+        private static void SetCarryMShrOut(ArmEmitterContext context, Operand m, int shift)
         {
             Operand cOut = context.ShiftRightUI(m, Const(shift - 1));
 
             cOut = context.BitwiseAnd(cOut, Const(1));
 
-            context.Copy(GetFlag(PState.CFlag), cOut);
+            SetFlag(context, PState.CFlag, cOut);
         }
     }
 }

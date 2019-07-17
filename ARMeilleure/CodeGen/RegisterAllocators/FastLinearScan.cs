@@ -67,12 +67,24 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             fixedIntervals[0] = new List<LiveInterval>();
             fixedIntervals[1] = new List<LiveInterval>();
 
+            int intUsedRegisters = 0;
+            int vecUsedRegisters = 0;
+
             for (int index = 0; index < RegistersCount * 2; index++)
             {
                 LiveInterval interval = _intervals[index];
 
                 if (!interval.IsEmpty)
                 {
+                    if (interval.Register.Type == RegisterType.Integer)
+                    {
+                        intUsedRegisters |= 1 << interval.Register.Index;
+                    }
+                    else /* if (interval.Register.Type == RegisterType.Vector) */
+                    {
+                        vecUsedRegisters |= 1 << interval.Register.Index;
+                    }
+
                     InsertSorted(fixedIntervals[index & 1], interval);
                 }
             }
@@ -83,9 +95,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             int intFreeRegisters = regMasks.IntAvailableRegisters;
             int vecFreeRegisters = regMasks.VecAvailableRegisters;
-
-            int intUsedRegisters = 0;
-            int vecUsedRegisters = 0;
 
             intFreeRegisters = ReserveSpillTemps(ref _intSpillTemps, intFreeRegisters);
             vecFreeRegisters = ReserveSpillTemps(ref _vecSpillTemps, vecFreeRegisters);
@@ -413,29 +422,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     Operation operation = node.Value as Operation;
 
-                    Operand dest = operation.Dest;
-
-                    if (dest != null)
-                    {
-                        if (dest.Kind == OperandKind.LocalVariable)
-                        {
-                            LiveInterval interval = GetOrAddInterval(dest);
-
-                            if (interval.IsEmpty)
-                            {
-                                interval.SetStart(operationPos + 1);
-                            }
-
-                            interval.AddUsePosition(operationPos);
-                        }
-                        else if (dest.Kind == OperandKind.Register)
-                        {
-                            int iIndex = GetRegisterId(dest.GetRegister());
-
-                            _intervals[iIndex].AddRange(operationPos + 1, operationPos + InstructionGap);
-                        }
-                    }
-
+                    // Note: For fixed intervals, we must process sources first, in
+                    // order to extend the live range of the fixed interval to the last
+                    // use, in case the register is both used and assigned on the same
+                    // instruction.
                     for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
                     {
                         Operand source = operation.GetSource(srcIndex);
@@ -463,6 +453,29 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             {
                                 interval.SetEnd(operationPos + 1);
                             }
+                        }
+                    }
+
+                    Operand dest = operation.Dest;
+
+                    if (dest != null)
+                    {
+                        if (dest.Kind == OperandKind.LocalVariable)
+                        {
+                            LiveInterval interval = GetOrAddInterval(dest);
+
+                            if (interval.IsEmpty)
+                            {
+                                interval.SetStart(operationPos + 1);
+                            }
+
+                            interval.AddUsePosition(operationPos);
+                        }
+                        else if (dest.Kind == OperandKind.Register)
+                        {
+                            int iIndex = GetRegisterId(dest.GetRegister());
+
+                            _intervals[iIndex].AddRange(operationPos + 1, operationPos + InstructionGap);
                         }
                     }
 

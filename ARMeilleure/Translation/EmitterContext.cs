@@ -1,11 +1,8 @@
-using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
-using System.Reflection;
-using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -13,12 +10,7 @@ namespace ARMeilleure.Translation
 {
     class EmitterContext
     {
-        public Block  CurrBlock { get; set; }
-        public OpCode CurrOp    { get; set; }
 
-        public Aarch32Mode Mode { get; }
-
-        public MemoryManager Memory { get; set; }
 
         private Dictionary<ulong, Operand> _labels;
 
@@ -92,28 +84,16 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ByteSwap, Local(op1.Type), op1);
         }
 
-        public Operand Call(MethodInfo info, params Operand[] callArgs)
+        public Operand Call(Delegate func, params Operand[] callArgs)
         {
-            RuntimeHelpers.PrepareMethod(info.MethodHandle);
+            //Add the delegate to the cache to ensure it will not be garbage collected.
+            func = DelegateCache.GetOrAdd(func);
 
-            long methodPtr = info.MethodHandle.GetFunctionPointer().ToInt64();
+            IntPtr ptr = Marshal.GetFunctionPointerForDelegate(func);
 
-            Operand[] args = new Operand[callArgs.Length + 1];
+            OperandType returnType = GetOperandType(func.Method.ReturnType);
 
-            args[0] = Const(methodPtr);
-
-            Array.Copy(callArgs, 0, args, 1, callArgs.Length);
-
-            if (info.ReturnType != typeof(void))
-            {
-                OperandType returnType = GetOperandType(info.ReturnType);
-
-                return Add(Instruction.Call, Local(returnType), args);
-            }
-            else
-            {
-                return Add(Instruction.Call, null, args);
-            }
+            return Call(Const(ptr.ToInt64()), returnType, callArgs);
         }
 
         private static OperandType GetOperandType(Type type)
@@ -146,12 +126,30 @@ namespace ARMeilleure.Translation
                 return OperandType.V128;
             }
 
+            if (type == typeof(void))
+            {
+                return OperandType.None;
+            }
+
             throw new ArgumentException($"Invalid type \"{type.Name}\".");
         }
 
-        public Operand Call(OperandType returnType, params Operand[] callArgs)
+        public Operand Call(Operand address, OperandType returnType, params Operand[] callArgs)
         {
-            return Add(Instruction.Call, Local(returnType), callArgs);
+            Operand[] args = new Operand[callArgs.Length + 1];
+
+            args[0] = address;
+
+            Array.Copy(callArgs, 0, args, 1, callArgs.Length);
+
+            if (returnType != OperandType.None)
+            {
+                return Add(Instruction.Call, Local(returnType), args);
+            }
+            else
+            {
+                return Add(Instruction.Call, null, args);
+            }
         }
 
         public Operand CompareAndSwap128(Operand address, Operand expected, Operand desired)
@@ -186,6 +184,11 @@ namespace ARMeilleure.Translation
 
         public Operand Copy(Operand dest, Operand op1)
         {
+            if (dest.Kind != OperandKind.Register)
+            {
+                throw new ArgumentException($"Invalid dest operand kind \"{dest.Kind}\".");
+            }
+
             return Add(Instruction.Copy, dest, op1);
         }
 
@@ -375,6 +378,11 @@ namespace ARMeilleure.Translation
         public Operand Subtract(Operand op1, Operand op2)
         {
             return Add(Instruction.Subtract, Local(op1.Type), op1, op2);
+        }
+
+        public Operand VectorCreateScalar(Operand value)
+        {
+            return Add(Instruction.VectorCreateScalar, Local(OperandType.V128), value);
         }
 
         public Operand VectorExtract(OperandType type, Operand vector, int index)

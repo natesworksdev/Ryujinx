@@ -12,27 +12,27 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Ld__Vms(EmitterContext context)
+        public static void Ld__Vms(ArmEmitterContext context)
         {
             EmitSimdMemMs(context, isLoad: true);
         }
 
-        public static void Ld__Vss(EmitterContext context)
+        public static void Ld__Vss(ArmEmitterContext context)
         {
             EmitSimdMemSs(context, isLoad: true);
         }
 
-        public static void St__Vms(EmitterContext context)
+        public static void St__Vms(ArmEmitterContext context)
         {
             EmitSimdMemMs(context, isLoad: false);
         }
 
-        public static void St__Vss(EmitterContext context)
+        public static void St__Vss(ArmEmitterContext context)
         {
             EmitSimdMemSs(context, isLoad: false);
         }
 
-        private static void EmitSimdMemMs(EmitterContext context, bool isLoad)
+        private static void EmitSimdMemMs(ArmEmitterContext context, bool isLoad)
         {
             OpCodeSimdMemMs op = (OpCodeSimdMemMs)context.CurrOp;
 
@@ -73,7 +73,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSimdMemSs(EmitterContext context, bool isLoad)
+        private static void EmitSimdMemSs(ArmEmitterContext context, bool isLoad)
         {
             OpCodeSimdMemSs op = (OpCodeSimdMemSs)context.CurrOp;
 
@@ -138,7 +138,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSimdMemWBack(EmitterContext context, long offset)
+        private static void EmitSimdMemWBack(ArmEmitterContext context, long offset)
         {
             OpCodeMemReg op = (OpCodeMemReg)context.CurrOp;
 

@@ -1,6 +1,6 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.Translation;
-using System.Reflection;
+using System;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -8,25 +8,23 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Brk(EmitterContext context)
+        public static void Brk(ArmEmitterContext context)
         {
-            EmitExceptionCall(context, nameof(NativeInterface.Break));
+            EmitExceptionCall(context, NativeInterface.Break);
         }
 
-        public static void Svc(EmitterContext context)
+        public static void Svc(ArmEmitterContext context)
         {
-            EmitExceptionCall(context, nameof(NativeInterface.SupervisorCall));
+            EmitExceptionCall(context, NativeInterface.SupervisorCall);
         }
 
-        private static void EmitExceptionCall(EmitterContext context, string mthdName)
+        private static void EmitExceptionCall(ArmEmitterContext context, _Void_U64_S32 func)
         {
             OpCodeException op = (OpCodeException)context.CurrOp;
 
-            MethodInfo info = typeof(NativeInterface).GetMethod(mthdName);
-
             context.StoreToContext();
 
-            context.Call(info, Const(op.Address), Const(op.Id));
+            context.Call(func, Const(op.Address), Const(op.Id));
 
             context.LoadFromContext();
 
@@ -36,15 +34,15 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Und(EmitterContext context)
+        public static void Und(ArmEmitterContext context)
         {
             OpCode op = context.CurrOp;
 
-            MethodInfo info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.Undefined));
+            Delegate dlg = new _Void_U64_S32(NativeInterface.Undefined);
 
             context.StoreToContext();
 
-            context.Call(info, Const(op.Address), Const(op.RawOpCode));
+            context.Call(dlg, Const(op.Address), Const(op.RawOpCode));
 
             context.LoadFromContext();
 

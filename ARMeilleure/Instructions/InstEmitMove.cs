@@ -9,7 +9,7 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Movk(EmitterContext context)
+        public static void Movk(ArmEmitterContext context)
         {
             OpCodeMov op = (OpCodeMov)context.CurrOp;
 
@@ -24,14 +24,14 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        public static void Movn(EmitterContext context)
+        public static void Movn(ArmEmitterContext context)
         {
             OpCodeMov op = (OpCodeMov)context.CurrOp;
 
             SetIntOrZR(context, op.Rd, Const(op.GetOperandType(), ~op.Immediate));
         }
 
-        public static void Movz(EmitterContext context)
+        public static void Movz(ArmEmitterContext context)
         {
             OpCodeMov op = (OpCodeMov)context.CurrOp;
 

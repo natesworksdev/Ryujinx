@@ -84,7 +84,6 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cmpps,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.NoRexW));
             Add(X86Instruction.Cmpsd,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.NoRexW | InstFlags.PrefixF2));
             Add(X86Instruction.Cmpss,      new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstFlags.Vex | InstFlags.NoRexW | InstFlags.PrefixF3));
-            Add(X86Instruction.Cmpxchg8b,  new InstInfo(0x01000fc7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.NoRexW));
             Add(X86Instruction.Cmpxchg16b, new InstInfo(0x01000fc7, BadOp,      BadOp,      BadOp,      BadOp,      InstFlags.RexW));
             Add(X86Instruction.Comisd,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstFlags.Vex | InstFlags.NoRexW | InstFlags.Prefix66));
             Add(X86Instruction.Comiss,     new InstInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstFlags.Vex | InstFlags.NoRexW));
@@ -263,16 +262,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Add);
         }
 
-        public void Addpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Addpd, source1);
-        }
-
-        public void Addps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Addps, source1);
-        }
-
         public void Addsd(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Addsd, source1);
@@ -286,16 +275,6 @@ namespace ARMeilleure.CodeGen.X86
         public void And(Operand dest, Operand source)
         {
             WriteInstruction(dest, source, X86Instruction.And);
-        }
-
-        public void Andnpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Andnpd, source1);
-        }
-
-        public void Andnps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Andnps, source1);
         }
 
         public void Bsr(Operand dest, Operand source)
@@ -336,46 +315,11 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte(0x99);
         }
 
-        public void Cmppd(Operand dest, Operand source, Operand source1, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cmppd, source1);
-
-            WriteByte(imm);
-        }
-
-        public void Cmpps(Operand dest, Operand source, Operand source1, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cmpps, source1);
-
-            WriteByte(imm);
-        }
-
-        public void Cmpsd(Operand dest, Operand source, Operand source1, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cmpsd, source1);
-
-            WriteByte(imm);
-        }
-
-        public void Cmpss(Operand dest, Operand source, Operand source1, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cmpss, source1);
-
-            WriteByte(imm);
-        }
-
         public void Cmpxchg16b(X86MemoryOperand memOp)
         {
             WriteByte(LockPrefix);
 
             WriteInstruction(memOp, null, X86Instruction.Cmpxchg16b);
-        }
-
-        public void Cmpxchg8b(X86MemoryOperand memOp)
-        {
-            WriteByte(LockPrefix);
-
-            WriteInstruction(memOp, null, X86Instruction.Cmpxchg8b);
         }
 
         public void Comisd(Operand source1, Operand source2)
@@ -386,41 +330,6 @@ namespace ARMeilleure.CodeGen.X86
         public void Comiss(Operand source1, Operand source2)
         {
             WriteInstruction(source1, source2, X86Instruction.Comiss);
-        }
-
-        public void Cvtdq2pd(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtdq2pd);
-        }
-
-        public void Cvtdq2ps(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtdq2ps);
-        }
-
-        public void Cvtpd2dq(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtpd2dq);
-        }
-
-        public void Cvtpd2ps(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtpd2ps);
-        }
-
-        public void Cvtps2dq(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtps2dq);
-        }
-
-        public void Cvtps2pd(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtps2pd);
-        }
-
-        public void Cvtsd2si(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Cvtsd2si);
         }
 
         public void Cvtsd2ss(Operand dest, Operand source, Operand source1)
@@ -448,16 +357,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(null, source, X86Instruction.Div);
         }
 
-        public void Divpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Divpd, source1);
-        }
-
-        public void Divps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Divps, source1);
-        }
-
         public void Divsd(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Divsd, source1);
@@ -466,16 +365,6 @@ namespace ARMeilleure.CodeGen.X86
         public void Divss(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Divss, source1);
-        }
-
-        public void Haddpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Haddpd, source1);
-        }
-
-        public void Haddps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Haddps, source1);
         }
 
         public void Idiv(Operand source)
@@ -578,46 +467,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Lea);
         }
 
-        public void Maxpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Maxpd, source1);
-        }
-
-        public void Maxps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Maxps, source1);
-        }
-
-        public void Maxsd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Maxsd, source1);
-        }
-
-        public void Maxss(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Maxss, source1);
-        }
-
-        public void Minpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Minpd, source1);
-        }
-
-        public void Minps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Minps, source1);
-        }
-
-        public void Minsd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Minsd, source1);
-        }
-
-        public void Minss(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Minss, source1);
-        }
-
         public void Mov(Operand dest, Operand source)
         {
             WriteInstruction(dest, source, X86Instruction.Mov);
@@ -707,16 +556,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(null, source, X86Instruction.Mul128);
         }
 
-        public void Mulpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Mulpd, source1);
-        }
-
-        public void Mulps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Mulps, source1);
-        }
-
         public void Mulsd(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Mulsd, source1);
@@ -742,92 +581,9 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Or);
         }
 
-        public void Paddb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Paddb, source1);
-        }
-
-        public void Paddd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Paddd, source1);
-        }
-
-        public void Paddq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Paddq, source1);
-        }
-
-        public void Paddw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Paddw, source1);
-        }
-
-        public void Pand(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pand, source1);
-        }
-
-        public void Pandn(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pandn, source1);
-        }
-
-        public void Pavgb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pavgb, source1);
-        }
-
-        public void Pavgw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pavgw, source1);
-        }
-
-        public void Pblendvb(Operand dest, Operand source1, Operand source2, Operand source3)
-        {
-            //TODO: Non-VEX version.
-            WriteInstruction(dest, source2, X86Instruction.Pblendvb, source1);
-
-            WriteByte((byte)(source3.AsByte() << 4));
-        }
-
-        public void Pcmpeqb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpeqb, source1);
-        }
-
-        public void Pcmpeqd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpeqd, source1);
-        }
-
-        public void Pcmpeqq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpeqq, source1);
-        }
-
         public void Pcmpeqw(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Pcmpeqw, source1);
-        }
-
-        public void Pcmpgtb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpgtb, source1);
-        }
-
-        public void Pcmpgtd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpgtd, source1);
-        }
-
-        public void Pcmpgtq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpgtq, source1);
-        }
-
-        public void Pcmpgtw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pcmpgtw, source1);
         }
 
         public void Pextrb(Operand dest, Operand source, byte imm)
@@ -872,106 +628,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte(imm);
         }
 
-        public void Pmaxsb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmaxsb, source1);
-        }
-
-        public void Pmaxsd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmaxsd, source1);
-        }
-
-        public void Pmaxsw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmaxsw, source1);
-        }
-
-        public void Pmaxub(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmaxub, source1);
-        }
-
-        public void Pmaxud(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmaxud, source1);
-        }
-
-        public void Pmaxuw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmaxuw, source1);
-        }
-
-        public void Pminsb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pminsb, source1);
-        }
-
-        public void Pminsd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pminsd, source1);
-        }
-
-        public void Pminsw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pminsw, source1);
-        }
-
-        public void Pminub(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pminub, source1);
-        }
-
-        public void Pminud(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pminud, source1);
-        }
-
-        public void Pminuw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pminuw, source1);
-        }
-
-        public void Pmovsxbw(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmovsxbw);
-        }
-
-        public void Pmovsxdq(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmovsxdq);
-        }
-
-        public void Pmovsxwd(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmovsxwd);
-        }
-
-        public void Pmovzxbw(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmovzxbw);
-        }
-
-        public void Pmovzxdq(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmovzxdq);
-        }
-
-        public void Pmovzxwd(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmovzxwd);
-        }
-
-        public void Pmulld(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmulld, source1);
-        }
-
-        public void Pmullw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pmullw, source1);
-        }
-
         public void Pop(Operand dest)
         {
             if (dest.Kind == OperandKind.Register)
@@ -989,131 +645,11 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, source, X86Instruction.Popcnt);
         }
 
-        public void Por(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Por, source1);
-        }
-
-        public void Pshufb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pshufb, source1);
-        }
-
         public void Pshufd(Operand dest, Operand source, byte imm)
         {
             WriteInstruction(dest, source, X86Instruction.Pshufd);
 
             WriteByte(imm);
-        }
-
-        public void Pslld(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Pslld, dest);
-        }
-
-        public void Pslldq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Pslldq, dest);
-        }
-
-        public void Psllq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psllq, dest);
-        }
-
-        public void Psllw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psllw, dest);
-        }
-
-        public void Psrad(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psrad, dest);
-        }
-
-        public void Psraw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psraw, dest);
-        }
-
-        public void Psrld(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psrld, dest);
-        }
-
-        public void Psrlq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psrlq, dest);
-        }
-
-        public void Psrldq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psrldq, dest);
-        }
-
-        public void Psrlw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(source1, source, X86Instruction.Psrlw, dest);
-        }
-
-        public void Psubb(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Psubb, source1);
-        }
-
-        public void Psubd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Psubd, source1);
-        }
-
-        public void Psubq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Psubq, source1);
-        }
-
-        public void Psubw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Psubw, source1);
-        }
-
-        public void Punpckhbw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpckhbw, source1);
-        }
-
-        public void Punpckhdq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpckhdq, source1);
-        }
-
-        public void Punpckhqdq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpckhqdq, source1);
-        }
-
-        public void Punpckhwd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpckhwd, source1);
-        }
-
-        public void Punpcklbw(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpcklbw, source1);
-        }
-
-        public void Punpckldq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpckldq, source1);
-        }
-
-        public void Punpcklqdq(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpcklqdq, source1);
-        }
-
-        public void Punpcklwd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Punpcklwd, source1);
         }
 
         public void Push(Operand source)
@@ -1128,21 +664,6 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        public void Pxor(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Pxor, source1);
-        }
-
-        public void Rcpps(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Rcpps);
-        }
-
-        public void Rcpss(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Rcpss);
-        }
-
         public void Return()
         {
             WriteByte(0xc3);
@@ -1151,44 +672,6 @@ namespace ARMeilleure.CodeGen.X86
         public void Ror(Operand dest, Operand source)
         {
             WriteShiftInst(dest, source, X86Instruction.Ror);
-        }
-
-        public void Roundpd(Operand dest, Operand source, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Roundpd);
-
-            WriteByte(imm);
-        }
-
-        public void Roundps(Operand dest, Operand source, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Roundps);
-
-            WriteByte(imm);
-        }
-
-        public void Roundsd(Operand dest, Operand source, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Roundsd);
-
-            WriteByte(imm);
-        }
-
-        public void Roundss(Operand dest, Operand source, byte imm)
-        {
-            WriteInstruction(dest, source, X86Instruction.Roundss);
-
-            WriteByte(imm);
-        }
-
-        public void Rsqrtps(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Rsqrtps);
-        }
-
-        public void Rsqrtss(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Rsqrtss);
         }
 
         public void Sar(Operand dest, Operand source)
@@ -1206,20 +689,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteShiftInst(dest, source, X86Instruction.Shr);
         }
 
-        public void Shufpd(Operand dest, Operand source, byte imm, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Shufpd, source1);
-
-            WriteByte(imm);
-        }
-
-        public void Shufps(Operand dest, Operand source, byte imm, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Shufps, source1);
-
-            WriteByte(imm);
-        }
-
         public void Setcc(Operand dest, X86Condition condition)
         {
             InstInfo info = _instTable[(int)X86Instruction.Setcc];
@@ -1227,39 +696,9 @@ namespace ARMeilleure.CodeGen.X86
             WriteOpCode(dest, null, info.Flags, info.OpRRM | (int)condition);
         }
 
-        public void Sqrtpd(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Sqrtpd);
-        }
-
-        public void Sqrtps(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Sqrtps);
-        }
-
-        public void Sqrtsd(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Sqrtsd);
-        }
-
-        public void Sqrtss(Operand dest, Operand source)
-        {
-            WriteInstruction(dest, source, X86Instruction.Sqrtss);
-        }
-
         public void Sub(Operand dest, Operand source)
         {
             WriteInstruction(dest, source, X86Instruction.Sub);
-        }
-
-        public void Subpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Subpd, source1);
-        }
-
-        public void Subps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Subps, source1);
         }
 
         public void Subsd(Operand dest, Operand source, Operand source1)
@@ -1277,39 +716,63 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(src1, src2, X86Instruction.Test);
         }
 
-        public void Unpckhpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Unpckhpd, source1);
-        }
-
-        public void Unpckhps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Unpckhps, source1);
-        }
-
-        public void Unpcklpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Unpcklpd, source1);
-        }
-
-        public void Unpcklps(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Unpcklps, source1);
-        }
-
         public void Xor(Operand dest, Operand source)
         {
             WriteInstruction(dest, source, X86Instruction.Xor);
         }
 
-        public void Xorpd(Operand dest, Operand source, Operand source1)
-        {
-            WriteInstruction(dest, source, X86Instruction.Xorpd, source1);
-        }
-
         public void Xorps(Operand dest, Operand source, Operand source1)
         {
             WriteInstruction(dest, source, X86Instruction.Xorps, source1);
+        }
+
+        public void WriteInstruction(X86Instruction inst, Operand dest, Operand source)
+        {
+            WriteInstruction(dest, source, inst);
+        }
+
+        public void WriteInstruction(X86Instruction inst, Operand dest, Operand src1, Operand src2)
+        {
+            if (src2.Kind == OperandKind.Constant)
+            {
+                WriteInstruction(src1, src2, inst, dest);
+            }
+            else
+            {
+                WriteInstruction(dest, src2, inst, src1);
+            }
+        }
+
+        public void WriteInstruction(X86Instruction inst, Operand dest, Operand source, byte imm)
+        {
+            WriteInstruction(dest, source, inst);
+
+            WriteByte(imm);
+        }
+
+        public void WriteInstruction(
+            X86Instruction inst,
+            Operand dest,
+            Operand src1,
+            Operand src2,
+            Operand src3)
+        {
+            //TODO: Non-VEX version.
+            WriteInstruction(dest, src2, inst, src1);
+
+            WriteByte((byte)(src3.AsByte() << 4));
+        }
+
+        public void WriteInstruction(
+            X86Instruction inst,
+            Operand dest,
+            Operand src1,
+            Operand src2,
+            byte imm)
+        {
+            WriteInstruction(dest, src2, inst, src1);
+
+            WriteByte(imm);
         }
 
         private void WriteShiftInst(Operand dest, Operand source, X86Instruction inst)

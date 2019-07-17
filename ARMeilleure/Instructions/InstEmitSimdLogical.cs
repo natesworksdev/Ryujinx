@@ -1,7 +1,6 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -11,7 +10,7 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void And_V(EmitterContext context)
+        public static void And_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -35,7 +34,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Bic_V(EmitterContext context)
+        public static void Bic_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -62,7 +61,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Bic_Vi(EmitterContext context)
+        public static void Bic_Vi(ArmEmitterContext context)
         {
             EmitVectorImmBinaryOp(context, (op1, op2) =>
             {
@@ -70,17 +69,17 @@ namespace ARMeilleure.Instructions
             });
         }
 
-        public static void Bif_V(EmitterContext context)
+        public static void Bif_V(ArmEmitterContext context)
         {
             EmitBifBit(context, notRm: true);
         }
 
-        public static void Bit_V(EmitterContext context)
+        public static void Bit_V(ArmEmitterContext context)
         {
             EmitBifBit(context, notRm: false);
         }
 
-        private static void EmitBifBit(EmitterContext context, bool notRm)
+        private static void EmitBifBit(ArmEmitterContext context, bool notRm)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -139,7 +138,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Bsl_V(EmitterContext context)
+        public static void Bsl_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -172,7 +171,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Eor_V(EmitterContext context)
+        public static void Eor_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -196,7 +195,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Not_V(EmitterContext context)
+        public static void Not_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -221,7 +220,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Orn_V(EmitterContext context)
+        public static void Orn_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -252,7 +251,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Orr_V(EmitterContext context)
+        public static void Orr_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -276,12 +275,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Orr_Vi(EmitterContext context)
+        public static void Orr_Vi(ArmEmitterContext context)
         {
             EmitVectorImmBinaryOp(context, (op1, op2) => context.BitwiseOr(op1, op2));
         }
 
-        public static void Rbit_V(EmitterContext context)
+        public static void Rbit_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -295,9 +294,7 @@ namespace ARMeilleure.Instructions
 
                 ne = context.ConvertI64ToI32(ne);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.ReverseBits8));
-
-                Operand de = context.Call(info, ne);
+                Operand de = context.Call(new _U32_U32(SoftFallback.ReverseBits8), ne);
 
                 de = context.ZeroExtend32(OperandType.I64, de);
 
@@ -307,7 +304,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Rev16_V(EmitterContext context)
+        public static void Rev16_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSsse3)
             {
@@ -337,7 +334,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Rev32_V(EmitterContext context)
+        public static void Rev32_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSsse3)
             {
@@ -381,7 +378,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Rev64_V(EmitterContext context)
+        public static void Rev64_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSsse3)
             {
@@ -434,7 +431,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitRev_V(EmitterContext context, int containerSize)
+        private static void EmitRev_V(ArmEmitterContext context, int containerSize)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 

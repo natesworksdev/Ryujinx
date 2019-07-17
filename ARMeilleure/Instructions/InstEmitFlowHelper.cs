@@ -10,7 +10,7 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitFlowHelper
     {
-        public static void EmitCondBranch(EmitterContext context, Operand target, Condition cond)
+        public static void EmitCondBranch(ArmEmitterContext context, Operand target, Condition cond)
         {
             if (cond != Condition.Al)
             {
@@ -22,8 +22,15 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand GetCondTrue(EmitterContext context, Condition condition)
+        public static Operand GetCondTrue(ArmEmitterContext context, Condition condition)
         {
+            Operand cmpResult = context.TryGetComparisonResult(condition);
+
+            if (cmpResult != null)
+            {
+                return cmpResult;
+            }
+
             Operand value = Const(1);
 
             Operand Inverse(Operand val)
@@ -131,27 +138,27 @@ namespace ARMeilleure.Instructions
             return value;
         }
 
-        public static void EmitCall(EmitterContext context, ulong immediate)
+        public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
             context.Return(Const(immediate));
         }
 
-        public static void EmitVirtualCall(EmitterContext context, Operand target)
+        public static void EmitVirtualCall(ArmEmitterContext context, Operand target)
         {
             EmitVirtualCallOrJump(context, target, isJump: false);
         }
 
-        public static void EmitVirtualJump(EmitterContext context, Operand target)
+        public static void EmitVirtualJump(ArmEmitterContext context, Operand target)
         {
             EmitVirtualCallOrJump(context, target, isJump: true);
         }
 
-        private static void EmitVirtualCallOrJump(EmitterContext context, Operand target, bool isJump)
+        private static void EmitVirtualCallOrJump(ArmEmitterContext context, Operand target, bool isJump)
         {
             context.Return(target);
         }
 
-        private static void EmitContinueOrReturnCheck(EmitterContext context, Operand retVal)
+        private static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand retVal)
         {
             //Note: The return value of the called method will be placed
             //at the Stack, the return value is always a Int64 with the

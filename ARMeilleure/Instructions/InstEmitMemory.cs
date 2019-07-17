@@ -10,14 +10,14 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Adr(EmitterContext context)
+        public static void Adr(ArmEmitterContext context)
         {
             OpCodeAdr op = (OpCodeAdr)context.CurrOp;
 
             SetIntOrZR(context, op.Rd, Const(op.Address + (ulong)op.Immediate));
         }
 
-        public static void Adrp(EmitterContext context)
+        public static void Adrp(ArmEmitterContext context)
         {
             OpCodeAdr op = (OpCodeAdr)context.CurrOp;
 
@@ -26,10 +26,10 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, Const(address));
         }
 
-        public static void Ldr(EmitterContext context)  => EmitLdr(context, signed: false);
-        public static void Ldrs(EmitterContext context) => EmitLdr(context, signed: true);
+        public static void Ldr(ArmEmitterContext context)  => EmitLdr(context, signed: false);
+        public static void Ldrs(ArmEmitterContext context) => EmitLdr(context, signed: true);
 
-        private static void EmitLdr(EmitterContext context, bool signed)
+        private static void EmitLdr(ArmEmitterContext context, bool signed)
         {
             OpCodeMem op = (OpCodeMem)context.CurrOp;
 
@@ -51,7 +51,7 @@ namespace ARMeilleure.Instructions
             EmitWBackIfNeeded(context, address);
         }
 
-        public static void Ldr_Literal(EmitterContext context)
+        public static void Ldr_Literal(ArmEmitterContext context)
         {
             IOpCodeLit op = (IOpCodeLit)context.CurrOp;
 
@@ -70,7 +70,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ldp(EmitterContext context)
+        public static void Ldp(ArmEmitterContext context)
         {
             OpCodeMemPair op = (OpCodeMemPair)context.CurrOp;
 
@@ -96,7 +96,7 @@ namespace ARMeilleure.Instructions
             EmitWBackIfNeeded(context, address);
         }
 
-        public static void Str(EmitterContext context)
+        public static void Str(ArmEmitterContext context)
         {
             OpCodeMem op = (OpCodeMem)context.CurrOp;
 
@@ -107,7 +107,7 @@ namespace ARMeilleure.Instructions
             EmitWBackIfNeeded(context, address);
         }
 
-        public static void Stp(EmitterContext context)
+        public static void Stp(ArmEmitterContext context)
         {
             OpCodeMemPair op = (OpCodeMemPair)context.CurrOp;
 
@@ -121,7 +121,7 @@ namespace ARMeilleure.Instructions
             EmitWBackIfNeeded(context, address);
         }
 
-        private static Operand GetAddress(EmitterContext context)
+        private static Operand GetAddress(ArmEmitterContext context)
         {
             Operand address = null;
 
@@ -160,7 +160,7 @@ namespace ARMeilleure.Instructions
             return address;
         }
 
-        private static void EmitWBackIfNeeded(EmitterContext context, Operand address)
+        private static void EmitWBackIfNeeded(ArmEmitterContext context, Operand address)
         {
             //Check whenever the current OpCode has post-indexed write back, if so write it.
             if (context.CurrOp is OpCodeMemImm op && op.WBack)

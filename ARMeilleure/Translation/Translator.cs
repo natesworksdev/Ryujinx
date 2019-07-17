@@ -6,7 +6,6 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
 using System.Collections.Concurrent;
-using System.Reflection;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -38,11 +37,6 @@ namespace ARMeilleure.Translation
             NativeInterface.UnregisterThread();
         }
 
-        public void SelfRegister(ExecutionContext context)
-        {
-            NativeInterface.RegisterThread(context, _memory);
-        }
-
         public ulong ExecuteSingle(ExecutionContext context, ulong address)
         {
             TranslatedFunction func = GetOrTranslate(address, ExecutionMode.Aarch64);
@@ -64,9 +58,7 @@ namespace ARMeilleure.Translation
 
         private TranslatedFunction Translate(ulong address, ExecutionMode mode)
         {
-            EmitterContext context = new EmitterContext();
-
-            context.Memory = _memory;
+            ArmEmitterContext context = new ArmEmitterContext(_memory, Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 
@@ -98,7 +90,7 @@ namespace ARMeilleure.Translation
             return new TranslatedFunction(func);
         }
 
-        private static ControlFlowGraph EmitAndGetCFG(EmitterContext context, Block[] blocks)
+        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)
         {
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
@@ -172,9 +164,7 @@ namespace ARMeilleure.Translation
 
             context.BranchIfTrue(lblNonZero, count);
 
-            MethodInfo info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization));
-
-            context.Call(info);
+            context.Call(new _Void(NativeInterface.CheckSynchronization));
 
             context.Branch(lblExit);
 

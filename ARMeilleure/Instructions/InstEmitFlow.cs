@@ -11,7 +11,7 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void B(EmitterContext context)
+        public static void B(ArmEmitterContext context)
         {
             OpCodeBImmAl op = (OpCodeBImmAl)context.CurrOp;
 
@@ -25,14 +25,14 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void B_Cond(EmitterContext context)
+        public static void B_Cond(ArmEmitterContext context)
         {
             OpCodeBImmCond op = (OpCodeBImmCond)context.CurrOp;
 
             EmitBranch(context, op.Cond);
         }
 
-        public static void Bl(EmitterContext context)
+        public static void Bl(ArmEmitterContext context)
         {
             OpCodeBImmAl op = (OpCodeBImmAl)context.CurrOp;
 
@@ -41,7 +41,7 @@ namespace ARMeilleure.Instructions
             EmitCall(context, (ulong)op.Immediate);
         }
 
-        public static void Blr(EmitterContext context)
+        public static void Blr(ArmEmitterContext context)
         {
             OpCodeBReg op = (OpCodeBReg)context.CurrOp;
 
@@ -52,32 +52,32 @@ namespace ARMeilleure.Instructions
             EmitVirtualCall(context, n);
         }
 
-        public static void Br(EmitterContext context)
+        public static void Br(ArmEmitterContext context)
         {
             OpCodeBReg op = (OpCodeBReg)context.CurrOp;
 
             EmitVirtualJump(context, GetIntOrZR(context, op.Rn));
         }
 
-        public static void Cbnz(EmitterContext context) => EmitCb(context, onNotZero: true);
-        public static void Cbz(EmitterContext context)  => EmitCb(context, onNotZero: false);
+        public static void Cbnz(ArmEmitterContext context) => EmitCb(context, onNotZero: true);
+        public static void Cbz(ArmEmitterContext context)  => EmitCb(context, onNotZero: false);
 
-        private static void EmitCb(EmitterContext context, bool onNotZero)
+        private static void EmitCb(ArmEmitterContext context, bool onNotZero)
         {
             OpCodeBImmCmp op = (OpCodeBImmCmp)context.CurrOp;
 
             EmitBranch(context, GetIntOrZR(context, op.Rt), onNotZero);
         }
 
-        public static void Ret(EmitterContext context)
+        public static void Ret(ArmEmitterContext context)
         {
             context.Return(GetIntOrZR(context, RegisterAlias.Lr));
         }
 
-        public static void Tbnz(EmitterContext context) => EmitTb(context, onNotZero: true);
-        public static void Tbz(EmitterContext context)  => EmitTb(context, onNotZero: false);
+        public static void Tbnz(ArmEmitterContext context) => EmitTb(context, onNotZero: true);
+        public static void Tbz(ArmEmitterContext context)  => EmitTb(context, onNotZero: false);
 
-        private static void EmitTb(EmitterContext context, bool onNotZero)
+        private static void EmitTb(ArmEmitterContext context, bool onNotZero)
         {
             OpCodeBImmTest op = (OpCodeBImmTest)context.CurrOp;
 
@@ -86,7 +86,7 @@ namespace ARMeilleure.Instructions
             EmitBranch(context, value, onNotZero);
         }
 
-        private static void EmitBranch(EmitterContext context, Condition cond)
+        private static void EmitBranch(ArmEmitterContext context, Condition cond)
         {
             OpCodeBImm op = (OpCodeBImm)context.CurrOp;
 
@@ -113,7 +113,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitBranch(EmitterContext context, Operand value, bool onNotZero)
+        private static void EmitBranch(ArmEmitterContext context, Operand value, bool onNotZero)
         {
             OpCodeBImm op = (OpCodeBImm)context.CurrOp;
 

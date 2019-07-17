@@ -9,10 +9,10 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Sdiv(EmitterContext context) => EmitDiv(context, unsigned: false);
-        public static void Udiv(EmitterContext context) => EmitDiv(context, unsigned: true);
+        public static void Sdiv(ArmEmitterContext context) => EmitDiv(context, unsigned: false);
+        public static void Udiv(ArmEmitterContext context) => EmitDiv(context, unsigned: true);
 
-        private static void EmitDiv(EmitterContext context, bool unsigned)
+        private static void EmitDiv(ArmEmitterContext context, bool unsigned)
         {
             OpCodeAluBinary op = (OpCodeAluBinary)context.CurrOp;
 

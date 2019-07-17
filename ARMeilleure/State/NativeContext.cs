@@ -112,19 +112,34 @@ namespace ARMeilleure.State
 
         public static int GetRegisterOffset(Register reg)
         {
+            int offset, size;
+
             if (reg.Type == RegisterType.Integer)
             {
-                return reg.Index * IntSize;
+                offset = reg.Index * IntSize;
+
+                size = IntSize;
             }
             else if (reg.Type == RegisterType.Vector)
             {
-                return RegisterConsts.IntRegsCount * IntSize + reg.Index * VecSize;
+                offset = RegisterConsts.IntRegsCount * IntSize + reg.Index * VecSize;
+
+                size = VecSize;
             }
             else /* if (reg.Type == RegisterType.Flag) */
             {
-                return RegisterConsts.IntRegsCount * IntSize +
-                       RegisterConsts.VecRegsCount * VecSize + reg.Index * FlagSize;
+                offset = RegisterConsts.IntRegsCount * IntSize +
+                         RegisterConsts.VecRegsCount * VecSize + reg.Index * FlagSize;
+
+                size = FlagSize;
             }
+
+            if ((uint)(offset + size) > (uint)TotalSize)
+            {
+                throw new ArgumentException("Invalid register.");
+            }
+
+            return offset;
         }
 
         public static int GetCounterOffset()

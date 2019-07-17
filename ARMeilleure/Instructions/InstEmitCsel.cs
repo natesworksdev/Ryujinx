@@ -18,12 +18,12 @@ namespace ARMeilleure.Instructions
             Negate
         }
 
-        public static void Csel(EmitterContext context)  => EmitCsel(context, CselOperation.None);
-        public static void Csinc(EmitterContext context) => EmitCsel(context, CselOperation.Increment);
-        public static void Csinv(EmitterContext context) => EmitCsel(context, CselOperation.Invert);
-        public static void Csneg(EmitterContext context) => EmitCsel(context, CselOperation.Negate);
+        public static void Csel(ArmEmitterContext context)  => EmitCsel(context, CselOperation.None);
+        public static void Csinc(ArmEmitterContext context) => EmitCsel(context, CselOperation.Increment);
+        public static void Csinv(ArmEmitterContext context) => EmitCsel(context, CselOperation.Invert);
+        public static void Csneg(ArmEmitterContext context) => EmitCsel(context, CselOperation.Negate);
 
-        private static void EmitCsel(EmitterContext context, CselOperation cselOp)
+        private static void EmitCsel(ArmEmitterContext context, CselOperation cselOp)
         {
             OpCodeCsel op = (OpCodeCsel)context.CurrOp;
 

@@ -4,7 +4,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -16,7 +15,7 @@ namespace ARMeilleure.Instructions
 
     static partial class InstEmit
     {
-        public static void Fcvt_S(EmitterContext context)
+        public static void Fcvt_S(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -62,9 +61,9 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
 
-                MethodInfo info = typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert));
+                Delegate dlg = new _U16_F32(SoftFloat32_16.FPConvert);
 
-                Operand res = context.Call(info, ne);
+                Operand res = context.Call(dlg, ne);
 
                 res = context.ZeroExtend16(OperandType.I64, res);
 
@@ -74,9 +73,9 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 1);
 
-                MethodInfo info = typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert));
+                Delegate dlg = new _F32_U16(SoftFloat16_32.FPConvert);
 
-                Operand res = context.Call(info, ne);
+                Operand res = context.Call(dlg, ne);
 
                 context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
             }
@@ -94,17 +93,17 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtas_Gp(EmitterContext context)
+        public static void Fcvtas_Gp(ArmEmitterContext context)
         {
             EmitFcvt_s_Gp(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1));
         }
 
-        public static void Fcvtau_Gp(EmitterContext context)
+        public static void Fcvtau_Gp(ArmEmitterContext context)
         {
             EmitFcvt_u_Gp(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1));
         }
 
-        public static void Fcvtl_V(EmitterContext context)
+        public static void Fcvtl_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -142,9 +141,9 @@ namespace ARMeilleure.Instructions
                     {
                         Operand ne = EmitVectorExtractZx(context, op.Rn, part + index, 1);
 
-                        MethodInfo info = typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert));
+                        Delegate dlg = new _F32_U16(SoftFloat16_32.FPConvert);
 
-                        Operand e = context.Call(info, ne);
+                        Operand e = context.Call(dlg, ne);
 
                         res = context.VectorInsert(res, e, index);
                     }
@@ -162,17 +161,17 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtms_Gp(EmitterContext context)
+        public static void Fcvtms_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1));
+            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1));
         }
 
-        public static void Fcvtmu_Gp(EmitterContext context)
+        public static void Fcvtmu_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1));
+            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1));
         }
 
-        public static void Fcvtn_V(EmitterContext context)
+        public static void Fcvtn_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -213,9 +212,9 @@ namespace ARMeilleure.Instructions
 
                     if (sizeF == 0)
                     {
-                        MethodInfo info = typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert));
+                        Delegate dlg = new _U16_F32(SoftFloat32_16.FPConvert);
 
-                        Operand e = context.Call(info, ne);
+                        Operand e = context.Call(dlg, ne);
 
                         e = context.ZeroExtend16(OperandType.I64, e);
 
@@ -233,7 +232,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtns_S(EmitterContext context)
+        public static void Fcvtns_S(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -245,7 +244,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtns_V(EmitterContext context)
+        public static void Fcvtns_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -257,7 +256,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtnu_S(EmitterContext context)
+        public static void Fcvtnu_S(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -269,7 +268,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtnu_V(EmitterContext context)
+        public static void Fcvtnu_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -281,27 +280,27 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtps_Gp(EmitterContext context)
+        public static void Fcvtps_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Ceiling), op1));
+            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1));
         }
 
-        public static void Fcvtpu_Gp(EmitterContext context)
+        public static void Fcvtpu_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Ceiling), op1));
+            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1));
         }
 
-        public static void Fcvtzs_Gp(EmitterContext context)
+        public static void Fcvtzs_Gp(ArmEmitterContext context)
         {
             EmitFcvt_s_Gp(context, (op1) => op1);
         }
 
-        public static void Fcvtzs_Gp_Fixed(EmitterContext context)
+        public static void Fcvtzs_Gp_Fixed(ArmEmitterContext context)
         {
             EmitFcvtzs_Gp_Fixed(context);
         }
 
-        public static void Fcvtzs_S(EmitterContext context)
+        public static void Fcvtzs_S(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -313,7 +312,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtzs_V(EmitterContext context)
+        public static void Fcvtzs_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -325,7 +324,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtzs_V_Fixed(EmitterContext context)
+        public static void Fcvtzs_V_Fixed(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -337,17 +336,17 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtzu_Gp(EmitterContext context)
+        public static void Fcvtzu_Gp(ArmEmitterContext context)
         {
             EmitFcvt_u_Gp(context, (op1) => op1);
         }
 
-        public static void Fcvtzu_Gp_Fixed(EmitterContext context)
+        public static void Fcvtzu_Gp_Fixed(ArmEmitterContext context)
         {
             EmitFcvtzu_Gp_Fixed(context);
         }
 
-        public static void Fcvtzu_S(EmitterContext context)
+        public static void Fcvtzu_S(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -359,7 +358,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtzu_V(EmitterContext context)
+        public static void Fcvtzu_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -371,7 +370,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcvtzu_V_Fixed(EmitterContext context)
+        public static void Fcvtzu_V_Fixed(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -383,7 +382,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Scvtf_Gp(EmitterContext context)
+        public static void Scvtf_Gp(ArmEmitterContext context)
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
@@ -399,7 +398,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
         }
 
-        public static void Scvtf_Gp_Fixed(EmitterContext context)
+        public static void Scvtf_Gp_Fixed(ArmEmitterContext context)
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
@@ -417,7 +416,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
         }
 
-        public static void Scvtf_S(EmitterContext context)
+        public static void Scvtf_S(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -437,7 +436,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Scvtf_V(EmitterContext context)
+        public static void Scvtf_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -453,7 +452,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Scvtf_V_Fixed(EmitterContext context)
+        public static void Scvtf_V_Fixed(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -470,7 +469,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ucvtf_Gp(EmitterContext context)
+        public static void Ucvtf_Gp(ArmEmitterContext context)
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
@@ -481,7 +480,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
         }
 
-        public static void Ucvtf_Gp_Fixed(EmitterContext context)
+        public static void Ucvtf_Gp_Fixed(ArmEmitterContext context)
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
@@ -494,7 +493,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
         }
 
-        public static void Ucvtf_S(EmitterContext context)
+        public static void Ucvtf_S(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -514,7 +513,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ucvtf_V(EmitterContext context)
+        public static void Ucvtf_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -530,7 +529,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ucvtf_V_Fixed(EmitterContext context)
+        public static void Ucvtf_V_Fixed(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -547,7 +546,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitFcvtn(EmitterContext context, bool signed, bool scalar)
+        private static void EmitFcvtn(ArmEmitterContext context, bool signed, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -570,25 +569,21 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    string name = signed
-                        ? nameof(SoftFallback.SatF32ToS32)
-                        : nameof(SoftFallback.SatF32ToU32);
+                    Delegate dlg = signed
+                        ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
+                        : (Delegate)new _U32_F32(SoftFallback.SatF32ToU32);
 
-                    MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    string name = signed
-                        ? nameof(SoftFallback.SatF64ToS64)
-                        : nameof(SoftFallback.SatF64ToU64);
+                    Delegate dlg = signed
+                        ? (Delegate)new _S64_F64(SoftFallback.SatF64ToS64)
+                        : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
 
-                    MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -597,7 +592,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitFcvtz(EmitterContext context, bool signed, bool scalar)
+        private static void EmitFcvtz(ArmEmitterContext context, bool signed, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -622,25 +617,21 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    string name = signed
-                        ? nameof(SoftFallback.SatF32ToS32)
-                        : nameof(SoftFallback.SatF32ToU32);
+                    Delegate dlg = signed
+                        ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
+                        : (Delegate)new _U32_F32(SoftFallback.SatF32ToU32);
 
-                    MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    string name = signed
-                        ? nameof(SoftFallback.SatF64ToS64)
-                        : nameof(SoftFallback.SatF64ToU64);
+                    Delegate dlg = signed
+                        ? (Delegate)new _S64_F64(SoftFallback.SatF64ToS64)
+                        : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
 
-                    MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -649,17 +640,17 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitFcvt_s_Gp(EmitterContext context, Func1I emit)
+        private static void EmitFcvt_s_Gp(ArmEmitterContext context, Func1I emit)
         {
             EmitFcvt___Gp(context, emit, signed: true);
         }
 
-        private static void EmitFcvt_u_Gp(EmitterContext context, Func1I emit)
+        private static void EmitFcvt_u_Gp(ArmEmitterContext context, Func1I emit)
         {
             EmitFcvt___Gp(context, emit, signed: false);
         }
 
-        private static void EmitFcvt___Gp(EmitterContext context, Func1I emit, bool signed)
+        private static void EmitFcvt___Gp(ArmEmitterContext context, Func1I emit, bool signed)
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
@@ -674,17 +665,17 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        private static void EmitFcvtzs_Gp_Fixed(EmitterContext context)
+        private static void EmitFcvtzs_Gp_Fixed(ArmEmitterContext context)
         {
             EmitFcvtz__Gp_Fixed(context, signed: true);
         }
 
-        private static void EmitFcvtzu_Gp_Fixed(EmitterContext context)
+        private static void EmitFcvtzu_Gp_Fixed(ArmEmitterContext context)
         {
             EmitFcvtz__Gp_Fixed(context, signed: false);
         }
 
-        private static void EmitFcvtz__Gp_Fixed(EmitterContext context, bool signed)
+        private static void EmitFcvtz__Gp_Fixed(ArmEmitterContext context, bool signed)
         {
             OpCodeSimdCvt op = (OpCodeSimdCvt)context.CurrOp;
 
@@ -699,7 +690,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        private static void EmitVectorCvtf(EmitterContext context, bool signed)
+        private static void EmitVectorCvtf(ArmEmitterContext context, bool signed)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -726,7 +717,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static int GetFBits(EmitterContext context)
+        private static int GetFBits(ArmEmitterContext context)
         {
             if (context.CurrOp is OpCodeSimdShImm op)
             {
@@ -736,7 +727,7 @@ namespace ARMeilleure.Instructions
             return 0;
         }
 
-        private static Operand EmitFPConvert(EmitterContext context, Operand value, int size, bool signed)
+        private static Operand EmitFPConvert(ArmEmitterContext context, Operand value, int size, bool signed)
         {
             Debug.Assert(value.Type == OperandType.I32 || value.Type == OperandType.I64);
             Debug.Assert((uint)size < 2);
@@ -754,7 +745,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand EmitScalarFcvts(EmitterContext context, Operand value, int fBits)
+        private static Operand EmitScalarFcvts(ArmEmitterContext context, Operand value, int fBits)
         {
             Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.FP64);
 
@@ -762,27 +753,23 @@ namespace ARMeilleure.Instructions
 
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                string name = value.Type == OperandType.FP32
-                    ? nameof(SoftFallback.SatF32ToS32)
-                    : nameof(SoftFallback.SatF64ToS32);
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
+                    : (Delegate)new _S32_F64(SoftFallback.SatF64ToS32);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                return context.Call(info, value);
+                return context.Call(dlg, value);
             }
             else
             {
-                string name = value.Type == OperandType.FP32
-                    ? nameof(SoftFallback.SatF32ToS64)
-                    : nameof(SoftFallback.SatF64ToS64);
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _S64_F32(SoftFallback.SatF32ToS64)
+                    : (Delegate)new _S64_F64(SoftFallback.SatF64ToS64);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                return context.Call(info, value);
+                return context.Call(dlg, value);
             }
         }
 
-        private static Operand EmitScalarFcvtu(EmitterContext context, Operand value, int fBits)
+        private static Operand EmitScalarFcvtu(ArmEmitterContext context, Operand value, int fBits)
         {
             Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.FP64);
 
@@ -790,27 +777,23 @@ namespace ARMeilleure.Instructions
 
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                string name = value.Type == OperandType.FP32
-                    ? nameof(SoftFallback.SatF32ToU32)
-                    : nameof(SoftFallback.SatF64ToU32);
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _U32_F32(SoftFallback.SatF32ToU32)
+                    : (Delegate)new _U32_F64(SoftFallback.SatF64ToU32);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                return context.Call(info, value);
+                return context.Call(dlg, value);
             }
             else
             {
-                string name = value.Type == OperandType.FP32
-                    ? nameof(SoftFallback.SatF32ToU64)
-                    : nameof(SoftFallback.SatF64ToU64);
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _U64_F32(SoftFallback.SatF32ToU64)
+                    : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-                return context.Call(info, value);
+                return context.Call(dlg, value);
             }
         }
 
-        private static Operand EmitF2iFBitsMul(EmitterContext context, Operand value, int fBits)
+        private static Operand EmitF2iFBitsMul(ArmEmitterContext context, Operand value, int fBits)
         {
             Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.FP64);
 
@@ -829,7 +812,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand EmitI2fFBitsMul(EmitterContext context, Operand value, int fBits)
+        private static Operand EmitI2fFBitsMul(ArmEmitterContext context, Operand value, int fBits)
         {
             Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.FP64);
 
@@ -848,7 +831,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSse41Fcvts(EmitterContext context, FPRoundingMode roundMode, bool scalar)
+        private static void EmitSse41Fcvts(ArmEmitterContext context, FPRoundingMode roundMode, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -950,7 +933,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSse41Fcvtu(EmitterContext context, FPRoundingMode roundMode, bool scalar)
+        private static void EmitSse41Fcvtu(ArmEmitterContext context, FPRoundingMode roundMode, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -1087,7 +1070,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSse2Scvtf(EmitterContext context, bool scalar)
+        private static void EmitSse2Scvtf(ArmEmitterContext context, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -1119,7 +1102,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitSse2Ucvtf(EmitterContext context, bool scalar)
+        private static void EmitSse2Ucvtf(ArmEmitterContext context, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -1164,16 +1147,16 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static Operand EmitVectorLongExtract(EmitterContext context, int reg, int index, int size)
+        private static Operand EmitVectorLongExtract(ArmEmitterContext context, int reg, int index, int size)
         {
             OperandType type = size == 3 ? OperandType.I64 : OperandType.I32;
 
             return context.VectorExtract(type, GetVec(reg), index);
         }
 
-        private static Operand EmitVectorLongCreate(EmitterContext context, Operand low, Operand high)
+        private static Operand EmitVectorLongCreate(ArmEmitterContext context, Operand low, Operand high)
         {
-            Operand vector = context.Copy(Local(OperandType.V128), low);
+            Operand vector = context.VectorCreateScalar(low);
 
             vector = context.VectorInsert(vector, high, 1);
 

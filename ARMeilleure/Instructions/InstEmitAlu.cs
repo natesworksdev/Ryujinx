@@ -11,10 +11,10 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Adc(EmitterContext context)  => EmitAdc(context, setFlags: false);
-        public static void Adcs(EmitterContext context) => EmitAdc(context, setFlags: true);
+        public static void Adc(ArmEmitterContext context)  => EmitAdc(context, setFlags: false);
+        public static void Adcs(ArmEmitterContext context) => EmitAdc(context, setFlags: true);
 
-        private static void EmitAdc(EmitterContext context, bool setFlags)
+        private static void EmitAdc(ArmEmitterContext context, bool setFlags)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
@@ -41,15 +41,17 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        public static void Add(EmitterContext context)
+        public static void Add(ArmEmitterContext context)
         {
             SetAluD(context, context.Add(GetAluN(context), GetAluM(context)));
         }
 
-        public static void Adds(EmitterContext context)
+        public static void Adds(ArmEmitterContext context)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
+
+            context.MarkComparison(n, m);
 
             Operand d = context.Add(n, m);
 
@@ -61,12 +63,12 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        public static void And(EmitterContext context)
+        public static void And(ArmEmitterContext context)
         {
             SetAluD(context, context.BitwiseAnd(GetAluN(context), GetAluM(context)));
         }
 
-        public static void Ands(EmitterContext context)
+        public static void Ands(ArmEmitterContext context)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
@@ -79,15 +81,15 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        public static void Asrv(EmitterContext context)
+        public static void Asrv(ArmEmitterContext context)
         {
             SetAluDOrZR(context, context.ShiftRightSI(GetAluN(context), GetAluMShift(context)));
         }
 
-        public static void Bic(EmitterContext context)  => EmitBic(context, setFlags: false);
-        public static void Bics(EmitterContext context) => EmitBic(context, setFlags: true);
+        public static void Bic(ArmEmitterContext context)  => EmitBic(context, setFlags: false);
+        public static void Bics(ArmEmitterContext context) => EmitBic(context, setFlags: true);
 
-        private static void EmitBic(EmitterContext context, bool setFlags)
+        private static void EmitBic(ArmEmitterContext context, bool setFlags)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
@@ -103,7 +105,7 @@ namespace ARMeilleure.Instructions
             SetAluD(context, d, setFlags);
         }
 
-        public static void Cls(EmitterContext context)
+        public static void Cls(ArmEmitterContext context)
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
@@ -124,7 +126,7 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, res);
         }
 
-        public static void Clz(EmitterContext context)
+        public static void Clz(ArmEmitterContext context)
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
@@ -135,7 +137,7 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        public static void Eon(EmitterContext context)
+        public static void Eon(ArmEmitterContext context)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
@@ -145,12 +147,12 @@ namespace ARMeilleure.Instructions
             SetAluD(context, d);
         }
 
-        public static void Eor(EmitterContext context)
+        public static void Eor(ArmEmitterContext context)
         {
             SetAluD(context, context.BitwiseExclusiveOr(GetAluN(context), GetAluM(context)));
         }
 
-        public static void Extr(EmitterContext context)
+        public static void Extr(ArmEmitterContext context)
         {
             OpCodeAluRs op = (OpCodeAluRs)context.CurrOp;
 
@@ -177,20 +179,20 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, res);
         }
 
-        public static void Lslv(EmitterContext context)
+        public static void Lslv(ArmEmitterContext context)
         {
             SetAluDOrZR(context, context.ShiftLeft(GetAluN(context), GetAluMShift(context)));
         }
 
-        public static void Lsrv(EmitterContext context)
+        public static void Lsrv(ArmEmitterContext context)
         {
             SetAluDOrZR(context, context.ShiftRightUI(GetAluN(context), GetAluMShift(context)));
         }
 
-        public static void Sbc(EmitterContext context)  => EmitSbc(context, setFlags: false);
-        public static void Sbcs(EmitterContext context) => EmitSbc(context, setFlags: true);
+        public static void Sbc(ArmEmitterContext context)  => EmitSbc(context, setFlags: false);
+        public static void Sbcs(ArmEmitterContext context) => EmitSbc(context, setFlags: true);
 
-        private static void EmitSbc(EmitterContext context, bool setFlags)
+        private static void EmitSbc(ArmEmitterContext context, bool setFlags)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
@@ -217,15 +219,17 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        public static void Sub(EmitterContext context)
+        public static void Sub(ArmEmitterContext context)
         {
             SetAluD(context, context.Subtract(GetAluN(context), GetAluM(context)));
         }
 
-        public static void Subs(EmitterContext context)
+        public static void Subs(ArmEmitterContext context)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
+
+            context.MarkComparison(n, m);
 
             Operand d = context.Subtract(n, m);
 
@@ -237,7 +241,7 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        public static void Orn(EmitterContext context)
+        public static void Orn(ArmEmitterContext context)
         {
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
@@ -247,20 +251,50 @@ namespace ARMeilleure.Instructions
             SetAluD(context, d);
         }
 
-        public static void Orr(EmitterContext context)
+        public static void Orr(ArmEmitterContext context)
         {
             SetAluD(context, context.BitwiseOr(GetAluN(context), GetAluM(context)));
         }
 
-        public static void Rbit(EmitterContext context) => EmitCall32_64(context,
-            nameof(SoftFallback.ReverseBits32),
-            nameof(SoftFallback.ReverseBits64));
+        public static void Rbit(ArmEmitterContext context)
+        {
+            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
-        public static void Rev16(EmitterContext context) => EmitCall32_64(context,
-            nameof(SoftFallback.ReverseBytes16_32),
-            nameof(SoftFallback.ReverseBytes16_64));
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand d;
 
-        public static void Rev32(EmitterContext context)
+            if (op.RegisterSize == RegisterSize.Int32)
+            {
+                d = context.Call(new _U32_U32(SoftFallback.ReverseBits32), n);
+            }
+            else
+            {
+                d = context.Call(new _U64_U64(SoftFallback.ReverseBits64), n);
+            }
+
+            SetAluDOrZR(context, d);
+        }
+
+        public static void Rev16(ArmEmitterContext context)
+        {
+            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
+
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand d;
+
+            if (op.RegisterSize == RegisterSize.Int32)
+            {
+                d = context.Call(new _U32_U32(SoftFallback.ReverseBytes16_32), n);
+            }
+            else
+            {
+                d = context.Call(new _U64_U64(SoftFallback.ReverseBytes16_64), n);
+            }
+
+            SetAluDOrZR(context, d);
+        }
+
+        public static void Rev32(ArmEmitterContext context)
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
@@ -272,42 +306,25 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCall32_64(context, null, nameof(SoftFallback.ReverseBytes32_64));
+                Operand d = context.Call(new _U64_U64(SoftFallback.ReverseBytes32_64), n);
+
+                SetAluDOrZR(context, d);
             }
         }
 
-        private static void EmitCall32_64(EmitterContext context, string name32, string name64)
-        {
-            OpCodeAlu op = (OpCodeAlu)context.CurrOp;
-
-            Operand n = GetIntOrZR(context, op.Rn);
-            Operand d;
-
-            if (op.RegisterSize == RegisterSize.Int32)
-            {
-                d = context.Call(typeof(SoftFallback).GetMethod(name32), n);
-            }
-            else
-            {
-                d = context.Call(typeof(SoftFallback).GetMethod(name64), n);
-            }
-
-            SetAluDOrZR(context, d);
-        }
-
-        public static void Rev64(EmitterContext context)
+        public static void Rev64(ArmEmitterContext context)
         {
             OpCodeAlu op = (OpCodeAlu)context.CurrOp;
 
             SetAluDOrZR(context, context.ByteSwap(GetIntOrZR(context, op.Rn)));
         }
 
-        public static void Rorv(EmitterContext context)
+        public static void Rorv(ArmEmitterContext context)
         {
             SetAluDOrZR(context, context.RotateRight(GetAluN(context), GetAluMShift(context)));
         }
 
-        private static Operand GetAluMShift(EmitterContext context)
+        private static Operand GetAluMShift(ArmEmitterContext context)
         {
             IOpCodeAluRs op = (IOpCodeAluRs)context.CurrOp;
 
@@ -321,29 +338,29 @@ namespace ARMeilleure.Instructions
             return context.BitwiseAnd(m, Const(context.CurrOp.GetBitsCount() - 1));
         }
 
-        private static void EmitNZFlagsCheck(EmitterContext context, Operand d)
+        private static void EmitNZFlagsCheck(ArmEmitterContext context, Operand d)
         {
-            context.Copy(GetFlag(PState.NFlag), context.ICompareLess (d, Const(d.Type, 0)));
-            context.Copy(GetFlag(PState.ZFlag), context.ICompareEqual(d, Const(d.Type, 0)));
+            SetFlag(context, PState.NFlag, context.ICompareLess (d, Const(d.Type, 0)));
+            SetFlag(context, PState.ZFlag, context.ICompareEqual(d, Const(d.Type, 0)));
         }
 
-        private static void EmitCVFlagsClear(EmitterContext context)
+        private static void EmitCVFlagsClear(ArmEmitterContext context)
         {
-            context.Copy(GetFlag(PState.CFlag), Const(0));
-            context.Copy(GetFlag(PState.VFlag), Const(0));
+            SetFlag(context, PState.CFlag, Const(0));
+            SetFlag(context, PState.VFlag, Const(0));
         }
 
-        public static void SetAluD(EmitterContext context, Operand d)
+        public static void SetAluD(ArmEmitterContext context, Operand d)
         {
             SetAluD(context, d, x31IsZR: false);
         }
 
-        public static void SetAluDOrZR(EmitterContext context, Operand d)
+        public static void SetAluDOrZR(ArmEmitterContext context, Operand d)
         {
             SetAluD(context, d, x31IsZR: true);
         }
 
-        public static void SetAluD(EmitterContext context, Operand d, bool x31IsZR)
+        public static void SetAluD(ArmEmitterContext context, Operand d, bool x31IsZR)
         {
             IOpCodeAlu op = (IOpCodeAlu)context.CurrOp;
 

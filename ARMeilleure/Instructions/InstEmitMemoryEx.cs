@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -21,33 +20,31 @@ namespace ARMeilleure.Instructions
             OrderedEx = Ordered | Exclusive
         }
 
-        public static void Clrex(EmitterContext context)
+        public static void Clrex(ArmEmitterContext context)
         {
-            MethodInfo info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ClearExclusive));
-
-            context.Call(info);
+            context.Call(new _Void(NativeInterface.ClearExclusive));
         }
 
-        public static void Dmb(EmitterContext context) => EmitBarrier(context);
-        public static void Dsb(EmitterContext context) => EmitBarrier(context);
+        public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
+        public static void Dsb(ArmEmitterContext context) => EmitBarrier(context);
 
-        public static void Ldar(EmitterContext context)  => EmitLdr(context, AccessType.Ordered);
-        public static void Ldaxr(EmitterContext context) => EmitLdr(context, AccessType.OrderedEx);
-        public static void Ldxr(EmitterContext context)  => EmitLdr(context, AccessType.Exclusive);
-        public static void Ldxp(EmitterContext context)  => EmitLdp(context, AccessType.Exclusive);
-        public static void Ldaxp(EmitterContext context) => EmitLdp(context, AccessType.OrderedEx);
+        public static void Ldar(ArmEmitterContext context)  => EmitLdr(context, AccessType.Ordered);
+        public static void Ldaxr(ArmEmitterContext context) => EmitLdr(context, AccessType.OrderedEx);
+        public static void Ldxr(ArmEmitterContext context)  => EmitLdr(context, AccessType.Exclusive);
+        public static void Ldxp(ArmEmitterContext context)  => EmitLdp(context, AccessType.Exclusive);
+        public static void Ldaxp(ArmEmitterContext context) => EmitLdp(context, AccessType.OrderedEx);
 
-        private static void EmitLdr(EmitterContext context, AccessType accType)
+        private static void EmitLdr(ArmEmitterContext context, AccessType accType)
         {
             EmitLoadEx(context, accType, pair: false);
         }
 
-        private static void EmitLdp(EmitterContext context, AccessType accType)
+        private static void EmitLdp(ArmEmitterContext context, AccessType accType)
         {
             EmitLoadEx(context, accType, pair: true);
         }
 
-        private static void EmitLoadEx(EmitterContext context, AccessType accType, bool pair)
+        private static void EmitLoadEx(ArmEmitterContext context, AccessType accType, bool pair)
         {
             OpCodeMemEx op = (OpCodeMemEx)context.CurrOp;
 
@@ -105,63 +102,61 @@ namespace ARMeilleure.Instructions
         }
 
         private static Operand EmitLoad(
-            EmitterContext context,
+            ArmEmitterContext context,
             Operand address,
             bool exclusive,
             int size)
         {
-            string fallbackMethodName = null;
+            Delegate fallbackMethodDlg = null;
 
             if (exclusive)
             {
                 switch (size)
                 {
-                    case 0: fallbackMethodName = nameof(NativeInterface.ReadByteExclusive);      break;
-                    case 1: fallbackMethodName = nameof(NativeInterface.ReadUInt16Exclusive);    break;
-                    case 2: fallbackMethodName = nameof(NativeInterface.ReadUInt32Exclusive);    break;
-                    case 3: fallbackMethodName = nameof(NativeInterface.ReadUInt64Exclusive);    break;
-                    case 4: fallbackMethodName = nameof(NativeInterface.ReadVector128Exclusive); break;
+                    case 0: fallbackMethodDlg = new _U8_U64  (NativeInterface.ReadByteExclusive);      break;
+                    case 1: fallbackMethodDlg = new _U16_U64 (NativeInterface.ReadUInt16Exclusive);    break;
+                    case 2: fallbackMethodDlg = new _U32_U64 (NativeInterface.ReadUInt32Exclusive);    break;
+                    case 3: fallbackMethodDlg = new _U64_U64 (NativeInterface.ReadUInt64Exclusive);    break;
+                    case 4: fallbackMethodDlg = new _V128_U64(NativeInterface.ReadVector128Exclusive); break;
                 }
             }
             else
             {
                 switch (size)
                 {
-                    case 0: fallbackMethodName = nameof(NativeInterface.ReadByte);      break;
-                    case 1: fallbackMethodName = nameof(NativeInterface.ReadUInt16);    break;
-                    case 2: fallbackMethodName = nameof(NativeInterface.ReadUInt32);    break;
-                    case 3: fallbackMethodName = nameof(NativeInterface.ReadUInt64);    break;
-                    case 4: fallbackMethodName = nameof(NativeInterface.ReadVector128); break;
+                    case 0: fallbackMethodDlg = new _U8_U64  (NativeInterface.ReadByte);      break;
+                    case 1: fallbackMethodDlg = new _U16_U64 (NativeInterface.ReadUInt16);    break;
+                    case 2: fallbackMethodDlg = new _U32_U64 (NativeInterface.ReadUInt32);    break;
+                    case 3: fallbackMethodDlg = new _U64_U64 (NativeInterface.ReadUInt64);    break;
+                    case 4: fallbackMethodDlg = new _V128_U64(NativeInterface.ReadVector128); break;
                 }
             }
 
-            MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
-
-            return context.Call(info, address);
+            return context.Call(fallbackMethodDlg, address);
         }
 
-        public static void Pfrm(EmitterContext context)
+        public static void Pfrm(ArmEmitterContext context)
         {
             //Memory Prefetch, execute as no-op.
         }
 
-        public static void Stlr(EmitterContext context)  => EmitStr(context, AccessType.Ordered);
-        public static void Stlxr(EmitterContext context) => EmitStr(context, AccessType.OrderedEx);
-        public static void Stxr(EmitterContext context)  => EmitStr(context, AccessType.Exclusive);
-        public static void Stxp(EmitterContext context)  => EmitStp(context, AccessType.Exclusive);
-        public static void Stlxp(EmitterContext context) => EmitStp(context, AccessType.OrderedEx);
+        public static void Stlr(ArmEmitterContext context)  => EmitStr(context, AccessType.Ordered);
+        public static void Stlxr(ArmEmitterContext context) => EmitStr(context, AccessType.OrderedEx);
+        public static void Stxr(ArmEmitterContext context)  => EmitStr(context, AccessType.Exclusive);
+        public static void Stxp(ArmEmitterContext context)  => EmitStp(context, AccessType.Exclusive);
+        public static void Stlxp(ArmEmitterContext context) => EmitStp(context, AccessType.OrderedEx);
 
-        private static void EmitStr(EmitterContext context, AccessType accType)
+        private static void EmitStr(ArmEmitterContext context, AccessType accType)
         {
             EmitStoreEx(context, accType, pair: false);
         }
 
-        private static void EmitStp(EmitterContext context, AccessType accType)
+        private static void EmitStp(ArmEmitterContext context, AccessType accType)
         {
             EmitStoreEx(context, accType, pair: true);
         }
 
-        private static void EmitStoreEx(EmitterContext context, AccessType accType, bool pair)
+        private static void EmitStoreEx(ArmEmitterContext context, AccessType accType, bool pair)
         {
             OpCodeMemEx op = (OpCodeMemEx)context.CurrOp;
 
@@ -213,7 +208,7 @@ namespace ARMeilleure.Instructions
         }
 
         private static Operand EmitStore(
-            EmitterContext context,
+            ArmEmitterContext context,
             Operand address,
             Operand value,
             bool exclusive,
@@ -224,43 +219,39 @@ namespace ARMeilleure.Instructions
                 value = context.ConvertI64ToI32(value);
             }
 
-            string fallbackMethodName = null;
+            Delegate fallbackMethodDlg = null;
 
             if (exclusive)
             {
                 switch (size)
                 {
-                    case 0: fallbackMethodName = nameof(NativeInterface.WriteByteExclusive);      break;
-                    case 1: fallbackMethodName = nameof(NativeInterface.WriteUInt16Exclusive);    break;
-                    case 2: fallbackMethodName = nameof(NativeInterface.WriteUInt32Exclusive);    break;
-                    case 3: fallbackMethodName = nameof(NativeInterface.WriteUInt64Exclusive);    break;
-                    case 4: fallbackMethodName = nameof(NativeInterface.WriteVector128Exclusive); break;
+                    case 0: fallbackMethodDlg = new _S32_U64_U8  (NativeInterface.WriteByteExclusive);      break;
+                    case 1: fallbackMethodDlg = new _S32_U64_U16 (NativeInterface.WriteUInt16Exclusive);    break;
+                    case 2: fallbackMethodDlg = new _S32_U64_U32 (NativeInterface.WriteUInt32Exclusive);    break;
+                    case 3: fallbackMethodDlg = new _S32_U64_U64 (NativeInterface.WriteUInt64Exclusive);    break;
+                    case 4: fallbackMethodDlg = new _S32_U64_V128(NativeInterface.WriteVector128Exclusive); break;
                 }
 
-                MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
-
-                return context.Call(info, address, value);
+                return context.Call(fallbackMethodDlg, address, value);
             }
             else
             {
                 switch (size)
                 {
-                    case 0: fallbackMethodName = nameof(NativeInterface.WriteByte);      break;
-                    case 1: fallbackMethodName = nameof(NativeInterface.WriteUInt16);    break;
-                    case 2: fallbackMethodName = nameof(NativeInterface.WriteUInt32);    break;
-                    case 3: fallbackMethodName = nameof(NativeInterface.WriteUInt64);    break;
-                    case 4: fallbackMethodName = nameof(NativeInterface.WriteVector128); break;
+                    case 0: fallbackMethodDlg = new _Void_U64_U8  (NativeInterface.WriteByte);      break;
+                    case 1: fallbackMethodDlg = new _Void_U64_U16 (NativeInterface.WriteUInt16);    break;
+                    case 2: fallbackMethodDlg = new _Void_U64_U32 (NativeInterface.WriteUInt32);    break;
+                    case 3: fallbackMethodDlg = new _Void_U64_U64 (NativeInterface.WriteUInt64);    break;
+                    case 4: fallbackMethodDlg = new _Void_U64_V128(NativeInterface.WriteVector128); break;
                 }
 
-                MethodInfo info = typeof(NativeInterface).GetMethod(fallbackMethodName);
-
-                context.Call(info, address, value);
+                context.Call(fallbackMethodDlg, address, value);
 
                 return null;
             }
         }
 
-        private static void EmitBarrier(EmitterContext context)
+        private static void EmitBarrier(ArmEmitterContext context)
         {
             //Note: This barrier is most likely not necessary, and probably
             //doesn't make any difference since we need to do a ton of stuff

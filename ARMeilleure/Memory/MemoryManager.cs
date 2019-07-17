@@ -237,7 +237,7 @@ namespace ARMeilleure.Memory
                     IntPtr newPtr = Allocate((ulong)(PtLevelSize * IntPtr.Size));
 
                     //Try to swap the current pointer (should be zero), with the allocated one.
-                    nextPtr = Interlocked.Exchange(ref *ptePtr, newPtr);
+                    nextPtr = Interlocked.CompareExchange(ref *ptePtr, newPtr, IntPtr.Zero);
 
                     //If the old pointer is not null, then another thread already has set it.
                     if (nextPtr != IntPtr.Zero)

@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.Memory;
 using System;
 using System.Collections.Generic;
+using System.Threading;
 
 namespace ARMeilleure.Translation
 {
@@ -10,7 +11,9 @@ namespace ARMeilleure.Translation
         private const int PageSize = 4 * 1024;
         private const int PageMask = PageSize - 1;
 
-        private static uint CacheSize = 512 * 1024 * 1024;
+        private const int CodeAlignment = 4; // Bytes
+
+        private const int CacheSize = 512 * 1024 * 1024;
 
         private static IntPtr _basePointer;
 
@@ -60,11 +63,13 @@ namespace ARMeilleure.Translation
 
         private static int Allocate(int codeSize)
         {
-            int allocOffset = _offset;
+            codeSize = checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
 
-            _offset += codeSize;
+            int newOffset = Interlocked.Add(ref _offset, codeSize);
 
-            if ((ulong)(uint)_offset > CacheSize)
+            int allocOffset = newOffset - codeSize;
+
+            if ((ulong)(uint)newOffset > CacheSize)
             {
                 throw new OutOfMemoryException();
             }
@@ -75,20 +80,26 @@ namespace ARMeilleure.Translation
         private static void Add(JitCacheEntry entry)
         {
             //TODO: Use concurrent collection.
-            _cacheEntries.Add(entry);
+            lock (_cacheEntries)
+            {
+                _cacheEntries.Add(entry);
+            }
         }
 
         public static bool TryFind(int offset, out JitCacheEntry entry)
         {
-            foreach (JitCacheEntry cacheEntry in _cacheEntries)
+            lock (_cacheEntries)
             {
-                int endOffset = cacheEntry.Offset + cacheEntry.Size;
-
-                if (offset >= cacheEntry.Offset && offset < endOffset)
+                foreach (JitCacheEntry cacheEntry in _cacheEntries)
                 {
-                    entry = cacheEntry;
+                    int endOffset = cacheEntry.Offset + cacheEntry.Size;
 
-                    return true;
+                    if (offset >= cacheEntry.Offset && offset < endOffset)
+                    {
+                        entry = cacheEntry;
+
+                        return true;
+                    }
                 }
             }
 

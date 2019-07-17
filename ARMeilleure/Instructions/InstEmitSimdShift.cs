@@ -4,7 +4,6 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -25,7 +24,7 @@ namespace ARMeilleure.Instructions
         };
 #endregion
 
-        public static void Rshrn_V(EmitterContext context)
+        public static void Rshrn_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSsse3)
             {
@@ -75,7 +74,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Shl_S(EmitterContext context)
+        public static void Shl_S(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -84,7 +83,7 @@ namespace ARMeilleure.Instructions
             EmitScalarUnaryOpZx(context, (op1) => context.ShiftLeft(op1, Const(shift)));
         }
 
-        public static void Shl_V(EmitterContext context)
+        public static void Shl_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -111,7 +110,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Shll_V(EmitterContext context)
+        public static void Shll_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -142,7 +141,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Shrn_V(EmitterContext context)
+        public static void Shrn_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSsse3)
             {
@@ -179,7 +178,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Sli_V(EmitterContext context)
+        public static void Sli_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -209,7 +208,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Sqrshl_V(EmitterContext context)
+        public static void Sqrshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -222,9 +221,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlRegSatQ));
-
-                Operand e = context.Call(info, ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(new _S64_S64_S64_Bool_S32(SoftFallback.SignedShlRegSatQ), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -232,27 +229,27 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Sqrshrn_S(EmitterContext context)
+        public static void Sqrshrn_S(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.ScalarSxSx);
         }
 
-        public static void Sqrshrn_V(EmitterContext context)
+        public static void Sqrshrn_V(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorSxSx);
         }
 
-        public static void Sqrshrun_S(EmitterContext context)
+        public static void Sqrshrun_S(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.ScalarSxZx);
         }
 
-        public static void Sqrshrun_V(EmitterContext context)
+        public static void Sqrshrun_V(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorSxZx);
         }
 
-        public static void Sqshl_V(EmitterContext context)
+        public static void Sqshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -265,9 +262,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlRegSatQ));
-
-                Operand e = context.Call(info, ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(new _S64_S64_S64_Bool_S32(SoftFallback.SignedShlRegSatQ), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -275,27 +270,27 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Sqshrn_S(EmitterContext context)
+        public static void Sqshrn_S(ArmEmitterContext context)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.ScalarSxSx);
         }
 
-        public static void Sqshrn_V(EmitterContext context)
+        public static void Sqshrn_V(ArmEmitterContext context)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorSxSx);
         }
 
-        public static void Sqshrun_S(EmitterContext context)
+        public static void Sqshrun_S(ArmEmitterContext context)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.ScalarSxZx);
         }
 
-        public static void Sqshrun_V(EmitterContext context)
+        public static void Sqshrun_V(ArmEmitterContext context)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorSxZx);
         }
 
-        public static void Srshl_V(EmitterContext context)
+        public static void Srshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -308,9 +303,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlReg));
-
-                Operand e = context.Call(info, ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(new _S64_S64_S64_Bool_S32(SoftFallback.SignedShlReg), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -318,12 +311,12 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Srshr_S(EmitterContext context)
+        public static void Srshr_S(ArmEmitterContext context)
         {
             EmitScalarShrImmOpSx(context, ShrImmFlags.Round);
         }
 
-        public static void Srshr_V(EmitterContext context)
+        public static void Srshr_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -363,12 +356,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Srsra_S(EmitterContext context)
+        public static void Srsra_S(ArmEmitterContext context)
         {
             EmitScalarShrImmOpSx(context, ShrImmFlags.Round | ShrImmFlags.Accumulate);
         }
 
-        public static void Srsra_V(EmitterContext context)
+        public static void Srsra_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -410,7 +403,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Sshl_V(EmitterContext context)
+        public static void Sshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -423,9 +416,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlReg));
-
-                Operand e = context.Call(info, ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(new _S64_S64_S64_Bool_S32(SoftFallback.SignedShlReg), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -433,7 +424,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Sshll_V(EmitterContext context)
+        public static void Sshll_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -467,12 +458,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Sshr_S(EmitterContext context)
+        public static void Sshr_S(ArmEmitterContext context)
         {
             EmitShrImmOp(context, ShrImmFlags.ScalarSx);
         }
 
-        public static void Sshr_V(EmitterContext context)
+        public static void Sshr_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -499,12 +490,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ssra_S(EmitterContext context)
+        public static void Ssra_S(ArmEmitterContext context)
         {
             EmitScalarShrImmOpSx(context, ShrImmFlags.Accumulate);
         }
 
-        public static void Ssra_V(EmitterContext context)
+        public static void Ssra_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -536,7 +527,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Uqrshl_V(EmitterContext context)
+        public static void Uqrshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -549,9 +540,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlRegSatQ));
-
-                Operand e = context.Call(info, ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(new _U64_U64_U64_Bool_S32(SoftFallback.UnsignedShlRegSatQ), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -559,17 +548,17 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Uqrshrn_S(EmitterContext context)
+        public static void Uqrshrn_S(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.ScalarZxZx);
         }
 
-        public static void Uqrshrn_V(EmitterContext context)
+        public static void Uqrshrn_V(ArmEmitterContext context)
         {
             EmitRoundShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorZxZx);
         }
 
-        public static void Uqshl_V(EmitterContext context)
+        public static void Uqshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -582,9 +571,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlRegSatQ));
-
-                Operand e = context.Call(info, ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(new _U64_U64_U64_Bool_S32(SoftFallback.UnsignedShlRegSatQ), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -592,17 +579,17 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Uqshrn_S(EmitterContext context)
+        public static void Uqshrn_S(ArmEmitterContext context)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.ScalarZxZx);
         }
 
-        public static void Uqshrn_V(EmitterContext context)
+        public static void Uqshrn_V(ArmEmitterContext context)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.VectorZxZx);
         }
 
-        public static void Urshl_V(EmitterContext context)
+        public static void Urshl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -615,9 +602,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlReg));
-
-                Operand e = context.Call(info, ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(new _U64_U64_U64_Bool_S32(SoftFallback.UnsignedShlReg), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -625,12 +610,12 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Urshr_S(EmitterContext context)
+        public static void Urshr_S(ArmEmitterContext context)
         {
             EmitScalarShrImmOpZx(context, ShrImmFlags.Round);
         }
 
-        public static void Urshr_V(EmitterContext context)
+        public static void Urshr_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -668,12 +653,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ursra_S(EmitterContext context)
+        public static void Ursra_S(ArmEmitterContext context)
         {
             EmitScalarShrImmOpZx(context, ShrImmFlags.Round | ShrImmFlags.Accumulate);
         }
 
-        public static void Ursra_V(EmitterContext context)
+        public static void Ursra_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -713,7 +698,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ushl_V(EmitterContext context)
+        public static void Ushl_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -726,9 +711,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                MethodInfo info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlReg));
-
-                Operand e = context.Call(info, ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(new _U64_U64_U64_Bool_S32(SoftFallback.UnsignedShlReg), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -736,7 +719,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Ushll_V(EmitterContext context)
+        public static void Ushll_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -770,12 +753,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ushr_S(EmitterContext context)
+        public static void Ushr_S(ArmEmitterContext context)
         {
             EmitShrImmOp(context, ShrImmFlags.ScalarZx);
         }
 
-        public static void Ushr_V(EmitterContext context)
+        public static void Ushr_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -802,12 +785,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Usra_S(EmitterContext context)
+        public static void Usra_S(ArmEmitterContext context)
         {
             EmitScalarShrImmOpZx(context, ShrImmFlags.Accumulate);
         }
 
-        public static void Usra_V(EmitterContext context)
+        public static void Usra_V(ArmEmitterContext context)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -855,27 +838,27 @@ namespace ARMeilleure.Instructions
             VectorZx = 0
         }
 
-        private static void EmitScalarShrImmOpSx(EmitterContext context, ShrImmFlags flags)
+        private static void EmitScalarShrImmOpSx(ArmEmitterContext context, ShrImmFlags flags)
         {
             EmitShrImmOp(context, ShrImmFlags.ScalarSx | flags);
         }
 
-        private static void EmitScalarShrImmOpZx(EmitterContext context, ShrImmFlags flags)
+        private static void EmitScalarShrImmOpZx(ArmEmitterContext context, ShrImmFlags flags)
         {
             EmitShrImmOp(context, ShrImmFlags.ScalarZx | flags);
         }
 
-        private static void EmitVectorShrImmOpSx(EmitterContext context, ShrImmFlags flags)
+        private static void EmitVectorShrImmOpSx(ArmEmitterContext context, ShrImmFlags flags)
         {
             EmitShrImmOp(context, ShrImmFlags.VectorSx | flags);
         }
 
-        private static void EmitVectorShrImmOpZx(EmitterContext context, ShrImmFlags flags)
+        private static void EmitVectorShrImmOpZx(ArmEmitterContext context, ShrImmFlags flags)
         {
             EmitShrImmOp(context, ShrImmFlags.VectorZx | flags);
         }
 
-        private static void EmitShrImmOp(EmitterContext context, ShrImmFlags flags)
+        private static void EmitShrImmOp(ArmEmitterContext context, ShrImmFlags flags)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -925,7 +908,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitVectorShrImmNarrowOpZx(EmitterContext context, bool round)
+        private static void EmitVectorShrImmNarrowOpZx(ArmEmitterContext context, bool round)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -974,12 +957,12 @@ namespace ARMeilleure.Instructions
             VectorZxZx = 0
         }
 
-        private static void EmitRoundShrImmSaturatingNarrowOp(EmitterContext context, ShrImmSaturatingNarrowFlags flags)
+        private static void EmitRoundShrImmSaturatingNarrowOp(ArmEmitterContext context, ShrImmSaturatingNarrowFlags flags)
         {
             EmitShrImmSaturatingNarrowOp(context, ShrImmSaturatingNarrowFlags.Round | flags);
         }
 
-        private static void EmitShrImmSaturatingNarrowOp(EmitterContext context, ShrImmSaturatingNarrowFlags flags)
+        private static void EmitShrImmSaturatingNarrowOp(ArmEmitterContext context, ShrImmSaturatingNarrowFlags flags)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
 
@@ -1028,32 +1011,30 @@ namespace ARMeilleure.Instructions
 
         // dst64 = (Int(src64, signed) + roundConst) >> shift;
         private static Operand EmitShrImm64(
-            EmitterContext context,
+            ArmEmitterContext context,
             Operand value,
             bool signed,
             long roundConst,
             int shift)
         {
-            string name = signed
-                ? nameof(SoftFallback.SignedShrImm64)
-                : nameof(SoftFallback.UnsignedShrImm64);
+            Delegate dlg = signed
+                ? (Delegate)new _S64_S64_S64_S32(SoftFallback.SignedShrImm64)
+                : (Delegate)new _U64_U64_S64_S32(SoftFallback.UnsignedShrImm64);
 
-            MethodInfo info = typeof(SoftFallback).GetMethod(name);
-
-            return context.Call(info, value, Const(roundConst), Const(shift));
+            return context.Call(dlg, value, Const(roundConst), Const(shift));
         }
 
-        private static void EmitVectorShImmWidenBinarySx(EmitterContext context, Func2I emit, int imm)
+        private static void EmitVectorShImmWidenBinarySx(ArmEmitterContext context, Func2I emit, int imm)
         {
             EmitVectorShImmWidenBinaryOp(context, emit, imm, signed: true);
         }
 
-        private static void EmitVectorShImmWidenBinaryZx(EmitterContext context, Func2I emit, int imm)
+        private static void EmitVectorShImmWidenBinaryZx(ArmEmitterContext context, Func2I emit, int imm)
         {
             EmitVectorShImmWidenBinaryOp(context, emit, imm, signed: false);
         }
 
-        private static void EmitVectorShImmWidenBinaryOp(EmitterContext context, Func2I emit, int imm, bool signed)
+        private static void EmitVectorShImmWidenBinaryOp(ArmEmitterContext context, Func2I emit, int imm, bool signed)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 

@@ -314,23 +314,18 @@ namespace ARMeilleure.Decoders
                 }
             }
 
-            OpCode decodedOpCode = new OpCode(inst, address, opCode);
-
             if (type != null)
             {
-                decodedOpCode = MakeOpCode(inst, type, address, opCode);
+                return MakeOpCode(inst, type, address, opCode);
             }
-
-            return decodedOpCode;
+            else
+            {
+                return new OpCode(inst, address, opCode);
+            }
         }
 
         private static OpCode MakeOpCode(InstDescriptor inst, Type type, ulong address, int opCode)
         {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
             MakeOp createInstance = _opActivators.GetOrAdd(type, CacheOpActivator);
 
             return (OpCode)createInstance(inst, address, opCode);

@@ -9,7 +9,7 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Bfm(EmitterContext context)
+        public static void Bfm(ArmEmitterContext context)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
@@ -48,7 +48,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        public static void Sbfm(EmitterContext context)
+        public static void Sbfm(ArmEmitterContext context)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
@@ -94,7 +94,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ubfm(EmitterContext context)
+        public static void Ubfm(ArmEmitterContext context)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
@@ -128,10 +128,10 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSbfiz(EmitterContext context) => EmitBfiz(context, signed: true);
-        private static void EmitUbfiz(EmitterContext context) => EmitBfiz(context, signed: false);
+        private static void EmitSbfiz(ArmEmitterContext context) => EmitBfiz(context, signed: true);
+        private static void EmitUbfiz(ArmEmitterContext context) => EmitBfiz(context, signed: false);
 
-        private static void EmitBfiz(EmitterContext context, bool signed)
+        private static void EmitBfiz(ArmEmitterContext context, bool signed)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
@@ -148,17 +148,17 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        private static void EmitSbfmShift(EmitterContext context)
+        private static void EmitSbfmShift(ArmEmitterContext context)
         {
             EmitBfmShift(context, signed: true);
         }
 
-        private static void EmitUbfmShift(EmitterContext context)
+        private static void EmitUbfmShift(ArmEmitterContext context)
         {
             EmitBfmShift(context, signed: false);
         }
 
-        private static void EmitBfmShift(EmitterContext context, bool signed)
+        private static void EmitBfmShift(ArmEmitterContext context, bool signed)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
@@ -171,7 +171,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        private static void EmitBfmLsl(EmitterContext context)
+        private static void EmitBfmLsl(ArmEmitterContext context)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 
@@ -182,7 +182,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, context.ShiftLeft(res, Const(shift)));
         }
 
-        private static Operand GetBfmN(EmitterContext context)
+        private static Operand GetBfmN(ArmEmitterContext context)
         {
             OpCodeBfm op = (OpCodeBfm)context.CurrOp;
 

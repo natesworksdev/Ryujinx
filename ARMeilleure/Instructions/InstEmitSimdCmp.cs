@@ -14,12 +14,12 @@ namespace ARMeilleure.Instructions
 
     static partial class InstEmit
     {
-        public static void Cmeq_S(EmitterContext context)
+        public static void Cmeq_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareEqual(op1, op2), scalar: true);
         }
 
-        public static void Cmeq_V(EmitterContext context)
+        public static void Cmeq_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse41)
             {
@@ -54,12 +54,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmge_S(EmitterContext context)
+        public static void Cmge_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareGreaterOrEqual(op1, op2), scalar: true);
         }
 
-        public static void Cmge_V(EmitterContext context)
+        public static void Cmge_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse42)
             {
@@ -98,12 +98,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmgt_S(EmitterContext context)
+        public static void Cmgt_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareGreater(op1, op2), scalar: true);
         }
 
-        public static void Cmgt_V(EmitterContext context)
+        public static void Cmgt_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse42)
             {
@@ -138,12 +138,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmhi_S(EmitterContext context)
+        public static void Cmhi_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareGreaterUI(op1, op2), scalar: true);
         }
 
-        public static void Cmhi_V(EmitterContext context)
+        public static void Cmhi_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -177,12 +177,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmhs_S(EmitterContext context)
+        public static void Cmhs_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareGreaterOrEqualUI(op1, op2), scalar: true);
         }
 
-        public static void Cmhs_V(EmitterContext context)
+        public static void Cmhs_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -212,12 +212,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmle_S(EmitterContext context)
+        public static void Cmle_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareLessOrEqual(op1, op2), scalar: true);
         }
 
-        public static void Cmle_V(EmitterContext context)
+        public static void Cmle_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse42)
             {
@@ -246,12 +246,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmlt_S(EmitterContext context)
+        public static void Cmlt_S(ArmEmitterContext context)
         {
             EmitCmpOp(context, (op1, op2) => context.ICompareLess(op1, op2), scalar: true);
         }
 
-        public static void Cmlt_V(EmitterContext context)
+        public static void Cmlt_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse42)
             {
@@ -276,27 +276,27 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Cmtst_S(EmitterContext context)
+        public static void Cmtst_S(ArmEmitterContext context)
         {
             EmitCmtstOp(context, scalar: true);
         }
 
-        public static void Cmtst_V(EmitterContext context)
+        public static void Cmtst_V(ArmEmitterContext context)
         {
             EmitCmtstOp(context, scalar: false);
         }
 
-        public static void Fccmp_S(EmitterContext context)
+        public static void Fccmp_S(ArmEmitterContext context)
         {
             EmitFccmpOrFccmpe(context, signalNaNs: false);
         }
 
-        public static void Fccmpe_S(EmitterContext context)
+        public static void Fccmpe_S(ArmEmitterContext context)
         {
             EmitFccmpOrFccmpe(context, signalNaNs: true);
         }
 
-        public static void Fcmeq_S(EmitterContext context)
+        public static void Fcmeq_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -304,11 +304,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareEQ), scalar: true);
+                EmitCmpOpF(context, SoftFloat32.FPCompareEQ, SoftFloat64.FPCompareEQ, scalar: true);
             }
         }
 
-        public static void Fcmeq_V(EmitterContext context)
+        public static void Fcmeq_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -316,11 +316,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareEQ), scalar: false);
+                EmitCmpOpF(context, SoftFloat32.FPCompareEQ, SoftFloat64.FPCompareEQ, scalar: false);
             }
         }
 
-        public static void Fcmge_S(EmitterContext context)
+        public static void Fcmge_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -328,11 +328,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGE), scalar: true);
+                EmitCmpOpF(context, SoftFloat32.FPCompareGE, SoftFloat64.FPCompareGE, scalar: true);
             }
         }
 
-        public static void Fcmge_V(EmitterContext context)
+        public static void Fcmge_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -340,11 +340,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGE), scalar: false);
+                EmitCmpOpF(context, SoftFloat32.FPCompareGE, SoftFloat64.FPCompareGE, scalar: false);
             }
         }
 
-        public static void Fcmgt_S(EmitterContext context)
+        public static void Fcmgt_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -352,11 +352,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGT), scalar: true);
+                EmitCmpOpF(context, SoftFloat32.FPCompareGT, SoftFloat64.FPCompareGT, scalar: true);
             }
         }
 
-        public static void Fcmgt_V(EmitterContext context)
+        public static void Fcmgt_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -364,11 +364,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGT), scalar: false);
+                EmitCmpOpF(context, SoftFloat32.FPCompareGT, SoftFloat64.FPCompareGT, scalar: false);
             }
         }
 
-        public static void Fcmle_S(EmitterContext context)
+        public static void Fcmle_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -376,11 +376,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareLE), scalar: true);
+                EmitCmpOpF(context, SoftFloat32.FPCompareLE, SoftFloat64.FPCompareLE, scalar: true);
             }
         }
 
-        public static void Fcmle_V(EmitterContext context)
+        public static void Fcmle_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -388,11 +388,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareLE), scalar: false);
+                EmitCmpOpF(context, SoftFloat32.FPCompareLE, SoftFloat64.FPCompareLE, scalar: false);
             }
         }
 
-        public static void Fcmlt_S(EmitterContext context)
+        public static void Fcmlt_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -400,11 +400,11 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareLT), scalar: true);
+                EmitCmpOpF(context, SoftFloat32.FPCompareLT, SoftFloat64.FPCompareLT, scalar: true);
             }
         }
 
-        public static void Fcmlt_V(EmitterContext context)
+        public static void Fcmlt_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
@@ -412,21 +412,21 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareLT), scalar: false);
+                EmitCmpOpF(context, SoftFloat32.FPCompareLT, SoftFloat64.FPCompareLT, scalar: false);
             }
         }
 
-        public static void Fcmp_S(EmitterContext context)
+        public static void Fcmp_S(ArmEmitterContext context)
         {
             EmitFcmpOrFcmpe(context, signalNaNs: false);
         }
 
-        public static void Fcmpe_S(EmitterContext context)
+        public static void Fcmpe_S(ArmEmitterContext context)
         {
             EmitFcmpOrFcmpe(context, signalNaNs: true);
         }
 
-        public static void EmitFccmpOrFccmpe(EmitterContext context, bool signalNaNs)
+        public static void EmitFccmpOrFccmpe(ArmEmitterContext context, bool signalNaNs)
         {
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
@@ -446,7 +446,7 @@ namespace ARMeilleure.Instructions
             context.MarkLabel(lblEnd);
         }
 
-        private static void EmitFcmpOrFcmpe(EmitterContext context, bool signalNaNs)
+        private static void EmitFcmpOrFcmpe(ArmEmitterContext context, bool signalNaNs)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -474,10 +474,10 @@ namespace ARMeilleure.Instructions
                     Operand zf = context.AddIntrinsicInt(Instruction.X86Comisseq, n, m);
                     Operand nf = context.AddIntrinsicInt(Instruction.X86Comisslt, n, m);
 
-                    context.Copy(GetFlag(PState.VFlag), Const(0));
-                    context.Copy(GetFlag(PState.CFlag), cf);
-                    context.Copy(GetFlag(PState.ZFlag), zf);
-                    context.Copy(GetFlag(PState.NFlag), nf);
+                    SetFlag(context, PState.VFlag, Const(0));
+                    SetFlag(context, PState.CFlag, cf);
+                    SetFlag(context, PState.ZFlag, zf);
+                    SetFlag(context, PState.NFlag, nf);
                 }
                 else /* if (op.Size == 1) */
                 {
@@ -491,20 +491,20 @@ namespace ARMeilleure.Instructions
                     Operand zf = context.AddIntrinsicInt(Instruction.X86Comisdeq, n, m);
                     Operand nf = context.AddIntrinsicInt(Instruction.X86Comisdlt, n, m);
 
-                    context.Copy(GetFlag(PState.VFlag), Const(0));
-                    context.Copy(GetFlag(PState.CFlag), cf);
-                    context.Copy(GetFlag(PState.ZFlag), zf);
-                    context.Copy(GetFlag(PState.NFlag), nf);
+                    SetFlag(context, PState.VFlag, Const(0));
+                    SetFlag(context, PState.CFlag, cf);
+                    SetFlag(context, PState.ZFlag, zf);
+                    SetFlag(context, PState.NFlag, nf);
                 }
 
                 context.Branch(lblEnd);
 
                 context.MarkLabel(lblNaN);
 
-                context.Copy(GetFlag(PState.VFlag), Const(1));
-                context.Copy(GetFlag(PState.CFlag), Const(1));
-                context.Copy(GetFlag(PState.ZFlag), Const(0));
-                context.Copy(GetFlag(PState.NFlag), Const(0));
+                SetFlag(context, PState.VFlag, Const(1));
+                SetFlag(context, PState.CFlag, Const(1));
+                SetFlag(context, PState.ZFlag, Const(0));
+                SetFlag(context, PState.NFlag, Const(0));
 
                 context.MarkLabel(lblEnd);
             }
@@ -524,13 +524,17 @@ namespace ARMeilleure.Instructions
                     me = context.VectorExtract(type, GetVec(op.Rm), 0);
                 }
 
-                Operand nzcv = EmitSoftFloatCall(context, nameof(SoftFloat32.FPCompare), ne, me, Const(signalNaNs));
+                Delegate dlg = op.Size != 0
+                    ? (Delegate)new _S32_F64_F64_Bool(SoftFloat64.FPCompare)
+                    : (Delegate)new _S32_F32_F32_Bool(SoftFloat32.FPCompare);
+
+                Operand nzcv = context.Call(dlg, ne, me, Const(signalNaNs));
 
                 EmitSetNzcv(context, nzcv);
             }
         }
 
-        private static void EmitSetNzcv(EmitterContext context, Operand nzcv)
+        private static void EmitSetNzcv(ArmEmitterContext context, Operand nzcv)
         {
             Operand Extract(Operand value, int bit)
             {
@@ -544,13 +548,13 @@ namespace ARMeilleure.Instructions
                 return value;
             }
 
-            context.Copy(GetFlag(PState.VFlag), Extract(nzcv, 0));
-            context.Copy(GetFlag(PState.CFlag), Extract(nzcv, 1));
-            context.Copy(GetFlag(PState.ZFlag), Extract(nzcv, 2));
-            context.Copy(GetFlag(PState.NFlag), Extract(nzcv, 3));
+            SetFlag(context, PState.VFlag, Extract(nzcv, 0));
+            SetFlag(context, PState.CFlag, Extract(nzcv, 1));
+            SetFlag(context, PState.ZFlag, Extract(nzcv, 2));
+            SetFlag(context, PState.NFlag, Extract(nzcv, 3));
         }
 
-        private static void EmitCmpOp(EmitterContext context, Func2I emitCmp, bool scalar)
+        private static void EmitCmpOp(ArmEmitterContext context, Func2I emitCmp, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -584,7 +588,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitCmtstOp(EmitterContext context, bool scalar)
+        private static void EmitCmtstOp(ArmEmitterContext context, bool scalar)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -611,7 +615,11 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitCmpOpF(EmitterContext context, string name, bool scalar)
+        private static void EmitCmpOpF(
+            ArmEmitterContext context,
+            _F32_F32_F32 f32,
+            _F64_F64_F64 f64,
+            bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -637,7 +645,7 @@ namespace ARMeilleure.Instructions
                     me = sizeF == 0 ? ConstF(0f) : ConstF(0d);
                 }
 
-                Operand e = EmitSoftFloatCall(context, name, ne, me);
+                Operand e = EmitSoftFloatCall(context, f32, f64, ne, me);
 
                 res = context.VectorInsert(res, e, index);
             }
@@ -653,7 +661,7 @@ namespace ARMeilleure.Instructions
         }
 
         private static void EmitCmpSseOrSse2OpF(
-            EmitterContext context,
+            ArmEmitterContext context,
             CmpCondition cond,
             bool scalar,
             bool isLeOrLt = false)

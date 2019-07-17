@@ -20,7 +20,6 @@ namespace ARMeilleure.CodeGen.X86
         Cmpsd,
         Cmpss,
         Cmpxchg16b,
-        Cmpxchg8b,
         Comisd,
         Comiss,
         Cvtdq2pd,

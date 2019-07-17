@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
-using System.Reflection;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -16,7 +15,7 @@ namespace ARMeilleure.Instructions
             return op is OpCodeT16;
         }
 
-        public static Operand GetExtendedM(EmitterContext context, int rm, IntType type)
+        public static Operand GetExtendedM(ArmEmitterContext context, int rm, IntType type)
         {
             Operand value = GetIntOrZR(context, rm);
 
@@ -34,7 +33,7 @@ namespace ARMeilleure.Instructions
             return value;
         }
 
-        public static Operand GetIntA32(EmitterContext context, int register)
+        public static Operand GetIntA32(ArmEmitterContext context, int register)
         {
             if (register == RegisterAlias.Aarch32Pc)
             {
@@ -132,7 +131,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand GetIntOrZR(EmitterContext context, int regIndex)
+        public static Operand GetIntOrZR(ArmEmitterContext context, int regIndex)
         {
             if (regIndex == RegisterConsts.ZeroIndex)
             {
@@ -146,9 +145,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static bool FullDebug = false;
-
-        public static void SetIntOrZR(EmitterContext context, int regIndex, Operand value)
+        public static void SetIntOrZR(ArmEmitterContext context, int regIndex, Operand value)
         {
             if (regIndex == RegisterConsts.ZeroIndex)
             {
@@ -158,7 +155,7 @@ namespace ARMeilleure.Instructions
             SetIntOrSP(context, regIndex, value);
         }
 
-        public static Operand GetIntOrSP(EmitterContext context, int regIndex)
+        public static Operand GetIntOrSP(ArmEmitterContext context, int regIndex)
         {
             Operand value = Register(regIndex, RegisterType.Integer, OperandType.I64);
 
@@ -170,7 +167,7 @@ namespace ARMeilleure.Instructions
             return value;
         }
 
-        public static void SetIntOrSP(EmitterContext context, int regIndex, Operand value)
+        public static void SetIntOrSP(ArmEmitterContext context, int regIndex, Operand value)
         {
             Operand reg = Register(regIndex, RegisterType.Integer, OperandType.I64);
 
@@ -190,6 +187,13 @@ namespace ARMeilleure.Instructions
         public static Operand GetFlag(PState stateFlag)
         {
             return Register((int)stateFlag, RegisterType.Flag, OperandType.I32);
+        }
+
+        public static void SetFlag(ArmEmitterContext context, PState stateFlag, Operand value)
+        {
+            context.Copy(GetFlag(stateFlag), value);
+
+            context.MarkFlagSet(stateFlag);
         }
     }
 }

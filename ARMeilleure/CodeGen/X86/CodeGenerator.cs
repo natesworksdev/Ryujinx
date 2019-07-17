@@ -16,9 +16,37 @@ namespace ARMeilleure.CodeGen.X86
     {
         private static Action<CodeGenContext, Operation>[] _instTable;
 
+        private enum X86IntrinsicType
+        {
+            Comis_,
+            PopCount,
+            Unary,
+            UnaryToGpr,
+            Binary,
+            BinaryImm,
+            Ternary,
+            TernaryImm
+        }
+
+        private struct X86Intrinsic
+        {
+            public X86Instruction   Inst { get; }
+            public X86IntrinsicType Type { get; }
+
+            public X86Intrinsic(X86Instruction inst, X86IntrinsicType type)
+            {
+                Inst = inst;
+                Type = type;
+            }
+        }
+
+        private static X86Intrinsic[] _x86InstTable;
+
         static CodeGenerator()
         {
             _instTable = new Action<CodeGenContext, Operation>[(int)Instruction.Count];
+
+            _x86InstTable = new X86Intrinsic[(int)Instruction.Count];
 
             Add(Instruction.Add,                     GenerateAdd);
             Add(Instruction.BitwiseAnd,              GenerateBitwiseAnd);
@@ -71,6 +99,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
             Add(Instruction.Subtract,                GenerateSubtract);
+            Add(Instruction.VectorCreateScalar,      GenerateVectorCreateScalar);
             Add(Instruction.VectorExtract,           GenerateVectorExtract);
             Add(Instruction.VectorExtract16,         GenerateVectorExtract16);
             Add(Instruction.VectorExtract8,          GenerateVectorExtract8);
@@ -84,143 +113,149 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ZeroExtend16,            GenerateZeroExtend16);
             Add(Instruction.ZeroExtend32,            GenerateZeroExtend32);
             Add(Instruction.ZeroExtend8,             GenerateZeroExtend8);
-            Add(Instruction.X86Addpd,                GenerateX86Addpd);
-            Add(Instruction.X86Addps,                GenerateX86Addps);
-            Add(Instruction.X86Addsd,                GenerateX86Addsd);
-            Add(Instruction.X86Addss,                GenerateX86Addss);
-            Add(Instruction.X86Andnpd,               GenerateX86Andnpd);
-            Add(Instruction.X86Andnps,               GenerateX86Andnps);
-            Add(Instruction.X86Cmppd,                GenerateX86Cmppd);
-            Add(Instruction.X86Cmpps,                GenerateX86Cmpps);
-            Add(Instruction.X86Cmpsd,                GenerateX86Cmpsd);
-            Add(Instruction.X86Cmpss,                GenerateX86Cmpss);
-            Add(Instruction.X86Comisdeq,             GenerateX86Comisdeq);
-            Add(Instruction.X86Comisdge,             GenerateX86Comisdge);
-            Add(Instruction.X86Comisdlt,             GenerateX86Comisdlt);
-            Add(Instruction.X86Comisseq,             GenerateX86Comisseq);
-            Add(Instruction.X86Comissge,             GenerateX86Comissge);
-            Add(Instruction.X86Comisslt,             GenerateX86Comisslt);
-            Add(Instruction.X86Cvtdq2pd,             GenerateX86Cvtdq2pd);
-            Add(Instruction.X86Cvtdq2ps,             GenerateX86Cvtdq2ps);
-            Add(Instruction.X86Cvtpd2dq,             GenerateX86Cvtpd2dq);
-            Add(Instruction.X86Cvtpd2ps,             GenerateX86Cvtpd2ps);
-            Add(Instruction.X86Cvtps2dq,             GenerateX86Cvtps2dq);
-            Add(Instruction.X86Cvtps2pd,             GenerateX86Cvtps2pd);
-            Add(Instruction.X86Cvtsd2si,             GenerateX86Cvtsd2si);
-            Add(Instruction.X86Cvtsd2ss,             GenerateX86Cvtsd2ss);
-            Add(Instruction.X86Cvtss2sd,             GenerateX86Cvtss2sd);
-            Add(Instruction.X86Divpd,                GenerateX86Divpd);
-            Add(Instruction.X86Divps,                GenerateX86Divps);
-            Add(Instruction.X86Divsd,                GenerateX86Divsd);
-            Add(Instruction.X86Divss,                GenerateX86Divss);
-            Add(Instruction.X86Haddpd,               GenerateX86Haddpd);
-            Add(Instruction.X86Haddps,               GenerateX86Haddps);
-            Add(Instruction.X86Maxpd,                GenerateX86Maxpd);
-            Add(Instruction.X86Maxps,                GenerateX86Maxps);
-            Add(Instruction.X86Maxsd,                GenerateX86Maxsd);
-            Add(Instruction.X86Maxss,                GenerateX86Maxss);
-            Add(Instruction.X86Minpd,                GenerateX86Minpd);
-            Add(Instruction.X86Minps,                GenerateX86Minps);
-            Add(Instruction.X86Minsd,                GenerateX86Minsd);
-            Add(Instruction.X86Minss,                GenerateX86Minss);
-            Add(Instruction.X86Movhlps,              GenerateX86Movhlps);
-            Add(Instruction.X86Movlhps,              GenerateX86Movlhps);
-            Add(Instruction.X86Mulpd,                GenerateX86Mulpd);
-            Add(Instruction.X86Mulps,                GenerateX86Mulps);
-            Add(Instruction.X86Mulsd,                GenerateX86Mulsd);
-            Add(Instruction.X86Mulss,                GenerateX86Mulss);
-            Add(Instruction.X86Paddb,                GenerateX86Paddb);
-            Add(Instruction.X86Paddd,                GenerateX86Paddd);
-            Add(Instruction.X86Paddq,                GenerateX86Paddq);
-            Add(Instruction.X86Paddw,                GenerateX86Paddw);
-            Add(Instruction.X86Pand,                 GenerateX86Pand);
-            Add(Instruction.X86Pandn,                GenerateX86Pandn);
-            Add(Instruction.X86Pavgb,                GenerateX86Pavgb);
-            Add(Instruction.X86Pavgw,                GenerateX86Pavgw);
-            Add(Instruction.X86Pblendvb,             GenerateX86Pblendvb);
-            Add(Instruction.X86Pcmpeqb,              GenerateX86Pcmpeqb);
-            Add(Instruction.X86Pcmpeqd,              GenerateX86Pcmpeqd);
-            Add(Instruction.X86Pcmpeqq,              GenerateX86Pcmpeqq);
-            Add(Instruction.X86Pcmpeqw,              GenerateX86Pcmpeqw);
-            Add(Instruction.X86Pcmpgtb,              GenerateX86Pcmpgtb);
-            Add(Instruction.X86Pcmpgtd,              GenerateX86Pcmpgtd);
-            Add(Instruction.X86Pcmpgtq,              GenerateX86Pcmpgtq);
-            Add(Instruction.X86Pcmpgtw,              GenerateX86Pcmpgtw);
-            Add(Instruction.X86Pmaxsb,               GenerateX86Pmaxsb);
-            Add(Instruction.X86Pmaxsd,               GenerateX86Pmaxsd);
-            Add(Instruction.X86Pmaxsw,               GenerateX86Pmaxsw);
-            Add(Instruction.X86Pmaxub,               GenerateX86Pmaxub);
-            Add(Instruction.X86Pmaxud,               GenerateX86Pmaxud);
-            Add(Instruction.X86Pmaxuw,               GenerateX86Pmaxuw);
-            Add(Instruction.X86Pminsb,               GenerateX86Pminsb);
-            Add(Instruction.X86Pminsd,               GenerateX86Pminsd);
-            Add(Instruction.X86Pminsw,               GenerateX86Pminsw);
-            Add(Instruction.X86Pminub,               GenerateX86Pminub);
-            Add(Instruction.X86Pminud,               GenerateX86Pminud);
-            Add(Instruction.X86Pminuw,               GenerateX86Pminuw);
-            Add(Instruction.X86Pmovsxbw,             GenerateX86Pmovsxbw);
-            Add(Instruction.X86Pmovsxdq,             GenerateX86Pmovsxdq);
-            Add(Instruction.X86Pmovsxwd,             GenerateX86Pmovsxwd);
-            Add(Instruction.X86Pmovzxbw,             GenerateX86Pmovzxbw);
-            Add(Instruction.X86Pmovzxdq,             GenerateX86Pmovzxdq);
-            Add(Instruction.X86Pmovzxwd,             GenerateX86Pmovzxwd);
-            Add(Instruction.X86Pmulld,               GenerateX86Pmulld);
-            Add(Instruction.X86Pmullw,               GenerateX86Pmullw);
-            Add(Instruction.X86Popcnt,               GenerateX86Popcnt);
-            Add(Instruction.X86Por,                  GenerateX86Por);
-            Add(Instruction.X86Pshufb,               GenerateX86Pshufb);
-            Add(Instruction.X86Pslld,                GenerateX86Pslld);
-            Add(Instruction.X86Pslldq,               GenerateX86Pslldq);
-            Add(Instruction.X86Psllq,                GenerateX86Psllq);
-            Add(Instruction.X86Psllw,                GenerateX86Psllw);
-            Add(Instruction.X86Psrad,                GenerateX86Psrad);
-            Add(Instruction.X86Psraw,                GenerateX86Psraw);
-            Add(Instruction.X86Psrld,                GenerateX86Psrld);
-            Add(Instruction.X86Psrlq,                GenerateX86Psrlq);
-            Add(Instruction.X86Psrldq,               GenerateX86Psrldq);
-            Add(Instruction.X86Psrlw,                GenerateX86Psrlw);
-            Add(Instruction.X86Psubb,                GenerateX86Psubb);
-            Add(Instruction.X86Psubd,                GenerateX86Psubd);
-            Add(Instruction.X86Psubq,                GenerateX86Psubq);
-            Add(Instruction.X86Psubw,                GenerateX86Psubw);
-            Add(Instruction.X86Punpckhbw,            GenerateX86Punpckhbw);
-            Add(Instruction.X86Punpckhdq,            GenerateX86Punpckhdq);
-            Add(Instruction.X86Punpckhqdq,           GenerateX86Punpckhqdq);
-            Add(Instruction.X86Punpckhwd,            GenerateX86Punpckhwd);
-            Add(Instruction.X86Punpcklbw,            GenerateX86Punpcklbw);
-            Add(Instruction.X86Punpckldq,            GenerateX86Punpckldq);
-            Add(Instruction.X86Punpcklqdq,           GenerateX86Punpcklqdq);
-            Add(Instruction.X86Punpcklwd,            GenerateX86Punpcklwd);
-            Add(Instruction.X86Pxor,                 GenerateX86Pxor);
-            Add(Instruction.X86Rcpps,                GenerateX86Rcpps);
-            Add(Instruction.X86Rcpss,                GenerateX86Rcpss);
-            Add(Instruction.X86Roundpd,              GenerateX86Roundpd);
-            Add(Instruction.X86Roundps,              GenerateX86Roundps);
-            Add(Instruction.X86Roundsd,              GenerateX86Roundsd);
-            Add(Instruction.X86Roundss,              GenerateX86Roundss);
-            Add(Instruction.X86Rsqrtps,              GenerateX86Rsqrtps);
-            Add(Instruction.X86Rsqrtss,              GenerateX86Rsqrtss);
-            Add(Instruction.X86Shufpd,               GenerateX86Shufpd);
-            Add(Instruction.X86Shufps,               GenerateX86Shufps);
-            Add(Instruction.X86Sqrtpd,               GenerateX86Sqrtpd);
-            Add(Instruction.X86Sqrtps,               GenerateX86Sqrtps);
-            Add(Instruction.X86Sqrtsd,               GenerateX86Sqrtsd);
-            Add(Instruction.X86Sqrtss,               GenerateX86Sqrtss);
-            Add(Instruction.X86Subpd,                GenerateX86Subpd);
-            Add(Instruction.X86Subps,                GenerateX86Subps);
-            Add(Instruction.X86Subsd,                GenerateX86Subsd);
-            Add(Instruction.X86Subss,                GenerateX86Subss);
-            Add(Instruction.X86Unpckhpd,             GenerateX86Unpckhpd);
-            Add(Instruction.X86Unpckhps,             GenerateX86Unpckhps);
-            Add(Instruction.X86Unpcklpd,             GenerateX86Unpcklpd);
-            Add(Instruction.X86Unpcklps,             GenerateX86Unpcklps);
-            Add(Instruction.X86Xorpd,                GenerateX86Xorpd);
-            Add(Instruction.X86Xorps,                GenerateX86Xorps);
+
+            Add(Instruction.X86Addpd,      new X86Intrinsic(X86Instruction.Addpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Addps,      new X86Intrinsic(X86Instruction.Addps,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Addsd,      new X86Intrinsic(X86Instruction.Addsd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Addss,      new X86Intrinsic(X86Instruction.Addss,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Andnpd,     new X86Intrinsic(X86Instruction.Andnpd,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Andnps,     new X86Intrinsic(X86Instruction.Andnps,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Cmppd,      new X86Intrinsic(X86Instruction.Cmppd,      X86IntrinsicType.TernaryImm));
+            Add(Instruction.X86Cmpps,      new X86Intrinsic(X86Instruction.Cmpps,      X86IntrinsicType.TernaryImm));
+            Add(Instruction.X86Cmpsd,      new X86Intrinsic(X86Instruction.Cmpsd,      X86IntrinsicType.TernaryImm));
+            Add(Instruction.X86Cmpss,      new X86Intrinsic(X86Instruction.Cmpss,      X86IntrinsicType.TernaryImm));
+            Add(Instruction.X86Comisdeq,   new X86Intrinsic(X86Instruction.Comisd,     X86IntrinsicType.Comis_));
+            Add(Instruction.X86Comisdge,   new X86Intrinsic(X86Instruction.Comisd,     X86IntrinsicType.Comis_));
+            Add(Instruction.X86Comisdlt,   new X86Intrinsic(X86Instruction.Comisd,     X86IntrinsicType.Comis_));
+            Add(Instruction.X86Comisseq,   new X86Intrinsic(X86Instruction.Comiss,     X86IntrinsicType.Comis_));
+            Add(Instruction.X86Comissge,   new X86Intrinsic(X86Instruction.Comiss,     X86IntrinsicType.Comis_));
+            Add(Instruction.X86Comisslt,   new X86Intrinsic(X86Instruction.Comiss,     X86IntrinsicType.Comis_));
+            Add(Instruction.X86Cvtdq2pd,   new X86Intrinsic(X86Instruction.Cvtdq2pd,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Cvtdq2ps,   new X86Intrinsic(X86Instruction.Cvtdq2ps,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Cvtpd2dq,   new X86Intrinsic(X86Instruction.Cvtpd2dq,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Cvtpd2ps,   new X86Intrinsic(X86Instruction.Cvtpd2ps,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Cvtps2dq,   new X86Intrinsic(X86Instruction.Cvtps2dq,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Cvtps2pd,   new X86Intrinsic(X86Instruction.Cvtps2pd,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Cvtsd2si,   new X86Intrinsic(X86Instruction.Cvtsd2si,   X86IntrinsicType.UnaryToGpr));
+            Add(Instruction.X86Cvtsd2ss,   new X86Intrinsic(X86Instruction.Cvtsd2ss,   X86IntrinsicType.Binary));
+            Add(Instruction.X86Cvtss2sd,   new X86Intrinsic(X86Instruction.Cvtss2sd,   X86IntrinsicType.Binary));
+            Add(Instruction.X86Divpd,      new X86Intrinsic(X86Instruction.Divpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Divps,      new X86Intrinsic(X86Instruction.Divps,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Divsd,      new X86Intrinsic(X86Instruction.Divsd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Divss,      new X86Intrinsic(X86Instruction.Divss,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Haddpd,     new X86Intrinsic(X86Instruction.Haddpd,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Haddps,     new X86Intrinsic(X86Instruction.Haddps,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Maxpd,      new X86Intrinsic(X86Instruction.Maxpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Maxps,      new X86Intrinsic(X86Instruction.Maxps,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Maxsd,      new X86Intrinsic(X86Instruction.Maxsd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Maxss,      new X86Intrinsic(X86Instruction.Maxss,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Minpd,      new X86Intrinsic(X86Instruction.Minpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Minps,      new X86Intrinsic(X86Instruction.Minps,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Minsd,      new X86Intrinsic(X86Instruction.Minsd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Minss,      new X86Intrinsic(X86Instruction.Minss,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Movhlps,    new X86Intrinsic(X86Instruction.Movhlps,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Movlhps,    new X86Intrinsic(X86Instruction.Movlhps,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Mulpd,      new X86Intrinsic(X86Instruction.Mulpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Mulps,      new X86Intrinsic(X86Instruction.Mulps,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Mulsd,      new X86Intrinsic(X86Instruction.Mulsd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Mulss,      new X86Intrinsic(X86Instruction.Mulss,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Paddb,      new X86Intrinsic(X86Instruction.Paddb,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Paddd,      new X86Intrinsic(X86Instruction.Paddd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Paddq,      new X86Intrinsic(X86Instruction.Paddq,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Paddw,      new X86Intrinsic(X86Instruction.Paddw,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Pand,       new X86Intrinsic(X86Instruction.Pand,       X86IntrinsicType.Binary));
+            Add(Instruction.X86Pandn,      new X86Intrinsic(X86Instruction.Pandn,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Pavgb,      new X86Intrinsic(X86Instruction.Pavgb,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Pavgw,      new X86Intrinsic(X86Instruction.Pavgw,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Pblendvb,   new X86Intrinsic(X86Instruction.Pblendvb,   X86IntrinsicType.Ternary));
+            Add(Instruction.X86Pcmpeqb,    new X86Intrinsic(X86Instruction.Pcmpeqb,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpeqd,    new X86Intrinsic(X86Instruction.Pcmpeqd,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpeqq,    new X86Intrinsic(X86Instruction.Pcmpeqq,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpeqw,    new X86Intrinsic(X86Instruction.Pcmpeqw,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpgtb,    new X86Intrinsic(X86Instruction.Pcmpgtb,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpgtd,    new X86Intrinsic(X86Instruction.Pcmpgtd,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpgtq,    new X86Intrinsic(X86Instruction.Pcmpgtq,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pcmpgtw,    new X86Intrinsic(X86Instruction.Pcmpgtw,    X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmaxsb,     new X86Intrinsic(X86Instruction.Pmaxsb,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmaxsd,     new X86Intrinsic(X86Instruction.Pmaxsd,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmaxsw,     new X86Intrinsic(X86Instruction.Pmaxsw,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmaxub,     new X86Intrinsic(X86Instruction.Pmaxub,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmaxud,     new X86Intrinsic(X86Instruction.Pmaxud,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmaxuw,     new X86Intrinsic(X86Instruction.Pmaxuw,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pminsb,     new X86Intrinsic(X86Instruction.Pminsb,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pminsd,     new X86Intrinsic(X86Instruction.Pminsd,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pminsw,     new X86Intrinsic(X86Instruction.Pminsw,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pminub,     new X86Intrinsic(X86Instruction.Pminub,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pminud,     new X86Intrinsic(X86Instruction.Pminud,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pminuw,     new X86Intrinsic(X86Instruction.Pminuw,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmovsxbw,   new X86Intrinsic(X86Instruction.Pmovsxbw,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Pmovsxdq,   new X86Intrinsic(X86Instruction.Pmovsxdq,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Pmovsxwd,   new X86Intrinsic(X86Instruction.Pmovsxwd,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Pmovzxbw,   new X86Intrinsic(X86Instruction.Pmovzxbw,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Pmovzxdq,   new X86Intrinsic(X86Instruction.Pmovzxdq,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Pmovzxwd,   new X86Intrinsic(X86Instruction.Pmovzxwd,   X86IntrinsicType.Unary));
+            Add(Instruction.X86Pmulld,     new X86Intrinsic(X86Instruction.Pmulld,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pmullw,     new X86Intrinsic(X86Instruction.Pmullw,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Popcnt,     new X86Intrinsic(X86Instruction.Popcnt,     X86IntrinsicType.PopCount));
+            Add(Instruction.X86Por,        new X86Intrinsic(X86Instruction.Por,        X86IntrinsicType.Binary));
+            Add(Instruction.X86Pshufb,     new X86Intrinsic(X86Instruction.Pshufb,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Pslld,      new X86Intrinsic(X86Instruction.Pslld,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Pslldq,     new X86Intrinsic(X86Instruction.Pslldq,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Psllq,      new X86Intrinsic(X86Instruction.Psllq,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psllw,      new X86Intrinsic(X86Instruction.Psllw,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psrad,      new X86Intrinsic(X86Instruction.Psrad,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psraw,      new X86Intrinsic(X86Instruction.Psraw,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psrld,      new X86Intrinsic(X86Instruction.Psrld,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psrlq,      new X86Intrinsic(X86Instruction.Psrlq,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psrldq,     new X86Intrinsic(X86Instruction.Psrldq,     X86IntrinsicType.Binary));
+            Add(Instruction.X86Psrlw,      new X86Intrinsic(X86Instruction.Psrlw,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psubb,      new X86Intrinsic(X86Instruction.Psubb,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psubd,      new X86Intrinsic(X86Instruction.Psubd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psubq,      new X86Intrinsic(X86Instruction.Psubq,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Psubw,      new X86Intrinsic(X86Instruction.Psubw,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpckhbw,  new X86Intrinsic(X86Instruction.Punpckhbw,  X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpckhdq,  new X86Intrinsic(X86Instruction.Punpckhdq,  X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpckhqdq, new X86Intrinsic(X86Instruction.Punpckhqdq, X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpckhwd,  new X86Intrinsic(X86Instruction.Punpckhwd,  X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpcklbw,  new X86Intrinsic(X86Instruction.Punpcklbw,  X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpckldq,  new X86Intrinsic(X86Instruction.Punpckldq,  X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpcklqdq, new X86Intrinsic(X86Instruction.Punpcklqdq, X86IntrinsicType.Binary));
+            Add(Instruction.X86Punpcklwd,  new X86Intrinsic(X86Instruction.Punpcklwd,  X86IntrinsicType.Binary));
+            Add(Instruction.X86Pxor,       new X86Intrinsic(X86Instruction.Pxor,       X86IntrinsicType.Binary));
+            Add(Instruction.X86Rcpps,      new X86Intrinsic(X86Instruction.Rcpps,      X86IntrinsicType.Unary));
+            Add(Instruction.X86Rcpss,      new X86Intrinsic(X86Instruction.Rcpss,      X86IntrinsicType.Unary));
+            Add(Instruction.X86Roundpd,    new X86Intrinsic(X86Instruction.Roundpd,    X86IntrinsicType.BinaryImm));
+            Add(Instruction.X86Roundps,    new X86Intrinsic(X86Instruction.Roundps,    X86IntrinsicType.BinaryImm));
+            Add(Instruction.X86Roundsd,    new X86Intrinsic(X86Instruction.Roundsd,    X86IntrinsicType.BinaryImm));
+            Add(Instruction.X86Roundss,    new X86Intrinsic(X86Instruction.Roundss,    X86IntrinsicType.BinaryImm));
+            Add(Instruction.X86Rsqrtps,    new X86Intrinsic(X86Instruction.Rsqrtps,    X86IntrinsicType.Unary));
+            Add(Instruction.X86Rsqrtss,    new X86Intrinsic(X86Instruction.Rsqrtss,    X86IntrinsicType.Unary));
+            Add(Instruction.X86Shufpd,     new X86Intrinsic(X86Instruction.Shufpd,     X86IntrinsicType.TernaryImm));
+            Add(Instruction.X86Shufps,     new X86Intrinsic(X86Instruction.Shufps,     X86IntrinsicType.TernaryImm));
+            Add(Instruction.X86Sqrtpd,     new X86Intrinsic(X86Instruction.Sqrtpd,     X86IntrinsicType.Unary));
+            Add(Instruction.X86Sqrtps,     new X86Intrinsic(X86Instruction.Sqrtps,     X86IntrinsicType.Unary));
+            Add(Instruction.X86Sqrtsd,     new X86Intrinsic(X86Instruction.Sqrtsd,     X86IntrinsicType.Unary));
+            Add(Instruction.X86Sqrtss,     new X86Intrinsic(X86Instruction.Sqrtss,     X86IntrinsicType.Unary));
+            Add(Instruction.X86Subpd,      new X86Intrinsic(X86Instruction.Subpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Subps,      new X86Intrinsic(X86Instruction.Subps,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Subsd,      new X86Intrinsic(X86Instruction.Subsd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Subss,      new X86Intrinsic(X86Instruction.Subss,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Unpckhpd,   new X86Intrinsic(X86Instruction.Unpckhpd,   X86IntrinsicType.Binary));
+            Add(Instruction.X86Unpckhps,   new X86Intrinsic(X86Instruction.Unpckhps,   X86IntrinsicType.Binary));
+            Add(Instruction.X86Unpcklpd,   new X86Intrinsic(X86Instruction.Unpcklpd,   X86IntrinsicType.Binary));
+            Add(Instruction.X86Unpcklps,   new X86Intrinsic(X86Instruction.Unpcklps,   X86IntrinsicType.Binary));
+            Add(Instruction.X86Xorpd,      new X86Intrinsic(X86Instruction.Xorpd,      X86IntrinsicType.Binary));
+            Add(Instruction.X86Xorps,      new X86Intrinsic(X86Instruction.Xorps,      X86IntrinsicType.Binary));
         }
 
         private static void Add(Instruction inst, Action<CodeGenContext, Operation> func)
         {
             _instTable[(int)inst] = func;
+        }
+
+        private static void Add(Instruction inst, X86Intrinsic intrin)
+        {
+            _x86InstTable[(int)inst] = intrin;
         }
 
         public static CompiledFunction Generate(CompilerContext cctx)
@@ -286,15 +321,146 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateOperation(CodeGenContext context, Operation operation)
         {
-            Action<CodeGenContext, Operation> func = _instTable[(int)operation.Inst];
-
-            if (func != null)
+            if (operation.Inst > Instruction.X86Intrinsic_Start &&
+                operation.Inst < Instruction.X86Intrinsic_End)
             {
-                func(context, operation);
+                X86Intrinsic intrin = _x86InstTable[(int)operation.Inst];
+
+                switch (intrin.Type)
+                {
+                    case X86IntrinsicType.Comis_:
+                    {
+                        Operand dest = operation.Dest;
+                        Operand src1 = operation.GetSource(0);
+                        Operand src2 = operation.GetSource(1);
+
+                        switch (operation.Inst)
+                        {
+                            case Instruction.X86Comisdeq:
+                                context.Assembler.Comisd(src1, src2);
+                                context.Assembler.Setcc(dest, X86Condition.Equal);
+                                break;
+
+                            case Instruction.X86Comisdge:
+                                context.Assembler.Comisd(src1, src2);
+                                context.Assembler.Setcc(dest, X86Condition.AboveOrEqual);
+                                break;
+
+                            case Instruction.X86Comisdlt:
+                                context.Assembler.Comisd(src1, src2);
+                                context.Assembler.Setcc(dest, X86Condition.Below);
+                                break;
+
+                            case Instruction.X86Comisseq:
+                                context.Assembler.Comiss(src1, src2);
+                                context.Assembler.Setcc(dest, X86Condition.Equal);
+                                break;
+
+                            case Instruction.X86Comissge:
+                                context.Assembler.Comiss(src1, src2);
+                                context.Assembler.Setcc(dest, X86Condition.AboveOrEqual);
+                                break;
+
+                            case Instruction.X86Comisslt:
+                                context.Assembler.Comiss(src1, src2);
+                                context.Assembler.Setcc(dest, X86Condition.Below);
+                                break;
+                        }
+
+                        context.Assembler.Movzx8(dest, dest);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.PopCount:
+                    {
+                        Operand dest   = operation.Dest;
+                        Operand source = operation.GetSource(0);
+
+                        context.Assembler.Popcnt(dest, source);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.Unary:
+                    {
+                        Operand dest   = operation.Dest;
+                        Operand source = operation.GetSource(0);
+
+                        context.Assembler.WriteInstruction(intrin.Inst, dest, source);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.UnaryToGpr:
+                    {
+                        Operand dest   = operation.Dest;
+                        Operand source = operation.GetSource(0);
+
+                        context.Assembler.WriteInstruction(intrin.Inst, dest, source);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.Binary:
+                    {
+                        Operand dest = operation.Dest;
+                        Operand src1 = operation.GetSource(0);
+                        Operand src2 = operation.GetSource(1);
+
+                        context.Assembler.WriteInstruction(intrin.Inst, dest, src1, src2);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.BinaryImm:
+                    {
+                        Operand dest   = operation.Dest;
+                        Operand source = operation.GetSource(0);
+                        byte    imm    = operation.GetSource(1).AsByte();
+
+                        context.Assembler.WriteInstruction(intrin.Inst, dest, source, imm);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.Ternary:
+                    {
+                        Operand dest = operation.Dest;
+                        Operand src1 = operation.GetSource(0);
+                        Operand src2 = operation.GetSource(1);
+                        Operand src3 = operation.GetSource(2);
+
+                        context.Assembler.WriteInstruction(intrin.Inst, dest, src1, src2, src3);
+
+                        break;
+                    }
+
+                    case X86IntrinsicType.TernaryImm:
+                    {
+                        Operand dest = operation.Dest;
+                        Operand src1 = operation.GetSource(0);
+                        Operand src2 = operation.GetSource(1);
+                        byte    imm  = operation.GetSource(2).AsByte();
+
+                        context.Assembler.WriteInstruction(intrin.Inst, dest, src1, src2, imm);
+
+                        break;
+                    }
+                }
             }
             else
             {
-                throw new ArgumentException($"Invalid instruction \"{operation.Inst}\".");
+                Action<CodeGenContext, Operation> func = _instTable[(int)operation.Inst];
+
+                if (func != null)
+                {
+                    func(context, operation);
+                }
+                else
+                {
+                    throw new ArgumentException($"Invalid instruction \"{operation.Inst}\".");
+                }
             }
         }
 
@@ -437,6 +603,7 @@ namespace ARMeilleure.CodeGen.X86
             GenerateCompare(context, operation, X86Condition.Below);
         }
 
+
         private static void GenerateCompareNotEqual(CodeGenContext context, Operation operation)
         {
             GenerateCompare(context, operation, X86Condition.NotEqual);
@@ -521,14 +688,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else if (dest.GetRegister().Type == RegisterType.Vector)
             {
-                if (source.GetRegister().Type == RegisterType.Integer)
-                {
-                    context.Assembler.Movd(dest, source);
-                }
-                else
-                {
-                    context.Assembler.Movdqu(dest, source);
-                }
+                context.Assembler.Movdqu(dest, source);
             }
             else
             {
@@ -843,6 +1003,14 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
+        private static void GenerateVectorCreateScalar(CodeGenContext context, Operation operation)
+        {
+            Operand dest   = operation.Dest;
+            Operand source = operation.GetSource(0);
+
+            context.Assembler.Movd(dest, source);
+        }
+
         private static void GenerateVectorExtract(CodeGenContext context, Operation operation)
         {
             Operand dest = operation.Dest; //Value
@@ -1010,706 +1178,6 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateZeroExtend8(CodeGenContext context, Operation operation)
         {
             context.Assembler.Movzx8(operation.Dest, Get32BitsRegister(operation.GetSource(0).GetRegister()));
-        }
-
-        private static void GenerateX86Addpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Addpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Addps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Addps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Addsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Addsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Addss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Addss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Andnpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Andnpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Andnps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Andnps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cmppd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cmppd(
-                operation.Dest,
-                operation.GetSource(1),
-                operation.GetSource(0),
-                operation.GetSource(2).AsByte());
-        }
-
-        private static void GenerateX86Cmpps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cmpps(
-                operation.Dest,
-                operation.GetSource(1),
-                operation.GetSource(0),
-                operation.GetSource(2).AsByte());
-        }
-
-        private static void GenerateX86Cmpsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cmpsd(
-                operation.Dest,
-                operation.GetSource(1),
-                operation.GetSource(0),
-                operation.GetSource(2).AsByte());
-        }
-
-        private static void GenerateX86Cmpss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cmpss(
-                operation.Dest,
-                operation.GetSource(1),
-                operation.GetSource(0),
-                operation.GetSource(2).AsByte());
-        }
-
-        private static void GenerateX86Comisdeq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
-            context.Assembler.Setcc(operation.Dest, X86Condition.Equal);
-            context.Assembler.Movzx8(operation.Dest, operation.Dest);
-        }
-
-        private static void GenerateX86Comisdge(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
-            context.Assembler.Setcc(operation.Dest, X86Condition.AboveOrEqual);
-            context.Assembler.Movzx8(operation.Dest, operation.Dest);
-        }
-
-        private static void GenerateX86Comisdlt(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Comisd(operation.GetSource(0), operation.GetSource(1));
-            context.Assembler.Setcc(operation.Dest, X86Condition.Below);
-            context.Assembler.Movzx8(operation.Dest, operation.Dest);
-        }
-
-        private static void GenerateX86Comisseq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
-            context.Assembler.Setcc(operation.Dest, X86Condition.Equal);
-            context.Assembler.Movzx8(operation.Dest, operation.Dest);
-        }
-
-        private static void GenerateX86Comissge(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
-            context.Assembler.Setcc(operation.Dest, X86Condition.AboveOrEqual);
-            context.Assembler.Movzx8(operation.Dest, operation.Dest);
-        }
-
-        private static void GenerateX86Comisslt(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Comiss(operation.GetSource(0), operation.GetSource(1));
-            context.Assembler.Setcc(operation.Dest, X86Condition.Below);
-            context.Assembler.Movzx8(operation.Dest, operation.Dest);
-        }
-
-        private static void GenerateX86Cvtdq2pd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtdq2pd(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtdq2ps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtdq2ps(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtpd2dq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtpd2dq(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtpd2ps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtpd2ps(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtps2dq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtps2dq(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtps2pd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtps2pd(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtsd2si(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtsd2si(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtsd2ss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtsd2ss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Cvtss2sd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Cvtss2sd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Divpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Divpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Divps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Divps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Divsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Divsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Divss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Divss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Haddpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Addpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Haddps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Addps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Maxpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Maxpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Maxps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Maxps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Maxsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Maxsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Maxss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Maxss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Minpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Minpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Minps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Minps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Minsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Minsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Minss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Minss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Movhlps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Movhlps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Movlhps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Movlhps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Mulpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Mulpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Mulps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Mulps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Mulsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Mulsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Mulss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Mulss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Paddb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Paddb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Paddd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Paddd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Paddq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Paddq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Paddw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Paddw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pand(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pand(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pandn(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pandn(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pavgb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pavgb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pavgw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pavgw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pblendvb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pblendvb(
-                operation.Dest,
-                operation.GetSource(0),
-                operation.GetSource(1),
-                operation.GetSource(2));
-        }
-
-        private static void GenerateX86Pcmpeqb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpeqb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpeqd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpeqd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpeqq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpeqq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpeqw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpeqw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpgtb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpgtb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpgtd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpgtd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpgtq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpgtq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pcmpgtw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pcmpgtw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmaxsb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmaxsb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmaxsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmaxsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmaxsw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmaxsw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmaxub(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmaxub(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmaxud(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmaxud(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmaxuw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmaxuw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pminsb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pminsb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pminsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pminsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pminsw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pminsw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pminub(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pminub(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pminud(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pminud(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pminuw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pminuw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmovsxbw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmovsxbw(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmovsxdq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmovsxdq(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmovsxwd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmovsxwd(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmovzxbw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmovzxbw(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmovzxdq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmovzxdq(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmovzxwd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmovzxwd(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmulld(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmulld(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pmullw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pmullw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Popcnt(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Popcnt(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Por(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Por(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pshufb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pshufb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pslld(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pslld(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pslldq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pslldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psllq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psllq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psllw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psllw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psrad(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psrad(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psraw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psraw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psrld(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psrld(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psrlq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psrlq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psrldq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psrldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psrlw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psrlw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psubb(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psubb(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psubd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psubd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psubq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psubq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Psubw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Psubw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpckhbw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpckhbw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpckhdq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpckhdq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpckhqdq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpckhqdq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpckhwd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpckhwd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpcklbw(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpcklbw(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpckldq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpckldq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpcklqdq(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpcklqdq(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Punpcklwd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Punpcklwd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Pxor(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Pxor(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Rcpps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Rcpps(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Rcpss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Rcpss(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Roundpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Roundpd(operation.Dest, operation.GetSource(0), operation.GetSource(1).AsByte());
-        }
-
-        private static void GenerateX86Roundps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Roundps(operation.Dest, operation.GetSource(0), operation.GetSource(1).AsByte());
-        }
-
-        private static void GenerateX86Roundsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Roundsd(operation.Dest, operation.GetSource(0), operation.GetSource(1).AsByte());
-        }
-
-        private static void GenerateX86Roundss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Roundss(operation.Dest, operation.GetSource(0), operation.GetSource(1).AsByte());
-        }
-
-        private static void GenerateX86Rsqrtps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Rsqrtps(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Rsqrtss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Rsqrtss(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Shufpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Shufpd(
-                operation.Dest,
-                operation.GetSource(1),
-                operation.GetSource(2).AsByte(),
-                operation.GetSource(0));
-        }
-
-        private static void GenerateX86Shufps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Shufps(
-                operation.Dest,
-                operation.GetSource(1),
-                operation.GetSource(2).AsByte(),
-                operation.GetSource(0));
-        }
-
-        private static void GenerateX86Sqrtpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Sqrtpd(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Sqrtps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Sqrtps(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Sqrtsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Sqrtsd(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Sqrtss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Sqrtss(operation.Dest, operation.GetSource(0));
-        }
-
-        private static void GenerateX86Subpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Subpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Subps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Subps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Subsd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Subsd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Subss(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Subss(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Unpckhpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Unpckhpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Unpckhps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Unpckhps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Unpcklpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Unpcklpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Unpcklps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Unpcklps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Xorpd(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Xorpd(operation.Dest, operation.GetSource(1), operation.GetSource(0));
-        }
-
-        private static void GenerateX86Xorps(CodeGenContext context, Operation operation)
-        {
-            context.Assembler.Xorps(operation.Dest, operation.GetSource(1), operation.GetSource(0));
         }
 
         private static void GenerateCompare(CodeGenContext context, Operation operation, X86Condition condition)

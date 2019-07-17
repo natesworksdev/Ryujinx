@@ -927,8 +927,8 @@ namespace ARMeilleure.Instructions
 
         private static uint Crc32w(uint crc, uint poly, uint val)
         {
-            crc = Crc32(crc, poly, (byte)(val >> 0 ));
-            crc = Crc32(crc, poly, (byte)(val >> 8 ));
+            crc = Crc32(crc, poly, (byte)(val >> 0));
+            crc = Crc32(crc, poly, (byte)(val >> 8));
             crc = Crc32(crc, poly, (byte)(val >> 16));
             crc = Crc32(crc, poly, (byte)(val >> 24));
 
@@ -937,8 +937,8 @@ namespace ARMeilleure.Instructions
 
         private static uint Crc32x(uint crc, uint poly, ulong val)
         {
-            crc = Crc32(crc, poly, (byte)(val >> 0 ));
-            crc = Crc32(crc, poly, (byte)(val >> 8 ));
+            crc = Crc32(crc, poly, (byte)(val >> 0));
+            crc = Crc32(crc, poly, (byte)(val >> 8));
             crc = Crc32(crc, poly, (byte)(val >> 16));
             crc = Crc32(crc, poly, (byte)(val >> 24));
             crc = Crc32(crc, poly, (byte)(val >> 32));

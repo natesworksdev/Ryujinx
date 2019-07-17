@@ -12,10 +12,10 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Ccmn(EmitterContext context) => EmitCcmp(context, isNegated: true);
-        public static void Ccmp(EmitterContext context) => EmitCcmp(context, isNegated: false);
+        public static void Ccmn(ArmEmitterContext context) => EmitCcmp(context, isNegated: true);
+        public static void Ccmp(ArmEmitterContext context) => EmitCcmp(context, isNegated: false);
 
-        private static void EmitCcmp(EmitterContext context, bool isNegated)
+        private static void EmitCcmp(ArmEmitterContext context, bool isNegated)
         {
             OpCodeCcmp op = (OpCodeCcmp)context.CurrOp;
 
@@ -24,10 +24,10 @@ namespace ARMeilleure.Instructions
 
             EmitCondBranch(context, lblTrue, op.Cond);
 
-            context.Copy(GetFlag(PState.VFlag), Const((op.Nzcv >> 0) & 1));
-            context.Copy(GetFlag(PState.CFlag), Const((op.Nzcv >> 1) & 1));
-            context.Copy(GetFlag(PState.ZFlag), Const((op.Nzcv >> 2) & 1));
-            context.Copy(GetFlag(PState.NFlag), Const((op.Nzcv >> 3) & 1));
+            SetFlag(context, PState.VFlag, Const((op.Nzcv >> 0) & 1));
+            SetFlag(context, PState.CFlag, Const((op.Nzcv >> 1) & 1));
+            SetFlag(context, PState.ZFlag, Const((op.Nzcv >> 2) & 1));
+            SetFlag(context, PState.NFlag, Const((op.Nzcv >> 3) & 1));
 
             context.Branch(lblEnd);
 

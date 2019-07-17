@@ -91,6 +91,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     context.Active.Set(index);
 
+                    if (current.Register.Type == RegisterType.Integer)
+                    {
+                        context.IntUsedRegisters |= 1 << current.Register.Index;
+                    }
+                    else /* if (interval.Register.Type == RegisterType.Vector) */
+                    {
+                        context.VecUsedRegisters |= 1 << current.Register.Index;
+                    }
+
                     continue;
                 }
 

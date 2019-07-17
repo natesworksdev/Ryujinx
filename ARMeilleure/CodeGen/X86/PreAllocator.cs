@@ -101,8 +101,6 @@ namespace ARMeilleure.CodeGen.X86
 
             if (src1.Kind == OperandKind.Constant)
             {
-                bool isVecCopy = inst == Instruction.Copy && !dest.Type.IsInteger();
-
                 if (!src1.Type.IsInteger())
                 {
                     //Handle non-integer types (FP32, FP64 and V128).
@@ -114,7 +112,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     operation.SetSource(0, src1);
                 }
-                else if (!HasConstSrc1(inst) || isVecCopy)
+                else if (!HasConstSrc1(inst))
                 {
                     //Handle integer types.
                     //Most ALU instructions accepts a 32-bits immediate on the second operand.
@@ -330,8 +328,8 @@ namespace ARMeilleure.CodeGen.X86
                 Operand rax = Gpr(X86Register.Rax, OperandType.I64);
                 Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
 
-                node.List.AddAfter(node, new Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1)));
-                node.List.AddAfter(node, new Operation(Instruction.Copy,         dest, rax));
+                node.List.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, rdx, Const(1)));
+                node.List.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, rax));
 
                 operation.SetSource(1, Undef());
                 operation.SetSource(2, Undef());
@@ -661,7 +659,9 @@ namespace ARMeilleure.CodeGen.X86
         {
             Operand temp = Local(source.Type);
 
-            Operation copyOp = new Operation(Instruction.Copy, temp, AddCopy(node, GetIntConst(source)));
+            Operand intConst = AddCopy(node, GetIntConst(source));
+
+            Operation copyOp = new Operation(Instruction.VectorCreateScalar, temp, intConst);
 
             node.List.AddBefore(node, copyOp);
 

@@ -1,6 +1,7 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -38,7 +39,7 @@ namespace ARMeilleure.Instructions
         };
 #endregion
 
-        public static void Dup_Gp(EmitterContext context)
+        public static void Dup_Gp(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -88,7 +89,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Dup_S(EmitterContext context)
+        public static void Dup_S(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -97,7 +98,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), ne, 0, op.Size));
         }
 
-        public static void Dup_V(EmitterContext context)
+        public static void Dup_V(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -165,7 +166,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Ext_V(EmitterContext context)
+        public static void Ext_V(ArmEmitterContext context)
         {
             OpCodeSimdExt op = (OpCodeSimdExt)context.CurrOp;
 
@@ -216,7 +217,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fcsel_S(EmitterContext context)
+        public static void Fcsel_S(ArmEmitterContext context)
         {
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
@@ -244,7 +245,7 @@ namespace ARMeilleure.Instructions
             context.MarkLabel(lblEnd);
         }
 
-        public static void Fmov_Ftoi(EmitterContext context)
+        public static void Fmov_Ftoi(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -253,7 +254,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, ne);
         }
 
-        public static void Fmov_Ftoi1(EmitterContext context)
+        public static void Fmov_Ftoi1(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -262,7 +263,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, ne);
         }
 
-        public static void Fmov_Itof(EmitterContext context)
+        public static void Fmov_Itof(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -271,7 +272,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), EmitVectorInsert(context, context.VectorZero(), n, 0, op.Size + 2));
         }
 
-        public static void Fmov_Itof1(EmitterContext context)
+        public static void Fmov_Itof1(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -280,7 +281,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), EmitVectorInsert(context, GetVec(op.Rd), n, 1, 3));
         }
 
-        public static void Fmov_S(EmitterContext context)
+        public static void Fmov_S(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -291,7 +292,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), ne, 0));
         }
 
-        public static void Fmov_Si(EmitterContext context)
+        public static void Fmov_Si(ArmEmitterContext context)
         {
             OpCodeSimdFmov op = (OpCodeSimdFmov)context.CurrOp;
 
@@ -305,7 +306,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Fmov_Vi(EmitterContext context)
+        public static void Fmov_Vi(ArmEmitterContext context)
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
@@ -323,7 +324,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void Ins_Gp(EmitterContext context)
+        public static void Ins_Gp(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -333,7 +334,7 @@ namespace ARMeilleure.Instructions
             context.Copy(d, EmitVectorInsert(context, d, n, op.DstIndex, op.Size));
         }
 
-        public static void Ins_V(EmitterContext context)
+        public static void Ins_V(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -343,7 +344,7 @@ namespace ARMeilleure.Instructions
             context.Copy(d, EmitVectorInsert(context, d, ne, op.DstIndex, op.Size));
         }
 
-        public static void Movi_V(EmitterContext context)
+        public static void Movi_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -355,7 +356,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Mvni_V(EmitterContext context)
+        public static void Mvni_V(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
@@ -367,7 +368,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Smov_S(EmitterContext context)
+        public static void Smov_S(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -381,7 +382,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, ne);
         }
 
-        public static void Tbl_V(EmitterContext context)
+        public static void Tbl_V(ArmEmitterContext context)
         {
             OpCodeSimdTbl op = (OpCodeSimdTbl)context.CurrOp;
 
@@ -433,42 +434,42 @@ namespace ARMeilleure.Instructions
                     args[1 + index] = GetVec((op.Rn + index) & 0x1f);
                 }
 
-                string name = null;
+                Delegate dlg = null;
 
                 switch (op.Size)
                 {
-                    case 1: name = op.RegisterSize == RegisterSize.Simd64
-                        ? nameof(SoftFallback.Tbl1_V64)
-                        : nameof(SoftFallback.Tbl1_V128); break;
+                    case 1: dlg = op.RegisterSize == RegisterSize.Simd64
+                        ? (Delegate)new _V128_V128_V128(SoftFallback.Tbl1_V64)
+                        : (Delegate)new _V128_V128_V128(SoftFallback.Tbl1_V128); break;
 
-                    case 2: name = op.RegisterSize == RegisterSize.Simd64
-                        ? nameof(SoftFallback.Tbl2_V64)
-                        : nameof(SoftFallback.Tbl2_V128); break;
+                    case 2: dlg = op.RegisterSize == RegisterSize.Simd64
+                        ? (Delegate)new _V128_V128_V128_V128(SoftFallback.Tbl2_V64)
+                        : (Delegate)new _V128_V128_V128_V128(SoftFallback.Tbl2_V128); break;
 
-                    case 3: name = op.RegisterSize == RegisterSize.Simd64
-                        ? nameof(SoftFallback.Tbl3_V64)
-                        : nameof(SoftFallback.Tbl3_V128); break;
+                    case 3: dlg = op.RegisterSize == RegisterSize.Simd64
+                        ? (Delegate)new _V128_V128_V128_V128_V128(SoftFallback.Tbl3_V64)
+                        : (Delegate)new _V128_V128_V128_V128_V128(SoftFallback.Tbl3_V128); break;
 
-                    case 4: name = op.RegisterSize == RegisterSize.Simd64
-                        ? nameof(SoftFallback.Tbl4_V64)
-                        : nameof(SoftFallback.Tbl4_V128); break;
+                    case 4: dlg = op.RegisterSize == RegisterSize.Simd64
+                        ? (Delegate)new _V128_V128_V128_V128_V128_V128(SoftFallback.Tbl4_V64)
+                        : (Delegate)new _V128_V128_V128_V128_V128_V128(SoftFallback.Tbl4_V128); break;
                 }
 
-                context.Copy(GetVec(op.Rd), context.Call(typeof(SoftFallback).GetMethod(name), args));
+                context.Copy(GetVec(op.Rd), context.Call(dlg, args));
             }
         }
 
-        public static void Trn1_V(EmitterContext context)
+        public static void Trn1_V(ArmEmitterContext context)
         {
             EmitVectorTranspose(context, part: 0);
         }
 
-        public static void Trn2_V(EmitterContext context)
+        public static void Trn2_V(ArmEmitterContext context)
         {
             EmitVectorTranspose(context, part: 1);
         }
 
-        public static void Umov_S(EmitterContext context)
+        public static void Umov_S(ArmEmitterContext context)
         {
             OpCodeSimdIns op = (OpCodeSimdIns)context.CurrOp;
 
@@ -477,17 +478,17 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, ne);
         }
 
-        public static void Uzp1_V(EmitterContext context)
+        public static void Uzp1_V(ArmEmitterContext context)
         {
             EmitVectorUnzip(context, part: 0);
         }
 
-        public static void Uzp2_V(EmitterContext context)
+        public static void Uzp2_V(ArmEmitterContext context)
         {
             EmitVectorUnzip(context, part: 1);
         }
 
-        public static void Xtn_V(EmitterContext context)
+        public static void Xtn_V(ArmEmitterContext context)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -530,17 +531,17 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Zip1_V(EmitterContext context)
+        public static void Zip1_V(ArmEmitterContext context)
         {
             EmitVectorZip(context, part: 0);
         }
 
-        public static void Zip2_V(EmitterContext context)
+        public static void Zip2_V(ArmEmitterContext context)
         {
             EmitVectorZip(context, part: 1);
         }
 
-        private static void EmitMoviMvni(EmitterContext context, bool not)
+        private static void EmitMoviMvni(ArmEmitterContext context, bool not)
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
@@ -576,7 +577,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), mask);
         }
 
-        private static void EmitVectorTranspose(EmitterContext context, int part)
+        private static void EmitVectorTranspose(ArmEmitterContext context, int part)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -642,7 +643,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitVectorUnzip(EmitterContext context, int part)
+        private static void EmitVectorUnzip(ArmEmitterContext context, int part)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -735,7 +736,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitVectorZip(EmitterContext context, int part)
+        private static void EmitVectorZip(ArmEmitterContext context, int part)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 

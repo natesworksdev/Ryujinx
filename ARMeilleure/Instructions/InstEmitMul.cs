@@ -9,10 +9,10 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit
     {
-        public static void Madd(EmitterContext context) => EmitMul(context, isAdd: true);
-        public static void Msub(EmitterContext context) => EmitMul(context, isAdd: false);
+        public static void Madd(ArmEmitterContext context) => EmitMul(context, isAdd: true);
+        public static void Msub(ArmEmitterContext context) => EmitMul(context, isAdd: false);
 
-        private static void EmitMul(EmitterContext context, bool isAdd)
+        private static void EmitMul(ArmEmitterContext context, bool isAdd)
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
@@ -27,10 +27,10 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        public static void Smaddl(EmitterContext context) => EmitMull(context, MullFlags.SignedAdd);
-        public static void Smsubl(EmitterContext context) => EmitMull(context, MullFlags.SignedSubtract);
-        public static void Umaddl(EmitterContext context) => EmitMull(context, MullFlags.Add);
-        public static void Umsubl(EmitterContext context) => EmitMull(context, MullFlags.Subtract);
+        public static void Smaddl(ArmEmitterContext context) => EmitMull(context, MullFlags.SignedAdd);
+        public static void Smsubl(ArmEmitterContext context) => EmitMull(context, MullFlags.SignedSubtract);
+        public static void Umaddl(ArmEmitterContext context) => EmitMull(context, MullFlags.Add);
+        public static void Umsubl(ArmEmitterContext context) => EmitMull(context, MullFlags.Subtract);
 
         [Flags]
         private enum MullFlags
@@ -43,7 +43,7 @@ namespace ARMeilleure.Instructions
             SignedSubtract = Signed | Subtract
         }
 
-        private static void EmitMull(EmitterContext context, MullFlags flags)
+        private static void EmitMull(ArmEmitterContext context, MullFlags flags)
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
@@ -73,7 +73,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, res);
         }
 
-        public static void Smulh(EmitterContext context)
+        public static void Smulh(ArmEmitterContext context)
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
@@ -85,7 +85,7 @@ namespace ARMeilleure.Instructions
             SetIntOrZR(context, op.Rd, d);
         }
 
-        public static void Umulh(EmitterContext context)
+        public static void Umulh(ArmEmitterContext context)
         {
             OpCodeMul op = (OpCodeMul)context.CurrOp;
 
