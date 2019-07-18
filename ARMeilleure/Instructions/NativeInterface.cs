@@ -46,8 +46,6 @@ namespace ARMeilleure.Instructions
 
         public static void SupervisorCall(ulong address, int imm)
         {
-            System.Span<byte> test = stackalloc byte[0x2000];
-
             GetContext().OnSupervisorCall(address, imm);
         }
 

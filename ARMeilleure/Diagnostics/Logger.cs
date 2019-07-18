@@ -17,7 +17,7 @@ namespace ARMeilleure.Diagnostics
 
         public static void StartPass(PassName name)
         {
-#if DEBUG
+#if M_DEBUG
             WriteOutput(name + " pass started...");
 
             _startTime = Stopwatch.GetTimestamp();
@@ -26,7 +26,7 @@ namespace ARMeilleure.Diagnostics
 
         public static void EndPass(PassName name, ControlFlowGraph cfg)
         {
-#if DEBUG
+#if M_DEBUG
             EndPass(name);
 
             WriteOutput("IR after " + name + " pass:");
@@ -37,7 +37,7 @@ namespace ARMeilleure.Diagnostics
 
         public static void EndPass(PassName name)
         {
-#if DEBUG
+#if M_DEBUG
             long elapsedTime = Stopwatch.GetTimestamp() - _startTime;
 
             _accumulatedTime[(int)name] += elapsedTime;

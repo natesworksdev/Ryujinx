@@ -10,8 +10,6 @@ namespace ARMeilleure.Translation
 {
     class EmitterContext
     {
-
-
         private Dictionary<ulong, Operand> _labels;
 
         private Dictionary<Operand, BasicBlock> _irLabels;
@@ -89,7 +87,7 @@ namespace ARMeilleure.Translation
             //Add the delegate to the cache to ensure it will not be garbage collected.
             func = DelegateCache.GetOrAdd(func);
 
-            IntPtr ptr = Marshal.GetFunctionPointerForDelegate(func);
+            IntPtr ptr = Marshal.GetFunctionPointerForDelegate<Delegate>(func);
 
             OperandType returnType = GetOperandType(func.Method.ReturnType);
 
