@@ -29,21 +29,11 @@
 
   <ItemGroup>
     <None Remove="Homebrew.npdm" />
-    <None Remove="ryujinxNCAIcon.png" />
-    <None Remove="ryujinxNROIcon.png" />
-    <None Remove="ryujinxNSOIcon.png" />
-    <None Remove="ryujinxNSPIcon.png" />
-    <None Remove="ryujinxXCIIcon.png" />
     <None Remove="RyujinxProfileImage.jpg" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="Homebrew.npdm" />
-    <EmbeddedResource Include="ryujinxNCAIcon.png" />
-    <EmbeddedResource Include="ryujinxNROIcon.png" />
-    <EmbeddedResource Include="ryujinxNSOIcon.png" />
-    <EmbeddedResource Include="ryujinxNSPIcon.png" />
-    <EmbeddedResource Include="ryujinxXCIIcon.png" />
     <EmbeddedResource Include="RyujinxProfileImage.jpg" />
   </ItemGroup>
 

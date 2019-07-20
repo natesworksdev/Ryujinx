@@ -22,188 +22,171 @@ namespace Ryujinx.UI
         private static bool _listeningForKeypress;
 
 #pragma warning disable 649
-        [GUI] Window       SettingsWin;
-        [GUI] CheckButton  IconToggle;
-        [GUI] CheckButton  TitleToggle;
-        [GUI] CheckButton  DeveloperToggle;
-        [GUI] CheckButton  VersionToggle;
-        [GUI] CheckButton  TimePlayedToggle;
-        [GUI] CheckButton  LastPlayedToggle;
-        [GUI] CheckButton  FileExtToggle;
-        [GUI] CheckButton  FileSizeToggle;
-        [GUI] CheckButton  PathToggle;
-        [GUI] CheckButton  ErrorLogToggle;
-        [GUI] CheckButton  WarningLogToggle;
-        [GUI] CheckButton  InfoLogToggle;
-        [GUI] CheckButton  StubLogToggle;
-        [GUI] CheckButton  DebugLogToggle;
-        [GUI] CheckButton  FileLogToggle;
-        [GUI] CheckButton  GuestLogToggle;
-        [GUI] CheckButton  FsAccessLogToggle;
-        [GUI] Adjustment   FsLogSpinAdjustment;
-        [GUI] CheckButton  DockedModeToggle;
-        [GUI] CheckButton  DiscordToggle;
-        [GUI] CheckButton  VSyncToggle;
-        [GUI] CheckButton  MultiSchedToggle;
-        [GUI] CheckButton  FSICToggle;
-        [GUI] CheckButton  AggrToggle;
-        [GUI] CheckButton  IgnoreToggle;
-        [GUI] CheckButton  DirectKeyboardAccess;
-        [GUI] ComboBoxText SystemLanguageSelect;
-        [GUI] CheckButton  CustThemeToggle;
-        [GUI] Entry        CustThemeDir;
-        [GUI] ToggleButton BrowseThemeDir;
-        [GUI] Label        CustThemeDirLabel;
-        [GUI] TreeView     GameDirsBox;
-        [GUI] Entry        AddGameDirBox;
-        [GUI] ToggleButton AddDir;
-        [GUI] ToggleButton BrowseDir;
-        [GUI] ToggleButton RemoveDir;
-        [GUI] Entry        LogPath;
-        [GUI] Entry        GraphicsShadersDumpPath;
-        [GUI] Image        ControllerImage;
+        [GUI] Window       _settingsWin;
+        [GUI] CheckButton  _errorLogToggle;
+        [GUI] CheckButton  _warningLogToggle;
+        [GUI] CheckButton  _infoLogToggle;
+        [GUI] CheckButton  _stubLogToggle;
+        [GUI] CheckButton  _debugLogToggle;
+        [GUI] CheckButton  _fileLogToggle;
+        [GUI] CheckButton  _guestLogToggle;
+        [GUI] CheckButton  _fsAccessLogToggle;
+        [GUI] Adjustment   _fsLogSpinAdjustment;
+        [GUI] CheckButton  _dockedModeToggle;
+        [GUI] CheckButton  _discordToggle;
+        [GUI] CheckButton  _vSyncToggle;
+        [GUI] CheckButton  _multiSchedToggle;
+        [GUI] CheckButton  _fsicToggle;
+        [GUI] CheckButton  _aggrToggle;
+        [GUI] CheckButton  _ignoreToggle;
+        [GUI] CheckButton  _directKeyboardAccess;
+        [GUI] ComboBoxText _systemLanguageSelect;
+        [GUI] CheckButton  _custThemeToggle;
+        [GUI] Entry        _custThemePath;
+        [GUI] ToggleButton _browseThemePath;
+        [GUI] Label        _custThemePathLabel;
+        [GUI] TreeView     _gameDirsBox;
+        [GUI] Entry        _addGameDirBox;
+        [GUI] ToggleButton _addDir;
+        [GUI] ToggleButton _browseDir;
+        [GUI] ToggleButton _removeDir;
+        [GUI] Entry        _logPath;
+        [GUI] Entry        _graphicsShadersDumpPath;
+        [GUI] Image        _controllerImage;
 
-        [GUI] ComboBoxText Controller1Type;
-        [GUI] ToggleButton LStickUp1;
-        [GUI] ToggleButton LStickDown1;
-        [GUI] ToggleButton LStickLeft1;
-        [GUI] ToggleButton LStickRight1;
-        [GUI] ToggleButton LStickButton1;
-        [GUI] ToggleButton DpadUp1;
-        [GUI] ToggleButton DpadDown1;
-        [GUI] ToggleButton DpadLeft1;
-        [GUI] ToggleButton DpadRight1;
-        [GUI] ToggleButton Minus1;
-        [GUI] ToggleButton L1;
-        [GUI] ToggleButton ZL1;
-        [GUI] ToggleButton RStickUp1;
-        [GUI] ToggleButton RStickDown1;
-        [GUI] ToggleButton RStickLeft1;
-        [GUI] ToggleButton RStickRight1;
-        [GUI] ToggleButton RStickButton1;
-        [GUI] ToggleButton A1;
-        [GUI] ToggleButton B1;
-        [GUI] ToggleButton X1;
-        [GUI] ToggleButton Y1;
-        [GUI] ToggleButton Plus1;
-        [GUI] ToggleButton R1;
-        [GUI] ToggleButton ZR1;
+        [GUI] ComboBoxText _controller1Type;
+        [GUI] ToggleButton _lStickUp1;
+        [GUI] ToggleButton _lStickDown1;
+        [GUI] ToggleButton _lStickLeft1;
+        [GUI] ToggleButton _lStickRight1;
+        [GUI] ToggleButton _lStickButton1;
+        [GUI] ToggleButton _dpadUp1;
+        [GUI] ToggleButton _dpadDown1;
+        [GUI] ToggleButton _dpadLeft1;
+        [GUI] ToggleButton _dpadRight1;
+        [GUI] ToggleButton _minus1;
+        [GUI] ToggleButton _l1;
+        [GUI] ToggleButton _zL1;
+        [GUI] ToggleButton _rStickUp1;
+        [GUI] ToggleButton _rStickDown1;
+        [GUI] ToggleButton _rStickLeft1;
+        [GUI] ToggleButton _rStickRight1;
+        [GUI] ToggleButton _rStickButton1;
+        [GUI] ToggleButton _a1;
+        [GUI] ToggleButton _b1;
+        [GUI] ToggleButton _x1;
+        [GUI] ToggleButton _y1;
+        [GUI] ToggleButton _plus1;
+        [GUI] ToggleButton _r1;
+        [GUI] ToggleButton _zR1;
 #pragma warning restore 649
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 
         public SwitchSettings(HLE.Switch device) : this(new Builder("Ryujinx.Ui.SwitchSettings.glade"), device) { }
 
-        private SwitchSettings(Builder builder, HLE.Switch device) : base(builder.GetObject("SettingsWin").Handle)
+        private SwitchSettings(Builder builder, HLE.Switch device) : base(builder.GetObject("_settingsWin").Handle)
         {
             Device = device;
 
             builder.Autoconnect(this);
 
-            SettingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
-            ControllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
+            _settingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
+            _controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
 
             //Bind Events
-            LStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, LStickUp1);
-            LStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, LStickDown1);
-            LStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, LStickLeft1);
-            LStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, LStickRight1);
-            LStickButton1.Clicked += (o, args) => Button_Pressed(o, args, LStickButton1);
-            DpadUp1.Clicked       += (o, args) => Button_Pressed(o, args, DpadUp1);
-            DpadDown1.Clicked     += (o, args) => Button_Pressed(o, args, DpadDown1);
-            DpadLeft1.Clicked     += (o, args) => Button_Pressed(o, args, DpadLeft1);
-            DpadRight1.Clicked    += (o, args) => Button_Pressed(o, args, DpadRight1);
-            Minus1.Clicked        += (o, args) => Button_Pressed(o, args, Minus1);
-            L1.Clicked            += (o, args) => Button_Pressed(o, args, L1);
-            ZL1.Clicked           += (o, args) => Button_Pressed(o, args, ZL1);
-            RStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, RStickUp1);
-            RStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, RStickDown1);
-            RStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, RStickLeft1);
-            RStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, RStickRight1);
-            RStickButton1.Clicked += (o, args) => Button_Pressed(o, args, RStickButton1);
-            A1.Clicked            += (o, args) => Button_Pressed(o, args, A1);
-            B1.Clicked            += (o, args) => Button_Pressed(o, args, B1);
-            X1.Clicked            += (o, args) => Button_Pressed(o, args, X1);
-            Y1.Clicked            += (o, args) => Button_Pressed(o, args, Y1);
-            Plus1.Clicked         += (o, args) => Button_Pressed(o, args, Plus1);
-            R1.Clicked            += (o, args) => Button_Pressed(o, args, R1);
-            ZR1.Clicked           += (o, args) => Button_Pressed(o, args, ZR1);
+            _lStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, _lStickUp1);
+            _lStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, _lStickDown1);
+            _lStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, _lStickLeft1);
+            _lStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, _lStickRight1);
+            _lStickButton1.Clicked += (o, args) => Button_Pressed(o, args, _lStickButton1);
+            _dpadUp1.Clicked       += (o, args) => Button_Pressed(o, args, _dpadUp1);
+            _dpadDown1.Clicked     += (o, args) => Button_Pressed(o, args, _dpadDown1);
+            _dpadLeft1.Clicked     += (o, args) => Button_Pressed(o, args, _dpadLeft1);
+            _dpadRight1.Clicked    += (o, args) => Button_Pressed(o, args, _dpadRight1);
+            _minus1.Clicked        += (o, args) => Button_Pressed(o, args, _minus1);
+            _l1.Clicked            += (o, args) => Button_Pressed(o, args, _l1);
+            _zL1.Clicked           += (o, args) => Button_Pressed(o, args, _zL1);
+            _rStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, _rStickUp1);
+            _rStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, _rStickDown1);
+            _rStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, _rStickLeft1);
+            _rStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, _rStickRight1);
+            _rStickButton1.Clicked += (o, args) => Button_Pressed(o, args, _rStickButton1);
+            _a1.Clicked            += (o, args) => Button_Pressed(o, args, _a1);
+            _b1.Clicked            += (o, args) => Button_Pressed(o, args, _b1);
+            _x1.Clicked            += (o, args) => Button_Pressed(o, args, _x1);
+            _y1.Clicked            += (o, args) => Button_Pressed(o, args, _y1);
+            _plus1.Clicked         += (o, args) => Button_Pressed(o, args, _plus1);
+            _r1.Clicked            += (o, args) => Button_Pressed(o, args, _r1);
+            _zR1.Clicked           += (o, args) => Button_Pressed(o, args, _zR1);
 
             //Setup Currents
-            if (SwitchConfig.GuiColumns[0])             { IconToggle.Click();           }
-            if (SwitchConfig.GuiColumns[1])             { TitleToggle.Click();          }
-            if (SwitchConfig.GuiColumns[2])             { DeveloperToggle.Click();      }
-            if (SwitchConfig.GuiColumns[3])             { VersionToggle.Click();        }
-            if (SwitchConfig.GuiColumns[4])             { TimePlayedToggle.Click();     }
-            if (SwitchConfig.GuiColumns[5])             { LastPlayedToggle.Click();     }
-            if (SwitchConfig.GuiColumns[6])             { FileExtToggle.Click();        }
-            if (SwitchConfig.GuiColumns[7])             { FileSizeToggle.Click();       }
-            if (SwitchConfig.GuiColumns[8])             { PathToggle.Click();           }
-            if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click();        }
-            if (SwitchConfig.LoggingEnableError)        { ErrorLogToggle.Click();       }
-            if (SwitchConfig.LoggingEnableWarn)         { WarningLogToggle.Click();     }
-            if (SwitchConfig.LoggingEnableInfo)         { InfoLogToggle.Click();        }
-            if (SwitchConfig.LoggingEnableStub)         { StubLogToggle.Click();        }
-            if (SwitchConfig.LoggingEnableDebug)        { DebugLogToggle.Click();       }
-            if (SwitchConfig.EnableFileLog)             { FileLogToggle.Click();        }
-            if (SwitchConfig.DockedMode)                { DockedModeToggle.Click();     }
-            if (SwitchConfig.EnableDiscordIntegration)  { DiscordToggle.Click();        }
-            if (SwitchConfig.EnableVsync)               { VSyncToggle.Click();          }
-            if (SwitchConfig.EnableMulticoreScheduling) { MultiSchedToggle.Click();     }
-            if (SwitchConfig.EnableFsIntegrityChecks)   { FSICToggle.Click();           }
-            if (SwitchConfig.EnableAggressiveCpuOpts)   { AggrToggle.Click();           }
-            if (SwitchConfig.IgnoreMissingServices)     { IgnoreToggle.Click();         }
-            if (SwitchConfig.EnableKeyboard)            { DirectKeyboardAccess.Click(); }
-            if (SwitchConfig.EnableCustomTheme)         { CustThemeToggle.Click();      }
+            if (SwitchConfig.EnableFileLog)             { _fileLogToggle.Click();        }
+            if (SwitchConfig.LoggingEnableError)        { _errorLogToggle.Click();       }
+            if (SwitchConfig.LoggingEnableWarn)         { _warningLogToggle.Click();     }
+            if (SwitchConfig.LoggingEnableInfo)         { _infoLogToggle.Click();        }
+            if (SwitchConfig.LoggingEnableStub)         { _stubLogToggle.Click();        }
+            if (SwitchConfig.LoggingEnableDebug)        { _debugLogToggle.Click();       }
+            if (SwitchConfig.LoggingEnableGuest)        { _guestLogToggle.Click();       }
+            if (SwitchConfig.LoggingEnableFsAccessLog)  { _fsAccessLogToggle.Click();    }
+            if (SwitchConfig.DockedMode)                { _dockedModeToggle.Click();     }
+            if (SwitchConfig.EnableDiscordIntegration)  { _discordToggle.Click();        }
+            if (SwitchConfig.EnableVsync)               { _vSyncToggle.Click();          }
+            if (SwitchConfig.EnableMulticoreScheduling) { _multiSchedToggle.Click();     }
+            if (SwitchConfig.EnableFsIntegrityChecks)   { _fsicToggle.Click();           }
+            if (SwitchConfig.EnableAggressiveCpuOpts)   { _aggrToggle.Click();           }
+            if (SwitchConfig.IgnoreMissingServices)     { _ignoreToggle.Click();         }
+            if (SwitchConfig.EnableKeyboard)            { _directKeyboardAccess.Click(); }
+            if (SwitchConfig.EnableCustomTheme)         { _custThemeToggle.Click();      }
 
-            SystemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
-            Controller1Type     .SetActiveId(SwitchConfig.ControllerType.ToString());
+            _systemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
+            _controller1Type     .SetActiveId(SwitchConfig.ControllerType.ToString());
 
-            LStickUp1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.StickUp.ToString();
-            LStickDown1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickDown.ToString();
-            LStickLeft1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickLeft.ToString();
-            LStickRight1.Label  = SwitchConfig.KeyboardControls.LeftJoycon.StickRight.ToString();
-            LStickButton1.Label = SwitchConfig.KeyboardControls.LeftJoycon.StickButton.ToString();
-            DpadUp1.Label       = SwitchConfig.KeyboardControls.LeftJoycon.DPadUp.ToString();
-            DpadDown1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.DPadDown.ToString();
-            DpadLeft1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.DPadLeft.ToString();
-            DpadRight1.Label    = SwitchConfig.KeyboardControls.LeftJoycon.DPadRight.ToString();
-            Minus1.Label        = SwitchConfig.KeyboardControls.LeftJoycon.ButtonMinus.ToString();
-            L1.Label            = SwitchConfig.KeyboardControls.LeftJoycon.ButtonL.ToString();
-            ZL1.Label           = SwitchConfig.KeyboardControls.LeftJoycon.ButtonZl.ToString();
-            RStickUp1.Label     = SwitchConfig.KeyboardControls.RightJoycon.StickUp.ToString();
-            RStickDown1.Label   = SwitchConfig.KeyboardControls.RightJoycon.StickDown.ToString();
-            RStickLeft1.Label   = SwitchConfig.KeyboardControls.RightJoycon.StickLeft.ToString();
-            RStickRight1.Label  = SwitchConfig.KeyboardControls.RightJoycon.StickRight.ToString();
-            RStickButton1.Label = SwitchConfig.KeyboardControls.RightJoycon.StickButton.ToString();
-            A1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonA.ToString();
-            B1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonB.ToString();
-            X1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonX.ToString();
-            Y1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonY.ToString();
-            Plus1.Label         = SwitchConfig.KeyboardControls.RightJoycon.ButtonPlus.ToString();
-            R1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonR.ToString();
-            ZR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
+            _lStickUp1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.StickUp.ToString();
+            _lStickDown1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickDown.ToString();
+            _lStickLeft1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickLeft.ToString();
+            _lStickRight1.Label  = SwitchConfig.KeyboardControls.LeftJoycon.StickRight.ToString();
+            _lStickButton1.Label = SwitchConfig.KeyboardControls.LeftJoycon.StickButton.ToString();
+            _dpadUp1.Label       = SwitchConfig.KeyboardControls.LeftJoycon.DPadUp.ToString();
+            _dpadDown1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.DPadDown.ToString();
+            _dpadLeft1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.DPadLeft.ToString();
+            _dpadRight1.Label    = SwitchConfig.KeyboardControls.LeftJoycon.DPadRight.ToString();
+            _minus1.Label        = SwitchConfig.KeyboardControls.LeftJoycon.ButtonMinus.ToString();
+            _l1.Label            = SwitchConfig.KeyboardControls.LeftJoycon.ButtonL.ToString();
+            _zL1.Label           = SwitchConfig.KeyboardControls.LeftJoycon.ButtonZl.ToString();
+            _rStickUp1.Label     = SwitchConfig.KeyboardControls.RightJoycon.StickUp.ToString();
+            _rStickDown1.Label   = SwitchConfig.KeyboardControls.RightJoycon.StickDown.ToString();
+            _rStickLeft1.Label   = SwitchConfig.KeyboardControls.RightJoycon.StickLeft.ToString();
+            _rStickRight1.Label  = SwitchConfig.KeyboardControls.RightJoycon.StickRight.ToString();
+            _rStickButton1.Label = SwitchConfig.KeyboardControls.RightJoycon.StickButton.ToString();
+            _a1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonA.ToString();
+            _b1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonB.ToString();
+            _x1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonX.ToString();
+            _y1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonY.ToString();
+            _plus1.Label         = SwitchConfig.KeyboardControls.RightJoycon.ButtonPlus.ToString();
+            _r1.Label            = SwitchConfig.KeyboardControls.RightJoycon.ButtonR.ToString();
+            _zR1.Label           = SwitchConfig.KeyboardControls.RightJoycon.ButtonZr.ToString();
 
-            CustThemeDir.Buffer.Text            = SwitchConfig.CustomThemePath;
-            GraphicsShadersDumpPath.Buffer.Text = SwitchConfig.GraphicsShadersDumpPath;
-            FsLogSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
+            _custThemePath.Buffer.Text           = SwitchConfig.CustomThemePath;
+            _graphicsShadersDumpPath.Buffer.Text = SwitchConfig.GraphicsShadersDumpPath;
+            _fsLogSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
 
-            GameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
+            _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
             _gameDirsBoxStore  = new ListStore(typeof(string));
-            GameDirsBox.Model  = _gameDirsBoxStore;
+            _gameDirsBox.Model  = _gameDirsBoxStore;
             foreach (string gameDir in SwitchConfig.GameDirs)
             {
                 _gameDirsBoxStore.AppendValues(gameDir);
             }
 
-            if (CustThemeToggle.Active == false)
+            if (_custThemeToggle.Active == false)
             {
-                CustThemeDir.Sensitive      = false;
-                CustThemeDirLabel.Sensitive = false;
-                BrowseThemeDir.Sensitive    = false;
+                _custThemePath.Sensitive      = false;
+                _custThemePathLabel.Sensitive = false;
+                _browseThemePath.Sensitive    = false;
             }
 
-            LogPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
+            _logPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
 
             _listeningForKeypress = false;
         }
@@ -235,9 +218,9 @@ namespace Ryujinx.UI
 
         private void AddDir_Pressed(object obj, EventArgs args)
         {
-            if (Directory.Exists(AddGameDirBox.Buffer.Text)) { _gameDirsBoxStore.AppendValues(AddGameDirBox.Buffer.Text); }
+            if (Directory.Exists(_addGameDirBox.Buffer.Text)) { _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text); }
 
-            AddDir.SetStateFlags(0, true);
+            _addDir.SetStateFlags(0, true);
         }
 
         private void BrowseDir_Pressed(object obj, EventArgs args)
@@ -251,32 +234,32 @@ namespace Ryujinx.UI
 
             fc.Destroy();
 
-            BrowseDir.SetStateFlags(0, true);
+            _browseDir.SetStateFlags(0, true);
         }
 
         private void RemoveDir_Pressed(object obj, EventArgs args)
         {
-            TreeSelection selection = GameDirsBox.Selection;
+            TreeSelection selection = _gameDirsBox.Selection;
 
             selection.GetSelected(out TreeIter treeiter);
             _gameDirsBoxStore.Remove(ref treeiter);
 
-            RemoveDir.SetStateFlags(0, true);
+            _removeDir.SetStateFlags(0, true);
         }
 
         private void CustThemeToggle_Activated(object obj, EventArgs args)
         {
-            if (CustThemeToggle.Active == false)
+            if (_custThemeToggle.Active == false)
             {
-                CustThemeDir.Sensitive      = false;
-                CustThemeDirLabel.Sensitive = false;
-                BrowseThemeDir.Sensitive    = false;
+                _custThemePath.Sensitive      = false;
+                _custThemePathLabel.Sensitive = false;
+                _browseThemePath.Sensitive    = false;
             }
             else
             {
-                CustThemeDir.Sensitive      = true;
-                CustThemeDirLabel.Sensitive = true;
-                BrowseThemeDir.Sensitive    = true;
+                _custThemePath.Sensitive      = true;
+                _custThemePathLabel.Sensitive = true;
+                _browseThemePath.Sensitive    = true;
             }
         }
 
@@ -288,12 +271,12 @@ namespace Ryujinx.UI
 
             if (fc.Run() == (int)ResponseType.Accept)
             {
-                CustThemeDir.Buffer.Text = fc.Filename;
+                _custThemePath.Buffer.Text = fc.Filename;
             }
 
             fc.Destroy();
 
-            BrowseThemeDir.SetStateFlags(0, true);
+            _browseThemePath.SetStateFlags(0, true);
         }
 
         private void SaveToggle_Activated(object obj, EventArgs args)
@@ -310,98 +293,80 @@ namespace Ryujinx.UI
                 _gameDirsBoxStore.IterNext(ref iter);
             }
 
-            if (IconToggle.Active)            SwitchConfig.GuiColumns[0]             = true;
-            if (TitleToggle.Active)           SwitchConfig.GuiColumns[1]             = true;
-            if (DeveloperToggle.Active)       SwitchConfig.GuiColumns[2]             = true;
-            if (VersionToggle.Active)         SwitchConfig.GuiColumns[3]             = true;
-            if (TimePlayedToggle.Active)      SwitchConfig.GuiColumns[4]             = true;
-            if (LastPlayedToggle.Active)      SwitchConfig.GuiColumns[5]             = true;
-            if (FileExtToggle.Active)         SwitchConfig.GuiColumns[6]             = true;
-            if (FileSizeToggle.Active)        SwitchConfig.GuiColumns[7]             = true;
-            if (PathToggle.Active)            SwitchConfig.GuiColumns[8]             = true;
-            if (ErrorLogToggle.Active)        SwitchConfig.LoggingEnableError        = true;
-            if (WarningLogToggle.Active)      SwitchConfig.LoggingEnableWarn         = true;
-            if (InfoLogToggle.Active)         SwitchConfig.LoggingEnableInfo         = true;
-            if (StubLogToggle.Active)         SwitchConfig.LoggingEnableStub         = true;
-            if (DebugLogToggle.Active)        SwitchConfig.LoggingEnableDebug        = true;
-            if (GuestLogToggle.Active)        SwitchConfig.LoggingEnableGuest        = true;
-            if (FsAccessLogToggle.Active)     SwitchConfig.LoggingEnableFsAccessLog  = true;
-            if (FileLogToggle.Active)         SwitchConfig.EnableFileLog             = true;
-            if (DockedModeToggle.Active)      SwitchConfig.DockedMode                = true;
-            if (DiscordToggle.Active)         SwitchConfig.EnableDiscordIntegration  = true;
-            if (VSyncToggle.Active)           SwitchConfig.EnableVsync               = true;
-            if (MultiSchedToggle.Active)      SwitchConfig.EnableMulticoreScheduling = true;
-            if (FSICToggle.Active)            SwitchConfig.EnableFsIntegrityChecks   = true;
-            if (AggrToggle.Active)            SwitchConfig.EnableAggressiveCpuOpts   = true;
-            if (IgnoreToggle.Active)          SwitchConfig.IgnoreMissingServices     = true;
-            if (DirectKeyboardAccess.Active)  SwitchConfig.EnableKeyboard            = true;
-            if (CustThemeToggle.Active)       SwitchConfig.EnableCustomTheme         = true;
+            if (_errorLogToggle.Active)        SwitchConfig.LoggingEnableError        = true;
+            if (_warningLogToggle.Active)      SwitchConfig.LoggingEnableWarn         = true;
+            if (_infoLogToggle.Active)         SwitchConfig.LoggingEnableInfo         = true;
+            if (_stubLogToggle.Active)         SwitchConfig.LoggingEnableStub         = true;
+            if (_debugLogToggle.Active)        SwitchConfig.LoggingEnableDebug        = true;
+            if (_guestLogToggle.Active)        SwitchConfig.LoggingEnableGuest        = true;
+            if (_fsAccessLogToggle.Active)     SwitchConfig.LoggingEnableFsAccessLog  = true;
+            if (_fileLogToggle.Active)         SwitchConfig.EnableFileLog             = true;
+            if (_dockedModeToggle.Active)      SwitchConfig.DockedMode                = true;
+            if (_discordToggle.Active)         SwitchConfig.EnableDiscordIntegration  = true;
+            if (_vSyncToggle.Active)           SwitchConfig.EnableVsync               = true;
+            if (_multiSchedToggle.Active)      SwitchConfig.EnableMulticoreScheduling = true;
+            if (_fsicToggle.Active)            SwitchConfig.EnableFsIntegrityChecks   = true;
+            if (_aggrToggle.Active)            SwitchConfig.EnableAggressiveCpuOpts   = true;
+            if (_ignoreToggle.Active)          SwitchConfig.IgnoreMissingServices     = true;
+            if (_directKeyboardAccess.Active)  SwitchConfig.EnableKeyboard            = true;
+            if (_custThemeToggle.Active)       SwitchConfig.EnableCustomTheme         = true;
 
-            if (!IconToggle.Active)           SwitchConfig.GuiColumns[0]             = false;
-            if (!TitleToggle.Active)          SwitchConfig.GuiColumns[1]             = false;
-            if (!DeveloperToggle.Active)      SwitchConfig.GuiColumns[2]             = false;
-            if (!VersionToggle.Active)        SwitchConfig.GuiColumns[3]             = false;
-            if (!TimePlayedToggle.Active)     SwitchConfig.GuiColumns[4]             = false;
-            if (!LastPlayedToggle.Active)     SwitchConfig.GuiColumns[5]             = false;
-            if (!FileExtToggle.Active)        SwitchConfig.GuiColumns[6]             = false;
-            if (!FileSizeToggle.Active)       SwitchConfig.GuiColumns[7]             = false;
-            if (!PathToggle.Active)           SwitchConfig.GuiColumns[8]             = false;
-            if (!ErrorLogToggle.Active)       SwitchConfig.LoggingEnableError        = false;
-            if (!WarningLogToggle.Active)     SwitchConfig.LoggingEnableWarn         = false;
-            if (!InfoLogToggle.Active)        SwitchConfig.LoggingEnableInfo         = false;
-            if (!StubLogToggle.Active )       SwitchConfig.LoggingEnableStub         = false;
-            if (!DebugLogToggle.Active)       SwitchConfig.LoggingEnableDebug        = false;
-            if (!GuestLogToggle.Active)       SwitchConfig.LoggingEnableGuest        = false;
-            if (!FsAccessLogToggle.Active)    SwitchConfig.LoggingEnableFsAccessLog  = false;
-            if (!FileLogToggle.Active)        SwitchConfig.EnableFileLog             = false;
-            if (!DockedModeToggle.Active)     SwitchConfig.DockedMode                = false;
-            if (!DiscordToggle.Active)        SwitchConfig.EnableDiscordIntegration  = false;
-            if (!VSyncToggle.Active)          SwitchConfig.EnableVsync               = false;
-            if (!MultiSchedToggle.Active)     SwitchConfig.EnableMulticoreScheduling = false;
-            if (!FSICToggle.Active)           SwitchConfig.EnableFsIntegrityChecks   = false;
-            if (!AggrToggle.Active)           SwitchConfig.EnableAggressiveCpuOpts   = false;
-            if (!IgnoreToggle.Active)         SwitchConfig.IgnoreMissingServices     = false;
-            if (!DirectKeyboardAccess.Active) SwitchConfig.EnableKeyboard            = false;
-            if (!CustThemeToggle.Active)      SwitchConfig.EnableCustomTheme         = false;
+            if (!_errorLogToggle.Active)       SwitchConfig.LoggingEnableError        = false;
+            if (!_warningLogToggle.Active)     SwitchConfig.LoggingEnableWarn         = false;
+            if (!_infoLogToggle.Active)        SwitchConfig.LoggingEnableInfo         = false;
+            if (!_stubLogToggle.Active )       SwitchConfig.LoggingEnableStub         = false;
+            if (!_debugLogToggle.Active)       SwitchConfig.LoggingEnableDebug        = false;
+            if (!_guestLogToggle.Active)       SwitchConfig.LoggingEnableGuest        = false;
+            if (!_fsAccessLogToggle.Active)    SwitchConfig.LoggingEnableFsAccessLog  = false;
+            if (!_fileLogToggle.Active)        SwitchConfig.EnableFileLog             = false;
+            if (!_dockedModeToggle.Active)     SwitchConfig.DockedMode                = false;
+            if (!_discordToggle.Active)        SwitchConfig.EnableDiscordIntegration  = false;
+            if (!_vSyncToggle.Active)          SwitchConfig.EnableVsync               = false;
+            if (!_multiSchedToggle.Active)     SwitchConfig.EnableMulticoreScheduling = false;
+            if (!_fsicToggle.Active)           SwitchConfig.EnableFsIntegrityChecks   = false;
+            if (!_aggrToggle.Active)           SwitchConfig.EnableAggressiveCpuOpts   = false;
+            if (!_ignoreToggle.Active)         SwitchConfig.IgnoreMissingServices     = false;
+            if (!_directKeyboardAccess.Active) SwitchConfig.EnableKeyboard            = false;
+            if (!_custThemeToggle.Active)      SwitchConfig.EnableCustomTheme         = false;
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
-                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickUp1.Label),
-                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickDown1.Label),
-                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickLeft1.Label),
-                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickRight1.Label),
-                StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), LStickButton1.Label),
-                DPadUp      = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadUp1.Label),
-                DPadDown    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadDown1.Label),
-                DPadLeft    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadLeft1.Label),
-                DPadRight   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), DpadRight1.Label),
-                ButtonMinus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Minus1.Label),
-                ButtonL     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), L1.Label),
-                ButtonZl    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZL1.Label),
+                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickUp1.Label),
+                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickDown1.Label),
+                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickLeft1.Label),
+                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickRight1.Label),
+                StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickButton1.Label),
+                DPadUp      = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadUp1.Label),
+                DPadDown    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadDown1.Label),
+                DPadLeft    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadLeft1.Label),
+                DPadRight   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadRight1.Label),
+                ButtonMinus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _minus1.Label),
+                ButtonL     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _l1.Label),
+                ButtonZl    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _zL1.Label),
             };
 
             SwitchConfig.KeyboardControls.RightJoycon = new NpadKeyboardRight()
             {
-                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickUp1.Label),
-                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickDown1.Label),
-                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickLeft1.Label),
-                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickRight1.Label),
-                StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), RStickButton1.Label),
-                ButtonA     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), A1.Label),
-                ButtonB     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), B1.Label),
-                ButtonX     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), X1.Label),
-                ButtonY     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Y1.Label),
-                ButtonPlus  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), Plus1.Label),
-                ButtonR     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), R1.Label),
-                ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), ZR1.Label),
+                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickUp1.Label),
+                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickDown1.Label),
+                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickLeft1.Label),
+                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickRight1.Label),
+                StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickButton1.Label),
+                ButtonA     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _a1.Label),
+                ButtonB     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _b1.Label),
+                ButtonX     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _x1.Label),
+                ButtonY     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _y1.Label),
+                ButtonPlus  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _plus1.Label),
+                ButtonR     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _r1.Label),
+                ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _zR1.Label),
             };
 
-            SwitchConfig.SystemLanguage          = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), SystemLanguageSelect.ActiveId);
-            SwitchConfig.ControllerType          = (ControllerStatus)Enum.Parse(typeof(ControllerStatus), Controller1Type.ActiveId);
-            SwitchConfig.CustomThemePath         = CustThemeDir.Buffer.Text;
-            SwitchConfig.GraphicsShadersDumpPath = GraphicsShadersDumpPath.Buffer.Text;
+            SwitchConfig.SystemLanguage          = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), _systemLanguageSelect.ActiveId);
+            SwitchConfig.ControllerType          = (ControllerStatus)Enum.Parse(typeof(ControllerStatus), _controller1Type.ActiveId);
+            SwitchConfig.CustomThemePath         = _custThemePath.Buffer.Text;
+            SwitchConfig.GraphicsShadersDumpPath = _graphicsShadersDumpPath.Buffer.Text;
             SwitchConfig.GameDirs                = gameDirs;
-            SwitchConfig.FsGlobalAccessLogMode   = (int)FsLogSpinAdjustment.Value;
+            SwitchConfig.FsGlobalAccessLogMode   = (int)_fsLogSpinAdjustment.Value;
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.Configure(Device, SwitchConfig);

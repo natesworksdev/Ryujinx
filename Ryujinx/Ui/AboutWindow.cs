@@ -10,29 +10,29 @@ namespace Ryujinx.UI
     public class AboutWindow : Window
     {
 #pragma warning disable 649
-        [GUI] Window AboutWin;
-        [GUI] Label  VersionText;
-        [GUI] Image  RyujinxLogo;
-        [GUI] Image  PatreonLogo;
-        [GUI] Image  GitHubLogo;
-        [GUI] Image  DiscordLogo;
-        [GUI] Image  TwitterLogo;
+        [GUI] Window _aboutWin;
+        [GUI] Label  _versionText;
+        [GUI] Image  _ryujinxLogo;
+        [GUI] Image  _patreonLogo;
+        [GUI] Image  _gitHubLogo;
+        [GUI] Image  _discordLogo;
+        [GUI] Image  _twitterLogo;
 #pragma warning restore 649
 
         public AboutWindow() : this(new Builder("Ryujinx.Ui.AboutWindow.glade")) { }
 
-        private AboutWindow(Builder builder) : base(builder.GetObject("AboutWin").Handle)
+        private AboutWindow(Builder builder) : base(builder.GetObject("_aboutWin").Handle)
         {
             builder.Autoconnect(this);
 
-            AboutWin.Icon      = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
-            RyujinxLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png", 100, 100);
-            PatreonLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.PatreonLogo.png", 30 , 30 );
-            GitHubLogo.Pixbuf  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.GitHubLogo.png" , 30 , 30 );
-            DiscordLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.DiscordLogo.png", 30 , 30 );
-            TwitterLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.TwitterLogo.png", 30 , 30 );
+            _aboutWin.Icon      = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
+            _ryujinxLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png", 100, 100);
+            _patreonLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.PatreonLogo.png", 30 , 30 );
+            _gitHubLogo.Pixbuf  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.GitHubLogo.png" , 30 , 30 );
+            _discordLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.DiscordLogo.png", 30 , 30 );
+            _twitterLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.TwitterLogo.png", 30 , 30 );
 
-            VersionText.Text = "Version x.x.x (Commit Number)";
+            _versionText.Text = "Version x.x.x (Commit Number)";
         }
 
         public void OpenUrl(string url)
@@ -79,7 +79,7 @@ namespace Ryujinx.UI
 
         private void ContributersButton_Pressed(object obj, ButtonPressEventArgs args)
         {
-            OpenUrl("https://github.com/Ryujinx/Ryujinx/graphs/contributors");
+            OpenUrl("https://github.com/Ryujinx/Ryujinx/graphs/contributors?type=a");
         }
 
         private void CloseToggle_Activated(object obj, EventArgs args)

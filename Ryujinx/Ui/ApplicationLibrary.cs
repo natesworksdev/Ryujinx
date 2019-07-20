@@ -10,12 +10,12 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 
-namespace Ryujinx.HLE
+namespace Ryujinx.UI
 {
     public class ApplicationLibrary
     {
         private static Keyset KeySet;
-        private static HOS.SystemState.TitleLanguage DesiredTitleLanguage;
+        private static HLE.HOS.SystemState.TitleLanguage DesiredTitleLanguage;
 
         private const double SecondsPerMinute = 60.0;
         private const double SecondsPerHour = SecondsPerMinute * 60;
@@ -43,17 +43,17 @@ namespace Ryujinx.HLE
             public string Path;
         }
 
-        public static void Init(List<string> AppDirs, Keyset keySet, HOS.SystemState.TitleLanguage desiredTitleLanguage)
+        public static void Init(List<string> AppDirs, Keyset keySet, HLE.HOS.SystemState.TitleLanguage desiredTitleLanguage)
         {
             KeySet               = keySet;
             DesiredTitleLanguage = desiredTitleLanguage;
 
             // Loads the default application Icons
-            RyujinxNspIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNSPIcon.png");
-            RyujinxXciIcon = GetResourceBytes("Ryujinx.HLE.ryujinxXCIIcon.png");
-            RyujinxNcaIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNCAIcon.png");
-            RyujinxNroIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNROIcon.png");
-            RyujinxNsoIcon = GetResourceBytes("Ryujinx.HLE.ryujinxNSOIcon.png");
+            RyujinxNspIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSPIcon.png");
+            RyujinxXciIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxXCIIcon.png");
+            RyujinxNcaIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNCAIcon.png");
+            RyujinxNroIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNROIcon.png");
+            RyujinxNsoIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSOIcon.png");
 
             // Builds the applications list with paths to found applications
             List<string> applications = new List<string>();

@@ -20,6 +20,11 @@
 
   <ItemGroup>
     <EmbeddedResource Include="Ui\AboutWindow.glade" />
+    <EmbeddedResource Include="Ui\assets\ryujinxNCAIcon.png" />
+    <EmbeddedResource Include="Ui\assets\ryujinxNROIcon.png" />
+    <EmbeddedResource Include="Ui\assets\ryujinxNSOIcon.png" />
+    <EmbeddedResource Include="Ui\assets\ryujinxNSPIcon.png" />
+    <EmbeddedResource Include="Ui\assets\ryujinxXCIIcon.png" />
     <EmbeddedResource Include="Ui\assets\DiscordLogo.png" />
     <EmbeddedResource Include="Ui\assets\GitHubLogo.png" />
     <EmbeddedResource Include="Ui\assets\JoyCon.png" />

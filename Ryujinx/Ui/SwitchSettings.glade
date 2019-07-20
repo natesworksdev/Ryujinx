@@ -2,12 +2,12 @@
 <!-- Generated with glade 3.22.1 -->
 <interface>
   <requires lib="gtk+" version="3.20"/>
-  <object class="GtkAdjustment" id="FsLogSpinAdjustment">
+  <object class="GtkAdjustment" id="_fsLogSpinAdjustment">
     <property name="upper">3</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
-  <object class="GtkDialog" id="SettingsWin">
+  <object class="GtkDialog" id="_settingsWin">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Ryujinx - Settings</property>
     <property name="resizable">False</property>
@@ -103,301 +103,80 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkBox">
+                      <object class="GtkBox" id="box1">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <child>
-                          <object class="GtkBox" id="box1">
-                            <property name="visible">True</property>
-                            <property name="can_focus">False</property>
-                            <property name="orientation">vertical</property>
-                            <child>
-                              <object class="GtkBox">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <child>
-                                  <object class="GtkLabel">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="tooltip_text" translatable="yes">Change System Language</property>
-                                    <property name="halign">end</property>
-                                    <property name="label" translatable="yes">System Language:</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkComboBoxText" id="SystemLanguageSelect">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="tooltip_text" translatable="yes">Change System Language</property>
-                                    <property name="margin_left">10</property>
-                                    <items>
-                                      <item id="AmericanEnglish" translatable="yes">American English</item>
-                                      <item id="BritishEnglish" translatable="yes">British English</item>
-                                      <item id="CanadianFrench" translatable="yes">Canadian French</item>
-                                      <item id="Chinese" translatable="yes">Chinese</item>
-                                      <item id="Dutch" translatable="yes">Dutch</item>
-                                      <item id="French" translatable="yes">French</item>
-                                      <item id="German" translatable="yes">German</item>
-                                      <item id="Italian" translatable="yes">Italian</item>
-                                      <item id="Japanese" translatable="yes">Japanese</item>
-                                      <item id="Korean" translatable="yes">Korean</item>
-                                      <item id="LatinAmericanSpanish" translatable="yes">Latin American Spanish</item>
-                                      <item id="Portuguese" translatable="yes">Portuguese</item>
-                                      <item id="Russian" translatable="yes">Russian</item>
-                                      <item id="SimplifiedChinese" translatable="yes">Simplified Chinese</item>
-                                      <item id="Spanish" translatable="yes">Spanish</item>
-                                      <item id="Taiwanese" translatable="yes">Taiwanese</item>
-                                      <item id="TraditionalChinese" translatable="yes">Traditional Chinese</item>
-                                    </items>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="position">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkCheckButton" id="DiscordToggle">
-                                <property name="label" translatable="yes">Enable Discord Integration</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">True</property>
-                                <property name="receives_default">False</property>
-                                <property name="tooltip_text" translatable="yes">Enables or disables Discord Rich Presense</property>
-                                <property name="halign">start</property>
-                                <property name="draw_indicator">True</property>
-                              </object>
-                              <packing>
-                                <property name="expand">False</property>
-                                <property name="fill">True</property>
-                                <property name="padding">5</property>
-                                <property name="position">1</property>
-                              </packing>
-                            </child>
-                          </object>
-                          <packing>
-                            <property name="expand">True</property>
-                            <property name="fill">True</property>
-                            <property name="position">0</property>
-                          </packing>
-                        </child>
+                        <property name="orientation">vertical</property>
                         <child>
                           <object class="GtkBox">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkCheckButton" id="IconToggle">
-                                    <property name="label" translatable="yes">Enable Icon Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Icon Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="DeveloperToggle">
-                                    <property name="label" translatable="yes">Enable Developer Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Developer Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="TimePlayedToggle">
-                                    <property name="label" translatable="yes">Enable Time Played Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Time Played Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
+                                <property name="tooltip_text" translatable="yes">Change System Language</property>
+                                <property name="halign">end</property>
+                                <property name="label" translatable="yes">System Language:</property>
                               </object>
                               <packing>
-                                <property name="expand">True</property>
+                                <property name="expand">False</property>
                                 <property name="fill">True</property>
                                 <property name="position">0</property>
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkBox">
+                              <object class="GtkComboBoxText" id="_systemLanguageSelect">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkCheckButton" id="TitleToggle">
-                                    <property name="label" translatable="yes">Enable Title Name/ID Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Title Name/ID Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="VersionToggle">
-                                    <property name="label" translatable="yes">Enable Version Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Version Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="LastPlayedToggle">
-                                    <property name="label" translatable="yes">Enable Last Played Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Last Played Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
+                                <property name="tooltip_text" translatable="yes">Change System Language</property>
+                                <items>
+                                  <item id="AmericanEnglish" translatable="yes">American English</item>
+                                  <item id="BritishEnglish" translatable="yes">British English</item>
+                                  <item id="CanadianFrench" translatable="yes">Canadian French</item>
+                                  <item id="Chinese" translatable="yes">Chinese</item>
+                                  <item id="Dutch" translatable="yes">Dutch</item>
+                                  <item id="French" translatable="yes">French</item>
+                                  <item id="German" translatable="yes">German</item>
+                                  <item id="Italian" translatable="yes">Italian</item>
+                                  <item id="Japanese" translatable="yes">Japanese</item>
+                                  <item id="Korean" translatable="yes">Korean</item>
+                                  <item id="LatinAmericanSpanish" translatable="yes">Latin American Spanish</item>
+                                  <item id="Portuguese" translatable="yes">Portuguese</item>
+                                  <item id="Russian" translatable="yes">Russian</item>
+                                  <item id="SimplifiedChinese" translatable="yes">Simplified Chinese</item>
+                                  <item id="Spanish" translatable="yes">Spanish</item>
+                                  <item id="Taiwanese" translatable="yes">Taiwanese</item>
+                                  <item id="TraditionalChinese" translatable="yes">Traditional Chinese</item>
+                                </items>
                               </object>
                               <packing>
-                                <property name="expand">True</property>
+                                <property name="expand">False</property>
                                 <property name="fill">True</property>
                                 <property name="position">1</property>
                               </packing>
                             </child>
-                            <child>
-                              <object class="GtkBox">
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkCheckButton" id="FileExtToggle">
-                                    <property name="label" translatable="yes">Enable File Ext Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable file extension column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="FileSizeToggle">
-                                    <property name="label" translatable="yes">Enable File Size Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable File Size Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkCheckButton" id="PathToggle">
-                                    <property name="label" translatable="yes">Enable Path Column</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable Path Column in the game list</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">2</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="expand">True</property>
-                                <property name="fill">True</property>
-                                <property name="position">2</property>
-                              </packing>
-                            </child>
                           </object>
                           <packing>
-                            <property name="expand">True</property>
+                            <property name="expand">False</property>
                             <property name="fill">True</property>
+                            <property name="position">0</property>
+                          </packing>
+                        </child>
+                        <child>
+                          <object class="GtkCheckButton" id="_discordToggle">
+                            <property name="label" translatable="yes">Enable Discord Integration</property>
+                            <property name="visible">True</property>
+                            <property name="can_focus">True</property>
+                            <property name="receives_default">False</property>
+                            <property name="tooltip_text" translatable="yes">Enables or disables Discord Rich Presense</property>
+                            <property name="halign">start</property>
+                            <property name="draw_indicator">True</property>
+                          </object>
+                          <packing>
+                            <property name="expand">False</property>
+                            <property name="fill">True</property>
+                            <property name="padding">5</property>
                             <property name="position">1</property>
                           </packing>
                         </child>
@@ -478,7 +257,7 @@
                             <property name="margin_bottom">10</property>
                             <property name="shadow_type">in</property>
                             <child>
-                              <object class="GtkTreeView" id="GameDirsBox">
+                              <object class="GtkTreeView" id="_gameDirsBox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="headers_visible">False</property>
@@ -503,7 +282,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkEntry" id="AddGameDirBox">
+                              <object class="GtkEntry" id="_addGameDirBox">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="tooltip_text" translatable="yes">Enter a game directroy to add to the list</property>
@@ -515,7 +294,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="AddDir">
+                              <object class="GtkToggleButton" id="_addDir">
                                 <property name="label" translatable="yes">Add</property>
                                 <property name="width_request">80</property>
                                 <property name="visible">True</property>
@@ -532,7 +311,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="BrowseDir">
+                              <object class="GtkToggleButton" id="_browseDir">
                                 <property name="label" translatable="yes">Browse...</property>
                                 <property name="width_request">80</property>
                                 <property name="visible">True</property>
@@ -549,7 +328,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="RemoveDir">
+                              <object class="GtkToggleButton" id="_removeDir">
                                 <property name="label" translatable="yes">Remove</property>
                                 <property name="width_request">80</property>
                                 <property name="visible">True</property>
@@ -633,7 +412,7 @@
                         <property name="margin_right">10</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkCheckButton" id="CustThemeToggle">
+                          <object class="GtkCheckButton" id="_custThemeToggle">
                             <property name="label" translatable="yes">Use Custom Theme</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -655,7 +434,7 @@
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <child>
-                              <object class="GtkLabel" id="CustThemeDirLabel">
+                              <object class="GtkLabel" id="_custThemePathLabel">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Path to custom GUI theme</property>
@@ -669,7 +448,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="CustThemeDir">
+                              <object class="GtkEntry" id="_custThemePath">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="tooltip_text" translatable="yes">Path to custom GUI theme</property>
@@ -682,7 +461,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkToggleButton" id="BrowseThemeDir">
+                              <object class="GtkToggleButton" id="_browseThemePath">
                                 <property name="label" translatable="yes">Browse...</property>
                                 <property name="width_request">80</property>
                                 <property name="visible">True</property>
@@ -745,7 +524,7 @@
                     <property name="margin_top">5</property>
                     <property name="margin_bottom">10</property>
                     <child>
-                      <object class="GtkCheckButton" id="DockedModeToggle">
+                      <object class="GtkCheckButton" id="_dockedModeToggle">
                         <property name="label" translatable="yes">Enable Docked Mode</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -760,7 +539,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkCheckButton" id="DirectKeyboardAccess">
+                      <object class="GtkCheckButton" id="_directKeyboardAccess">
                         <property name="label" translatable="yes">Direct Keyboard Access</property>
                         <property name="visible">True</property>
                         <property name="can_focus">True</property>
@@ -821,7 +600,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkComboBoxText" id="Controller1Type">
+                                  <object class="GtkComboBoxText" id="_controller1Type">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
                                     <property name="margin_left">5</property>
@@ -1119,7 +898,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="LStickUp1">
+                                  <object class="GtkToggleButton" id="_lStickUp1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1131,7 +910,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="LStickDown1">
+                                  <object class="GtkToggleButton" id="_lStickDown1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1143,7 +922,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="LStickLeft1">
+                                  <object class="GtkToggleButton" id="_lStickLeft1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1155,7 +934,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="LStickRight1">
+                                  <object class="GtkToggleButton" id="_lStickRight1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1167,7 +946,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="LStickButton1">
+                                  <object class="GtkToggleButton" id="_lStickButton1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1179,7 +958,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="DpadUp1">
+                                  <object class="GtkToggleButton" id="_dpadUp1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1191,7 +970,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="DpadDown1">
+                                  <object class="GtkToggleButton" id="_dpadDown1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1203,7 +982,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="DpadLeft1">
+                                  <object class="GtkToggleButton" id="_dpadLeft1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1215,7 +994,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="DpadRight1">
+                                  <object class="GtkToggleButton" id="_dpadRight1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1227,7 +1006,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="Minus1">
+                                  <object class="GtkToggleButton" id="_minus1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1239,7 +1018,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="L1">
+                                  <object class="GtkToggleButton" id="_l1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1251,7 +1030,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="ZL1">
+                                  <object class="GtkToggleButton" id="_zL1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1263,7 +1042,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="RStickUp1">
+                                  <object class="GtkToggleButton" id="_rStickUp1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1275,7 +1054,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="RStickDown1">
+                                  <object class="GtkToggleButton" id="_rStickDown1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1287,7 +1066,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="RStickLeft1">
+                                  <object class="GtkToggleButton" id="_rStickLeft1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1299,7 +1078,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="RStickRight1">
+                                  <object class="GtkToggleButton" id="_rStickRight1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1311,7 +1090,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="RStickButton1">
+                                  <object class="GtkToggleButton" id="_rStickButton1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1323,7 +1102,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="A1">
+                                  <object class="GtkToggleButton" id="_a1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1335,7 +1114,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="B1">
+                                  <object class="GtkToggleButton" id="_b1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1347,7 +1126,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="X1">
+                                  <object class="GtkToggleButton" id="_x1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1359,7 +1138,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="Y1">
+                                  <object class="GtkToggleButton" id="_y1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1371,7 +1150,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="Plus1">
+                                  <object class="GtkToggleButton" id="_plus1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1383,7 +1162,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="R1">
+                                  <object class="GtkToggleButton" id="_r1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1395,7 +1174,7 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkToggleButton" id="ZR1">
+                                  <object class="GtkToggleButton" id="_zR1">
                                     <property name="label" translatable="yes"> </property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
@@ -1422,7 +1201,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkImage" id="ControllerImage">
+                          <object class="GtkImage" id="_controllerImage">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
                             <property name="margin_left">5</property>
@@ -1658,7 +1437,7 @@
                         <property name="margin_right">10</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkCheckButton" id="VSyncToggle">
+                          <object class="GtkCheckButton" id="_vSyncToggle">
                             <property name="label" translatable="yes">Enable VSync</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1676,7 +1455,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="MultiSchedToggle">
+                          <object class="GtkCheckButton" id="_multiSchedToggle">
                             <property name="label" translatable="yes">Enable Multicore Scheduling</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1694,7 +1473,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="AggrToggle">
+                          <object class="GtkCheckButton" id="_aggrToggle">
                             <property name="label" translatable="yes">Enable Aggressive CPU Optimizations</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1712,7 +1491,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="FSICToggle">
+                          <object class="GtkCheckButton" id="_fsicToggle">
                             <property name="label" translatable="yes">Enable FS Integrity Checks</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1748,7 +1527,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="GraphicsShadersDumpPath">
+                              <object class="GtkEntry" id="_graphicsShadersDumpPath">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="tooltip_text" translatable="yes">Graphics Shaders Dump Path</property>
@@ -1830,7 +1609,7 @@
                         <property name="margin_right">10</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkCheckButton" id="FileLogToggle">
+                          <object class="GtkCheckButton" id="_fileLogToggle">
                             <property name="label" translatable="yes">Enable Logging to File</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1868,7 +1647,7 @@
                               </packing>
                             </child>
                             <child>
-                              <object class="GtkEntry" id="LogPath">
+                              <object class="GtkEntry" id="_logPath">
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="tooltip_text" translatable="yes">Location of the log file</property>
@@ -1891,7 +1670,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="DebugLogToggle">
+                          <object class="GtkCheckButton" id="_debugLogToggle">
                             <property name="label" translatable="yes">Enable Debug Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1909,7 +1688,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="StubLogToggle">
+                          <object class="GtkCheckButton" id="_stubLogToggle">
                             <property name="label" translatable="yes">Enable Stub Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1927,7 +1706,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="InfoLogToggle">
+                          <object class="GtkCheckButton" id="_infoLogToggle">
                             <property name="label" translatable="yes">Enable Info Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1945,7 +1724,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="WarningLogToggle">
+                          <object class="GtkCheckButton" id="_warningLogToggle">
                             <property name="label" translatable="yes">Enable Warning Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1963,7 +1742,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="ErrorLogToggle">
+                          <object class="GtkCheckButton" id="_errorLogToggle">
                             <property name="label" translatable="yes">Enable Error Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1981,7 +1760,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="GuestLogToggle">
+                          <object class="GtkCheckButton" id="_guestLogToggle">
                             <property name="label" translatable="yes">Enable Guest Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -1999,7 +1778,7 @@
                           </packing>
                         </child>
                         <child>
-                          <object class="GtkCheckButton" id="FsAccessLogToggle">
+                          <object class="GtkCheckButton" id="_fsAccessLogToggle">
                             <property name="label" translatable="yes">Enable Fs Access Logs</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
@@ -2039,7 +1818,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="tooltip_text" translatable="yes">Enables FS access log output to the console. Possible modes are 0-3</property>
-                                <property name="adjustment">FsLogSpinAdjustment</property>
+                                <property name="adjustment">_fsLogSpinAdjustment</property>
                               </object>
                               <packing>
                                 <property name="expand">True</property>
@@ -2141,7 +1920,7 @@
                         <property name="margin_right">10</property>
                         <property name="orientation">vertical</property>
                         <child>
-                          <object class="GtkCheckButton" id="IgnoreToggle">
+                          <object class="GtkCheckButton" id="_ignoreToggle">
                             <property name="label" translatable="yes">Ignore Missing Services</property>
                             <property name="visible">True</property>
                             <property name="can_focus">True</property>
