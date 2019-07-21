@@ -341,14 +341,14 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, src1, src2, X86Instruction.Cvtsd2ss);
         }
 
-        public void Cvtsi2sd(Operand dest, Operand src1, Operand src2)
+        public void Cvtsi2sd(Operand dest, Operand src1, Operand src2, OperandType type)
         {
-            WriteInstruction(dest, src1, src2, X86Instruction.Cvtsi2sd);
+            WriteInstruction(dest, src1, src2, X86Instruction.Cvtsi2sd, type);
         }
 
-        public void Cvtsi2ss(Operand dest, Operand src1, Operand src2)
+        public void Cvtsi2ss(Operand dest, Operand src1, Operand src2, OperandType type)
         {
-            WriteInstruction(dest, src1, src2, X86Instruction.Cvtsi2ss);
+            WriteInstruction(dest, src1, src2, X86Instruction.Cvtsi2ss, type);
         }
 
         public void Cvtss2sd(Operand dest, Operand src1, Operand src2)
@@ -759,9 +759,13 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, src1, src2, X86Instruction.Xorps);
         }
 
-        public void WriteInstruction(X86Instruction inst, Operand dest, Operand source)
+        public void WriteInstruction(
+            X86Instruction inst,
+            Operand dest,
+            Operand source,
+            OperandType type = OperandType.None)
         {
-            WriteInstruction(dest, null, source, inst);
+            WriteInstruction(dest, null, source, inst, type);
         }
 
         public void WriteInstruction(X86Instruction inst, Operand dest, Operand src1, Operand src2)
@@ -904,7 +908,12 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private void WriteInstruction(Operand dest, Operand src1, Operand src2, X86Instruction inst)
+        private void WriteInstruction(
+            Operand dest,
+            Operand src1,
+            Operand src2,
+            X86Instruction inst,
+            OperandType type = OperandType.None)
         {
             InstructionInfo info = _instTable[(int)inst];
 
@@ -916,7 +925,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     if ((byte)imm == imm && info.OpRMImm8 != BadOp)
                     {
-                        WriteOpCode(dest, src1, null, OperandType.None, info.Flags, info.OpRMImm8);
+                        WriteOpCode(dest, src1, null, type, info.Flags, info.OpRMImm8);
 
                         WriteByte((byte)imm);
                     }
@@ -927,11 +936,11 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else if (src2.Kind == OperandKind.Register && info.OpRMR != BadOp)
                 {
-                    WriteOpCode(dest, src1, src2, OperandType.None, info.Flags, info.OpRMR);
+                    WriteOpCode(dest, src1, src2, type, info.Flags, info.OpRMR);
                 }
                 else if (info.OpRRM != BadOp)
                 {
-                    WriteOpCode(dest, src1, src2, OperandType.None, info.Flags, info.OpRRM, rrm: true);
+                    WriteOpCode(dest, src1, src2, type, info.Flags, info.OpRRM, rrm: true);
                 }
                 else
                 {
@@ -940,11 +949,11 @@ namespace ARMeilleure.CodeGen.X86
             }
             else if (info.OpRRM != BadOp)
             {
-                WriteOpCode(dest, src1, src2, OperandType.None, info.Flags, info.OpRRM, rrm: true);
+                WriteOpCode(dest, src1, src2, type, info.Flags, info.OpRRM, rrm: true);
             }
             else if (info.OpRMR != BadOp)
             {
-                WriteOpCode(dest, src1, src2, OperandType.None, info.Flags, info.OpRMR);
+                WriteOpCode(dest, src1, src2, type, info.Flags, info.OpRMR);
             }
             else
             {

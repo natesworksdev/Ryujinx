@@ -41,17 +41,29 @@ namespace ARMeilleure.Instructions
 
         public static void Break(ulong address, int imm)
         {
+            Statistics.PauseTimer();
+
             GetContext().OnBreak(address, imm);
+
+            Statistics.ResumeTimer();
         }
 
         public static void SupervisorCall(ulong address, int imm)
         {
+            Statistics.PauseTimer();
+
             GetContext().OnSupervisorCall(address, imm);
+
+            Statistics.ResumeTimer();
         }
 
         public static void Undefined(ulong address, int opCode)
         {
+            Statistics.PauseTimer();
+
             GetContext().OnUndefined(address, opCode);
+
+            Statistics.ResumeTimer();
         }
 
 #region "System registers"
@@ -335,7 +347,11 @@ namespace ARMeilleure.Instructions
 
         public static void CheckSynchronization()
         {
+            Statistics.PauseTimer();
+
             GetContext().CheckInterrupt();
+
+            Statistics.ResumeTimer();
         }
 
         public static ExecutionContext GetContext()

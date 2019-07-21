@@ -26,6 +26,8 @@ namespace ARMeilleure.Translation
 
         public void Execute(ExecutionContext context, ulong address)
         {
+            Statistics.InitializeTimer();
+
             NativeInterface.RegisterThread(context, _memory);
 
             do
@@ -41,7 +43,13 @@ namespace ARMeilleure.Translation
         {
             TranslatedFunction func = GetOrTranslate(address, ExecutionMode.Aarch64);
 
-            return func.Execute(context);
+            Statistics.StartTimer();
+
+            ulong nextAddr = func.Execute(context);
+
+            Statistics.StopTimer(address);
+
+            return nextAddr;
         }
 
         private TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)

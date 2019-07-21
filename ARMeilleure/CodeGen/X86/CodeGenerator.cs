@@ -242,7 +242,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         Debug.Assert(dest.Type.IsInteger() && !source.Type.IsInteger());
 
-                        context.Assembler.WriteInstruction(info.Inst, dest, source);
+                        context.Assembler.WriteInstruction(info.Inst, dest, source, dest.Type);
 
                         break;
                     }
@@ -559,7 +559,7 @@ namespace ARMeilleure.CodeGen.X86
                 if (source.Type.IsInteger())
                 {
                     context.Assembler.Xorps   (dest, dest, dest);
-                    context.Assembler.Cvtsi2ss(dest, dest, source);
+                    context.Assembler.Cvtsi2ss(dest, dest, source, source.Type);
                 }
                 else /* if (source.Type == OperandType.FP64) */
                 {
@@ -575,7 +575,7 @@ namespace ARMeilleure.CodeGen.X86
                 if (source.Type.IsInteger())
                 {
                     context.Assembler.Xorps   (dest, dest, dest);
-                    context.Assembler.Cvtsi2sd(dest, dest, source);
+                    context.Assembler.Cvtsi2sd(dest, dest, source, source.Type);
                 }
                 else /* if (source.Type == OperandType.FP32) */
                 {

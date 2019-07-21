@@ -1831,8 +1831,7 @@ namespace ARMeilleure.Instructions
                 Operand res  = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
                 Operand res2 = context.AddIntrinsic(Intrinsic.X86Pxor, n, m);
 
-                Intrinsic shiftInst = op.Size == 1 ? Intrinsic.X86Psraw
-                                                     : Intrinsic.X86Psrad;
+                Intrinsic shiftInst = op.Size == 1 ? Intrinsic.X86Psraw : Intrinsic.X86Psrad;
 
                 res2 = context.AddIntrinsic(shiftInst, res2, Const(1));
 
@@ -1872,8 +1871,7 @@ namespace ARMeilleure.Instructions
                 Operand nPlusMask = context.AddIntrinsic(addInst, n, mask);
                 Operand mPlusMask = context.AddIntrinsic(addInst, m, mask);
 
-                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb
-                                                   : Intrinsic.X86Pavgw;
+                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb : Intrinsic.X86Pavgw;
 
                 Operand res = context.AddIntrinsic(avgInst, nPlusMask, mPlusMask);
 
@@ -2002,8 +2000,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw
-                                                    : Intrinsic.X86Pmulld;
+                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw : Intrinsic.X86Pmulld;
 
                 Operand res = context.AddIntrinsic(mullInst, n, m);
 
@@ -2051,8 +2048,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw
-                                                    : Intrinsic.X86Pmulld;
+                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw : Intrinsic.X86Pmulld;
 
                 Operand res = context.AddIntrinsic(mullInst, n, m);
 
@@ -2183,8 +2179,7 @@ namespace ARMeilleure.Instructions
                 Operand nMinusMask = context.AddIntrinsic(subInst, n, mask);
                 Operand mMinusMask = context.AddIntrinsic(subInst, m, mask);
 
-                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb
-                                                   : Intrinsic.X86Pavgw;
+                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb : Intrinsic.X86Pavgw;
 
                 Operand res = context.AddIntrinsic(avgInst, nMinusMask, mMinusMask);
 
@@ -2470,8 +2465,7 @@ namespace ARMeilleure.Instructions
                 Operand res  = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
                 Operand res2 = context.AddIntrinsic(Intrinsic.X86Pxor, n, m);
 
-                Intrinsic shiftInst = op.Size == 1 ? Intrinsic.X86Psrlw
-                                                     : Intrinsic.X86Psrld;
+                Intrinsic shiftInst = op.Size == 1 ? Intrinsic.X86Psrlw : Intrinsic.X86Psrld;
 
                 res2 = context.AddIntrinsic(shiftInst, res2, Const(1));
 
@@ -2504,8 +2498,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb
-                                                   : Intrinsic.X86Pavgw;
+                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb : Intrinsic.X86Pavgw;
 
                 Operand res = context.AddIntrinsic(avgInst, n, m);
 
@@ -2634,8 +2627,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw
-                                                    : Intrinsic.X86Pmulld;
+                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw : Intrinsic.X86Pmulld;
 
                 Operand res = context.AddIntrinsic(mullInst, n, m);
 
@@ -2683,8 +2675,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw
-                                                    : Intrinsic.X86Pmulld;
+                Intrinsic mullInst = op.Size == 0 ? Intrinsic.X86Pmullw : Intrinsic.X86Pmulld;
 
                 Operand res = context.AddIntrinsic(mullInst, n, m);
 
@@ -2758,8 +2749,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb
-                                                   : Intrinsic.X86Pavgw;
+                Intrinsic avgInst = op.Size == 0 ? Intrinsic.X86Pavgb : Intrinsic.X86Pavgw;
 
                 Operand res = context.AddIntrinsic(avgInst, n, m);
 
@@ -2961,8 +2951,7 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd
-                                                  : Intrinsic.X86Roundss;
+            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
 
             Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
 
@@ -2984,8 +2973,7 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd
-                                                  : Intrinsic.X86Roundps;
+            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
 
             Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
 
