@@ -1,6 +1,6 @@
-namespace ARMeilleure.CodeGen.X86
+namespace ARMeilleure.IntermediateRepresentation
 {
-    enum Scale
+    enum Multiplier
     {
         x1 = 0,
         x2 = 1,

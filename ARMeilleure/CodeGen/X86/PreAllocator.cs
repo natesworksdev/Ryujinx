@@ -239,14 +239,15 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type == OperandType.FP32)
             {
-                temp = nodes.AddAfter(temp, new Operation(Instruction.X86Pslld, res, res, Const(31)));
+                temp = nodes.AddAfter(temp, new IntrinsicOperation(Intrinsic.X86Pslld, res, res, Const(31)));
             }
             else /* if (dest.Type == OperandType.FP64) */
             {
-                temp = nodes.AddAfter(temp, new Operation(Instruction.X86Psllq, res, res, Const(63)));
+                temp = nodes.AddAfter(temp, new IntrinsicOperation(Intrinsic.X86Psllq, res, res, Const(63)));
             }
 
-            temp = nodes.AddAfter(temp, new Operation(Instruction.X86Xorps, res, res, source));
+            temp = nodes.AddAfter(temp, new IntrinsicOperation(Intrinsic.X86Xorps, res, res, source));
+
             temp = nodes.AddAfter(temp, new Operation(Instruction.Copy, dest, res));
 
             Delete(node, operation);
@@ -836,8 +837,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsIntrinsic(Instruction inst)
         {
-            return inst > Instruction.X86Intrinsic_Start &&
-                   inst < Instruction.X86Intrinsic_End;
+            return inst == Instruction.Extended;
         }
     }
 }

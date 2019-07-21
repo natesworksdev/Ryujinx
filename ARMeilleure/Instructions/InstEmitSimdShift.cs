@@ -37,7 +37,7 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Operand dLow = context.AddIntrinsic(Instruction.X86Movlhps, d, context.VectorZero());
+                Operand dLow = context.AddIntrinsic(Intrinsic.X86Movlhps, d, context.VectorZero());
 
                 Operand mask = null;
 
@@ -48,21 +48,21 @@ namespace ARMeilleure.Instructions
                     case 3: mask = X86GetAllElements(context,      roundConst); break;
                 }
 
-                Instruction addInst = X86PaddInstruction[op.Size + 1];
+                Intrinsic addInst = X86PaddInstruction[op.Size + 1];
 
                 Operand res = context.AddIntrinsic(addInst, n, mask);
 
-                Instruction srlInst = X86PsrlInstruction[op.Size + 1];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size + 1];
 
                 res = context.AddIntrinsic(srlInst, res, Const(shift));
 
                 Operand mask2 = X86GetAllElements(context, _masks_RshrnShrn[op.Size]);
 
-                res = context.AddIntrinsic(Instruction.X86Pshufb, res, mask2);
+                res = context.AddIntrinsic(Intrinsic.X86Pshufb, res, mask2);
 
-                Instruction movInst = op.RegisterSize == RegisterSize.Simd128
-                    ? Instruction.X86Movlhps
-                    : Instruction.X86Movhlps;
+                Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128
+                    ? Intrinsic.X86Movlhps
+                    : Intrinsic.X86Movhlps;
 
                 res = context.AddIntrinsic(movInst, dLow, res);
 
@@ -93,7 +93,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand n = GetVec(op.Rn);
 
-                Instruction sllInst = X86PsllInstruction[op.Size];
+                Intrinsic sllInst = X86PsllInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sllInst, n, Const(shift));
 
@@ -122,14 +122,14 @@ namespace ARMeilleure.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    n = context.AddIntrinsic(Instruction.X86Psrldq, n, Const(8));
+                    n = context.AddIntrinsic(Intrinsic.X86Psrldq, n, Const(8));
                 }
 
-                Instruction movsxInst = X86PmovsxInstruction[op.Size];
+                Intrinsic movsxInst = X86PmovsxInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(movsxInst, n);
 
-                Instruction sllInst = X86PsllInstruction[op.Size + 1];
+                Intrinsic sllInst = X86PsllInstruction[op.Size + 1];
 
                 res = context.AddIntrinsic(sllInst, res, Const(shift));
 
@@ -154,19 +154,19 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Operand dLow = context.AddIntrinsic(Instruction.X86Movlhps, d, context.VectorZero());
+                Operand dLow = context.AddIntrinsic(Intrinsic.X86Movlhps, d, context.VectorZero());
 
-                Instruction srlInst = X86PsrlInstruction[op.Size + 1];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size + 1];
 
                 Operand nShifted = context.AddIntrinsic(srlInst, n, Const(shift));
 
                 Operand mask = X86GetAllElements(context, _masks_RshrnShrn[op.Size]);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pshufb, nShifted, mask);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pshufb, nShifted, mask);
 
-                Instruction movInst = op.RegisterSize == RegisterSize.Simd128
-                    ? Instruction.X86Movlhps
-                    : Instruction.X86Movhlps;
+                Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128
+                    ? Intrinsic.X86Movlhps
+                    : Intrinsic.X86Movhlps;
 
                 res = context.AddIntrinsic(movInst, dLow, res);
 
@@ -327,19 +327,19 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Instruction sllInst = X86PsllInstruction[op.Size];
+                Intrinsic sllInst = X86PsllInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sllInst, n, Const(eSize - shift));
 
-                Instruction srlInst = X86PsrlInstruction[op.Size];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size];
 
                 res = context.AddIntrinsic(srlInst, res, Const(eSize - 1));
 
-                Instruction sraInst = X86PsraInstruction[op.Size];
+                Intrinsic sraInst = X86PsraInstruction[op.Size];
 
                 Operand nSra = context.AddIntrinsic(sraInst, n, Const(shift));
 
-                Instruction addInst = X86PaddInstruction[op.Size];
+                Intrinsic addInst = X86PaddInstruction[op.Size];
 
                 res = context.AddIntrinsic(addInst, res, nSra);
 
@@ -373,19 +373,19 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Instruction sllInst = X86PsllInstruction[op.Size];
+                Intrinsic sllInst = X86PsllInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sllInst, n, Const(eSize - shift));
 
-                Instruction srlInst = X86PsrlInstruction[op.Size];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size];
 
                 res = context.AddIntrinsic(srlInst, res, Const(eSize - 1));
 
-                Instruction sraInst = X86PsraInstruction[op.Size];
+                Intrinsic sraInst = X86PsraInstruction[op.Size];
 
                 Operand nSra = context.AddIntrinsic(sraInst, n, Const(shift));
 
-                Instruction addInst = X86PaddInstruction[op.Size];
+                Intrinsic addInst = X86PaddInstruction[op.Size];
 
                 res = context.AddIntrinsic(addInst, res, nSra);
                 res = context.AddIntrinsic(addInst, res, d);
@@ -436,16 +436,16 @@ namespace ARMeilleure.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    n = context.AddIntrinsic(Instruction.X86Psrldq, n, Const(8));
+                    n = context.AddIntrinsic(Intrinsic.X86Psrldq, n, Const(8));
                 }
 
-                Instruction movsxInst = X86PmovsxInstruction[op.Size];
+                Intrinsic movsxInst = X86PmovsxInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(movsxInst, n);
 
                 if (shift != 0)
                 {
-                    Instruction sllInst = X86PsllInstruction[op.Size + 1];
+                    Intrinsic sllInst = X86PsllInstruction[op.Size + 1];
 
                     res = context.AddIntrinsic(sllInst, res, Const(shift));
                 }
@@ -473,7 +473,7 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Instruction sraInst = X86PsraInstruction[op.Size];
+                Intrinsic sraInst = X86PsraInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sraInst, n, Const(shift));
 
@@ -506,11 +506,11 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Instruction sraInst = X86PsraInstruction[op.Size];
+                Intrinsic sraInst = X86PsraInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sraInst, n, Const(shift));
 
-                Instruction addInst = X86PaddInstruction[op.Size];
+                Intrinsic addInst = X86PaddInstruction[op.Size];
 
                 res = context.AddIntrinsic(addInst, res, d);
 
@@ -626,17 +626,17 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Instruction sllInst = X86PsllInstruction[op.Size];
+                Intrinsic sllInst = X86PsllInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sllInst, n, Const(eSize - shift));
 
-                Instruction srlInst = X86PsrlInstruction[op.Size];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size];
 
                 res = context.AddIntrinsic(srlInst, res, Const(eSize - 1));
 
                 Operand nSrl = context.AddIntrinsic(srlInst, n, Const(shift));
 
-                Instruction addInst = X86PaddInstruction[op.Size];
+                Intrinsic addInst = X86PaddInstruction[op.Size];
 
                 res = context.AddIntrinsic(addInst, res, nSrl);
 
@@ -670,17 +670,17 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Instruction sllInst = X86PsllInstruction[op.Size];
+                Intrinsic sllInst = X86PsllInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(sllInst, n, Const(eSize - shift));
 
-                Instruction srlInst = X86PsrlInstruction[op.Size];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size];
 
                 res = context.AddIntrinsic(srlInst, res, Const(eSize - 1));
 
                 Operand nSrl = context.AddIntrinsic(srlInst, n, Const(shift));
 
-                Instruction addInst = X86PaddInstruction[op.Size];
+                Intrinsic addInst = X86PaddInstruction[op.Size];
 
                 res = context.AddIntrinsic(addInst, res, nSrl);
                 res = context.AddIntrinsic(addInst, res, d);
@@ -731,16 +731,16 @@ namespace ARMeilleure.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    n = context.AddIntrinsic(Instruction.X86Psrldq, n, Const(8));
+                    n = context.AddIntrinsic(Intrinsic.X86Psrldq, n, Const(8));
                 }
 
-                Instruction movzxInst = X86PmovzxInstruction[op.Size];
+                Intrinsic movzxInst = X86PmovzxInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(movzxInst, n);
 
                 if (shift != 0)
                 {
-                    Instruction sllInst = X86PsllInstruction[op.Size + 1];
+                    Intrinsic sllInst = X86PsllInstruction[op.Size + 1];
 
                     res = context.AddIntrinsic(sllInst, res, Const(shift));
                 }
@@ -768,7 +768,7 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Instruction srlInst = X86PsrlInstruction[op.Size];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(srlInst, n, Const(shift));
 
@@ -801,11 +801,11 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Instruction srlInst = X86PsrlInstruction[op.Size];
+                Intrinsic srlInst = X86PsrlInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(srlInst, n, Const(shift));
 
-                Instruction addInst = X86PaddInstruction[op.Size];
+                Intrinsic addInst = X86PaddInstruction[op.Size];
 
                 res = context.AddIntrinsic(addInst, res, d);
 

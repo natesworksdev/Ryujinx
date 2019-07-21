@@ -1,21 +1,20 @@
-using ARMeilleure.IntermediateRepresentation;
-
-namespace ARMeilleure.CodeGen.X86
+namespace ARMeilleure.IntermediateRepresentation
 {
-    class X86MemoryOperand : Operand
+    class MemoryOperand : Operand
     {
         public Operand BaseAddress { get; set; }
         public Operand Index       { get; set; }
-        public Scale   Scale       { get; }
+
+        public Multiplier Scale { get; }
 
         public int Displacement { get; }
 
-        public X86MemoryOperand(
+        public MemoryOperand(
             OperandType type,
             Operand     baseAddress,
-            Operand     index,
-            Scale       scale,
-            int         displacement) : base(OperandKind.Memory, type)
+            Operand     index        = null,
+            Multiplier  scale        = Multiplier.x1,
+            int         displacement = 0) : base(OperandKind.Memory, type)
         {
             BaseAddress  = baseAddress;
             Index        = index;

@@ -2,6 +2,8 @@ namespace ARMeilleure.CodeGen.X86
 {
     enum X86Register
     {
+        Invalid = -1,
+
         Rax = 0,
         Rcx = 1,
         Rdx = 2,

@@ -16,118 +16,118 @@ namespace ARMeilleure.Instructions
 
     static class InstEmitSimdHelper
     {
-#region "X86 SSE Instructions"
-        public static readonly Instruction[] X86PaddInstruction = new Instruction[]
+#region "X86 SSE Intrinsics"
+        public static readonly Intrinsic[] X86PaddInstruction = new Intrinsic[]
         {
-            Instruction.X86Paddb,
-            Instruction.X86Paddw,
-            Instruction.X86Paddd,
-            Instruction.X86Paddq
+            Intrinsic.X86Paddb,
+            Intrinsic.X86Paddw,
+            Intrinsic.X86Paddd,
+            Intrinsic.X86Paddq
         };
 
-        public static readonly Instruction[] X86PcmpeqInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PcmpeqInstruction = new Intrinsic[]
         {
-            Instruction.X86Pcmpeqb,
-            Instruction.X86Pcmpeqw,
-            Instruction.X86Pcmpeqd,
-            Instruction.X86Pcmpeqq
+            Intrinsic.X86Pcmpeqb,
+            Intrinsic.X86Pcmpeqw,
+            Intrinsic.X86Pcmpeqd,
+            Intrinsic.X86Pcmpeqq
         };
 
-        public static readonly Instruction[] X86PcmpgtInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PcmpgtInstruction = new Intrinsic[]
         {
-            Instruction.X86Pcmpgtb,
-            Instruction.X86Pcmpgtw,
-            Instruction.X86Pcmpgtd,
-            Instruction.X86Pcmpgtq
+            Intrinsic.X86Pcmpgtb,
+            Intrinsic.X86Pcmpgtw,
+            Intrinsic.X86Pcmpgtd,
+            Intrinsic.X86Pcmpgtq
         };
 
-        public static readonly Instruction[] X86PmaxsInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PmaxsInstruction = new Intrinsic[]
         {
-            Instruction.X86Pmaxsb,
-            Instruction.X86Pmaxsw,
-            Instruction.X86Pmaxsd
+            Intrinsic.X86Pmaxsb,
+            Intrinsic.X86Pmaxsw,
+            Intrinsic.X86Pmaxsd
         };
 
-        public static readonly Instruction[] X86PmaxuInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PmaxuInstruction = new Intrinsic[]
         {
-            Instruction.X86Pmaxub,
-            Instruction.X86Pmaxuw,
-            Instruction.X86Pmaxud
+            Intrinsic.X86Pmaxub,
+            Intrinsic.X86Pmaxuw,
+            Intrinsic.X86Pmaxud
         };
 
-        public static readonly Instruction[] X86PminsInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PminsInstruction = new Intrinsic[]
         {
-            Instruction.X86Pminsb,
-            Instruction.X86Pminsw,
-            Instruction.X86Pminsd
+            Intrinsic.X86Pminsb,
+            Intrinsic.X86Pminsw,
+            Intrinsic.X86Pminsd
         };
 
-        public static readonly Instruction[] X86PminuInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PminuInstruction = new Intrinsic[]
         {
-            Instruction.X86Pminub,
-            Instruction.X86Pminuw,
-            Instruction.X86Pminud
+            Intrinsic.X86Pminub,
+            Intrinsic.X86Pminuw,
+            Intrinsic.X86Pminud
         };
 
-        public static readonly Instruction[] X86PmovsxInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PmovsxInstruction = new Intrinsic[]
         {
-            Instruction.X86Pmovsxbw,
-            Instruction.X86Pmovsxwd,
-            Instruction.X86Pmovsxdq
+            Intrinsic.X86Pmovsxbw,
+            Intrinsic.X86Pmovsxwd,
+            Intrinsic.X86Pmovsxdq
         };
 
-        public static readonly Instruction[] X86PmovzxInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PmovzxInstruction = new Intrinsic[]
         {
-            Instruction.X86Pmovzxbw,
-            Instruction.X86Pmovzxwd,
-            Instruction.X86Pmovzxdq
+            Intrinsic.X86Pmovzxbw,
+            Intrinsic.X86Pmovzxwd,
+            Intrinsic.X86Pmovzxdq
         };
 
-        public static readonly Instruction[] X86PsllInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PsllInstruction = new Intrinsic[]
         {
             0,
-            Instruction.X86Psllw,
-            Instruction.X86Pslld,
-            Instruction.X86Psllq
+            Intrinsic.X86Psllw,
+            Intrinsic.X86Pslld,
+            Intrinsic.X86Psllq
         };
 
-        public static readonly Instruction[] X86PsraInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PsraInstruction = new Intrinsic[]
         {
             0,
-            Instruction.X86Psraw,
-            Instruction.X86Psrad
+            Intrinsic.X86Psraw,
+            Intrinsic.X86Psrad
         };
 
-        public static readonly Instruction[] X86PsrlInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PsrlInstruction = new Intrinsic[]
         {
             0,
-            Instruction.X86Psrlw,
-            Instruction.X86Psrld,
-            Instruction.X86Psrlq
+            Intrinsic.X86Psrlw,
+            Intrinsic.X86Psrld,
+            Intrinsic.X86Psrlq
         };
 
-        public static readonly Instruction[] X86PsubInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PsubInstruction = new Intrinsic[]
         {
-            Instruction.X86Psubb,
-            Instruction.X86Psubw,
-            Instruction.X86Psubd,
-            Instruction.X86Psubq
+            Intrinsic.X86Psubb,
+            Intrinsic.X86Psubw,
+            Intrinsic.X86Psubd,
+            Intrinsic.X86Psubq
         };
 
-        public static readonly Instruction[] X86PunpckhInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PunpckhInstruction = new Intrinsic[]
         {
-            Instruction.X86Punpckhbw,
-            Instruction.X86Punpckhwd,
-            Instruction.X86Punpckhdq,
-            Instruction.X86Punpckhqdq
+            Intrinsic.X86Punpckhbw,
+            Intrinsic.X86Punpckhwd,
+            Intrinsic.X86Punpckhdq,
+            Intrinsic.X86Punpckhqdq
         };
 
-        public static readonly Instruction[] X86PunpcklInstruction = new Instruction[]
+        public static readonly Intrinsic[] X86PunpcklInstruction = new Intrinsic[]
         {
-            Instruction.X86Punpcklbw,
-            Instruction.X86Punpcklwd,
-            Instruction.X86Punpckldq,
-            Instruction.X86Punpcklqdq
+            Intrinsic.X86Punpcklbw,
+            Intrinsic.X86Punpcklwd,
+            Intrinsic.X86Punpckldq,
+            Intrinsic.X86Punpcklqdq
         };
 #endregion
 
@@ -175,7 +175,7 @@ namespace ARMeilleure.Instructions
         {
             Operand vector = context.VectorCreateScalar(Const(value));
 
-            vector = context.AddIntrinsic(Instruction.X86Shufps, vector, vector, Const(0));
+            vector = context.AddIntrinsic(Intrinsic.X86Shufps, vector, vector, Const(0));
 
             return vector;
         }
@@ -184,7 +184,7 @@ namespace ARMeilleure.Instructions
         {
             Operand vector = context.VectorCreateScalar(Const(value));
 
-            vector = context.AddIntrinsic(Instruction.X86Movlhps, vector, vector);
+            vector = context.AddIntrinsic(Intrinsic.X86Movlhps, vector, vector);
 
             return vector;
         }
@@ -202,13 +202,13 @@ namespace ARMeilleure.Instructions
             throw new ArgumentException($"Invalid rounding mode \"{roundMode}\".");
         }
 
-        public static void EmitScalarUnaryOpF(ArmEmitterContext context, Instruction inst32, Instruction inst64)
+        public static void EmitScalarUnaryOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
 
-            Instruction inst = (op.Size & 1) != 0 ? inst64 : inst32;
+            Intrinsic inst = (op.Size & 1) != 0 ? inst64 : inst32;
 
             Operand res = context.AddIntrinsic(inst, n);
 
@@ -224,14 +224,14 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void EmitScalarBinaryOpF(ArmEmitterContext context, Instruction inst32, Instruction inst64)
+        public static void EmitScalarBinaryOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
             Operand m = GetVec(op.Rm);
 
-            Instruction inst = (op.Size & 1) != 0 ? inst64 : inst32;
+            Intrinsic inst = (op.Size & 1) != 0 ? inst64 : inst32;
 
             Operand res = context.AddIntrinsic(inst, n, m);
 
@@ -247,13 +247,13 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void EmitVectorUnaryOpF(ArmEmitterContext context, Instruction inst32, Instruction inst64)
+        public static void EmitVectorUnaryOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
 
-            Instruction inst = (op.Size & 1) != 0 ? inst64 : inst32;
+            Intrinsic inst = (op.Size & 1) != 0 ? inst64 : inst32;
 
             Operand res = context.AddIntrinsic(inst, n);
 
@@ -265,14 +265,14 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void EmitVectorBinaryOpF(ArmEmitterContext context, Instruction inst32, Instruction inst64)
+        public static void EmitVectorBinaryOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
             Operand m = GetVec(op.Rm);
 
-            Instruction inst = (op.Size & 1) != 0 ? inst64 : inst32;
+            Intrinsic inst = (op.Size & 1) != 0 ? inst64 : inst32;
 
             Operand res = context.AddIntrinsic(inst, n, m);
 
@@ -1066,7 +1066,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void EmitVectorPairwiseOpF(ArmEmitterContext context, Instruction inst32, Instruction inst64)
+        public static void EmitVectorPairwiseOpF(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
@@ -1079,12 +1079,12 @@ namespace ARMeilleure.Instructions
             {
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
-                    Operand unpck = context.AddIntrinsic(Instruction.X86Unpcklps, n, m);
+                    Operand unpck = context.AddIntrinsic(Intrinsic.X86Unpcklps, n, m);
 
                     Operand zero = context.VectorZero();
 
-                    Operand part0 = context.AddIntrinsic(Instruction.X86Movlhps, unpck, zero);
-                    Operand part1 = context.AddIntrinsic(Instruction.X86Movhlps, zero, unpck);
+                    Operand part0 = context.AddIntrinsic(Intrinsic.X86Movlhps, unpck, zero);
+                    Operand part1 = context.AddIntrinsic(Intrinsic.X86Movhlps, zero, unpck);
 
                     context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst32, part0, part1));
                 }
@@ -1093,16 +1093,16 @@ namespace ARMeilleure.Instructions
                     const int sm0 = 2 << 6 | 0 << 4 | 2 << 2 | 0 << 0;
                     const int sm1 = 3 << 6 | 1 << 4 | 3 << 2 | 1 << 0;
 
-                    Operand part0 = context.AddIntrinsic(Instruction.X86Shufps, n, m, Const(sm0));
-                    Operand part1 = context.AddIntrinsic(Instruction.X86Shufps, n, m, Const(sm1));
+                    Operand part0 = context.AddIntrinsic(Intrinsic.X86Shufps, n, m, Const(sm0));
+                    Operand part1 = context.AddIntrinsic(Intrinsic.X86Shufps, n, m, Const(sm1));
 
                     context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst32, part0, part1));
                 }
             }
             else /* if (sizeF == 1) */
             {
-                Operand part0 = context.AddIntrinsic(Instruction.X86Unpcklpd, n, m);
-                Operand part1 = context.AddIntrinsic(Instruction.X86Unpckhpd, n, m);
+                Operand part0 = context.AddIntrinsic(Intrinsic.X86Unpcklpd, n, m);
+                Operand part1 = context.AddIntrinsic(Intrinsic.X86Unpckhpd, n, m);
 
                 context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst64, part0, part1));
             }

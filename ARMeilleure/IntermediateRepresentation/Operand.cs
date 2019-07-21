@@ -12,14 +12,12 @@ namespace ARMeilleure.IntermediateRepresentation
         public ulong Value { get; private set; }
 
         public LinkedList<Node> Assignments { get; }
-
-        public LinkedList<Node> Uses { get; }
+        public LinkedList<Node> Uses        { get; }
 
         private Operand()
         {
             Assignments = new LinkedList<Node>();
-
-            Uses = new LinkedList<Node>();
+            Uses        = new LinkedList<Node>();
         }
 
         public Operand(OperandKind kind, OperandType type = OperandType.None) : this()

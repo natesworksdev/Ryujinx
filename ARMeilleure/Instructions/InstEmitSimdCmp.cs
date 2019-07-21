@@ -37,7 +37,7 @@ namespace ARMeilleure.Instructions
                     m = context.VectorZero();
                 }
 
-                Instruction cmpInst = X86PcmpeqInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpeqInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(cmpInst, n, m);
 
@@ -77,13 +77,13 @@ namespace ARMeilleure.Instructions
                     m = context.VectorZero();
                 }
 
-                Instruction cmpInst = X86PcmpgtInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpgtInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(cmpInst, m, n);
 
                 Operand mask = X86GetAllElements(context, -1L);
 
-                res = context.AddIntrinsic(Instruction.X86Pandn, res, mask);
+                res = context.AddIntrinsic(Intrinsic.X86Pandn, res, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -121,7 +121,7 @@ namespace ARMeilleure.Instructions
                     m = context.VectorZero();
                 }
 
-                Instruction cmpInst = X86PcmpgtInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpgtInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(cmpInst, n, m);
 
@@ -152,17 +152,17 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Instruction maxInst = X86PmaxuInstruction[op.Size];
+                Intrinsic maxInst = X86PmaxuInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(maxInst, m, n);
 
-                Instruction cmpInst = X86PcmpeqInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpeqInstruction[op.Size];
 
                 res = context.AddIntrinsic(cmpInst, res, m);
 
                 Operand mask = X86GetAllElements(context, -1L);
 
-                res = context.AddIntrinsic(Instruction.X86Pandn, res, mask);
+                res = context.AddIntrinsic(Intrinsic.X86Pandn, res, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -191,11 +191,11 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Instruction maxInst = X86PmaxuInstruction[op.Size];
+                Intrinsic maxInst = X86PmaxuInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(maxInst, n, m);
 
-                Instruction cmpInst = X86PcmpeqInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpeqInstruction[op.Size];
 
                 res = context.AddIntrinsic(cmpInst, res, n);
 
@@ -225,13 +225,13 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Instruction cmpInst = X86PcmpgtInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpgtInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(cmpInst, n, context.VectorZero());
 
                 Operand mask = X86GetAllElements(context, -1L);
 
-                res = context.AddIntrinsic(Instruction.X86Pandn, res, mask);
+                res = context.AddIntrinsic(Intrinsic.X86Pandn, res, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -259,7 +259,7 @@ namespace ARMeilleure.Instructions
 
                 Operand n = GetVec(op.Rn);
 
-                Instruction cmpInst = X86PcmpgtInstruction[op.Size];
+                Intrinsic cmpInst = X86PcmpgtInstruction[op.Size];
 
                 Operand res = context.AddIntrinsic(cmpInst, context.VectorZero(), n);
 
@@ -464,15 +464,15 @@ namespace ARMeilleure.Instructions
 
                 if (op.Size == 0)
                 {
-                    Operand ordMask = context.AddIntrinsic(Instruction.X86Cmpss, n, m, Const(cmpOrdered));
+                    Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpss, n, m, Const(cmpOrdered));
 
                     Operand isOrdered = context.VectorExtract16(ordMask, 0);
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
-                    Operand cf = context.AddIntrinsicInt(Instruction.X86Comissge, n, m);
-                    Operand zf = context.AddIntrinsicInt(Instruction.X86Comisseq, n, m);
-                    Operand nf = context.AddIntrinsicInt(Instruction.X86Comisslt, n, m);
+                    Operand cf = context.AddIntrinsicInt(Intrinsic.X86Comissge, n, m);
+                    Operand zf = context.AddIntrinsicInt(Intrinsic.X86Comisseq, n, m);
+                    Operand nf = context.AddIntrinsicInt(Intrinsic.X86Comisslt, n, m);
 
                     SetFlag(context, PState.VFlag, Const(0));
                     SetFlag(context, PState.CFlag, cf);
@@ -481,15 +481,15 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Operand ordMask = context.AddIntrinsic(Instruction.X86Cmpsd, n, m, Const(cmpOrdered));
+                    Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpsd, n, m, Const(cmpOrdered));
 
                     Operand isOrdered = context.VectorExtract16(ordMask, 0);
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
-                    Operand cf = context.AddIntrinsicInt(Instruction.X86Comisdge, n, m);
-                    Operand zf = context.AddIntrinsicInt(Instruction.X86Comisdeq, n, m);
-                    Operand nf = context.AddIntrinsicInt(Instruction.X86Comisdlt, n, m);
+                    Operand cf = context.AddIntrinsicInt(Intrinsic.X86Comisdge, n, m);
+                    Operand zf = context.AddIntrinsicInt(Intrinsic.X86Comisdeq, n, m);
+                    Operand nf = context.AddIntrinsicInt(Intrinsic.X86Comisdlt, n, m);
 
                     SetFlag(context, PState.VFlag, Const(0));
                     SetFlag(context, PState.CFlag, cf);
@@ -675,7 +675,7 @@ namespace ARMeilleure.Instructions
 
             if (sizeF == 0)
             {
-                Instruction inst = scalar ? Instruction.X86Cmpss : Instruction.X86Cmpps;
+                Intrinsic inst = scalar ? Intrinsic.X86Cmpss : Intrinsic.X86Cmpps;
 
                 Operand res = isLeOrLt
                     ? context.AddIntrinsic(inst, m, n, Const((int)cond))
@@ -694,7 +694,7 @@ namespace ARMeilleure.Instructions
             }
             else /* if (sizeF == 1) */
             {
-                Instruction inst = scalar ? Instruction.X86Cmpsd : Instruction.X86Cmppd;
+                Intrinsic inst = scalar ? Intrinsic.X86Cmpsd : Intrinsic.X86Cmppd;
 
                 Operand res = isLeOrLt
                     ? context.AddIntrinsic(inst, m, n, Const((int)cond))

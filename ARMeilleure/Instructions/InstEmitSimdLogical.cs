@@ -19,7 +19,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pand, n, m);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pand, n, m);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -43,7 +43,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pandn, m, n);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pandn, m, n);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -89,18 +89,18 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pxor, n, d);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pxor, n, d);
 
                 if (notRm)
                 {
-                    res = context.AddIntrinsic(Instruction.X86Pandn, m, res);
+                    res = context.AddIntrinsic(Intrinsic.X86Pandn, m, res);
                 }
                 else
                 {
-                    res = context.AddIntrinsic(Instruction.X86Pand, m, res);
+                    res = context.AddIntrinsic(Intrinsic.X86Pand, m, res);
                 }
 
-                res = context.AddIntrinsic(Instruction.X86Pxor, d, res);
+                res = context.AddIntrinsic(Intrinsic.X86Pxor, d, res);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -148,10 +148,10 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pxor, n, m);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pxor, n, m);
 
-                res = context.AddIntrinsic(Instruction.X86Pand, res, d);
-                res = context.AddIntrinsic(Instruction.X86Pxor, res, m);
+                res = context.AddIntrinsic(Intrinsic.X86Pand, res, d);
+                res = context.AddIntrinsic(Intrinsic.X86Pxor, res, m);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -180,7 +180,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pxor, n, m);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pxor, n, m);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -205,7 +205,7 @@ namespace ARMeilleure.Instructions
 
                 Operand mask = X86GetAllElements(context, -1L);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pandn, n, mask);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pandn, n, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -231,9 +231,9 @@ namespace ARMeilleure.Instructions
 
                 Operand mask = X86GetAllElements(context, -1L);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pandn, m, mask);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pandn, m, mask);
 
-                res = context.AddIntrinsic(Instruction.X86Por, res, n);
+                res = context.AddIntrinsic(Intrinsic.X86Por, res, n);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -260,7 +260,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Por, n, m);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Por, n, m);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -319,7 +319,7 @@ namespace ARMeilleure.Instructions
 
                 mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pshufb, n, mask);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -363,7 +363,7 @@ namespace ARMeilleure.Instructions
                     mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
                 }
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pshufb, n, mask);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
@@ -416,7 +416,7 @@ namespace ARMeilleure.Instructions
                     mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
                 }
 
-                Operand res = context.AddIntrinsic(Instruction.X86Pshufb, n, mask);
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask);
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {

@@ -162,6 +162,11 @@ namespace ARMeilleure.Translation
 
         public Operand ConvertI64ToI32(Operand op1)
         {
+            if (op1.Type != OperandType.I64)
+            {
+                throw new ArgumentException($"Invalid operand type \"{op1.Type}\".");
+            }
+
             return Add(Instruction.ConvertI64ToI32, Local(OperandType.I32), op1);
         }
 
@@ -443,21 +448,6 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ZeroExtend8, Local(type), op1);
         }
 
-        public Operand AddIntrinsic(Instruction inst, params Operand[] args)
-        {
-            return Add(inst, Local(OperandType.V128), args);
-        }
-
-        public Operand AddIntrinsicInt(Instruction inst, params Operand[] args)
-        {
-            return Add(inst, Local(OperandType.I32), args);
-        }
-
-        public Operand AddIntrinsicLong(Instruction inst, params Operand[] args)
-        {
-            return Add(inst, Local(OperandType.I64), args);
-        }
-
         private Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
         {
             if (_needsNewBlock)
@@ -466,6 +456,35 @@ namespace ARMeilleure.Translation
             }
 
             Operation operation = new Operation(inst, dest, sources);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return dest;
+        }
+
+        public Operand AddIntrinsic(Intrinsic intrin, params Operand[] args)
+        {
+            return Add(intrin, Local(OperandType.V128), args);
+        }
+
+        public Operand AddIntrinsicInt(Intrinsic intrin, params Operand[] args)
+        {
+            return Add(intrin, Local(OperandType.I32), args);
+        }
+
+        public Operand AddIntrinsicLong(Intrinsic intrin, params Operand[] args)
+        {
+            return Add(intrin, Local(OperandType.I64), args);
+        }
+
+        private Operand Add(Intrinsic intrin, Operand dest, params Operand[] sources)
+        {
+            if (_needsNewBlock)
+            {
+                NewNextBlock();
+            }
+
+            IntrinsicOperation operation = new IntrinsicOperation(intrin, dest, sources);
 
             _irBlock.Operations.AddLast(operation);
 

@@ -400,11 +400,6 @@ namespace ARMeilleure.Instructions
 
             Operand value = context.Call(fallbackMethodDlg, address);
 
-            if (size < 3)
-            {
-                value = context.ConvertI64ToI32(value);
-            }
-
             switch (size)
             {
                 case 0: value = context.VectorInsert8 (vector, value, elem); break;
