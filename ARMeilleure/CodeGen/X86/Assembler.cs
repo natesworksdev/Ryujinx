@@ -400,13 +400,13 @@ namespace ARMeilleure.CodeGen.X86
                 throw new ArgumentException($"Invalid source 2 operand kind \"{src2.Kind}\".");
             }
 
-            if (IsImm8(src2) && info.OpRMImm8 != BadOp)
+            if (IsImm8(src2.Value, src2.Type) && info.OpRMImm8 != BadOp)
             {
                 WriteOpCode(dest, null, src1, type, info.Flags, info.OpRMImm8, rrm: true);
 
                 WriteByte(src2.AsByte());
             }
-            else if (IsImm32(src2) && info.OpRMImm32 != BadOp)
+            else if (IsImm32(src2.Value, src2.Type) && info.OpRMImm32 != BadOp)
             {
                 WriteOpCode(dest, null, src1, type, info.Flags, info.OpRMImm32, rrm: true);
 
@@ -1209,47 +1209,6 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte((byte)(opCode + (regIndex & 0b111)));
         }
 
-        private static int GetRexPrefix(Operand dest, Operand source, bool rexW, bool rrm)
-        {
-            int rexPrefix = 0;
-
-            void SetRegisterHighBit(Register reg, int bit)
-            {
-                if (reg.Index >= 8)
-                {
-                    rexPrefix |= 0x40 | (reg.Index >> 3) << bit;
-                }
-            }
-
-            if (dest != null)
-            {
-                if (Is64Bits(dest.Type) && rexW)
-                {
-                    rexPrefix = 0x48;
-                }
-
-                if (dest.Kind == OperandKind.Register)
-                {
-                    SetRegisterHighBit(dest.GetRegister(), (rrm ? 2 : 0));
-                }
-            }
-
-            if (source != null)
-            {
-                if (Is64Bits(source.Type) && rexW)
-                {
-                    rexPrefix |= 0x48;
-                }
-
-                if (source.Kind == OperandKind.Register)
-                {
-                    SetRegisterHighBit(source.GetRegister(), (rrm ? 0 : 2));
-                }
-            }
-
-            return rexPrefix;
-        }
-
         private static int GetRexPrefix(Operand dest, Operand source, OperandType type, bool rrm)
         {
             int rexPrefix = 0;
@@ -1280,22 +1239,9 @@ namespace ARMeilleure.CodeGen.X86
             return rexPrefix;
         }
 
-        private static bool IsR64(Operand operand)
-        {
-            return operand.Kind == OperandKind.Register && operand.Type == OperandType.I64;
-        }
-
         private static bool Is64Bits(OperandType type)
         {
             return type == OperandType.I64 || type == OperandType.FP64;
-        }
-
-        private static bool IsImm8(Operand operand)
-        {
-            long value = operand.Type == OperandType.I32 ? operand.AsInt32()
-                                                         : operand.AsInt64();
-
-            return ConstFitsOnS8(value);
         }
 
         private static bool IsImm8(ulong immediate, OperandType type)
@@ -1303,14 +1249,6 @@ namespace ARMeilleure.CodeGen.X86
             long value = type == OperandType.I32 ? (int)immediate : (long)immediate;
 
             return ConstFitsOnS8(value);
-        }
-
-        private static bool IsImm32(Operand operand)
-        {
-            long value = operand.Type == OperandType.I32 ? operand.AsInt32()
-                                                         : operand.AsInt64();
-
-            return ConstFitsOnS32(value);
         }
 
         private static bool IsImm32(ulong immediate, OperandType type)
@@ -1352,11 +1290,6 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static bool ConstFitsOnU32(long value)
-        {
-            return value >> 32 == 0;
-        }
-
         private static bool ConstFitsOnS8(long value)
         {
             return value == (sbyte)value;
@@ -1375,11 +1308,6 @@ namespace ARMeilleure.CodeGen.X86
         private void WriteInt32(int value)
         {
             WriteUInt32((uint)value);
-        }
-
-        private void WriteInt64(long value)
-        {
-            WriteUInt64((ulong)value);
         }
 
         private void WriteByte(byte value)
