@@ -270,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             char[] tzName       = TimeZoneManager.Instance.GetDeviceLocationName().ToCharArray();
             char[] locationName = new char[0x24];
 
-            Array.Copy(tzName, locationName, locationName.Length);
+            Array.Copy(tzName, locationName, tzName.Length);
 
             clockSnapshot.LocationName = locationName;
 
