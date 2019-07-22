@@ -1,10 +1,23 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.Utilities;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SteadyClockCore
     {
+        private UInt128 _clockSourceId;
+
+        public SteadyClockCore()
+        {
+            _clockSourceId = new UInt128(Guid.NewGuid().ToByteArray());
+        }
+
+        public UInt128 GetClockSourceId()
+        {
+            return _clockSourceId;
+        }
+
         public virtual TimeSpanType GetTestOffset()
         {
             return new TimeSpanType(0);

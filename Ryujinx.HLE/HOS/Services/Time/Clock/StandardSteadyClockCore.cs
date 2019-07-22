@@ -1,7 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Bpc;
-using Ryujinx.HLE.Utilities;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
@@ -12,7 +10,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         private bool         _isRtcResetDetected;
         private TimeSpanType _testOffset;
         private TimeSpanType _internalOffset;
-        private UInt128      _clockSourceId;
 
         private static StandardSteadyClockCore instance;
 
@@ -33,7 +30,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             _testOffset     = new TimeSpanType(0);
             _internalOffset = new TimeSpanType(0);
-            _clockSourceId  = new UInt128(Guid.NewGuid().ToByteArray());
         }
 
         public override SteadyClockTimePoint GetTimePoint(KThread thread)
@@ -41,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             SteadyClockTimePoint result = new SteadyClockTimePoint
             {
                 TimePoint     = 0,
-                ClockSourceId = _clockSourceId
+                ClockSourceId = GetClockSourceId()
             };
 
             TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.ThreadState.CntpctEl0, thread.Context.ThreadState.CntfrqEl0);
@@ -49,11 +45,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             result.TimePoint = _setupValue + ticksTimeSpan.ToSeconds();
 
             return result;
-        }
-
-        public UInt128 GetClockSourceId()
-        {
-            return _clockSourceId;
         }
 
         public override TimeSpanType GetTestOffset()
