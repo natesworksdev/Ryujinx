@@ -1,23 +1,23 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
-    class StandardLocalSystemClockCore : SystemClockCore
+    class EphemeralNetworkSystemClockCore : SystemClockCore
     {
-        private static StandardLocalSystemClockCore instance;
+        private static EphemeralNetworkSystemClockCore instance;
 
-        public static StandardLocalSystemClockCore Instance
+        public static EphemeralNetworkSystemClockCore Instance
         {
             get
             {
                 if (instance == null)
                 {
-                    instance = new StandardLocalSystemClockCore(StandardSteadyClockCore.Instance);
+                    instance = new EphemeralNetworkSystemClockCore(TickBasedSteadyClockCore.Instance);
                 }
 
                 return instance;
             }
         }
 
-        public StandardLocalSystemClockCore(StandardSteadyClockCore steadyClockCore) : base(steadyClockCore) {}
+        public EphemeralNetworkSystemClockCore(SteadyClockCore steadyClockCore) : base(steadyClockCore) { }
 
         public override ResultCode Flush(SystemClockContext context)
         {

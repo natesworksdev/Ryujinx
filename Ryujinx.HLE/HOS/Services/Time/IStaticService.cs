@@ -66,6 +66,15 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return ResultCode.Success;
         }
 
+        [Command(5)] // 4.0.0+
+        // GetEphemeralNetworkSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
+        public ResultCode GetEphemeralNetworkSystemClock(ServiceCtx context)
+        {
+            MakeObject(context, new ISystemClock(StandardNetworkSystemClockCore.Instance, false));
+
+            return ResultCode.Success;
+        }
+
         [Command(20)] // 6.0.0+
         // GetSharedMemoryNativeHandle() -> handle<copy>
         public ResultCode GetSharedMemoryNativeHandle(ServiceCtx context)
