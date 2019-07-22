@@ -1,12 +1,9 @@
-﻿using System;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.HLE.HOS.Kernel.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardNetworkSystemClockCore : SystemClockCore
     {
-        private StandardSteadyClockCore    _steadyClockCore;
-        private SystemClockContext _context;
         private TimeSpanType       _standardNetworkClockSufficientAccuracy;
 
         private static StandardNetworkSystemClockCore instance;
@@ -24,12 +21,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             }
         }
 
-        public StandardNetworkSystemClockCore(StandardSteadyClockCore steadyClockCore)
+        public StandardNetworkSystemClockCore(StandardSteadyClockCore steadyClockCore) : base(steadyClockCore)
         {
-            _steadyClockCore = steadyClockCore;
-            _context         = new SystemClockContext();
-
-            _context.SteadyTimePoint.ClockSourceId  = steadyClockCore.GetClockSourceId();
             _standardNetworkClockSufficientAccuracy = new TimeSpanType(0);
         }
 
@@ -40,33 +33,16 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return ResultCode.Success;
         }
 
-        public override StandardSteadyClockCore GetSteadyClockCore()
-        {
-            return _steadyClockCore;
-        }
-
-        public override ResultCode GetSystemClockContext(KThread thread, out SystemClockContext context)
-        {
-            context = _context;
-
-            return ResultCode.Success;
-        }
-
-        public override ResultCode SetSystemClockContext(SystemClockContext context)
-        {
-            _context = context;
-
-            return ResultCode.Success;
-        }
-
         public bool IsStandardNetworkSystemClockAccuracySufficient(KThread thread)
         {
-            StandardSteadyClockCore      steadyClockCore  = GetSteadyClockCore();
-            SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(thread);
+            StandardSteadyClockCore steadyClockCore  = GetSteadyClockCore();
+            SteadyClockTimePoint    currentTimePoint = steadyClockCore.GetCurrentTimePoint(thread);
 
             bool isStandardNetworkClockSufficientAccuracy = false;
 
-            if (_context.SteadyTimePoint.GetSpanBetween(currentTimePoint, out long outSpan) == ResultCode.Success)
+            ResultCode result = GetSystemClockContext(thread, out SystemClockContext context);
+
+            if (result == ResultCode.Success && context.SteadyTimePoint.GetSpanBetween(currentTimePoint, out long outSpan) == ResultCode.Success)
             {
                 isStandardNetworkClockSufficientAccuracy = outSpan * 1000000000 < _standardNetworkClockSufficientAccuracy.NanoSeconds;
             }

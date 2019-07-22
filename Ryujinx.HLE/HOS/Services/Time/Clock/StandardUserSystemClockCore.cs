@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             }
         }
 
-        public StandardUserSystemClockCore(StandardLocalSystemClockCore localSystemClockCore, StandardNetworkSystemClockCore networkSystemClockCore)
+        public StandardUserSystemClockCore(StandardLocalSystemClockCore localSystemClockCore, StandardNetworkSystemClockCore networkSystemClockCore) : base(localSystemClockCore.GetSteadyClockCore())
         {
             _localSystemClockCore   = localSystemClockCore;
             _networkSystemClockCore = networkSystemClockCore;
@@ -33,11 +33,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public override ResultCode Flush(SystemClockContext context)
         {
             return ResultCode.NotImplemented;
-        }
-
-        public override StandardSteadyClockCore GetSteadyClockCore()
-        {
-            return _localSystemClockCore.GetSteadyClockCore();
         }
 
         public override ResultCode GetSystemClockContext(KThread thread, out SystemClockContext context)
