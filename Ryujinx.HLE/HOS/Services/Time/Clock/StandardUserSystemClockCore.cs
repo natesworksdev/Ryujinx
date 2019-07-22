@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return ResultCode.NotImplemented;
         }
 
-        public override SteadyClockCore GetSteadyClockCore()
+        public override StandardSteadyClockCore GetSteadyClockCore()
         {
             return _localSystemClockCore.GetSteadyClockCore();
         }

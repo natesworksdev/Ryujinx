@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardNetworkSystemClockCore : SystemClockCore
     {
-        private SteadyClockCore    _steadyClockCore;
+        private StandardSteadyClockCore    _steadyClockCore;
         private SystemClockContext _context;
         private TimeSpanType       _standardNetworkClockSufficientAccuracy;
 
@@ -17,14 +17,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             {
                 if (instance == null)
                 {
-                    instance = new StandardNetworkSystemClockCore(SteadyClockCore.Instance);
+                    instance = new StandardNetworkSystemClockCore(StandardSteadyClockCore.Instance);
                 }
 
                 return instance;
             }
         }
 
-        public StandardNetworkSystemClockCore(SteadyClockCore steadyClockCore)
+        public StandardNetworkSystemClockCore(StandardSteadyClockCore steadyClockCore)
         {
             _steadyClockCore = steadyClockCore;
             _context         = new SystemClockContext();
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return ResultCode.Success;
         }
 
-        public override SteadyClockCore GetSteadyClockCore()
+        public override StandardSteadyClockCore GetSteadyClockCore()
         {
             return _steadyClockCore;
         }
@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public bool IsStandardNetworkSystemClockAccuracySufficient(KThread thread)
         {
-            SteadyClockCore      steadyClockCore  = GetSteadyClockCore();
+            StandardSteadyClockCore      steadyClockCore  = GetSteadyClockCore();
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(thread);
 
             bool isStandardNetworkClockSufficientAccuracy = false;

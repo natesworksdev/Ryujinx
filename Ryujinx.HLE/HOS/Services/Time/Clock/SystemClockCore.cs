@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SystemClockCore
     {
-        public abstract SteadyClockCore GetSteadyClockCore();
+        public abstract StandardSteadyClockCore GetSteadyClockCore();
 
         public abstract ResultCode GetSystemClockContext(KThread thread, out SystemClockContext context);
 
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             if (result == ResultCode.Success)
             {
-                SteadyClockCore steadyClockCore = GetSteadyClockCore();
+                StandardSteadyClockCore steadyClockCore = GetSteadyClockCore();
 
                 SteadyClockTimePoint steadyClockTimePoint = steadyClockCore.GetCurrentTimePoint(thread);
 

@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardLocalSystemClockCore : SystemClockCore
     {
-        private SteadyClockCore    _steadyClockCore;
+        private StandardSteadyClockCore    _steadyClockCore;
         private SystemClockContext _context;
 
         private static StandardLocalSystemClockCore instance;
@@ -15,14 +15,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             {
                 if (instance == null)
                 {
-                    instance = new StandardLocalSystemClockCore(SteadyClockCore.Instance);
+                    instance = new StandardLocalSystemClockCore(StandardSteadyClockCore.Instance);
                 }
 
                 return instance;
             }
         }
 
-        public StandardLocalSystemClockCore(SteadyClockCore steadyClockCore)
+        public StandardLocalSystemClockCore(StandardSteadyClockCore steadyClockCore)
         {
             _steadyClockCore = steadyClockCore;
             _context         = new SystemClockContext();
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return ResultCode.Success;
         }
 
-        public override SteadyClockCore GetSteadyClockCore()
+        public override StandardSteadyClockCore GetSteadyClockCore()
         {
             return _steadyClockCore;
         }
