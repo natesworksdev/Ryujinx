@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         }
 
         [Command(401)] // 4.0.0+
-        // GetClockSnapshotFromSystemClockContext(u8, nn::time::SystemClockContext, nn::time::SystemClockContext) -> buffer<nn::time::sf::-*, 0x1a>
+        // GetClockSnapshotFromSystemClockContext(u8, nn::time::SystemClockContext, nn::time::SystemClockContext) -> buffer<nn::time::sf::ClockSnapshot, 0x1a>
         public ResultCode GetClockSnapshotFromSystemClockContext(ServiceCtx context)
         {
             byte type = context.RequestData.ReadByte();
@@ -193,7 +193,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             long               bufferPosition = context.Request.RecvListBuff[0].Position;
             long               bufferSize     = context.Request.RecvListBuff[0].Size;
 
-
             ResultCode result = GetClockSnapshotFromSystemClockContextInternal(context.Thread, userContext, networkContext, type, out ClockSnapshot clockSnapshot);
 
             if (result == ResultCode.Success)
@@ -202,6 +201,59 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
 
             return result;
+        }
+
+        [Command(500)] // 4.0.0+
+        // CalculateStandardUserSystemClockDifferenceByUser(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
+        public ResultCode CalculateStandardUserSystemClockDifferenceByUser(ServiceCtx context)
+        {
+            ClockSnapshot clockSnapshotA = context.Memory.ReadStruct<ClockSnapshot>(context.Request.ExchangeBuff[0].Position);
+            ClockSnapshot clockSnapshotB = context.Memory.ReadStruct<ClockSnapshot>(context.Request.ExchangeBuff[1].Position);
+            TimeSpanType  difference     = TimeSpanType.FromSeconds(clockSnapshotB.UserContext.Offset - clockSnapshotA.UserContext.Offset);
+
+            if (clockSnapshotB.UserContext.SteadyTimePoint.ClockSourceId != clockSnapshotA.UserContext.SteadyTimePoint.ClockSourceId || (clockSnapshotB.IsAutomaticCorrectionEnabled && clockSnapshotA.IsAutomaticCorrectionEnabled))
+            {
+                difference = new TimeSpanType(0);
+            }
+
+            context.ResponseData.Write(difference.NanoSeconds);
+
+            return ResultCode.Success;
+        }
+
+        [Command(501)] // 4.0.0+
+        // CalculateSpanBetween(buffer<nn::time::sf::ClockSnapshot, 0x19>, buffer<nn::time::sf::ClockSnapshot, 0x19>) -> nn::TimeSpanType
+        public ResultCode CalculateSpanBetween(ServiceCtx context)
+        {
+            ClockSnapshot clockSnapshotA = context.Memory.ReadStruct<ClockSnapshot>(context.Request.ExchangeBuff[0].Position);
+            ClockSnapshot clockSnapshotB = context.Memory.ReadStruct<ClockSnapshot>(context.Request.ExchangeBuff[1].Position);
+
+            TimeSpanType result;
+
+            ResultCode resultCode = clockSnapshotA.SteadyClockTimePoint.GetSpanBetween(clockSnapshotB.SteadyClockTimePoint, out long timeSpan);
+
+            if (resultCode != ResultCode.Success)
+            {
+                resultCode = ResultCode.TimeNotFound;
+
+                if (clockSnapshotA.NetworkTime != 0 && clockSnapshotB.NetworkTime != 0)
+                {
+                    result     = TimeSpanType.FromSeconds(clockSnapshotB.NetworkTime - clockSnapshotA.NetworkTime);
+                    resultCode = ResultCode.Success;
+                }
+                else
+                {
+                    return resultCode;
+                }
+            }
+            else
+            {
+                result = TimeSpanType.FromSeconds(timeSpan);
+            }
+
+            context.ResponseData.Write(result.NanoSeconds);
+
+            return resultCode;
         }
 
         private ResultCode GetClockSnapshotFromSystemClockContextInternal(KThread thread, SystemClockContext userContext, SystemClockContext networkContext, byte type, out ClockSnapshot clockSnapshot)

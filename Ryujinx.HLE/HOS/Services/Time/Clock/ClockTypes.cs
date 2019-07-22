@@ -19,9 +19,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return NanoSeconds / 1000000000;
         }
 
+        public static TimeSpanType FromSeconds(long seconds)
+        {
+            return new TimeSpanType(seconds * 1000000000);
+        }
+
         public static TimeSpanType FromTicks(ulong ticks, ulong frequency)
         {
-            return new TimeSpanType((long)ticks * 1000000000 / (long)frequency);
+            return FromSeconds((long)ticks / (long)frequency);
         }
     }
 

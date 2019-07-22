@@ -759,6 +759,19 @@ namespace ChocolArm64.Memory
             }
         }
 
+        public unsafe T ReadStruct<T>(long position)
+            where T : struct
+        {
+            int size = Marshal.SizeOf<T>();
+
+            byte[] data = ReadBytes(position, size);
+
+            fixed (byte* ptr = data)
+            {
+                return Marshal.PtrToStructure<T>((IntPtr)ptr);
+            }
+        }
+
         public void WriteSByte(long position, sbyte value)
         {
             WriteByte(position, (byte)value);
