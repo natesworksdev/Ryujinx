@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public bool IsStandardNetworkSystemClockAccuracySufficient(KThread thread)
         {
-            StandardSteadyClockCore steadyClockCore  = GetSteadyClockCore();
+            SteadyClockCore         steadyClockCore  = GetSteadyClockCore();
             SteadyClockTimePoint    currentTimePoint = steadyClockCore.GetCurrentTimePoint(thread);
 
             bool isStandardNetworkClockSufficientAccuracy = false;

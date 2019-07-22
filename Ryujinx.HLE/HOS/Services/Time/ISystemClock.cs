@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetCurrentTime() -> nn::time::PosixTime
         public ResultCode GetCurrentTime(ServiceCtx context)
         {
-            StandardSteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
+            SteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(context.Thread);
 
             ResultCode result = _clockCore.GetSystemClockContext(context.Thread, out SystemClockContext clockContext);
@@ -50,7 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
 
             long                 posixTime        = context.RequestData.ReadInt64();
-            StandardSteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
+            SteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
             SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(context.Thread);
 
             SystemClockContext clockContext = new SystemClockContext()

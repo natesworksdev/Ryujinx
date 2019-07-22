@@ -952,6 +952,21 @@ namespace ChocolArm64.Memory
             }
         }
 
+        public unsafe void WriteStruct<T>(long position, T value)
+            where T : struct
+        {
+            long size = Marshal.SizeOf<T>();
+
+            byte[] data = new byte[size];
+
+            fixed (byte* ptr = data)
+            {
+                Marshal.StructureToPtr<T>(value, (IntPtr)ptr, false);
+            }
+
+            WriteBytes(position, data);
+        }
+
         public void CopyBytes(long src, long dst, long size)
         {
             // Note: This will be moved later.
