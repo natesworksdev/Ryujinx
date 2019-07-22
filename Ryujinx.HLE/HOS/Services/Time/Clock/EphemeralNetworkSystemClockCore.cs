@@ -21,8 +21,6 @@
 
         public override ResultCode Flush(SystemClockContext context)
         {
-            // TODO: set:sys SetUserSystemClockContext
-
             return ResultCode.Success;
         }
     }
