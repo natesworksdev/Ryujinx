@@ -30,6 +30,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.BranchIfTrue,            GenerateBranchIfTrue);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
+            Add(Instruction.Clobber,                 GenerateClobber);
             Add(Instruction.CompareAndSwap128,       GenerateCompareAndSwap128);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
@@ -46,6 +47,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ConvertToFP,             GenerateConvertToFP);
             Add(Instruction.Copy,                    GenerateCopy);
             Add(Instruction.CountLeadingZeros,       GenerateCountLeadingZeros);
+            Add(Instruction.CpuId,                   GenerateCpuId);
             Add(Instruction.Divide,                  GenerateDivide);
             Add(Instruction.DivideUI,                GenerateDivideUI);
             Add(Instruction.Fill,                    GenerateFill);
@@ -255,6 +257,11 @@ namespace ARMeilleure.CodeGen.X86
 
                         EnsureSameType(dest, src1);
 
+                        if (!HardwareCapabilities.SupportsVexEncoding)
+                        {
+                            EnsureSameReg(dest, src1);
+                        }
+
                         Debug.Assert(!dest.Type.IsInteger());
                         Debug.Assert(!src2.Type.IsInteger() || src2.Kind == OperandKind.Constant);
 
@@ -270,6 +277,11 @@ namespace ARMeilleure.CodeGen.X86
                         Operand src2 = operation.GetSource(1);
 
                         EnsureSameType(dest, src1);
+
+                        if (!HardwareCapabilities.SupportsVexEncoding)
+                        {
+                            EnsureSameReg(dest, src1);
+                        }
 
                         Debug.Assert(!dest.Type.IsInteger() && src2.Kind == OperandKind.Constant);
 
@@ -289,7 +301,18 @@ namespace ARMeilleure.CodeGen.X86
 
                         Debug.Assert(!dest.Type.IsInteger());
 
-                        context.Assembler.WriteInstruction(info.Inst, dest, src1, src2, src3);
+                        if (info.Inst == X86Instruction.Pblendvb && HardwareCapabilities.SupportsVexEncoding)
+                        {
+                            context.Assembler.WriteInstruction(X86Instruction.Vpblendvb, dest, src1, src2, src3);
+                        }
+                        else
+                        {
+                            EnsureSameReg(dest, src1);
+
+                            Debug.Assert(src3.GetRegister().Index == 0);
+
+                            context.Assembler.WriteInstruction(info.Inst, dest, src1, src2);
+                        }
 
                         break;
                     }
@@ -302,6 +325,11 @@ namespace ARMeilleure.CodeGen.X86
                         Operand src3 = operation.GetSource(2);
 
                         EnsureSameType(dest, src1, src2);
+
+                        if (!HardwareCapabilities.SupportsVexEncoding)
+                        {
+                            EnsureSameReg(dest, src1);
+                        }
 
                         Debug.Assert(!dest.Type.IsInteger() && src3.Kind == OperandKind.Constant);
 
@@ -442,6 +470,12 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateCall(CodeGenContext context, Operation operation)
         {
             context.Assembler.Call(operation.GetSource(0));
+        }
+
+        private static void GenerateClobber(CodeGenContext context, Operation operation)
+        {
+            // This is only used to indicate that a register is clobbered to the
+            // register allocator, we don't need to produce any code.
         }
 
         private static void GenerateCompareAndSwap128(CodeGenContext context, Operation operation)
@@ -644,6 +678,11 @@ namespace ARMeilleure.CodeGen.X86
             //return the number of 0 bits on the high end. So, we invert the result
             //of the BSR using XOR to get the correct value.
             context.Assembler.Xor(dest, new Operand(operandMask), OperandType.I32);
+        }
+
+        private static void GenerateCpuId(CodeGenContext context, Operation operation)
+        {
+            context.Assembler.Cpuid();
         }
 
         private static void GenerateDivide(CodeGenContext context, Operation operation)

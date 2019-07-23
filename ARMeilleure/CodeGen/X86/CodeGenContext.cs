@@ -22,8 +22,7 @@ namespace ARMeilleure.CodeGen.X86
         public BasicBlock CurrBlock { get; private set; }
 
         public int CallArgsRegionSize { get; }
-
-        public int VecCalleeSaveSize { get; }
+        public int VecCalleeSaveSize  { get; }
 
         private long[] _blockOffsets;
 
@@ -82,8 +81,7 @@ namespace ARMeilleure.CodeGen.X86
             Assembler = new Assembler(stream);
 
             CallArgsRegionSize = GetCallArgsRegionSize(allocResult, maxCallArgs, out int vecCalleeSaveSize);
-
-            VecCalleeSaveSize = vecCalleeSaveSize;
+            VecCalleeSaveSize  = vecCalleeSaveSize;
 
             _blockOffsets = new long[blocksCount];
 

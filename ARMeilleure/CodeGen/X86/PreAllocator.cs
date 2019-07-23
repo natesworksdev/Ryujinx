@@ -255,14 +255,48 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleFixedRegisterCopy(LinkedListNode<Node> node, Operation operation)
         {
+            Instruction inst = operation.Inst;
+
+            Operand dest = operation.Dest;
+
+            //Handle the many restrictions of the CPU Id instruction:
+            //- EAX controls the information returned by this instruction.
+            //- When EAX is 1, feature information is returned.
+            //- The information is written to registers EAX, EBX, ECX and EDX.
+            if (inst == Instruction.CpuId)
+            {
+                Debug.Assert(dest.Type == OperandType.I64);
+
+                Operand eax = Gpr(X86Register.Rax, OperandType.I32);
+                Operand ebx = Gpr(X86Register.Rbx, OperandType.I32);
+                Operand ecx = Gpr(X86Register.Rcx, OperandType.I32);
+                Operand edx = Gpr(X86Register.Rdx, OperandType.I32);
+
+                // Value 0x01 = Version, family and feature information.
+                node.List.AddBefore(node, new Operation(Instruction.Copy, eax, Const(1)));
+
+                // Copy results to the destination register.
+                // The values are split into 2 32-bits registers, we merge them
+                // into a single 64-bits register.
+                Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
+
+                node.List.AddAfter(node, new Operation(Instruction.BitwiseOr,    dest, dest, rcx));
+                node.List.AddAfter(node, new Operation(Instruction.ShiftLeft,    dest, dest, Const(32)));
+                node.List.AddAfter(node, new Operation(Instruction.ZeroExtend32, dest, edx));
+
+                // We don't care about those two, but their values are overwritten,
+                // so we need to take that into account.
+                node.List.AddAfter(node, new Operation(Instruction.Clobber, ebx));
+                node.List.AddAfter(node, new Operation(Instruction.Clobber, eax));
+
+                operation.Dest = null;
+            }
+
             if (operation.SourcesCount == 0)
             {
                 return;
             }
 
-            Instruction inst = operation.Inst;
-
-            Operand dest = operation.Dest;
             Operand src1 = operation.GetSource(0);
 
             //Handle the many restrictions of the division instructions:
@@ -278,9 +312,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 operation.SetSource(0, rax);
 
-                Operation clobberCopyOp = new Operation(Instruction.Copy, rdx, rdx);
-
-                node.List.AddBefore(node, clobberCopyOp);
+                node.List.AddBefore(node, new Operation(Instruction.Clobber, rdx));
 
                 node.List.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
 
@@ -320,11 +352,8 @@ namespace ARMeilleure.CodeGen.X86
                     node.List.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
                 }
 
-                Operand src2 = operation.GetSource(1);
-                Operand src3 = operation.GetSource(2);
-
-                SplitOperand(src2, X86Register.Rax, X86Register.Rdx);
-                SplitOperand(src3, X86Register.Rbx, X86Register.Rcx);
+                SplitOperand(operation.GetSource(1), X86Register.Rax, X86Register.Rdx);
+                SplitOperand(operation.GetSource(2), X86Register.Rbx, X86Register.Rcx);
 
                 Operand rax = Gpr(X86Register.Rax, OperandType.I64);
                 Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
@@ -334,6 +363,8 @@ namespace ARMeilleure.CodeGen.X86
 
                 operation.SetSource(1, Undef());
                 operation.SetSource(2, Undef());
+
+                operation.Dest = null;
             }
 
             //The shift register is always implied to be CL (low 8-bits of RCX or ECX).
@@ -344,6 +375,22 @@ namespace ARMeilleure.CodeGen.X86
                 node.List.AddBefore(node, new Operation(Instruction.Copy, rcx, operation.GetSource(1)));
 
                 operation.SetSource(1, rcx);
+            }
+
+            //Handle intrinsics.
+            if (IsIntrinsic(inst))
+            {
+                IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
+
+                //PBLENDVB last operand is always implied to be XMM0 when VEX is not supported.
+                if (intrinOp.Intrinsic == Intrinsic.X86Pblendvb && !HardwareCapabilities.SupportsVexEncoding)
+                {
+                    Operand xmm0 = Xmm(X86Register.Xmm0, OperandType.V128);
+
+                    node.List.AddBefore(node, new Operation(Instruction.Copy, xmm0, operation.GetSource(2)));
+
+                    operation.SetSource(2, xmm0);
+                }
             }
         }
 
@@ -696,8 +743,9 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsLongConst(Operand operand)
         {
-            long value = operand.Type == OperandType.I32 ? operand.AsInt32()
-                                                         : operand.AsInt64();
+            long value = operand.Type == OperandType.I32
+                ? operand.AsInt32()
+                : operand.AsInt64();
 
             return !ConstFitsOnS32(value);
         }
@@ -763,7 +811,9 @@ namespace ARMeilleure.CodeGen.X86
             {
                 bool isUnary = operation.SourcesCount < 2;
 
-                return !HardwareCapabilities.SupportsVexEncoding && !isUnary;
+                bool hasVecDest = operation.Dest != null && operation.Dest.Type == OperandType.V128;
+
+                return !HardwareCapabilities.SupportsVexEncoding && !isUnary && hasVecDest;
             }
 
             return false;
@@ -775,10 +825,8 @@ namespace ARMeilleure.CodeGen.X86
             {
                 case Instruction.Copy:
                 case Instruction.LoadArgument:
-                case Instruction.LoadFromContext:
                 case Instruction.Spill:
                 case Instruction.SpillArg:
-                case Instruction.StoreToContext:
                     return true;
             }
 

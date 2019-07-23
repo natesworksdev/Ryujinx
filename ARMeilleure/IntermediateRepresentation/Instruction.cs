@@ -67,6 +67,8 @@ namespace ARMeilleure.IntermediateRepresentation
         ZeroExtend32,
         ZeroExtend8,
 
+        Clobber,
+        CpuId,
         Extended,
         Fill,
         LoadFromContext,

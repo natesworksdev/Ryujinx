@@ -89,6 +89,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cmpxchg16b, new InstructionInfo(0x01000fc7, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.RexW));
             Add(X86Instruction.Comisd,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Comiss,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstructionFlags.Vex));
+            Add(X86Instruction.Cpuid,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fa2, InstructionFlags.RegOnly));
             Add(X86Instruction.Cvtdq2pd,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstructionFlags.Vex | InstructionFlags.PrefixF3));
             Add(X86Instruction.Cvtdq2ps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5b, InstructionFlags.Vex));
             Add(X86Instruction.Cvtpd2dq,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstructionFlags.Vex | InstructionFlags.PrefixF2));
@@ -151,7 +152,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Pandn,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fdf, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pavgb,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe0, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pavgw,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe3, InstructionFlags.Vex | InstructionFlags.Prefix66));
-            Add(X86Instruction.Pblendvb,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4c, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Pblendvb,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3810, InstructionFlags.Prefix66));
             Add(X86Instruction.Pcmpeqb,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f74, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pcmpeqd,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f76, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Pcmpeqq,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3829, InstructionFlags.Vex | InstructionFlags.Prefix66));
@@ -246,6 +247,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Unpckhps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f15, InstructionFlags.Vex));
             Add(X86Instruction.Unpcklpd,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Unpcklps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstructionFlags.Vex));
+            Add(X86Instruction.Vpblendvb,  new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4c, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Xor,        new InstructionInfo(0x00000031, 0x06000083, 0x06000081, BadOp,      0x00000033, InstructionFlags.None));
             Add(X86Instruction.Xorpd,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Xorps,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex));
@@ -334,6 +336,11 @@ namespace ARMeilleure.CodeGen.X86
         public void Comiss(Operand src1, Operand src2)
         {
             WriteInstruction(src1, null, src2, X86Instruction.Comiss);
+        }
+
+        public void Cpuid()
+        {
+            WriteInstruction(null, null, OperandType.None, X86Instruction.Cpuid);
         }
 
         public void Cvtsd2ss(Operand dest, Operand src1, Operand src2)
@@ -794,7 +801,9 @@ namespace ARMeilleure.CodeGen.X86
             Operand src2,
             Operand src3)
         {
-            //TODO: Non-VEX version.
+            // 3+ operands can only be encoded with the VEX encoding scheme.
+            Debug.Assert(HardwareCapabilities.SupportsVexEncoding);
+
             WriteInstruction(dest, src1, src2, inst);
 
             WriteByte((byte)(src3.AsByte() << 4));
@@ -1166,7 +1175,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            if ((flags & InstructionFlags.RegOnly) != 0)
+            if (dest != null && (flags & InstructionFlags.RegOnly) != 0)
             {
                 opCode += dest.GetRegister().Index & 7;
             }
