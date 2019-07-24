@@ -143,7 +143,7 @@ namespace Ryujinx.UI
                                     applicationIcon = ms.ToArray();
                                 }
                             }
-                            catch (FileNotFoundException)
+                            catch (HorizonResultException)
                             {
                                 IDirectory controlDir = controlFs.OpenDirectory("./", OpenDirectoryMode.All);
                                 foreach (DirectoryEntry entry in controlDir.Read())

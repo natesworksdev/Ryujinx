@@ -21,8 +21,6 @@ namespace Ryujinx
 
             Profile.Initialize();
 
-            ApplicationLibrary.Init();
-
             Application.Init();
 
             Application gtkapp = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
