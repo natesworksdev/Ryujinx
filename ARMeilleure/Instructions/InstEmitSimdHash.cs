@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
 
             Operand res = context.Call(new _U32_U32(SoftFallback.FixedRotate), ne);
 
-            context.Copy(GetVec(op.Rd), res);
+            context.Copy(GetVec(op.Rd), context.VectorCreateScalar(res));
         }
 
         public static void Sha1m_V(ArmEmitterContext context)

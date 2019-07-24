@@ -324,7 +324,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThan, scalar: true, reverseOps: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: true);
             }
             else
             {
@@ -336,7 +336,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThan, scalar: false, reverseOps: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: false);
             }
             else
             {
@@ -348,7 +348,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThanOrEqual, scalar: true, reverseOps: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: true);
             }
             else
             {
@@ -360,7 +360,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThanOrEqual, scalar: false, reverseOps: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: false);
             }
             else
             {
@@ -372,7 +372,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThanOrEqual, scalar: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: true, isLeOrLt: true);
             }
             else
             {
@@ -384,7 +384,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThanOrEqual, scalar: false);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: false, isLeOrLt: true);
             }
             else
             {
@@ -396,7 +396,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThan, scalar: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: true, isLeOrLt: true);
             }
             else
             {
@@ -408,7 +408,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThan, scalar: false);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: false, isLeOrLt: true);
             }
             else
             {
@@ -655,16 +655,16 @@ namespace ARMeilleure.Instructions
 
         private enum CmpCondition
         {
-            Equal           = 0,
-            LessThan        = 1,
-            LessThanOrEqual = 2
+            Equal              = 0,
+            GreaterThanOrEqual = 5,
+            GreaterThan        = 6
         }
 
         private static void EmitCmpSseOrSse2OpF(
             ArmEmitterContext context,
             CmpCondition cond,
             bool scalar,
-            bool reverseOps = false)
+            bool isLeOrLt = false)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -677,7 +677,7 @@ namespace ARMeilleure.Instructions
             {
                 Intrinsic inst = scalar ? Intrinsic.X86Cmpss : Intrinsic.X86Cmpps;
 
-                Operand res = reverseOps
+                Operand res = isLeOrLt
                     ? context.AddIntrinsic(inst, m, n, Const((int)cond))
                     : context.AddIntrinsic(inst, n, m, Const((int)cond));
 
@@ -696,7 +696,7 @@ namespace ARMeilleure.Instructions
             {
                 Intrinsic inst = scalar ? Intrinsic.X86Cmpsd : Intrinsic.X86Cmppd;
 
-                Operand res = reverseOps
+                Operand res = isLeOrLt
                     ? context.AddIntrinsic(inst, m, n, Const((int)cond))
                     : context.AddIntrinsic(inst, n, m, Const((int)cond));
 

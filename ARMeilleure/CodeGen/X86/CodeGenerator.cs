@@ -625,6 +625,8 @@ namespace ARMeilleure.CodeGen.X86
             Operand dest   = operation.Dest;
             Operand source = operation.GetSource(0);
 
+            EnsureSameType(dest, source);
+
             Debug.Assert(dest.Type.IsInteger() || source.Kind != OperandKind.Constant);
 
             //Moves to the same register are useless.
