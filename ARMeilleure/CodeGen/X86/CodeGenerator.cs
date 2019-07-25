@@ -625,11 +625,6 @@ namespace ARMeilleure.CodeGen.X86
             Operand dest   = operation.Dest;
             Operand source = operation.GetSource(0);
 
-            if (dest.Type != source.Type)
-            {
-                System.Console.WriteLine(dest.Type + " " + source.Type);
-            }
-
             EnsureSameType(dest, source);
 
             Debug.Assert(dest.Type.IsInteger() || source.Kind != OperandKind.Constant);

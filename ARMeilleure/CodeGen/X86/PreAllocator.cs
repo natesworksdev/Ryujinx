@@ -226,7 +226,7 @@ namespace ARMeilleure.CodeGen.X86
                     Operand edx = Gpr(X86Register.Rdx, OperandType.I32);
 
                     // Value 0x01 = Version, family and feature information.
-                    node = nodes.AddBefore(node, new Operation(Instruction.Copy, eax, Const(1)));
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, eax, Const(1)));
 
                     // We don't care about those two, but their values are overwritten,
                     // so we need to take that into account.
