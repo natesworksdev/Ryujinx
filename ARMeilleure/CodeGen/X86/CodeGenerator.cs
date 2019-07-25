@@ -625,6 +625,11 @@ namespace ARMeilleure.CodeGen.X86
             Operand dest   = operation.Dest;
             Operand source = operation.GetSource(0);
 
+            if (dest.Type != source.Type)
+            {
+                System.Console.WriteLine(dest.Type + " " + source.Type);
+            }
+
             EnsureSameType(dest, source);
 
             Debug.Assert(dest.Type.IsInteger() || source.Kind != OperandKind.Constant);
@@ -1073,15 +1078,61 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type == OperandType.I32)
             {
-                context.Assembler.Pextrd(dest, src1, index);
+                Debug.Assert(index < 4);
+
+                if (HardwareCapabilities.SupportsSse41)
+                {
+                    context.Assembler.Pextrd(dest, src1, index);
+                }
+                else
+                {
+                    if (index != 0)
+                    {
+                        int mask0 = 0b11_10_01_00;
+                        int mask1 = 0b11_10_01_00;
+
+                        mask0 = BitUtils.RotateRight(mask0,     index * 2, 8);
+                        mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
+
+                        context.Assembler.Pshufd(src1, src1, (byte)mask0);
+                        context.Assembler.Movd  (dest, src1);
+                        context.Assembler.Pshufd(src1, src1, (byte)mask1);
+                    }
+                    else
+                    {
+                        context.Assembler.Movd(dest, src1);
+                    }
+                }
             }
             else if (dest.Type == OperandType.I64)
             {
-                context.Assembler.Pextrq(dest, src1, index);
+                Debug.Assert(index < 2);
+
+                if (HardwareCapabilities.SupportsSse41)
+                {
+                    context.Assembler.Pextrq(dest, src1, index);
+                }
+                else
+                {
+                    if (index != 0)
+                    {
+                        const byte mask = 0b01_00_11_10;
+
+                        context.Assembler.Pshufd(src1, src1, mask);
+                        context.Assembler.Movq  (dest, src1);
+                        context.Assembler.Pshufd(src1, src1, mask);
+                    }
+                    else
+                    {
+                        context.Assembler.Movq(dest, src1);
+                    }
+                }
             }
             else
             {
-                //Floating-point type.
+                Debug.Assert(index < (dest.Type == OperandType.FP32 ? 4 : 2));
+
+                //Floating-point types.
                 if ((index >= 2 && dest.Type == OperandType.FP32) ||
                     (index == 1 && dest.Type == OperandType.FP64))
                 {
@@ -1111,6 +1162,8 @@ namespace ARMeilleure.CodeGen.X86
 
             byte index = src2.AsByte();
 
+            Debug.Assert(index < 8);
+
             context.Assembler.Pextrw(dest, src1, index);
         }
 
@@ -1125,8 +1178,25 @@ namespace ARMeilleure.CodeGen.X86
 
             byte index = src2.AsByte();
 
-            //TODO: SSE/SSE2 version.
-            context.Assembler.Pextrb(dest, src1, index);
+            Debug.Assert(index < 16);
+
+            if (HardwareCapabilities.SupportsSse41)
+            {
+                context.Assembler.Pextrb(dest, src1, index);
+            }
+            else
+            {
+                context.Assembler.Pextrw(dest, src1, (byte)(index >> 1));
+
+                if ((index & 1) != 0)
+                {
+                    context.Assembler.Shr(dest, new Operand(8), OperandType.I32);
+                }
+                else
+                {
+                    context.Assembler.Movzx8(dest, dest, OperandType.I32);
+                }
+            }
         }
 
         private static void GenerateVectorInsert(CodeGenContext context, Operation operation)
@@ -1136,27 +1206,97 @@ namespace ARMeilleure.CodeGen.X86
             Operand src2 = operation.GetSource(1); //Value
             Operand src3 = operation.GetSource(2); //Index
 
+            if (!HardwareCapabilities.SupportsVexEncoding)
+            {
+                EnsureSameReg(dest, src1);
+            }
+
             Debug.Assert(src1.Type == OperandType.V128);
             Debug.Assert(src3.Kind == OperandKind.Constant);
 
             byte index = src3.AsByte();
 
+            void InsertIntSse2(int words)
+            {
+                if (dest.GetRegister() != src1.GetRegister())
+                {
+                    context.Assembler.Movdqu(dest, src1);
+                }
+
+                for (int word = 0; word < words; word++)
+                {
+                    // Insert lower 16-bits.
+                    context.Assembler.Pinsrw(dest, dest, src2, (byte)(index * words + word));
+
+                    // Move next word down.
+                    context.Assembler.Ror(src2, new Operand(16), src2.Type);
+                }
+            }
+
             if (src2.Type == OperandType.I32)
             {
-                //TODO: SSE/SSE2 version.
-                context.Assembler.Pinsrd(dest, src1, src2, index);
+                Debug.Assert(index < 4);
+
+                if (HardwareCapabilities.SupportsSse41)
+                {
+                    context.Assembler.Pinsrd(dest, src1, src2, index);
+                }
+                else
+                {
+                    InsertIntSse2(2);
+                }
             }
             else if (src2.Type == OperandType.I64)
             {
-                //TODO: SSE/SSE2 version.
-                context.Assembler.Pinsrq(dest, src1, src2, index);
+                Debug.Assert(index < 2);
+
+                if (HardwareCapabilities.SupportsSse41)
+                {
+                    context.Assembler.Pinsrq(dest, src1, src2, index);
+                }
+                else
+                {
+                    InsertIntSse2(4);
+                }
             }
             else if (src2.Type == OperandType.FP32)
             {
+                Debug.Assert(index < 4);
+
                 if (index != 0)
                 {
-                    //TODO: SSE/SSE2 version.
-                    context.Assembler.Insertps(dest, src1, src2, (byte)(index << 4));
+                    if (HardwareCapabilities.SupportsSse41)
+                    {
+                        context.Assembler.Insertps(dest, src1, src2, (byte)(index << 4));
+                    }
+                    else
+                    {
+                        if (src1.GetRegister() == src2.GetRegister())
+                        {
+                            int mask = 0b11_10_01_00;
+
+                            mask &= ~(0b11 << index * 2);
+
+                            context.Assembler.Pshufd(dest, src1, (byte)mask);
+                        }
+                        else
+                        {
+                            int mask0 = 0b11_10_01_00;
+                            int mask1 = 0b11_10_01_00;
+
+                            mask0 = BitUtils.RotateRight(mask0,     index * 2, 8);
+                            mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
+
+                            if (dest.GetRegister() != src1.GetRegister())
+                            {
+                                context.Assembler.Movdqu(dest, src1);
+                            }
+
+                            context.Assembler.Pshufd(dest, dest, (byte)mask0);
+                            context.Assembler.Movss (dest, dest, src2);
+                            context.Assembler.Pshufd(dest, dest, (byte)mask1);
+                        }
+                    }
                 }
                 else
                 {
@@ -1165,6 +1305,8 @@ namespace ARMeilleure.CodeGen.X86
             }
             else /* if (src2.Type == OperandType.FP64) */
             {
+                Debug.Assert(index < 2);
+
                 if (index != 0)
                 {
                     context.Assembler.Movlhps(dest, src1, src2);
@@ -1183,6 +1325,11 @@ namespace ARMeilleure.CodeGen.X86
             Operand src2 = operation.GetSource(1); //Value
             Operand src3 = operation.GetSource(2); //Index
 
+            if (!HardwareCapabilities.SupportsVexEncoding)
+            {
+                EnsureSameReg(dest, src1);
+            }
+
             Debug.Assert(src1.Type == OperandType.V128);
             Debug.Assert(src3.Kind == OperandKind.Constant);
 
@@ -1198,12 +1345,22 @@ namespace ARMeilleure.CodeGen.X86
             Operand src2 = operation.GetSource(1); //Value
             Operand src3 = operation.GetSource(2); //Index
 
+            // It's not possible to emulate this instruction without
+            // SSE 4.1 support without the use of a temporary register,
+            // so we instead handle that case on the pre-allocator when
+            // SSE 4.1 is not supported on the CPU.
+            Debug.Assert(HardwareCapabilities.SupportsSse41);
+
+            if (!HardwareCapabilities.SupportsVexEncoding)
+            {
+                EnsureSameReg(dest, src1);
+            }
+
             Debug.Assert(src1.Type == OperandType.V128);
             Debug.Assert(src3.Kind == OperandKind.Constant);
 
             byte index = src3.AsByte();
 
-            //TODO: SSE/SSE2 version.
             context.Assembler.Pinsrb(dest, src1, src2, index);
         }
 
