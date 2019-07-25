@@ -14,6 +14,9 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class CodeGenerator
     {
+        private const int PageSize       = 0x1000;
+        private const int StackGuardSize = 0x2000;
+
         private static Action<CodeGenContext, Operation>[] _instTable;
 
         static CodeGenerator()
@@ -1536,6 +1539,11 @@ namespace ARMeilleure.CodeGen.X86
 
             reservedStackSize += context.VecCalleeSaveSize;
 
+            if (reservedStackSize >= StackGuardSize)
+            {
+                GenerateInlineStackProbe(context, reservedStackSize);
+            }
+
             if (reservedStackSize != 0)
             {
                 context.Assembler.Sub(rsp, new Operand(reservedStackSize), OperandType.I64);
@@ -1583,6 +1591,29 @@ namespace ARMeilleure.CodeGen.X86
                 context.Assembler.Pop(Register((X86Register)bit));
 
                 mask &= ~(1 << bit);
+            }
+        }
+
+        private static void GenerateInlineStackProbe(CodeGenContext context, int size)
+        {
+            // Windows does lazy stack allocation, and there are just 2
+            // guard pages on the end of the stack. So, if the allocation
+            // size we make is greater than this guard size, we must ensure
+            // that the OS will map all pages that we'll use. We do that by
+            // doing a dummy read on those pages, forcing a page fault and
+            // the OS to map them. If they are already mapped, nothing happens.
+            const int pageMask = PageSize - 1;
+
+            size = (size + pageMask) & ~pageMask;
+
+            Operand rsp  = Register(X86Register.Rsp);
+            Operand temp = Register(CallingConvention.GetIntReturnRegister());            
+
+            for (int offset = PageSize; offset < size; offset += PageSize)
+            {
+                Operand memOp = new MemoryOperand(OperandType.I32, rsp, null, Multiplier.x1, -offset);;
+
+                context.Assembler.Mov(temp, memOp, OperandType.I32);
             }
         }
 
