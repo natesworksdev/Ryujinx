@@ -7,6 +7,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     [StructLayout(LayoutKind.Sequential)]
     struct TimeSpanType
     {
+        private const long NanoSecondsPerSecond = 1000000000;
+
         public long NanoSeconds;
 
         public TimeSpanType(long nanoSeconds)
@@ -16,12 +18,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public long ToSeconds()
         {
-            return NanoSeconds / 1000000000;
+            return NanoSeconds / NanoSecondsPerSecond;
         }
 
         public static TimeSpanType FromSeconds(long seconds)
         {
-            return new TimeSpanType(seconds * 1000000000);
+            return new TimeSpanType(seconds * NanoSecondsPerSecond);
         }
 
         public static TimeSpanType FromTicks(ulong ticks, ulong frequency)
@@ -65,7 +67,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public SteadyClockTimePoint SteadyTimePoint;
     }
 
-
     [StructLayout(LayoutKind.Sequential, Size = 0xD0)]
     struct ClockSnapshot
     {
@@ -86,7 +87,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public bool   IsAutomaticCorrectionEnabled;
         public byte   Type;
         public ushort Unknown;
-
 
         public static ResultCode GetCurrentTime(out long currentTime, SteadyClockTimePoint steadyClockTimePoint, SystemClockContext context)
         {

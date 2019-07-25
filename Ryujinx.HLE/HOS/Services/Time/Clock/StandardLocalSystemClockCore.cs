@@ -2,18 +2,18 @@
 {
     class StandardLocalSystemClockCore : SystemClockCore
     {
-        private static StandardLocalSystemClockCore instance;
+        private static StandardLocalSystemClockCore _instance;
 
         public static StandardLocalSystemClockCore Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new StandardLocalSystemClockCore(StandardSteadyClockCore.Instance);
+                    _instance = new StandardLocalSystemClockCore(StandardSteadyClockCore.Instance);
                 }
 
-                return instance;
+                return _instance;
             }
         }
 

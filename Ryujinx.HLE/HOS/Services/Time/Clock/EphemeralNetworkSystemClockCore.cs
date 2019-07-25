@@ -2,18 +2,18 @@
 {
     class EphemeralNetworkSystemClockCore : SystemClockCore
     {
-        private static EphemeralNetworkSystemClockCore instance;
+        private static EphemeralNetworkSystemClockCore _instance;
 
         public static EphemeralNetworkSystemClockCore Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new EphemeralNetworkSystemClockCore(TickBasedSteadyClockCore.Instance);
+                    _instance = new EphemeralNetworkSystemClockCore(TickBasedSteadyClockCore.Instance);
                 }
 
-                return instance;
+                return _instance;
             }
         }
 

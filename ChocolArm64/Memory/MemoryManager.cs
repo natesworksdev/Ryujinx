@@ -759,19 +759,6 @@ namespace ChocolArm64.Memory
             }
         }
 
-        public unsafe T ReadStruct<T>(long position)
-            where T : struct
-        {
-            int size = Marshal.SizeOf<T>();
-
-            byte[] data = ReadBytes(position, size);
-
-            fixed (byte* ptr = data)
-            {
-                return Marshal.PtrToStructure<T>((IntPtr)ptr);
-            }
-        }
-
         public void WriteSByte(long position, sbyte value)
         {
             WriteByte(position, (byte)value);
@@ -963,21 +950,6 @@ namespace ChocolArm64.Memory
                 position += copySize;
                 offset   += copySize;
             }
-        }
-
-        public unsafe void WriteStruct<T>(long position, T value)
-            where T : struct
-        {
-            long size = Marshal.SizeOf<T>();
-
-            byte[] data = new byte[size];
-
-            fixed (byte* ptr = data)
-            {
-                Marshal.StructureToPtr<T>(value, (IntPtr)ptr, false);
-            }
-
-            WriteBytes(position, data);
         }
 
         public void CopyBytes(long src, long dst, long size)

@@ -5,18 +5,18 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class TickBasedSteadyClockCore : SteadyClockCore
     {
-        private static TickBasedSteadyClockCore instance;
+        private static TickBasedSteadyClockCore _instance;
 
         public static TickBasedSteadyClockCore Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new TickBasedSteadyClockCore();
+                    _instance = new TickBasedSteadyClockCore();
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         {
             SteadyClockTimePoint result = new SteadyClockTimePoint
             {
-                TimePoint = 0,
+                TimePoint     = 0,
                 ClockSourceId = GetClockSourceId()
             };
 

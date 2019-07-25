@@ -11,18 +11,18 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         private TimeSpanType _testOffset;
         private TimeSpanType _internalOffset;
 
-        private static StandardSteadyClockCore instance;
+        private static StandardSteadyClockCore _instance;
 
         public static StandardSteadyClockCore Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new StandardSteadyClockCore();
+                    _instance = new StandardSteadyClockCore();
                 }
 
-                return instance;
+                return _instance;
             }
         }
 

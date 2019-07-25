@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SystemClockCore
     {
-        private SteadyClockCore          _steadyClockCore;
-        private SystemClockContext      _context;
+        private SteadyClockCore    _steadyClockCore;
+        private SystemClockContext _context;
 
         public SystemClockCore(SteadyClockCore steadyClockCore)
         {

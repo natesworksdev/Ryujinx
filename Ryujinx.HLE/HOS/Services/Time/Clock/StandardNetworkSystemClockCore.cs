@@ -6,18 +6,18 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     {
         private TimeSpanType       _standardNetworkClockSufficientAccuracy;
 
-        private static StandardNetworkSystemClockCore instance;
+        private static StandardNetworkSystemClockCore _instance;
 
         public static StandardNetworkSystemClockCore Instance
         {
             get
             {
-                if (instance == null)
+                if (_instance == null)
                 {
-                    instance = new StandardNetworkSystemClockCore(StandardSteadyClockCore.Instance);
+                    _instance = new StandardNetworkSystemClockCore(StandardSteadyClockCore.Instance);
                 }
 
-                return instance;
+                return _instance;
             }
         }
 
