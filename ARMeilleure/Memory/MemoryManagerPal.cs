@@ -59,7 +59,14 @@ namespace ARMeilleure.Memory
 
                 ControlFlowGraph cfg = context.GetControlFlowGraph();
 
-                _compareExchange128 = Compiler.Compile<CompareExchange128>(cfg, OperandType.V128);
+                OperandType[] argTypes = new OperandType[]
+                {
+                    OperandType.I64,
+                    OperandType.V128,
+                    OperandType.V128
+                };
+
+                _compareExchange128 = Compiler.Compile<CompareExchange128>(cfg, argTypes, OperandType.V128);
             }
         }
     }

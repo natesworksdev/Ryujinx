@@ -16,6 +16,8 @@ namespace ARMeilleure.CodeGen.X86
         {
             maxCallArgs = -1;
 
+            CallConvName callConv = CallingConvention.GetCurrentCallConv();
+
             Operand[] preservedArgs = new Operand[CallingConvention.GetArgumentsOnRegsCount()];
 
             foreach (BasicBlock block in cctx.Cfg.Blocks)
@@ -58,7 +60,14 @@ namespace ARMeilleure.CodeGen.X86
 
                             // Copy values to registers expected by the function
                             // being called, as mandated by the ABI.
-                            node = HandleCallWindowsAbi(stackAlloc, node, operation);
+                            if (callConv == CallConvName.Windows)
+                            {
+                                node = HandleCallWindowsAbi(stackAlloc, node, operation);
+                            }
+                            else /* if (callConv == CallConvName.SystemV) */
+                            {
+                                node = HandleCallSystemVAbi(node, operation);
+                            }
                             break;
 
                         case Instruction.ConvertToFPUI:
@@ -66,7 +75,14 @@ namespace ARMeilleure.CodeGen.X86
                             break;
 
                         case Instruction.LoadArgument:
-                            HandleLoadArgumentWindowsAbi(cctx, node, preservedArgs, operation);
+                            if (callConv == CallConvName.Windows)
+                            {
+                                HandleLoadArgumentWindowsAbi(cctx, node, preservedArgs, operation);
+                            }
+                            else
+                            {
+                                HandleLoadArgumentSystemVAbi(cctx, node, preservedArgs, operation);
+                            }
                             break;
 
                         case Instruction.Negate:
@@ -77,7 +93,14 @@ namespace ARMeilleure.CodeGen.X86
                             break;
 
                         case Instruction.Return:
-                            HandleReturnWindowsAbi(cctx, node, preservedArgs, operation);
+                            if (callConv == CallConvName.Windows)
+                            {
+                                HandleReturnWindowsAbi(cctx, node, preservedArgs, operation);
+                            }
+                            else /* if (callConv == CallConvName.SystemV) */
+                            {
+                                HandleReturnSystemVAbi(node, operation);
+                            }
                             break;
 
                         case Instruction.VectorInsert8:
@@ -612,9 +635,9 @@ namespace ARMeilleure.CodeGen.X86
                     argReg = Xmm(CallingConvention.GetVecArgumentRegister(argIndex), source.Type);
                 }
 
-                Operation srcCopyOp = new Operation(Instruction.Copy, argReg, source);
+                Operation copyOp = new Operation(Instruction.Copy, argReg, source);
 
-                HandleConstantCopy(nodes.AddBefore(node, srcCopyOp), srcCopyOp);
+                HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
 
                 operation.SetSource(index + 1, argReg);
             }
@@ -656,20 +679,120 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     RegisterType regType = dest.Type.ToRegisterType();
 
-                    Operand retReg;
+                    Operand retReg = regType == RegisterType.Integer
+                        ? Gpr(CallingConvention.GetIntReturnRegister(), dest.Type)
+                        : Xmm(CallingConvention.GetVecReturnRegister(), dest.Type);
 
-                    if (regType == RegisterType.Integer)
-                    {
-                        retReg = Gpr(CallingConvention.GetIntReturnRegister(), dest.Type);
-                    }
-                    else /* if (regType == RegisterType.Vector) */
-                    {
-                        retReg = Xmm(CallingConvention.GetVecReturnRegister(), dest.Type);
-                    }
+                    Operation copyOp = new Operation(Instruction.Copy, dest, retReg);
 
-                    Operation destCopyOp = new Operation(Instruction.Copy, dest, retReg);
+                    node = nodes.AddAfter(node, copyOp);
 
-                    node = nodes.AddAfter(node, destCopyOp);
+                    operation.Dest = retReg;
+                }
+            }
+
+            return node;
+        }
+
+        private static LLNode HandleCallSystemVAbi(LLNode node, Operation operation)
+        {
+            Operand dest = operation.Dest;
+
+            LinkedList<Node> nodes = node.List;
+
+            // Handle arguments passed on registers.
+            int argsCount = operation.SourcesCount - 1;
+
+            int intMax = CallingConvention.GetIntArgumentsOnRegsCount();
+            int vecMax = CallingConvention.GetVecArgumentsOnRegsCount();
+
+            int intCount = 0;
+            int vecCount = 0;
+
+            int stackOffset = 0;
+
+            for (int index = 0; index < argsCount; index++)
+            {
+                Operand source = operation.GetSource(index + 1);
+
+                bool passOnReg;
+
+                if (source.Type.IsInteger())
+                {
+                    passOnReg = intCount < intMax;
+                }
+                else if (source.Type == OperandType.V128)
+                {
+                    passOnReg = intCount + 1 < intMax;
+                }
+                else
+                {
+                    passOnReg = vecCount < vecMax;
+                }
+
+                if (source.Type == OperandType.V128 && passOnReg)
+                {
+                    // V128 is a struct, we pass each half on a GPR if possible.
+                    Operand argReg  = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
+                    Operand argReg2 = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
+
+                    nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg,  source, Const(0)));
+                    nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
+
+                    operation.SetSource(index + 1, Undef());
+
+                    continue;
+                }
+
+                if (passOnReg)
+                {
+                    Operand argReg = source.Type.IsInteger()
+                        ? Gpr(CallingConvention.GetIntArgumentRegister(intCount++), source.Type)
+                        : Xmm(CallingConvention.GetVecArgumentRegister(vecCount++), source.Type);
+
+                    Operation copyOp = new Operation(Instruction.Copy, argReg, source);
+
+                    HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
+
+                    operation.SetSource(index + 1, argReg);
+                }
+                else
+                {
+                    Operand offset = new Operand(stackOffset);
+
+                    Operation spillOp = new Operation(Instruction.SpillArg, null, offset, source);
+
+                    HandleConstantCopy(nodes.AddBefore(node, spillOp), spillOp);
+
+                    stackOffset += source.Type.GetSizeInBytes();
+
+                    operation.SetSource(index + 1, Undef());
+                }
+            }
+
+            if (dest != null)
+            {
+                if (dest.Type == OperandType.V128)
+                {
+                    Operand retLReg = Gpr(CallingConvention.GetIntReturnRegister(),     OperandType.I64);
+                    Operand retHReg = Gpr(CallingConvention.GetIntReturnRegisterHigh(), OperandType.I64);
+
+                    node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, retLReg));
+                    node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, retHReg, Const(1)));
+
+                    operation.Dest = null;
+                }
+                else
+                {
+                    RegisterType regType = dest.Type.ToRegisterType();
+
+                    Operand retReg = regType == RegisterType.Integer
+                        ? Gpr(CallingConvention.GetIntReturnRegister(), dest.Type)
+                        : Xmm(CallingConvention.GetVecReturnRegister(), dest.Type);
+
+                    Operation copyOp = new Operation(Instruction.Copy, dest, retReg);
+
+                    node = nodes.AddAfter(node, copyOp);
 
                     operation.Dest = retReg;
                 }
@@ -698,43 +821,143 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (preservedArgs[index] == null)
                 {
-                    Operand preservedArg;
-
-                    Operand argReg;
+                    Operand argReg, pArg;
 
                     if (dest.Type.IsInteger())
                     {
                         argReg = Gpr(CallingConvention.GetIntArgumentRegister(index), dest.Type);
 
-                        preservedArg = Local(dest.Type);
+                        pArg = Local(dest.Type);
                     }
                     else if (dest.Type == OperandType.V128)
                     {
                         argReg = Gpr(CallingConvention.GetIntArgumentRegister(index), OperandType.I64);
 
-                        preservedArg = Local(OperandType.I64);
+                        pArg = Local(OperandType.I64);
                     }
-                    else /* if (regType == RegisterType.Vector) */
+                    else
                     {
                         argReg = Xmm(CallingConvention.GetVecArgumentRegister(index), dest.Type);
 
-                        preservedArg = Local(dest.Type);
+                        pArg = Local(dest.Type);
                     }
 
-                    Operation copyOp = new Operation(Instruction.Copy, preservedArg, argReg);
+                    Operation copyOp = new Operation(Instruction.Copy, pArg, argReg);
 
                     cctx.Cfg.Entry.Operations.AddFirst(copyOp);
 
-                    preservedArgs[index] = preservedArg;
+                    preservedArgs[index] = pArg;
                 }
 
-                Operation loadArgOp = new Operation(dest.Type == OperandType.V128
+                Operation argCopyOp = new Operation(dest.Type == OperandType.V128
                     ? Instruction.Load
                     : Instruction.Copy, dest, preservedArgs[index]);
 
-                node.List.AddBefore(node, loadArgOp);
+                node.List.AddBefore(node, argCopyOp);
 
                 Delete(node, operation);
+            }
+            else
+            {
+                // TODO: Pass on stack.
+            }
+        }
+
+        private static void HandleLoadArgumentSystemVAbi(
+            CompilerContext cctx,
+            LLNode node,
+            Operand[] preservedArgs,
+            Operation operation)
+        {
+            Operand source = operation.GetSource(0);
+
+            Debug.Assert(source.Kind == OperandKind.Constant, "Non-constant LoadArgument source kind.");
+
+            int index = source.AsInt32();
+
+            int intCount = 0;
+            int vecCount = 0;
+
+            for (int cIndex = 0; cIndex < index; cIndex++)
+            {
+                OperandType argType = cctx.FuncArgTypes[cIndex];
+
+                if (argType.IsInteger())
+                {
+                    intCount++;
+                }
+                else if (argType == OperandType.V128)
+                {
+                    intCount += 2;
+                }
+                else
+                {
+                    vecCount++;
+                }
+            }
+
+            bool passOnReg;
+
+            if (source.Type.IsInteger())
+            {
+                passOnReg = intCount < CallingConvention.GetIntArgumentsOnRegsCount();
+            }
+            else if (source.Type == OperandType.V128)
+            {
+                passOnReg = intCount + 1 < CallingConvention.GetIntArgumentsOnRegsCount();
+            }
+            else
+            {
+                passOnReg = vecCount < CallingConvention.GetVecArgumentsOnRegsCount();
+            }
+
+            if (passOnReg)
+            {
+                Operand dest = operation.Dest;
+
+                if (preservedArgs[index] == null)
+                {
+                    if (dest.Type == OperandType.V128)
+                    {
+                        // V128 is a struct, we pass each half on a GPR if possible.
+                        Operand pArg = Local(OperandType.V128);
+
+                        Operand argLReg = Gpr(CallingConvention.GetIntArgumentRegister(intCount),     OperandType.I64);
+                        Operand argHReg = Gpr(CallingConvention.GetIntArgumentRegister(intCount + 1), OperandType.I64);
+
+                        Operation copyL = new Operation(Instruction.VectorCreateScalar, pArg, argLReg);
+                        Operation copyH = new Operation(Instruction.VectorInsert,       pArg, pArg, argHReg, Const(1));
+
+                        cctx.Cfg.Entry.Operations.AddFirst(copyH);
+                        cctx.Cfg.Entry.Operations.AddFirst(copyL);
+
+                        preservedArgs[index] = pArg;
+                    }
+                    else
+                    {
+                        Operand pArg = Local(dest.Type);
+
+                        Operand argReg = dest.Type.IsInteger()
+                            ? Gpr(CallingConvention.GetIntArgumentRegister(intCount), dest.Type)
+                            : Xmm(CallingConvention.GetVecArgumentRegister(vecCount), dest.Type);
+
+                        Operation copyOp = new Operation(Instruction.Copy, pArg, argReg);
+
+                        cctx.Cfg.Entry.Operations.AddFirst(copyOp);
+
+                        preservedArgs[index] = pArg;
+                    }
+                }
+
+                Operation argCopyOp = new Operation(Instruction.Copy, dest, preservedArgs[index]);
+
+                node.List.AddBefore(node, argCopyOp);
+
+                Delete(node, operation);
+            }
+            else
+            {
+                // TODO: Pass on stack.
             }
         }
 
@@ -774,7 +997,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 retReg = preservedArgs[0];
             }
-            else /* if (regType == RegisterType.Vector) */
+            else
             {
                 retReg = Xmm(CallingConvention.GetVecReturnRegister(), source.Type);
             }
@@ -787,6 +1010,35 @@ namespace ARMeilleure.CodeGen.X86
             }
             else
             {
+                Operation retCopyOp = new Operation(Instruction.Copy, retReg, source);
+
+                node.List.AddBefore(node, retCopyOp);
+            }
+        }
+
+        private static void HandleReturnSystemVAbi(LLNode node, Operation operation)
+        {
+            if (operation.SourcesCount == 0)
+            {
+                return;
+            }
+
+            Operand source = operation.GetSource(0);
+
+            if (source.Type == OperandType.V128)
+            {
+                Operand retLReg = Gpr(CallingConvention.GetIntReturnRegister(),     OperandType.I64);
+                Operand retHReg = Gpr(CallingConvention.GetIntReturnRegisterHigh(), OperandType.I64);
+
+                node.List.AddBefore(node, new Operation(Instruction.VectorExtract, retLReg, source, Const(0)));
+                node.List.AddBefore(node, new Operation(Instruction.VectorExtract, retHReg, source, Const(1)));
+            }
+            else
+            {
+                Operand retReg = source.Type.IsInteger()
+                    ? Gpr(CallingConvention.GetIntReturnRegister(), source.Type)
+                    : Xmm(CallingConvention.GetVecReturnRegister(), source.Type);
+
                 Operation retCopyOp = new Operation(Instruction.Copy, retReg, source);
 
                 node.List.AddBefore(node, retCopyOp);

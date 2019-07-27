@@ -6,11 +6,16 @@ namespace ARMeilleure.Translation
     {
         public ControlFlowGraph Cfg { get; }
 
-        public OperandType FuncReturnType { get; }
+        public OperandType[] FuncArgTypes   { get; }
+        public OperandType   FuncReturnType { get; }
 
-        public CompilerContext(ControlFlowGraph cfg, OperandType funcReturnType)
+        public CompilerContext(
+            ControlFlowGraph cfg,
+            OperandType[]    funcArgTypes,
+            OperandType      funcReturnType)
         {
             Cfg            = cfg;
+            FuncArgTypes   = funcArgTypes;
             FuncReturnType = funcReturnType;
         }
     }

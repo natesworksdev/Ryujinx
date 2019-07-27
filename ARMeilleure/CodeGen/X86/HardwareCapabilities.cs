@@ -38,7 +38,9 @@ namespace ARMeilleure.CodeGen.X86
 
             ControlFlowGraph cfg = context.GetControlFlowGraph();
 
-            GetFeatureInfo getFeatureInfo = Compiler.Compile<GetFeatureInfo>(cfg, OperandType.I64);
+            OperandType[] argTypes = new OperandType[0];
+
+            GetFeatureInfo getFeatureInfo = Compiler.Compile<GetFeatureInfo>(cfg, argTypes, OperandType.I64);
 
             _featureInfo = getFeatureInfo();
         }

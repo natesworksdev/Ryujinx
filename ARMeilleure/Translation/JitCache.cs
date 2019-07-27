@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.Memory;
 using System;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace ARMeilleure.Translation
@@ -25,10 +26,13 @@ namespace ARMeilleure.Translation
         {
             _basePointer = MemoryManagement.Allocate(CacheSize);
 
-            JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);
 
-            //The first page is used for the table based SEH structs.
-            _offset = PageSize;
+                // The first page is used for the table based SEH structs.
+                _offset = PageSize;
+            }
 
             _cacheEntries = new List<JitCacheEntry>();
         }
@@ -41,24 +45,42 @@ namespace ARMeilleure.Translation
 
             IntPtr funcPtr = _basePointer + funcOffset;
 
-            unsafe
-            {
-                fixed (byte* codePtr = code)
-                {
-                    byte* dest = (byte*)funcPtr;
+            Marshal.Copy(code, 0, funcPtr, code.Length);
 
-                    long size = (long)code.Length;
-
-                    Buffer.MemoryCopy(codePtr, dest, size, size);
-                }
-            }
-
-            //TODO: W^X.
-            MemoryManagement.Reprotect(funcPtr, (ulong)code.Length, MemoryProtection.ReadWriteExecute);
+            ReprotectRange(funcOffset, code.Length);
 
             Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
 
             return funcPtr;
+        }
+
+        private static void ReprotectRange(int offset, int size)
+        {
+            // Map pages that are already full as RX.
+            // Map pages that are not full yet as RWX.
+            // On unix, the address and size must be page aligned.
+            int endOffs = offset + size;
+
+            int pageStart = offset  & ~PageMask;
+            int pageEnd   = endOffs & ~PageMask;
+
+            int fullPagesSize = pageEnd - pageStart;
+
+            if (fullPagesSize != 0)
+            {
+                IntPtr funcPtr = _basePointer + pageStart;
+
+                MemoryManagement.Reprotect(funcPtr, (ulong)fullPagesSize, MemoryProtection.ReadAndExecute);
+            }
+
+            int remaining = endOffs - pageEnd;
+
+            if (remaining != 0)
+            {
+                IntPtr funcPtr = _basePointer + pageEnd;
+
+                MemoryManagement.Reprotect(funcPtr, (ulong)remaining, MemoryProtection.ReadWriteExecute);
+            }
         }
 
         private static int Allocate(int codeSize)
@@ -79,7 +101,7 @@ namespace ARMeilleure.Translation
 
         private static void Add(JitCacheEntry entry)
         {
-            //TODO: Use concurrent collection.
+            // TODO: Use concurrent collection.
             lock (_cacheEntries)
             {
                 _cacheEntries.Add(entry);

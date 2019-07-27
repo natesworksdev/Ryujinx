@@ -9,9 +9,12 @@ namespace ARMeilleure.Translation
 {
     static class Compiler
     {
-        public static T Compile<T>(ControlFlowGraph cfg, OperandType funcReturnType)
+        public static T Compile<T>(
+            ControlFlowGraph cfg,
+            OperandType[]    funcArgTypes,
+            OperandType      funcReturnType)
         {
-            CompilerContext cctx = GetCompilerContext(cfg, funcReturnType);
+            CompilerContext cctx = GetCompilerContext(cfg, funcArgTypes, funcReturnType);
 
             CompiledFunction func = CodeGenerator.Generate(cctx);
 
@@ -20,7 +23,10 @@ namespace ARMeilleure.Translation
             return Marshal.GetDelegateForFunctionPointer<T>(codePtr);
         }
 
-        private static CompilerContext GetCompilerContext(ControlFlowGraph cfg, OperandType funcReturnType)
+        private static CompilerContext GetCompilerContext(
+            ControlFlowGraph cfg,
+            OperandType[]    funcArgTypes,
+            OperandType      funcReturnType)
         {
             Logger.StartPass(PassName.Dominance);
 
@@ -35,7 +41,7 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.SsaConstruction, cfg);
 
-            return new CompilerContext(cfg, funcReturnType);
+            return new CompilerContext(cfg, funcArgTypes, funcReturnType);
         }
     }
 }

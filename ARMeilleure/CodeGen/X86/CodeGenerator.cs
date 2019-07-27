@@ -117,7 +117,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.RegisterAllocation);
 
-            FastLinearScan regAlloc = new FastLinearScan();
+            LinearScan regAlloc = new LinearScan();
 
             RegisterMasks regMasks = new RegisterMasks(
                 CallingConvention.GetIntAvailableRegisters(),
@@ -1607,7 +1607,7 @@ namespace ARMeilleure.CodeGen.X86
             size = (size + pageMask) & ~pageMask;
 
             Operand rsp  = Register(X86Register.Rsp);
-            Operand temp = Register(CallingConvention.GetIntReturnRegister());            
+            Operand temp = Register(CallingConvention.GetIntReturnRegister());
 
             for (int offset = PageSize; offset < size; offset += PageSize)
             {

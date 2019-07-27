@@ -93,7 +93,9 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.RegisterUsage);
 
-            GuestFunction func = Compiler.Compile<GuestFunction>(cfg, OperandType.I64);
+            OperandType[] argTypes = new OperandType[] { OperandType.I64 };
+
+            GuestFunction func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64);
 
             return new TranslatedFunction(func);
         }
