@@ -696,7 +696,10 @@ namespace ARMeilleure.CodeGen.X86
             Operand dividend = operation.GetSource(0);
             Operand divisor  = operation.GetSource(1);
 
-            ValidateBinOp(dest, dividend, divisor);
+            if (!dest.Type.IsInteger())
+            {
+                ValidateBinOp(dest, dividend, divisor);
+            }
 
             if (dest.Type.IsInteger())
             {

@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace ARMeilleure.IntermediateRepresentation
 {
     class Operation : Node

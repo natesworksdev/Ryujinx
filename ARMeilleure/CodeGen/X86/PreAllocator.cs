@@ -502,36 +502,29 @@ namespace ARMeilleure.CodeGen.X86
 
             LLNode currentNode = node;
 
-            Operand temp = Local(OperandType.I32);
+            Operand temp1 = Local(OperandType.I32);
+            Operand temp2 = Local(OperandType.I32);
 
-            Operation vextOp = new Operation(Instruction.VectorExtract16, temp, src1, Const(index >> 1));
+            node = nodes.AddAfter(node, new Operation(Instruction.Copy, temp2, src2));
+
+            Operation vextOp = new Operation(Instruction.VectorExtract16, temp1, src1, Const(index >> 1));
 
             node = nodes.AddAfter(node, vextOp);
 
             if ((index & 1) != 0)
             {
-                Operand temp2 = Local(OperandType.I32);
-
-                Operation copyOp = new Operation(Instruction.Copy,        temp2, src2);
-                Operation andOp  = new Operation(Instruction.ZeroExtend8, temp,  temp);
-                Operation shlOp  = new Operation(Instruction.ShiftLeft,   temp2, temp2, Const(8));
-                Operation orOp   = new Operation(Instruction.BitwiseOr,   temp,  temp,  temp2);
-
-                node = nodes.AddAfter(node, copyOp);
-                node = nodes.AddAfter(node, andOp);
-                node = nodes.AddAfter(node, shlOp);
-                node = nodes.AddAfter(node, orOp);
+                node = nodes.AddAfter(node, new Operation(Instruction.ZeroExtend8, temp1, temp1));
+                node = nodes.AddAfter(node, new Operation(Instruction.ShiftLeft,   temp2, temp2, Const(8)));
+                node = nodes.AddAfter(node, new Operation(Instruction.BitwiseOr,   temp1, temp1, temp2));
             }
             else
             {
-                Operation andOp = new Operation(Instruction.BitwiseAnd, temp, temp, Const(0xff00));
-                Operation orOp  = new Operation(Instruction.BitwiseOr,  temp, temp, src2);
-
-                node = nodes.AddAfter(node, andOp);
-                node = nodes.AddAfter(node, orOp);
+                node = nodes.AddAfter(node, new Operation(Instruction.ZeroExtend8, temp2, temp2));
+                node = nodes.AddAfter(node, new Operation(Instruction.BitwiseAnd,  temp1, temp1, Const(0xff00)));
+                node = nodes.AddAfter(node, new Operation(Instruction.BitwiseOr,   temp1, temp1, temp2));
             }
 
-            Operation vinsOp = new Operation(Instruction.VectorInsert16, dest, src1, temp, Const(index >> 1));
+            Operation vinsOp = new Operation(Instruction.VectorInsert16, dest, src1, temp1, Const(index >> 1));
 
             node = nodes.AddAfter(node, vinsOp);
 

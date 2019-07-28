@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 
 namespace ARMeilleure.IntermediateRepresentation
@@ -43,7 +44,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Node(Operand[] destinations, int sourcesCount)
         {
-            SetDestinations(destinations);
+            SetDestinations(destinations ?? throw new ArgumentNullException(nameof(destinations)));
 
             _sources = new Operand[sourcesCount];
 
@@ -62,69 +63,99 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void SetDestination(int index, Operand destination)
         {
-            Set(_destinations, _asgUseNodes, index, destination);
+            Operand oldOp = _destinations[index];
+
+            if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
+            {
+                oldOp.Assignments.Remove(_asgUseNodes[index]);
+            }
+
+            if (destination != null && destination.Kind == OperandKind.LocalVariable)
+            {
+                _asgUseNodes[index] = destination.Assignments.AddLast(this);
+            }
+
+            _destinations[index] = destination;
         }
 
         public void SetSource(int index, Operand source)
         {
-            Set(_sources, _srcUseNodes, index, source);
-        }
-
-        private void Set(Operand[] ops, LinkedListNode<Node>[] uses, int index, Operand newOp)
-        {
-            Operand oldOp = ops[index];
+            Operand oldOp = _sources[index];
 
             if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
             {
-                oldOp.Uses.Remove(uses[index]);
+                oldOp.Uses.Remove(_srcUseNodes[index]);
             }
 
-            if (newOp != null && newOp.Kind == OperandKind.LocalVariable)
+            if (source != null && source.Kind == OperandKind.LocalVariable)
             {
-                uses[index] = newOp.Uses.AddLast(this);
+                _srcUseNodes[index] = source.Uses.AddLast(this);
             }
 
-            ops[index] = newOp;
+            _sources[index] = source;
         }
 
         public void SetDestinations(Operand[] destinations)
         {
-            Set(ref _destinations, ref _asgUseNodes, destinations);
+            if (_destinations != null)
+            {
+                for (int index = 0; index < _destinations.Length; index++)
+                {
+                    Operand oldOp = _destinations[index];
+
+                    if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
+                    {
+                        oldOp.Assignments.Remove(_asgUseNodes[index]);
+                    }
+                }
+
+                _destinations = destinations;
+            }
+            else
+            {
+                _destinations = new Operand[destinations.Length];
+            }
+
+            _asgUseNodes = new LinkedListNode<Node>[destinations.Length];
+
+            for (int index = 0; index < destinations.Length; index++)
+            {
+                Operand newOp = destinations[index];
+
+                _destinations[index] = newOp;
+
+                if (newOp.Kind == OperandKind.LocalVariable)
+                {
+                    _asgUseNodes[index] = newOp.Assignments.AddLast(this);
+                }
+            }
         }
 
         public void SetSources(Operand[] sources)
         {
-            Set(ref _sources, ref _srcUseNodes, sources);
-        }
-
-        private void Set(ref Operand[] ops, ref LinkedListNode<Node>[] uses, Operand[] newOps)
-        {
-            if (ops != null)
+            for (int index = 0; index < _sources.Length; index++)
             {
-                for (int index = 0; index < ops.Length; index++)
-                {
-                    Operand oldOp = ops[index];
+                Operand oldOp = _sources[index];
 
-                    if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
-                    {
-                        oldOp.Uses.Remove(uses[index]);
-                    }
+                if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
+                {
+                    oldOp.Uses.Remove(_srcUseNodes[index]);
                 }
             }
 
-            ops = new Operand[newOps.Length];
+            _sources = new Operand[sources.Length];
 
-            uses = new LinkedListNode<Node>[newOps.Length];
+            _srcUseNodes = new LinkedListNode<Node>[sources.Length];
 
-            for (int index = 0; index < newOps.Length; index++)
+            for (int index = 0; index < sources.Length; index++)
             {
-                Operand newOp = newOps[index];
+                Operand newOp = sources[index];
 
-                ops[index] = newOp;
+                _sources[index] = newOp;
 
                 if (newOp.Kind == OperandKind.LocalVariable)
                 {
-                    uses[index] = newOp.Uses.AddLast(this);
+                    _srcUseNodes[index] = newOp.Uses.AddLast(this);
                 }
             }
         }
