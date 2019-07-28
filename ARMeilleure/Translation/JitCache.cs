@@ -58,7 +58,7 @@ namespace ARMeilleure.Translation
         {
             // Map pages that are already full as RX.
             // Map pages that are not full yet as RWX.
-            // On unix, the address and size must be page aligned.
+            // On unix, the address must be page aligned.
             int endOffs = offset + size;
 
             int pageStart = offset  & ~PageMask;

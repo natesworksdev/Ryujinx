@@ -22,7 +22,7 @@ namespace ARMeilleure.CodeGen.X86
         public BasicBlock CurrBlock { get; private set; }
 
         public int CallArgsRegionSize { get; }
-        public int VecCalleeSaveSize  { get; }
+        public int XmmSaveRegionSize  { get; }
 
         private long[] _blockOffsets;
 
@@ -80,24 +80,24 @@ namespace ARMeilleure.CodeGen.X86
 
             Assembler = new Assembler(stream);
 
-            CallArgsRegionSize = GetCallArgsRegionSize(allocResult, maxCallArgs, out int vecCalleeSaveSize);
-            VecCalleeSaveSize  = vecCalleeSaveSize;
+            CallArgsRegionSize = GetCallArgsRegionSize(allocResult, maxCallArgs, out int xmmSaveRegionSize);
+            XmmSaveRegionSize  = xmmSaveRegionSize;
 
             _blockOffsets = new long[blocksCount];
 
             _jumps = new List<Jump>();
         }
 
-        private int GetCallArgsRegionSize(AllocationResult allocResult, int maxCallArgs, out int vecCalleeSaveSize)
+        private int GetCallArgsRegionSize(AllocationResult allocResult, int maxCallArgs, out int xmmSaveRegionSize)
         {
             //We need to add 8 bytes to the total size, as the call to this
             //function already pushed 8 bytes (the return address).
             int intMask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.IntUsedRegisters;
             int vecMask = CallingConvention.GetVecCalleeSavedRegisters() & allocResult.VecUsedRegisters;
 
-            vecCalleeSaveSize = BitUtils.CountBits(vecMask) * 16;
+            xmmSaveRegionSize = BitUtils.CountBits(vecMask) * 16;
 
-            int calleeSaveRegionSize = BitUtils.CountBits(intMask) * 8 + vecCalleeSaveSize + 8;
+            int calleeSaveRegionSize = BitUtils.CountBits(intMask) * 8 + xmmSaveRegionSize + 8;
 
             int argsCount = maxCallArgs;
 

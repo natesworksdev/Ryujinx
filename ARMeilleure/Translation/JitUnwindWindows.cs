@@ -99,31 +99,48 @@ namespace ARMeilleure.Translation
 
             var unwindInfo = funcEntry.UnwindInfo;
 
-            _unwindInfo->UnwindCodes[0] = PackUwop(UnwindOperation.AllocLarge, unwindInfo.PrologueSize, 1);
-            _unwindInfo->UnwindCodes[1] = (ushort)(unwindInfo.FixedAllocSize >> 0);
-            _unwindInfo->UnwindCodes[2] = (ushort)(unwindInfo.FixedAllocSize >> 16);
+            int codeIndex = 0;
 
-            int codeIndex = 3;
+            int spOffset = unwindInfo.FixedAllocSize;
 
-            int spOffset = 0;
+            foreach (var entry in unwindInfo.PushEntries)
+            {
+                if (entry.Type == RegisterType.Vector)
+                {
+                    spOffset -= 16;
+                }
+            }
 
             for (int index = unwindInfo.PushEntries.Length - 1; index >= 0; index--)
             {
                 var entry = unwindInfo.PushEntries[index];
 
-                bool isInteger = entry.Type == RegisterType.Integer;
-
-                UnwindOperation uwop = isInteger
-                    ? UnwindOperation.PushNonvol
-                    : UnwindOperation.SaveXmm128;
-
-                _unwindInfo->UnwindCodes[codeIndex++] = PackUwop(uwop, entry.StreamEndOffset, entry.Index);
-
-                if (!isInteger)
+                if (entry.Type == RegisterType.Vector)
                 {
+                    ushort uwop = PackUwop(UnwindOperation.SaveXmm128, entry.StreamEndOffset, entry.Index);
+
+                    _unwindInfo->UnwindCodes[codeIndex++] = uwop;
                     _unwindInfo->UnwindCodes[codeIndex++] = (ushort)spOffset;
 
-                    spOffset -= 16;
+                    spOffset += 16;
+                }
+            }
+
+            _unwindInfo->UnwindCodes[0] = PackUwop(UnwindOperation.AllocLarge, unwindInfo.PrologueSize, 1);
+            _unwindInfo->UnwindCodes[1] = (ushort)(unwindInfo.FixedAllocSize >> 0);
+            _unwindInfo->UnwindCodes[2] = (ushort)(unwindInfo.FixedAllocSize >> 16);
+
+            codeIndex += 3;
+
+            for (int index = unwindInfo.PushEntries.Length - 1; index >= 0; index--)
+            {
+                var entry = unwindInfo.PushEntries[index];
+
+                if (entry.Type == RegisterType.Integer)
+                {
+                    ushort uwop = PackUwop(UnwindOperation.PushNonvol, entry.StreamEndOffset, entry.Index);
+
+                    _unwindInfo->UnwindCodes[codeIndex++] = uwop;
                 }
             }
 

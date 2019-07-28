@@ -1523,9 +1523,23 @@ namespace ARMeilleure.CodeGen.X86
                 mask &= ~(1 << bit);
             }
 
-            mask = CallingConvention.GetVecCalleeSavedRegisters() & context.AllocResult.VecUsedRegisters;
+            int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
 
-            int offset = 0;
+            reservedStackSize += context.XmmSaveRegionSize;
+
+            if (reservedStackSize >= StackGuardSize)
+            {
+                GenerateInlineStackProbe(context, reservedStackSize);
+            }
+
+            if (reservedStackSize != 0)
+            {
+                context.Assembler.Sub(rsp, new Operand(reservedStackSize), OperandType.I64);
+            }
+
+            int offset = reservedStackSize;
+
+            mask = CallingConvention.GetVecCalleeSavedRegisters() & context.AllocResult.VecUsedRegisters;
 
             while (mask != 0)
             {
@@ -1542,20 +1556,6 @@ namespace ARMeilleure.CodeGen.X86
                 mask &= ~(1 << bit);
             }
 
-            int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
-
-            reservedStackSize += context.VecCalleeSaveSize;
-
-            if (reservedStackSize >= StackGuardSize)
-            {
-                GenerateInlineStackProbe(context, reservedStackSize);
-            }
-
-            if (reservedStackSize != 0)
-            {
-                context.Assembler.Sub(rsp, new Operand(reservedStackSize), OperandType.I64);
-            }
-
             return new UnwindInfo(pushEntries.ToArray(), context.StreamOffset, reservedStackSize);
         }
 
@@ -1565,16 +1565,11 @@ namespace ARMeilleure.CodeGen.X86
 
             int reservedStackSize = context.CallArgsRegionSize + context.AllocResult.SpillRegionSize;
 
-            reservedStackSize += context.VecCalleeSaveSize;
+            reservedStackSize += context.XmmSaveRegionSize;
 
-            if (reservedStackSize != 0)
-            {
-                context.Assembler.Add(rsp, new Operand(reservedStackSize), OperandType.I64);
-            }
+            int offset = reservedStackSize;
 
             int mask = CallingConvention.GetVecCalleeSavedRegisters() & context.AllocResult.VecUsedRegisters;
-
-            int offset = 0;
 
             while (mask != 0)
             {
@@ -1587,6 +1582,11 @@ namespace ARMeilleure.CodeGen.X86
                 context.Assembler.Movdqu(Xmm((X86Register)bit), memOp);
 
                 mask &= ~(1 << bit);
+            }
+
+            if (reservedStackSize != 0)
+            {
+                context.Assembler.Add(rsp, new Operand(reservedStackSize), OperandType.I64);
             }
 
             mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
