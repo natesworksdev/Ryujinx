@@ -18,7 +18,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     LinkedListNode<Node> nextNode = node.Next;
 
-                    Operand local = Local(phi.Dest.Type);
+                    Operand local = Local(phi.Destination.Type);
 
                     for (int index = 0; index < phi.SourcesCount; index++)
                     {
@@ -31,11 +31,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         phi.SetSource(index, null);
                     }
 
-                    Operation copyOp = new Operation(Instruction.Copy, phi.Dest, local);
+                    Operation copyOp = new Operation(Instruction.Copy, phi.Destination, local);
 
                     block.Operations.AddBefore(node, copyOp);
 
-                    phi.Dest = null;
+                    phi.Destination = null;
 
                     block.Operations.Remove(node);
 

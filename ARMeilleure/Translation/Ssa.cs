@@ -82,7 +82,7 @@ namespace ARMeilleure.Translation
                             operation.SetSource(index, RenameLocal(operation.GetSource(index)));
                         }
 
-                        Operand dest = operation.Dest;
+                        Operand dest = operation.Destination;
 
                         if (dest != null && dest.Kind == OperandKind.Register)
                         {
@@ -90,7 +90,7 @@ namespace ARMeilleure.Translation
 
                             localDefs[GetIdFromRegister(dest.GetRegister())] = local;
 
-                            operation.Dest = local;
+                            operation.Destination = local;
                         }
                     }
 

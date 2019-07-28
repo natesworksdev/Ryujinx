@@ -94,9 +94,9 @@ namespace ARMeilleure.Translation
                         localInputs[block.Index] |= GetMask(register) & ~localOutputs[block.Index];
                     }
 
-                    if (operation.Dest != null && operation.Dest.Kind == OperandKind.Register)
+                    if (operation.Destination != null && operation.Destination.Kind == OperandKind.Register)
                     {
-                        localOutputs[block.Index] |= GetMask(operation.Dest.GetRegister());
+                        localOutputs[block.Index] |= GetMask(operation.Destination.GetRegister());
                     }
                 }
             }
@@ -241,7 +241,7 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return block.Operations.First.Value is Operation operation && operation.Inst == inst;
+            return block.Operations.First.Value is Operation operation && operation.Instruction == inst;
         }
 
         private static bool EndsWith(BasicBlock block, Instruction inst)
@@ -251,7 +251,7 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return block.Operations.Last.Value is Operation operation && operation.Inst == inst;
+            return block.Operations.Last.Value is Operation operation && operation.Instruction == inst;
         }
 
         private static RegisterMask GetMask(Register register)
@@ -391,7 +391,7 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return operation.Inst == Instruction.Return;
+            return operation.Instruction == Instruction.Return;
         }
 
         private static long ClearCallerSavedIntRegs(long mask)

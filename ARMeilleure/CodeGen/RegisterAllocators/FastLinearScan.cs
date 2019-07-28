@@ -256,9 +256,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                 }
 
-                if (operation.Dest == interval.Local)
+                if (operation.Destination == interval.Local)
                 {
-                    operation.Dest = register;
+                    operation.Destination = register;
                 }
             }
         }
@@ -317,13 +317,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                 }
 
-                if (operation.Dest == local)
+                if (operation.Destination == local)
                 {
                     Operation spillOp = new Operation(Instruction.Spill, null, Const(spillOffset), temp);
 
                     node.List.AddAfter(node, spillOp);
 
-                    operation.Dest = temp;
+                    operation.Destination = temp;
                 }
             }
         }
@@ -350,7 +350,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 info.VecSpillUsedRegisters |= 1 << selectedReg;
             }
 
-            Debug.Assert(selectedReg != -1, "Out of spill temporary registers. " + (info.Node.Value as Operation).Inst);
+            Debug.Assert(selectedReg != -1, "Out of spill temporary registers. " + (info.Node.Value as Operation).Instruction);
 
             return selectedReg;
         }
@@ -456,7 +456,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                     }
 
-                    Operand dest = operation.Dest;
+                    Operand dest = operation.Destination;
 
                     if (dest != null)
                     {
@@ -479,7 +479,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                     }
 
-                    if (operation.Inst == Instruction.Call)
+                    if (operation.Instruction == Instruction.Call)
                     {
                         AddIntervalCallerSavedReg(masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
                         AddIntervalCallerSavedReg(masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);

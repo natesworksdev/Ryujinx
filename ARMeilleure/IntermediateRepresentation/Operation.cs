@@ -2,14 +2,14 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     class Operation : Node
     {
-        public Instruction Inst { get; private set; }
+        public Instruction Instruction { get; private set; }
 
         public Operation(
-            Instruction inst,
+            Instruction instruction,
             Operand destination,
             params Operand[] sources) : base(destination, sources.Length)
         {
-            Inst = inst;
+            Instruction = instruction;
 
             for (int index = 0; index < sources.Length; index++)
             {
@@ -18,11 +18,11 @@ namespace ARMeilleure.IntermediateRepresentation
         }
 
         public Operation(
-            Instruction inst,
+            Instruction instruction,
             Operand[] destinations,
             Operand[] sources) : base(destinations, sources.Length)
         {
-            Inst = inst;
+            Instruction = instruction;
 
             for (int index = 0; index < sources.Length; index++)
             {
@@ -32,7 +32,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void TurnIntoCopy(Operand source)
         {
-            Inst = Instruction.Copy;
+            Instruction = Instruction.Copy;
 
             SetSources(new Operand[] { source });
         }

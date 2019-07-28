@@ -9,7 +9,7 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static void RunPass(Operation operation)
         {
-            if (operation.Dest == null || operation.SourcesCount == 0)
+            if (operation.Destination == null || operation.SourcesCount == 0)
             {
                 return;
             }
@@ -19,9 +19,9 @@ namespace ARMeilleure.CodeGen.Optimizations
                 return;
             }
 
-            OperandType type = operation.Dest.Type;
+            OperandType type = operation.Destination.Type;
 
-            switch (operation.Inst)
+            switch (operation.Instruction)
             {
                 case Instruction.Add:
                     if (type == OperandType.I32)

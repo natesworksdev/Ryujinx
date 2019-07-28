@@ -81,16 +81,16 @@ namespace ARMeilleure.Diagnostics
                             sources[index] = GetOperandName(operation.GetSource(index), localNames);
                         }
 
-                        instName = operation.Inst.ToString();
+                        instName = operation.Instruction.ToString();
                     }
 
                     string allSources = string.Join(", ", sources);
 
                     string line = instName + " " + allSources;
 
-                    if (node.Dest != null)
+                    if (node.Destination != null)
                     {
-                        line = GetOperandName(node.Dest, localNames) + " = " + line;
+                        line = GetOperandName(node.Destination, localNames) + " = " + line;
                     }
 
                     AppendLine(line);

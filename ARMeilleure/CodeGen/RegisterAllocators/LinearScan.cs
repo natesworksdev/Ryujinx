@@ -916,7 +916,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         interval.AddUsePosition(operationPos);
                     }
 
-                    if (node is Operation operation && operation.Inst == Instruction.Call)
+                    if (node is Operation operation && operation.Instruction == Instruction.Call)
                     {
                         AddIntervalCallerSavedReg(context.Masks.IntCallerSavedRegisters, operationPos, RegisterType.Integer);
                         AddIntervalCallerSavedReg(context.Masks.VecCallerSavedRegisters, operationPos, RegisterType.Vector);

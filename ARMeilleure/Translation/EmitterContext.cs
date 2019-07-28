@@ -550,8 +550,8 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return lastOp.Inst == Instruction.Branch ||
-                   lastOp.Inst == Instruction.Return;
+            return lastOp.Instruction == Instruction.Branch ||
+                   lastOp.Instruction == Instruction.Return;
         }
 
         public ControlFlowGraph GetControlFlowGraph()

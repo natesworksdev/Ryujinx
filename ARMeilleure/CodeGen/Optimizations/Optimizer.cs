@@ -63,7 +63,7 @@ namespace ARMeilleure.CodeGen.Optimizations
         private static void PropagateCopy(Operation copyOp)
         {
             //Propagate copy source operand to all uses of the destination operand.
-            Operand dest   = copyOp.Dest;
+            Operand dest   = copyOp.Destination;
             Operand source = copyOp.GetSource(0);
 
             Node[] uses = dest.Uses.ToArray();
@@ -93,34 +93,34 @@ namespace ARMeilleure.CodeGen.Optimizations
                 node.SetSource(index, null);
             }
 
-            Debug.Assert(node.Dest == null || node.Dest.Uses.Count == 0);
+            Debug.Assert(node.Destination == null || node.Destination.Uses.Count == 0);
 
-            node.Dest = null;
+            node.Destination = null;
         }
 
         private static bool IsUnused(Node node)
         {
-            return DestIsLocalVar(node) && node.Dest.Uses.Count == 0 && !HasSideEffects(node);
+            return DestIsLocalVar(node) && node.Destination.Uses.Count == 0 && !HasSideEffects(node);
         }
 
         private static bool DestIsLocalVar(Node node)
         {
-            return node.Dest != null && node.Dest.Kind == OperandKind.LocalVariable;
+            return node.Destination != null && node.Destination.Kind == OperandKind.LocalVariable;
         }
 
         private static bool HasSideEffects(Node node)
         {
-            return (node is Operation operation) && operation.Inst == Instruction.Call;
+            return (node is Operation operation) && operation.Instruction == Instruction.Call;
         }
 
         private static bool IsPropagableCopy(Operation operation)
         {
-            if (operation.Inst != Instruction.Copy)
+            if (operation.Instruction != Instruction.Copy)
             {
                 return false;
             }
 
-            return operation.Dest.Type == operation.GetSource(0).Type;
+            return operation.Destination.Type == operation.GetSource(0).Type;
         }
     }
 }

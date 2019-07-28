@@ -5,7 +5,7 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     class Node
     {
-        public Operand Dest
+        public Operand Destination
         {
             get
             {
@@ -35,7 +35,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Node(Operand destination, int sourcesCount)
         {
-            Dest = destination;
+            Destination = destination;
 
             _sources = new Operand[sourcesCount];
 

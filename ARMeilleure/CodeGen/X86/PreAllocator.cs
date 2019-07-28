@@ -39,7 +39,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node = HandleFixedRegisterCopy(node, operation);
 
-                    switch (operation.Inst)
+                    switch (operation.Instruction)
                     {
                         case Instruction.Call:
                             // Get the maximum number of arguments used on a call.
@@ -48,7 +48,7 @@ namespace ARMeilleure.CodeGen.X86
                             // should be written on the first argument.
                             int argsCount = operation.SourcesCount - 1;
 
-                            if (operation.Dest != null && operation.Dest.Type == OperandType.V128)
+                            if (operation.Destination != null && operation.Destination.Type == OperandType.V128)
                             {
                                 argsCount++;
                             }
@@ -116,12 +116,12 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleConstantCopy(LLNode node, Operation operation)
         {
-            if (operation.SourcesCount == 0 || IsIntrinsic(operation.Inst))
+            if (operation.SourcesCount == 0 || IsIntrinsic(operation.Instruction))
             {
                 return;
             }
 
-            Instruction inst = operation.Inst;
+            Instruction inst = operation.Instruction;
 
             Operand src1 = operation.GetSource(0);
             Operand src2;
@@ -197,11 +197,11 @@ namespace ARMeilleure.CodeGen.X86
 
         private static LLNode HandleFixedRegisterCopy(LLNode node, Operation operation)
         {
-            Operand dest = operation.Dest;
+            Operand dest = operation.Destination;
 
             LinkedList<Node> nodes = node.List;
 
-            switch (operation.Inst)
+            switch (operation.Instruction)
             {
                 case Instruction.CompareAndSwap128:
                 {
@@ -286,7 +286,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     operation.SetSources(new Operand[] { rdx, rax, operation.GetSource(1) });
 
-                    operation.Dest = rax;
+                    operation.Destination = rax;
 
                     break;
                 }
@@ -355,14 +355,14 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleSameDestSrc1Copy(LLNode node, Operation operation)
         {
-            if (operation.Dest == null || operation.SourcesCount == 0)
+            if (operation.Destination == null || operation.SourcesCount == 0)
             {
                 return;
             }
 
-            Instruction inst = operation.Inst;
+            Instruction inst = operation.Instruction;
 
-            Operand dest = operation.Dest;
+            Operand dest = operation.Destination;
             Operand src1 = operation.GetSource(0);
 
             // The multiply instruction (that maps to IMUL) is somewhat special, it has
@@ -394,7 +394,7 @@ namespace ARMeilleure.CodeGen.X86
             // Unsigned integer to FP conversions are not supported on X86.
             // We need to turn them into signed integer to FP conversions, and
             // adjust the final result.
-            Operand dest   = operation.Dest;
+            Operand dest   = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(source.Type.IsInteger(), $"Invalid source type \"{source.Type}\".");
@@ -452,7 +452,7 @@ namespace ARMeilleure.CodeGen.X86
             // There's no SSE FP negate instruction, so we need to transform that into
             // a XOR of the value to be negated with a mask with the highest bit set.
             // This also produces -0 for a negation of the value 0.
-            Operand dest   = operation.Dest;
+            Operand dest   = operation.Destination;
             Operand source = operation.GetSource(0);
 
             Debug.Assert(dest.Type == OperandType.FP32 ||
@@ -487,7 +487,7 @@ namespace ARMeilleure.CodeGen.X86
         private static LLNode HandleVectorInsert8(LLNode node, Operation operation)
         {
             // Handle vector insertion, when SSE 4.1 is not supported.
-            Operand dest = operation.Dest;
+            Operand dest = operation.Destination;
             Operand src1 = operation.GetSource(0); // Vector
             Operand src2 = operation.GetSource(1); // Value
             Operand src3 = operation.GetSource(2); // Index
@@ -535,7 +535,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static LLNode HandleCallWindowsAbi(StackAllocator stackAlloc, LLNode node, Operation operation)
         {
-            Operand dest = operation.Dest;
+            Operand dest = operation.Destination;
 
             LinkedList<Node> nodes = node.List;
 
@@ -674,7 +674,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node = nodes.AddAfter(node, loadOp);
 
-                    operation.Dest = null;
+                    operation.Destination = null;
                 }
                 else
                 {
@@ -686,7 +686,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node = nodes.AddAfter(node, copyOp);
 
-                    operation.Dest = retReg;
+                    operation.Destination = retReg;
                 }
             }
 
@@ -697,7 +697,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static LLNode HandleCallSystemVAbi(LLNode node, Operation operation)
         {
-            Operand dest = operation.Dest;
+            Operand dest = operation.Destination;
 
             LinkedList<Node> nodes = node.List;
 
@@ -780,7 +780,7 @@ namespace ARMeilleure.CodeGen.X86
                     node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, retLReg));
                     node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, retHReg, Const(1)));
 
-                    operation.Dest = null;
+                    operation.Destination = null;
                 }
                 else
                 {
@@ -792,7 +792,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node = nodes.AddAfter(node, copyOp);
 
-                    operation.Dest = retReg;
+                    operation.Destination = retReg;
                 }
             }
 
@@ -817,7 +817,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (index < CallingConvention.GetArgumentsOnRegsCount())
             {
-                Operand dest = operation.Dest;
+                Operand dest = operation.Destination;
 
                 if (preservedArgs[index] == null)
                 {
@@ -913,7 +913,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (passOnReg)
             {
-                Operand dest = operation.Dest;
+                Operand dest = operation.Destination;
 
                 if (preservedArgs[index] == null)
                 {
@@ -1099,7 +1099,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void Delete(LLNode node, Operation operation)
         {
-            operation.Dest = null;
+            operation.Destination = null;
 
             for (int index = 0; index < operation.SourcesCount; index++)
             {
@@ -1121,7 +1121,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsSameOperandDestSrc1(Operation operation)
         {
-            switch (operation.Inst)
+            switch (operation.Instruction)
             {
                 case Instruction.Add:
                 case Instruction.BitwiseAnd:
@@ -1149,11 +1149,11 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsVexSameOperandDestSrc1(Operation operation)
         {
-            if (IsIntrinsic(operation.Inst))
+            if (IsIntrinsic(operation.Instruction))
             {
                 bool isUnary = operation.SourcesCount < 2;
 
-                bool hasVecDest = operation.Dest != null && operation.Dest.Type == OperandType.V128;
+                bool hasVecDest = operation.Destination != null && operation.Destination.Type == OperandType.V128;
 
                 return !HardwareCapabilities.SupportsVexEncoding && !isUnary && hasVecDest;
             }

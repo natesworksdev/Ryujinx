@@ -9,7 +9,7 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static void RunPass(Operation operation)
         {
-            switch (operation.Inst)
+            switch (operation.Instruction)
             {
                 case Instruction.Add:
                 case Instruction.BitwiseExclusiveOr:
