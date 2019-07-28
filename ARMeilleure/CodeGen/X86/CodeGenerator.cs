@@ -700,6 +700,10 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type.IsInteger())
             {
+                divisor = operation.GetSource(2);
+
+                EnsureSameType(dest, divisor);
+
                 if (divisor.Type == OperandType.I32)
                 {
                     context.Assembler.Cdq();
@@ -723,7 +727,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateDivideUI(CodeGenContext context, Operation operation)
         {
-            Operand divisor = operation.GetSource(1);
+            Operand divisor = operation.GetSource(2);
 
             Operand rdx = Register(X86Register.Rdx);
 

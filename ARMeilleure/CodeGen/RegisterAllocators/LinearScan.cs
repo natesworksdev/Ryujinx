@@ -695,19 +695,24 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 Node operation = GetOperationNode(usePosition).Value;
 
-                for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
+                for (int index = 0; index < operation.SourcesCount; index++)
                 {
-                    Operand source = operation.GetSource(srcIndex);
+                    Operand source = operation.GetSource(index);
 
                     if (source == current.Local)
                     {
-                        operation.SetSource(srcIndex, register);
+                        operation.SetSource(index, register);
                     }
                 }
 
-                if (operation.Dest == current.Local)
+                for (int index = 0; index < operation.DestinationsCount; index++)
                 {
-                    operation.Dest = register;
+                    Operand dest = operation.GetDestination(index);
+
+                    if (dest == current.Local)
+                    {
+                        operation.SetDestination(index, register);
+                    }
                 }
             }
         }
@@ -753,13 +758,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     Node operation = node.Value;
 
-                    Operand dest = operation.Dest;
-
-                    if (dest != null && dest.Kind == OperandKind.LocalVariable && visited.Add(dest))
+                    foreach (Operand dest in Destinations(operation))
                     {
-                        dest.NumberLocal(_intervals.Count);
+                        if (dest.Kind == OperandKind.LocalVariable && visited.Add(dest))
+                        {
+                            dest.NumberLocal(_intervals.Count);
 
-                        _intervals.Add(new LiveInterval(dest));
+                            _intervals.Add(new LiveInterval(dest));
+                        }
                     }
                 }
 
@@ -794,7 +800,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 foreach (Node node in block.Operations)
                 {
-                    foreach (Operand source in Operands(node))
+                    foreach (Operand source in Sources(node))
                     {
                         int id = GetOperandId(source);
 
@@ -804,9 +810,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                     }
 
-                    if (node.Dest != null && IsLocalOrRegister(node.Dest.Kind))
+                    foreach (Operand dest in Destinations(node))
                     {
-                        liveKill.Set(GetOperandId(node.Dest));
+                        liveKill.Set(GetOperandId(dest));
                     }
                 }
 
@@ -894,9 +900,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     operationPos -= InstructionGap;
 
-                    Operand dest = node.Dest;
-
-                    if (dest != null && IsLocalOrRegister(dest.Kind))
+                    foreach (Operand dest in Destinations(node))
                     {
                         LiveInterval interval = _intervals[GetOperandId(dest)];
 
@@ -904,7 +908,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         interval.AddUsePosition(operationPos + 1);
                     }
 
-                    foreach (Operand source in Operands(node))
+                    foreach (Operand source in Sources(node))
                     {
                         LiveInterval interval = _intervals[GetOperandId(source)];
 
@@ -983,7 +987,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private static IEnumerable<Operand> Operands(Node node)
+        private static IEnumerable<Operand> Destinations(Node node)
+        {
+            for (int index = 0; index < node.DestinationsCount; index++)
+            {
+                yield return node.GetDestination(index);
+            }
+        }
+
+        private static IEnumerable<Operand> Sources(Node node)
         {
             for (int index = 0; index < node.SourcesCount; index++)
             {

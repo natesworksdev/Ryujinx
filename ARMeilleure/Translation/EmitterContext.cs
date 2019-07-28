@@ -10,8 +10,6 @@ namespace ARMeilleure.Translation
 {
     class EmitterContext
     {
-        private Dictionary<ulong, Operand> _labels;
-
         private Dictionary<Operand, BasicBlock> _irLabels;
 
         private LinkedList<BasicBlock> _irBlocks;
@@ -22,8 +20,6 @@ namespace ARMeilleure.Translation
 
         public EmitterContext()
         {
-            _labels = new Dictionary<ulong, Operand>();
-
             _irLabels = new Dictionary<Operand, BasicBlock>();
 
             _irBlocks = new LinkedList<BasicBlock>();
@@ -94,37 +90,34 @@ namespace ARMeilleure.Translation
             return Call(Const(ptr.ToInt64()), returnType, callArgs);
         }
 
+        private static Dictionary<TypeCode, OperandType> _typeCodeToOperandTypeMap =
+                   new Dictionary<TypeCode, OperandType>()
+        {
+            { TypeCode.Boolean, OperandType.I32  },
+            { TypeCode.Byte,    OperandType.I32  },
+            { TypeCode.Char,    OperandType.I32  },
+            { TypeCode.Double,  OperandType.FP64 },
+            { TypeCode.Int16,   OperandType.I32  },
+            { TypeCode.Int32,   OperandType.I32  },
+            { TypeCode.Int64,   OperandType.I64  },
+            { TypeCode.SByte,   OperandType.I32  },
+            { TypeCode.Single,  OperandType.FP32 },
+            { TypeCode.UInt16,  OperandType.I32  },
+            { TypeCode.UInt32,  OperandType.I32  },
+            { TypeCode.UInt64,  OperandType.I64  }
+        };
+
         private static OperandType GetOperandType(Type type)
         {
-            switch (Type.GetTypeCode(type))
+            if (_typeCodeToOperandTypeMap.TryGetValue(Type.GetTypeCode(type), out OperandType ot))
             {
-                case TypeCode.Boolean:
-                case TypeCode.Char:
-                case TypeCode.Byte:
-                case TypeCode.SByte:
-                case TypeCode.UInt16:
-                case TypeCode.Int16:
-                case TypeCode.UInt32:
-                case TypeCode.Int32:
-                    return OperandType.I32;
-
-                case TypeCode.UInt64:
-                case TypeCode.Int64:
-                    return OperandType.I64;
-
-                case TypeCode.Single:
-                    return OperandType.FP32;
-
-                case TypeCode.Double:
-                    return OperandType.FP64;
+                return ot;
             }
-
-            if (type == typeof(V128))
+            else if (type == typeof(V128))
             {
                 return OperandType.V128;
             }
-
-            if (type == typeof(void))
+            else if (type == typeof(void))
             {
                 return OperandType.None;
             }
@@ -525,18 +518,6 @@ namespace ARMeilleure.Translation
 
                 _irLabels.Add(label, _irBlock);
             }
-        }
-
-        public Operand GetLabel(ulong address)
-        {
-            if (!_labels.TryGetValue(address, out Operand label))
-            {
-                label = Label();
-
-                _labels.Add(address, label);
-            }
-
-            return label;
         }
 
         private void NewNextBlock()

@@ -79,7 +79,7 @@ namespace ARMeilleure.CodeGen.X86
                             {
                                 HandleLoadArgumentWindowsAbi(cctx, node, preservedArgs, operation);
                             }
-                            else
+                            else /* if (callConv == CallConvName.SystemV) */
                             {
                                 HandleLoadArgumentSystemVAbi(cctx, node, preservedArgs, operation);
                             }
@@ -209,28 +209,26 @@ namespace ARMeilleure.CodeGen.X86
                     // - The expected value should be in RDX:RAX.
                     // - The new value to be written should be in RCX:RBX.
                     // - The value at the memory location is loaded to RDX:RAX.
-                    void SplitOperand(Operand source, X86Register lowReg, X86Register highReg)
+                    void SplitOperand(Operand source, Operand lr, Operand hr)
                     {
-                        Operand lr = Gpr(lowReg,  OperandType.I64);
-                        Operand hr = Gpr(highReg, OperandType.I64);
-
                         nodes.AddBefore(node, new Operation(Instruction.VectorExtract, lr, source, Const(0)));
                         nodes.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
                     }
 
-                    SplitOperand(operation.GetSource(1), X86Register.Rax, X86Register.Rdx);
-                    SplitOperand(operation.GetSource(2), X86Register.Rbx, X86Register.Rcx);
-
                     Operand rax = Gpr(X86Register.Rax, OperandType.I64);
+                    Operand rbx = Gpr(X86Register.Rbx, OperandType.I64);
+                    Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
                     Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
+
+                    SplitOperand(operation.GetSource(1), rax, rdx);
+                    SplitOperand(operation.GetSource(2), rbx, rcx);
 
                     node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, rax));
                     node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, rdx, Const(1)));
 
-                    operation.SetSource(1, Undef());
-                    operation.SetSource(2, Undef());
+                    operation.SetDestinations(new Operand[] { rdx, rax });
 
-                    operation.Dest = null;
+                    operation.SetSources(new Operand[] { operation.GetSource(0), rdx, rax, rcx, rbx });
 
                     break;
                 }
@@ -245,25 +243,24 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operand eax = Gpr(X86Register.Rax, OperandType.I32);
                     Operand ebx = Gpr(X86Register.Rbx, OperandType.I32);
-                    Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
+                    Operand ecx = Gpr(X86Register.Rcx, OperandType.I32);
                     Operand edx = Gpr(X86Register.Rdx, OperandType.I32);
 
                     // Value 0x01 = Version, family and feature information.
                     nodes.AddBefore(node, new Operation(Instruction.Copy, eax, Const(1)));
 
-                    // We don't care about those two, but their values are overwritten,
-                    // so we need to take that into account.
-                    node = nodes.AddAfter(node, new Operation(Instruction.Clobber, eax));
-                    node = nodes.AddAfter(node, new Operation(Instruction.Clobber, ebx));
-
                     // Copy results to the destination register.
                     // The values are split into 2 32-bits registers, we merge them
                     // into a single 64-bits register.
+                    Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
+
                     node = nodes.AddAfter(node, new Operation(Instruction.ZeroExtend32, dest, edx));
                     node = nodes.AddAfter(node, new Operation(Instruction.ShiftLeft,    dest, dest, Const(32)));
                     node = nodes.AddAfter(node, new Operation(Instruction.BitwiseOr,    dest, dest, rcx));
 
-                    operation.Dest = null;
+                    operation.SetDestinations(new Operand[] { eax, ebx, ecx, edx });
+
+                    operation.SetSources(new Operand[] { eax });
 
                     break;
                 }
@@ -280,13 +277,14 @@ namespace ARMeilleure.CodeGen.X86
                     Operand rax = Gpr(X86Register.Rax, src1.Type);
                     Operand rdx = Gpr(X86Register.Rdx, src1.Type);
 
-                    nodes.AddBefore(node, new Operation(Instruction.Copy, rax, src1));
-
-                    operation.SetSource(0, rax);
-
+                    nodes.AddBefore(node, new Operation(Instruction.Copy,    rax, src1));
                     nodes.AddBefore(node, new Operation(Instruction.Clobber, rdx));
 
                     node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
+
+                    operation.SetDestinations(new Operand[] { rdx, rax });
+
+                    operation.SetSources(new Operand[] { rdx, rax, operation.GetSource(1) });
 
                     operation.Dest = rax;
 
@@ -328,7 +326,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rdx));
 
-                    operation.Dest = rdx;
+                    operation.SetDestinations(new Operand[] { rdx, rax });
 
                     break;
                 }
@@ -571,17 +569,37 @@ namespace ARMeilleure.CodeGen.X86
                 return offset;
             }
 
+            Operand arg0Reg = null;
+
             if (dest != null && dest.Type == OperandType.V128)
             {
                 int stackOffset = AllocateOnStack(dest.Type.GetSizeInBytes());
 
-                Operand arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
+                arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
 
                 Operation allocOp = new Operation(Instruction.StackAlloc, arg0Reg, Const(stackOffset));
 
                 nodes.AddBefore(node, allocOp);
 
                 retArgs = 1;
+            }
+
+            int argsCount = operation.SourcesCount - 1;
+
+            int maxArgs = CallingConvention.GetArgumentsOnRegsCount() - retArgs;
+
+            if (argsCount > maxArgs)
+            {
+                argsCount = maxArgs;
+            }
+
+            Operand[] sources = new Operand[1 + retArgs + argsCount];
+
+            sources[0] = operation.GetSource(0);
+
+            if (arg0Reg != null)
+            {
+                sources[1] = arg0Reg;
             }
 
             for (int index = 1; index < operation.SourcesCount; index++)
@@ -602,35 +620,29 @@ namespace ARMeilleure.CodeGen.X86
 
                     HandleConstantCopy(nodes.AddBefore(node, storeOp), storeOp);
 
-                    operation.SetSource(index, stackAddr);
+                    sources[retArgs + index] = stackAddr;
                 }
             }
 
             // Handle arguments passed on registers.
-            int argsCount = operation.SourcesCount - 1;
-
-            int maxArgs = CallingConvention.GetArgumentsOnRegsCount() - retArgs;
-
-            if (argsCount > maxArgs)
-            {
-                argsCount = maxArgs;
-            }
-
             for (int index = 0; index < argsCount; index++)
             {
                 Operand source = operation.GetSource(index + 1);
 
-                RegisterType regType = source.Type.ToRegisterType();
+                if (source.Type == OperandType.V128)
+                {
+                    source = sources[1 + retArgs + index];
+                }
 
                 Operand argReg;
 
                 int argIndex = index + retArgs;
 
-                if (regType == RegisterType.Integer)
+                if (source.Type.IsInteger())
                 {
                     argReg = Gpr(CallingConvention.GetIntArgumentRegister(argIndex), source.Type);
                 }
-                else /* if (regType == RegisterType.Vector) */
+                else
                 {
                     argReg = Xmm(CallingConvention.GetVecArgumentRegister(argIndex), source.Type);
                 }
@@ -639,7 +651,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
 
-                operation.SetSource(index + 1, argReg);
+                sources[1 + retArgs + index] = argReg;
             }
 
             // The remaining arguments (those that are not passed on registers)
@@ -653,8 +665,6 @@ namespace ARMeilleure.CodeGen.X86
                 Operation spillOp = new Operation(Instruction.SpillArg, null, offset, source);
 
                 HandleConstantCopy(nodes.AddBefore(node, spillOp), spillOp);
-
-                operation.SetSource(index + 1, new Operand(OperandKind.Undefined));
             }
 
             if (dest != null)
@@ -662,8 +672,6 @@ namespace ARMeilleure.CodeGen.X86
                 if (dest.Type == OperandType.V128)
                 {
                     Operand retValueAddr = Local(OperandType.I64);
-
-                    Operand arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
 
                     Operation copyOp = new Operation(Instruction.Copy, retValueAddr, arg0Reg);
 
@@ -677,9 +685,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
-                    RegisterType regType = dest.Type.ToRegisterType();
-
-                    Operand retReg = regType == RegisterType.Integer
+                    Operand retReg = dest.Type.IsInteger()
                         ? Gpr(CallingConvention.GetIntReturnRegister(), dest.Type)
                         : Xmm(CallingConvention.GetVecReturnRegister(), dest.Type);
 
@@ -691,6 +697,8 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
+            operation.SetSources(sources);
+
             return node;
         }
 
@@ -700,7 +708,10 @@ namespace ARMeilleure.CodeGen.X86
 
             LinkedList<Node> nodes = node.List;
 
-            // Handle arguments passed on registers.
+            List<Operand> sources = new List<Operand>();
+
+            sources.Add(operation.GetSource(0));
+
             int argsCount = operation.SourcesCount - 1;
 
             int intMax = CallingConvention.GetIntArgumentsOnRegsCount();
@@ -739,8 +750,6 @@ namespace ARMeilleure.CodeGen.X86
                     nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg,  source, Const(0)));
                     nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
 
-                    operation.SetSource(index + 1, Undef());
-
                     continue;
                 }
 
@@ -754,7 +763,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
 
-                    operation.SetSource(index + 1, argReg);
+                    sources.Add(argReg);
                 }
                 else
                 {
@@ -765,8 +774,6 @@ namespace ARMeilleure.CodeGen.X86
                     HandleConstantCopy(nodes.AddBefore(node, spillOp), spillOp);
 
                     stackOffset += source.Type.GetSizeInBytes();
-
-                    operation.SetSource(index + 1, Undef());
                 }
             }
 
@@ -784,9 +791,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
-                    RegisterType regType = dest.Type.ToRegisterType();
-
-                    Operand retReg = regType == RegisterType.Integer
+                    Operand retReg = dest.Type.IsInteger()
                         ? Gpr(CallingConvention.GetIntReturnRegister(), dest.Type)
                         : Xmm(CallingConvention.GetVecReturnRegister(), dest.Type);
 
@@ -797,6 +802,8 @@ namespace ARMeilleure.CodeGen.X86
                     operation.Dest = retReg;
                 }
             }
+
+            operation.SetSources(sources.ToArray());
 
             return node;
         }

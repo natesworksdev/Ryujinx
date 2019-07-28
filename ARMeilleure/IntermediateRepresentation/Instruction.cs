@@ -76,21 +76,4 @@ namespace ARMeilleure.IntermediateRepresentation
         SpillArg,
         StoreToContext
     }
-
-    static class InstructionExtensions
-    {
-        public static bool IsShift(this Instruction inst)
-        {
-            switch (inst)
-            {
-                case Instruction.RotateRight:
-                case Instruction.ShiftLeft:
-                case Instruction.ShiftRightSI:
-                case Instruction.ShiftRightUI:
-                    return true;
-            }
-
-            return false;
-        }
-    }
 }

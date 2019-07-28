@@ -4,13 +4,9 @@ namespace ARMeilleure.IntermediateRepresentation
     {
         private BasicBlock[] _blocks;
 
-        public PhiNode(Operand dest, int predecessorsCount) : base(predecessorsCount)
+        public PhiNode(Operand destination, int predecessorsCount) : base(destination, predecessorsCount)
         {
-            Sources = new Operand[predecessorsCount];
-
             _blocks = new BasicBlock[predecessorsCount];
-
-            Dest = dest;
         }
 
         public BasicBlock GetBlock(int index)

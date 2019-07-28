@@ -3,6 +3,7 @@ using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using System.Collections.Generic;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -10,6 +11,8 @@ namespace ARMeilleure.Translation
 {
     class ArmEmitterContext : EmitterContext
     {
+        private Dictionary<ulong, Operand> _labels;
+
         private OpCode _optOpLastCompare;
         private OpCode _optOpLastFlagSet;
 
@@ -42,6 +45,20 @@ namespace ARMeilleure.Translation
         {
             Memory = memory;
             Mode   = mode;
+
+            _labels = new Dictionary<ulong, Operand>();
+        }
+
+        public Operand GetLabel(ulong address)
+        {
+            if (!_labels.TryGetValue(address, out Operand label))
+            {
+                label = Label();
+
+                _labels.Add(address, label);
+            }
+
+            return label;
         }
 
         public void MarkComparison(Operand n, Operand m)
