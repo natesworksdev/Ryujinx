@@ -605,15 +605,13 @@ namespace ARMeilleure.CodeGen.X86
 
                     int stackOffset = AllocateOnStack(source.Type.GetSizeInBytes());
 
-                    Operation allocOp = new Operation(Instruction.StackAlloc, stackAddr, Const(stackOffset));
-
-                    nodes.AddBefore(node, allocOp);
+                    nodes.AddBefore(node, new Operation(Instruction.StackAlloc, stackAddr, Const(stackOffset)));
 
                     Operation storeOp = new Operation(Instruction.Store, null, stackAddr, source);
 
                     HandleConstantCopy(nodes.AddBefore(node, storeOp), storeOp);
 
-                    sources[retArgs + index] = stackAddr;
+                    operation.SetSource(index, stackAddr);
                 }
             }
 
@@ -621,11 +619,6 @@ namespace ARMeilleure.CodeGen.X86
             for (int index = 0; index < argsCount; index++)
             {
                 Operand source = operation.GetSource(index + 1);
-
-                if (source.Type == OperandType.V128)
-                {
-                    source = sources[1 + retArgs + index];
-                }
 
                 Operand argReg;
 
@@ -666,9 +659,7 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     Operand retValueAddr = Local(OperandType.I64);
 
-                    Operation copyOp = new Operation(Instruction.Copy, retValueAddr, arg0Reg);
-
-                    nodes.AddBefore(node, copyOp);
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, retValueAddr, arg0Reg));
 
                     Operation loadOp = new Operation(Instruction.Load, dest, retValueAddr);
 
