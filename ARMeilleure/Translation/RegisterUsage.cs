@@ -70,7 +70,7 @@ namespace ARMeilleure.Translation
 
         public static void RunPass(ControlFlowGraph cfg)
         {
-            //Computer local register inputs and outputs used inside blocks.
+            // Computer local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
             RegisterMask[] localOutputs = new RegisterMask[cfg.Blocks.Count];
 
@@ -101,7 +101,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            //Compute global register inputs and outputs used across blocks.
+            // Compute global register inputs and outputs used across blocks.
             RegisterMask[] globalCmnOutputs = new RegisterMask[cfg.Blocks.Count];
 
             RegisterMask[] globalInputs  = new RegisterMask[cfg.Blocks.Count];
@@ -115,7 +115,7 @@ namespace ARMeilleure.Translation
             {
                 modified = false;
 
-                //Compute register outputs.
+                // Compute register outputs.
                 for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
                 {
                     BasicBlock block = cfg.PostOrderBlocks[index];
@@ -162,7 +162,7 @@ namespace ARMeilleure.Translation
                     }
                 }
 
-                //Compute register inputs.
+                // Compute register inputs.
                 for (int index = 0; index < cfg.PostOrderBlocks.Length; index++)
                 {
                     BasicBlock block = cfg.PostOrderBlocks[index];
@@ -191,7 +191,7 @@ namespace ARMeilleure.Translation
             }
             while (modified);
 
-            //Insert load and store context instructions where needed.
+            // Insert load and store context instructions where needed.
             foreach (BasicBlock block in cfg.Blocks)
             {
                 bool hasContextLoad = HasContextLoad(block);
@@ -201,8 +201,8 @@ namespace ARMeilleure.Translation
                     block.Operations.RemoveFirst();
                 }
 
-                //The only block without any predecessor should be the entry block.
-                //It always needs a context load as it is the first block to run.
+                // The only block without any predecessor should be the entry block.
+                // It always needs a context load as it is the first block to run.
                 if (block.Predecessors.Count == 0 || hasContextLoad)
                 {
                     LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector);
@@ -396,7 +396,7 @@ namespace ARMeilleure.Translation
 
         private static long ClearCallerSavedIntRegs(long mask)
         {
-            //TODO: ARM32 support.
+            // TODO: ARM32 support.
             mask &= ~(CallerSavedIntRegistersMask | PStateNzcvFlagsMask);
 
             return mask;
@@ -404,7 +404,7 @@ namespace ARMeilleure.Translation
 
         private static long ClearCallerSavedVecRegs(long mask)
         {
-            //TODO: ARM32 support.
+            // TODO: ARM32 support.
             mask &= ~CallerSavedVecRegistersMask;
 
             return mask;

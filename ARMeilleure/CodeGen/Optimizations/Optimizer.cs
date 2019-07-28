@@ -62,7 +62,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static void PropagateCopy(Operation copyOp)
         {
-            //Propagate copy source operand to all uses of the destination operand.
+            // Propagate copy source operand to all uses of the destination operand.
             Operand dest   = copyOp.Destination;
             Operand source = copyOp.GetSource(0);
 
@@ -82,8 +82,8 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static void RemoveNode(BasicBlock block, LinkedListNode<Node> llNode)
         {
-            //Remove a node from the nodes list, and also remove itself
-            //from all the use lists on the operands that this node uses.
+            // Remove a node from the nodes list, and also remove itself
+            // from all the use lists on the operands that this node uses.
             block.Operations.Remove(llNode);
 
             Node node = llNode.Value;

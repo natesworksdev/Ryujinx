@@ -114,10 +114,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             if (index >= 0)
             {
-                //New range insersects with an existing range, we need to remove
-                //all the intersecting ranges before adding the new one.
-                //We also extend the new range as needed, based on the values of
-                //the existing ranges being removed.
+                // New range insersects with an existing range, we need to remove
+                // all the intersecting ranges before adding the new one.
+                // We also extend the new range as needed, based on the values of
+                // the existing ranges being removed.
                 int lIndex = index;
                 int rIndex = index;
 
@@ -153,14 +153,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void InsertRange(int index, int start, int end)
         {
-            //Here we insert a new range on the ranges list.
-            //If possible, we extend an existing range rather than inserting a new one.
-            //We can extend an existing range if any of the following conditions are true:
-            //- The new range starts right after the end of the previous range on the list.
-            //- The new range ends right before the start of the next range on the list.
-            //If both cases are true, we can extend either one. We prefer to extend the
-            //previous range, and then remove the next one, but theres no specific reason
-            //for that, extending either one will do.
+            // Here we insert a new range on the ranges list.
+            // If possible, we extend an existing range rather than inserting a new one.
+            // We can extend an existing range if any of the following conditions are true:
+            // - The new range starts right after the end of the previous range on the list.
+            // - The new range ends right before the start of the next range on the list.
+            // If both cases are true, we can extend either one. We prefer to extend the
+            // previous range, and then remove the next one, but theres no specific reason
+            // for that, extending either one will do.
             int? extIndex = null;
 
             if (index > 0 && _ranges[index - 1].End == start)
@@ -225,9 +225,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (overlapIndex >= 0)
                 {
-                    //It's possible that we have multiple overlaps within a single interval,
-                    //in this case, we pick the one with the lowest start position, since
-                    //we return the first overlap position.
+                    // It's possible that we have multiple overlaps within a single interval,
+                    // in this case, we pick the one with the lowest start position, since
+                    // we return the first overlap position.
                     while (overlapIndex > 0 && _ranges[overlapIndex - 1].End > range.Start)
                     {
                         overlapIndex--;

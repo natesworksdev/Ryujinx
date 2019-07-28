@@ -16,7 +16,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAluBinary op = (OpCodeAluBinary)context.CurrOp;
 
-            //If Rm == 0, Rd = 0 (division by zero).
+            // If Rm == 0, Rd = 0 (division by zero).
             Operand n = GetIntOrZR(context, op.Rn);
             Operand m = GetIntOrZR(context, op.Rm);
 
@@ -29,7 +29,7 @@ namespace ARMeilleure.Instructions
 
             if (!unsigned)
             {
-                //If Rn == INT_MIN && Rm == -1, Rd = INT_MIN (overflow).
+                // If Rn == INT_MIN && Rm == -1, Rd = INT_MIN (overflow).
                 bool is32Bits = op.RegisterSize == RegisterSize.Int32;
 
                 Operand intMin = is32Bits ? Const(int.MinValue) : Const(long.MinValue);

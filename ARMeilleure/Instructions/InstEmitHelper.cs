@@ -49,10 +49,10 @@ namespace ARMeilleure.Instructions
 
         public static int GetRegisterAlias(Aarch32Mode mode, int register)
         {
-            //Only registers >= 8 are banked,
-            //with registers in the range [8, 12] being
-            //banked for the FIQ mode, and registers
-            //13 and 14 being banked for all modes.
+            // Only registers >= 8 are banked,
+            // with registers in the range [8, 12] being
+            // banked for the FIQ mode, and registers
+            // 13 and 14 being banked for all modes.
             if ((uint)register < 8)
             {
                 return register;

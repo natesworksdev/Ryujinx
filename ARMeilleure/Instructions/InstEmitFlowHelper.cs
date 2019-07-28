@@ -160,10 +160,10 @@ namespace ARMeilleure.Instructions
 
         private static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand retVal)
         {
-            //Note: The return value of the called method will be placed
-            //at the Stack, the return value is always a Int64 with the
-            //return address of the function. We check if the address is
-            //correct, if it isn't we keep returning until we reach the dispatcher.
+            // Note: The return value of the called method will be placed
+            // at the Stack, the return value is always a Int64 with the
+            // return address of the function. We check if the address is
+            // correct, if it isn't we keep returning until we reach the dispatcher.
             ulong nextAddr = GetNextOpAddress(context.CurrOp);
 
             if (context.CurrBlock.Next != null)

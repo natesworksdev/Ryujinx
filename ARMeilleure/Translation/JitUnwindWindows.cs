@@ -93,7 +93,7 @@ namespace ARMeilleure.Translation
 
             if (!JitCache.TryFind(offset, out JitCacheEntry funcEntry))
             {
-                //Not found.
+                // Not found.
                 return null;
             }
 

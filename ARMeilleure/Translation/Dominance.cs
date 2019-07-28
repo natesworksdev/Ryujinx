@@ -5,8 +5,8 @@ namespace ARMeilleure.Translation
 {
     static class Dominance
     {
-        //Those methods are an implementation of the algorithms on "A Simple, Fast Dominance Algorithm".
-        //https://www.cs.rice.edu/~keith/EMBED/dom.pdf
+        // Those methods are an implementation of the algorithms on "A Simple, Fast Dominance Algorithm".
+        // https://www.cs.rice.edu/~keith/EMBED/dom.pdf
         public static void FindDominators(ControlFlowGraph cfg)
         {
             BasicBlock Intersect(BasicBlock block1, BasicBlock block2)

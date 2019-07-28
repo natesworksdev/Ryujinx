@@ -54,7 +54,7 @@ namespace ARMeilleure.Decoders
 
             while (workQueue.TryDequeue(out Block currBlock))
             {
-                //Check if the current block is inside another block.
+                // Check if the current block is inside another block.
                 if (BinarySearch(blocks, currBlock.Address, out int nBlkIndex))
                 {
                     Block nBlock = blocks[nBlkIndex];
@@ -71,7 +71,7 @@ namespace ARMeilleure.Decoders
                     continue;
                 }
 
-                //If we have a block after the current one, set the limit address.
+                // If we have a block after the current one, set the limit address.
                 ulong limitAddress = ulong.MaxValue;
 
                 if (nBlkIndex != blocks.Count)
@@ -94,10 +94,10 @@ namespace ARMeilleure.Decoders
 
                 if (currBlock.OpCodes.Count != 0)
                 {
-                    //Set child blocks. "Branch" is the block the branch instruction
-                    //points to (when taken), "Next" is the block at the next address,
-                    //executed when the branch is not taken. For Unconditional Branches
-                    //(except BL/BLR that are sub calls) or end of executable, Next is null.
+                    // Set child blocks. "Branch" is the block the branch instruction
+                    // points to (when taken), "Next" is the block at the next address,
+                    // executed when the branch is not taken. For Unconditional Branches
+                    // (except BL/BLR that are sub calls) or end of executable, Next is null.
                     OpCode lastOp = currBlock.GetLastOp();
 
                     bool isCall = IsCall(lastOp);
@@ -113,7 +113,7 @@ namespace ARMeilleure.Decoders
                     }
                 }
 
-                //Insert the new block on the list (sorted by address).
+                // Insert the new block on the list (sorted by address).
                 if (blocks.Count != 0)
                 {
                     Block nBlock = blocks[nBlkIndex];
@@ -211,25 +211,25 @@ namespace ARMeilleure.Decoders
                 return false;
             }
 
-            //Note: On ARM32, most instructions have conditional execution,
-            //so there's no "Always" (unconditional) branch like on ARM64.
-            //We need to check if the condition is "Always" instead.
+            // Note: On ARM32, most instructions have conditional execution,
+            // so there's no "Always" (unconditional) branch like on ARM64.
+            // We need to check if the condition is "Always" instead.
             return IsAarch32Branch(op) && op.Cond >= Condition.Al;
         }
 
         private static bool IsAarch32Branch(OpCode opCode)
         {
-            //Note: On ARM32, most ALU operations can write to R15 (PC),
-            //so we must consider such operations as a branch in potential aswell.
+            // Note: On ARM32, most ALU operations can write to R15 (PC),
+            // so we must consider such operations as a branch in potential aswell.
             if (opCode is IOpCode32Alu opAlu && opAlu.Rd == RegisterAlias.Aarch32Pc)
             {
                 return true;
             }
 
-            //Same thing for memory operations. We have the cases where PC is a target
-            //register (Rt == 15 or (mask & (1 << 15)) != 0), and cases where there is
-            //a write back to PC (wback == true && Rn == 15), however the later may
-            //be "undefined" depending on the CPU, so compilers should not produce that.
+            // Same thing for memory operations. We have the cases where PC is a target
+            // register (Rt == 15 or (mask & (1 << 15)) != 0), and cases where there is
+            // a write back to PC (wback == true && Rn == 15), however the later may
+            // be "undefined" depending on the CPU, so compilers should not produce that.
             if (opCode is IOpCode32Mem || opCode is IOpCode32MemMult)
             {
                 int rt, rn;
@@ -243,8 +243,8 @@ namespace ARMeilleure.Decoders
                     wBack  = opMem.WBack;
                     isLoad = opMem.IsLoad;
 
-                    //For the dual load, we also need to take into account the
-                    //case were Rt2 == 15 (PC).
+                    // For the dual load, we also need to take into account the
+                    // case were Rt2 == 15 (PC).
                     if (rt == 14 && opMem.Instruction.Name == InstName.Ldrd)
                     {
                         rt = RegisterAlias.Aarch32Pc;
@@ -271,14 +271,14 @@ namespace ARMeilleure.Decoders
                 }
             }
 
-            //Explicit branch instructions.
+            // Explicit branch instructions.
             return opCode is IOpCode32BImm ||
                    opCode is IOpCode32BReg;
         }
 
         private static bool IsCall(OpCode opCode)
         {
-            //TODO (CQ): ARM32 support.
+            // TODO (CQ): ARM32 support.
             return opCode.Instruction.Name == InstName.Bl ||
                    opCode.Instruction.Name == InstName.Blr;
         }

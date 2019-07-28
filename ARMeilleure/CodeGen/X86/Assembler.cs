@@ -1044,7 +1044,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (memOp != null)
             {
-                //Either source or destination is a memory operand.
+                // Either source or destination is a memory operand.
                 Register baseReg = memOp.BaseAddress.GetRegister();
 
                 X86Register baseRegLow = (X86Register)(baseReg.Index & 0b111);
@@ -1106,7 +1106,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else
             {
-                //Source and destination are registers.
+                // Source and destination are registers.
                 modRM |= 0xc0;
             }
 
@@ -1129,7 +1129,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 if ((rexPrefix & 0b1011) == 0 && opCodeHigh == 0xf)
                 {
-                    //Two-byte form.
+                    // Two-byte form.
                     WriteByte(0xc5);
 
                     vexByte2 |= (~rexPrefix & 4) << 5;
@@ -1138,7 +1138,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
-                    //Three-byte form.
+                    // Three-byte form.
                     WriteByte(0xc4);
 
                     int vexByte1 = (~rexPrefix & 7) << 5;

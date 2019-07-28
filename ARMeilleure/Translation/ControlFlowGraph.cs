@@ -84,7 +84,7 @@ namespace ARMeilleure.Translation
 
             if (visited.Count < blocks.Count)
             {
-                //Remove unreachable blocks and renumber.
+                // Remove unreachable blocks and renumber.
                 int index = 0;
 
                 for (LinkedListNode<BasicBlock> node = blocks.First; node != null;)
@@ -129,14 +129,14 @@ namespace ARMeilleure.Translation
                 throw new ArgumentException("Predecessor and successor are not connected.");
             }
 
-            //Insert the new block on the list of blocks.
+            // Insert the new block on the list of blocks.
             BasicBlock succPrev = successor.Node.Previous?.Value;
 
             if (succPrev != null && succPrev != predecessor && succPrev.Next == successor)
             {
-                //Can't insert after the predecessor or before the successor.
-                //Here, we insert it before the successor by also spliting another
-                //edge (the one between the block before "successor" and "successor").
+                // Can't insert after the predecessor or before the successor.
+                // Here, we insert it before the successor by also spliting another
+                // edge (the one between the block before "successor" and "successor").
                 BasicBlock splitBlock2 = new BasicBlock(splitBlock.Index + 1);
 
                 succPrev.Next = splitBlock2;

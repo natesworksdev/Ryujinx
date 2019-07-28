@@ -131,7 +131,7 @@ namespace ARMeilleure.Instructions
                 {
                     address = context.Copy(GetIntOrSP(context, op.Rn));
 
-                    //Pre-indexing.
+                    // Pre-indexing.
                     if (!op.PostIdx)
                     {
                         address = context.Add(address, Const(op.Immediate));
@@ -162,7 +162,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitWBackIfNeeded(ArmEmitterContext context, Operand address)
         {
-            //Check whenever the current OpCode has post-indexed write back, if so write it.
+            // Check whenever the current OpCode has post-indexed write back, if so write it.
             if (context.CurrOp is OpCodeMemImm op && op.WBack)
             {
                 if (op.PostIdx)

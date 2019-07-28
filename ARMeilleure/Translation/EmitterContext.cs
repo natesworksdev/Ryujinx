@@ -80,7 +80,7 @@ namespace ARMeilleure.Translation
 
         public Operand Call(Delegate func, params Operand[] callArgs)
         {
-            //Add the delegate to the cache to ensure it will not be garbage collected.
+            // Add the delegate to the cache to ensure it will not be garbage collected.
             func = DelegateCache.GetOrAdd(func);
 
             IntPtr ptr = Marshal.GetFunctionPointerForDelegate<Delegate>(func);

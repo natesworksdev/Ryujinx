@@ -169,9 +169,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
                 else
                 {
-                    //Spill the interval that will free the register for the longest
-                    //amount of time, as long there's no interference of the current
-                    //interval with a fixed interval using the same register.
+                    // Spill the interval that will free the register for the longest
+                    // amount of time, as long there's no interference of the current
+                    // interval with a fixed interval using the same register.
                     bool hasRegisterSelected = false;
 
                     RegisterType regType = current.Local.Type.ToRegisterType();
@@ -493,7 +493,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     int branchIndex = cfg.PostOrderMap[block.Index];
                     int targetIndex = cfg.PostOrderMap[successor.Index];
 
-                    //Is the branch jumping backwards?
+                    // Is the branch jumping backwards?
                     if (targetIndex >= branchIndex)
                     {
                         int targetPos = blockStarts[successor.Index];

@@ -13,7 +13,7 @@ namespace ARMeilleure.Instructions
     {
         public static void EmitAdcsCCheck(ArmEmitterContext context, Operand n, Operand d)
         {
-            //C = (Rd == Rn && CIn) || Rd < Rn
+            // C = (Rd == Rn && CIn) || Rd < Rn
             Operand cIn = GetFlag(PState.CFlag);
 
             Operand cOut = context.BitwiseAnd(context.ICompareEqual(d, n), cIn);
@@ -25,13 +25,13 @@ namespace ARMeilleure.Instructions
 
         public static void EmitAddsCCheck(ArmEmitterContext context, Operand n, Operand d)
         {
-            //C = Rd < Rn
+            // C = Rd < Rn
             SetFlag(context, PState.CFlag, context.ICompareLessUI(d, n));
         }
 
         public static void EmitAddsVCheck(ArmEmitterContext context, Operand n, Operand m, Operand d)
         {
-            //V = (Rd ^ Rn) & ~(Rn ^ Rm) < 0
+            // V = (Rd ^ Rn) & ~(Rn ^ Rm) < 0
             Operand vOut = context.BitwiseExclusiveOr(d, n);
 
             vOut = context.BitwiseAnd(vOut, context.BitwiseNot(context.BitwiseExclusiveOr(n, m)));
@@ -43,7 +43,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitSbcsCCheck(ArmEmitterContext context, Operand n, Operand m)
         {
-            //C = (Rn == Rm && CIn) || Rn > Rm
+            // C = (Rn == Rm && CIn) || Rn > Rm
             Operand cIn = GetFlag(PState.CFlag);
 
             Operand cOut = context.BitwiseAnd(context.ICompareEqual(n, m), cIn);
@@ -55,13 +55,13 @@ namespace ARMeilleure.Instructions
 
         public static void EmitSubsCCheck(ArmEmitterContext context, Operand n, Operand m)
         {
-            //C = Rn >= Rm
+            // C = Rn >= Rm
             SetFlag(context, PState.CFlag, context.ICompareGreaterOrEqualUI(n, m));
         }
 
         public static void EmitSubsVCheck(ArmEmitterContext context, Operand n, Operand m, Operand d)
         {
-            //V = (Rd ^ Rn) & (Rn ^ Rm) < 0
+            // V = (Rd ^ Rn) & (Rn ^ Rm) < 0
             Operand vOut = context.BitwiseExclusiveOr(d, n);
 
             vOut = context.BitwiseAnd(vOut, context.BitwiseExclusiveOr(n, m));
@@ -98,7 +98,7 @@ namespace ARMeilleure.Instructions
         {
             switch (context.CurrOp)
             {
-                //ARM32.
+                // ARM32.
                 case OpCode32AluImm op:
                 {
                     if (op.SetFlags && op.IsRotated)
@@ -113,7 +113,7 @@ namespace ARMeilleure.Instructions
 
                 case OpCodeT16AluImm8 op: return Const(op.Immediate);
 
-                //ARM64.
+                // ARM64.
                 case IOpCodeAluImm op:
                 {
                     if (op.GetOperandType() == OperandType.I32)
@@ -159,7 +159,7 @@ namespace ARMeilleure.Instructions
             return new InvalidOperationException($"Invalid OpCode type \"{opCode?.GetType().Name ?? "null"}\".");
         }
 
-        //ARM32 helpers.
+        // ARM32 helpers.
         private static Operand GetMShiftedByImmediate(ArmEmitterContext context, OpCode32AluRsImm op, bool setCarry)
         {
             Operand m = GetIntA32(context, op.Rm);
@@ -307,7 +307,7 @@ namespace ARMeilleure.Instructions
 
         private static Operand GetRrxC(ArmEmitterContext context, Operand m, bool setCarry)
         {
-            //Rotate right by 1 with carry.
+            // Rotate right by 1 with carry.
             Operand cIn = context.Copy(GetFlag(PState.CFlag));
 
             if (setCarry)

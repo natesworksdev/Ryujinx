@@ -61,7 +61,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 foreach (Copy copy in _copies)
                 {
-                    //If the destination is not used anywhere, we can assign it immediately.
+                    // If the destination is not used anywhere, we can assign it immediately.
                     if (!locations.ContainsKey(copy.Dest))
                     {
                         readyQueue.Enqueue(copy.Dest);
@@ -109,13 +109,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (copyDest != locations[sources[copySource]])
                         {
-                            //Find the other swap destination register.
-                            //To do that, we search all the pending registers, and pick
-                            //the one where the copy source register is equal to the
-                            //current destination register being processed (copyDest).
+                            // Find the other swap destination register.
+                            // To do that, we search all the pending registers, and pick
+                            // the one where the copy source register is equal to the
+                            // current destination register being processed (copyDest).
                             foreach (Register pending in pendingQueue)
                             {
-                                //Is this a copy of pending <- copyDest?
+                                // Is this a copy of pending <- copyDest?
                                 if (copyDest == locations[sources[pending]])
                                 {
                                     swapOther = pending;
@@ -125,10 +125,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             }
                         }
 
-                        //The value that was previously at "copyDest" now lives on
-                        //"copySource" thanks to the swap, now we need to update the
-                        //location for the next copy that is supposed to copy the value
-                        //that used to live on "copyDest".
+                        // The value that was previously at "copyDest" now lives on
+                        // "copySource" thanks to the swap, now we need to update the
+                        // location for the next copy that is supposed to copy the value
+                        // that used to live on "copyDest".
                         locations[sources[swapOther]] = copySource;
                     }
                 }
@@ -173,22 +173,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             if (left.IsSpilled && !right.IsSpilled)
             {
-                //Move from the stack to a register.
+                // Move from the stack to a register.
                 AddSplitFill(left, right, type);
             }
             else if (!left.IsSpilled && right.IsSpilled)
             {
-                //Move from a register to the stack.
+                // Move from a register to the stack.
                 AddSplitSpill(left, right, type);
             }
             else if (!left.IsSpilled && !right.IsSpilled && left.Register != right.Register)
             {
-                //Move from one register to another.
+                // Move from one register to another.
                 AddSplitCopy(left, right, type);
             }
             else if (left.SpillOffset != right.SpillOffset)
             {
-                //This would be the stack-to-stack move case, but this is not supported.
+                // This would be the stack-to-stack move case, but this is not supported.
                 throw new ArgumentException("Both intervals were spilled.");
             }
         }

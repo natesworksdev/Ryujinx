@@ -83,7 +83,7 @@ namespace ARMeilleure.Instructions
 
             if (op.Replicate)
             {
-                //Only loads uses the replicate mode.
+                // Only loads uses the replicate mode.
                 Debug.Assert(isLoad, "Replicate mode is not valid for stores.");
 
                 int elems = op.GetBytesCount() >> op.Size;

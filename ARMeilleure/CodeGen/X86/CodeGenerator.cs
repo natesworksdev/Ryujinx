@@ -632,7 +632,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(dest.Type.IsInteger() || source.Kind != OperandKind.Constant);
 
-            //Moves to the same register are useless.
+            // Moves to the same register are useless.
             if (dest.Kind == source.Kind && dest.Value == source.Value)
             {
                 return;
@@ -641,7 +641,7 @@ namespace ARMeilleure.CodeGen.X86
             if (dest.Kind   == OperandKind.Register &&
                 source.Kind == OperandKind.Constant && source.Value == 0)
             {
-                //Assemble "mov reg, 0" as "xor reg, reg" as the later is more efficient.
+                // Assemble "mov reg, 0" as "xor reg, reg" as the later is more efficient.
                 context.Assembler.Xor(dest, dest, OperandType.I32);
             }
             else if (dest.Type.IsInteger())
@@ -668,20 +668,20 @@ namespace ARMeilleure.CodeGen.X86
             int operandSize = dest.Type == OperandType.I32 ? 32 : 64;
             int operandMask = operandSize - 1;
 
-            //When the input operand is 0, the result is undefined, however the
-            //ZF flag is set. We are supposed to return the operand size on that
-            //case. So, add an additional jump to handle that case, by moving the
-            //operand size constant to the destination register.
+            // When the input operand is 0, the result is undefined, however the
+            // ZF flag is set. We are supposed to return the operand size on that
+            // case. So, add an additional jump to handle that case, by moving the
+            // operand size constant to the destination register.
             context.JumpToNear(X86Condition.NotEqual);
 
             context.Assembler.Mov(dest, new Operand(operandSize | operandMask), OperandType.I32);
 
             context.JumpHere();
 
-            //BSR returns the zero based index of the last bit set on the operand,
-            //starting from the least significant bit. However we are supposed to
-            //return the number of 0 bits on the high end. So, we invert the result
-            //of the BSR using XOR to get the correct value.
+            // BSR returns the zero based index of the last bit set on the operand,
+            // starting from the least significant bit. However we are supposed to
+            // return the number of 0 bits on the high end. So, we invert the result
+            // of the BSR using XOR to get the correct value.
             context.Assembler.Xor(dest, new Operand(operandMask), OperandType.I32);
         }
 
@@ -1137,7 +1137,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Debug.Assert(index < (dest.Type == OperandType.FP32 ? 4 : 2));
 
-                //Floating-point types.
+                // Floating-point types.
                 if ((index >= 2 && dest.Type == OperandType.FP32) ||
                     (index == 1 && dest.Type == OperandType.FP64))
                 {

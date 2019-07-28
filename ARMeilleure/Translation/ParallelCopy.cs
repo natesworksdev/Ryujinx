@@ -35,9 +35,9 @@ namespace ARMeilleure.Translation
 
         private Operand GetUnique(Operand operand)
         {
-            //Operand is supposed to be a value or reference type based on kind.
-            //We differentiate local variables by reference, but everything else
-            //is supposed to be considered the same, if "Value" is the same.
+            // Operand is supposed to be a value or reference type based on kind.
+            // We differentiate local variables by reference, but everything else
+            // is supposed to be considered the same, if "Value" is the same.
             if (operand.Kind != OperandKind.LocalVariable)
             {
                 if (_uniqueOperands.TryGetValue(operand.Value, out Operand prevOperand))

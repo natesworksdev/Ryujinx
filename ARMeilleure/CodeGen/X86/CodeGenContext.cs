@@ -90,8 +90,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private int GetCallArgsRegionSize(AllocationResult allocResult, int maxCallArgs, out int xmmSaveRegionSize)
         {
-            //We need to add 8 bytes to the total size, as the call to this
-            //function already pushed 8 bytes (the return address).
+            // We need to add 8 bytes to the total size, as the call to this
+            // function already pushed 8 bytes (the return address).
             int intMask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.IntUsedRegisters;
             int vecMask = CallingConvention.GetVecCalleeSavedRegisters() & allocResult.VecUsedRegisters;
 
@@ -103,14 +103,14 @@ namespace ARMeilleure.CodeGen.X86
 
             if (argsCount < 0)
             {
-                //When the function has no calls, argsCount is -1.
-                //In this case, we don't need to allocate the shadow space.
+                // When the function has no calls, argsCount is -1.
+                // In this case, we don't need to allocate the shadow space.
                 argsCount = 0;
             }
             else if (argsCount < 4)
             {
-                //The ABI mandates that the space for at least 4 arguments
-                //is reserved on the stack (this is called shadow space).
+                // The ABI mandates that the space for at least 4 arguments
+                // is reserved on the stack (this is called shadow space).
                 argsCount = 4;
             }
 
@@ -118,7 +118,7 @@ namespace ARMeilleure.CodeGen.X86
 
             int callArgsAndFrameSize = frameSize + argsCount * 16; //FIXME * 16 => calc
 
-            //Ensure that the Stack Pointer will be aligned to 16 bytes.
+            // Ensure that the Stack Pointer will be aligned to 16 bytes.
             callArgsAndFrameSize = (callArgsAndFrameSize + 0xf) & ~0xf;
 
             return callArgsAndFrameSize - frameSize;
@@ -179,7 +179,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public byte[] GetCode()
         {
-            //Write jump relative offsets.
+            // Write jump relative offsets.
             bool modified;
 
             do
@@ -234,14 +234,14 @@ namespace ARMeilleure.CodeGen.X86
                         jump.InstSize = Assembler.GetJmpLength(offset);
                     }
 
-                    //The jump is relative to the next instruction, not the current one.
-                    //Since we didn't know the next instruction address when calculating
-                    //the offset (as the size of the current jump instruction was not know),
-                    //we now need to compensate the offset with the jump instruction size.
-                    //It's also worth to note that:
-                    //- This is only needed for backward jumps.
-                    //- The GetJmpLength and GetJccLength also compensates the offset
-                    //internally when computing the jump instruction size.
+                    // The jump is relative to the next instruction, not the current one.
+                    // Since we didn't know the next instruction address when calculating
+                    // the offset (as the size of the current jump instruction was not know),
+                    // we now need to compensate the offset with the jump instruction size.
+                    // It's also worth to note that:
+                    // - This is only needed for backward jumps.
+                    // - The GetJmpLength and GetJccLength also compensates the offset
+                    // internally when computing the jump instruction size.
                     if (offset < 0)
                     {
                         offset -= jump.InstSize;
@@ -259,7 +259,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             while (modified);
 
-            //Write the code, ignoring the dummy bytes after jumps, into a new stream.
+            // Write the code, ignoring the dummy bytes after jumps, into a new stream.
             _stream.Seek(0, SeekOrigin.Begin);
 
             using (MemoryStream codeStream = new MemoryStream())

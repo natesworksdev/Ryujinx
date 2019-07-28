@@ -54,7 +54,7 @@ namespace ARMeilleure.Translation
 
             Queue<BasicBlock> dfPhiBlocks = new Queue<BasicBlock>();
 
-            //First pass, get all defs and locals uses.
+            // First pass, get all defs and locals uses.
             foreach (BasicBlock block in cfg.Blocks)
             {
                 Operand[] localDefs = new Operand[RegisterConsts.TotalCount];
@@ -125,7 +125,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            //Second pass, rename variables with definitions on different blocks.
+            // Second pass, rename variables with definitions on different blocks.
             foreach (BasicBlock block in cfg.Blocks)
             {
                 Operand[] localDefs = new Operand[RegisterConsts.TotalCount];
@@ -213,10 +213,10 @@ namespace ARMeilleure.Translation
 
         private static Operand InsertPhi(DefMap[] globalDefs, BasicBlock block, Operand operand)
         {
-            //This block has a Phi that has not been materialized yet, but that
-            //would define a new version of the variable we're looking for. We need
-            //to materialize the Phi, add all the block/operand pairs into the Phi, and
-            //then use the definition from that Phi.
+            // This block has a Phi that has not been materialized yet, but that
+            // would define a new version of the variable we're looking for. We need
+            // to materialize the Phi, add all the block/operand pairs into the Phi, and
+            // then use the definition from that Phi.
             Operand local = Local(operand.Type);
 
             PhiNode phi = new PhiNode(local, block.Predecessors.Count);

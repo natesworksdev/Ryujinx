@@ -20,7 +20,7 @@ namespace ARMeilleure.Instructions
 
             if (op.Pos < op.Shift)
             {
-                //BFI.
+                // BFI.
                 int shift = op.GetBitsCount() - op.Shift;
 
                 int width = op.Pos + 1;
@@ -33,7 +33,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                //BFXIL.
+                // BFXIL.
                 int shift = op.Shift;
 
                 int width = op.Pos - shift + 1;

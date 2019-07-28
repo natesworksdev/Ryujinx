@@ -14,12 +14,12 @@ namespace ARMeilleure.Instructions
 
         public static void Hint(ArmEmitterContext context)
         {
-            //Execute as no-op.
+            // Execute as no-op.
         }
 
         public static void Isb(ArmEmitterContext context)
         {
-            //Execute as no-op.
+            // Execute as no-op.
         }
 
         public static void Mrs(ArmEmitterContext context)
@@ -65,21 +65,21 @@ namespace ARMeilleure.Instructions
 
         public static void Nop(ArmEmitterContext context)
         {
-            //Do nothing.
+            // Do nothing.
         }
 
         public static void Sys(ArmEmitterContext context)
         {
-            //This instruction is used to do some operations on the CPU like cache invalidation,
-            //address translation and the like.
-            //We treat it as no-op here since we don't have any cache being emulated anyway.
+            // This instruction is used to do some operations on the CPU like cache invalidation,
+            // address translation and the like.
+            // We treat it as no-op here since we don't have any cache being emulated anyway.
             OpCodeSystem op = (OpCodeSystem)context.CurrOp;
 
             switch (GetPackedId(op))
             {
                 case 0b11_011_0111_0100_001:
                 {
-                    //DC ZVA
+                    // DC ZVA
                     Operand t = GetIntOrZR(context, op.Rt);
 
                     for (long offset = 0; offset < (4 << DczSizeLog2); offset += 8)
@@ -92,7 +92,7 @@ namespace ARMeilleure.Instructions
                     break;
                 }
 
-                //No-op
+                // No-op
                 case 0b11_011_0111_1110_001: //DC CIVAC
                     break;
             }

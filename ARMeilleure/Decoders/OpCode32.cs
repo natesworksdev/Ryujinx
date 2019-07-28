@@ -13,8 +13,8 @@ namespace ARMeilleure.Decoders
 
         public uint GetPc()
         {
-            //Due to backwards compatibility and legacy behavior of ARMv4 CPUs pipeline,
-            //the PC actually points 2 instructions ahead.
+            // Due to backwards compatibility and legacy behavior of ARMv4 CPUs pipeline,
+            // the PC actually points 2 instructions ahead.
             return (uint)Address + (uint)OpCodeSizeInBytes * 2;
         }
     }

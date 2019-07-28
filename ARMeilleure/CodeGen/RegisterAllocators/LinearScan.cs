@@ -125,7 +125,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private void AllocateInterval(AllocationContext context, LiveInterval current, int cIndex)
         {
-            //Check active intervals that already ended.
+            // Check active intervals that already ended.
             foreach (int iIndex in context.Active)
             {
                 LiveInterval interval = _intervals[iIndex];
@@ -140,7 +140,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
             }
 
-            //Check inactive intervals that already ended or were reactivated.
+            // Check inactive intervals that already ended or were reactivated.
             foreach (int iIndex in context.Inactive)
             {
                 LiveInterval interval = _intervals[iIndex];
@@ -206,17 +206,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             int selectedNextUse = freePositions[selectedReg];
 
-            //Intervals starts and ends at odd positions, unless they span an entire
-            //block, in this case they will have ranges at a even position.
-            //When a interval is loaded from the stack to a register, we can only
-            //do the split at a odd position, because otherwise the split interval
-            //that is inserted on the list to be processed may clobber a register
-            //used by the instruction at the same position as the split.
-            //The problem only happens when a interval ends exactly at this instruction,
-            //because otherwise they would interfere, and the register wouldn't be selected.
-            //When the interval is aligned and the above happens, there's no problem as
-            //the instruction that is actually with the last use is the one
-            //before that position.
+            // Intervals starts and ends at odd positions, unless they span an entire
+            // block, in this case they will have ranges at a even position.
+            // When a interval is loaded from the stack to a register, we can only
+            // do the split at a odd position, because otherwise the split interval
+            // that is inserted on the list to be processed may clobber a register
+            // used by the instruction at the same position as the split.
+            // The problem only happens when a interval ends exactly at this instruction,
+            // because otherwise they would interfere, and the register wouldn't be selected.
+            // When the interval is aligned and the above happens, there's no problem as
+            // the instruction that is actually with the last use is the one
+            // before that position.
             selectedNextUse &= ~InstructionGapMask;
 
             if (selectedNextUse <= current.GetStart())
@@ -352,8 +352,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             if (usePositions[selectedReg] < currentFirstUse)
             {
-                //All intervals on inactive and active are being used before current,
-                //so spill the current interval.
+                // All intervals on inactive and active are being used before current,
+                // so spill the current interval.
                 Debug.Assert(currentFirstUse > current.GetStart(), "Trying to spill a interval currently being used.");
 
                 LiveInterval splitChild = current.Split(currentFirstUse);
@@ -366,8 +366,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
             else if (blockedPositions[selectedReg] > current.GetEnd())
             {
-                //Spill made the register available for the entire current lifetime,
-                //so we only need to split the intervals using the selected register.
+                // Spill made the register available for the entire current lifetime,
+                // so we only need to split the intervals using the selected register.
                 current.Register = new Register(selectedReg, regType);
 
                 SplitAndSpillOverlappingIntervals(context, current);
@@ -376,9 +376,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
             else
             {
-                //There are conflicts even after spill due to the use of fixed registers
-                //that can't be spilled, so we need to also split current at the point of
-                //the first fixed register use.
+                // There are conflicts even after spill due to the use of fixed registers
+                // that can't be spilled, so we need to also split current at the point of
+                // the first fixed register use.
                 current.Register = new Register(selectedReg, regType);
 
                 int splitPosition = blockedPositions[selectedReg] & ~InstructionGapMask;
@@ -467,10 +467,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             LiveInterval      current,
             LiveInterval      interval)
         {
-            //If there's a next use after the start of the current interval,
-            //we need to split the spilled interval twice, and re-insert it
-            //on the "pending" list to ensure that it will get a new register
-            //on that use position.
+            // If there's a next use after the start of the current interval,
+            // we need to split the spilled interval twice, and re-insert it
+            // on the "pending" list to ensure that it will get a new register
+            // on that use position.
             int nextUse = interval.NextUseAfter(current.GetStart());
 
             LiveInterval splitChild;
@@ -528,9 +528,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             Debug.Assert(!interval.IsFixed,       "Trying to spill a fixed interval.");
             Debug.Assert(interval.UsesCount == 0, "Trying to spill a interval with uses.");
 
-            //We first check if any of the siblings were spilled, if so we can reuse
-            //the stack offset. Otherwise, we allocate a new space on the stack.
-            //This prevents stack-to-stack copies being necessary for a split interval.
+            // We first check if any of the siblings were spilled, if so we can reuse
+            // the stack offset. Otherwise, we allocate a new space on the stack.
+            // This prevents stack-to-stack copies being necessary for a split interval.
             if (!interval.TrySpillWithSiblingOffset())
             {
                 interval.Spill(context.StackAlloc.Allocate(interval.Local.Type));
@@ -618,8 +618,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     int succIndex = successor.Index;
 
-                    //If the current node is a split node, then the actual successor node
-                    //(the successor before the split) should be right after it.
+                    // If the current node is a split node, then the actual successor node
+                    // (the successor before the split) should be right after it.
                     if (IsSplitEdgeBlock(successor))
                     {
                         succIndex = Successors(successor).First().Index;
@@ -675,7 +675,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                     else
                     {
-                        //Split the critical edge.
+                        // Split the critical edge.
                         BasicBlock splitBlock = cfg.SplitEdge(block, successor);
 
                         foreach (Operation operation in sequence)
@@ -773,7 +773,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (block.Operations.Count == 0)
                 {
-                    //Pretend we have a dummy instruction on the empty block.
+                    // Pretend we have a dummy instruction on the empty block.
                     _operationNodes.Add(null);
 
                     _operationsCount += InstructionGap;
@@ -792,7 +792,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             BitMap[] blkLiveGen  = new BitMap[cfg.Blocks.Count];
             BitMap[] blkLiveKill = new BitMap[cfg.Blocks.Count];
 
-            //Compute local live sets.
+            // Compute local live sets.
             foreach (BasicBlock block in cfg.Blocks)
             {
                 BitMap liveGen  = new BitMap(mapSize);
@@ -820,7 +820,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 blkLiveKill[block.Index] = liveKill;
             }
 
-            //Compute global live sets.
+            // Compute global live sets.
             BitMap[] blkLiveIn  = new BitMap[cfg.Blocks.Count];
             BitMap[] blkLiveOut = new BitMap[cfg.Blocks.Count];
 
@@ -863,16 +863,16 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             _blockEdges = new HashSet<int>();
 
-            //Compute lifetime intervals.
+            // Compute lifetime intervals.
             int operationPos = _operationsCount;
 
             for (int index = 0; index < cfg.PostOrderBlocks.Length; index++)
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                //We handle empty blocks by pretending they have a dummy instruction,
-                //because otherwise the block would have the same start and end position,
-                //and this is not valid.
+                // We handle empty blocks by pretending they have a dummy instruction,
+                // because otherwise the block would have the same start and end position,
+                // and this is not valid.
                 int instCount = Math.Max(block.Operations.Count, 1);
 
                 int blockStart = operationPos - instCount * InstructionGap;

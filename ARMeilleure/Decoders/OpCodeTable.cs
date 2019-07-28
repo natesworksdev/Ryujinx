@@ -38,7 +38,7 @@ namespace ARMeilleure.Decoders
         static OpCodeTable()
         {
 #region "OpCode Table (AArch64)"
-            //Base
+            // Base
             SetA64("x0011010000xxxxx000000xxxxxxxxxx", InstName.Adc,             InstEmit.Adc,             typeof(OpCodeAluRs));
             SetA64("x0111010000xxxxx000000xxxxxxxxxx", InstName.Adcs,            InstEmit.Adcs,            typeof(OpCodeAluRs));
             SetA64("x00100010xxxxxxxxxxxxxxxxxxxxxxx", InstName.Add,             InstEmit.Add,             typeof(OpCodeAluImm));
@@ -189,7 +189,7 @@ namespace ARMeilleure.Decoders
             SetA64("10011011101xxxxx1xxxxxxxxxxxxxxx", InstName.Umsubl,          InstEmit.Umsubl,          typeof(OpCodeMul));
             SetA64("10011011110xxxxx0xxxxxxxxxxxxxxx", InstName.Umulh,           InstEmit.Umulh,           typeof(OpCodeMul));
 
-            //FP & SIMD
+            // FP & SIMD
             SetA64("0101111011100000101110xxxxxxxxxx", InstName.Abs_S,           InstEmit.Abs_S,           typeof(OpCodeSimd));
             SetA64("0>001110<<100000101110xxxxxxxxxx", InstName.Abs_V,           InstEmit.Abs_V,           typeof(OpCodeSimd));
             SetA64("01011110111xxxxx100001xxxxxxxxxx", InstName.Add_S,           InstEmit.Add_S,           typeof(OpCodeSimdReg));
@@ -593,7 +593,7 @@ namespace ARMeilleure.Decoders
 #endregion
 
 #region "OpCode Table (AArch32)"
-            //Base
+            // Base
             SetA32("<<<<0010100xxxxxxxxxxxxxxxxxxxxx", InstName.Add,             null,                     typeof(OpCode32AluImm));
             SetA32("<<<<0000100xxxxxxxxxxxxxxxx0xxxx", InstName.Add,             null,                     typeof(OpCode32AluRsImm));
             SetA32("<<<<1010xxxxxxxxxxxxxxxxxxxxxxxx", InstName.B,               null,                     typeof(OpCode32BImm));
@@ -684,12 +684,12 @@ namespace ARMeilleure.Decoders
 
             for (int index = 0; index < encoding.Length; index++, bit--)
             {
-                //Note: < and > are used on special encodings.
-                //The < means that we should never have ALL bits with the '<' set.
-                //So, when the encoding has <<, it means that 00, 01, and 10 are valid,
-                //but not 11. <<< is 000, 001, ..., 110 but NOT 111, and so on...
-                //For >, the invalid value is zero. So, for >> 01, 10 and 11 are valid,
-                //but 00 isn't.
+                // Note: < and > are used on special encodings.
+                // The < means that we should never have ALL bits with the '<' set.
+                // So, when the encoding has <<, it means that 00, 01, and 10 are valid,
+                // but not 11. <<< is 000, 001, ..., 110 but NOT 111, and so on...
+                // For >, the invalid value is zero. So, for >> 01, 10 and 11 are valid,
+                // but 00 isn't.
                 char chr = encoding[index];
 
                 if (chr == '1')

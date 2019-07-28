@@ -60,10 +60,10 @@ namespace ARMeilleure.Instructions
 
             if (pair)
             {
-                //Exclusive loads should be atomic. For pairwise loads, we need to
-                //read all the data at once. For a 32-bits pairwise load, we do a
-                //simple 64-bits load, for a 128-bits load, we need to call a special
-                //method to read 128-bits atomically.
+                // Exclusive loads should be atomic. For pairwise loads, we need to
+                // read all the data at once. For a 32-bits pairwise load, we do a
+                // simple 64-bits load, for a 128-bits load, we need to call a special
+                // method to read 128-bits atomically.
                 if (op.Size == 2)
                 {
                     Operand value = EmitLoad(context, address, exclusive, 3);
@@ -94,7 +94,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                //8, 16, 32 or 64-bits (non-pairwise) load.
+                // 8, 16, 32 or 64-bits (non-pairwise) load.
                 Operand value = EmitLoad(context, address, exclusive, op.Size);
 
                 SetIntOrZR(context, op.Rt, value);
@@ -137,7 +137,7 @@ namespace ARMeilleure.Instructions
 
         public static void Pfrm(ArmEmitterContext context)
         {
-            //Memory Prefetch, execute as no-op.
+            // Memory Prefetch, execute as no-op.
         }
 
         public static void Stlr(ArmEmitterContext context)  => EmitStr(context, AccessType.Ordered);
@@ -201,8 +201,8 @@ namespace ARMeilleure.Instructions
 
             if (s != null)
             {
-                //This is only needed for exclusive stores. The function returns 0
-                //when the store is successful, and 1 otherwise.
+                // This is only needed for exclusive stores. The function returns 0
+                // when the store is successful, and 1 otherwise.
                 SetIntOrZR(context, op.Rs, s);
             }
         }
@@ -253,9 +253,9 @@ namespace ARMeilleure.Instructions
 
         private static void EmitBarrier(ArmEmitterContext context)
         {
-            //Note: This barrier is most likely not necessary, and probably
-            //doesn't make any difference since we need to do a ton of stuff
-            //(software MMU emulation) to read or write anything anyway.
+            // Note: This barrier is most likely not necessary, and probably
+            // doesn't make any difference since we need to do a ton of stuff
+            // (software MMU emulation) to read or write anything anyway.
         }
     }
 }

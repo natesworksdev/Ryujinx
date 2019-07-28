@@ -57,9 +57,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void Append(Node node)
         {
-            //If the branch block is not null, then the list of operations
-            //should end with a branch instruction. We insert the new operation
-            //before this branch.
+            // If the branch block is not null, then the list of operations
+            // should end with a branch instruction. We insert the new operation
+            // before this branch.
             if (_branch != null || (Operations.Last != null && IsLeafBlock()))
             {
                 Operations.AddBefore(Operations.Last, node);

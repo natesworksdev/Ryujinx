@@ -2,7 +2,7 @@ namespace ARMeilleure.Instructions
 {
     enum InstName
     {
-        //Base (AArch64)
+        // Base (AArch64)
         Adc,
         Adcs,
         Add,
@@ -102,7 +102,7 @@ namespace ARMeilleure.Instructions
         Umulh,
         Und,
 
-        //FP & SIMD (AArch64)
+        // FP & SIMD (AArch64)
         Abs_S,
         Abs_V,
         Add_S,
@@ -440,7 +440,7 @@ namespace ARMeilleure.Instructions
         Zip1_V,
         Zip2_V,
 
-        //Base (AArch32)
+        // Base (AArch32)
         Blx,
         Bx,
         Cmp,
