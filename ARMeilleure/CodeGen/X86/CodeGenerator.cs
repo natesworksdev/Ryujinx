@@ -117,6 +117,8 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.RegisterAllocation);
 
+            Ssa.Deconstruct(cfg);
+
             LinearScan regAlloc = new LinearScan();
 
             RegisterMasks regMasks = new RegisterMasks(

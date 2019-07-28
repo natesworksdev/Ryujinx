@@ -7,7 +7,7 @@ using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
 {
-    static class Ssa
+    static partial class Ssa
     {
         private class DefMap
         {
@@ -43,7 +43,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public static void Rename(ControlFlowGraph cfg)
+        public static void Construct(ControlFlowGraph cfg)
         {
             DefMap[] globalDefs = new DefMap[cfg.Blocks.Count];
 

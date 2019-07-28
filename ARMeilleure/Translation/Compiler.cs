@@ -37,7 +37,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.SsaConstruction);
 
-            Ssa.Rename(cfg);
+            Ssa.Construct(cfg);
 
             Logger.EndPass(PassName.SsaConstruction, cfg);
 

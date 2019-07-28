@@ -58,8 +58,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
-            PhiFunctions.Remove(cfg);
-
             BuildIntervals(cfg, regMasks);
 
             List<LiveInterval>[] fixedIntervals = new List<LiveInterval>[2];

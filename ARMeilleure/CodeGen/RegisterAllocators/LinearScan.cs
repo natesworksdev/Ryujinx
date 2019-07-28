@@ -8,6 +8,9 @@ using System.Linq;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
+    // Based on:
+    // "Linear Scan Register Allocation for the Java(tm) HotSpot Client Compiler".
+    // http://www.christianwimmer.at/Publications/Wimmer04a/Wimmer04a.pdf
     class LinearScan
     {
         private const int InstructionGap     = 2;
@@ -70,8 +73,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
-            PhiFunctions.Remove(cfg);
-
             NumberLocals(cfg);
 
             AllocationContext context = new AllocationContext(stackAlloc, regMasks, _intervals.Count);

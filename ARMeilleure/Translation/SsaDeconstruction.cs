@@ -1,14 +1,13 @@
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Translation;
 using System.Collections.Generic;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
-namespace ARMeilleure.CodeGen.RegisterAllocators
+namespace ARMeilleure.Translation
 {
-    static class PhiFunctions
+    static partial class Ssa
     {
-        public static void Remove(ControlFlowGraph cfg)
+        public static void Deconstruct(ControlFlowGraph cfg)
         {
             foreach (BasicBlock block in cfg.Blocks)
             {
