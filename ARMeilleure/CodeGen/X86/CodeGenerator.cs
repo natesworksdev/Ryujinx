@@ -1294,14 +1294,9 @@ namespace ARMeilleure.CodeGen.X86
                             mask0 = BitUtils.RotateRight(mask0,     index * 2, 8);
                             mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
 
-                            if (dest.GetRegister() != src1.GetRegister())
-                            {
-                                context.Assembler.Movdqu(dest, src1);
-                            }
-
-                            context.Assembler.Pshufd(dest, dest, (byte)mask0);
-                            context.Assembler.Movss (dest, dest, src2);
-                            context.Assembler.Pshufd(dest, dest, (byte)mask1);
+                            context.Assembler.Pshufd(src1, src1, (byte)mask0);
+                            context.Assembler.Movss (dest, src1, src2);
+                            context.Assembler.Pshufd(src1, src1, (byte)mask1);
                         }
                     }
                 }
