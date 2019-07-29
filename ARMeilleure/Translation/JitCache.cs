@@ -3,7 +3,6 @@ using ARMeilleure.Memory;
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading;
 
 namespace ARMeilleure.Translation
 {
@@ -22,6 +21,8 @@ namespace ARMeilleure.Translation
 
         private static List<JitCacheEntry> _cacheEntries;
 
+        private static object _lock;
+
         static JitCache()
         {
             _basePointer = MemoryManagement.Allocate(CacheSize);
@@ -35,23 +36,28 @@ namespace ARMeilleure.Translation
             }
 
             _cacheEntries = new List<JitCacheEntry>();
+
+            _lock = new object();
         }
 
         public static IntPtr Map(CompiledFunction func)
         {
             byte[] code = func.Code;
 
-            int funcOffset = Allocate(code.Length);
+            lock (_lock)
+            {
+                int funcOffset = Allocate(code.Length);
 
-            IntPtr funcPtr = _basePointer + funcOffset;
+                IntPtr funcPtr = _basePointer + funcOffset;
 
-            Marshal.Copy(code, 0, funcPtr, code.Length);
+                Marshal.Copy(code, 0, funcPtr, code.Length);
 
-            ReprotectRange(funcOffset, code.Length);
+                ReprotectRange(funcOffset, code.Length);
 
-            Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
+                Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
 
-            return funcPtr;
+                return funcPtr;
+            }
         }
 
         private static void ReprotectRange(int offset, int size)
@@ -87,11 +93,11 @@ namespace ARMeilleure.Translation
         {
             codeSize = checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
 
-            int newOffset = Interlocked.Add(ref _offset, codeSize);
+            int allocOffset = _offset;
 
-            int allocOffset = newOffset - codeSize;
+            _offset += codeSize;
 
-            if ((ulong)(uint)newOffset > CacheSize)
+            if ((ulong)(uint)_offset > CacheSize)
             {
                 throw new OutOfMemoryException();
             }
@@ -101,16 +107,12 @@ namespace ARMeilleure.Translation
 
         private static void Add(JitCacheEntry entry)
         {
-            // TODO: Use concurrent collection.
-            lock (_cacheEntries)
-            {
-                _cacheEntries.Add(entry);
-            }
+            _cacheEntries.Add(entry);
         }
 
         public static bool TryFind(int offset, out JitCacheEntry entry)
         {
-            lock (_cacheEntries)
+            lock (_lock)
             {
                 foreach (JitCacheEntry cacheEntry in _cacheEntries)
                 {
