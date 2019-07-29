@@ -177,12 +177,6 @@ namespace Ryujinx.UI
 
         public static void ApplyTheme()
         {
-            Settings settings     = Settings.Default;
-            settings.XftRgba      = "rgb";
-            settings.XftDpi       = 96;
-            settings.XftHinting   = 1;
-            settings.XftHintstyle = "hintfull";
-
             CssProvider cssProvider = new CssProvider();
 
             if (SwitchSettings.SwitchConfig.EnableCustomTheme)

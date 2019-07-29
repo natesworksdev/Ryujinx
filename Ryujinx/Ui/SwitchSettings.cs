@@ -286,7 +286,7 @@ namespace Ryujinx.UI
             _gameDirsBoxStore.GetIterFirst(out TreeIter iter);
             for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
             {
-                _gameDirsBoxStore.GetValue(iter, i );
+                _gameDirsBoxStore.GetValue(iter, i);
 
                 gameDirs.Add((string)_gameDirsBoxStore.GetValue(iter, 0));
 
