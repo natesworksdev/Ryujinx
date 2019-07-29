@@ -272,21 +272,24 @@ namespace ARMeilleure.CodeGen.X86
                     // - The dividend is always in RDX:RAX.
                     // - The result is always in RAX.
                     // - Additionally it also writes the remainder in RDX.
-                    Operand src1 = operation.GetSource(0);
+                    if (dest.Type.IsInteger())
+                    {
+                        Operand src1 = operation.GetSource(0);
 
-                    Operand rax = Gpr(X86Register.Rax, src1.Type);
-                    Operand rdx = Gpr(X86Register.Rdx, src1.Type);
+                        Operand rax = Gpr(X86Register.Rax, src1.Type);
+                        Operand rdx = Gpr(X86Register.Rdx, src1.Type);
 
-                    nodes.AddBefore(node, new Operation(Instruction.Copy,    rax, src1));
-                    nodes.AddBefore(node, new Operation(Instruction.Clobber, rdx));
+                        nodes.AddBefore(node, new Operation(Instruction.Copy,    rax, src1));
+                        nodes.AddBefore(node, new Operation(Instruction.Clobber, rdx));
 
-                    node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
+                        node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
 
-                    operation.SetDestinations(new Operand[] { rdx, rax });
+                        operation.SetDestinations(new Operand[] { rdx, rax });
 
-                    operation.SetSources(new Operand[] { rdx, rax, operation.GetSource(1) });
+                        operation.SetSources(new Operand[] { rdx, rax, operation.GetSource(1) });
 
-                    operation.Destination = rax;
+                        operation.Destination = rax;
+                    }
 
                     break;
                 }
@@ -1115,19 +1118,24 @@ namespace ARMeilleure.CodeGen.X86
             switch (operation.Instruction)
             {
                 case Instruction.Add:
+                case Instruction.Multiply:
+                case Instruction.Subtract:
+                    return !HardwareCapabilities.SupportsVexEncoding || operation.Destination.Type.IsInteger();
+
                 case Instruction.BitwiseAnd:
                 case Instruction.BitwiseExclusiveOr:
                 case Instruction.BitwiseNot:
                 case Instruction.BitwiseOr:
                 case Instruction.ByteSwap:
-                case Instruction.Multiply:
                 case Instruction.Negate:
                 case Instruction.RotateRight:
                 case Instruction.ShiftLeft:
                 case Instruction.ShiftRightSI:
                 case Instruction.ShiftRightUI:
-                case Instruction.Subtract:
                     return true;
+
+                case Instruction.Divide:
+                    return !HardwareCapabilities.SupportsVexEncoding && !operation.Destination.Type.IsInteger();
 
                 case Instruction.VectorInsert:
                 case Instruction.VectorInsert16:

@@ -417,6 +417,10 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, Intrinsic.X86Divss, Intrinsic.X86Divsd);
             }
+            else if (Optimizations.FastFP)
+            {
+                EmitScalarBinaryOpF(context, (op1, op2) => context.Divide(op1, op2));
+            }
             else
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
@@ -431,6 +435,10 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorBinaryOpF(context, Intrinsic.X86Divps, Intrinsic.X86Divpd);
+            }
+            else if (Optimizations.FastFP)
+            {
+                EmitVectorBinaryOpF(context, (op1, op2) => context.Divide(op1, op2));
             }
             else
             {
@@ -841,6 +849,10 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd);
             }
+            else if (Optimizations.FastFP)
+            {
+                EmitScalarBinaryOpF(context, (op1, op2) => context.Multiply(op1, op2));
+            }
             else
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
@@ -860,6 +872,10 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorBinaryOpF(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd);
+            }
+            else if (Optimizations.FastFP)
+            {
+                EmitVectorBinaryOpF(context, (op1, op2) => context.Multiply(op1, op2));
             }
             else
             {
@@ -906,6 +922,10 @@ namespace ARMeilleure.Instructions
 
                     context.Copy(GetVec(op.Rd), res);
                 }
+            }
+            else if (Optimizations.FastFP)
+            {
+                EmitVectorBinaryOpByElemF(context, (op1, op2) => context.Multiply(op1, op2));
             }
             else
             {
@@ -1552,6 +1572,10 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, Intrinsic.X86Subss, Intrinsic.X86Subsd);
             }
+            else if (Optimizations.FastFP)
+            {
+                EmitScalarBinaryOpF(context, (op1, op2) => context.Subtract(op1, op2));
+            }
             else
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
@@ -1566,6 +1590,10 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorBinaryOpF(context, Intrinsic.X86Subps, Intrinsic.X86Subpd);
+            }
+            else if (Optimizations.FastFP)
+            {
+                EmitVectorBinaryOpF(context, (op1, op2) => context.Subtract(op1, op2));
             }
             else
             {

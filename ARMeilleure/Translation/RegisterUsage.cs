@@ -70,7 +70,7 @@ namespace ARMeilleure.Translation
 
         public static void RunPass(ControlFlowGraph cfg)
         {
-            // Computer local register inputs and outputs used inside blocks.
+            // Compute local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
             RegisterMask[] localOutputs = new RegisterMask[cfg.Blocks.Count];
 
