@@ -41,7 +41,7 @@ namespace ARMeilleure.Translation
 
         public ulong ExecuteSingle(ExecutionContext context, ulong address)
         {
-            TranslatedFunction func = GetOrTranslate(address, ExecutionMode.Aarch64);
+            TranslatedFunction func = GetOrTranslate(address, context.ExecutionMode);
 
             Statistics.StartTimer();
 
@@ -70,7 +70,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = Decoder.DecodeFunction(_memory, address, ExecutionMode.Aarch64);
+            Block[] blocks = Decoder.DecodeFunction(_memory, address, mode);
 
             Logger.EndPass(PassName.Decoding);
 

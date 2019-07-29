@@ -159,7 +159,7 @@ namespace ARMeilleure.Instructions
                     break;
             }
 
-            SetIntOrZR(context, rt, value);
+            SetInt(context, rt, value);
 
             context.MarkLabel(lblEnd);
         }
@@ -245,9 +245,9 @@ namespace ARMeilleure.Instructions
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath);
 
-            Operand value = GetIntOrZR(context, rt);
+            Operand value = GetInt(context, rt);
 
-            if (size < 3)
+            if (size < 3 && value.Type == OperandType.I64)
             {
                 value = context.ConvertI64ToI32(value);
             }
@@ -322,7 +322,7 @@ namespace ARMeilleure.Instructions
 
             addressCheckMask |= (1u << size) - 1;
 
-            return context.BitwiseAnd(address, Const(addressCheckMask));
+            return context.BitwiseAnd(address, Const(address.Type, addressCheckMask));
         }
 
         private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblFallbackPath)
@@ -339,10 +339,15 @@ namespace ARMeilleure.Instructions
 
                 if (bit < context.Memory.AddressSpaceBits)
                 {
-                    addrPart = context.BitwiseAnd(addrPart, Const((long)context.Memory.PtLevelMask));
+                    addrPart = context.BitwiseAnd(addrPart, Const(addrPart.Type, context.Memory.PtLevelMask));
                 }
 
                 Operand pteOffset = context.ShiftLeft(addrPart, Const(3));
+
+                if (pteOffset.Type == OperandType.I32)
+                {
+                    pteOffset = context.ZeroExtend32(OperandType.I64, pteOffset);
+                }
 
                 Operand pteAddress = context.Add(pte, pteOffset);
 
@@ -357,7 +362,12 @@ namespace ARMeilleure.Instructions
                 context.BranchIfTrue(lblFallbackPath, hasFlagSet);
             }
 
-            Operand pageOffset = context.BitwiseAnd(address, Const((long)MemoryManager.PageMask));
+            Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, MemoryManager.PageMask));
+
+            if (pageOffset.Type == OperandType.I32)
+            {
+                pageOffset = context.ZeroExtend32(OperandType.I64, pageOffset);
+            }
 
             Operand physAddr = context.Add(pte, pageOffset);
 
@@ -376,7 +386,7 @@ namespace ARMeilleure.Instructions
                 case 3: fallbackMethodDlg = new _U64_U64(NativeInterface.ReadUInt64); break;
             }
 
-            SetIntOrZR(context, rt, context.Call(fallbackMethodDlg, address));
+            SetInt(context, rt, context.Call(fallbackMethodDlg, address));
         }
 
         private static void EmitReadVectorFallback(
@@ -423,9 +433,9 @@ namespace ARMeilleure.Instructions
                 case 3: fallbackMethodDlg = new _Void_U64_U64(NativeInterface.WriteUInt64); break;
             }
 
-            Operand value = GetIntOrZR(context, rt);
+            Operand value = GetInt(context, rt);
 
-            if (size < 3)
+            if (size < 3 && value.Type == OperandType.I64)
             {
                 value = context.ConvertI64ToI32(value);
             }
@@ -480,6 +490,23 @@ namespace ARMeilleure.Instructions
             }
 
             context.Call(fallbackMethodDlg, address, value);
+        }
+
+        private static Operand GetInt(ArmEmitterContext context, int rt)
+        {
+            return context.CurrOp is OpCode32 ? GetIntA32(context, rt) : GetIntOrZR(context, rt);
+        }
+
+        private static void SetInt(ArmEmitterContext context, int rt, Operand value)
+        {
+            if (context.CurrOp is OpCode32)
+            {
+                SetIntA32(context, rt, value);
+            }
+            else
+            {
+                SetIntOrZR(context, rt, value);
+            }
         }
     }
 }

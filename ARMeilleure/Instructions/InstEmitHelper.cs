@@ -33,9 +33,9 @@ namespace ARMeilleure.Instructions
             return value;
         }
 
-        public static Operand GetIntA32(ArmEmitterContext context, int register)
+        public static Operand GetIntA32(ArmEmitterContext context, int regIndex)
         {
-            if (register == RegisterAlias.Aarch32Pc)
+            if (regIndex == RegisterAlias.Aarch32Pc)
             {
                 OpCode32 op = (OpCode32)context.CurrOp;
 
@@ -43,27 +43,41 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                return GetIntOrSP(context, GetRegisterAlias(context.Mode, register));
+                return GetIntOrSP(context, GetRegisterAlias(context.Mode, regIndex));
             }
         }
 
-        public static int GetRegisterAlias(Aarch32Mode mode, int register)
+        public static void SetIntA32(ArmEmitterContext context, int regIndex, Operand value)
+        {
+            if (regIndex == RegisterAlias.Aarch32Pc)
+            {
+                context.StoreToContext();
+
+                EmitBxWritePc(context, value);
+            }
+            else
+            {
+                SetIntOrSP(context, GetRegisterAlias(context.Mode, regIndex), value);
+            }
+        }
+
+        public static int GetRegisterAlias(Aarch32Mode mode, int regIndex)
         {
             // Only registers >= 8 are banked,
             // with registers in the range [8, 12] being
             // banked for the FIQ mode, and registers
             // 13 and 14 being banked for all modes.
-            if ((uint)register < 8)
+            if ((uint)regIndex < 8)
             {
-                return register;
+                return regIndex;
             }
 
-            return GetBankedRegisterAlias(mode, register);
+            return GetBankedRegisterAlias(mode, regIndex);
         }
 
-        public static int GetBankedRegisterAlias(Aarch32Mode mode, int register)
+        public static int GetBankedRegisterAlias(Aarch32Mode mode, int regIndex)
         {
-            switch (register)
+            switch (regIndex)
             {
                 case 8: return mode == Aarch32Mode.Fiq
                     ? RegisterAlias.R8Fiq
@@ -115,20 +129,25 @@ namespace ARMeilleure.Instructions
                         default: throw new ArgumentException(nameof(mode));
                     }
 
-                default: throw new ArgumentOutOfRangeException(nameof(register));
+                default: throw new ArgumentOutOfRangeException(nameof(regIndex));
             }
         }
 
-        public static Operand GetIntOrZR32(int regIndex)
+        public static void EmitBxWritePc(ArmEmitterContext context, Operand pc)
         {
-            if (regIndex == RegisterConsts.ZeroIndex)
-            {
-                return Const(0);
-            }
-            else
-            {
-                return Register(regIndex, RegisterType.Integer, OperandType.I32);
-            }
+            Operand mode = context.BitwiseAnd(pc, Const(1));
+
+            SetFlag(context, PState.TFlag, mode);
+
+            Operand lblArmMode = Label();
+
+            context.BranchIfTrue(lblArmMode, mode);
+
+            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(pc, Const(~1))));
+
+            context.MarkLabel(lblArmMode);
+
+            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(pc, Const(~3))));
         }
 
         public static Operand GetIntOrZR(ArmEmitterContext context, int regIndex)

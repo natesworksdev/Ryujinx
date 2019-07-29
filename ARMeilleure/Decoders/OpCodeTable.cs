@@ -594,32 +594,32 @@ namespace ARMeilleure.Decoders
 
 #region "OpCode Table (AArch32)"
             // Base
-            SetA32("<<<<0010100xxxxxxxxxxxxxxxxxxxxx", InstName.Add,             null,                     typeof(OpCode32AluImm));
-            SetA32("<<<<0000100xxxxxxxxxxxxxxxx0xxxx", InstName.Add,             null,                     typeof(OpCode32AluRsImm));
-            SetA32("<<<<1010xxxxxxxxxxxxxxxxxxxxxxxx", InstName.B,               null,                     typeof(OpCode32BImm));
-            SetA32("<<<<1011xxxxxxxxxxxxxxxxxxxxxxxx", InstName.Bl,              null,                     typeof(OpCode32BImm));
-            SetA32("1111101xxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Blx,             null,                     typeof(OpCode32BImm));
-            SetA32("<<<<000100101111111111110001xxxx", InstName.Bx,              null,                     typeof(OpCode32BReg));
-            SetT32("xxxxxxxxxxxxxxxx010001110xxxx000", InstName.Bx,              null,                     typeof(OpCodeT16BReg));
-            SetA32("<<<<00110101xxxx0000xxxxxxxxxxxx", InstName.Cmp,             null,                     typeof(OpCode32AluImm));
-            SetA32("<<<<00010101xxxx0000xxxxxxx0xxxx", InstName.Cmp,             null,                     typeof(OpCode32AluRsImm));
-            SetA32("<<<<100xx0x1xxxxxxxxxxxxxxxxxxxx", InstName.Ldm,             null,                     typeof(OpCode32MemMult));
-            SetA32("<<<<010xx0x1xxxxxxxxxxxxxxxxxxxx", InstName.Ldr,             null,                     typeof(OpCode32MemImm));
-            SetA32("<<<<010xx1x1xxxxxxxxxxxxxxxxxxxx", InstName.Ldrb,            null,                     typeof(OpCode32MemImm));
-            SetA32("<<<<000xx1x0xxxxxxxxxxxx1101xxxx", InstName.Ldrd,            null,                     typeof(OpCode32MemImm8));
-            SetA32("<<<<000xx1x1xxxxxxxxxxxx1011xxxx", InstName.Ldrh,            null,                     typeof(OpCode32MemImm8));
-            SetA32("<<<<000xx1x1xxxxxxxxxxxx1101xxxx", InstName.Ldrsb,           null,                     typeof(OpCode32MemImm8));
-            SetA32("<<<<000xx1x1xxxxxxxxxxxx1111xxxx", InstName.Ldrsh,           null,                     typeof(OpCode32MemImm8));
-            SetA32("<<<<0011101x0000xxxxxxxxxxxxxxxx", InstName.Mov,             null,                     typeof(OpCode32AluImm));
-            SetA32("<<<<0001101x0000xxxxxxxxxxx0xxxx", InstName.Mov,             null,                     typeof(OpCode32AluRsImm));
-            SetT32("xxxxxxxxxxxxxxxx00100xxxxxxxxxxx", InstName.Mov,             null,                     typeof(OpCodeT16AluImm8));
-            SetA32("<<<<100xx0x0xxxxxxxxxxxxxxxxxxxx", InstName.Stm,             null,                     typeof(OpCode32MemMult));
-            SetA32("<<<<010xx0x0xxxxxxxxxxxxxxxxxxxx", InstName.Str,             null,                     typeof(OpCode32MemImm));
-            SetA32("<<<<010xx1x0xxxxxxxxxxxxxxxxxxxx", InstName.Strb,            null,                     typeof(OpCode32MemImm));
-            SetA32("<<<<000xx1x0xxxxxxxxxxxx1111xxxx", InstName.Strd,            null,                     typeof(OpCode32MemImm8));
-            SetA32("<<<<000xx1x0xxxxxxxxxxxx1011xxxx", InstName.Strh,            null,                     typeof(OpCode32MemImm8));
-            SetA32("<<<<0010010xxxxxxxxxxxxxxxxxxxxx", InstName.Sub,             null,                     typeof(OpCode32AluImm));
-            SetA32("<<<<0000010xxxxxxxxxxxxxxxx0xxxx", InstName.Sub,             null,                     typeof(OpCode32AluRsImm));
+            SetA32("<<<<0010100xxxxxxxxxxxxxxxxxxxxx", InstName.Add,   InstEmit32.Add,   typeof(OpCode32AluImm));
+            SetA32("<<<<0000100xxxxxxxxxxxxxxxx0xxxx", InstName.Add,   InstEmit32.Add,   typeof(OpCode32AluRsImm));
+            SetA32("<<<<1010xxxxxxxxxxxxxxxxxxxxxxxx", InstName.B,     InstEmit32.B,     typeof(OpCode32BImm));
+            SetA32("<<<<1011xxxxxxxxxxxxxxxxxxxxxxxx", InstName.Bl,    InstEmit32.Bl,    typeof(OpCode32BImm));
+            SetA32("1111101xxxxxxxxxxxxxxxxxxxxxxxxx", InstName.Blx,   InstEmit32.Blx,   typeof(OpCode32BImm));
+            SetA32("<<<<000100101111111111110001xxxx", InstName.Bx,    InstEmit32.Bx,    typeof(OpCode32BReg));
+            SetT32("xxxxxxxxxxxxxxxx010001110xxxx000", InstName.Bx,    InstEmit32.Bx,    typeof(OpCodeT16BReg));
+            SetA32("<<<<00110101xxxx0000xxxxxxxxxxxx", InstName.Cmp,   InstEmit32.Cmp,   typeof(OpCode32AluImm));
+            SetA32("<<<<00010101xxxx0000xxxxxxx0xxxx", InstName.Cmp,   InstEmit32.Cmp,   typeof(OpCode32AluRsImm));
+            SetA32("<<<<100xx0x1xxxxxxxxxxxxxxxxxxxx", InstName.Ldm,   InstEmit32.Ldm,   typeof(OpCode32MemMult));
+            SetA32("<<<<010xx0x1xxxxxxxxxxxxxxxxxxxx", InstName.Ldr,   InstEmit32.Ldr,   typeof(OpCode32MemImm));
+            SetA32("<<<<010xx1x1xxxxxxxxxxxxxxxxxxxx", InstName.Ldrb,  InstEmit32.Ldrb,  typeof(OpCode32MemImm));
+            SetA32("<<<<000xx1x0xxxxxxxxxxxx1101xxxx", InstName.Ldrd,  InstEmit32.Ldrd,  typeof(OpCode32MemImm8));
+            SetA32("<<<<000xx1x1xxxxxxxxxxxx1011xxxx", InstName.Ldrh,  InstEmit32.Ldrh,  typeof(OpCode32MemImm8));
+            SetA32("<<<<000xx1x1xxxxxxxxxxxx1101xxxx", InstName.Ldrsb, InstEmit32.Ldrsb, typeof(OpCode32MemImm8));
+            SetA32("<<<<000xx1x1xxxxxxxxxxxx1111xxxx", InstName.Ldrsh, InstEmit32.Ldrsh, typeof(OpCode32MemImm8));
+            SetA32("<<<<0011101x0000xxxxxxxxxxxxxxxx", InstName.Mov,   InstEmit32.Mov,   typeof(OpCode32AluImm));
+            SetA32("<<<<0001101x0000xxxxxxxxxxx0xxxx", InstName.Mov,   InstEmit32.Mov,   typeof(OpCode32AluRsImm));
+            SetT32("xxxxxxxxxxxxxxxx00100xxxxxxxxxxx", InstName.Mov,   InstEmit32.Mov,   typeof(OpCodeT16AluImm8));
+            SetA32("<<<<100xx0x0xxxxxxxxxxxxxxxxxxxx", InstName.Stm,   InstEmit32.Stm,   typeof(OpCode32MemMult));
+            SetA32("<<<<010xx0x0xxxxxxxxxxxxxxxxxxxx", InstName.Str,   InstEmit32.Str,   typeof(OpCode32MemImm));
+            SetA32("<<<<010xx1x0xxxxxxxxxxxxxxxxxxxx", InstName.Strb,  InstEmit32.Strb,  typeof(OpCode32MemImm));
+            SetA32("<<<<000xx1x0xxxxxxxxxxxx1111xxxx", InstName.Strd,  InstEmit32.Strd,  typeof(OpCode32MemImm8));
+            SetA32("<<<<000xx1x0xxxxxxxxxxxx1011xxxx", InstName.Strh,  InstEmit32.Strh,  typeof(OpCode32MemImm8));
+            SetA32("<<<<0010010xxxxxxxxxxxxxxxxxxxxx", InstName.Sub,   InstEmit32.Sub,   typeof(OpCode32AluImm));
+            SetA32("<<<<0000010xxxxxxxxxxxxxxxx0xxxx", InstName.Sub,   InstEmit32.Sub,   typeof(OpCode32AluRsImm));
 #endregion
 
             FillFastLookupTable(_instA32FastLookup, _allInstA32);

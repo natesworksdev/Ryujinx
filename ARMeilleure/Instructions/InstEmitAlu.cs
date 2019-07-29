@@ -338,12 +338,6 @@ namespace ARMeilleure.Instructions
             return context.BitwiseAnd(m, Const(context.CurrOp.GetBitsCount() - 1));
         }
 
-        private static void EmitNZFlagsCheck(ArmEmitterContext context, Operand d)
-        {
-            SetFlag(context, PState.NFlag, context.ICompareLess (d, Const(d.Type, 0)));
-            SetFlag(context, PState.ZFlag, context.ICompareEqual(d, Const(d.Type, 0)));
-        }
-
         private static void EmitCVFlagsClear(ArmEmitterContext context)
         {
             SetFlag(context, PState.CFlag, Const(0));

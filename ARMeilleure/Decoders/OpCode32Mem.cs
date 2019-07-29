@@ -7,7 +7,7 @@ namespace ARMeilleure.Decoders
         public int  Rt { get; private set; }
         public int  Rn { get; private set; }
 
-        public int Imm { get; protected set; }
+        public int Immediate { get; protected set; }
 
         public bool Index        { get; private set; }
         public bool Add          { get; private set; }

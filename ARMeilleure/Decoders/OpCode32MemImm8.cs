@@ -7,7 +7,7 @@ namespace ARMeilleure.Decoders
             int imm4L = (opCode >> 0) & 0xf;
             int imm4H = (opCode >> 8) & 0xf;
 
-            Imm = imm4L | (imm4H << 4);
+            Immediate = imm4L | (imm4H << 4);
         }
     }
 }

@@ -37,6 +37,25 @@ namespace ARMeilleure.State
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
 
+        public bool IsAarch32 { get; set; }
+
+        internal ExecutionMode ExecutionMode
+        {
+            get
+            {
+                if (IsAarch32)
+                {
+                    return GetPstateFlag(PState.TFlag)
+                        ? ExecutionMode.Aarch32Thumb
+                        : ExecutionMode.Aarch32Arm;
+                }
+                else
+                {
+                    return ExecutionMode.Aarch64;
+                }
+            }
+        }
+
         public bool Running { get; set; }
 
         public event EventHandler<EventArgs>              Interrupt;

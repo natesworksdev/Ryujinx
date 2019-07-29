@@ -11,6 +11,12 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitAluHelper
     {
+        public static void EmitNZFlagsCheck(ArmEmitterContext context, Operand d)
+        {
+            SetFlag(context, PState.NFlag, context.ICompareLess (d, Const(d.Type, 0)));
+            SetFlag(context, PState.ZFlag, context.ICompareEqual(d, Const(d.Type, 0)));
+        }
+
         public static void EmitAdcsCCheck(ArmEmitterContext context, Operand n, Operand d)
         {
             // C = (Rd == Rn && CIn) || Rd < Rn
@@ -70,6 +76,7 @@ namespace ARMeilleure.Instructions
 
             SetFlag(context, PState.VFlag, vOut);
         }
+
 
         public static Operand GetAluN(ArmEmitterContext context)
         {
