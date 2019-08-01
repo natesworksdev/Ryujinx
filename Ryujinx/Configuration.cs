@@ -1,3 +1,4 @@
+using ARMeilleure;
 using LibHac.Fs;
 using OpenTK.Input;
 using Ryujinx.Common;
