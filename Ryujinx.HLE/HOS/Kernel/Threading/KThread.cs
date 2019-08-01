@@ -1,4 +1,5 @@
 using ARMeilleure.Memory;
+using ARMeilleure.State;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -16,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public Thread HostThread { get; private set; }
 
-        public ARMeilleure.State.ExecutionContext Context { get; private set; }
+        public IExecutionContext Context { get; private set; }
 
         public long AffinityMask { get; set; }
 
@@ -158,7 +159,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             HostThread = new Thread(() => ThreadStart(entrypoint));
 
-            Context = new ARMeilleure.State.ExecutionContext();
+            if (System.UseLegacyJit)
+            {
+                Context = new ChocolArm64.State.CpuThreadState();
+            }
+            else
+            {
+                Context = new ARMeilleure.State.ExecutionContext();
+            }
 
             bool isAarch32 = (Owner.MmuFlags & 1) == 0;
 

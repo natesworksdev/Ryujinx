@@ -43,6 +43,7 @@
     <ProjectReference Include="..\Ryujinx.Graphics\Ryujinx.Graphics.csproj" />
     <ProjectReference Include="..\Ryujinx.Profiler\Ryujinx.Profiler.csproj" />
     <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
+    <ProjectReference Include="..\ChocolArm64\ChocolArm64.csproj" />
   </ItemGroup>
 
   <ItemGroup>

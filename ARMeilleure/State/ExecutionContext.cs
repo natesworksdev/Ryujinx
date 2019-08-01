@@ -3,7 +3,7 @@ using System.Diagnostics;
 
 namespace ARMeilleure.State
 {
-    public class ExecutionContext : IDisposable
+    public class ExecutionContext : IExecutionContext
     {
         private const int MinCountForCheck = 40000;
 
@@ -90,7 +90,7 @@ namespace ARMeilleure.State
         public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
 
-        public void CheckInterrupt()
+        internal void CheckInterrupt()
         {
             if (_interrupted)
             {

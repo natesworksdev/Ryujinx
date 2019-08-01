@@ -6,9 +6,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        private Switch        _device;
-        private KProcess      _process;
-        private Horizon       _system;
+        private Switch   _device;
+        private KProcess _process;
+        private Horizon  _system;
 
         public SvcHandler(Switch device, KProcess process)
         {
@@ -19,14 +19,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public void SvcCall(object sender, InstExceptionEventArgs e)
         {
-            Action<SvcHandler, ExecutionContext> svcFunc = SvcTable.GetSvcFunc(e.Id);
+            Action<SvcHandler, IExecutionContext> svcFunc = SvcTable.GetSvcFunc(e.Id);
 
             if (svcFunc == null)
             {
                 throw new NotImplementedException($"SVC 0x{e.Id:X4} is not implemented.");
             }
 
-            ExecutionContext context = (ExecutionContext)sender;
+            IExecutionContext context = (IExecutionContext)sender;
 
             svcFunc(this, context);
         }

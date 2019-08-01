@@ -1,4 +1,5 @@
 using ARMeilleure.Memory;
+using ARMeilleure.State;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Elf;
@@ -39,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _images = new List<Image>();
         }
 
-        public string GetGuestStackTrace(ARMeilleure.State.ExecutionContext context)
+        public string GetGuestStackTrace(IExecutionContext context)
         {
             EnsureLoaded();
 
@@ -217,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private void LoadMod0Symbols(MemoryManager memory, long textOffset)
+        private void LoadMod0Symbols(IMemoryManager memory, long textOffset)
         {
             long mod0Offset = textOffset + memory.ReadUInt32(textOffset + 4);
 
@@ -287,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private ElfSymbol GetSymbol(MemoryManager memory, long address, long strTblAddr)
+        private ElfSymbol GetSymbol(IMemoryManager memory, long address, long strTblAddr)
         {
             int  nameIndex = memory.ReadInt32(address + 0);
             int  info      = memory.ReadByte (address + 4);
