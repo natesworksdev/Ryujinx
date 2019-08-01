@@ -37,7 +37,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     HandleSameDestSrc1Copy(node, operation);
 
-                    node = HandleFixedRegisterCopy(node, operation);
+                    HandleFixedRegisterCopy(node, operation);
 
                     switch (operation.Instruction)
                     {
@@ -356,11 +356,11 @@ namespace ARMeilleure.CodeGen.X86
             return node;
         }
 
-        private static void HandleSameDestSrc1Copy(LLNode node, Operation operation)
+        private static LLNode HandleSameDestSrc1Copy(LLNode node, Operation operation)
         {
             if (operation.Destination == null || operation.SourcesCount == 0)
             {
-                return;
+                return node;
             }
 
             Instruction inst = operation.Instruction;
@@ -368,38 +368,74 @@ namespace ARMeilleure.CodeGen.X86
             Operand dest = operation.Destination;
             Operand src1 = operation.GetSource(0);
 
+            LinkedList<Node> nodes = node.List;
+
             // The multiply instruction (that maps to IMUL) is somewhat special, it has
             // a three operand form where the second source is a immediate value.
             bool threeOperandForm = inst == Instruction.Multiply && operation.GetSource(1).Kind == OperandKind.Constant;
 
             if (IsSameOperandDestSrc1(operation) && src1.Kind == OperandKind.LocalVariable && !threeOperandForm)
             {
-                // FIXME: We should support the same variable as dest being used on sources.
+                bool useNewLocal = false;
+
                 for (int srcIndex = 1; srcIndex < operation.SourcesCount; srcIndex++)
                 {
-                    Debug.Assert(operation.GetSource(srcIndex) == dest);
+                    if (operation.GetSource(srcIndex) == dest)
+                    {
+                        useNewLocal = true;
+
+                        break;
+                    }
                 }
 
-                Operation copyOp = new Operation(Instruction.Copy, dest, src1);
+                if (useNewLocal)
+                {
+                    // Dest is being used as some source already, we need to use a new
+                    // local to store the temporary value, otherwise the value on dest
+                    // local would be overwritten.
+                    Operand temp = Local(dest.Type);
 
-                node.List.AddBefore(node, copyOp);
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, temp, src1));
 
-                operation.SetSource(0, dest);
+                    operation.SetSource(0, temp);
+
+                    node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, temp));
+
+                    operation.Destination = temp;
+                }
+                else
+                {
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, dest, src1));
+
+                    operation.SetSource(0, dest);
+                }
             }
             else if (inst == Instruction.ConditionalSelect)
             {
                 Operand src2 = operation.GetSource(1);
                 Operand src3 = operation.GetSource(2);
 
-                // FIXME: We should support the same variable as dest being used on sources.
-                Debug.Assert(src1 == dest || src2 == dest);
+                if (src1 == dest || src2 == dest)
+                {
+                    Operand temp = Local(dest.Type);
 
-                Operation copyOp = new Operation(Instruction.Copy, dest, src3);
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, temp, src3));
 
-                node.List.AddBefore(node, copyOp);
+                    operation.SetSource(2, temp);
 
-                operation.SetSource(2, dest);
+                    node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, temp));
+
+                    operation.Destination = temp;
+                }
+                else
+                {
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, dest, src3));
+
+                    operation.SetSource(2, dest);
+                }
             }
+
+            return node;
         }
 
         private static LLNode HandleConvertToFPUI(LLNode node, Operation operation)
@@ -1018,6 +1054,8 @@ namespace ARMeilleure.CodeGen.X86
 
                 node.List.AddBefore(node, retCopyOp);
             }
+
+            operation.SetSources(new Operand[0]);
         }
 
         private static void HandleReturnSystemVAbi(LLNode node, Operation operation)

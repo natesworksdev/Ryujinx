@@ -16,9 +16,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private struct BlockInfo
         {
-            public bool HasCall;
-            public int IntFixedRegisters;
-            public int VecFixedRegisters;
+            public bool HasCall { get; }
+
+            public int IntFixedRegisters { get; }
+            public int VecFixedRegisters { get; }
+
+            public BlockInfo(bool hasCall, int intFixedRegisters, int vecFixedRegisters)
+            {
+                HasCall           = hasCall;
+                IntFixedRegisters = intFixedRegisters;
+                VecFixedRegisters = vecFixedRegisters;
+            }
         }
 
         private class LocalInfo
@@ -142,12 +150,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                 }
 
-                blockInfo[block.Index] = new BlockInfo()
-                {
-                    HasCall           = hasCall,
-                    IntFixedRegisters = intFixedRegisters,
-                    VecFixedRegisters = vecFixedRegisters
-                };
+                blockInfo[block.Index] = new BlockInfo(hasCall, intFixedRegisters, vecFixedRegisters);
             }
 
             int intReservedCount = 0;
