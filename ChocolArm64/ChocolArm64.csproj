@@ -33,6 +33,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Ryujinx.Profiler\Ryujinx.Profiler.csproj" />
+    <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
   </ItemGroup>
 
 </Project>

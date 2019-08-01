@@ -20,6 +20,7 @@
     "enable_multicore_scheduling",
     "enable_fs_integrity_checks",
     "fs_global_access_log_mode",
+    "enable_legacy_jit",
     "enable_aggressive_cpu_opts",
     "controller_type",
     "enable_keyboard",
@@ -441,7 +442,7 @@
       "$id": "#/properties/fs_global_access_log_mode",
       "type": "integer",
       "title": "Enable FS access log",
-      "description": "Enables FS access log output. Possible modes are 0-3. Modes 2 and 3 output to the console.",
+      "description": "Enables FS access log output. Possible modes are 0-3. Modes 2 and 3 output to the console",
       "default": 0,
       "minimum": 0,
       "examples": [
@@ -449,6 +450,17 @@
         1,
         2,
         3
+      ]
+    },
+    "enable_legacy_jit": {
+      "$id": "#/properties/enable_legacy_jit",
+      "type": "boolean",
+      "title": "Enable legacy JIT",
+      "description": "Use old ChocolArm64 ARM emulator",
+      "default": false,
+      "examples": [
+        true,
+        false
       ]
     },
     "enable_aggressive_cpu_opts": {

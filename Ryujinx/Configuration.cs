@@ -108,6 +108,11 @@ namespace Ryujinx
         public int FsGlobalAccessLogMode { get; private set; }
 
         /// <summary>
+        /// Use old ChocolArm64 ARM emulator
+        /// </summary>
+        public bool EnableLegacyJit { get; private set; }
+
+        /// <summary>
         /// Enable or Disable aggressive CPU optimizations
         /// </summary>
         public bool EnableAggressiveCpuOpts { get; private set; }
@@ -238,6 +243,8 @@ namespace Ryujinx
                 : IntegrityCheckLevel.None;
 
             device.System.GlobalAccessLogMode = Instance.FsGlobalAccessLogMode;
+
+            device.System.UseLegacyJit = Instance.EnableLegacyJit;
 
             if (Instance.EnableAggressiveCpuOpts)
             {
