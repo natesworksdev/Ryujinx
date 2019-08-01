@@ -11,7 +11,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     // Based on:
     // "Linear Scan Register Allocation for the Java(tm) HotSpot Client Compiler".
     // http://www.christianwimmer.at/Publications/Wimmer04a/Wimmer04a.pdf
-    class LinearScan
+    class LinearScanAllocator : IRegisterAllocator
     {
         private const int InstructionGap     = 2;
         private const int InstructionGapMask = InstructionGap - 1;
@@ -71,7 +71,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
+        public AllocationResult RunPass(
+            ControlFlowGraph cfg,
+            StackAllocator stackAlloc,
+            RegisterMasks regMasks)
         {
             NumberLocals(cfg);
 

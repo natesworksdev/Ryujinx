@@ -49,8 +49,8 @@ namespace ARMeilleure.Instructions
             {
                 switch (op.Size)
                 {
-                    case 0: n = context.ZeroExtend8 (n.Type, n); n = context.Multiply(n, Const(0x01010101)); break;
-                    case 1: n = context.ZeroExtend16(n.Type, n); n = context.Multiply(n, Const(0x00010001)); break;
+                    case 0: n = context.ZeroExtend8 (n.Type, n); n = context.Multiply(n, Const(n.Type, 0x01010101)); break;
+                    case 1: n = context.ZeroExtend16(n.Type, n); n = context.Multiply(n, Const(n.Type, 0x00010001)); break;
                     case 2: n = context.ZeroExtend32(n.Type, n); break;
                 }
 

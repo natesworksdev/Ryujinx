@@ -71,7 +71,7 @@ namespace ARMeilleure.Instructions
 
         public static void Ret(ArmEmitterContext context)
         {
-            context.Return(GetIntOrZR(context, RegisterAlias.Lr));
+            context.Return(context.BitwiseOr(GetIntOrZR(context, RegisterAlias.Lr), Const(CallFlag)));
         }
 
         public static void Tbnz(ArmEmitterContext context) => EmitTb(context, onNotZero: true);

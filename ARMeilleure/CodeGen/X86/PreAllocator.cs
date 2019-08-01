@@ -374,6 +374,12 @@ namespace ARMeilleure.CodeGen.X86
 
             if (IsSameOperandDestSrc1(operation) && src1.Kind == OperandKind.LocalVariable && !threeOperandForm)
             {
+                // FIXME: We should support the same variable as dest being used on sources.
+                for (int srcIndex = 1; srcIndex < operation.SourcesCount; srcIndex++)
+                {
+                    Debug.Assert(operation.GetSource(srcIndex) == dest);
+                }
+
                 Operation copyOp = new Operation(Instruction.Copy, dest, src1);
 
                 node.List.AddBefore(node, copyOp);
@@ -382,7 +388,11 @@ namespace ARMeilleure.CodeGen.X86
             }
             else if (inst == Instruction.ConditionalSelect)
             {
+                Operand src2 = operation.GetSource(1);
                 Operand src3 = operation.GetSource(2);
+
+                // FIXME: We should support the same variable as dest being used on sources.
+                Debug.Assert(src1 == dest || src2 == dest);
 
                 Operation copyOp = new Operation(Instruction.Copy, dest, src3);
 

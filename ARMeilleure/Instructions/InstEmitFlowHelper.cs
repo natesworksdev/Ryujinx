@@ -10,6 +10,8 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitFlowHelper
     {
+        public const ulong CallFlag = 1;
+
         public static void EmitCondBranch(ArmEmitterContext context, Operand target, Condition cond)
         {
             if (cond != Condition.Al)
@@ -140,7 +142,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
-            context.Return(Const(immediate));
+            context.Return(Const(immediate | CallFlag));
         }
 
         public static void EmitVirtualCall(ArmEmitterContext context, Operand target)
@@ -155,7 +157,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitVirtualCallOrJump(ArmEmitterContext context, Operand target, bool isJump)
         {
-            context.Return(target);
+            context.Return(context.BitwiseOr(target, Const(target.Type, (long)CallFlag)));
         }
 
         private static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand retVal)

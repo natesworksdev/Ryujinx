@@ -103,7 +103,11 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.Optimization);
 
-            Optimizer.RunPass(cfg);
+            if ((cctx.Options & CompilerOptions.SsaForm)  != 0 &&
+                (cctx.Options & CompilerOptions.Optimize) != 0)
+            {
+                Optimizer.RunPass(cfg);
+            }
 
             Logger.EndPass(PassName.Optimization, cfg);
 
@@ -117,9 +121,21 @@ namespace ARMeilleure.CodeGen.X86
 
             Logger.StartPass(PassName.RegisterAllocation);
 
-            Ssa.Deconstruct(cfg);
+            if ((cctx.Options & CompilerOptions.SsaForm) != 0)
+            {
+                Ssa.Deconstruct(cfg);
+            }
 
-            LinearScan regAlloc = new LinearScan();
+            IRegisterAllocator regAlloc;
+
+            if ((cctx.Options & CompilerOptions.Lsra) != 0)
+            {
+                regAlloc = new LinearScanAllocator();
+            }
+            else
+            {
+                regAlloc = new HybridAllocator();
+            }
 
             RegisterMasks regMasks = new RegisterMasks(
                 CallingConvention.GetIntAvailableRegisters(),

@@ -40,7 +40,11 @@ namespace ARMeilleure.CodeGen.X86
 
             OperandType[] argTypes = new OperandType[0];
 
-            GetFeatureInfo getFeatureInfo = Compiler.Compile<GetFeatureInfo>(cfg, argTypes, OperandType.I64);
+            GetFeatureInfo getFeatureInfo = Compiler.Compile<GetFeatureInfo>(
+                cfg,
+                argTypes,
+                OperandType.I64,
+                CompilerOptions.HighCq);
 
             _featureInfo = getFeatureInfo();
         }

@@ -284,7 +284,7 @@ namespace ARMeilleure.Translation
             {
                 return new Register(id - RegisterConsts.IntRegsCount, RegisterType.Vector);
             }
-            else /* if (key < RegisterConsts.TotalCount) */
+            else /* if (id < RegisterConsts.TotalCount) */
             {
                 return new Register(id - RegisterConsts.IntAndVecRegsCount, RegisterType.Flag);
             }

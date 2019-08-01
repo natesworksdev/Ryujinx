@@ -66,7 +66,11 @@ namespace ARMeilleure.Memory
                     OperandType.V128
                 };
 
-                _compareExchange128 = Compiler.Compile<CompareExchange128>(cfg, argTypes, OperandType.V128);
+                _compareExchange128 = Compiler.Compile<CompareExchange128>(
+                    cfg,
+                    argTypes,
+                    OperandType.V128,
+                    CompilerOptions.HighCq);
             }
         }
     }

@@ -68,7 +68,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public static void RunPass(ControlFlowGraph cfg)
+        public static void RunPass(ControlFlowGraph cfg, bool isCompleteFunction)
         {
             // Compute local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
@@ -218,8 +218,8 @@ namespace ARMeilleure.Translation
 
                 if (EndsWithReturn(block) || hasContextStore)
                 {
-                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer);
-                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector);
+                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, isCompleteFunction);
+                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  isCompleteFunction);
                 }
             }
         }
@@ -311,9 +311,9 @@ namespace ARMeilleure.Translation
             block.Operations.AddFirst(loadArg0);
         }
 
-        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType)
+        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, bool isCompleteFunction)
         {
-            if (Optimizations.AssumeStrictAbiCompliance)
+            if (Optimizations.AssumeStrictAbiCompliance && isCompleteFunction)
             {
                 if (baseType == RegisterType.Integer || baseType == RegisterType.Flag)
                 {
