@@ -29,10 +29,8 @@ namespace ARMeilleure.State
         void  SetX(int index, ulong value);
 
         V128 GetV(int index);
-        void SetV(int index, V128 value);
 
         bool GetPstateFlag(PState flag);
-        void SetPstateFlag(PState flag, bool value);
 
         void RequestInterrupt();
     }

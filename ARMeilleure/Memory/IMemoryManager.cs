@@ -25,8 +25,6 @@ namespace ARMeilleure.Memory
 
         int AtomicDecrementInt32(long position);
 
-        V128 ReadVector128(long position);
-
         byte[] ReadBytes(long position, long size);
 
         void ReadBytes(long position, byte[] data, int startIndex, int size);
