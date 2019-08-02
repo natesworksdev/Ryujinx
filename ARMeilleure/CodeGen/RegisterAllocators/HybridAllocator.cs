@@ -162,29 +162,35 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     int selectedReg = BitUtils.HighestBitSet(intFreeRegisters & ~regMasks.IntCallerSavedRegisters);
 
-                    int mask = 1 << selectedReg;
+                    if (selectedReg >= 0)
+                    {
+                        int mask = 1 << selectedReg;
 
-                    intFreeRegisters &= ~mask;
-                    intUsedRegisters |=  mask;
+                        intFreeRegisters &= ~mask;
+                        intUsedRegisters |=  mask;
 
-                    info.PreAllocated = true;
-                    info.Register     = selectedReg;
+                        info.PreAllocated = true;
+                        info.Register     = selectedReg;
 
-                    intReservedCount++;
+                        intReservedCount++;
+                    }
                 }
                 else if (!info.Type.IsInteger() && vecReservedCount < 7)
                 {
                     int selectedReg = BitUtils.HighestBitSet(vecFreeRegisters & ~regMasks.VecCallerSavedRegisters);
 
-                    int mask = 1 << selectedReg;
+                    if (selectedReg >= 0)
+                    {
+                        int mask = 1 << selectedReg;
 
-                    vecFreeRegisters &= ~mask;
-                    vecUsedRegisters |=  mask;
+                        vecFreeRegisters &= ~mask;
+                        vecUsedRegisters |=  mask;
 
-                    info.PreAllocated = true;
-                    info.Register     = selectedReg;
+                        info.PreAllocated = true;
+                        info.Register     = selectedReg;
 
-                    vecReservedCount++;
+                        vecReservedCount++;
+                    }
                 }
 
                 if (intReservedCount + vecReservedCount == 14)
