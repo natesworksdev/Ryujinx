@@ -153,52 +153,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 blockInfo[block.Index] = new BlockInfo(hasCall, intFixedRegisters, vecFixedRegisters);
             }
 
-            int intReservedCount = 0;
-            int vecReservedCount = 0;
-
-            foreach (LocalInfo info in locInfo.OrderByDescending(x => x.Uses))
-            {
-                if (info.Type.IsInteger() && intReservedCount < 7)
-                {
-                    int selectedReg = BitUtils.HighestBitSet(intFreeRegisters & ~regMasks.IntCallerSavedRegisters);
-
-                    if (selectedReg >= 0)
-                    {
-                        int mask = 1 << selectedReg;
-
-                        intFreeRegisters &= ~mask;
-                        intUsedRegisters |=  mask;
-
-                        info.PreAllocated = true;
-                        info.Register     = selectedReg;
-
-                        intReservedCount++;
-                    }
-                }
-                else if (!info.Type.IsInteger() && vecReservedCount < 7)
-                {
-                    int selectedReg = BitUtils.HighestBitSet(vecFreeRegisters & ~regMasks.VecCallerSavedRegisters);
-
-                    if (selectedReg >= 0)
-                    {
-                        int mask = 1 << selectedReg;
-
-                        vecFreeRegisters &= ~mask;
-                        vecUsedRegisters |=  mask;
-
-                        info.PreAllocated = true;
-                        info.Register     = selectedReg;
-
-                        vecReservedCount++;
-                    }
-                }
-
-                if (intReservedCount + vecReservedCount == 14)
-                {
-                    break;
-                }
-            }
-
             int sequence = 0;
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
