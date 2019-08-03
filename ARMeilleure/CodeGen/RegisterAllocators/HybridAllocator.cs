@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
