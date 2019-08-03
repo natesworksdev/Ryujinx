@@ -167,8 +167,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 int intCallerSavedRegisters = blkInfo.HasCall ? regMasks.IntCallerSavedRegisters : 0;
                 int vecCallerSavedRegisters = blkInfo.HasCall ? regMasks.VecCallerSavedRegisters : 0;
 
-                int intSpillTempRegisters = SelectSpillTemps(intCallerSavedRegisters, intLocalFreeRegisters);
-                int vecSpillTempRegisters = SelectSpillTemps(vecCallerSavedRegisters, vecLocalFreeRegisters);
+                int intSpillTempRegisters = SelectSpillTemps(
+                    intCallerSavedRegisters & ~blkInfo.IntFixedRegisters,
+                    intLocalFreeRegisters);
+                int vecSpillTempRegisters = SelectSpillTemps(
+                    vecCallerSavedRegisters & ~blkInfo.VecFixedRegisters,
+                    vecLocalFreeRegisters);
 
                 intLocalFreeRegisters &= ~(intSpillTempRegisters | intCallerSavedRegisters);
                 vecLocalFreeRegisters &= ~(vecSpillTempRegisters | vecCallerSavedRegisters);
