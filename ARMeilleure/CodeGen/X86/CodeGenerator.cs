@@ -1090,7 +1090,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorExtract(CodeGenContext context, Operation operation)
         {
-            Operand dest = operation.Destination; //Value
+            Operand dest = operation.Destination;  //Value
             Operand src1 = operation.GetSource(0); //Vector
             Operand src2 = operation.GetSource(1); //Index
 
@@ -1176,7 +1176,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorExtract16(CodeGenContext context, Operation operation)
         {
-            Operand dest = operation.Destination; //Value
+            Operand dest = operation.Destination;  //Value
             Operand src1 = operation.GetSource(0); //Vector
             Operand src2 = operation.GetSource(1); //Index
 
@@ -1192,7 +1192,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateVectorExtract8(CodeGenContext context, Operation operation)
         {
-            Operand dest = operation.Destination; //Value
+            Operand dest = operation.Destination;  //Value
             Operand src1 = operation.GetSource(0); //Vector
             Operand src2 = operation.GetSource(1); //Index
 
@@ -1308,7 +1308,6 @@ namespace ARMeilleure.CodeGen.X86
                             int mask1 = 0b11_10_01_00;
 
                             mask0 = BitUtils.RotateRight(mask0,     index * 2, 8);
-                          //mask1 = BitUtils.RotateLeft (mask1,     index * 2, 8);
                             mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
 
                             context.Assembler.Pshufd(src1, src1, (byte)mask0); // Lane to be inserted in position 0.

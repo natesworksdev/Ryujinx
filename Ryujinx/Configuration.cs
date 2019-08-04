@@ -114,11 +114,6 @@ namespace Ryujinx
         public bool EnableLegacyJit { get; private set; }
 
         /// <summary>
-        /// Enable or Disable aggressive CPU optimizations
-        /// </summary>
-        public bool EnableAggressiveCpuOpts { get; private set; }
-
-        /// <summary>
         /// Enable or disable ignoring missing services
         /// </summary>
         public bool IgnoreMissingServices { get; private set; }
@@ -246,11 +241,6 @@ namespace Ryujinx
             device.System.GlobalAccessLogMode = Instance.FsGlobalAccessLogMode;
 
             device.System.UseLegacyJit = Instance.EnableLegacyJit;
-
-            if (Instance.EnableAggressiveCpuOpts)
-            {
-                Optimizations.AssumeStrictAbiCompliance = true;
-            }
 
             ServiceConfiguration.IgnoreMissingServices = Instance.IgnoreMissingServices;
 

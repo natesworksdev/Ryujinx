@@ -2,9 +2,11 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeMov : OpCode
     {
-        public int  Rd  { get; private set; }
+        public int Rd { get; private set; }
+
         public long Immediate { get; private set; }
-        public int  Bit { get; private set; }
+
+        public int Bit { get; private set; }
 
         public OpCodeMov(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
@@ -18,11 +20,12 @@ namespace ARMeilleure.Decoders
                 return;
             }
 
-            Rd  = (opCode >>  0) & 0x1f;
+            Rd        = (opCode >>  0) & 0x1f;
             Immediate = (opCode >>  5) & 0xffff;
-            Bit = (opCode >> 21) & 0x3;
+            Bit       = (opCode >> 21) & 0x3;
 
             Bit <<= 4;
+
             Immediate <<= Bit;
 
             RegisterSize = (opCode >> 31) != 0

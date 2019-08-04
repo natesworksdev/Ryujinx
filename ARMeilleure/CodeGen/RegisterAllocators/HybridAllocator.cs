@@ -11,7 +11,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
     class HybridAllocator : IRegisterAllocator
     {
         private const int RegistersCount = 16;
-        private const int MaxIROperands = 4;
+        private const int MaxIROperands  = 4;
 
         private struct BlockInfo
         {
@@ -323,7 +323,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private static int SelectSpillTemps(int mask0, int mask1)
         {
             int selection = 0;
-            int count = 0;
+            int count     = 0;
 
             while (count < MaxIROperands && mask0 != 0)
             {

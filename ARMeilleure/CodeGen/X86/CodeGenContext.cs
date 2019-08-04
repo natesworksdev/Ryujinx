@@ -116,7 +116,10 @@ namespace ARMeilleure.CodeGen.X86
 
             int frameSize = calleeSaveRegionSize + allocResult.SpillRegionSize;
 
-            int callArgsAndFrameSize = frameSize + argsCount * 16; //FIXME * 16 => calc
+            // TODO: Instead of always multiplying by 16 (the largest possible size of a variable,
+            // since a V128 has 16 bytes), we should calculate the exact size consumed by the
+            // arguments passed to the called functions on the stack.
+            int callArgsAndFrameSize = frameSize + argsCount * 16;
 
             // Ensure that the Stack Pointer will be aligned to 16 bytes.
             callArgsAndFrameSize = (callArgsAndFrameSize + 0xf) & ~0xf;

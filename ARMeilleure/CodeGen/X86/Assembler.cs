@@ -7,13 +7,11 @@ namespace ARMeilleure.CodeGen.X86
 {
     class Assembler
     {
-        private const int BadOp = 0;
-
+        private const int BadOp       = 0;
         private const int OpModRMBits = 24;
 
         private const byte RexPrefix  = 0x40;
         private const byte RexWPrefix = 0x48;
-
         private const byte LockPrefix = 0xf0;
 
         [Flags]
@@ -1036,8 +1034,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            bool needsSibByte = false;
-
+            bool needsSibByte      = false;
             bool needsDisplacement = false;
 
             int sib = 0;
@@ -1049,8 +1046,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 X86Register baseRegLow = (X86Register)(baseReg.Index & 0b111);
 
-                needsSibByte = memOp.Index != null || baseRegLow == X86Register.Rsp;
-
+                needsSibByte      = memOp.Index != null     || baseRegLow == X86Register.Rsp;
                 needsDisplacement = memOp.Displacement != 0 || baseRegLow == X86Register.Rbp;
 
                 if (needsDisplacement)

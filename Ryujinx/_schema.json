@@ -21,7 +21,6 @@
     "enable_fs_integrity_checks",
     "fs_global_access_log_mode",
     "enable_legacy_jit",
-    "enable_aggressive_cpu_opts",
     "controller_type",
     "enable_keyboard",
     "keyboard_controls",
@@ -458,17 +457,6 @@
       "title": "Enable legacy JIT",
       "description": "Use old ChocolArm64 ARM emulator",
       "default": false,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "enable_aggressive_cpu_opts": {
-      "$id": "#/properties/enable_aggressive_cpu_opts",
-      "type": "boolean",
-      "title": "Enable Aggressive CPU Optimizations",
-      "description": "Enable or disable aggressive CPU optimizations",
-      "default": true,
       "examples": [
         true,
         false

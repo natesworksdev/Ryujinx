@@ -45,16 +45,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 Dictionary<Register, OperandType> types = new Dictionary<Register, OperandType>();
 
                 Queue<Register> pendingQueue = new Queue<Register>();
-
-                Queue<Register> readyQueue = new Queue<Register>();
+                Queue<Register> readyQueue   = new Queue<Register>();
 
                 foreach (Copy copy in _copies)
                 {
                     locations[copy.Source] = copy.Source;
-
-                    sources[copy.Dest] = copy.Source;
-
-                    types[copy.Dest] = copy.Type;
+                    sources[copy.Dest]     = copy.Source;
+                    types[copy.Dest]       = copy.Type;
 
                     pendingQueue.Enqueue(copy.Dest);
                 }

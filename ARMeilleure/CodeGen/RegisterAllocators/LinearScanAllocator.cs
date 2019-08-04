@@ -267,8 +267,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             int availableRegisters = context.Masks.GetAvailableRegisters(regType);
 
-            int[] usePositions = new int[RegistersCount];
-
+            int[] usePositions     = new int[RegistersCount];
             int[] blockedPositions = new int[RegistersCount];
 
             for (int index = 0; index < RegistersCount; index++)
@@ -425,8 +424,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (higuest < current)
                 {
-                    higuest = current;
-
+                    higuest  = current;
                     selected = index;
 
                     if (current == int.MaxValue)

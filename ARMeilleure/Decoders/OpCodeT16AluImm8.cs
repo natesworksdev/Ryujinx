@@ -13,8 +13,8 @@ namespace ARMeilleure.Decoders
 
         public OpCodeT16AluImm8(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            Immediate  = (opCode >> 0) & 0xff;
-            _rdn = (opCode >> 8) & 0x7;
+            Immediate = (opCode >> 0) & 0xff;
+            _rdn      = (opCode >> 8) & 0x7;
         }
     }
 }
