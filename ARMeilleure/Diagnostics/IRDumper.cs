@@ -8,7 +8,7 @@ namespace ARMeilleure.Diagnostics
 {
     static class IRDumper
     {
-        private const string Identation = " ";
+        private const string Indentation = " ";
 
         public static string GetDump(ControlFlowGraph cfg)
         {
@@ -16,24 +16,24 @@ namespace ARMeilleure.Diagnostics
 
             Dictionary<Operand, string> localNames = new Dictionary<Operand, string>();
 
-            string identation = string.Empty;
+            string indentation = string.Empty;
 
-            void IncreaseIdentation()
+            void IncreaseIndentation()
             {
-                identation += Identation;
+                indentation += Indentation;
             }
 
-            void DecreaseIdentation()
+            void DecreaseIndentation()
             {
-                identation = identation.Substring(0, identation.Length - Identation.Length);
+                indentation = indentation.Substring(0, indentation.Length - Indentation.Length);
             }
 
             void AppendLine(string text)
             {
-                sb.AppendLine(identation + text);
+                sb.AppendLine(indentation + text);
             }
 
-            IncreaseIdentation();
+            IncreaseIndentation();
 
             foreach (BasicBlock block in cfg.Blocks)
             {
@@ -53,7 +53,7 @@ namespace ARMeilleure.Diagnostics
 
                 AppendLine(blockName);
 
-                IncreaseIdentation();
+                IncreaseIndentation();
 
                 foreach (Node node in block.Operations)
                 {
@@ -96,7 +96,7 @@ namespace ARMeilleure.Diagnostics
                     AppendLine(line);
                 }
 
-                DecreaseIdentation();
+                DecreaseIndentation();
             }
 
             return sb.ToString();

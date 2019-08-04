@@ -170,16 +170,16 @@ namespace ChocolArm64.State
         {
             switch (index)
             {
-                case 0: return X0;
-                case 1: return X1;
-                case 2: return X2;
-                case 3: return X3;
-                case 4: return X4;
-                case 5: return X5;
-                case 6: return X6;
-                case 7: return X7;
-                case 8: return X8;
-                case 9: return X9;
+                case 0:  return X0;
+                case 1:  return X1;
+                case 2:  return X2;
+                case 3:  return X3;
+                case 4:  return X4;
+                case 5:  return X5;
+                case 6:  return X6;
+                case 7:  return X7;
+                case 8:  return X8;
+                case 9:  return X9;
                 case 10: return X10;
                 case 11: return X11;
                 case 12: return X12;
@@ -211,16 +211,16 @@ namespace ChocolArm64.State
         {
             switch (index)
             {
-                case 0: X0 = value; break;
-                case 1: X1 = value; break;
-                case 2: X2 = value; break;
-                case 3: X3 = value; break;
-                case 4: X4 = value; break;
-                case 5: X5 = value; break;
-                case 6: X6 = value; break;
-                case 7: X7 = value; break;
-                case 8: X8 = value; break;
-                case 9: X9 = value; break;
+                case 0:  X0  = value; break;
+                case 1:  X1  = value; break;
+                case 2:  X2  = value; break;
+                case 3:  X3  = value; break;
+                case 4:  X4  = value; break;
+                case 5:  X5  = value; break;
+                case 6:  X6  = value; break;
+                case 7:  X7  = value; break;
+                case 8:  X8  = value; break;
+                case 9:  X9  = value; break;
                 case 10: X10 = value; break;
                 case 11: X11 = value; break;
                 case 12: X12 = value; break;
@@ -252,16 +252,16 @@ namespace ChocolArm64.State
         {
             switch (index)
             {
-                case 0: return new ARMeilleure.State.V128(VectorExtractIntZx(V0, 0, 3), VectorExtractIntZx(V0, 1, 3));
-                case 1: return new ARMeilleure.State.V128(VectorExtractIntZx(V1, 0, 3), VectorExtractIntZx(V1, 1, 3));
-                case 2: return new ARMeilleure.State.V128(VectorExtractIntZx(V2, 0, 3), VectorExtractIntZx(V2, 1, 3));
-                case 3: return new ARMeilleure.State.V128(VectorExtractIntZx(V3, 0, 3), VectorExtractIntZx(V3, 1, 3));
-                case 4: return new ARMeilleure.State.V128(VectorExtractIntZx(V4, 0, 3), VectorExtractIntZx(V4, 1, 3));
-                case 5: return new ARMeilleure.State.V128(VectorExtractIntZx(V5, 0, 3), VectorExtractIntZx(V5, 1, 3));
-                case 6: return new ARMeilleure.State.V128(VectorExtractIntZx(V6, 0, 3), VectorExtractIntZx(V6, 1, 3));
-                case 7: return new ARMeilleure.State.V128(VectorExtractIntZx(V7, 0, 3), VectorExtractIntZx(V7, 1, 3));
-                case 8: return new ARMeilleure.State.V128(VectorExtractIntZx(V8, 0, 3), VectorExtractIntZx(V8, 1, 3));
-                case 9: return new ARMeilleure.State.V128(VectorExtractIntZx(V9, 0, 3), VectorExtractIntZx(V9, 1, 3));
+                case 0:  return new ARMeilleure.State.V128(VectorExtractIntZx(V0,  0, 3), VectorExtractIntZx(V0,  1, 3));
+                case 1:  return new ARMeilleure.State.V128(VectorExtractIntZx(V1,  0, 3), VectorExtractIntZx(V1,  1, 3));
+                case 2:  return new ARMeilleure.State.V128(VectorExtractIntZx(V2,  0, 3), VectorExtractIntZx(V2,  1, 3));
+                case 3:  return new ARMeilleure.State.V128(VectorExtractIntZx(V3,  0, 3), VectorExtractIntZx(V3,  1, 3));
+                case 4:  return new ARMeilleure.State.V128(VectorExtractIntZx(V4,  0, 3), VectorExtractIntZx(V4,  1, 3));
+                case 5:  return new ARMeilleure.State.V128(VectorExtractIntZx(V5,  0, 3), VectorExtractIntZx(V5,  1, 3));
+                case 6:  return new ARMeilleure.State.V128(VectorExtractIntZx(V6,  0, 3), VectorExtractIntZx(V6,  1, 3));
+                case 7:  return new ARMeilleure.State.V128(VectorExtractIntZx(V7,  0, 3), VectorExtractIntZx(V7,  1, 3));
+                case 8:  return new ARMeilleure.State.V128(VectorExtractIntZx(V8,  0, 3), VectorExtractIntZx(V8,  1, 3));
+                case 9:  return new ARMeilleure.State.V128(VectorExtractIntZx(V9,  0, 3), VectorExtractIntZx(V9,  1, 3));
                 case 10: return new ARMeilleure.State.V128(VectorExtractIntZx(V10, 0, 3), VectorExtractIntZx(V10, 1, 3));
                 case 11: return new ARMeilleure.State.V128(VectorExtractIntZx(V11, 0, 3), VectorExtractIntZx(V11, 1, 3));
                 case 12: return new ARMeilleure.State.V128(VectorExtractIntZx(V12, 0, 3), VectorExtractIntZx(V12, 1, 3));
