@@ -1471,12 +1471,12 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="_aggrToggle">
-                                    <property name="label" translatable="yes">Enable Aggressive CPU Optimizations</property>
+                                  <object class="GtkCheckButton" id="_legacyJitToggle">
+                                    <property name="label" translatable="yes">Use old ChocolArm64 ARM emulator</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disable aggressive CPU optimizations</property>
+                                    <property name="tooltip_text" translatable="yes">Uses old ChocolArm64 ARM emulator rather then the new ARMeilleure</property>
                                     <property name="halign">start</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>

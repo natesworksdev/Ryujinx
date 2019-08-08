@@ -37,7 +37,7 @@ namespace Ryujinx.UI
         [GUI] CheckButton  _vSyncToggle;
         [GUI] CheckButton  _multiSchedToggle;
         [GUI] CheckButton  _fsicToggle;
-        [GUI] CheckButton  _aggrToggle;
+        [GUI] CheckButton  _legacyJitToggle;
         [GUI] CheckButton  _ignoreToggle;
         [GUI] CheckButton  _directKeyboardAccess;
         [GUI] ComboBoxText _systemLanguageSelect;
@@ -134,7 +134,7 @@ namespace Ryujinx.UI
             if (SwitchConfig.EnableVsync)               { _vSyncToggle.Click();          }
             if (SwitchConfig.EnableMulticoreScheduling) { _multiSchedToggle.Click();     }
             if (SwitchConfig.EnableFsIntegrityChecks)   { _fsicToggle.Click();           }
-            if (SwitchConfig.EnableAggressiveCpuOpts)   { _aggrToggle.Click();           }
+            if (SwitchConfig.EnableLegacyJit)           { _legacyJitToggle.Click();      }
             if (SwitchConfig.IgnoreMissingServices)     { _ignoreToggle.Click();         }
             if (SwitchConfig.EnableKeyboard)            { _directKeyboardAccess.Click(); }
             if (SwitchConfig.EnableCustomTheme)         { _custThemeToggle.Click();      }
@@ -306,7 +306,7 @@ namespace Ryujinx.UI
             if (_vSyncToggle.Active)           SwitchConfig.EnableVsync               = true;
             if (_multiSchedToggle.Active)      SwitchConfig.EnableMulticoreScheduling = true;
             if (_fsicToggle.Active)            SwitchConfig.EnableFsIntegrityChecks   = true;
-            if (_aggrToggle.Active)            SwitchConfig.EnableAggressiveCpuOpts   = true;
+            if (_legacyJitToggle.Active)       SwitchConfig.EnableLegacyJit           = true;
             if (_ignoreToggle.Active)          SwitchConfig.IgnoreMissingServices     = true;
             if (_directKeyboardAccess.Active)  SwitchConfig.EnableKeyboard            = true;
             if (_custThemeToggle.Active)       SwitchConfig.EnableCustomTheme         = true;
@@ -324,7 +324,7 @@ namespace Ryujinx.UI
             if (!_vSyncToggle.Active)          SwitchConfig.EnableVsync               = false;
             if (!_multiSchedToggle.Active)     SwitchConfig.EnableMulticoreScheduling = false;
             if (!_fsicToggle.Active)           SwitchConfig.EnableFsIntegrityChecks   = false;
-            if (!_aggrToggle.Active)           SwitchConfig.EnableAggressiveCpuOpts   = false;
+            if (!_legacyJitToggle.Active)      SwitchConfig.EnableLegacyJit           = false;
             if (!_ignoreToggle.Active)         SwitchConfig.IgnoreMissingServices     = false;
             if (!_directKeyboardAccess.Active) SwitchConfig.EnableKeyboard            = false;
             if (!_custThemeToggle.Active)      SwitchConfig.EnableCustomTheme         = false;
