@@ -289,7 +289,10 @@ namespace Ryujinx
             device.System.UseLegacyJit = SwitchConfig.EnableLegacyJit;
 
             ServiceConfiguration.IgnoreMissingServices = SwitchConfig.IgnoreMissingServices;
-
+        }
+       
+        public static void ConfigureHid(Switch device, Configuration SwitchConfig) 
+        {   
             if (SwitchConfig.JoystickControls.Enabled)
             {
                 if (!Joystick.GetState(SwitchConfig.JoystickControls.Index).IsConnected)

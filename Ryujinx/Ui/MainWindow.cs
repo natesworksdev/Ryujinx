@@ -310,6 +310,8 @@ namespace Ryujinx.UI
 
         private static void CreateGameWindow()
         {
+            Configuration.ConfigureHid(_device, SwitchSettings.SwitchConfig);
+            
             using (GlScreen screen = new GlScreen(_device, _renderer))
             {
                 screen.MainLoop();
