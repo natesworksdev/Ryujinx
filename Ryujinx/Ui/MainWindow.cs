@@ -474,6 +474,12 @@ namespace Ryujinx.UI
             fc.Destroy();
         }
 
+        private void Update_Pressed(object o, EventArgs args)
+        {
+            string ryuUpdater = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "RyuUpdater.exe");
+            Process.Start(new ProcessStartInfo(ryuUpdater, "/U") { UseShellExecute = true });
+        }
+
         private void About_Pressed(object o, EventArgs args)
         {
             AboutWindow AboutWin = new AboutWindow();
