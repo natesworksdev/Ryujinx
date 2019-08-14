@@ -281,7 +281,7 @@ namespace Ryujinx.UI
                 string userId = "00000000000000000000000000000001";
                 try
                 {
-                    string savePath = System.IO.Path.Combine(VirtualFileSystem.UserNandPath, "save", "0000000000000000", userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
@@ -327,7 +327,7 @@ namespace Ryujinx.UI
             {
                 try
                 {
-                    string savePath = System.IO.Path.Combine(VirtualFileSystem.UserNandPath, "save", "0000000000000000", userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", userId, _device.System.TitleID);
                     double currentPlayTime = 0;
 
                     using (FileStream fs = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -477,7 +477,8 @@ namespace Ryujinx.UI
         private void Update_Pressed(object o, EventArgs args)
         {
             string ryuUpdater = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "RyuUpdater.exe");
-            Process.Start(new ProcessStartInfo(ryuUpdater, "/U") { UseShellExecute = true });
+            try { Process.Start(new ProcessStartInfo(ryuUpdater, "/U") { UseShellExecute = true }); }
+            catch(System.ComponentModel.Win32Exception) { CreateErrorDialog("Update canceled by user or updater was not found"); }
         }
 
         private void About_Pressed(object o, EventArgs args)

@@ -4,11 +4,23 @@ using System;
 using System.Diagnostics;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using Utf8Json;
+using Utf8Json.Resolvers;
+using System.IO;
 
 namespace Ryujinx.UI
 {
+    public struct Info
+    {
+        public string InstallVersion;
+        public string InstallCommit;
+        public string InstallBranch;
+    }
+
     public class AboutWindow : Window
     {
+        public static Info Information { get; private set; }
+
 #pragma warning disable 649
         [GUI] Window _aboutWin;
         [GUI] Label  _versionText;
@@ -32,7 +44,18 @@ namespace Ryujinx.UI
             _discordLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.DiscordLogo.png", 30 , 30 );
             _twitterLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.TwitterLogo.png", 30 , 30 );
 
-            _versionText.Text = "Version x.x.x (Commit Number)";
+            try
+            {
+                var resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
+                using (Stream stream = File.OpenRead(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "Installer", "Config", "Config.json")))
+                {
+                    Information = JsonSerializer.Deserialize<Info>(stream, resolver);
+                }
+
+                _versionText.Text = $"Version {Information.InstallVersion} - {Information.InstallBranch} ({Information.InstallCommit})";
+            }
+            catch { _versionText.Text = "Unknown Version"; }
         }
 
         public void OpenUrl(string url)

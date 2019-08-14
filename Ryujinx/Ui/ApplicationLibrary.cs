@@ -2,7 +2,6 @@
 using LibHac.Fs;
 using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -331,7 +330,7 @@ namespace Ryujinx.UI
             try
             {
                 string[] playedData = new string[2];
-                string savePath = Path.Combine(VirtualFileSystem.UserNandPath, "save", "0000000000000000", UserId, TitleId);
+                string savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", UserId, TitleId);
 
                 if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
                 {
