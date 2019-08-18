@@ -115,11 +115,15 @@ namespace Ryujinx
                     DiscordPresence.Assets.LargeImageKey = device.System.TitleID;
                 }
 
-                string state = device.System.TitleID.ToUpper();
+                string state = device.System.TitleID;
 
                 if (state == null)
                 {
                     state = "Ryujinx";
+                }
+                else
+                {
+                    state = state.ToUpper();
                 }
 
                 string details = "Idling";
