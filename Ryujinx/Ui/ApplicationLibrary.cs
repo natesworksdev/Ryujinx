@@ -8,13 +8,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using SystemState = Ryujinx.HLE.HOS.SystemState;
 
 namespace Ryujinx.UI
 {
     public class ApplicationLibrary
     {
         private static Keyset KeySet;
-        private static HLE.HOS.SystemState.TitleLanguage DesiredTitleLanguage;
+        private static SystemState.TitleLanguage DesiredTitleLanguage;
 
         private const double SecondsPerMinute = 60.0;
         private const double SecondsPerHour = SecondsPerMinute * 60;
@@ -42,7 +43,7 @@ namespace Ryujinx.UI
             public string Path;
         }
 
-        public static void Init(List<string> AppDirs, Keyset keySet, HLE.HOS.SystemState.TitleLanguage desiredTitleLanguage)
+        public static void Init(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
         {
             KeySet               = keySet;
             DesiredTitleLanguage = desiredTitleLanguage;
@@ -66,7 +67,7 @@ namespace Ryujinx.UI
                 }
 
                 DirectoryInfo AppDirInfo = new DirectoryInfo(appDir);
-                foreach (var App in AppDirInfo.GetFiles())
+                foreach (FileInfo App in AppDirInfo.GetFiles())
                 {
                     if ((Path.GetExtension(App.ToString()) == ".xci")  ||
                         (Path.GetExtension(App.ToString()) == ".nca")  ||
@@ -84,12 +85,12 @@ namespace Ryujinx.UI
             ApplicationLibraryData = new List<ApplicationData>();
             foreach (string applicationPath in applications)
             {
-                double filesize         = new FileInfo(applicationPath).Length * 0.000000000931;
-                string titleName        = null;
-                string titleId          = null;
-                string developer        = null;
-                string version          = null;
-                byte[] applicationIcon  = null;
+                double filesize        = new FileInfo(applicationPath).Length * 0.000000000931;
+                string titleName       = null;
+                string titleId         = null;
+                string developer       = null;
+                string version         = null;
+                byte[] applicationIcon = null;
 
                 using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                 {
@@ -105,9 +106,13 @@ namespace Ryujinx.UI
                             if (Path.GetExtension(applicationPath) == ".xci")
                             {
                                 Xci xci = new Xci(KeySet, file.AsStorage());
+
                                 controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
                             }
-                            else { controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage())); }
+                            else
+                            {
+                                controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage()));
+                            }
 
                             // Creates NACP class from the NACP file
                             IFile controlNacp = controlFs.OpenFile("/control.nacp", OpenMode.Read);
@@ -117,16 +122,26 @@ namespace Ryujinx.UI
                             version = controlData.DisplayVersion;
 
                             titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
+
                             if (string.IsNullOrWhiteSpace(titleName))
                             {
                                 titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                             }
 
                             titleId = controlData.PresenceGroupId.ToString("x16");
-                            if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("x16"); }
-                            if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16"); }
+
+                            if (string.IsNullOrWhiteSpace(titleId))
+                            {
+                                titleId = controlData.SaveDataOwnerId.ToString("x16");
+                            }
+
+                            if (string.IsNullOrWhiteSpace(titleId))
+                            {
+                                titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
+                            }
 
                             developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
+
                             if (string.IsNullOrWhiteSpace(developer))
                             {
                                 developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
@@ -136,10 +151,10 @@ namespace Ryujinx.UI
                             try
                             {
                                 IFile icon = controlFs.OpenFile($"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read);
-                                using (MemoryStream ms = new MemoryStream())
+                                using (MemoryStream stream = new MemoryStream())
                                 {
-                                    icon.AsStream().CopyTo(ms);
-                                    applicationIcon = ms.ToArray();
+                                    icon.AsStream().CopyTo(stream);
+                                    applicationIcon = stream.ToArray();
                                 }
                             }
                             catch (HorizonResultException)
@@ -147,22 +162,34 @@ namespace Ryujinx.UI
                                 IDirectory controlDir = controlFs.OpenDirectory("./", OpenDirectoryMode.All);
                                 foreach (DirectoryEntry entry in controlDir.Read())
                                 {
-                                    if (entry.Name == "control.nacp") { continue; }
-
-                                    IFile icon = controlFs.OpenFile(entry.FullPath, OpenMode.Read);
-                                    using (MemoryStream ms = new MemoryStream())
+                                    if (entry.Name == "control.nacp")
                                     {
-                                        icon.AsStream().CopyTo(ms);
-                                        applicationIcon = ms.ToArray();
+                                        continue;
                                     }
 
-                                    if (applicationIcon != null) { break; }
+                                    IFile icon = controlFs.OpenFile(entry.FullPath, OpenMode.Read);
+                                    using (MemoryStream stream = new MemoryStream())
+                                    {
+                                        icon.AsStream().CopyTo(stream);
+                                        applicationIcon = stream.ToArray();
+                                    }
+
+                                    if (applicationIcon != null)
+                                    {
+                                        break;
+                                    }
                                 }
 
                                 if (applicationIcon == null)
                                 {
-                                    if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
-                                    else { applicationIcon = RyujinxNspIcon; }
+                                    if (Path.GetExtension(applicationPath) == ".xci")
+                                    {
+                                        applicationIcon = RyujinxXciIcon;
+                                    }
+                                    else
+                                    {
+                                        applicationIcon = RyujinxNspIcon;
+                                    }
                                 }
                             }
                         }
@@ -173,8 +200,14 @@ namespace Ryujinx.UI
                             developer = "Unknown";
                             version   = "?";
 
-                            if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
-                            else { applicationIcon = RyujinxNspIcon; }
+                            if (Path.GetExtension(applicationPath) == ".xci")
+                            {
+                                applicationIcon = RyujinxXciIcon;
+                            }
+                            else
+                            {
+                                applicationIcon = RyujinxNspIcon;
+                            }
 
                             Logger.PrintError(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                         }
@@ -191,7 +224,6 @@ namespace Ryujinx.UI
                             Logger.PrintError(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
                         }
                     }
-
                     else if (Path.GetExtension(applicationPath) == ".nro")
                     {
                         BinaryReader reader = new BinaryReader(file);
@@ -199,6 +231,7 @@ namespace Ryujinx.UI
                         byte[] Read(long Position, int Size)
                         {
                             file.Seek(Position, SeekOrigin.Begin);
+
                             return reader.ReadBytes(Size);
                         }
 
@@ -228,33 +261,55 @@ namespace Ryujinx.UI
                                 version = controlData.DisplayVersion;
 
                                 titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
+
                                 if (string.IsNullOrWhiteSpace(titleName))
                                 {
                                     titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                                 }
 
                                 titleId = controlData.PresenceGroupId.ToString("x16");
-                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = controlData.SaveDataOwnerId.ToString("x16"); }
-                                if (string.IsNullOrWhiteSpace(titleId)) { titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16"); }
+
+                                if (string.IsNullOrWhiteSpace(titleId))
+                                {
+                                    titleId = controlData.SaveDataOwnerId.ToString("x16");
+                                }
+
+                                if (string.IsNullOrWhiteSpace(titleId)) {
+                                    titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
+                                }
 
                                 developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
+
                                 if (string.IsNullOrWhiteSpace(developer))
                                 {
                                     developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
                                 }
                             }
                         }
-                        else { applicationIcon = RyujinxNroIcon; titleName = "Application"; titleId = "0000000000000000"; developer = "Unknown"; version = "?"; }
+                        else
+                        {
+                            applicationIcon = RyujinxNroIcon;
+                            titleName       = "Application";
+                            titleId         = "0000000000000000";
+                            developer       = "Unknown";
+                            version         = "?";
+                        }
                     }
-
                     // If its an NCA or NSO we just set defaults
                     else if ((Path.GetExtension(applicationPath) == ".nca") || (Path.GetExtension(applicationPath) == ".nso"))
                     {
-                             if (Path.GetExtension(applicationPath) == ".nca") { applicationIcon = RyujinxNcaIcon; }
-                        else if (Path.GetExtension(applicationPath) == ".nso") { applicationIcon = RyujinxNsoIcon; }
+                        if (Path.GetExtension(applicationPath) == ".nca")
+                        {
+                            applicationIcon = RyujinxNcaIcon;
+                        }
+                        else if (Path.GetExtension(applicationPath) == ".nso")
+                        {
+                            applicationIcon = RyujinxNsoIcon;
+                        }
 
                         string fileName = Path.GetFileName(applicationPath);
                         string fileExt  = Path.GetExtension(applicationPath);
+
                         StringBuilder titlename = new StringBuilder();
                         titlename.Append(fileName);
                         titlename.Remove(fileName.Length - fileExt.Length, fileExt.Length);
@@ -335,7 +390,10 @@ namespace Ryujinx.UI
                 if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
                 {
                     Directory.CreateDirectory(savePath);
-                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat"))) { file.Write(Encoding.ASCII.GetBytes("0")); }
+                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat")))
+                    {
+                        file.Write(Encoding.ASCII.GetBytes("0"));
+                    }
                 }
                 using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
                 {
@@ -343,10 +401,22 @@ namespace Ryujinx.UI
                     {
                         float timePlayed = float.Parse(sr.ReadLine());
 
-                             if (timePlayed < SecondsPerMinute) { playedData[0] = $"{timePlayed}s"; }
-                        else if (timePlayed < SecondsPerHour)   { playedData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins"; }
-                        else if (timePlayed < SecondsPerDay)    { playedData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";  }
-                        else                                    { playedData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days"; }
+                        if (timePlayed < SecondsPerMinute)
+                        {
+                            playedData[0] = $"{timePlayed}s";
+                        }
+                        else if (timePlayed < SecondsPerHour)
+                        {
+                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
+                        }
+                        else if (timePlayed < SecondsPerDay)
+                        {
+                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";
+                        }
+                        else
+                        {
+                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days";
+                        }
                     }
                 }
 
@@ -358,6 +428,7 @@ namespace Ryujinx.UI
                         file.Write(Encoding.ASCII.GetBytes("Never"));
                     }
                 }
+
                 using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
                 {
                     using (StreamReader sr = new StreamReader(fs))
@@ -368,7 +439,10 @@ namespace Ryujinx.UI
 
                 return playedData;
             }
-            catch { return new string[] { "Unknown", "Unknown" }; }
+            catch
+            {
+                return new string[] { "Unknown", "Unknown" };
+            }
         }
     }
 }

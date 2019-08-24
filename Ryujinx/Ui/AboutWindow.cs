@@ -55,7 +55,10 @@ namespace Ryujinx.UI
 
                 _versionText.Text = $"Version {Information.InstallVersion} - {Information.InstallBranch} ({Information.InstallCommit})";
             }
-            catch { _versionText.Text = "Unknown Version"; }
+            catch
+            {
+                _versionText.Text = "Unknown Version";
+            }
         }
 
         public void OpenUrl(string url)

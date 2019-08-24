@@ -565,18 +565,34 @@ namespace Ryujinx.HLE.HOS
                             if (nacpSize != 0)
                             {
                                 input.Seek(obj.FileSize + (long)nacpOffset, SeekOrigin.Begin);
-                                using (MemoryStream stream = new MemoryStream(reader.ReadBytes((int)nacpSize))) { ControlData = new Nacp(stream); }
+                                using (MemoryStream stream = new MemoryStream(reader.ReadBytes((int)nacpSize)))
+                                {
+                                    ControlData = new Nacp(stream);
+                                }
 
                                 metaData.TitleName = ControlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
+
                                 if (string.IsNullOrWhiteSpace(metaData.TitleName))
                                 {
                                     metaData.TitleName = ControlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                                 }
 
                                 metaData.Aci0.TitleId = ControlData.PresenceGroupId;
-                                if (metaData.Aci0.TitleId == 0) { metaData.Aci0.TitleId = ControlData.SaveDataOwnerId; }
-                                if (metaData.Aci0.TitleId == 0) { metaData.Aci0.TitleId = ControlData.AddOnContentBaseId - 0x1000; }
-                                if (metaData.Aci0.TitleId.ToString("x16") == "fffffffffffff000") { metaData.Aci0.TitleId = 0000000000000000; }
+
+                                if (metaData.Aci0.TitleId == 0)
+                                {
+                                    metaData.Aci0.TitleId = ControlData.SaveDataOwnerId;
+                                }
+
+                                if (metaData.Aci0.TitleId == 0)
+                                {
+                                    metaData.Aci0.TitleId = ControlData.AddOnContentBaseId - 0x1000;
+                                }
+
+                                if (metaData.Aci0.TitleId.ToString("x16") == "fffffffffffff000")
+                                {
+                                    metaData.Aci0.TitleId = 0000000000000000;
+                                }
                             }
                         }
                         else
@@ -702,7 +718,9 @@ namespace Ryujinx.HLE.HOS
                 // It's only safe to release resources once all threads
                 // have exited.
                 ThreadCounter.Signal();
-                //ThreadCounter.Wait();
+                //ThreadCounter.Wait(); // FIXME: Uncomment this
+                // BODY: Right now, guest processes don't exit properly because the logic waits for them to exit.
+                // BODY: However, this doesn't happen when you close the main window so we need to find a way to make them exit gracefully
 
                 Scheduler.Dispose();
 

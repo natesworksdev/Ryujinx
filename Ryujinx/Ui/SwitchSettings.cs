@@ -172,7 +172,7 @@ namespace Ryujinx.UI
             _fsLogSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
-            _gameDirsBoxStore  = new ListStore(typeof(string));
+            _gameDirsBoxStore   = new ListStore(typeof(string));
             _gameDirsBox.Model  = _gameDirsBoxStore;
             foreach (string gameDir in SwitchConfig.GameDirs)
             {
@@ -197,6 +197,7 @@ namespace Ryujinx.UI
             if (_listeningForKeypress == false)
             {
                 KeyPressEvent += On_KeyPress;
+
                 _listeningForKeypress = true;
 
                 void On_KeyPress(object Obj, KeyPressEventArgs KeyPressed)
@@ -204,35 +205,52 @@ namespace Ryujinx.UI
                     string key    = KeyPressed.Event.Key.ToString();
                     string capKey = key.First().ToString().ToUpper() + key.Substring(1);
 
-                    if (Enum.IsDefined(typeof(OpenTK.Input.Key), capKey)) { Button.Label = capKey;                }
-                    else if (GdkToOpenTKInput.ContainsKey(key))           { Button.Label = GdkToOpenTKInput[key]; }
-                    else                                                  { Button.Label = "Space";               }
+                    if (Enum.IsDefined(typeof(OpenTK.Input.Key), capKey))
+                    {
+                        Button.Label = capKey;
+                    }
+                    else if (GdkToOpenTKInput.ContainsKey(key))
+                    {
+                        Button.Label = GdkToOpenTKInput[key];
+                    }
+                    else
+                    {
+                        Button.Label = "Space";
+                    }
 
                     Button.SetStateFlags(0, true);
+
                     KeyPressEvent -= On_KeyPress;
+
                     _listeningForKeypress = false;
                 }
             }
-            else { Button.SetStateFlags(0, true); }
+            else
+            {
+                Button.SetStateFlags(0, true);
+            }
         }
 
         private void AddDir_Pressed(object obj, EventArgs args)
         {
-            if (Directory.Exists(_addGameDirBox.Buffer.Text)) { _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text); }
+            if (Directory.Exists(_addGameDirBox.Buffer.Text))
+            {
+                _gameDirsBoxStore.AppendValues(_addGameDirBox.Buffer.Text);
+            }
 
             _addDir.SetStateFlags(0, true);
         }
 
         private void BrowseDir_Pressed(object obj, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
 
-            if (fc.Run() == (int)ResponseType.Accept)
+            if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                _gameDirsBoxStore.AppendValues(fc.Filename);
+                _gameDirsBoxStore.AppendValues(fileChooser.Filename);
             }
 
-            fc.Destroy();
+            fileChooser.Destroy();
 
             _browseDir.SetStateFlags(0, true);
         }
@@ -241,40 +259,32 @@ namespace Ryujinx.UI
         {
             TreeSelection selection = _gameDirsBox.Selection;
 
-            selection.GetSelected(out TreeIter treeiter);
-            _gameDirsBoxStore.Remove(ref treeiter);
+            selection.GetSelected(out TreeIter treeIter);
+            _gameDirsBoxStore.Remove(ref treeIter);
 
             _removeDir.SetStateFlags(0, true);
         }
 
         private void CustThemeToggle_Activated(object obj, EventArgs args)
         {
-            if (_custThemeToggle.Active == false)
-            {
-                _custThemePath.Sensitive      = false;
-                _custThemePathLabel.Sensitive = false;
-                _browseThemePath.Sensitive    = false;
-            }
-            else
-            {
-                _custThemePath.Sensitive      = true;
-                _custThemePathLabel.Sensitive = true;
-                _browseThemePath.Sensitive    = true;
-            }
+            _custThemePath.Sensitive      = _custThemeToggle.Active;
+            _custThemePathLabel.Sensitive = _custThemeToggle.Active;
+            _browseThemePath.Sensitive    = _custThemeToggle.Active;
         }
 
         private void BrowseThemeDir_Pressed(object obj, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept);
-            fc.Filter = new FileFilter();
-            fc.Filter.AddPattern("*.css");
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept);
 
-            if (fc.Run() == (int)ResponseType.Accept)
+            fileChooser.Filter = new FileFilter();
+            fileChooser.Filter.AddPattern("*.css");
+
+            if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                _custThemePath.Buffer.Text = fc.Filename;
+                _custThemePath.Buffer.Text = fileChooser.Filename;
             }
 
-            fc.Destroy();
+            fileChooser.Destroy();
 
             _browseThemePath.SetStateFlags(0, true);
         }
@@ -283,51 +293,33 @@ namespace Ryujinx.UI
         {
             List<string> gameDirs = new List<string>();
 
-            _gameDirsBoxStore.GetIterFirst(out TreeIter iter);
+            _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
             for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
             {
-                _gameDirsBoxStore.GetValue(iter, i);
+                _gameDirsBoxStore.GetValue(treeIter, i);
 
-                gameDirs.Add((string)_gameDirsBoxStore.GetValue(iter, 0));
+                gameDirs.Add((string)_gameDirsBoxStore.GetValue(treeIter, 0));
 
-                _gameDirsBoxStore.IterNext(ref iter);
+                _gameDirsBoxStore.IterNext(ref treeIter);
             }
 
-            if (_errorLogToggle.Active)        SwitchConfig.LoggingEnableError        = true;
-            if (_warningLogToggle.Active)      SwitchConfig.LoggingEnableWarn         = true;
-            if (_infoLogToggle.Active)         SwitchConfig.LoggingEnableInfo         = true;
-            if (_stubLogToggle.Active)         SwitchConfig.LoggingEnableStub         = true;
-            if (_debugLogToggle.Active)        SwitchConfig.LoggingEnableDebug        = true;
-            if (_guestLogToggle.Active)        SwitchConfig.LoggingEnableGuest        = true;
-            if (_fsAccessLogToggle.Active)     SwitchConfig.LoggingEnableFsAccessLog  = true;
-            if (_fileLogToggle.Active)         SwitchConfig.EnableFileLog             = true;
-            if (_dockedModeToggle.Active)      SwitchConfig.DockedMode                = true;
-            if (_discordToggle.Active)         SwitchConfig.EnableDiscordIntegration  = true;
-            if (_vSyncToggle.Active)           SwitchConfig.EnableVsync               = true;
-            if (_multiSchedToggle.Active)      SwitchConfig.EnableMulticoreScheduling = true;
-            if (_fsicToggle.Active)            SwitchConfig.EnableFsIntegrityChecks   = true;
-            if (_legacyJitToggle.Active)       SwitchConfig.EnableLegacyJit           = true;
-            if (_ignoreToggle.Active)          SwitchConfig.IgnoreMissingServices     = true;
-            if (_directKeyboardAccess.Active)  SwitchConfig.EnableKeyboard            = true;
-            if (_custThemeToggle.Active)       SwitchConfig.EnableCustomTheme         = true;
-
-            if (!_errorLogToggle.Active)       SwitchConfig.LoggingEnableError        = false;
-            if (!_warningLogToggle.Active)     SwitchConfig.LoggingEnableWarn         = false;
-            if (!_infoLogToggle.Active)        SwitchConfig.LoggingEnableInfo         = false;
-            if (!_stubLogToggle.Active )       SwitchConfig.LoggingEnableStub         = false;
-            if (!_debugLogToggle.Active)       SwitchConfig.LoggingEnableDebug        = false;
-            if (!_guestLogToggle.Active)       SwitchConfig.LoggingEnableGuest        = false;
-            if (!_fsAccessLogToggle.Active)    SwitchConfig.LoggingEnableFsAccessLog  = false;
-            if (!_fileLogToggle.Active)        SwitchConfig.EnableFileLog             = false;
-            if (!_dockedModeToggle.Active)     SwitchConfig.DockedMode                = false;
-            if (!_discordToggle.Active)        SwitchConfig.EnableDiscordIntegration  = false;
-            if (!_vSyncToggle.Active)          SwitchConfig.EnableVsync               = false;
-            if (!_multiSchedToggle.Active)     SwitchConfig.EnableMulticoreScheduling = false;
-            if (!_fsicToggle.Active)           SwitchConfig.EnableFsIntegrityChecks   = false;
-            if (!_legacyJitToggle.Active)      SwitchConfig.EnableLegacyJit           = false;
-            if (!_ignoreToggle.Active)         SwitchConfig.IgnoreMissingServices     = false;
-            if (!_directKeyboardAccess.Active) SwitchConfig.EnableKeyboard            = false;
-            if (!_custThemeToggle.Active)      SwitchConfig.EnableCustomTheme         = false;
+            SwitchConfig.LoggingEnableError        = _errorLogToggle.Active;
+            SwitchConfig.LoggingEnableWarn         = _warningLogToggle.Active;
+            SwitchConfig.LoggingEnableInfo         = _infoLogToggle.Active;
+            SwitchConfig.LoggingEnableStub         = _stubLogToggle.Active;
+            SwitchConfig.LoggingEnableDebug        = _debugLogToggle.Active;
+            SwitchConfig.LoggingEnableGuest        = _guestLogToggle.Active;
+            SwitchConfig.LoggingEnableFsAccessLog  = _fsAccessLogToggle.Active;
+            SwitchConfig.EnableFileLog             = _fileLogToggle.Active;
+            SwitchConfig.DockedMode                = _dockedModeToggle.Active;
+            SwitchConfig.EnableDiscordIntegration  = _discordToggle.Active;
+            SwitchConfig.EnableVsync               = _vSyncToggle.Active;
+            SwitchConfig.EnableMulticoreScheduling = _multiSchedToggle.Active;
+            SwitchConfig.EnableFsIntegrityChecks   = _fsicToggle.Active;
+            SwitchConfig.EnableLegacyJit           = _legacyJitToggle.Active;
+            SwitchConfig.IgnoreMissingServices     = _ignoreToggle.Active;
+            SwitchConfig.EnableKeyboard            = _directKeyboardAccess.Active;
+            SwitchConfig.EnableCustomTheme         = _custThemeToggle.Active;
 
             SwitchConfig.KeyboardControls.LeftJoycon = new NpadKeyboardLeft()
             {
@@ -370,6 +362,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.Configure(Device, SwitchConfig);
+
             MainWindow.ApplyTheme();
             MainWindow.UpdateGameTable();
 
@@ -383,49 +376,49 @@ namespace Ryujinx.UI
 
         public readonly Dictionary<string, string> GdkToOpenTKInput = new Dictionary<string, string>()
         {
-            { "Key_0"      , "Number0"         },
-            { "Key_1"      , "Number1"         },
-            { "Key_2"      , "Number2"         },
-            { "Key_3"      , "Number3"         },
-            { "Key_4"      , "Number4"         },
-            { "Key_5"      , "Number5"         },
-            { "Key_6"      , "Number6"         },
-            { "Key_7"      , "Number7"         },
-            { "Key_8"      , "Number8"         },
-            { "Key_9"      , "Number9"         },
-            { "equal"      , "Plus"            },
-            { "uparrow"    , "Up"              },
-            { "downarrow"  , "Down"            },
-            { "leftarrow"  , "Left"            },
-            { "rightarrow" , "Right"           },
-            { "Control_L"  , "ControlLeft"     },
-            { "Control_R"  , "ControlRight"    },
-            { "Shift_L"    , "ShiftLeft"       },
-            { "Shift_R"    , "ShiftRight"      },
-            { "Alt_L"      , "AltLeft"         },
-            { "Alt_R"      , "AltRight"        },
-            { "Page_Up"    , "PageUp"          },
-            { "Page_Down"  , "PageDown"        },
-            { "KP_Enter"   , "KeypadEnter"     },
-            { "KP_Up"      , "Up"              },
-            { "KP_Down"    , "Down"            },
-            { "KP_Left"    , "Left"            },
-            { "KP_Right"   , "Right"           },
-            { "KP_Divide"  , "KeypadDivide"    },
+            { "Key_0",       "Number0"         },
+            { "Key_1",       "Number1"         },
+            { "Key_2",       "Number2"         },
+            { "Key_3",       "Number3"         },
+            { "Key_4",       "Number4"         },
+            { "Key_5",       "Number5"         },
+            { "Key_6",       "Number6"         },
+            { "Key_7",       "Number7"         },
+            { "Key_8",       "Number8"         },
+            { "Key_9",       "Number9"         },
+            { "equal",       "Plus"            },
+            { "uparrow",     "Up"              },
+            { "downarrow",   "Down"            },
+            { "leftarrow",   "Left"            },
+            { "rightarrow",  "Right"           },
+            { "Control_L",   "ControlLeft"     },
+            { "Control_R",   "ControlRight"    },
+            { "Shift_L",     "ShiftLeft"       },
+            { "Shift_R",     "ShiftRight"      },
+            { "Alt_L",       "AltLeft"         },
+            { "Alt_R",       "AltRight"        },
+            { "Page_Up",     "PageUp"          },
+            { "Page_Down",   "PageDown"        },
+            { "KP_Enter",    "KeypadEnter"     },
+            { "KP_Up",       "Up"              },
+            { "KP_Down",     "Down"            },
+            { "KP_Left",     "Left"            },
+            { "KP_Right",    "Right"           },
+            { "KP_Divide",   "KeypadDivide"    },
             { "KP_Multiply", "KeypadMultiply"  },
             { "KP_Subtract", "KeypadSubtract"  },
-            { "KP_Add"     , "KeypadAdd"       },
-            { "KP_Decimal" , "KeypadDecimal"   },
-            { "KP_0"       , "Keypad0"         },
-            { "KP_1"       , "Keypad1"         },
-            { "KP_2"       , "Keypad2"         },
-            { "KP_3"       , "Keypad3"         },
-            { "KP_4"       , "Keypad4"         },
-            { "KP_5"       , "Keypad5"         },
-            { "KP_6"       , "Keypad6"         },
-            { "KP_7"       , "Keypad7"         },
-            { "KP_8"       , "Keypad8"         },
-            { "KP_9"       , "Keypad9"         },
+            { "KP_Add",      "KeypadAdd"       },
+            { "KP_Decimal",  "KeypadDecimal"   },
+            { "KP_0",        "Keypad0"         },
+            { "KP_1",        "Keypad1"         },
+            { "KP_2",        "Keypad2"         },
+            { "KP_3",        "Keypad3"         },
+            { "KP_4",        "Keypad4"         },
+            { "KP_5",        "Keypad5"         },
+            { "KP_6",        "Keypad6"         },
+            { "KP_7",        "Keypad7"         },
+            { "KP_8",        "Keypad8"         },
+            { "KP_9",        "Keypad9"         },
         };
     }
 }

@@ -23,12 +23,12 @@ namespace Ryujinx
 
             Application.Init();
 
-            Application gtkapp = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-            MainWindow  win    = new MainWindow(args, gtkapp);
+            Application gtkApplication = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
+            MainWindow mainWindow      = new MainWindow(args, gtkApplication);
 
-            gtkapp.Register(GLib.Cancellable.Current);
-            gtkapp.AddWindow(win);
-            win.Show();
+            gtkApplication.Register(GLib.Cancellable.Current);
+            gtkApplication.AddWindow(mainWindow);
+            mainWindow.Show();
 
             Application.Run();
         }

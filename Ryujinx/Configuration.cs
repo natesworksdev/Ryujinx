@@ -184,8 +184,8 @@ namespace Ryujinx
         /// <param name="path">The path to the JSON configuration file</param>
         public static async Task LoadAsync(string path)
         {
-            var resolver = CompositeResolver.Create(
-                new[] { new ConfigurationEnumFormatter<Key>() },
+            IJsonFormatterResolver resolver = CompositeResolver.Create(
+                new[] { new ConfigurationEnumFormatter<Key>()  },
                 new[] { StandardResolver.AllowPrivateSnakeCase }
             );
 
@@ -201,12 +201,12 @@ namespace Ryujinx
         /// <param name="path">The path to the JSON configuration file</param>
         public static void SaveConfig(Configuration config, string path)
         {
-            var resolver = CompositeResolver.Create(
-                new[] { new ConfigurationEnumFormatter<Key>() },
+            IJsonFormatterResolver resolver = CompositeResolver.Create(
+                new[] { new ConfigurationEnumFormatter<Key>()  },
                 new[] { StandardResolver.AllowPrivateSnakeCase }
             );
 
-            var data = JsonSerializer.Serialize(config, resolver);
+            byte[] data = JsonSerializer.Serialize(config, resolver);
             File.WriteAllText(path, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
         }
 
@@ -245,12 +245,12 @@ namespace Ryujinx
         {
             GraphicsConfig.ShadersDumpPath = SwitchConfig.GraphicsShadersDumpPath;
 
-            Logger.SetEnable(LogLevel.Debug    , SwitchConfig.LoggingEnableDebug      );
-            Logger.SetEnable(LogLevel.Stub     , SwitchConfig.LoggingEnableStub       );
-            Logger.SetEnable(LogLevel.Info     , SwitchConfig.LoggingEnableInfo       );
-            Logger.SetEnable(LogLevel.Warning  , SwitchConfig.LoggingEnableWarn       );
-            Logger.SetEnable(LogLevel.Error    , SwitchConfig.LoggingEnableError      );
-            Logger.SetEnable(LogLevel.Guest    , SwitchConfig.LoggingEnableGuest      );
+            Logger.SetEnable(LogLevel.Debug,     SwitchConfig.LoggingEnableDebug      );
+            Logger.SetEnable(LogLevel.Stub,      SwitchConfig.LoggingEnableStub       );
+            Logger.SetEnable(LogLevel.Info,      SwitchConfig.LoggingEnableInfo       );
+            Logger.SetEnable(LogLevel.Warning,   SwitchConfig.LoggingEnableWarn       );
+            Logger.SetEnable(LogLevel.Error,     SwitchConfig.LoggingEnableError      );
+            Logger.SetEnable(LogLevel.Guest,     SwitchConfig.LoggingEnableGuest      );
             Logger.SetEnable(LogLevel.AccessLog, SwitchConfig.LoggingEnableFsAccessLog);
 
             if (SwitchConfig.LoggingFilteredClasses.Length > 0)

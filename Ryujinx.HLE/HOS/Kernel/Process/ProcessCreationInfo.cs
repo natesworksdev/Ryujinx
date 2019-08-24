@@ -4,8 +4,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
     {
         public string Name { get; private set; }
 
-        public int  Category { get; private set; }
-        public ulong TitleId { get; private set; }
+        public int   Category { get; private set; }
+        public ulong TitleId  { get; private set; }
 
         public ulong CodeAddress    { get; private set; }
         public int   CodePagesCount { get; private set; }
