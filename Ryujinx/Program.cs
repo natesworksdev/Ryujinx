@@ -24,7 +24,7 @@ namespace Ryujinx
             Application.Init();
 
             Application gtkApplication = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-            MainWindow mainWindow      = new MainWindow(args, gtkApplication);
+            MainWindow  mainWindow     = new MainWindow(args, gtkApplication);
 
             gtkApplication.Register(GLib.Cancellable.Current);
             gtkApplication.AddWindow(mainWindow);

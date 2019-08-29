@@ -51,7 +51,6 @@ namespace Ryujinx.UI
         [GUI] CheckMenuItem _fileExtToggle;
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
-        [GUI] MenuItem      _nfc;
         [GUI] Box           _box;
         [GUI] TreeView      _gameTable;
         [GUI] GLArea        _glScreen;
@@ -100,7 +99,6 @@ namespace Ryujinx.UI
             DeleteEvent += Window_Close;
 
             _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
-            _nfc.Sensitive           = false;
             _stopEmulation.Sensitive = false;
 
             if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _iconToggle.Active       = true; }
@@ -159,11 +157,13 @@ namespace Ryujinx.UI
 
         public static void CreateErrorDialog(string errorMessage)
         {
-            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, errorMessage);
+            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, errorMessage)
+            {
+                Title          = "Ryujinx - Error",
+                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png"),
+                WindowPosition = WindowPosition.Center
+            };
             errorDialog.SetSizeRequest(100, 20);
-            errorDialog.Title = "Ryujinx - Error";
-            errorDialog.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
-            errorDialog.WindowPosition = WindowPosition.Center;
             errorDialog.Run();
             errorDialog.Destroy();
         }
@@ -297,8 +297,8 @@ namespace Ryujinx.UI
                         details = $"Playing {_device.System.TitleName}";
                     }
 
-                    DiscordPresence.Details = details;
-                    DiscordPresence.State = state;
+                    DiscordPresence.Details               = details;
+                    DiscordPresence.State                 = state;
                     DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
                     DiscordPresence.Assets.SmallImageKey  = "ryujinx";
                     DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
@@ -316,16 +316,18 @@ namespace Ryujinx.UI
                         Directory.CreateDirectory(savePath);
                         using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat"))) { stream.Write(Encoding.ASCII.GetBytes("0")); }
                     }
+
                     if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
                     {
                         Directory.CreateDirectory(savePath);
                         using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat"))) { stream.Write(Encoding.ASCII.GetBytes("Never")); }
                     }
+
                     using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
                     {
-                        using (StreamWriter sr = new StreamWriter(stream))
+                        using (StreamWriter writer = new StreamWriter(stream))
                         {
-                            sr.WriteLine(DateTime.UtcNow);
+                            writer.WriteLine(DateTime.UtcNow);
                         }
                     }
                 }
@@ -426,34 +428,34 @@ namespace Ryujinx.UI
 
         private void Load_Application_File(object o, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
-            fc.Filter = new FileFilter();
-            fc.Filter.AddPattern("*.nsp" );
-            fc.Filter.AddPattern("*.pfs0");
-            fc.Filter.AddPattern("*.xci" );
-            fc.Filter.AddPattern("*.nca" );
-            fc.Filter.AddPattern("*.nro" );
-            fc.Filter.AddPattern("*.nso" );
+            fileChooser.Filter = new FileFilter();
+            fileChooser.Filter.AddPattern("*.nsp" );
+            fileChooser.Filter.AddPattern("*.pfs0");
+            fileChooser.Filter.AddPattern("*.xci" );
+            fileChooser.Filter.AddPattern("*.nca" );
+            fileChooser.Filter.AddPattern("*.nro" );
+            fileChooser.Filter.AddPattern("*.nso" );
 
-            if (fc.Run() == (int)ResponseType.Accept)
+            if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                LoadApplication(fc.Filename);
+                LoadApplication(fileChooser.Filename);
             }
 
-            fc.Destroy();
+            fileChooser.Destroy();
         }
 
         private void Load_Application_Folder(object o, EventArgs args)
         {
-            FileChooserDialog fc = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
-            if (fc.Run() == (int)ResponseType.Accept)
+            if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                LoadApplication(fc.Filename);
+                LoadApplication(fileChooser.Filename);
             }
 
-            fc.Destroy();
+            fileChooser.Destroy();
         }
 
         private void Open_Ryu_Folder(object o, EventArgs args)
@@ -483,7 +485,7 @@ namespace Ryujinx.UI
 
         private void FullScreen_Toggled(object o, EventArgs args)
         {
-            if (_fullScreen.Active == true)
+            if (_fullScreen.Active)
             {
                 Fullscreen();
             }
@@ -501,20 +503,6 @@ namespace Ryujinx.UI
             _gtkApplication.AddWindow(SettingsWin);
 
             SettingsWin.Show();
-        }
-
-        private void Nfc_Pressed(object o, EventArgs args)
-        {
-            FileChooserDialog fc = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
-
-            fc.Filter = new FileFilter();
-            fc.Filter.AddPattern("*.bin");
-
-            if (fc.Run() == (int)ResponseType.Accept)
-            {
-                // TODO: Write logic to emulate reading an NFC tag
-            }
-            fc.Destroy();
         }
 
         private void Update_Pressed(object o, EventArgs args)
@@ -543,72 +531,63 @@ namespace Ryujinx.UI
 
         private void Icon_Toggled(object o, EventArgs args)
         {
-            if (_iconToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[0] = true;
-            else                    SwitchSettings.SwitchConfig.GuiColumns[0] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[0] = _iconToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void Title_Toggled(object o, EventArgs args)
         {
-            if (_titleToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[1] = true;
-            else                     SwitchSettings.SwitchConfig.GuiColumns[1] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[1] = _titleToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void Developer_Toggled(object o, EventArgs args)
         {
-            if (_developerToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[2] = true;
-            else                         SwitchSettings.SwitchConfig.GuiColumns[2] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[2] = _developerToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void Version_Toggled(object o, EventArgs args)
         {
-            if (_versionToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[3] = true;
-            else                       SwitchSettings.SwitchConfig.GuiColumns[3] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[3] = _versionToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void TimePlayed_Toggled(object o, EventArgs args)
         {
-            if (_timePlayedToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[4] = true;
-            else                          SwitchSettings.SwitchConfig.GuiColumns[4] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[4] = _timePlayedToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void LastPlayed_Toggled(object o, EventArgs args)
         {
-            if (_lastPlayedToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[5] = true;
-            else                          SwitchSettings.SwitchConfig.GuiColumns[5] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[5] = _lastPlayedToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void FileExt_Toggled(object o, EventArgs args)
         {
-            if (_fileExtToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[6] = true;
-            else                       SwitchSettings.SwitchConfig.GuiColumns[6] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[6] = _fileExtToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void FileSize_Toggled(object o, EventArgs args)
         {
-            if (_fileSizeToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[7] = true;
-            else                        SwitchSettings.SwitchConfig.GuiColumns[7] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[7] = _fileSizeToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
 
         private void Path_Toggled(object o, EventArgs args)
         {
-            if (_pathToggle.Active) SwitchSettings.SwitchConfig.GuiColumns[8] = true;
-            else                    SwitchSettings.SwitchConfig.GuiColumns[8] = false;
+            SwitchSettings.SwitchConfig.GuiColumns[8] = _pathToggle.Active;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }

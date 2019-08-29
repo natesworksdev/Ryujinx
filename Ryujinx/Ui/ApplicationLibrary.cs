@@ -18,8 +18,8 @@ namespace Ryujinx.UI
         private static SystemState.TitleLanguage DesiredTitleLanguage;
 
         private const double SecondsPerMinute = 60.0;
-        private const double SecondsPerHour = SecondsPerMinute * 60;
-        private const double SecondsPerDay = SecondsPerHour * 24;
+        private const double SecondsPerHour   = SecondsPerMinute * 60;
+        private const double SecondsPerDay    = SecondsPerHour   * 24;
 
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
@@ -182,44 +182,27 @@ namespace Ryujinx.UI
 
                                 if (applicationIcon == null)
                                 {
-                                    if (Path.GetExtension(applicationPath) == ".xci")
-                                    {
-                                        applicationIcon = RyujinxXciIcon;
-                                    }
-                                    else
-                                    {
-                                        applicationIcon = RyujinxNspIcon;
-                                    }
+                                    applicationIcon = NspOrXciIcon(applicationPath);
                                 }
                             }
                         }
                         catch (MissingKeyException exception)
                         {
-                            titleName = "Unknown";
-                            titleId   = "Unknown";
-                            developer = "Unknown";
-                            version   = "?";
-
-                            if (Path.GetExtension(applicationPath) == ".xci")
-                            {
-                                applicationIcon = RyujinxXciIcon;
-                            }
-                            else
-                            {
-                                applicationIcon = RyujinxNspIcon;
-                            }
+                            titleName       = "Unknown";
+                            titleId         = "Unknown";
+                            developer       = "Unknown";
+                            version         = "?";
+                            applicationIcon = NspOrXciIcon(applicationPath);
 
                             Logger.PrintError(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                         }
                         catch (InvalidDataException)
                         {
-                            titleName = "Unknown";
-                            titleId   = "Unknown";
-                            developer = "Unknown";
-                            version   = "?";
-
-                            if (Path.GetExtension(applicationPath) == ".xci") { applicationIcon = RyujinxXciIcon; }
-                            else { applicationIcon = RyujinxNspIcon; }
+                            titleName       = "Unknown";
+                            titleId         = "Unknown";
+                            developer       = "Unknown";
+                            version         = "?";
+                            applicationIcon = NspOrXciIcon(applicationPath);
 
                             Logger.PrintError(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
                         }
@@ -274,7 +257,8 @@ namespace Ryujinx.UI
                                     titleId = controlData.SaveDataOwnerId.ToString("x16");
                                 }
 
-                                if (string.IsNullOrWhiteSpace(titleId)) {
+                                if (string.IsNullOrWhiteSpace(titleId))
+                                {
                                     titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
                                 }
 
@@ -385,7 +369,7 @@ namespace Ryujinx.UI
             try
             {
                 string[] playedData = new string[2];
-                string savePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", UserId, TitleId);
+                string savePath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", UserId, TitleId);
 
                 if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
                 {
@@ -442,6 +426,18 @@ namespace Ryujinx.UI
             catch
             {
                 return new string[] { "Unknown", "Unknown" };
+            }
+        }
+
+        private static byte[] NspOrXciIcon(string applicationPath)
+        {
+            if (Path.GetExtension(applicationPath) == ".xci")
+            {
+                return RyujinxXciIcon;
+            }
+            else
+            {
+                return RyujinxNspIcon;
             }
         }
     }

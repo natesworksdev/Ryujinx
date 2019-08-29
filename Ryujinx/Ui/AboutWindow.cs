@@ -46,7 +46,7 @@ namespace Ryujinx.UI
 
             try
             {
-                var resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+                IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
 
                 using (Stream stream = File.OpenRead(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "Installer", "Config", "Config.json")))
                 {
