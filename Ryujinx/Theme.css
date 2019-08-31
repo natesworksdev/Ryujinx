@@ -80,6 +80,10 @@ these are pretty self explicative */
 /***************
  * Base States *
  ***************/
+* {
+  color: white
+}
+
 .background {
   color: white;
   background-color: #292f34; }
@@ -1533,6 +1537,7 @@ check {
   min-width: 18px;
   animation: none;
   background-color: transparent;
+  color: #292f34
 }
 
 radio {
