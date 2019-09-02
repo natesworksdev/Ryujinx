@@ -191,7 +191,7 @@ namespace Ryujinx.UI
                 }
                 else
                 {
-                    Logger.PrintError(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
+                    Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
                 }
             }
             else
@@ -314,13 +314,19 @@ namespace Ryujinx.UI
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
                         Directory.CreateDirectory(savePath);
-                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat"))) { stream.Write(Encoding.ASCII.GetBytes("0")); }
+                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                        {
+                            stream.Write(Encoding.ASCII.GetBytes("0"));
+                        }
                     }
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
                     {
                         Directory.CreateDirectory(savePath);
-                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat"))) { stream.Write(Encoding.ASCII.GetBytes("Never")); }
+                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                        {
+                            stream.Write(Encoding.ASCII.GetBytes("Never"));
+                        }
                     }
 
                     using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -333,7 +339,7 @@ namespace Ryujinx.UI
                 }
                 catch (ArgumentNullException)
                 {
-                    Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
                 }
             }
         }
@@ -385,7 +391,7 @@ namespace Ryujinx.UI
                 }
                 catch (ArgumentNullException)
                 {
-                    Logger.PrintError(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
                 }
             }
 

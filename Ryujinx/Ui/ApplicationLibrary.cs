@@ -61,7 +61,7 @@ namespace Ryujinx.UI
             {
                 if (Directory.Exists(appDir) == false)
                 {
-                    Logger.PrintError(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
+                    Logger.PrintWarning(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
 
                     continue;
                 }
@@ -194,7 +194,7 @@ namespace Ryujinx.UI
                             version         = "?";
                             applicationIcon = NspOrXciIcon(applicationPath);
 
-                            Logger.PrintError(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
+                            Logger.PrintWarning(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                         }
                         catch (InvalidDataException)
                         {
@@ -204,7 +204,13 @@ namespace Ryujinx.UI
                             version         = "?";
                             applicationIcon = NspOrXciIcon(applicationPath);
 
-                            Logger.PrintError(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
+                            Logger.PrintWarning(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
+                        }
+                        catch (Exception exception)
+                        {
+                            Logger.PrintWarning(LogClass.Application, $"This warning usualy means that you have a DLC in one of you game directories\n{exception}");
+
+                            continue;
                         }
                     }
                     else if (Path.GetExtension(applicationPath) == ".nro")

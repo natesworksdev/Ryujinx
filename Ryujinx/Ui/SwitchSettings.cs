@@ -172,8 +172,8 @@ namespace Ryujinx.UI
             _fsLogSpinAdjustment.Value           = SwitchConfig.FsGlobalAccessLogMode;
 
             _gameDirsBox.AppendColumn("", new CellRendererText(), "text", 0);
-            _gameDirsBoxStore   = new ListStore(typeof(string));
-            _gameDirsBox.Model  = _gameDirsBoxStore;
+            _gameDirsBoxStore  = new ListStore(typeof(string));
+            _gameDirsBox.Model = _gameDirsBoxStore;
             foreach (string gameDir in SwitchConfig.GameDirs)
             {
                 _gameDirsBoxStore.AppendValues(gameDir);
