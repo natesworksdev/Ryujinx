@@ -109,6 +109,7 @@
                                   <object class="GtkLabel">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">Click to open the Ryujinx website in your default browser</property>
                                     <property name="label" translatable="yes">www.ryujinx.org</property>
                                     <property name="justify">center</property>
                                     <attributes>
@@ -200,6 +201,7 @@ or any of its partners, in any way</property>
                       <object class="GtkEventBox" id="PatreonButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Click to open the Ryujinx Patreon page in your default browser</property>
                         <signal name="button-press-event" handler="PatreonButton_Pressed" swapped="no"/>
                         <child>
                           <object class="GtkBox">
@@ -242,6 +244,7 @@ or any of its partners, in any way</property>
                       <object class="GtkEventBox" id="GitHubButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Click to open the Ryujinx GitHub page in your default browser</property>
                         <signal name="button-press-event" handler="GitHubButton_Pressed" swapped="no"/>
                         <child>
                           <object class="GtkBox">
@@ -284,6 +287,7 @@ or any of its partners, in any way</property>
                       <object class="GtkEventBox" id="DiscordButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Click to open an invite to the Ryujinx Discord server in your default browser</property>
                         <signal name="button-press-event" handler="DiscordButton_Pressed" swapped="no"/>
                         <child>
                           <object class="GtkBox">
@@ -326,6 +330,7 @@ or any of its partners, in any way</property>
                       <object class="GtkEventBox" id="TwitterButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Click to open the Ryujinx Twitter page in your default browser</property>
                         <signal name="button-press-event" handler="TwitterButton_Pressed" swapped="no"/>
                         <child>
                           <object class="GtkBox">
@@ -414,7 +419,6 @@ or any of its partners, in any way</property>
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">True</property>
-                    <property name="padding">5</property>
                     <property name="position">0</property>
                   </packing>
                 </child>

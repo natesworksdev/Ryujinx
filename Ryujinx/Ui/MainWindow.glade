@@ -34,6 +34,7 @@
                       <object class="GtkMenuItem" id="LoadApplicationFile">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Open a file chooser to chose a switch compatible file to load</property>
                         <property name="label" translatable="yes">Load Application from File</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Load_Application_File" swapped="no"/>
@@ -43,7 +44,8 @@
                       <object class="GtkMenuItem" id="LoadApplicationFolder">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="label" translatable="yes">Load Application from Folder</property>
+                        <property name="tooltip_text" translatable="yes">Open a file chooser to chose a switch compatible, unpacked application to load</property>
+                        <property name="label" translatable="yes">Load Unpacked Game</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Load_Application_Folder" swapped="no"/>
                       </object>
@@ -58,6 +60,7 @@
                       <object class="GtkMenuItem" id="OpenRyuFolder">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Open Ryujinx filesystem folder</property>
                         <property name="label" translatable="yes">Open Ryujinx Folder</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Open_Ryu_Folder" swapped="no"/>
@@ -73,6 +76,7 @@
                       <object class="GtkMenuItem" id="Exit">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Exit Ryujinx</property>
                         <property name="label" translatable="yes">Exit</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Exit_Pressed" swapped="no"/>
@@ -96,6 +100,7 @@
                       <object class="GtkCheckMenuItem" id="_fullScreen">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Fullscreens the window</property>
                         <property name="label" translatable="yes">Fullscreen</property>
                         <property name="use_underline">True</property>
                         <signal name="toggled" handler="FullScreen_Toggled" swapped="no"/>
@@ -105,6 +110,7 @@
                       <object class="GtkMenuItem" id="_stopEmulation">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Stop emualtion of the current game and return to game selection</property>
                         <property name="label" translatable="yes">Stop Emulation</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="StopEmulation_Pressed" swapped="no"/>
@@ -231,6 +237,7 @@
                       <object class="GtkMenuItem" id="SettingsMenu">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Open settings window</property>
                         <property name="label" translatable="yes">Settings</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Settings_Pressed" swapped="no"/>
@@ -262,6 +269,7 @@
                       <object class="GtkMenuItem" id="CheckUpdates">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Check for updates to Ryujinx (requires Ryujinx Installer)</property>
                         <property name="label" translatable="yes">Check for Updates</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Update_Pressed" swapped="no"/>
@@ -277,6 +285,7 @@
                       <object class="GtkMenuItem" id="About">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Open about window</property>
                         <property name="label" translatable="yes">About</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="About_Pressed" swapped="no"/>

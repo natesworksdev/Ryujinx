@@ -528,6 +528,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Enable or disable Docked Mode</property>
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
@@ -543,6 +544,7 @@
                                 <property name="visible">True</property>
                                 <property name="can_focus">True</property>
                                 <property name="receives_default">False</property>
+                                <property name="tooltip_text" translatable="yes">Enable or disable "direct keyboard access (HID) support" (Provides games access to your keyboard as a text entry device)</property>
                                 <property name="draw_indicator">True</property>
                               </object>
                               <packing>
@@ -585,6 +587,7 @@
                                           <object class="GtkLabel">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="tooltip_text" translatable="yes">The primary controller's type</property>
                                             <property name="halign">center</property>
                                             <property name="margin_left">10</property>
                                             <property name="margin_right">10</property>
@@ -602,6 +605,7 @@
                                           <object class="GtkComboBoxText" id="_controller1Type">
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
+                                            <property name="tooltip_text" translatable="yes">The primary controller's type</property>
                                             <property name="margin_left">5</property>
                                             <property name="active">0</property>
                                             <items>
