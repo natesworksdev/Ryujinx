@@ -24,7 +24,30 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Ui\AboutWindow.glade" />
+    <None Remove="Ui\assets\BlueCon.png" />
+    <None Remove="Ui\assets\ProCon.png" />
+    <None Remove="Ui\assets\RedCon.png" />
+    <None Remove="Ui\assets\ryujinxNCAIcon.png" />
+    <None Remove="Ui\assets\ryujinxNROIcon.png" />
+    <None Remove="Ui\assets\ryujinxNSOIcon.png" />
+    <None Remove="Ui\assets\ryujinxNSPIcon.png" />
+    <None Remove="Ui\assets\ryujinxXCIIcon.png" />
+    <None Remove="Ui\assets\DiscordLogo.png" />
+    <None Remove="Ui\assets\GitHubLogo.png" />
+    <None Remove="Ui\assets\JoyCon.png" />
+    <None Remove="Ui\assets\PatreonLogo.png" />
+    <None Remove="Ui\assets\RyujinxIcon.png" />
+    <None Remove="Ui\assets\TwitterLogo.png" />
+    <None Remove="Ui\MainWindow.glade" />
+    <None Remove="Ui\SwitchSettings.glade" />
+  </ItemGroup>
+
+  <ItemGroup>
     <EmbeddedResource Include="Ui\AboutWindow.glade" />
+    <EmbeddedResource Include="Ui\assets\BlueCon.png" />
+    <EmbeddedResource Include="Ui\assets\ProCon.png" />
+    <EmbeddedResource Include="Ui\assets\RedCon.png" />
     <EmbeddedResource Include="Ui\assets\ryujinxNCAIcon.png" />
     <EmbeddedResource Include="Ui\assets\ryujinxNROIcon.png" />
     <EmbeddedResource Include="Ui\assets\ryujinxNSOIcon.png" />

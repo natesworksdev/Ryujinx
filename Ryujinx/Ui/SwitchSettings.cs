@@ -51,7 +51,7 @@ namespace Ryujinx.UI
         [GUI] ToggleButton _removeDir;
         [GUI] Entry        _logPath;
         [GUI] Entry        _graphicsShadersDumpPath;
-        [GUI] Image        _controllerImage;
+        [GUI] Image        _controller1Image;
 
         [GUI] ComboBoxText _controller1Type;
         [GUI] ToggleButton _lStickUp1;
@@ -90,34 +90,35 @@ namespace Ryujinx.UI
 
             builder.Autoconnect(this);
 
-            _settingsWin.Icon       = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
-            _controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
+            _settingsWin.Icon        = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RyujinxIcon.png");
+            _controller1Image.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
 
             //Bind Events
-            _lStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, _lStickUp1);
-            _lStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, _lStickDown1);
-            _lStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, _lStickLeft1);
-            _lStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, _lStickRight1);
-            _lStickButton1.Clicked += (o, args) => Button_Pressed(o, args, _lStickButton1);
-            _dpadUp1.Clicked       += (o, args) => Button_Pressed(o, args, _dpadUp1);
-            _dpadDown1.Clicked     += (o, args) => Button_Pressed(o, args, _dpadDown1);
-            _dpadLeft1.Clicked     += (o, args) => Button_Pressed(o, args, _dpadLeft1);
-            _dpadRight1.Clicked    += (o, args) => Button_Pressed(o, args, _dpadRight1);
-            _minus1.Clicked        += (o, args) => Button_Pressed(o, args, _minus1);
-            _l1.Clicked            += (o, args) => Button_Pressed(o, args, _l1);
-            _zL1.Clicked           += (o, args) => Button_Pressed(o, args, _zL1);
-            _rStickUp1.Clicked     += (o, args) => Button_Pressed(o, args, _rStickUp1);
-            _rStickDown1.Clicked   += (o, args) => Button_Pressed(o, args, _rStickDown1);
-            _rStickLeft1.Clicked   += (o, args) => Button_Pressed(o, args, _rStickLeft1);
-            _rStickRight1.Clicked  += (o, args) => Button_Pressed(o, args, _rStickRight1);
-            _rStickButton1.Clicked += (o, args) => Button_Pressed(o, args, _rStickButton1);
-            _a1.Clicked            += (o, args) => Button_Pressed(o, args, _a1);
-            _b1.Clicked            += (o, args) => Button_Pressed(o, args, _b1);
-            _x1.Clicked            += (o, args) => Button_Pressed(o, args, _x1);
-            _y1.Clicked            += (o, args) => Button_Pressed(o, args, _y1);
-            _plus1.Clicked         += (o, args) => Button_Pressed(o, args, _plus1);
-            _r1.Clicked            += (o, args) => Button_Pressed(o, args, _r1);
-            _zR1.Clicked           += (o, args) => Button_Pressed(o, args, _zR1);
+            _lStickUp1.Clicked       += (o, args) => Button_Pressed(o, args, _lStickUp1);
+            _lStickDown1.Clicked     += (o, args) => Button_Pressed(o, args, _lStickDown1);
+            _lStickLeft1.Clicked     += (o, args) => Button_Pressed(o, args, _lStickLeft1);
+            _lStickRight1.Clicked    += (o, args) => Button_Pressed(o, args, _lStickRight1);
+            _lStickButton1.Clicked   += (o, args) => Button_Pressed(o, args, _lStickButton1);
+            _dpadUp1.Clicked         += (o, args) => Button_Pressed(o, args, _dpadUp1);
+            _dpadDown1.Clicked       += (o, args) => Button_Pressed(o, args, _dpadDown1);
+            _dpadLeft1.Clicked       += (o, args) => Button_Pressed(o, args, _dpadLeft1);
+            _dpadRight1.Clicked      += (o, args) => Button_Pressed(o, args, _dpadRight1);
+            _minus1.Clicked          += (o, args) => Button_Pressed(o, args, _minus1);
+            _l1.Clicked              += (o, args) => Button_Pressed(o, args, _l1);
+            _zL1.Clicked             += (o, args) => Button_Pressed(o, args, _zL1);
+            _rStickUp1.Clicked       += (o, args) => Button_Pressed(o, args, _rStickUp1);
+            _rStickDown1.Clicked     += (o, args) => Button_Pressed(o, args, _rStickDown1);
+            _rStickLeft1.Clicked     += (o, args) => Button_Pressed(o, args, _rStickLeft1);
+            _rStickRight1.Clicked    += (o, args) => Button_Pressed(o, args, _rStickRight1);
+            _rStickButton1.Clicked   += (o, args) => Button_Pressed(o, args, _rStickButton1);
+            _a1.Clicked              += (o, args) => Button_Pressed(o, args, _a1);
+            _b1.Clicked              += (o, args) => Button_Pressed(o, args, _b1);
+            _x1.Clicked              += (o, args) => Button_Pressed(o, args, _x1);
+            _y1.Clicked              += (o, args) => Button_Pressed(o, args, _y1);
+            _plus1.Clicked           += (o, args) => Button_Pressed(o, args, _plus1);
+            _r1.Clicked              += (o, args) => Button_Pressed(o, args, _r1);
+            _zR1.Clicked             += (o, args) => Button_Pressed(o, args, _zR1);
+            _controller1Type.Changed += (o, args) => Controller_Changed(o, args, _controller1Type.ActiveId, _controller1Image);
 
             //Setup Currents
             if (SwitchConfig.EnableFileLog)             { _fileLogToggle.Click();        }
@@ -139,6 +140,7 @@ namespace Ryujinx.UI
 
             _systemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
             _controller1Type     .SetActiveId(SwitchConfig.ControllerType.ToString());
+            Controller_Changed(null, null, _controller1Type.ActiveId, _controller1Image);
 
             _lStickUp1.Label     = SwitchConfig.KeyboardControls.LeftJoycon.StickUp.ToString();
             _lStickDown1.Label   = SwitchConfig.KeyboardControls.LeftJoycon.StickDown.ToString();
@@ -226,6 +228,26 @@ namespace Ryujinx.UI
             else
             {
                 Button.SetStateFlags(0, true);
+            }
+        }
+
+        private void Controller_Changed(object obj, EventArgs args, string controllerType, Image controllerImage)
+        {
+            if (controllerType == "ProController")
+            {
+                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ProCon.png", 500, 500);
+            }
+            else if (controllerType == "NpadLeft")
+            {
+                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.BlueCon.png", 500, 500);
+            }
+            else if (controllerType == "NpadRight")
+            {
+                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RedCon.png", 500, 500);
+            }
+            else
+            {
+                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
             }
         }
 
