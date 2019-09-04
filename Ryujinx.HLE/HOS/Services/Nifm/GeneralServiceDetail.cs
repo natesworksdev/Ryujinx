@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    public class GeneralServiceDetail
+    class GeneralServiceDetail
     {
         public int  ClientId;
         public bool IsAnyInternetRequestAccepted;

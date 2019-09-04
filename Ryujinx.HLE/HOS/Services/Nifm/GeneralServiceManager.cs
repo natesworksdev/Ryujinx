@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm
 {
-    public static class GeneralServiceManager
+    static class GeneralServiceManager
     {
         private static List<GeneralServiceDetail> _generalServices = new List<GeneralServiceDetail>();
 
