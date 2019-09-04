@@ -29,7 +29,7 @@ If you build it yourself you will need to:
 Run `dotnet run -c Release -- path\to\homebrew.nro` inside the Ryujinx project folder to run homebrew apps.  
 Run `dotnet run -c Release -- path\to\game.nsp/xci` to run official games.
 
-Every files related to Ryujinx are stored in the `RyuFs` folder. Located in `C:\Users\USERNAME\AppData\Roaming\` for Windows, `/home/USERNAME/.config` for Linux or `/Users/USERNAME/Library/Application Support/` for macOS.
+Every file related to Ryujinx is stored in the `RyuFs` folder. Located in `C:\Users\USERNAME\AppData\Roaming\` for Windows, `/home/USERNAME/.config` for Linux or `/Users/USERNAME/Library/Application Support/` for macOS.
 
 ## Latest build
 
@@ -74,7 +74,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 - **CPU**  
 
-  The CPU emulator emulates a ARMv8 CPU, and only the new 64-bits ARMv8 instructions are implemented (with a few instructions still missing). It translates the ARM code to a custom IR and then it performs a few optimizations and turns that into x86 code.  
+  The CPU emulator emulates an ARMv8 CPU, and only the new 64-bits ARMv8 instructions are implemented (with a few instructions still missing). It translates the ARM code to a custom IR and then it performs a few optimizations and turns that into x86 code.  
   To handle that we use our own JIT called ARMeilleure, which has the custom IR and compiles the code to x86.  
   ChocolArm is the old ARM emulator, is being replaced by ARMeilleure (It can still be enabled inside the configuration menu/file) and it works by translating the ARM code to .NET IL. The runtime JIT then compiles that to the platform CPU code. On .NET Core, the JIT is called RyuJIT (hence the project name, Ryujinx).
 
