@@ -69,17 +69,17 @@ namespace Ryujinx.UI
                     continue;
                 }
 
-                DirectoryInfo AppDirInfo = new DirectoryInfo(appDir);
-                foreach (FileInfo App in AppDirInfo.GetFiles())
+                string[] apps = Directory.GetFiles(appDir, "*.*", SearchOption.AllDirectories);
+                foreach (string app in apps)
                 {
-                    if ((Path.GetExtension(App.ToString()) == ".xci")  ||
-                        (Path.GetExtension(App.ToString()) == ".nca")  ||
-                        (Path.GetExtension(App.ToString()) == ".nsp")  ||
-                        (Path.GetExtension(App.ToString()) == ".pfs0") ||
-                        (Path.GetExtension(App.ToString()) == ".nro")  ||
-                        (Path.GetExtension(App.ToString()) == ".nso"))
+                    if ((Path.GetExtension(app.ToString()) == ".xci") ||
+                        (Path.GetExtension(app.ToString()) == ".nca") ||
+                        (Path.GetExtension(app.ToString()) == ".nsp") ||
+                        (Path.GetExtension(app.ToString()) == ".pfs0")||
+                        (Path.GetExtension(app.ToString()) == ".nro") ||
+                        (Path.GetExtension(app.ToString()) == ".nso"))
                     {
-                        applications.Add(App.ToString());
+                        applications.Add(app);
                     }
                 }
             }
