@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             SaveSpaceId  saveSpaceId  = (SaveSpaceId)context.RequestData.ReadInt64();
             ulong        titleId      = context.RequestData.ReadUInt64();
             UInt128      userId       = context.RequestData.ReadStruct<UInt128>();
-             long        saveId       = context.RequestData.ReadInt64();
+            long         saveId       = context.RequestData.ReadInt64();
             SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadByte();
             SaveInfo     saveInfo     = new SaveInfo(titleId, saveId, saveDataType, saveSpaceId, userId);
             string       savePath     = context.Device.FileSystem.GetSavePath(context, saveInfo);
