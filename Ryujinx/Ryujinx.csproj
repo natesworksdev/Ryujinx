@@ -37,7 +37,7 @@
     <None Remove="Ui\assets\GitHubLogo.png" />
     <None Remove="Ui\assets\JoyCon.png" />
     <None Remove="Ui\assets\PatreonLogo.png" />
-    <None Remove="Ui\assets\RyujinxIcon.png" />
+    <None Remove="Ui\assets\ryujinxIcon.png" />
     <None Remove="Ui\assets\TwitterLogo.png" />
     <None Remove="Ui\MainWindow.glade" />
     <None Remove="Ui\SwitchSettings.glade" />

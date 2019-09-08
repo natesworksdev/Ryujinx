@@ -30,6 +30,15 @@ namespace Ryujinx
             gtkApplication.AddWindow(mainWindow);
             mainWindow.Show();
 
+            string ryuFsProd = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "system", "prod.keys");
+            string homeProd  = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
+
+            if (!File.Exists(ryuFsProd) && !File.Exists(homeProd))
+            {
+                Logger.PrintWarning(LogClass.Application, "Key file was not found");
+                MainWindow.CreateErrorDialog($"Key file was not found. Please refer to `KEYS.md` for more info");
+            }
+
             if (args.Length == 1)
             {
                 mainWindow.LoadApplication(args[0]);
