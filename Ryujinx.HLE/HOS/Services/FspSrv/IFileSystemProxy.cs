@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             {
                 if (fullPath.Contains("."))
                 {
-                    ResultCode result = IFileSystemHelper.OpenFileSystemFromInternalFile(context, fullPath, out IFileSystem fileSystem);
+                    ResultCode result = FileSystemHelper.OpenFileSystemFromInternalFile(context, fullPath, out IFileSystem fileSystem);
 
                     if (result == ResultCode.Success)
                     {
@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
 
             if (extension == ".nca")
             {
-                ResultCode result = IFileSystemHelper.OpenNcaFs(context, fullPath, fileStream.AsStorage(), out IFileSystem fileSystem);
+                ResultCode result = FileSystemHelper.OpenNcaFs(context, fullPath, fileStream.AsStorage(), out IFileSystem fileSystem);
 
                 if (result == ResultCode.Success)
                 {
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
             }
             else if (extension == ".nsp")
             {
-                ResultCode result = IFileSystemHelper.OpenNsp(context, fullPath, out IFileSystem fileSystem);
+                ResultCode result = FileSystemHelper.OpenNsp(context, fullPath, out IFileSystem fileSystem);
 
                 if (result == ResultCode.Success)
                 {
@@ -128,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
         // OpenSaveDataFileSystem(u8 save_data_space_id, nn::fssrv::sf::SaveStruct saveStruct) -> object<nn::fssrv::sf::IFileSystem> saveDataFs
         public ResultCode OpenSaveDataFileSystem(ServiceCtx context)
         {
-            ResultCode result = IFileSystemHelper.LoadSaveDataFileSystem(context, false, out IFileSystem fileSystem);
+            ResultCode result = FileSystemHelper.LoadSaveDataFileSystem(context, false, out IFileSystem fileSystem);
 
             if (result == ResultCode.Success)
             {
@@ -142,7 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
         // OpenSaveDataFileSystemBySystemSaveDataId(u8 save_data_space_id, nn::fssrv::sf::SaveStruct saveStruct) -> object<nn::fssrv::sf::IFileSystem> systemSaveDataFs
         public ResultCode OpenSaveDataFileSystemBySystemSaveDataId(ServiceCtx context)
         {
-            ResultCode result = IFileSystemHelper.LoadSaveDataFileSystem(context, false, out IFileSystem fileSystem);
+            ResultCode result = FileSystemHelper.LoadSaveDataFileSystem(context, false, out IFileSystem fileSystem);
 
             if (result == ResultCode.Success)
             {
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.FspSrv
         // OpenReadOnlySaveDataFileSystem(u8 save_data_space_id, nn::fssrv::sf::SaveStruct save_struct) -> object<nn::fssrv::sf::IFileSystem>
         public ResultCode OpenReadOnlySaveDataFileSystem(ServiceCtx context)
         {
-            ResultCode result = IFileSystemHelper.LoadSaveDataFileSystem(context, true, out IFileSystem fileSystem);
+            ResultCode result = FileSystemHelper.LoadSaveDataFileSystem(context, true, out IFileSystem fileSystem);
 
             if (result == ResultCode.Success)
             {

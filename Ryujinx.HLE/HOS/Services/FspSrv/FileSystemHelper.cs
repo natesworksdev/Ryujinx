@@ -8,7 +8,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.FspSrv
 {
-    static class IFileSystemHelper
+    static class FileSystemHelper
     {
         public static ResultCode LoadSaveDataFileSystem(ServiceCtx context, bool readOnly, out IFileSystem loadedFileSystem)
         {
