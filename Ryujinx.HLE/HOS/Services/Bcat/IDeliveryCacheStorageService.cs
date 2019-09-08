@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
         private const int DeliveryCacheDirectoriesLimit    = 100;
         private const int DeliveryCacheDirectoryNameLength = 32;
 
-        private List<string> _deliveryCacheDirectories = new List<string>();
+        private string[] _deliveryCacheDirectories = new string[0];
 
         public IDeliveryCacheStorageService(ServiceCtx context, ApplicationLaunchProperty applicationLaunchProperty)
         {
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
             long outputPosition = context.Request.ReceiveBuff[0].Position;
             long outputSize     = context.Request.ReceiveBuff[0].Size;
 
-            for (int index = 0; index < _deliveryCacheDirectories.Count; index++)
+            for (int index = 0; index < _deliveryCacheDirectories.Length; index++)
             {
                 if (index == DeliveryCacheDirectoriesLimit - 1)
                 {
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
                 context.Memory.WriteBytes(outputPosition + index * DeliveryCacheDirectoryNameLength, directoryNameBuffer);
             }
 
-            context.ResponseData.Write(_deliveryCacheDirectories.Count);
+            context.ResponseData.Write(_deliveryCacheDirectories.Length);
 
             return ResultCode.Success;
         }
