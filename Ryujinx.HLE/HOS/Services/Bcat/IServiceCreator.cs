@@ -1,7 +1,4 @@
-using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Arp;
-using Ryujinx.HLE.Utilities;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Bcat
 {
@@ -23,13 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
             //       Add an instance of nn::bcat::detail::service::core::TaskManager who load "bcat-sys:/" system save data and open "dc/task.bin". 
             //       If the file don't exist, create a new one (size of 0x800) and write 2 empty struct with a size of 0x400.
 
-            ApplicationLaunchProperty applicationLaunchProperty = new ApplicationLaunchProperty
-            {
-                TitleId             = BitConverter.ToInt64(StringUtils.HexToBytes(context.Device.System.TitleID), 0),
-                Version             = 0x00,
-                BaseGameStorageId   = (byte)StorageId.NandSystem,
-                UpdateGameStorageId = (byte)StorageId.None
-            };
+            ApplicationLaunchProperty applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetByPid(context);
 
             MakeObject(context, new IBcatService(applicationLaunchProperty));
 
@@ -49,13 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
             //       Where X depend of the ApplicationLaunchProperty stored in an array (range 0-3).
             //       Add an instance of nn::bcat::detail::service::ServiceMemoryManager.
 
-            ApplicationLaunchProperty applicationLaunchProperty = new ApplicationLaunchProperty
-            {
-                TitleId             = BitConverter.ToInt64(StringUtils.HexToBytes(context.Device.System.TitleID), 0),
-                Version             = 0x00,
-                BaseGameStorageId   = (byte)StorageId.NandSystem,
-                UpdateGameStorageId = (byte)StorageId.None
-            };
+            ApplicationLaunchProperty applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetByPid(context);
 
             MakeObject(context, new IDeliveryCacheStorageService(context, applicationLaunchProperty));
 

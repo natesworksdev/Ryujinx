@@ -173,26 +173,14 @@ namespace Ryujinx.HLE.HOS.Services.Acc
             /*
             if (nn::arp::detail::IReader::GetApplicationLaunchProperty() == 0xCC9D) // InvalidProcessId
             {
-                _applicationLaunchProperty = new ApplicationLaunchProperty
-                {
-                    TitleId             = 0x00;
-                    Version             = 0x00;
-                    BaseGameStorageId   = 0x03;
-                    UpdateGameStorageId = 0x00;
-                }
+                _applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetDefault();
 
                 return ResultCode.InvalidArgument;
             }
             else
             */
             {
-                _applicationLaunchProperty = new ApplicationLaunchProperty
-                {
-                    TitleId             = BitConverter.ToInt64(StringUtils.HexToBytes(context.Device.System.TitleID), 0),
-                    Version             = 0x00,
-                    BaseGameStorageId   = (byte)StorageId.NandSystem,
-                    UpdateGameStorageId = (byte)StorageId.None
-                };
+                _applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetByPid(context);
             }
 
             Logger.PrintStub(LogClass.ServiceAcc, new { unknown });
