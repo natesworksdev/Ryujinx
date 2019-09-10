@@ -10,15 +10,12 @@ namespace Ryujinx.HLE.HOS.Services.Arp
         public byte  UpdateGameStorageId;
         public short Padding;
 
-        public static ApplicationLaunchProperty GetDefault()
+        public static readonly ApplicationLaunchProperty Default = new ApplicationLaunchProperty
         {
-            return new ApplicationLaunchProperty
-            {
-                TitleId             = 0x00,
-                Version             = 0x00,
-                BaseGameStorageId   = (byte)StorageId.NandSystem,
-                UpdateGameStorageId = (byte)StorageId.None
-            };
-        }
+            TitleId             = 0x00,
+            Version             = 0x00,
+            BaseGameStorageId   = (byte)StorageId.NandSystem,
+            UpdateGameStorageId = (byte)StorageId.None
+        };
     }
 }

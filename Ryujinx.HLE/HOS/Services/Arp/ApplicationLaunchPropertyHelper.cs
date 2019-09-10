@@ -1,7 +1,6 @@
 ﻿using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Utilities;
 using System;
-using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Arp
 {
