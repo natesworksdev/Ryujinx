@@ -1,6 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS.Services.Arp;
+using Ryujinx.HLE.HOS.Services.Glue;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Utilities;
 using System;
@@ -180,7 +180,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
             else
             */
             {
-                _applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetByPid(context);
+                _applicationLaunchProperty = ApplicationLaunchProperty.GetByPid(context);
             }
 
             Logger.PrintStub(LogClass.ServiceAcc, new { unknown });

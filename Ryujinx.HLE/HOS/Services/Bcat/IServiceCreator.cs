@@ -1,4 +1,4 @@
-using Ryujinx.HLE.HOS.Services.Arp;
+using Ryujinx.HLE.HOS.Services.Glue;
 
 namespace Ryujinx.HLE.HOS.Services.Bcat
 {
@@ -20,9 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
             //       Add an instance of nn::bcat::detail::service::core::TaskManager who load "bcat-sys:/" system save data and open "dc/task.bin". 
             //       If the file don't exist, create a new one (size of 0x800) and write 2 empty struct with a size of 0x400.
 
-            ApplicationLaunchProperty applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetByPid(context);
-
-            MakeObject(context, new IBcatService(applicationLaunchProperty));
+            MakeObject(context, new IBcatService(ApplicationLaunchProperty.GetByPid(context)));
 
             // NOTE: If the IBcatService is null this error is returned, Doesn't occur in our case. 
             //       return ResultCode.NullObject;
@@ -40,9 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat
             //       Where X depend of the ApplicationLaunchProperty stored in an array (range 0-3).
             //       Add an instance of nn::bcat::detail::service::ServiceMemoryManager.
 
-            ApplicationLaunchProperty applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetByPid(context);
-
-            MakeObject(context, new IDeliveryCacheStorageService(context, applicationLaunchProperty));
+            MakeObject(context, new IDeliveryCacheStorageService(context, ApplicationLaunchProperty.GetByPid(context)));
 
             // NOTE: If the IDeliveryCacheStorageService is null this error is returned, Doesn't occur in our case. 
             //       return ResultCode.NullObject;

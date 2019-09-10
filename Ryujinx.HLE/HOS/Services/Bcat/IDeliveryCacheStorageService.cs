@@ -1,6 +1,5 @@
-using Ryujinx.HLE.HOS.Services.Arp;
+using Ryujinx.HLE.HOS.Services.Glue;
 using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Bcat

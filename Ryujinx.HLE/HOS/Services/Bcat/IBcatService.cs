@@ -1,4 +1,4 @@
-using Ryujinx.HLE.HOS.Services.Arp;
+using Ryujinx.HLE.HOS.Services.Glue;
 
 namespace Ryujinx.HLE.HOS.Services.Bcat
 {
