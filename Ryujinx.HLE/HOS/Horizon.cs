@@ -1,3 +1,4 @@
+using ARMeilleure.Translation.AOT;
 using LibHac;
 using LibHac.Fs;
 using LibHac.Fs.NcaUtils;
@@ -515,6 +516,10 @@ namespace Ryujinx.HLE.HOS
             LoadNso("sdk");
 
             ContentManager.LoadEntries();
+
+            Logger.PrintInfo(LogClass.Loader, "AOT Init...");
+
+            Aot.Init(TitleID, !UseLegacyJit);
 
             ProgramLoader.LoadStaticObjects(this, metaData, staticObjects.ToArray());
         }
