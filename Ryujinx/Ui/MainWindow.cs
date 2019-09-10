@@ -1,4 +1,5 @@
-﻿using DiscordRPC;
+using ARMeilleure.Translation.AOT;
+using DiscordRPC;
 using Gtk;
 using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.Audio;
@@ -394,6 +395,7 @@ namespace Ryujinx.UI
             }
 
             Profile.FinishProfiling();
+            Aot.Dispose();
             _device.Dispose();
             _audioOut.Dispose();
             DiscordClient.Dispose();
