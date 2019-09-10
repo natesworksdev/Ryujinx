@@ -7,17 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Arp
 {
     static class ApplicationLaunchPropertyHelper
     {
-        public static ApplicationLaunchProperty GetDefault()
-        {
-            return new ApplicationLaunchProperty
-            {
-                TitleId             = 0x00,
-                Version             = 0x00,
-                BaseGameStorageId   = (byte)StorageId.NandSystem,
-                UpdateGameStorageId = (byte)StorageId.None
-            };
-        }
-
         public static ApplicationLaunchProperty GetByPid(ServiceCtx context)
         {
             // TODO: Handle ApplicationLaunchProperty as array when pid will be supported and return the right item.

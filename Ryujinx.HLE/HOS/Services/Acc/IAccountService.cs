@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Acc
             /*
             if (nn::arp::detail::IReader::GetApplicationLaunchProperty() == 0xCC9D) // InvalidProcessId
             {
-                _applicationLaunchProperty = ApplicationLaunchPropertyHelper.GetDefault();
+                _applicationLaunchProperty = ApplicationLaunchProperty.GetDefault();
 
                 return ResultCode.InvalidArgument;
             }
