@@ -1,8 +1,7 @@
+using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -78,51 +77,40 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ByteSwap, Local(op1.Type), op1);
         }
 
-        public Operand Call(Delegate func, params Operand[] callArgs)
+        public Operand MathCall(string className, string funcName, params Operand[] callArgs)
         {
-            // Add the delegate to the cache to ensure it will not be garbage collected.
-            func = DelegateCache.GetOrAdd(func);
+            string name = $"{className}.{funcName}";
 
-            IntPtr ptr = Marshal.GetFunctionPointerForDelegate<Delegate>(func);
+            DelegateInfo dlgInfo = Delegates.GetMathDelegateInfo(name);
 
-            OperandType returnType = GetOperandType(func.Method.ReturnType);
-
-            return Call(Const(ptr.ToInt64()), returnType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, name), dlgInfo.RetType, callArgs);
         }
 
-        private static Dictionary<TypeCode, OperandType> _typeCodeToOperandTypeMap =
-                   new Dictionary<TypeCode, OperandType>()
+        public Operand NativeInterfaceCall(string funcName, params Operand[] callArgs)
         {
-            { TypeCode.Boolean, OperandType.I32  },
-            { TypeCode.Byte,    OperandType.I32  },
-            { TypeCode.Char,    OperandType.I32  },
-            { TypeCode.Double,  OperandType.FP64 },
-            { TypeCode.Int16,   OperandType.I32  },
-            { TypeCode.Int32,   OperandType.I32  },
-            { TypeCode.Int64,   OperandType.I64  },
-            { TypeCode.SByte,   OperandType.I32  },
-            { TypeCode.Single,  OperandType.FP32 },
-            { TypeCode.UInt16,  OperandType.I32  },
-            { TypeCode.UInt32,  OperandType.I32  },
-            { TypeCode.UInt64,  OperandType.I64  }
-        };
+            funcName = $"{nameof(NativeInterface)}.{funcName}";
 
-        private static OperandType GetOperandType(Type type)
+            DelegateInfo dlgInfo = Delegates.GetNativeInterfaceDelegateInfo(funcName);
+
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, funcName), dlgInfo.RetType, callArgs);
+        }
+
+        public Operand SoftFallbackCall(string funcName, params Operand[] callArgs)
         {
-            if (_typeCodeToOperandTypeMap.TryGetValue(Type.GetTypeCode(type), out OperandType ot))
-            {
-                return ot;
-            }
-            else if (type == typeof(V128))
-            {
-                return OperandType.V128;
-            }
-            else if (type == typeof(void))
-            {
-                return OperandType.None;
-            }
+            funcName = $"{nameof(SoftFallback)}.{funcName}";
 
-            throw new ArgumentException($"Invalid type \"{type.Name}\".");
+            DelegateInfo dlgInfo = Delegates.GetSoftFallbackDelegateInfo(funcName);
+
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, funcName), dlgInfo.RetType, callArgs);
+        }
+
+        public Operand SoftFloatCall(string className, string funcName, params Operand[] callArgs)
+        {
+            string name = $"{className}.{funcName}";
+
+            DelegateInfo dlgInfo = Delegates.GetSoftFloatDelegateInfo(name);
+
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, name), dlgInfo.RetType, callArgs);
         }
 
         public Operand Call(Operand address, OperandType returnType, params Operand[] callArgs)

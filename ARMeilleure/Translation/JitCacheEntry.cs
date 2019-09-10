@@ -1,4 +1,4 @@
-using ARMeilleure.CodeGen.Unwinding;
+/*using ARMeilleure.CodeGen.Unwinding;
 
 namespace ARMeilleure.Translation
 {
@@ -16,4 +16,4 @@ namespace ARMeilleure.Translation
             UnwindInfo = unwindInfo;
         }
     }
-}
+}*/

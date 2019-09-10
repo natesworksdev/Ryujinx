@@ -1,6 +1,3 @@
-using ARMeilleure.State;
-using System;
-
 namespace ARMeilleure.IntermediateRepresentation
 {
     static class OperandHelper
@@ -25,9 +22,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return new Operand(value);
         }
 
-        public static Operand Const(long value)
+        public static Operand Const(long value, bool disableCF = false, string name = null)
         {
-            return new Operand(value);
+            return new Operand(value, disableCF, name);
         }
 
         public static Operand Const(ulong value)

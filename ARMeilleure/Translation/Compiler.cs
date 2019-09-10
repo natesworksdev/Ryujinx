@@ -7,13 +7,16 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
 {
+    using AOT;
+
     static class Compiler
     {
         public static T Compile<T>(
             ControlFlowGraph cfg,
             OperandType[]    funcArgTypes,
             OperandType      funcReturnType,
-            CompilerOptions  options)
+            CompilerOptions  options,
+            AotInfo          aotInfo = null)
         {
             Logger.StartPass(PassName.Dominance);
 
@@ -37,7 +40,7 @@ namespace ARMeilleure.Translation
 
             CompilerContext cctx = new CompilerContext(cfg, funcArgTypes, funcReturnType, options);
 
-            CompiledFunction func = CodeGenerator.Generate(cctx);
+            CompiledFunction func = CodeGenerator.Generate(cctx, aotInfo);
 
             IntPtr codePtr = JitCache.Map(func);
 

@@ -1,4 +1,4 @@
-namespace ARMeilleure.CodeGen.Unwinding
+/*namespace ARMeilleure.CodeGen.Unwinding
 {
     struct UnwindInfo
     {
@@ -15,4 +15,4 @@ namespace ARMeilleure.CodeGen.Unwinding
             FixedAllocSize = fixedAllocSize;
         }
     }
-}
+}*/

@@ -265,11 +265,11 @@ namespace ARMeilleure.Instructions
 
             if (op.RegisterSize == RegisterSize.Int32)
             {
-                d = context.Call(new _U32_U32(SoftFallback.ReverseBits32), n);
+                d = context.SoftFallbackCall(nameof(SoftFallback.ReverseBits32), n);
             }
             else
             {
-                d = context.Call(new _U64_U64(SoftFallback.ReverseBits64), n);
+                d = context.SoftFallbackCall(nameof(SoftFallback.ReverseBits64), n);
             }
 
             SetAluDOrZR(context, d);
@@ -284,11 +284,11 @@ namespace ARMeilleure.Instructions
 
             if (op.RegisterSize == RegisterSize.Int32)
             {
-                d = context.Call(new _U32_U32(SoftFallback.ReverseBytes16_32), n);
+                d = context.SoftFallbackCall(nameof(SoftFallback.ReverseBytes16_32), n);
             }
             else
             {
-                d = context.Call(new _U64_U64(SoftFallback.ReverseBytes16_64), n);
+                d = context.SoftFallbackCall(nameof(SoftFallback.ReverseBytes16_64), n);
             }
 
             SetAluDOrZR(context, d);
@@ -306,7 +306,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                Operand d = context.Call(new _U64_U64(SoftFallback.ReverseBytes32_64), n);
+                Operand d = context.SoftFallbackCall(nameof(SoftFallback.ReverseBytes32_64), n);
 
                 SetAluDOrZR(context, d);
             }

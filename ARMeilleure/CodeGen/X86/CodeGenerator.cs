@@ -1,12 +1,12 @@
 using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.CodeGen.RegisterAllocators;
-using ARMeilleure.CodeGen.Unwinding;
+//using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.AOT;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -97,7 +97,7 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = func;
         }
 
-        public static CompiledFunction Generate(CompilerContext cctx)
+        public static CompiledFunction Generate(CompilerContext cctx, AotInfo aotInfo = null)
         {
             ControlFlowGraph cfg = cctx.Cfg;
 
@@ -153,9 +153,9 @@ namespace ARMeilleure.CodeGen.X86
 
             using (MemoryStream stream = new MemoryStream())
             {
-                CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count);
+                CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count, aotInfo);
 
-                UnwindInfo unwindInfo = WritePrologue(context);
+                /*UnwindInfo unwindInfo = */WritePrologue(context);
 
                 foreach (BasicBlock block in cfg.Blocks)
                 {
@@ -172,7 +172,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Logger.EndPass(PassName.CodeGeneration);
 
-                return new CompiledFunction(context.GetCode(), unwindInfo);
+                return new CompiledFunction(context.GetCode()/*, unwindInfo*/);
             }
         }
 
@@ -1518,9 +1518,9 @@ namespace ARMeilleure.CodeGen.X86
             Debug.Assert(op1.Type == op4.Type);
         }
 
-        private static UnwindInfo WritePrologue(CodeGenContext context)
+        private static /*UnwindInfo*/ void WritePrologue(CodeGenContext context)
         {
-            List<UnwindPushEntry> pushEntries = new List<UnwindPushEntry>();
+            //List<UnwindPushEntry> pushEntries = new List<UnwindPushEntry>();
 
             Operand rsp = Register(X86Register.Rsp);
 
@@ -1532,7 +1532,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 context.Assembler.Push(Register((X86Register)bit));
 
-                pushEntries.Add(new UnwindPushEntry(bit, RegisterType.Integer, context.StreamOffset));
+                //pushEntries.Add(new UnwindPushEntry(bit, RegisterType.Integer, context.StreamOffset));
 
                 mask &= ~(1 << bit);
             }
@@ -1565,12 +1565,12 @@ namespace ARMeilleure.CodeGen.X86
 
                 context.Assembler.Movdqu(memOp, Xmm((X86Register)bit));
 
-                pushEntries.Add(new UnwindPushEntry(bit, RegisterType.Vector, context.StreamOffset));
+                //pushEntries.Add(new UnwindPushEntry(bit, RegisterType.Vector, context.StreamOffset));
 
                 mask &= ~(1 << bit);
             }
 
-            return new UnwindInfo(pushEntries.ToArray(), context.StreamOffset, reservedStackSize);
+            //return new UnwindInfo(pushEntries.ToArray(), context.StreamOffset, reservedStackSize);
         }
 
         private static void WriteEpilogue(CodeGenContext context)

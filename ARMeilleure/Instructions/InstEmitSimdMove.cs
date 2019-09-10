@@ -1,7 +1,6 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -434,28 +433,28 @@ namespace ARMeilleure.Instructions
                     args[1 + index] = GetVec((op.Rn + index) & 0x1f);
                 }
 
-                Delegate dlg = null;
+                string name = null;
 
                 switch (op.Size)
                 {
-                    case 1: dlg = op.RegisterSize == RegisterSize.Simd64
-                        ? (Delegate)new _V128_V128_V128(SoftFallback.Tbl1_V64)
-                        : (Delegate)new _V128_V128_V128(SoftFallback.Tbl1_V128); break;
+                    case 1: name = op.RegisterSize == RegisterSize.Simd64
+                        ? nameof(SoftFallback.Tbl1_V64)
+                        : nameof(SoftFallback.Tbl1_V128); break;
 
-                    case 2: dlg = op.RegisterSize == RegisterSize.Simd64
-                        ? (Delegate)new _V128_V128_V128_V128(SoftFallback.Tbl2_V64)
-                        : (Delegate)new _V128_V128_V128_V128(SoftFallback.Tbl2_V128); break;
+                    case 2: name = op.RegisterSize == RegisterSize.Simd64
+                        ? nameof(SoftFallback.Tbl2_V64)
+                        : nameof(SoftFallback.Tbl2_V128); break;
 
-                    case 3: dlg = op.RegisterSize == RegisterSize.Simd64
-                        ? (Delegate)new _V128_V128_V128_V128_V128(SoftFallback.Tbl3_V64)
-                        : (Delegate)new _V128_V128_V128_V128_V128(SoftFallback.Tbl3_V128); break;
+                    case 3: name = op.RegisterSize == RegisterSize.Simd64
+                        ? nameof(SoftFallback.Tbl3_V64)
+                        : nameof(SoftFallback.Tbl3_V128); break;
 
-                    case 4: dlg = op.RegisterSize == RegisterSize.Simd64
-                        ? (Delegate)new _V128_V128_V128_V128_V128_V128(SoftFallback.Tbl4_V64)
-                        : (Delegate)new _V128_V128_V128_V128_V128_V128(SoftFallback.Tbl4_V128); break;
+                    case 4: name = op.RegisterSize == RegisterSize.Simd64
+                        ? nameof(SoftFallback.Tbl4_V64)
+                        : nameof(SoftFallback.Tbl4_V128); break;
                 }
 
-                context.Copy(GetVec(op.Rd), context.Call(dlg, args));
+                context.Copy(GetVec(op.Rd), context.SoftFallbackCall(name, args));
             }
         }
 

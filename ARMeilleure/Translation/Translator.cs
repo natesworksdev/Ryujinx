@@ -6,21 +6,28 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
 {
+    using AOT;
+
     public class Translator : ITranslator
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
 
         private MemoryManager _memory;
 
-        private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
+        private readonly object _locker;
 
-        private PriorityQueue<ulong> _backgroundQueue;
+        private Dictionary<ulong, TranslatedFunction> _funcs;
+        private ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
+
+        private ConcurrentQueue<ulong> _backgroundQueue;
 
         private AutoResetEvent _backgroundTranslatorEvent;
 
@@ -30,9 +37,14 @@ namespace ARMeilleure.Translation
         {
             _memory = memory;
 
-            _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            _locker = new object();
 
-            _backgroundQueue = new PriorityQueue<ulong>(2);
+            _funcs       = new Dictionary<ulong, TranslatedFunction>();
+            _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
+
+            Aot.FullTranslate(_funcsHighCq);
+
+            _backgroundQueue = new ConcurrentQueue<ulong>();
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
         }
@@ -45,7 +57,9 @@ namespace ARMeilleure.Translation
                 {
                     TranslatedFunction func = Translate(address, ExecutionMode.Aarch64, highCq: true);
 
-                    _funcs.AddOrUpdate(address, func, (key, oldFunc) => func);
+                    bool isAddressUnique = _funcsHighCq.TryAdd(address, func);
+
+                    Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
                 }
                 else
                 {
@@ -99,23 +113,38 @@ namespace ARMeilleure.Translation
 
         private TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
+            const int MaxQueueCount = 300;
+
             // TODO: Investigate how we should handle code at unaligned addresses.
             // Currently, those low bits are used to store special flags.
             bool isCallTarget = (address & CallFlag) != 0;
 
             address &= ~CallFlag;
 
-            if (!_funcs.TryGetValue(address, out TranslatedFunction func))
-            {
-                func = Translate(address, mode, highCq: false);
+            TranslatedFunction func;
 
-                _funcs.TryAdd(address, func);
-            }
-            else if (isCallTarget && func.ShouldRejit())
+            if (!isCallTarget || !_funcsHighCq.TryGetValue(address, out func))
             {
-                _backgroundQueue.Enqueue(0, address);
+                lock (_locker)
+                {
+                    if (!_funcs.TryGetValue(address, out func))
+                    {
+                        func = Translate(address, mode, highCq: false);
 
-                _backgroundTranslatorEvent.Set();
+                        bool isAddressUnique = _funcs.TryAdd(address, func);
+
+                        Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
+                    }
+
+                    if (isCallTarget && func.GetRejit() && _backgroundQueue.Count < MaxQueueCount)
+                    {
+                        func.ResetRejit();
+
+                        _backgroundQueue.Enqueue(address);
+
+                        _backgroundTranslatorEvent.Set();
+                    }
+                }
             }
 
             return func;
@@ -154,11 +183,32 @@ namespace ARMeilleure.Translation
 
             OperandType[] argTypes = new OperandType[] { OperandType.I64 };
 
-            CompilerOptions options = highCq
-                ? CompilerOptions.HighCq
-                : CompilerOptions.None;
+            GuestFunction func;
 
-            GuestFunction func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
+            if (highCq)
+            {
+                if (Aot.Enabled)
+                {
+                    AotInfo aotInfo = new AotInfo();
+
+                    func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq, aotInfo);
+
+                    if (aotInfo.CodeStream.Length >= Aot.MinCodeLengthToSave)
+                    {
+                        Aot.WriteInfoCodeReloc((long)address, aotInfo);
+                    }
+
+                    aotInfo.Dispose();
+                }
+                else
+                {
+                    func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq);
+                }
+            }
+            else
+            {
+                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.None);
+            }
 
             return new TranslatedFunction(func, rejit: !highCq);
         }
@@ -237,7 +287,7 @@ namespace ARMeilleure.Translation
 
             context.BranchIfTrue(lblNonZero, count);
 
-            context.Call(new _Void(NativeInterface.CheckSynchronization));
+            context.NativeInterfaceCall(nameof(NativeInterface.CheckSynchronization));
 
             context.Branch(lblExit);
 

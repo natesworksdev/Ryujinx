@@ -1,4 +1,4 @@
-using System.Collections.Concurrent;
+/*using System.Collections.Concurrent; // TODO: For future use.
 
 namespace ARMeilleure.Translation
 {
@@ -35,5 +35,17 @@ namespace ARMeilleure.Translation
 
             return false;
         }
+
+        public int GetQueuesCount()
+        {
+            int count = 0;
+
+            for (int index = 0; index < _queues.Length; index++)
+            {
+                count += _queues[index].Count;
+            }
+
+            return count;
+        }
     }
-}
+}*/

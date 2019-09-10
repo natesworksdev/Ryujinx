@@ -1,4 +1,4 @@
-using ARMeilleure.IntermediateRepresentation;
+/*using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Runtime.InteropServices;
 
@@ -161,4 +161,4 @@ namespace ARMeilleure.Translation
             return (ushort)(prologOffset | ((int)uwop << 8) | (opInfo << 12));
         }
     }
-}
+}*/

@@ -1,7 +1,6 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.Memory;
 using System;
-using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
@@ -11,7 +10,7 @@ namespace ARMeilleure.Translation
         private const int PageSize = 4 * 1024;
         private const int PageMask = PageSize - 1;
 
-        private const int CodeAlignment = 4; // Bytes
+        private const int CodeAlignment = 4; // Bytes.
 
         private const int CacheSize = 512 * 1024 * 1024;
 
@@ -19,32 +18,32 @@ namespace ARMeilleure.Translation
 
         private static int _offset;
 
-        private static List<JitCacheEntry> _cacheEntries;
+        //private static List<JitCacheEntry> _cacheEntries;
 
-        private static object _lock;
+        private static readonly object _locker;
 
         static JitCache()
         {
             _basePointer = MemoryManagement.Allocate(CacheSize);
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);
 
                 // The first page is used for the table based SEH structs.
                 _offset = PageSize;
-            }
+            }*/
 
-            _cacheEntries = new List<JitCacheEntry>();
+            //_cacheEntries = new List<JitCacheEntry>();
 
-            _lock = new object();
+            _locker = new object();
         }
 
         public static IntPtr Map(CompiledFunction func)
         {
             byte[] code = func.Code;
 
-            lock (_lock)
+            lock (_locker)
             {
                 int funcOffset = Allocate(code.Length);
 
@@ -54,7 +53,7 @@ namespace ARMeilleure.Translation
 
                 ReprotectRange(funcOffset, code.Length);
 
-                Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
+                //Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
 
                 return funcPtr;
             }
@@ -105,14 +104,14 @@ namespace ARMeilleure.Translation
             return allocOffset;
         }
 
-        private static void Add(JitCacheEntry entry)
+        /*private static void Add(JitCacheEntry entry)
         {
             _cacheEntries.Add(entry);
-        }
+        }*/
 
-        public static bool TryFind(int offset, out JitCacheEntry entry)
+        /*public static bool TryFind(int offset, out JitCacheEntry entry)
         {
-            lock (_lock)
+            lock (_locker)
             {
                 foreach (JitCacheEntry cacheEntry in _cacheEntries)
                 {
@@ -130,6 +129,6 @@ namespace ARMeilleure.Translation
             entry = default(JitCacheEntry);
 
             return false;
-        }
+        }*/
     }
 }

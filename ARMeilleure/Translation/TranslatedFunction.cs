@@ -1,15 +1,10 @@
-using System.Threading;
-
 namespace ARMeilleure.Translation
 {
     class TranslatedFunction
     {
-        private const int MinCallsForRejit = 100;
-
         private GuestFunction _func;
 
         private bool _rejit;
-        private int  _callCount;
 
         public TranslatedFunction(GuestFunction func, bool rejit)
         {
@@ -22,9 +17,14 @@ namespace ARMeilleure.Translation
             return _func(context.NativeContextPtr);
         }
 
-        public bool ShouldRejit()
+        public bool GetRejit()
         {
-            return _rejit && Interlocked.Increment(ref _callCount) == MinCallsForRejit;
+            return _rejit;
+        }
+
+        public void ResetRejit()
+        {
+            _rejit = false;
         }
     }
 }

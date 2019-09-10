@@ -294,7 +294,7 @@ namespace ARMeilleure.Instructions
 
                 ne = context.ConvertI64ToI32(ne);
 
-                Operand de = context.Call(new _U32_U32(SoftFallback.ReverseBits8), ne);
+                Operand de = context.SoftFallbackCall(nameof(SoftFallback.ReverseBits8), ne);
 
                 de = context.ZeroExtend32(OperandType.I64, de);
 

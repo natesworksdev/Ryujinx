@@ -9,6 +9,8 @@ namespace ARMeilleure.Memory
 {
     public unsafe class MemoryManager : IMemoryManager
     {
+        public static long PTbl { get; private set; }
+
         public const int PageBits = 12;
         public const int PageSize = 1 << PageBits;
         public const int PageMask = PageSize - 1;
@@ -65,6 +67,8 @@ namespace ARMeilleure.Memory
             PtLevelMask = PtLevelSize - 1;
 
             _pageTable = Allocate((ulong)(PtLevelSize * IntPtr.Size));
+
+            PTbl = _pageTable.ToInt64();
         }
 
         public void Map(long va, long pa, long size)

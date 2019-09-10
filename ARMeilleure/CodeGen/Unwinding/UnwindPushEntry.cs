@@ -1,4 +1,4 @@
-using ARMeilleure.IntermediateRepresentation;
+/*using ARMeilleure.IntermediateRepresentation;
 
 namespace ARMeilleure.CodeGen.Unwinding
 {
@@ -17,4 +17,4 @@ namespace ARMeilleure.CodeGen.Unwinding
             StreamEndOffset = streamEndOffset;
         }
     }
-}
+}*/

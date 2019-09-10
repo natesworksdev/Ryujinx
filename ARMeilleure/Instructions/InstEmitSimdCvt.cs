@@ -61,9 +61,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
 
-                Delegate dlg = new _U16_F32(SoftFloat32_16.FPConvert);
-
-                Operand res = context.Call(dlg, ne);
+                Operand res = context.SoftFloatCall(nameof(SoftFloat32_16), nameof(SoftFloat32_16.FPConvert), ne);
 
                 res = context.ZeroExtend16(OperandType.I64, res);
 
@@ -73,9 +71,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 1);
 
-                Delegate dlg = new _F32_U16(SoftFloat16_32.FPConvert);
-
-                Operand res = context.Call(dlg, ne);
+                Operand res = context.SoftFloatCall(nameof(SoftFloat16_32), nameof(SoftFloat16_32.FPConvert), ne);
 
                 context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
             }
@@ -141,9 +137,7 @@ namespace ARMeilleure.Instructions
                     {
                         Operand ne = EmitVectorExtractZx(context, op.Rn, part + index, 1);
 
-                        Delegate dlg = new _F32_U16(SoftFloat16_32.FPConvert);
-
-                        Operand e = context.Call(dlg, ne);
+                        Operand e = context.SoftFloatCall(nameof(SoftFloat16_32), nameof(SoftFloat16_32.FPConvert), ne);
 
                         res = context.VectorInsert(res, e, index);
                     }
@@ -163,12 +157,12 @@ namespace ARMeilleure.Instructions
 
         public static void Fcvtms_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1));
+            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1));
         }
 
         public static void Fcvtmu_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1));
+            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1));
         }
 
         public static void Fcvtn_V(ArmEmitterContext context)
@@ -212,9 +206,7 @@ namespace ARMeilleure.Instructions
 
                     if (sizeF == 0)
                     {
-                        Delegate dlg = new _U16_F32(SoftFloat32_16.FPConvert);
-
-                        Operand e = context.Call(dlg, ne);
+                        Operand e = context.SoftFloatCall(nameof(SoftFloat32_16), nameof(SoftFloat32_16.FPConvert), ne);
 
                         e = context.ZeroExtend16(OperandType.I64, e);
 
@@ -282,12 +274,12 @@ namespace ARMeilleure.Instructions
 
         public static void Fcvtps_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1));
+            EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Ceiling), op1));
         }
 
         public static void Fcvtpu_Gp(ArmEmitterContext context)
         {
-            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1));
+            EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Ceiling), op1));
         }
 
         public static void Fcvtzs_Gp(ArmEmitterContext context)
@@ -569,21 +561,17 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    Delegate dlg = signed
-                        ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
-                        : (Delegate)new _U32_F32(SoftFallback.SatF32ToU32);
+                    string name = signed ? nameof(SoftFallback.SatF32ToS32) : nameof(SoftFallback.SatF32ToU32);
 
-                    e = context.Call(dlg, e);
+                    e = context.SoftFallbackCall(name, e);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Delegate dlg = signed
-                        ? (Delegate)new _S64_F64(SoftFallback.SatF64ToS64)
-                        : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
+                    string name = signed ? nameof(SoftFallback.SatF64ToS64) : nameof(SoftFallback.SatF64ToU64);
 
-                    e = context.Call(dlg, e);
+                    e = context.SoftFallbackCall(name, e);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -617,21 +605,17 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    Delegate dlg = signed
-                        ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
-                        : (Delegate)new _U32_F32(SoftFallback.SatF32ToU32);
+                    string name = signed ? nameof(SoftFallback.SatF32ToS32) : nameof(SoftFallback.SatF32ToU32);
 
-                    e = context.Call(dlg, e);
+                    e = context.SoftFallbackCall(name, e);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    Delegate dlg = signed
-                        ? (Delegate)new _S64_F64(SoftFallback.SatF64ToS64)
-                        : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
+                    string name = signed ? nameof(SoftFallback.SatF64ToS64) : nameof(SoftFallback.SatF64ToU64);
 
-                    e = context.Call(dlg, e);
+                    e = context.SoftFallbackCall(name, e);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -751,22 +735,18 @@ namespace ARMeilleure.Instructions
 
             value = EmitF2iFBitsMul(context, value, fBits);
 
+            string name;
+
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                Delegate dlg = value.Type == OperandType.FP32
-                    ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
-                    : (Delegate)new _S32_F64(SoftFallback.SatF64ToS32);
-
-                return context.Call(dlg, value);
+                name = value.Type == OperandType.FP32 ? nameof(SoftFallback.SatF32ToS32) : nameof(SoftFallback.SatF64ToS32);
             }
             else
             {
-                Delegate dlg = value.Type == OperandType.FP32
-                    ? (Delegate)new _S64_F32(SoftFallback.SatF32ToS64)
-                    : (Delegate)new _S64_F64(SoftFallback.SatF64ToS64);
-
-                return context.Call(dlg, value);
+                name = value.Type == OperandType.FP32 ? nameof(SoftFallback.SatF32ToS64) : nameof(SoftFallback.SatF64ToS64);
             }
+
+            return context.SoftFallbackCall(name, value);
         }
 
         private static Operand EmitScalarFcvtu(ArmEmitterContext context, Operand value, int fBits)
@@ -775,22 +755,18 @@ namespace ARMeilleure.Instructions
 
             value = EmitF2iFBitsMul(context, value, fBits);
 
+            string name;
+
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                Delegate dlg = value.Type == OperandType.FP32
-                    ? (Delegate)new _U32_F32(SoftFallback.SatF32ToU32)
-                    : (Delegate)new _U32_F64(SoftFallback.SatF64ToU32);
-
-                return context.Call(dlg, value);
+                name = value.Type == OperandType.FP32 ? nameof(SoftFallback.SatF32ToU32) : nameof(SoftFallback.SatF64ToU32);
             }
             else
             {
-                Delegate dlg = value.Type == OperandType.FP32
-                    ? (Delegate)new _U64_F32(SoftFallback.SatF32ToU64)
-                    : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
-
-                return context.Call(dlg, value);
+                name = value.Type == OperandType.FP32 ? nameof(SoftFallback.SatF32ToU64) : nameof(SoftFallback.SatF64ToU64);
             }
+
+            return context.SoftFallbackCall(name, value);
         }
 
         private static Operand EmitF2iFBitsMul(ArmEmitterContext context, Operand value, int fBits)
