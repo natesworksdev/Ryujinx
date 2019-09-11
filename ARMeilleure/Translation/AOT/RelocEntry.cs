@@ -1,6 +1,6 @@
 namespace ARMeilleure.Translation.AOT
 {
-    public struct RelocEntry
+    struct RelocEntry
     {
         public int    Position;
         public string Name;
@@ -9,6 +9,11 @@ namespace ARMeilleure.Translation.AOT
         {
             Position = position;
             Name     = name;
+        }
+
+        public override string ToString()
+        {
+            return $"(Position = {Position}, Name = {Name})";
         }
     }
 }
