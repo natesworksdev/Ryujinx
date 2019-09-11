@@ -14,9 +14,9 @@ namespace ARMeilleure.Translation.AOT
     {
         private const string WorkDir = "RyuAot";
 
-        private const long SaveInterval = 30L; // Seconds.
+        private const int SaveInterval = 30; // Seconds.
 
-        internal const long MinCodeLengthToSave = 0x180L; // Bytes.
+        internal const int MinCodeLengthToSave = 0x180; // Bytes.
 
         private static readonly MemoryStream _infosStream;
         private static readonly MemoryStream _codesStream;
