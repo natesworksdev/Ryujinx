@@ -28,7 +28,7 @@ namespace ARMeilleure.Translation.AOT
 
         private static readonly object _locker;
 
-        private static bool _disposed; // TODO: volatile?
+        private static bool _disposed;
 
         public static string WorkPath { get; }
         public static string TitleId  { get; private set; }
@@ -60,15 +60,13 @@ namespace ARMeilleure.Translation.AOT
 
             _timer = new Timer((double)SaveInterval * 1000d);
             _timer.Elapsed += MergeAndSave;
-            //_timer.AutoReset = true;
-            //_timer.Enabled = false;
 
             _locker = new object();
 
             _disposed = false;
         }
 
-        public static void Init(string titleId, bool enabled, bool readOnly = false)
+        public static void Init(string titleId, bool enabled, bool readOnlyMode = false)
         {
             if (!String.IsNullOrEmpty(titleId))
             {
@@ -81,7 +79,7 @@ namespace ARMeilleure.Translation.AOT
             {
                 LoadAndSplit();
 
-                if (!readOnly)
+                if (!readOnlyMode)
                 {
                     _timer.Enabled = true;
                 }
@@ -129,12 +127,12 @@ namespace ARMeilleure.Translation.AOT
                         }
                         else
                         {
-                            cacheStream.SetLength(0L);
+                            InvalidateCacheStream(cacheStream);
                         }
                     }
                     catch
                     {
-                        cacheStream.SetLength(0L);
+                        InvalidateCacheStream(cacheStream);
                     }
 
                     md5.Dispose();
@@ -168,6 +166,11 @@ namespace ARMeilleure.Translation.AOT
             relocsLen = headerReader.ReadInt32();
 
             headerReader.Dispose();
+        }
+
+        private static void InvalidateCacheStream(FileStream cacheStream)
+        {
+            cacheStream.SetLength(0L);
         }
 
         private static void MergeAndSave(Object source, ElapsedEventArgs e)
@@ -236,9 +239,11 @@ namespace ARMeilleure.Translation.AOT
             headerWriter.Dispose();
         }
 
-        internal static void FullTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq)
+        internal static void FullTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, IntPtr pageTable)
         {
-            if ((int)_infosStream.Length + (int)_codesStream.Length + (int)_relocsStream.Length != 0) // infosCodesRelocsLen
+            if ((int)_infosStream. Length +
+                (int)_codesStream. Length +
+                (int)_relocsStream.Length != 0) // infosCodesRelocsLen
             {
                 _infosStream. Seek(0L, SeekOrigin.Begin);
                 _codesStream. Seek(0L, SeekOrigin.Begin);
@@ -257,10 +262,10 @@ namespace ARMeilleure.Translation.AOT
 
                     if (infoEntry.RelocEntriesCount != 0)
                     {
-                        PatchCode(code, GetRelocEntries(relocReader, infoEntry.RelocEntriesCount));
+                        PatchCode(code, GetRelocEntries(relocReader, infoEntry.RelocEntriesCount), pageTable);
                     }
 
-                    bool isAddressUnique = funcsHighCq.TryAdd((ulong)infoEntry.Address, FakeTranslate(code));
+                    bool isAddressUnique = funcsHighCq.TryAdd((ulong)infoEntry.Address, FastTranslate(code));
 
                     Debug.Assert(isAddressUnique, $"The address 0x{(ulong)infoEntry.Address:X16} is not unique.");
                 }
@@ -307,28 +312,30 @@ namespace ARMeilleure.Translation.AOT
             return relocEntries;
         }
 
-        private static void PatchCode(byte[] code, RelocEntry[] relocEntries)
+        private static void PatchCode(byte[] code, RelocEntry[] relocEntries, IntPtr pageTable)
         {
             foreach (RelocEntry relocEntry in relocEntries)
             {
                 byte[] immBytes = new byte[8];
 
-                if (relocEntry.Name == nameof(MemoryManager.PTbl))
+                if (relocEntry.Name == nameof(MemoryManager.PageTable))
                 {
-                    immBytes = BitConverter.GetBytes((ulong)MemoryManager.PTbl);
+                    immBytes = BitConverter.GetBytes((ulong)pageTable.ToInt64());
+                }
+                else if (Delegates.TryGetDelegateFuncPtr(relocEntry.Name, out IntPtr funcPtr))
+                {
+                    immBytes = BitConverter.GetBytes((ulong)funcPtr.ToInt64());
                 }
                 else
                 {
-                    IntPtr funcPtr = Delegates.GetDelegateInfo(relocEntry.Name).FuncPtr;
-
-                    immBytes = BitConverter.GetBytes((ulong)funcPtr.ToInt64());
+                    throw new Exception($"Unexpected reloc entry {relocEntry}.");
                 }
 
                 Buffer.BlockCopy(immBytes, 0, code, relocEntry.Position, 8);
             }
         }
 
-        private static TranslatedFunction FakeTranslate(byte[] code)
+        private static TranslatedFunction FastTranslate(byte[] code)
         {
             CompiledFunction cFunc = new CompiledFunction(code);
 
