@@ -16,8 +16,8 @@ namespace ARMeilleure.Translation
         {
             _dlg = dlg;
 
-            FuncPtr = Marshal.GetFunctionPointerForDelegate<Delegate>(_dlg);
-            RetType = GetOperandType(_dlg.Method.ReturnType);
+            FuncPtr = Marshal.GetFunctionPointerForDelegate<Delegate>(dlg);
+            RetType = GetOperandType(dlg.Method.ReturnType);
         }
 
         private static OperandType GetOperandType(Type type)
