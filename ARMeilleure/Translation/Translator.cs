@@ -193,7 +193,7 @@ namespace ARMeilleure.Translation
 
                     func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq, aotInfo);
 
-                    if (aotInfo.CodeStream.Length >= Aot.MinCodeLengthToSave)
+                    if ((int)aotInfo.CodeStream.Length >= Aot.MinCodeLengthToSave)
                     {
                         Aot.WriteInfoCodeReloc((long)address, aotInfo);
                     }
