@@ -8,38 +8,50 @@ namespace ARMeilleure.Translation
 {
     static class Delegates
     {
-        public static DelegateInfo GetDelegateInfo(string key)
+        public static bool TryGetDelegateFuncPtr(string key, out IntPtr funcPtr)
         {
             if (key == null)
             {
                 throw new ArgumentNullException();
             }
 
-            if (_nativeInterfaceDelegates.TryGetValue(key, out DelegateInfo value))
+            if (_nativeInterfaceDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
-                return value;
-            }
-            else if (_softFallbackDelegates.TryGetValue(key, out value))
-            {
-                return value;
-            }
-            else if (_mathDelegates.TryGetValue(key, out value))
-            {
-                return value;
-            }
-            else if (_softFloatDelegates.TryGetValue(key, out value))
-            {
-                return value;
-            }
+                funcPtr = dlgInfo.FuncPtr;
 
-            throw new Exception();
+                return true;
+            }
+            else if (_softFallbackDelegates.TryGetValue(key, out dlgInfo))
+            {
+                funcPtr = dlgInfo.FuncPtr;
+
+                return true;
+            }
+            else if (_mathDelegates.TryGetValue(key, out dlgInfo))
+            {
+                funcPtr = dlgInfo.FuncPtr;
+
+                return true;
+            }
+            else if (_softFloatDelegates.TryGetValue(key, out dlgInfo))
+            {
+                funcPtr = dlgInfo.FuncPtr;
+
+                return true;
+            }
+            else
+            {
+                funcPtr = default(IntPtr);
+
+                return false;
+            }
         }
 
         public static DelegateInfo GetMathDelegateInfo(string key)
         {
-            if (key != null && _mathDelegates.TryGetValue(key, out DelegateInfo value))
+            if (key != null && _mathDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
-                return value;
+                return dlgInfo;
             }
 
             throw new Exception();
@@ -47,9 +59,9 @@ namespace ARMeilleure.Translation
 
         public static DelegateInfo GetNativeInterfaceDelegateInfo(string key)
         {
-            if (key != null && _nativeInterfaceDelegates.TryGetValue(key, out DelegateInfo value))
+            if (key != null && _nativeInterfaceDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
-                return value;
+                return dlgInfo;
             }
 
             throw new Exception();
@@ -57,9 +69,9 @@ namespace ARMeilleure.Translation
 
         public static DelegateInfo GetSoftFallbackDelegateInfo(string key)
         {
-            if (key != null && _softFallbackDelegates.TryGetValue(key, out DelegateInfo value))
+            if (key != null && _softFallbackDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
-                return value;
+                return dlgInfo;
             }
 
             throw new Exception();
@@ -67,9 +79,9 @@ namespace ARMeilleure.Translation
 
         public static DelegateInfo GetSoftFloatDelegateInfo(string key)
         {
-            if (key != null && _softFloatDelegates.TryGetValue(key, out DelegateInfo value))
+            if (key != null && _softFloatDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
-                return value;
+                return dlgInfo;
             }
 
             throw new Exception();
@@ -107,7 +119,10 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static string GetKey(MethodInfo info) => $"{info.DeclaringType.Name}.{info.Name}";
+        private static string GetKey(MethodInfo info)
+        {
+            return $"{info.DeclaringType.Name}.{info.Name}";
+        }
 
         private static readonly Dictionary<string, DelegateInfo> _mathDelegates;
         private static readonly Dictionary<string, DelegateInfo> _nativeInterfaceDelegates;
