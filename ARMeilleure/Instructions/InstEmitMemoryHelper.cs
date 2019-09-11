@@ -288,7 +288,7 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblFallbackPath)
         {
-            string name = nameof(MemoryManager.PTbl);
+            string name = nameof(MemoryManager.PageTable);
 
             Operand pte = Const(context.Memory.PageTable.ToInt64(), true, name);
 
