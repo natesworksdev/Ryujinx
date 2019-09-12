@@ -7,10 +7,10 @@ namespace ARMeilleure.Translation
 {
     class DelegateInfo
     {
-        private Delegate _dlg;
+        private readonly Delegate _dlg; // Ensures that this delegate will not be garbage collected.
 
-        public IntPtr      FuncPtr { get; private set; }
-        public OperandType RetType { get; private set; }
+        public IntPtr      FuncPtr { get; }
+        public OperandType RetType { get; }
 
         public DelegateInfo(Delegate dlg)
         {
