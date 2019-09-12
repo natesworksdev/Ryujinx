@@ -295,6 +295,12 @@ namespace Ryujinx.UI
                     {
                         if (Path.GetExtension(applicationPath) == ".nca")
                         {
+                            Nca nca = new Nca(KeySet, new FileStream(applicationPath, FileMode.Open, FileAccess.Read).AsStorage(false));
+                            if (nca.Header.ContentType != ContentType.Program)
+                            {
+                                continue;
+                            }
+
                             applicationIcon = RyujinxNcaIcon;
                         }
                         else if (Path.GetExtension(applicationPath) == ".nso")
