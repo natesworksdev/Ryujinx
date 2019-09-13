@@ -1,10 +1,11 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Time.Clock.Types;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardNetworkSystemClockCore : SystemClockCore
     {
-        private TimeSpanType       _standardNetworkClockSufficientAccuracy;
+        private TimeSpanType _standardNetworkClockSufficientAccuracy;
 
         private static StandardNetworkSystemClockCore _instance;
 

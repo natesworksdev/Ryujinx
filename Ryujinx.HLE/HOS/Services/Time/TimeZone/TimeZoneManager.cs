@@ -1,15 +1,16 @@
-﻿using LibHac.Fs.NcaUtils;
+﻿using LibHac.Fs;
+using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Services.Time.TimeZone.Types;
 using System;
-using System.Collections.ObjectModel;
-using LibHac.Fs;
-using System.IO;
 using System.Collections.Generic;
-using TimeZoneConverter.Posix;
+using System.Collections.ObjectModel;
+using System.IO;
 using TimeZoneConverter;
+using TimeZoneConverter.Posix;
 
-using static Ryujinx.HLE.HOS.Services.Time.TimeZoneRule;
+using static Ryujinx.HLE.HOS.Services.Time.TimeZone.Types.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {

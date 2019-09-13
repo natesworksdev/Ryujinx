@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Time.Clock
+﻿using Ryujinx.HLE.HOS.Services.Time.Clock.Types;
+
+namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardLocalSystemClockCore : SystemClockCore
     {

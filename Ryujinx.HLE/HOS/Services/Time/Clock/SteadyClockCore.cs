@@ -1,4 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Time.Clock.Types;
 using Ryujinx.HLE.Utilities;
 using System;
 
