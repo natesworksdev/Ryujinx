@@ -17,7 +17,7 @@
     "enable_fs_integrity_checks": true,
     "ignore_missing_services": false,
     "controller_type": "Handheld",
-    "gui_columns": [ true, true, true, true, true, true, true, true, true ],
+    "gui_columns": [ true, true, true, true, true, true, true, true, true, true ],
     "game_dirs": [],
     "enable_custom_theme": false,
     "custom_theme_path": "",

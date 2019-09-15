@@ -494,7 +494,7 @@
       "type": "bool list",
       "title": "Used to toggle columns in the GUI",
       "description": "Used to toggle columns in the GUI",
-      "default": [ true, true, true, true, true, true, true, true, true ]
+      "default": [ true, true, true, true, true, true, true, true, true, true ]
     },
     "enable_custom_theme": {
       "$id": "#/properties/enable_custom_theme",
