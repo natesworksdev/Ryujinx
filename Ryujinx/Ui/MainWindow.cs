@@ -34,6 +34,15 @@ namespace Ryujinx.UI
 
         private static bool _firstLoadComplete = false;
 
+        private static TreeViewColumn appColumn;
+        private static TreeViewColumn devColumn;
+        private static TreeViewColumn versionColumn;
+        private static TreeViewColumn timePlayedColumn;
+        private static TreeViewColumn lastPlayedColumn;
+        private static TreeViewColumn fileExtColumn;
+        private static TreeViewColumn fileSizeColumn;
+        private static TreeViewColumn pathColumn;
+
         public static bool DiscordIntegrationEnabled { get; set; }
 
         public static DiscordRpcClient DiscordClient;
@@ -120,8 +129,7 @@ namespace Ryujinx.UI
 
                 UpdateColumns();
 
-                _tableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-                _gameTable.Model = _tableStore;
+                _gameTable.Model = _tableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
                 UpdateGameTable();
 
@@ -134,8 +142,7 @@ namespace Ryujinx.UI
 
                 UpdateColumns();
 
-                _tableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-                _gameTable.Model = _tableStore;
+                _gameTable.Model = _tableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
                 UpdateGameTable();
 
@@ -206,6 +213,27 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   6); }
             if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   7); }
             if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   8); }
+
+            foreach (TreeViewColumn column in _gameTable.Columns)
+            {
+                     if (column.Title == "Application") { appColumn        = column; }
+                else if (column.Title == "Developer")   { devColumn        = column; }
+                else if (column.Title == "Version")     { versionColumn    = column; }
+                else if (column.Title == "Time Played") { timePlayedColumn = column; }
+                else if (column.Title == "Last Played") { lastPlayedColumn = column; }
+                else if (column.Title == "File Ext")    { fileExtColumn    = column; }
+                else if (column.Title == "File Size")   { fileSizeColumn   = column; }
+                else if (column.Title == "Path")        { pathColumn       = column; }
+            }
+
+            if (SwitchSettings.SwitchConfig.GuiColumns[1]) { appColumn.SortColumnId        = 1; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[2]) { devColumn.SortColumnId        = 2; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[3]) { versionColumn.SortColumnId    = 3; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[4]) { timePlayedColumn.SortColumnId = 4; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[5]) { lastPlayedColumn.SortColumnId = 5; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[6]) { fileExtColumn.SortColumnId    = 6; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[7]) { fileSizeColumn.SortColumnId   = 7; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[8]) { pathColumn.SortColumnId       = 8; }
         }
 
         internal void LoadApplication(string path)

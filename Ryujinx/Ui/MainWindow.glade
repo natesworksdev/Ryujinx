@@ -311,7 +311,6 @@
               <object class="GtkTreeView" id="_gameTable">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
-                <property name="headers_clickable">False</property>
                 <property name="reorderable">True</property>
                 <property name="hover_selection">True</property>
                 <signal name="row-activated" handler="Row_Activated" swapped="no"/>
