@@ -34,7 +34,8 @@ namespace ARMeilleure.Translation.AOT
         public static string WorkPath { get; }
         public static string TitleId  { get; private set; }
 
-        public static bool Enabled { get; private set; }
+        public static bool Enabled      { get; private set; }
+        public static bool ReadOnlyMode { get; private set; }
 
         static Aot()
         {
@@ -51,7 +52,8 @@ namespace ARMeilleure.Translation.AOT
 
             TitleId = String.Empty;
 
-            Enabled = false;
+            Enabled      = false;
+            ReadOnlyMode = true;
 
             _infosStream  = new MemoryStream();
             _codesStream  = new MemoryStream();
@@ -74,7 +76,8 @@ namespace ARMeilleure.Translation.AOT
                 TitleId = titleId.ToUpper();
             }
 
-            Enabled = enabled;
+            Enabled      = enabled;
+            ReadOnlyMode = readOnlyMode;
 
             if (enabled)
             {
@@ -97,6 +100,8 @@ namespace ARMeilleure.Translation.AOT
             {
                 using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.Open))
                 {
+                    DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true);
+
                     MemoryStream cacheStream = new MemoryStream();
 
                     MD5 md5 = MD5.Create();
@@ -105,10 +110,10 @@ namespace ARMeilleure.Translation.AOT
 
                     try
                     {
-                        using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true))
-        	            {
+                        using (deflateStream)
+                        {
                             deflateStream.CopyTo(cacheStream);
-        	            }
+                        }
 
                         cacheStream.Seek(0L, SeekOrigin.Begin);
 
@@ -150,22 +155,22 @@ namespace ARMeilleure.Translation.AOT
                                 }
                                 else
                                 {
-                                    compressedCacheStream.SetLength(0L);
+                                    InvalidateCompressedCacheStream(compressedCacheStream);
                                 }
                             }
                             else
                             {
-                                compressedCacheStream.SetLength(0L);
+                                InvalidateCompressedCacheStream(compressedCacheStream);
                             }
                         }
                         else
                         {
-                            compressedCacheStream.SetLength(0L);
+                            InvalidateCompressedCacheStream(compressedCacheStream);
                         }
                     }
                     catch
                     {
-                        compressedCacheStream.SetLength(0L);
+                        InvalidateCompressedCacheStream(compressedCacheStream);
                     }
 
                     md5.Dispose();
@@ -206,6 +211,14 @@ namespace ARMeilleure.Translation.AOT
             relocsLen = headerReader.ReadInt32();
 
             headerReader.Dispose();
+        }
+
+        private static void InvalidateCompressedCacheStream(FileStream compressedCacheStream)
+        {
+            if (!ReadOnlyMode)
+            {
+                compressedCacheStream.SetLength(0L);
+            }
         }
 
         private static void MergeAndSave(Object source, ElapsedEventArgs e)
