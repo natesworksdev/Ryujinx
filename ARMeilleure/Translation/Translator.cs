@@ -42,7 +42,10 @@ namespace ARMeilleure.Translation
             _funcs       = new Dictionary<ulong, TranslatedFunction>();
             _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
-            Aot.FullTranslate(_funcsHighCq, memory.PageTable);
+            if (Aot.Enabled)
+            {
+                Aot.FullTranslate(_funcsHighCq, memory.PageTable);
+            }
 
             _backgroundQueue = new ConcurrentQueue<ulong>();
 
