@@ -160,7 +160,7 @@ namespace Ryujinx.UI
             };
             errorDialog.SetSizeRequest(100, 20);
             errorDialog.Run();
-            errorDialog.Destroy();
+            errorDialog.Dispose();
         }
 
         public static void UpdateGameTable()
@@ -171,6 +171,10 @@ namespace Ryujinx.UI
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
                 _tableStore.AppendValues(new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
+
+                _tableStore.SetSortFunc(4, TimePlayedSort);
+                _tableStore.SetSortFunc(5, LastPlayedSort);
+                _tableStore.SetSortFunc(7, FileSizeSort);
             }
         }
 
@@ -484,7 +488,7 @@ namespace Ryujinx.UI
                 LoadApplication(fileChooser.Filename);
             }
 
-            fileChooser.Destroy();
+            fileChooser.Dispose();
         }
 
         private void Load_Application_Folder(object o, EventArgs args)
@@ -496,7 +500,7 @@ namespace Ryujinx.UI
                 LoadApplication(fileChooser.Filename);
             }
 
-            fileChooser.Destroy();
+            fileChooser.Dispose();
         }
 
         private void Open_Ryu_Folder(object o, EventArgs args)
@@ -649,6 +653,83 @@ namespace Ryujinx.UI
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
             if (_firstLoadComplete) UpdateColumns();
+        }
+        
+        private static int TimePlayedSort(ITreeModel model, TreeIter a, TreeIter b)
+        {
+            string aValue = model.GetValue(a, 4).ToString();
+            string bValue = model.GetValue(b, 4).ToString();
+
+            if (aValue.Length > 4 && aValue.Substring(aValue.Length - 4) == "mins")
+            {
+                aValue = (float.Parse(aValue.Substring(0, aValue.Length - 5)) * 60).ToString();
+            }
+            else if (aValue.Length > 3 && aValue.Substring(aValue.Length - 3) == "hrs")
+            {
+                aValue = (float.Parse(aValue.Substring(0, aValue.Length - 4)) * 3600).ToString();
+            }
+            else if (aValue.Length > 4 && aValue.Substring(aValue.Length - 4) == "days")
+            {
+                aValue = (float.Parse(aValue.Substring(0, aValue.Length - 5)) * 86400).ToString();
+            }
+            else
+            {
+                aValue = aValue.Substring(0, aValue.Length - 1);
+            }
+
+            if (bValue.Length > 4 && bValue.Substring(bValue.Length - 4) == "mins")
+            {
+                bValue = (float.Parse(bValue.Substring(0, bValue.Length - 5)) * 60).ToString();
+            }
+            else if (bValue.Length > 3 && bValue.Substring(bValue.Length - 3) == "hrs")
+            {
+                bValue = (float.Parse(bValue.Substring(0, bValue.Length - 4)) * 3600).ToString();
+            }
+            else if (bValue.Length > 4 && bValue.Substring(bValue.Length - 4) == "days")
+            {
+                bValue = (float.Parse(bValue.Substring(0, bValue.Length - 5)) * 86400).ToString();
+            }
+            else
+            {
+                bValue = bValue.Substring(0, bValue.Length - 1);
+            }
+
+                 if (float.Parse(aValue) > float.Parse(bValue)) return -1;
+            else if (float.Parse(bValue) > float.Parse(aValue)) return 1;
+            else return 0;
+        }
+
+        private static int LastPlayedSort(ITreeModel model, TreeIter a, TreeIter b)
+        {
+            string aValue = model.GetValue(a, 5).ToString();
+            string bValue = model.GetValue(b, 5).ToString();
+
+            if (aValue == "Never") aValue = DateTime.UnixEpoch.ToString();
+            if (bValue == "Never") bValue = DateTime.UnixEpoch.ToString();
+
+            return DateTime.Compare(DateTime.Parse(bValue), DateTime.Parse(aValue));
+        }
+
+        private static int FileSizeSort(ITreeModel model, TreeIter a, TreeIter b)
+        {
+            string aValue = model.GetValue(a, 7).ToString();
+            string bValue = model.GetValue(b, 7).ToString();
+
+            if (aValue.Substring(aValue.Length - 2) == "GB")
+            {
+                aValue = (float.Parse(aValue.Substring(0, aValue.Length - 2)) * 1024).ToString();
+            }
+            else aValue = aValue.Substring(0, aValue.Length - 2);
+
+            if (bValue.Substring(bValue.Length - 2) == "GB")
+            {
+                bValue = (float.Parse(bValue.Substring(0, bValue.Length - 2)) * 1024).ToString();
+            }
+            else bValue = bValue.Substring(0, bValue.Length - 2);
+
+                 if (float.Parse(aValue) > float.Parse(bValue)) return -1;
+            else if (float.Parse(bValue) > float.Parse(aValue)) return 1;
+            else return 0;
         }
     }
 }

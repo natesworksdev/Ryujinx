@@ -110,7 +110,7 @@ namespace Ryujinx.UI
 
         private void CloseToggle_Activated(object obj, EventArgs args)
         {
-            Destroy();
+            Dispose();
         }
     }
 }

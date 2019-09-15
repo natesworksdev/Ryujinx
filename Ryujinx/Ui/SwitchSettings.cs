@@ -270,7 +270,7 @@ namespace Ryujinx.UI
                 _gameDirsBoxStore.AppendValues(fileChooser.Filename);
             }
 
-            fileChooser.Destroy();
+            fileChooser.Dispose();
 
             _browseDir.SetStateFlags(0, true);
         }
@@ -304,7 +304,7 @@ namespace Ryujinx.UI
                 _custThemePath.Buffer.Text = fileChooser.Filename;
             }
 
-            fileChooser.Destroy();
+            fileChooser.Dispose();
 
             _browseThemePath.SetStateFlags(0, true);
         }
@@ -385,12 +385,12 @@ namespace Ryujinx.UI
             MainWindow.ApplyTheme();
             MainWindow.UpdateGameTable();
 
-            Destroy();
+            Dispose();
         }
 
         private void CloseToggle_Activated(object obj, EventArgs args)
         {
-            Destroy();
+            Dispose();
         }
 
         public readonly Dictionary<string, string> GdkToOpenTKInput = new Dictionary<string, string>()
