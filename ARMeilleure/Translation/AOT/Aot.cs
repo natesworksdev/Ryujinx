@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Timers;
@@ -94,14 +95,23 @@ namespace ARMeilleure.Translation.AOT
 
             if (cacheInfo.Exists && cacheInfo.Length != 0L)
             {
-                using (FileStream cacheStream = new FileStream(cachePath, FileMode.Open))
+                using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.Open))
                 {
+                    MemoryStream cacheStream = new MemoryStream();
+
                     MD5 md5 = MD5.Create();
 
                     int hashSize = md5.HashSize / 8;
 
                     try
                     {
+                        using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true))
+        	            {
+                            deflateStream.CopyTo(cacheStream);
+        	            }
+
+                        cacheStream.Seek(0L, SeekOrigin.Begin);
+
                         byte[] currentHash = new byte[hashSize];
                         cacheStream.Read(currentHash, 0, hashSize);
 
@@ -113,35 +123,65 @@ namespace ARMeilleure.Translation.AOT
 
                             ReadHeader(cacheStream, out int infosLen, out int codesLen, out int relocsLen);
 
-                            byte[] infosBuf  = new byte[infosLen];
-                            byte[] codesBuf  = new byte[codesLen];
-                            byte[] relocsBuf = new byte[relocsLen];
+                            if (infosLen % InfoEntry.Size == 0)
+                            {
+                                byte[] infosBuf  = new byte[infosLen];
+                                byte[] codesBuf  = new byte[codesLen];
+                                byte[] relocsBuf = new byte[relocsLen];
 
-                            cacheStream.Read(infosBuf,  0, infosLen);
-                            cacheStream.Read(codesBuf,  0, codesLen);
-                            cacheStream.Read(relocsBuf, 0, relocsLen);
+                                cacheStream.Read(infosBuf,  0, infosLen);
+                                cacheStream.Read(codesBuf,  0, codesLen);
+                                cacheStream.Read(relocsBuf, 0, relocsLen);
 
-                            _infosStream. Write(infosBuf,  0, infosLen);
-                            _codesStream. Write(codesBuf,  0, codesLen);
-                            _relocsStream.Write(relocsBuf, 0, relocsLen);
+                                if (cacheStream.Position == cacheStream.Length)
+                                {
+                                    try
+                                    {
+                                        _infosStream. Write(infosBuf,  0, infosLen);
+                                        _codesStream. Write(codesBuf,  0, codesLen);
+                                        _relocsStream.Write(relocsBuf, 0, relocsLen);
+                                    }
+                                    catch
+                                    {
+                                        _infosStream. SetLength(0L);
+                                        _codesStream. SetLength(0L);
+                                        _relocsStream.SetLength(0L);
+                                    }
+                                }
+                                else
+                                {
+                                    compressedCacheStream.SetLength(0L);
+                                }
+                            }
+                            else
+                            {
+                                compressedCacheStream.SetLength(0L);
+                            }
                         }
                         else
                         {
-                            InvalidateCacheStream(cacheStream);
+                            compressedCacheStream.SetLength(0L);
                         }
                     }
                     catch
                     {
-                        InvalidateCacheStream(cacheStream);
+                        compressedCacheStream.SetLength(0L);
                     }
 
                     md5.Dispose();
+
+                    cacheStream.Dispose();
                 }
             }
         }
 
         private static bool CompareHash(byte[] currentHash, byte[] expectedHash)
         {
+            if (currentHash.Length != expectedHash.Length)
+            {
+                return false;
+            }
+
             for (int i = 0; i < currentHash.Length; i++)
             {
                 if (currentHash[i] != expectedHash[i])
@@ -154,10 +194,10 @@ namespace ARMeilleure.Translation.AOT
         }
 
         private static void ReadHeader(
-            FileStream cacheStream,
-            out int    infosLen,
-            out int    codesLen,
-            out int    relocsLen)
+            MemoryStream cacheStream,
+            out int      infosLen,
+            out int      codesLen,
+            out int      relocsLen)
         {
             BinaryReader headerReader = new BinaryReader(cacheStream, EncodingCache.UTF8NoBOM, true);
 
@@ -168,40 +208,37 @@ namespace ARMeilleure.Translation.AOT
             headerReader.Dispose();
         }
 
-        private static void InvalidateCacheStream(FileStream cacheStream)
-        {
-            cacheStream.SetLength(0L);
-        }
-
         private static void MergeAndSave(Object source, ElapsedEventArgs e)
         {
             string cachePath = Path.Combine(WorkPath, TitleId);
 
-            using (FileStream cacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
+            using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
             {
+                MemoryStream cacheStream = new MemoryStream();
+
                 MD5 md5 = MD5.Create();
 
                 int hashSize = md5.HashSize / 8;
 
-                bool computeHash = false;
+                cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
+
+                bool disposed = true;
 
                 lock (_locker) // Read.
                 {
                     if (!_disposed)
                     {
-                        cacheStream.Write(GetPlaceholder(hashSize), 0, hashSize);
-
                         WriteHeader(cacheStream);
 
                         _infosStream. WriteTo(cacheStream);
                         _codesStream. WriteTo(cacheStream);
                         _relocsStream.WriteTo(cacheStream);
 
-                        computeHash = true;
+                        disposed = false;
                     }
                 }
 
-                if (computeHash)
+                if (!disposed)
                 {
                     cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
                     byte[] hash = md5.ComputeHash(cacheStream);
@@ -209,26 +246,26 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    cacheStream.Seek(0L, SeekOrigin.End);
+                    cacheStream.Seek(0L, SeekOrigin.Begin);
+
+                    using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Compress, true))
+                    {
+                        cacheStream.CopyTo(deflateStream);
+                    }
+
+                    if (compressedCacheStream.Length > compressedCacheStream.Position)
+                    {
+                        compressedCacheStream.SetLength(compressedCacheStream.Position);
+                    }
                 }
 
                 md5.Dispose();
+
+                cacheStream.Dispose();
             }
         }
 
-        private static byte[] GetPlaceholder(int size)
-        {
-            byte[] placeholder = new byte[size];
-
-            for (int i = 0; i < placeholder.Length; i++)
-            {
-                placeholder[i] = 0;
-            }
-
-            return placeholder;
-        }
-
-        private static void WriteHeader(FileStream cacheStream)
+        private static void WriteHeader(MemoryStream cacheStream)
         {
             BinaryWriter headerWriter = new BinaryWriter(cacheStream, EncodingCache.UTF8NoBOM, true);
 
@@ -241,9 +278,9 @@ namespace ARMeilleure.Translation.AOT
 
         internal static void FullTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, IntPtr pageTable)
         {
-            if ((int)_infosStream. Length +
-                (int)_codesStream. Length +
-                (int)_relocsStream.Length != 0) // infosCodesRelocsLen
+            if ((int)_infosStream. Length != 0 &&
+                (int)_codesStream. Length != 0 &&
+                (int)_relocsStream.Length != 0)
             {
                 _infosStream. Seek(0L, SeekOrigin.Begin);
                 _codesStream. Seek(0L, SeekOrigin.Begin);
@@ -251,8 +288,6 @@ namespace ARMeilleure.Translation.AOT
 
                 BinaryReader infoReader  = new BinaryReader(_infosStream,  EncodingCache.UTF8NoBOM, true);
                 BinaryReader relocReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true);
-
-                Debug.Assert((int)_infosStream.Length % InfoEntry.Size == 0);
 
                 for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Size; i++) // infosEntriesCount
                 {
@@ -273,9 +308,12 @@ namespace ARMeilleure.Translation.AOT
                 infoReader. Dispose();
                 relocReader.Dispose();
 
-                Debug.Assert(_infosStream. Position == _infosStream. Length, "The Infos stream is unbalanced.");
-                Debug.Assert(_codesStream. Position == _codesStream. Length, "The Codes stream is unbalanced.");
-                Debug.Assert(_relocsStream.Position == _relocsStream.Length, "The Relocs stream is unbalanced.");
+                if (_infosStream. Position != _infosStream. Length ||
+                    _codesStream. Position != _codesStream. Length ||
+                    _relocsStream.Position != _relocsStream.Length)
+                {
+                    throw new Exception("Unexpected unbalance of memory streams.");
+                }
             }
         }
 
