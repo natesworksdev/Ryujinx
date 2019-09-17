@@ -252,7 +252,10 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (_aotInfo != null)
                 {
-                    _aotInfo.WriteCode(codeStream);
+                    if ((int)codeStream.Length >= Aot.MinCodeLengthToSave)
+                    {
+                        _aotInfo.WriteCode(codeStream);
+                    }
                 }
 
                 return codeStream.ToArray();
