@@ -2,6 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.AOT;
 using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -290,7 +291,7 @@ namespace ARMeilleure.Instructions
         {
             string name = nameof(MemoryManager.PageTable);
 
-            Operand pte = Const(context.Memory.PageTable.ToInt64(), true, name);
+            Operand pte = Const(context.Memory.PageTable.ToInt64(), Aot.Enabled, name);
 
             int bit = MemoryManager.PageBits;
 
