@@ -7,6 +7,8 @@ using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
 {
+    using AOT;
+
     class EmitterContext
     {
         private Dictionary<Operand, BasicBlock> _irLabels;
@@ -83,7 +85,7 @@ namespace ARMeilleure.Translation
 
             DelegateInfo dlgInfo = Delegates.GetMathDelegateInfo(name);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, name), dlgInfo.RetType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
         }
 
         public Operand NativeInterfaceCall(string funcName, params Operand[] callArgs)
@@ -92,7 +94,7 @@ namespace ARMeilleure.Translation
 
             DelegateInfo dlgInfo = Delegates.GetNativeInterfaceDelegateInfo(funcName);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, funcName), dlgInfo.RetType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, funcName), dlgInfo.RetType, callArgs);
         }
 
         public Operand SoftFallbackCall(string funcName, params Operand[] callArgs)
@@ -101,7 +103,7 @@ namespace ARMeilleure.Translation
 
             DelegateInfo dlgInfo = Delegates.GetSoftFallbackDelegateInfo(funcName);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, funcName), dlgInfo.RetType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, funcName), dlgInfo.RetType, callArgs);
         }
 
         public Operand SoftFloatCall(string className, string funcName, params Operand[] callArgs)
@@ -110,7 +112,7 @@ namespace ARMeilleure.Translation
 
             DelegateInfo dlgInfo = Delegates.GetSoftFloatDelegateInfo(name);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), true, name), dlgInfo.RetType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
         }
 
         public Operand Call(Operand address, OperandType returnType, params Operand[] callArgs)
