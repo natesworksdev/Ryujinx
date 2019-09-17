@@ -259,11 +259,9 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    cacheStream.Seek(0L, SeekOrigin.Begin);
-
                     using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Compress, true))
                     {
-                        cacheStream.CopyTo(deflateStream);
+                        cacheStream.WriteTo(deflateStream);
                     }
 
                     if (compressedCacheStream.Length > compressedCacheStream.Position)
