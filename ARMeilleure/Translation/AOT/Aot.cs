@@ -19,6 +19,8 @@ namespace ARMeilleure.Translation.AOT
 
         internal const int MinCodeLengthToSave = 0x180; // Bytes.
 
+        private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
+
         private static readonly MemoryStream _infosStream;
         private static readonly MemoryStream _codesStream;
         private static readonly MemoryStream _relocsStream;
@@ -259,7 +261,7 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Compress, true))
+                    using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true))
                     {
                         cacheStream.WriteTo(deflateStream);
                     }
