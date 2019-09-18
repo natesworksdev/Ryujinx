@@ -181,10 +181,6 @@ namespace Ryujinx.UI
                     Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
                 }
             }
-            else
-            {
-                cssProvider.LoadFromPath(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Theme.css"));
-            }
 
             StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
         }
@@ -199,7 +195,7 @@ namespace Ryujinx.UI
             CellRendererToggle favToggle = new CellRendererToggle();
             favToggle.Toggled += FavToggle_Toggled;
 
-            if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _gameTable.AppendColumn("Fav",         favToggle, "active", 0); }
+            if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _gameTable.AppendColumn("Fav",         favToggle,                "active", 0); }
             if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1); }
             if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2); }
             if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   3); }
@@ -234,20 +230,6 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns[9]) { pathColumn.SortColumnId       = 9; }
         }
 
-        private void FavToggle_Toggled(object o, ToggledArgs args)
-        {
-            _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
-
-            if ((bool)_tableStore.GetValue(treeIter, 0))
-            {
-                _tableStore.SetValue(treeIter, 0, false);
-            }
-            else
-            {
-                _tableStore.SetValue(treeIter, 0, true);
-            }
-        }
-
         public static void UpdateGameTable()
         {
             _tableStore.Clear();
@@ -255,7 +237,7 @@ namespace Ryujinx.UI
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                _tableStore.AppendValues(false, new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
+                _tableStore.AppendValues(AppData.Fav, new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
 
                 _tableStore.SetSortFunc(5, TimePlayedSort);
                 _tableStore.SetSortFunc(6, LastPlayedSort);
@@ -371,7 +353,7 @@ namespace Ryujinx.UI
 
                 try
                 {
-                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", _userId, _device.System.TitleID);
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
@@ -424,7 +406,7 @@ namespace Ryujinx.UI
             {
                 try
                 {
-                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleID);
+                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", _userId, _device.System.TitleID);
                     double currentPlayTime = 0;
 
                     using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -486,6 +468,31 @@ namespace Ryujinx.UI
         }
 
         //Events
+        private void FavToggle_Toggled(object o, ToggledArgs args)
+        {
+            _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
+            string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", _userId, _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1]);
+
+            if ((bool)_tableStore.GetValue(treeIter, 0))
+            {
+                _tableStore.SetValue(treeIter, 0, false);
+
+                if (File.Exists(System.IO.Path.Combine(savePath, "Fav.dat")))
+                {
+                    File.Delete(System.IO.Path.Combine(savePath, "Fav.dat"));
+                }
+            }
+            else
+            {
+                _tableStore.SetValue(treeIter, 0, true);
+
+                if (!File.Exists(System.IO.Path.Combine(savePath, "Fav.dat")))
+                {
+                    using (File.Create(System.IO.Path.Combine(savePath, "Fav.dat"))) { };
+                }
+            }
+        }
+
         private void Row_Activated(object o, RowActivatedArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path.ToString()));
@@ -691,6 +698,9 @@ namespace Ryujinx.UI
         {
             string aValue = model.GetValue(a, 5).ToString();
             string bValue = model.GetValue(b, 5).ToString();
+
+            if (aValue == "Unknown") { aValue = "0s"; }
+            if (bValue == "Unknown") { bValue = "0s"; }
 
             if (aValue.Length > 4 && aValue.Substring(aValue.Length - 4) == "mins")
             {

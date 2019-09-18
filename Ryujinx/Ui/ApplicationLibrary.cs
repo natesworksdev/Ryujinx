@@ -34,6 +34,7 @@ namespace Ryujinx.UI
 
         public struct ApplicationData
         {
+            public bool   Fav;
             public byte[] Icon;
             public string TitleName;
             public string TitleId;
@@ -322,17 +323,18 @@ namespace Ryujinx.UI
                     }
                 }
 
-                string[] playedData = GetPlayedData(titleId, "00000000000000000000000000000001");
+                string[] userData = GetUserData(titleId, "00000000000000000000000000000001");
 
                 ApplicationData data = new ApplicationData()
                 {
+                    Fav        = bool.Parse(userData[2]),
                     Icon       = applicationIcon,
                     TitleName  = titleName,
                     TitleId    = titleId,
                     Developer  = developer,
                     Version    = version,
-                    TimePlayed = playedData[0],
-                    LastPlayed = playedData[1],
+                    TimePlayed = userData[0],
+                    LastPlayed = userData[1],
                     FileExt    = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
                     FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
                     Path       = applicationPath,
@@ -386,13 +388,14 @@ namespace Ryujinx.UI
             return controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
         }
 
-        private static string[] GetPlayedData(string TitleId, string UserId)
+        private static string[] GetUserData(string TitleId, string UserId)
         {
             try
             {
-                string[] playedData = new string[2];
-                string savePath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", UserId, TitleId);
+                string[] userData = new string[3];
+                string savePath   = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", UserId, TitleId);
 
+                //Time Played
                 if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
                 {
                     Directory.CreateDirectory(savePath);
@@ -401,6 +404,7 @@ namespace Ryujinx.UI
                         file.Write(Encoding.ASCII.GetBytes("0"));
                     }
                 }
+
                 using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
                 {
                     using (StreamReader sr = new StreamReader(fs))
@@ -409,23 +413,24 @@ namespace Ryujinx.UI
 
                         if (timePlayed < SecondsPerMinute)
                         {
-                            playedData[0] = $"{timePlayed}s";
+                            userData[0] = $"{timePlayed}s";
                         }
                         else if (timePlayed < SecondsPerHour)
                         {
-                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
+                            userData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
                         }
                         else if (timePlayed < SecondsPerDay)
                         {
-                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";
+                            userData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";
                         }
                         else
                         {
-                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days";
+                            userData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days";
                         }
                     }
                 }
 
+                //Last Played
                 if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
                 {
                     Directory.CreateDirectory(savePath);
@@ -439,15 +444,25 @@ namespace Ryujinx.UI
                 {
                     using (StreamReader sr = new StreamReader(fs))
                     {
-                        playedData[1] = sr.ReadLine();
+                        userData[1] = sr.ReadLine();
                     }
                 }
 
-                return playedData;
+                //Fav Games
+                if (File.Exists(Path.Combine(savePath, "Fav.dat")))
+                {
+                    userData[2] = "true";
+                }
+                else
+                {
+                    userData[2] = "false";
+                }
+
+                return userData;
             }
             catch
             {
-                return new string[] { "Unknown", "Unknown" };
+                return new string[] { "Unknown", "Unknown", "false" };
             }
         }
 
