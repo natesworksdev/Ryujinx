@@ -310,8 +310,8 @@ namespace Ryujinx.UI
                     Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
                     End();
                 }
-
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
+				
+				new Thread(new ThreadStart(CreateGameWindow)).Start();
 
                 _gameLoaded              = true;
                 _stopEmulation.Sensitive = true;
@@ -353,7 +353,7 @@ namespace Ryujinx.UI
 
                 try
                 {
-                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", _userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _device.System.TitleID);
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
@@ -406,7 +406,7 @@ namespace Ryujinx.UI
             {
                 try
                 {
-                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", _userId, _device.System.TitleID);
+                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _device.System.TitleID);
                     double currentPlayTime = 0;
 
                     using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -471,7 +471,7 @@ namespace Ryujinx.UI
         private void FavToggle_Toggled(object o, ToggledArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
-            string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", _userId, _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1]);
+            string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower());
 
             if ((bool)_tableStore.GetValue(treeIter, 0))
             {
@@ -582,7 +582,7 @@ namespace Ryujinx.UI
 
         private void Update_Pressed(object o, EventArgs args)
         {
-            string ryuUpdater = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "RyuUpdater.exe");
+            string ryuUpdater = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "RyuUpdater.exe");
 
             try
             {

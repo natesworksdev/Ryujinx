@@ -393,7 +393,7 @@ namespace Ryujinx.UI
             try
             {
                 string[] userData = new string[3];
-                string savePath   = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "GUI", UserId, TitleId);
+                string savePath   = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", UserId, TitleId);
 
                 //Time Played
                 if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
