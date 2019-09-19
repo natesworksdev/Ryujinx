@@ -8,7 +8,7 @@
 
         public BehaviorInfo()
         {
-            /* TODO: return a 0xC0 struct:
+            /* TODO: this class got a size of 0xC0
                      0x00 - uint - Internal Revision
                      0x04 - uint - User Revision
                      0x08 - ... unknown ...

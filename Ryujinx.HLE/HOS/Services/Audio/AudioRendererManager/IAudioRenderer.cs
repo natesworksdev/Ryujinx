@@ -221,7 +221,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             if (behaviorInfo.IsElapsedFrameCountSupported())
             {
-                outputHeader.Unknown28 = 0x10;
+                outputHeader.ElapsedFrameCountInfoSize = 0x10;
             }
 
             outputHeader.TotalSize = updateHeaderSize                    +
@@ -231,7 +231,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
                                      outputHeader.EffectSize             +
                                      outputHeader.SinkSize               +
                                      outputHeader.PerformanceManagerSize +
-                                     outputHeader.Unknown28;
+                                     outputHeader.ElapsedFrameCountInfoSize;
 
             writer.Write(outputHeader);
 
