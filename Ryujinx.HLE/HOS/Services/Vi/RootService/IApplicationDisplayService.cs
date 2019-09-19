@@ -2,7 +2,6 @@ using ARMeilleure.Memory;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService;
-using Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService.Types;
 using System;
 using System.IO;
 using System.Text;

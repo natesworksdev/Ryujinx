@@ -1,11 +1,11 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Android.Types
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x8)]
     struct Fence
     {
-        public int id;
-        public int value;
+        public int Id;
+        public int Value;
     }
 }

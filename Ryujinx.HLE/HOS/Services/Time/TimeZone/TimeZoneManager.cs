@@ -2,7 +2,6 @@
 using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
-using Ryujinx.HLE.HOS.Services.Time.TimeZone.Types;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -10,7 +9,7 @@ using System.IO;
 using TimeZoneConverter;
 using TimeZoneConverter.Posix;
 
-using static Ryujinx.HLE.HOS.Services.Time.TimeZone.Types.TimeZoneRule;
+using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {

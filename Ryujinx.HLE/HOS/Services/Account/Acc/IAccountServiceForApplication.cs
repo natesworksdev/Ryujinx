@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Account.Acc.Types;
 using Ryujinx.HLE.HOS.Services.Arp;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;

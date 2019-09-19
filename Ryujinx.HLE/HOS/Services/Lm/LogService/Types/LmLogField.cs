@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Services.Lm.LogService.Types
+namespace Ryujinx.HLE.HOS.Services.Lm.LogService
 {
     enum LmLogField
     {

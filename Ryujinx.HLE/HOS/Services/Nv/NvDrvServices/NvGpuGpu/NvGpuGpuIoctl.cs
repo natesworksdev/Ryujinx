@@ -1,7 +1,5 @@
 using ARMeilleure.Memory;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu.Types;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Diagnostics;
 

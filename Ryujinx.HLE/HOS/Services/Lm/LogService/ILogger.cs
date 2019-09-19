@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Lm.LogService.Types;
 using System.IO;
 using System.Text;
 

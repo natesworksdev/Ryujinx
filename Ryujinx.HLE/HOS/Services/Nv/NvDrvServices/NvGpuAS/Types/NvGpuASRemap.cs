@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS.Types
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS
 {
     struct NvGpuASRemap
     {

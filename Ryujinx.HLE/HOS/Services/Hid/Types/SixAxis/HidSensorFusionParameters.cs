@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Hid.Types.SixAxis
+﻿namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public struct HidSensorFusionParameters
     {

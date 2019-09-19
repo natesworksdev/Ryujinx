@@ -3,8 +3,6 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.NotificationService;
-using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.NotificationService.Types;
-using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.Types;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;

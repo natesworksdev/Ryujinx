@@ -2,9 +2,9 @@
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
-using Ryujinx.HLE.HOS.Services.Hid.Types.Npad;
-using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager.Types;
+using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager;
 using System;
 using System.Collections.Generic;
 

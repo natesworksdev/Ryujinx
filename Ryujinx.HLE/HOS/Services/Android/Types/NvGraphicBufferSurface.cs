@@ -1,7 +1,6 @@
-﻿using Ryujinx.HLE.HOS.Services.Android.Types.Color;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Android.Types
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     [StructLayout(LayoutKind.Explicit, Size = 0x58)]
     struct NvGraphicBufferSurface

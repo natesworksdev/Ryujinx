@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Android.Types.Color
+﻿namespace Ryujinx.HLE.HOS.Services.Android
 {
     enum ColorComponent : uint
     {

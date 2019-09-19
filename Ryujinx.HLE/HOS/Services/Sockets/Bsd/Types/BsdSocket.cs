@@ -1,6 +1,6 @@
 using System.Net.Sockets;
 
-namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types
+namespace Ryujinx.HLE.HOS.Services.Sockets.Bsd
 {
     class BsdSocket
     {

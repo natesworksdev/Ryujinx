@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Android.Types
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     [StructLayout(LayoutKind.Explicit, Size = 0x144)]
     struct NvGraphicBuffer

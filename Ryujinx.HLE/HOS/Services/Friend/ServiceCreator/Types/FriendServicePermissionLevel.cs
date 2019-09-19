@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.Types
+namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 {
     [Flags]
     enum FriendServicePermissionLevel

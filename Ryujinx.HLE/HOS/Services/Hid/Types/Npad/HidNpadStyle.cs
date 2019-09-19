@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.HLE.HOS.Services.Hid.Types.Npad
+namespace Ryujinx.HLE.HOS.Services.Hid
 {
     [Flags]
     public enum HidNpadStyle

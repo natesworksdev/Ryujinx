@@ -1,12 +1,11 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.HLE.HOS.Services.Time.TimeZone.Types;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-using static Ryujinx.HLE.HOS.Services.Time.TimeZone.Types.TimeZoneRule;
+using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {

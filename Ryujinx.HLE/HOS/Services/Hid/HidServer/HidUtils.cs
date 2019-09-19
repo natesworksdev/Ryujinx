@@ -1,5 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Services.Hid.Types.Npad;
-using Ryujinx.HLE.Input;
+﻿using Ryujinx.HLE.Input;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.HidServer

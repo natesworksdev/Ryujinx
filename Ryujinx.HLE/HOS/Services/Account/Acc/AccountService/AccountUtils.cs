@@ -1,5 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Services.Account.Acc.Types;
-using Ryujinx.HLE.Utilities;
+﻿using Ryujinx.HLE.Utilities;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;

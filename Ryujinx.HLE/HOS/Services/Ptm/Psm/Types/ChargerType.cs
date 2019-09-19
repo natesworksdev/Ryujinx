@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Ptm.Psm.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 {
     enum ChargerType
     {

@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Android.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Android
 {
     struct BufferEntry
     {

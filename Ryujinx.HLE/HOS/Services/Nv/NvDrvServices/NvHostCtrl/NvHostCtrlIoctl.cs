@@ -1,8 +1,6 @@
 using ARMeilleure.Memory;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using Ryujinx.HLE.HOS.Services.Settings;
 using System;
 using System.Collections.Concurrent;

@@ -1,7 +1,5 @@
 using ARMeilleure.Memory;
 using Ryujinx.Audio.Adpcm;
-using Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager.Types;
-using Ryujinx.HLE.HOS.Services.Audio.Types;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager

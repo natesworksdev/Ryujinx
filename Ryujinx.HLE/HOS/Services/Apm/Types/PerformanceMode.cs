@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Apm.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
     enum PerformanceMode
     {

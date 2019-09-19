@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap.Types
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 {
     struct NvMapFree
     {

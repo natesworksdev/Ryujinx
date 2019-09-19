@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Services.Nv.Types
+namespace Ryujinx.HLE.HOS.Services.Nv
 {
     class NvFd
     {

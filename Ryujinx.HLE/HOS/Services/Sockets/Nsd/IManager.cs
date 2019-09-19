@@ -2,7 +2,6 @@
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager;
-using Ryujinx.HLE.HOS.Services.Sockets.Nsd.Types;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd

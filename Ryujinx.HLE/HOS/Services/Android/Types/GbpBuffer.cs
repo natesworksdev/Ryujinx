@@ -3,7 +3,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Android.Types
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     struct GbpBuffer
     {

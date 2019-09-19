@@ -1,8 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Account.Acc.Types;
-using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService.Types;
-using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.Types;
+using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService;
 using Ryujinx.HLE.Utilities;
 using System.IO;
 using System.Runtime.InteropServices;

@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager.Types
+namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
 {
     [StructLayout(LayoutKind.Sequential)]
     struct AudioOutData

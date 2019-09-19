@@ -1,7 +1,7 @@
 ﻿using Ryujinx.HLE.Utilities;
 using System;
 
-namespace Ryujinx.HLE.HOS.Services.Account.Acc.Types
+namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
     class UserProfile
     {

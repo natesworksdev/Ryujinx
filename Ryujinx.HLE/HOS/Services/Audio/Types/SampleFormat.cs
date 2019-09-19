@@ -1,4 +1,4 @@
-namespace Ryujinx.HLE.HOS.Services.Audio.Types
+namespace Ryujinx.HLE.HOS.Services.Audio
 {
     enum SampleFormat : byte
     {

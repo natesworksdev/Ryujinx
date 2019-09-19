@@ -3,10 +3,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap.Types;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Concurrent;
 

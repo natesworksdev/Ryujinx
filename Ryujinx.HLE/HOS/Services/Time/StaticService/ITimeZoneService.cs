@@ -2,7 +2,6 @@ using ARMeilleure.Memory;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
-using Ryujinx.HLE.HOS.Services.Time.TimeZone.Types;
 using System;
 using System.Text;
 

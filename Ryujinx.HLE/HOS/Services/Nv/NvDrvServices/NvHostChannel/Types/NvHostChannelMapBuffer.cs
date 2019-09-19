@@ -1,6 +1,6 @@
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
     [StructLayout(LayoutKind.Sequential, Size = 0xc, Pack = 4)]
     struct NvHostChannelMapBuffer

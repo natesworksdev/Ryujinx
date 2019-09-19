@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Hid.Types.Vibration
+﻿namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public struct HidVibrationDeviceValue
     {

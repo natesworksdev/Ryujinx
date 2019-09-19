@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu
 {
     struct NvGpuGpuGetTpcMasks
     {

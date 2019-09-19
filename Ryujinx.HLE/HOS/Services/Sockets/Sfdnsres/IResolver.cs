@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types;
 using System;
 using System.Collections.Generic;
 using System.Net;

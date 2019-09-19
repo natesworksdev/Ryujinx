@@ -5,7 +5,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager.Types;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Runtime.InteropServices;

@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Sockets.Bsd.Types;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.Net;

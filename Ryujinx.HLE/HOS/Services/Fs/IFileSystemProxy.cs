@@ -4,7 +4,6 @@ using LibHac.Fs.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
-using Ryujinx.HLE.HOS.Services.Fs.Types;
 using System.IO;
 
 using static Ryujinx.HLE.FileSystem.VirtualFileSystem;

@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 {
     enum GaiError
     {

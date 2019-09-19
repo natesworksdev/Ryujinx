@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Time.TimeZone.Types
+namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
     [StructLayout(LayoutKind.Sequential, Pack = 0x4, Size = 0x8)]
     struct CalendarTime

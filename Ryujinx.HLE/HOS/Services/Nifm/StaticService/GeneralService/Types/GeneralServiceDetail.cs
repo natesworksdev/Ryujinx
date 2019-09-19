@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService.GeneralService.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService.GeneralService
 {
     class GeneralServiceDetail
     {

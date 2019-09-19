@@ -1,6 +1,5 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator;
-using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.Types;
 using Ryujinx.HLE.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Friend

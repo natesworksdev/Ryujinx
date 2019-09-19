@@ -1,7 +1,6 @@
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager;
-using Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager.Types;
 using Ryujinx.HLE.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Audio

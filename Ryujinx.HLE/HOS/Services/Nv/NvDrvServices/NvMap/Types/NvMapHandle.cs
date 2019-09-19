@@ -1,6 +1,6 @@
 using System.Threading;
 
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap.Types
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 {
     class NvMapHandle
     {

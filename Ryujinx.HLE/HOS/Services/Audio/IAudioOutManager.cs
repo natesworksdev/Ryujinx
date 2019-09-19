@@ -3,7 +3,6 @@ using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Audio.AudioOutManager;
-using Ryujinx.HLE.HOS.Services.Audio.Types;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Audio

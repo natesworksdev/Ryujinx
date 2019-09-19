@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
 {
     enum SourceScalingMode
     {

@@ -1,7 +1,7 @@
 ﻿using Ryujinx.HLE.Utilities;
 using System.Runtime.InteropServices;
 
-namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService.Types
+namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.FriendService
 {
     [StructLayout(LayoutKind.Sequential, Pack = 0x8, CharSet = CharSet.Ansi)]
     struct UserPresence

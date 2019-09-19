@@ -1,6 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Services.Time.Clock.Types;
-
-namespace Ryujinx.HLE.HOS.Services.Time.Clock
+﻿namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class EphemeralNetworkSystemClockCore : SystemClockCore
     {

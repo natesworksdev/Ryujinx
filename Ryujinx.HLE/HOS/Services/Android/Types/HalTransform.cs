@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.HLE.HOS.Services.Android.Types
+namespace Ryujinx.HLE.HOS.Services.Android
 {
     [Flags]
     enum HalTransform

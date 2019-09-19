@@ -1,6 +1,5 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Nifm.StaticService.GeneralService;
-using Ryujinx.HLE.HOS.Services.Nifm.StaticService.GeneralService.Types;
 using System;
 using System.Linq;
 using System.Net;

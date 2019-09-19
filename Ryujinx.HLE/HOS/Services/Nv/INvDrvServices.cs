@@ -9,7 +9,6 @@ using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Generic;
 

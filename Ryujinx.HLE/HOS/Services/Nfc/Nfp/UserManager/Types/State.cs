@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
 {
     enum State
     {
