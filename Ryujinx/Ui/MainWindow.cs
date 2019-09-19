@@ -24,15 +24,19 @@ namespace Ryujinx.UI
 
         private static IAalOutput _audioOut;
 
+        private static GlScreen _screen;
+
         private static Application _gtkApplication;
 
         private static ListStore _tableStore;
 
         private static bool _gameLoaded = false;
 
-        private static string _userId = "00000000000000000000000000000001";
+        private static bool _ending = false;
 
         private static bool _firstLoadComplete = false;
+
+        private static string _userId = "00000000000000000000000000000001";
 
         private static TreeViewColumn favColumn;
         private static TreeViewColumn appColumn;
@@ -392,9 +396,9 @@ namespace Ryujinx.UI
         {
             Configuration.ConfigureHid(_device, SwitchSettings.SwitchConfig);
             
-            using (GlScreen screen = new GlScreen(_device, _renderer))
+            using (_screen = new GlScreen(_device, _renderer))
             {
-                screen.MainLoop();
+                _screen.MainLoop();
 
                 End();
             }
@@ -402,49 +406,54 @@ namespace Ryujinx.UI
 
         private static void End()
         {
-            if (_gameLoaded)
+            if (!_ending)
             {
-                try
+                _ending = true;
+
+                if (_gameLoaded)
                 {
-                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _device.System.TitleID);
-                    double currentPlayTime = 0;
-
-                    using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                    try
                     {
-                        using (StreamReader reader = new StreamReader(stream))
+                        string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _device.System.TitleID);
+                        double currentPlayTime = 0;
+
+                        using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
                         {
-                            DateTime startTime = DateTime.Parse(reader.ReadLine());
-
-                            using (FileStream lastPlayedStream = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                            using (StreamReader reader = new StreamReader(stream))
                             {
-                                using (StreamReader lastPlayedReader = new StreamReader(lastPlayedStream))
+                                DateTime startTime = DateTime.Parse(reader.ReadLine());
+
+                                using (FileStream lastPlayedStream = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
                                 {
-                                    currentPlayTime = double.Parse(lastPlayedReader.ReadLine());
+                                    using (StreamReader lastPlayedReader = new StreamReader(lastPlayedStream))
+                                    {
+                                        currentPlayTime = double.Parse(lastPlayedReader.ReadLine());
+                                    }
                                 }
-                            }
 
-                            using (FileStream timePlayedStream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                            {
-                                using (StreamWriter timePlayedWriter = new StreamWriter(timePlayedStream))
+                                using (FileStream timePlayedStream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
                                 {
-                                    timePlayedWriter.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                                    using (StreamWriter timePlayedWriter = new StreamWriter(timePlayedStream))
+                                    {
+                                        timePlayedWriter.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+                                    }
                                 }
                             }
                         }
                     }
+                    catch (ArgumentNullException)
+                    {
+                        Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                    }
                 }
-                catch (ArgumentNullException)
-                {
-                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
-                }
-            }
 
-            Profile.FinishProfiling();
-            _device.Dispose();
-            _audioOut.Dispose();
-            DiscordClient?.Dispose();
-            Logger.Shutdown();
-            Environment.Exit(0);
+                Profile.FinishProfiling();
+                _device.Dispose();
+                _audioOut.Dispose();
+                DiscordClient?.Dispose();
+                Logger.Shutdown();
+                Environment.Exit(0);
+            }
         }
 
         /// <summary>
@@ -545,11 +554,13 @@ namespace Ryujinx.UI
 
         private void Exit_Pressed(object o, EventArgs args)
         {
+            _screen?.Exit();
             End();
         }
 
         private void Window_Close(object o, DeleteEventArgs args)
         {
+            _screen?.Exit();
             End();
         }
 
