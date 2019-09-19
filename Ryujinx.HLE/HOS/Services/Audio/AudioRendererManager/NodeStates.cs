@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
                 size |= 7;
             }
 
-            return 4 * (totalMixCount * totalMixCount) + 0x12 * totalMixCount + 2 * (size / 8);
+            return 4 * (totalMixCount * totalMixCount) + 12 * totalMixCount + 2 * (size / 8);
         }
     }
 }
