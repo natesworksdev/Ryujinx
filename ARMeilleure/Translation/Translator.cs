@@ -116,7 +116,7 @@ namespace ARMeilleure.Translation
 
         private TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
-            const int MaxQueueCount = 300;
+            const int MaxBackgroundQueueCount = 300;
 
             // TODO: Investigate how we should handle code at unaligned addresses.
             // Currently, those low bits are used to store special flags.
@@ -139,7 +139,7 @@ namespace ARMeilleure.Translation
                         Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
                     }
 
-                    if (isCallTarget && func.GetRejit() && _backgroundQueue.Count < MaxQueueCount)
+                    if (isCallTarget && func.GetRejit() && _backgroundQueue.Count < MaxBackgroundQueueCount)
                     {
                         func.ResetRejit();
 
