@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.Utilities;
+﻿using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 {
@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             if (!behaviorInfo.IsSplitterBugFixed())
             {
-                size += IntUtils.AlignUp(4 * parameters.SplitterDestinationDataCount, 16);
+                size += BitUtils.AlignUp(4 * parameters.SplitterDestinationDataCount, 16);
             }
 
             return size;

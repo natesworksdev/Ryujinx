@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.Utilities;
+﻿using Ryujinx.Common;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 {
@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
     {
         public static long GetWorkBufferSize(int totalMixCount)
         {
-            int size = IntUtils.AlignUp(totalMixCount, AudioRendererConsts.BufferAlignment);
+            int size = BitUtils.AlignUp(totalMixCount, AudioRendererConsts.BufferAlignment);
 
             if (size < 0)
             {

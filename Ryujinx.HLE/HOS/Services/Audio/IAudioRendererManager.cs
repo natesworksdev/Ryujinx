@@ -1,7 +1,7 @@
 using Ryujinx.Audio;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager;
-using Ryujinx.HLE.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
@@ -44,13 +44,13 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
                 int totalMixCount = parameters.SubMixCount + 1;
 
-                size = IntUtils.AlignUp(parameters.MixBufferCount * 4, AudioRendererConsts.BufferAlignment) +
+                size = BitUtils.AlignUp(parameters.MixBufferCount * 4, AudioRendererConsts.BufferAlignment) +
                        parameters.SubMixCount * 0x400 +
                        totalMixCount          * 0x940 +
                        parameters.VoiceCount  * 0x3F0 +
-                       IntUtils.AlignUp(totalMixCount * 8, 16) +
-                       IntUtils.AlignUp(parameters.VoiceCount * 8, 16) +
-                       IntUtils.AlignUp(((parameters.SinkCount + parameters.SubMixCount) * 0x3C0 + parameters.SampleCount * 4) *
+                       BitUtils.AlignUp(totalMixCount * 8, 16) +
+                       BitUtils.AlignUp(parameters.VoiceCount * 8, 16) +
+                       BitUtils.AlignUp(((parameters.SinkCount + parameters.SubMixCount) * 0x3C0 + parameters.SampleCount * 4) *
                                          (parameters.MixBufferCount + 6), AudioRendererConsts.BufferAlignment) +
                        (parameters.SinkCount + parameters.SubMixCount) * 0x2C0 +
                        (parameters.EffectCount + parameters.VoiceCount * 4) * 0x30 + 
@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
                 if (behaviorInfo.IsSplitterSupported())
                 {
-                    size += IntUtils.AlignUp(NodeStates.GetWorkBufferSize(totalMixCount) + EdgeMatrix.GetWorkBufferSize(totalMixCount), 16);
+                    size += BitUtils.AlignUp(NodeStates.GetWorkBufferSize(totalMixCount) + EdgeMatrix.GetWorkBufferSize(totalMixCount), 16);
                 }
 
                 size = parameters.SinkCount                            * 0x170 +
@@ -82,7 +82,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
                     size += 0x1807E;
                 }
 
-                size = IntUtils.AlignUp(size, 0x1000);
+                size = BitUtils.AlignUp(size, 0x1000);
 
                 context.ResponseData.Write(size);
 
