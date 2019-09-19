@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         throw new InvalidOperationException($"Method \"{svcName}\" has a invalid ref type \"{argType.Name}\".");
                     }
 
-                    generator.Emit(OpCodes.Ldloc, local);
+                    generator.Emit(OpCodes.Ldloca, local);
                 }
                 else
                 {
