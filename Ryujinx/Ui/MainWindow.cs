@@ -209,6 +209,8 @@ namespace Ryujinx.UI
             }
             else
             {
+                Logger.RestartTime();
+
                 if (Directory.Exists(path))
                 {
                     string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
@@ -229,7 +231,6 @@ namespace Ryujinx.UI
                         _device.LoadCart(path);
                     }
                 }
-
                 else if (File.Exists(path))
                 {
                     switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
@@ -255,14 +256,14 @@ namespace Ryujinx.UI
                             }
                             catch (ArgumentOutOfRangeException)
                             {
-                                Logger.PrintError(LogClass.Application, $"The file which you have specified is unsupported by Ryujinx");
+                                Logger.PrintError(LogClass.Application, "The file which you have specified is unsupported by Ryujinx.");
                             }
                             break;
                     }
                 }
                 else
                 {
-                    Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file");
+                    Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
                     End();
                 }
 
@@ -398,7 +399,7 @@ namespace Ryujinx.UI
             Aot.Dispose();
             _device.Dispose();
             _audioOut.Dispose();
-            DiscordClient.Dispose();
+            DiscordClient?.Dispose();
             Logger.Shutdown();
             Environment.Exit(0);
         }
