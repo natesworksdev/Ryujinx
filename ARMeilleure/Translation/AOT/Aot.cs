@@ -112,10 +112,7 @@ namespace ARMeilleure.Translation.AOT
 
                     try
                     {
-                        using (deflateStream)
-                        {
-                            deflateStream.CopyTo(cacheStream);
-                        }
+                        using (deflateStream) deflateStream.CopyTo(cacheStream);
 
                         cacheStream.Seek(0L, SeekOrigin.Begin);
 
@@ -229,6 +226,8 @@ namespace ARMeilleure.Translation.AOT
 
             using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
             {
+                DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true);
+
                 MemoryStream cacheStream = new MemoryStream();
 
                 MD5 md5 = MD5.Create();
@@ -261,12 +260,16 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true))
+                    try
                     {
-                        cacheStream.WriteTo(deflateStream);
+                        using (deflateStream) cacheStream.WriteTo(deflateStream);
+                    }
+                    catch
+                    {
+                        compressedCacheStream.Position = 0L;
                     }
 
-                    if (compressedCacheStream.Length > compressedCacheStream.Position)
+                    if (compressedCacheStream.Position < compressedCacheStream.Length)
                     {
                         compressedCacheStream.SetLength(compressedCacheStream.Position);
                     }
