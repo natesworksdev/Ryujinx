@@ -147,6 +147,28 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
             return ResultCode.Success;
         }
 
+        [Command(12)] // 6.0.0+
+        // SetAudioOutVolume(s32)
+        public ResultCode SetAudioOutVolume(ServiceCtx context)
+        {
+            float volume = context.RequestData.ReadSingle();
+
+            _audioOut.SetVolume(volume);
+
+            return ResultCode.Success;
+        }
+
+        [Command(13)] // 6.0.0+
+        // GetAudioOutVolume() -> s32
+        public ResultCode GetAudioOutVolume(ServiceCtx context)
+        {
+            float volume = _audioOut.GetVolume();
+
+            context.ResponseData.Write(volume);
+
+            return ResultCode.Success;
+        }
+
         public void Dispose()
         {
             Dispose(true);
