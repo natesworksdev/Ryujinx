@@ -1,4 +1,5 @@
-﻿using LibHac;
+﻿using JsonPrettyPrinterPlus;
+using LibHac;
 using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
@@ -10,27 +11,19 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-
+using Utf8Json;
+using Utf8Json.Resolvers;
 using SystemState = Ryujinx.HLE.HOS.SystemState;
 
 namespace Ryujinx.UI
 {
     public class ApplicationLibrary
     {
-        private static Keyset KeySet;
-        private static SystemState.TitleLanguage DesiredTitleLanguage;
-
-        private const double SecondsPerMinute = 60.0;
-        private const double SecondsPerHour   = SecondsPerMinute * 60;
-        private const double SecondsPerDay    = SecondsPerHour   * 24;
-
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
         public static byte[] RyujinxNcaIcon { get; private set; }
         public static byte[] RyujinxNroIcon { get; private set; }
         public static byte[] RyujinxNsoIcon { get; private set; }
-
-        public static List<ApplicationData> ApplicationLibraryData { get; private set; }
 
         public struct ApplicationData
         {
@@ -46,6 +39,24 @@ namespace Ryujinx.UI
             public string FileSize;
             public string Path;
         }
+
+        public static List<ApplicationData> ApplicationLibraryData { get; private set; }
+
+        private static Keyset KeySet;
+        private static SystemState.TitleLanguage DesiredTitleLanguage;
+
+        private const double SecondsPerMinute = 60.0;
+        private const double SecondsPerHour   = SecondsPerMinute * 60;
+        private const double SecondsPerDay    = SecondsPerHour * 24;
+
+        private struct ApplicationMetadata
+        {
+            public bool   Fav;
+            public double TimePlayed;
+            public string LastPlayed;
+        }
+
+        private static ApplicationMetadata AppMetadata;
 
         public static void Init(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
         {
@@ -297,7 +308,7 @@ namespace Ryujinx.UI
                         if (Path.GetExtension(applicationPath) == ".nca")
                         {
                             Nca nca = new Nca(KeySet, new FileStream(applicationPath, FileMode.Open, FileAccess.Read).AsStorage(false));
-                            if (nca.Header.ContentType != ContentType.Program)
+                            if (nca.Header.ContentType != NcaContentType.Program)
                             {
                                 continue;
                             }
@@ -323,18 +334,18 @@ namespace Ryujinx.UI
                     }
                 }
 
-                string[] userData = GetUserData(titleId, "00000000000000000000000000000001");
+                (bool, string, string) metaData = GetMetadata(titleId);
 
                 ApplicationData data = new ApplicationData()
                 {
-                    Fav        = bool.Parse(userData[2]),
+                    Fav        = metaData.Item1,
                     Icon       = applicationIcon,
                     TitleName  = titleName,
                     TitleId    = titleId,
                     Developer  = developer,
                     Version    = version,
-                    TimePlayed = userData[0],
-                    LastPlayed = userData[1],
+                    TimePlayed = metaData.Item2,
+                    LastPlayed = metaData.Item3,
                     FileExt    = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
                     FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
                     Path       = applicationPath,
@@ -388,82 +399,53 @@ namespace Ryujinx.UI
             return controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
         }
 
-        private static string[] GetUserData(string TitleId, string UserId)
+        private static (bool, string, string) GetMetadata(string TitleId)
         {
-            try
+            string metadataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", TitleId, "gui");
+            string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
+
+            IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
+            if (!File.Exists(metadataFile))
             {
-                string[] userData = new string[3];
-                string savePath   = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", UserId, TitleId);
+                Directory.CreateDirectory(metadataFolder);
 
-                //Time Played
-                if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
+                AppMetadata = new ApplicationMetadata
                 {
-                    Directory.CreateDirectory(savePath);
-                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat")))
-                    {
-                        file.Write(Encoding.ASCII.GetBytes("0"));
-                    }
-                }
+                    Fav        = false,
+                    TimePlayed = 0,
+                    LastPlayed = "Never"
+                };
 
-                using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
-                {
-                    using (StreamReader sr = new StreamReader(fs))
-                    {
-                        float timePlayed = float.Parse(sr.ReadLine());
-
-                        if (timePlayed < SecondsPerMinute)
-                        {
-                            userData[0] = $"{timePlayed}s";
-                        }
-                        else if (timePlayed < SecondsPerHour)
-                        {
-                            userData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
-                        }
-                        else if (timePlayed < SecondsPerDay)
-                        {
-                            userData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";
-                        }
-                        else
-                        {
-                            userData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days";
-                        }
-                    }
-                }
-
-                //Last Played
-                if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
-                {
-                    Directory.CreateDirectory(savePath);
-                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat")))
-                    {
-                        file.Write(Encoding.ASCII.GetBytes("Never"));
-                    }
-                }
-
-                using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
-                {
-                    using (StreamReader sr = new StreamReader(fs))
-                    {
-                        userData[1] = sr.ReadLine();
-                    }
-                }
-
-                //Fav Games
-                if (File.Exists(Path.Combine(savePath, "Fav.dat")))
-                {
-                    userData[2] = "true";
-                }
-                else
-                {
-                    userData[2] = "false";
-                }
-
-                return userData;
+                byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+                File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
             }
-            catch
+
+            using (Stream stream = File.OpenRead(metadataFile))
             {
-                return new string[] { "Unknown", "Unknown", "false" };
+                AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
             }
+
+            string timePlayed;
+
+            if (AppMetadata.TimePlayed < SecondsPerMinute)
+            {
+                timePlayed = $"{AppMetadata.TimePlayed}s";
+            }
+            else if (AppMetadata.TimePlayed < SecondsPerHour)
+            {
+                timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
+            }
+            else if (AppMetadata.TimePlayed < SecondsPerDay)
+            {
+                timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerHour, 2, MidpointRounding.AwayFromZero)} hrs";
+            }
+            else
+            {
+                timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerDay, 2, MidpointRounding.AwayFromZero)} days";
+            }
+
+            return (AppMetadata.Fav, timePlayed, AppMetadata.LastPlayed);
         }
 
         private static byte[] NspOrXciIcon(string applicationPath)

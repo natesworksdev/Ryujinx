@@ -1,3 +1,4 @@
+using JsonPrettyPrinterPlus;
 using DiscordRPC;
 using Gtk;
 using GUI = Gtk.Builder.ObjectAttribute;
@@ -13,6 +14,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Utf8Json;
+using Utf8Json.Resolvers;
 
 namespace Ryujinx.UI
 {
@@ -36,8 +39,6 @@ namespace Ryujinx.UI
 
         private static bool _firstLoadComplete = false;
 
-        private static string _userId = "00000000000000000000000000000001";
-
         private static TreeViewColumn favColumn;
         private static TreeViewColumn appColumn;
         private static TreeViewColumn devColumn;
@@ -47,6 +48,15 @@ namespace Ryujinx.UI
         private static TreeViewColumn fileExtColumn;
         private static TreeViewColumn fileSizeColumn;
         private static TreeViewColumn pathColumn;
+
+        private struct ApplicationMetadata
+        {
+            public bool   Fav;
+            public double TimePlayed;
+            public string LastPlayed;
+        }
+
+        private static ApplicationMetadata AppMetadata;
 
         public static bool DiscordIntegrationEnabled { get; set; }
 
@@ -355,40 +365,35 @@ namespace Ryujinx.UI
                     DiscordClient.SetPresence(DiscordPresence);
                 }
 
-                try
+                string metadataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", _device.System.TitleID, "gui");
+                string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
+
+                IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
+                if (!File.Exists(metadataFile))
                 {
-                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _device.System.TitleID);
+                    Directory.CreateDirectory(metadataFolder);
 
-                    if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
+                    AppMetadata = new ApplicationMetadata
                     {
-                        Directory.CreateDirectory(savePath);
-                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                        {
-                            stream.Write(Encoding.ASCII.GetBytes("0"));
-                        }
-                    }
+                        Fav        = false,
+                        TimePlayed = 0,
+                        LastPlayed = "Never"
+                    };
 
-                    if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
-                    {
-                        Directory.CreateDirectory(savePath);
-                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
-                        {
-                            stream.Write(Encoding.ASCII.GetBytes("Never"));
-                        }
-                    }
-
-                    using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
-                    {
-                        using (StreamWriter writer = new StreamWriter(stream))
-                        {
-                            writer.WriteLine(DateTime.UtcNow);
-                        }
-                    }
+                    byte[] data = JsonSerializer.Serialize(AppMetadata, resolver);
+                    File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
                 }
-                catch (ArgumentNullException)
+
+                using (Stream stream = File.OpenRead(metadataFile))
                 {
-                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                    AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
                 }
+
+                AppMetadata.LastPlayed = DateTime.UtcNow.ToString();
+
+                byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+                File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
             }
         }
 
@@ -412,39 +417,35 @@ namespace Ryujinx.UI
 
                 if (_gameLoaded)
                 {
-                    try
-                    {
-                        string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _device.System.TitleID);
-                        double currentPlayTime = 0;
+                    string metadataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", _device.System.TitleID, "gui");
+                    string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
-                        using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                    IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
+                    if (!File.Exists(metadataFile))
+                    {
+                        Directory.CreateDirectory(metadataFolder);
+
+                        AppMetadata = new ApplicationMetadata
                         {
-                            using (StreamReader reader = new StreamReader(stream))
-                            {
-                                DateTime startTime = DateTime.Parse(reader.ReadLine());
+                            Fav        = false,
+                            TimePlayed = 0,
+                            LastPlayed = "Never"
+                        };
 
-                                using (FileStream lastPlayedStream = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                                {
-                                    using (StreamReader lastPlayedReader = new StreamReader(lastPlayedStream))
-                                    {
-                                        currentPlayTime = double.Parse(lastPlayedReader.ReadLine());
-                                    }
-                                }
-
-                                using (FileStream timePlayedStream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                                {
-                                    using (StreamWriter timePlayedWriter = new StreamWriter(timePlayedStream))
-                                    {
-                                        timePlayedWriter.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
-                                    }
-                                }
-                            }
-                        }
+                        byte[] data = JsonSerializer.Serialize(AppMetadata, resolver);
+                        File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
                     }
-                    catch (ArgumentNullException)
+
+                    using (Stream stream = File.OpenRead(metadataFile))
                     {
-                        Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                        AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
                     }
+
+                    AppMetadata.TimePlayed += Math.Round(DateTime.UtcNow.Subtract(DateTime.Parse(AppMetadata.LastPlayed)).TotalSeconds, MidpointRounding.AwayFromZero);
+
+                    byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+                    File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
                 }
 
                 Profile.FinishProfiling();
@@ -480,26 +481,31 @@ namespace Ryujinx.UI
         private void FavToggle_Toggled(object o, ToggledArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
-            string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "GUI", _userId, _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower());
+            string titleid      = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+            string metadataPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", titleid, "gui", "metadata.json");
+
+            IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
+            using (Stream stream = File.OpenRead(metadataPath))
+            {
+                AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+            }
 
             if ((bool)_tableStore.GetValue(treeIter, 0))
             {
                 _tableStore.SetValue(treeIter, 0, false);
 
-                if (File.Exists(System.IO.Path.Combine(savePath, "Fav.dat")))
-                {
-                    File.Delete(System.IO.Path.Combine(savePath, "Fav.dat"));
-                }
+                AppMetadata.Fav = false;
             }
             else
             {
                 _tableStore.SetValue(treeIter, 0, true);
 
-                if (!File.Exists(System.IO.Path.Combine(savePath, "Fav.dat")))
-                {
-                    using (File.Create(System.IO.Path.Combine(savePath, "Fav.dat"))) { };
-                }
+                AppMetadata.Fav = true;
             }
+
+            byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+            File.WriteAllText(metadataPath, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
         }
 
         private void Row_Activated(object o, RowActivatedArgs args)
@@ -709,9 +715,6 @@ namespace Ryujinx.UI
         {
             string aValue = model.GetValue(a, 5).ToString();
             string bValue = model.GetValue(b, 5).ToString();
-
-            if (aValue == "Unknown") { aValue = "0s"; }
-            if (bValue == "Unknown") { bValue = "0s"; }
 
             if (aValue.Length > 4 && aValue.Substring(aValue.Length - 4) == "mins")
             {
