@@ -112,7 +112,7 @@ namespace ARMeilleure.Translation.AOT
 
                     try
                     {
-                        using (deflateStream) deflateStream.CopyTo(cacheStream);
+                        deflateStream.CopyTo(cacheStream);
 
                         cacheStream.Seek(0L, SeekOrigin.Begin);
 
@@ -172,9 +172,11 @@ namespace ARMeilleure.Translation.AOT
                         InvalidateCompressedCacheStream(compressedCacheStream);
                     }
 
-                    md5.Dispose();
+                    deflateStream.Dispose();
 
                     cacheStream.Dispose();
+
+                    md5.Dispose();
                 }
             }
         }
@@ -222,14 +224,8 @@ namespace ARMeilleure.Translation.AOT
 
         private static void MergeAndSave(Object source, ElapsedEventArgs e)
         {
-            string cachePath = Path.Combine(WorkPath, TitleId);
-
-            using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
+            using (MemoryStream cacheStream = new MemoryStream())
             {
-                DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true);
-
-                MemoryStream cacheStream = new MemoryStream();
-
                 MD5 md5 = MD5.Create();
 
                 int hashSize = md5.HashSize / 8;
@@ -260,24 +256,31 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    try
-                    {
-                        using (deflateStream) cacheStream.WriteTo(deflateStream);
-                    }
-                    catch
-                    {
-                        compressedCacheStream.Position = 0L;
-                    }
+                    string cachePath = Path.Combine(WorkPath, TitleId);
 
-                    if (compressedCacheStream.Position < compressedCacheStream.Length)
+                    using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
                     {
-                        compressedCacheStream.SetLength(compressedCacheStream.Position);
+                        DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true);
+
+                        try
+                        {
+                            cacheStream.WriteTo(deflateStream);
+                        }
+                        catch
+                        {
+                            compressedCacheStream.Position = 0L;
+                        }
+
+                        if (compressedCacheStream.Position < compressedCacheStream.Length)
+                        {
+                            compressedCacheStream.SetLength(compressedCacheStream.Position);
+                        }
+
+                        deflateStream.Dispose();
                     }
                 }
 
                 md5.Dispose();
-
-                cacheStream.Dispose();
             }
         }
 
