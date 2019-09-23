@@ -34,10 +34,7 @@ namespace Ryujinx.UI
         private static ListStore _tableStore;
 
         private static bool _gameLoaded = false;
-
-        private static bool _ending = false;
-
-        private static bool _firstLoadComplete = false;
+        private static bool _ending     = false;
 
         private static TreeViewColumn favColumn;
         private static TreeViewColumn appColumn;
@@ -78,9 +75,7 @@ namespace Ryujinx.UI
         [GUI] CheckMenuItem _fileExtToggle;
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
-        [GUI] Box           _box;
         [GUI] TreeView      _gameTable;
-        [GUI] GLArea        _glScreen;
 #pragma warning restore 649
 
         public MainWindow(string[] args, Application gtkApplication) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), args, gtkApplication) { }
@@ -139,32 +134,10 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _fileSizeToggle.Active   = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns[9]) { _pathToggle.Active       = true; }
 
-            if (args.Length == 1)
-            {
-                // Temporary code section start, remove this section when game is rendered to the GLArea in the GUI
-                _box.Remove(_glScreen);
+            _gameTable.Model = _tableStore = new ListStore(typeof(bool), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
-                UpdateColumns();
-
-                _gameTable.Model = _tableStore = new ListStore(typeof(bool), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-
-                UpdateGameTable();
-
-                _firstLoadComplete = true;
-                // Temporary code section end
-            }
-            else
-            {
-                _box.Remove(_glScreen);
-
-                UpdateColumns();
-
-                _gameTable.Model = _tableStore = new ListStore(typeof(bool), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
-
-                UpdateGameTable();
-
-                _firstLoadComplete = true;
-            }
+            UpdateColumns();
+            UpdateGameTable();
         }
 
         public static void CreateErrorDialog(string errorMessage)
@@ -252,11 +225,11 @@ namespace Ryujinx.UI
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
                 _tableStore.AppendValues(AppData.Fav, new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
-
-                _tableStore.SetSortFunc(5, TimePlayedSort);
-                _tableStore.SetSortFunc(6, LastPlayedSort);
-                _tableStore.SetSortFunc(8, FileSizeSort);
             }
+
+            _tableStore.SetSortFunc(5, TimePlayedSort);
+            _tableStore.SetSortFunc(6, LastPlayedSort);
+            _tableStore.SetSortFunc(8, FileSizeSort);
         }
 
         internal void LoadApplication(string path)
@@ -631,7 +604,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void Icon_Toggled(object o, EventArgs args)
@@ -640,7 +613,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if(_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void Title_Toggled(object o, EventArgs args)
@@ -649,7 +622,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void Developer_Toggled(object o, EventArgs args)
@@ -658,7 +631,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void Version_Toggled(object o, EventArgs args)
@@ -667,7 +640,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void TimePlayed_Toggled(object o, EventArgs args)
@@ -676,7 +649,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void LastPlayed_Toggled(object o, EventArgs args)
@@ -685,7 +658,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void FileExt_Toggled(object o, EventArgs args)
@@ -694,7 +667,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void FileSize_Toggled(object o, EventArgs args)
@@ -703,7 +676,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
 
         private void Path_Toggled(object o, EventArgs args)
@@ -712,7 +685,7 @@ namespace Ryujinx.UI
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
 
-            if (_firstLoadComplete) UpdateColumns();
+            UpdateColumns();
         }
         
         private static int TimePlayedSort(ITreeModel model, TreeIter a, TreeIter b)
