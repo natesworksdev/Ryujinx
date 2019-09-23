@@ -23,6 +23,10 @@
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
+    <DefineConstants>MACOS_BUILD</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <None Remove="Ui\AboutWindow.glade" />
     <None Remove="Ui\assets\BlueCon.png" />

@@ -324,8 +324,12 @@ namespace Ryujinx.UI
                     Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
                     End();
                 }
-				
-				new Thread(new ThreadStart(CreateGameWindow)).Start();
+
+#if MACOS_BUILD
+                CreateGameWindow();
+#else
+                new Thread(new ThreadStart(CreateGameWindow)).Start();
+#endif
 
                 _gameLoaded              = true;
                 _stopEmulation.Sensitive = true;
