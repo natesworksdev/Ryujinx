@@ -20,16 +20,17 @@ namespace ARMeilleure.Translation
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
 
-        private MemoryManager _memory;
+        private readonly MemoryManager _memory;
 
         private readonly object _locker;
 
-        private Dictionary<ulong, TranslatedFunction> _funcs;
-        private ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
+        private readonly Dictionary<ulong, TranslatedFunction> _funcs;
+        private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
 
-        private ConcurrentQueue<ulong> _backgroundQueue;
+        private readonly int _maxBackgroundQueueCount = 30;
+        private readonly ConcurrentQueue<ulong> _backgroundQueue;
 
-        private AutoResetEvent _backgroundTranslatorEvent;
+        private readonly AutoResetEvent _backgroundTranslatorEvent;
 
         private volatile int _threadCount;
 
@@ -45,6 +46,8 @@ namespace ARMeilleure.Translation
             if (Aot.Enabled)
             {
                 Aot.FullTranslate(_funcsHighCq, memory.PageTable);
+
+                _maxBackgroundQueueCount *= 10;
             }
 
             _backgroundQueue = new ConcurrentQueue<ulong>();
@@ -116,8 +119,6 @@ namespace ARMeilleure.Translation
 
         private TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
-            const int MaxBackgroundQueueCount = 300;
-
             // TODO: Investigate how we should handle code at unaligned addresses.
             // Currently, those low bits are used to store special flags.
             bool isCallTarget = (address & CallFlag) != 0;
@@ -139,7 +140,7 @@ namespace ARMeilleure.Translation
                         Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
                     }
 
-                    if (isCallTarget && func.GetRejit() && _backgroundQueue.Count < MaxBackgroundQueueCount)
+                    if (isCallTarget && func.GetRejit() && _backgroundQueue.Count < _maxBackgroundQueueCount)
                     {
                         func.ResetRejit();
 
