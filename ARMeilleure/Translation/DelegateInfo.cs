@@ -5,9 +5,9 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
 {
-    class DelegateInfo
+    sealed class DelegateInfo
     {
-        private readonly Delegate _dlg; // Ensures that this delegate will not be garbage collected.
+        private readonly Delegate _dlg; // Ensure that this delegate will not be garbage collected.
 
         public IntPtr      FuncPtr { get; }
         public OperandType RetType { get; }
