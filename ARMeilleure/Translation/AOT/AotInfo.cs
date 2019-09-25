@@ -2,7 +2,7 @@ using System.IO;
 
 namespace ARMeilleure.Translation.AOT
 {
-    class AotInfo
+    sealed class AotInfo
     {
         private readonly BinaryWriter _relocWriter;
 
