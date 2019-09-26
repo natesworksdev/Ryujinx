@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:a", TimePermissions.Applet)]
     [Service("time:s", TimePermissions.System)]
     [Service("time:u", TimePermissions.User)]
-    [Service("time:p", TimePermissions.System)] // 9.0.0+ - TODO: Fix the permission.
+    [Service("time:su", TimePermissions.System)] // 9.0.0+ - TODO: Fix the permission.
     class IStaticService : IpcService
     {
         private TimePermissions _permissions;
