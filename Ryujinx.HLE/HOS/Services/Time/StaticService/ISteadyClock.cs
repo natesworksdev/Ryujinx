@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             return ResultCode.Success;
         }
 
-        [Command(1)]
+        [Command(2)]
         // GetTestOffset() -> nn::TimeSpanType
         public ResultCode GetTestOffset(ServiceCtx context)
         {
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             return ResultCode.Success;
         }
 
-        [Command(2)]
+        [Command(3)]
         // SetTestOffset(nn::TimeSpanType)
         public ResultCode SetTestOffset(ServiceCtx context)
         {
