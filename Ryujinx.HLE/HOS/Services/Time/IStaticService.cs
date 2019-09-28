@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             if (_timeSharedMemoryNativeHandle == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(context.Device.System.TimeSharedMem, out _timeSharedMemoryNativeHandle) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_timeManager.SharedMemory.GetSharedMemory(), out _timeSharedMemoryNativeHandle) != KernelResult.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }

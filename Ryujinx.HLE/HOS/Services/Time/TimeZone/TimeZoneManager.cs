@@ -17,10 +17,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
     {
         private const long TimeZoneBinaryTitleId = 0x010000000000080E;
 
-        private static TimeZoneManager instance;
-
-        private static object instanceLock = new object();
-
         private Switch       _device;
         private TimeZoneRule _myRules;
         private string       _deviceLocationName;

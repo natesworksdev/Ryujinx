@@ -7,12 +7,17 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         private StandardLocalSystemClockCore   _localSystemClockCore;
         private StandardNetworkSystemClockCore _networkSystemClockCore;
         private bool                           _autoCorrectionEnabled;
+        private SteadyClockTimePoint           _autoCorrectionTime;
+        private KEvent                         _autoCorrectionEvent;
 
         public StandardUserSystemClockCore(StandardLocalSystemClockCore localSystemClockCore, StandardNetworkSystemClockCore networkSystemClockCore) : base(localSystemClockCore.GetSteadyClockCore())
         {
             _localSystemClockCore   = localSystemClockCore;
             _networkSystemClockCore = networkSystemClockCore;
             _autoCorrectionEnabled  = false;
+            _autoCorrectionTime     = SteadyClockTimePoint.GetRandom();
+
+            _autoCorrectionEvent = null;
         }
 
         protected override ResultCode Flush(SystemClockContext context)
@@ -56,6 +61,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return result;
         }
 
+        internal void CreateAutomaticCorrectionEvent(Horizon system)
+        {
+            _autoCorrectionEvent = new KEvent(system);
+        }
+
         public ResultCode SetAutomaticCorrectionEnabled(KThread thread, bool autoCorrectionEnabled)
         {
             ResultCode result = ApplyAutomaticCorrection(thread, autoCorrectionEnabled);
@@ -71,6 +81,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public bool IsAutomaticCorrectionEnabled()
         {
             return _autoCorrectionEnabled;
+        }
+
+        public void SetAutomaticCorrectionUpdatedTime(SteadyClockTimePoint steadyClockTimePoint)
+        {
+            _autoCorrectionTime = steadyClockTimePoint;
+            _autoCorrectionEvent.WritableEvent.Signal();
         }
     }
 }

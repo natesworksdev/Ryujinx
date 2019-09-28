@@ -1,8 +1,9 @@
-﻿using Ryujinx.HLE.HOS.Services.Time.Clock;
+﻿using System;
+using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Ryujinx.HLE.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
@@ -30,6 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public StandardUserSystemClockCore     StandardUserSystemClock     { get; private set; }
         public TimeZoneManager                 TimeZone                    { get; private set; }
         public EphemeralNetworkSystemClockCore EphemeralNetworkSystemClock { get; private set; }
+        public TimeSharedMemory                SharedMemory                { get; private set; }
 
         // TODO: 9.0.0+ power state, alarms, clock writers
 
@@ -42,6 +44,107 @@ namespace Ryujinx.HLE.HOS.Services.Time
             StandardUserSystemClock     = new StandardUserSystemClockCore(StandardLocalSystemClock, StandardNetworkSystemClock);
             TimeZone                    = new TimeZoneManager();
             EphemeralNetworkSystemClock = new EphemeralNetworkSystemClockCore(StandardSteadyClock);
+            SharedMemory                = new TimeSharedMemory();
+        }
+
+        public void Initialize(Switch device, Horizon system, KSharedMemory sharedMemory, long timeSharedMemoryAddress, int timeSharedMemorySize)
+        {
+            SharedMemory.Initialize(device, sharedMemory, timeSharedMemoryAddress, timeSharedMemorySize);
+
+            // Here we use system on purpose as device.System isn't initialized at this point.
+            StandardUserSystemClock.CreateAutomaticCorrectionEvent(system);
+        }
+
+
+        public ResultCode SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
+        {
+            SetupInternalStandardSteadyClock(clockSourceId, setupValue, internalOffset, testOffset, isRtcResetDetected);
+
+            TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint(thread);
+
+            SharedMemory.SetupStandardSteadyClock(clockSourceId, currentTimePoint);
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+            return ResultCode.Success;
+        }
+
+        private void SetupInternalStandardSteadyClock(UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
+        {
+            StandardSteadyClock.SetClockSourceId(clockSourceId);
+            StandardSteadyClock.SetSetupValue(setupValue);
+            StandardSteadyClock.SetInternalOffset(internalOffset);
+            StandardSteadyClock.SetTestOffset(testOffset);
+
+            if (isRtcResetDetected)
+            {
+                StandardSteadyClock.SetRtcReset();
+            }
+
+            StandardSteadyClock.MarkInitialized();
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+        }
+
+        public void SetupStandardLocalSystemClock(KThread thread, SystemClockContext clockContext, long posixTime)
+        {
+            SteadyClockTimePoint currentTimePoint = StandardLocalSystemClock.GetSteadyClockCore().GetCurrentTimePoint(thread);
+            if (currentTimePoint.ClockSourceId == clockContext.SteadyTimePoint.ClockSourceId)
+            {
+                StandardLocalSystemClock.SetSystemClockContext(clockContext);
+            }
+            else
+            {
+                // TODO: if the result of this is wrong, abort
+                StandardLocalSystemClock.SetCurrentTime(thread, posixTime);
+            }
+
+            StandardLocalSystemClock.MarkInitialized();
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+
+        }
+
+        public void SetupStandardNetworkSystemClock(SystemClockContext clockContext, TimeSpanType sufficientAccuracy)
+        {
+            // TODO: if the result of this is wrong, abort
+            StandardNetworkSystemClock.SetSystemClockContext(clockContext);
+
+            StandardNetworkSystemClock.SetStandardNetworkClockSufficientAccuracy(sufficientAccuracy);
+            StandardNetworkSystemClock.MarkInitialized();
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+
+        }
+
+        public void SetupEphemeralNetworkSystemClock()
+        {
+            EphemeralNetworkSystemClock.MarkInitialized();
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+
+        }
+
+        public void SetupStandardUserSystemClock(KThread thread, bool isAutomaticCorrectionEnabled, SteadyClockTimePoint steadyClockTimePoint)
+        {
+            // TODO: if the result of this is wrong, abort
+            StandardUserSystemClock.SetAutomaticCorrectionEnabled(thread, isAutomaticCorrectionEnabled);
+
+            StandardUserSystemClock.SetAutomaticCorrectionUpdatedTime(steadyClockTimePoint);
+            StandardUserSystemClock.MarkInitialized();
+
+            SharedMemory.SetAutomaticCorrectionEnabled(isAutomaticCorrectionEnabled);
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+
+        }
+
+        public void SetStandardSteadyClockRtcOffset(KThread thread, TimeSpanType rtcOffset)
+        {
+            StandardSteadyClock.SetSetupValue(rtcOffset);
+
+            TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint(thread);
+
+            SharedMemory.SetSteadyClockRawTimePoint(currentTimePoint);
         }
     }
 }

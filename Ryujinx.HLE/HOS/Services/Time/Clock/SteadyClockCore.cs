@@ -22,6 +22,16 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return _clockSourceId;
         }
 
+        public void SetClockSourceId(UInt128 clockSourceId)
+        {
+            _clockSourceId = clockSourceId;
+        }
+
+        public void SetRtcReset()
+        {
+            _isRtcResetDetected = true;
+        }
+
         public virtual TimeSpanType GetTestOffset()
         {
             return new TimeSpanType(0);

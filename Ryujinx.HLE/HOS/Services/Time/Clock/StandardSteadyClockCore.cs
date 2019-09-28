@@ -1,5 +1,4 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
@@ -14,10 +13,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public StandardSteadyClockCore()
         {
-            _setupValue         = new TimeSpanType(0);
-            _testOffset         = new TimeSpanType(0);
-            _internalOffset     = new TimeSpanType(0);
-            _cachedRawTimePoint = new TimeSpanType(0);
+            _setupValue         = TimeSpanType.Zero;
+            _testOffset         = TimeSpanType.Zero;
+            _internalOffset     = TimeSpanType.Zero;
+            _cachedRawTimePoint = TimeSpanType.Zero;
         }
 
         public override SteadyClockTimePoint GetTimePoint(KThread thread)
@@ -53,7 +52,17 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public override TimeSpanType GetCurrentRawTimePoint(KThread thread)
         {
-            TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.CntpctEl0, thread.Context.CntfrqEl0);
+            TimeSpanType ticksTimeSpan;
+
+            // As this may be called before the guest code, we support passing a null thread to make this api usable.
+            if (thread == null)
+            {
+                ticksTimeSpan = TimeSpanType.FromSeconds(0);
+            }
+            else
+            {
+                ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.CntpctEl0, thread.Context.CntfrqEl0);
+            }
 
             TimeSpanType rawTimePoint = new TimeSpanType(_setupValue.NanoSeconds + ticksTimeSpan.NanoSeconds);
 
@@ -67,27 +76,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return rawTimePoint;
         }
 
-        // TODO: move this to glue when we will have psc fully done
-        public void ConfigureSetupValue()
+        public void SetSetupValue(TimeSpanType setupValue)
         {
-            int retry = 0;
-
-            ResultCode result = ResultCode.Success;
-
-            while (retry < 20)
-            {
-                result = (ResultCode)IRtcManager.GetExternalRtcValue(out ulong rtcValue);
-
-                if (result == ResultCode.Success)
-                {
-                    _setupValue = TimeSpanType.FromSeconds((long)rtcValue);
-                    break;
-                }
-
-                retry++;
-            }
-
-            _setupResultCode = result;
+            _setupValue = setupValue;
         }
     }
 }
