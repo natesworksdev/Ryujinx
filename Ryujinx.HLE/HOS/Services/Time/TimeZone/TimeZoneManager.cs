@@ -26,23 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private string       _deviceLocationName;
         private string[]     _locationNameCache;
 
-        public static TimeZoneManager Instance
-        {
-            get
-            {
-                lock (instanceLock)
-                {
-                    if (instance == null)
-                    {
-                        instance = new TimeZoneManager();
-                    }
-
-                    return instance;
-                }
-            }
-        }
-
-        TimeZoneManager()
+        public TimeZoneManager()
         {
             // Empty rules (UTC)
             _myRules = new TimeZoneRule

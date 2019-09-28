@@ -9,13 +9,20 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ITimeZoneService : IpcService
     {
-        public ITimeZoneService() { }
+        private TimeZoneManager _timeZoneManager;
+        private bool            _writePermission;
+
+        public ITimeZoneService(TimeZoneManager timeZoneManager, bool writePermission)
+        {
+            _timeZoneManager = timeZoneManager;
+            _writePermission = writePermission;
+        }
 
         [Command(0)]
         // GetDeviceLocationName() -> nn::time::LocationName
         public ResultCode GetDeviceLocationName(ServiceCtx context)
         {
-            char[] tzName = TimeZoneManager.Instance.GetDeviceLocationName().ToCharArray();
+            char[] tzName = _timeZoneManager.GetDeviceLocationName().ToCharArray();
 
             int padding = 0x24 - tzName.Length;
 
@@ -38,16 +45,21 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         // SetDeviceLocationName(nn::time::LocationName)
         public ResultCode SetDeviceLocationName(ServiceCtx context)
         {
+            if (!_writePermission)
+            {
+                return ResultCode.PermissionDenied;
+            }
+
             string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
 
-            return TimeZoneManager.Instance.SetDeviceLocationName(locationName);
+            return _timeZoneManager.SetDeviceLocationName(locationName);
         }
 
         [Command(2)]
         // GetTotalLocationNameCount() -> u32
         public ResultCode GetTotalLocationNameCount(ServiceCtx context)
         {
-            context.ResponseData.Write(TimeZoneManager.Instance.GetTotalLocationNameCount());
+            context.ResponseData.Write(_timeZoneManager.GetTotalLocationNameCount());
 
             return ResultCode.Success;
         }
@@ -60,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferSize     = context.Request.ReceiveBuff[0].Size;
 
-            ResultCode errorCode = TimeZoneManager.Instance.LoadLocationNameList(index, out string[] locationNameArray, (uint)bufferSize / 0x24);
+            ResultCode errorCode = _timeZoneManager.LoadLocationNameList(index, out string[] locationNameArray, (uint)bufferSize / 0x24);
 
             if (errorCode == 0)
             {
@@ -105,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
 
-            ResultCode resultCode = TimeZoneManager.Instance.LoadTimeZoneRules(out TimeZoneRule rules, locationName);
+            ResultCode resultCode = _timeZoneManager.LoadTimeZoneRules(out TimeZoneRule rules, locationName);
 
             // Write TimeZoneRule if success
             if (resultCode == 0)
@@ -150,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         {
             long posixTime = context.RequestData.ReadInt64();
 
-            ResultCode resultCode = TimeZoneManager.Instance.ToCalendarTimeWithMyRules(posixTime, out CalendarInfo calendar);
+            ResultCode resultCode = _timeZoneManager.ToCalendarTimeWithMyRules(posixTime, out CalendarInfo calendar);
 
             if (resultCode == 0)
             {
@@ -199,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         {
             CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
 
-            ResultCode resultCode = TimeZoneManager.Instance.ToPosixTimeWithMyRules(calendarTime, out long posixTime);
+            ResultCode resultCode = _timeZoneManager.ToPosixTimeWithMyRules(calendarTime, out long posixTime);
 
             if (resultCode == 0)
             {

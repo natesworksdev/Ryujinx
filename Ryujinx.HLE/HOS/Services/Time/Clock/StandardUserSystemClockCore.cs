@@ -8,21 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         private StandardNetworkSystemClockCore _networkSystemClockCore;
         private bool                           _autoCorrectionEnabled;
 
-        private static StandardUserSystemClockCore _instance;
-
-        public static StandardUserSystemClockCore Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new StandardUserSystemClockCore(StandardLocalSystemClockCore.Instance, StandardNetworkSystemClockCore.Instance);
-                }
-
-                return _instance;
-            }
-        }
-
         public StandardUserSystemClockCore(StandardLocalSystemClockCore localSystemClockCore, StandardNetworkSystemClockCore networkSystemClockCore) : base(localSystemClockCore.GetSteadyClockCore())
         {
             _localSystemClockCore   = localSystemClockCore;

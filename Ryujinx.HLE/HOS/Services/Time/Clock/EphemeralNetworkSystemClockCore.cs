@@ -2,21 +2,6 @@
 {
     class EphemeralNetworkSystemClockCore : SystemClockCore
     {
-        private static EphemeralNetworkSystemClockCore _instance;
-
-        public static EphemeralNetworkSystemClockCore Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new EphemeralNetworkSystemClockCore(TickBasedSteadyClockCore.Instance);
-                }
-
-                return _instance;
-            }
-        }
-
         public EphemeralNetworkSystemClockCore(SteadyClockCore steadyClockCore) : base(steadyClockCore) { }
 
         protected override ResultCode Flush(SystemClockContext context)

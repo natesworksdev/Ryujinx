@@ -7,27 +7,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     {
         private TimeSpanType _setupValue;
         // TODO: move this to glue when we will have psc fully done
-        //private ResultCode   _setupResultCode;
+        private ResultCode   _setupResultCode;
         private TimeSpanType _testOffset;
         private TimeSpanType _internalOffset;
         private TimeSpanType _cachedRawTimePoint;
 
-        private static StandardSteadyClockCore _instance;
-
-        public static StandardSteadyClockCore Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new StandardSteadyClockCore();
-                }
-
-                return _instance;
-            }
-        }
-
-        private StandardSteadyClockCore()
+        public StandardSteadyClockCore()
         {
             _setupValue         = new TimeSpanType(0);
             _testOffset         = new TimeSpanType(0);
@@ -83,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         }
 
         // TODO: move this to glue when we will have psc fully done
-        /*public void ConfigureSetupValue()
+        public void ConfigureSetupValue()
         {
             int retry = 0;
 
@@ -103,6 +88,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             }
 
             _setupResultCode = result;
-        }*/
+        }
     }
 }

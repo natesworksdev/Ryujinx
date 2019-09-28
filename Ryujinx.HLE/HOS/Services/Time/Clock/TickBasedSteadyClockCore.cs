@@ -4,22 +4,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class TickBasedSteadyClockCore : SteadyClockCore
     {
-        private static TickBasedSteadyClockCore _instance;
-
-        public static TickBasedSteadyClockCore Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new TickBasedSteadyClockCore();
-                }
-
-                return _instance;
-            }
-        }
-
-        private TickBasedSteadyClockCore() {}
+        public TickBasedSteadyClockCore() {}
 
         public override SteadyClockTimePoint GetTimePoint(KThread thread)
         {

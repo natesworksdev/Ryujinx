@@ -22,6 +22,8 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 
+using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
+
 using NxStaticObject = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
 
 namespace Ryujinx.HLE.HOS
@@ -202,13 +204,15 @@ namespace Ryujinx.HLE.HOS
 
             // TODO: use set:sys (and set external clock source id from settings)
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
-            StandardSteadyClockCore.Instance.ConfigureSetupValue();
+            // TODO: migrate to 9.0.0+
+            TimeServiceManager.Instance.StandardSteadyClock.ConfigureSetupValue();
+            TimeServiceManager.Instance.StandardSteadyClock.MarkInitialized();
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
             {
                 TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
 
-                StandardNetworkSystemClockCore.Instance.SetStandardNetworkClockSufficientAccuracy(standardNetworkClockSufficientAccuracy);
+                TimeServiceManager.Instance.StandardNetworkSystemClock.SetStandardNetworkClockSufficientAccuracy(standardNetworkClockSufficientAccuracy);
             }
 
         }
