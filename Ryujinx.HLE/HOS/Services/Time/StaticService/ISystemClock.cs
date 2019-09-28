@@ -7,34 +7,29 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
     {
         private SystemClockCore _clockCore;
         private bool            _writePermission;
+        private bool           _bypassUninitializedClock;
 
-        public ISystemClock(SystemClockCore clockCore, bool writePermission)
+        public ISystemClock(SystemClockCore clockCore, bool writePermission, bool bypassUninitializedCloc)
         {
-            _clockCore       = clockCore;
-            _writePermission = writePermission;
+            _clockCore                = clockCore;
+            _writePermission          = writePermission;
+            _bypassUninitializedClock = bypassUninitializedCloc;
         }
 
         [Command(0)]
         // GetCurrentTime() -> nn::time::PosixTime
         public ResultCode GetCurrentTime(ServiceCtx context)
         {
-            SteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
-            SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(context.Thread);
+            if (!_bypassUninitializedClock && !_clockCore.IsInitialized())
+            {
+                return ResultCode.UninitializedClock;
+            }
 
-            ResultCode result = _clockCore.GetSystemClockContext(context.Thread, out SystemClockContext clockContext);
+            ResultCode result = _clockCore.GetCurrentTime(context.Thread, out long posixTime);
 
             if (result == ResultCode.Success)
             {
-                result = ResultCode.TimeMismatch;
-
-                if (currentTimePoint.ClockSourceId == clockContext.SteadyTimePoint.ClockSourceId)
-                {
-                    long posixTime = clockContext.Offset + currentTimePoint.TimePoint;
-
-                    context.ResponseData.Write(posixTime);
-
-                    result = 0;
-                }
+                context.ResponseData.Write(posixTime);
             }
 
             return result;
@@ -49,31 +44,26 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.PermissionDenied;
             }
 
-            long                 posixTime        = context.RequestData.ReadInt64();
-            SteadyClockCore      steadyClockCore  = _clockCore.GetSteadyClockCore();
-            SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(context.Thread);
-
-            SystemClockContext clockContext = new SystemClockContext()
+            if (!_bypassUninitializedClock && !_clockCore.IsInitialized())
             {
-                Offset          = posixTime - currentTimePoint.TimePoint,
-                SteadyTimePoint = currentTimePoint
-            };
-
-            ResultCode result = _clockCore.SetSystemClockContext(clockContext);
-
-            if (result == ResultCode.Success)
-            {
-                result = _clockCore.Flush(clockContext);
+                return ResultCode.UninitializedClock;
             }
 
-            return result;
+            long posixTime = context.RequestData.ReadInt64();
+
+            return _clockCore.SetCurrentTime(context.Thread, posixTime);
         }
 
         [Command(2)]
-        // GetSystemClockContext() -> nn::time::SystemClockContext
+        // GetClockContext() -> nn::time::SystemClockContext
         public ResultCode GetSystemClockContext(ServiceCtx context)
         {
-            ResultCode result = _clockCore.GetSystemClockContext(context.Thread, out SystemClockContext clockContext);
+            if (!_bypassUninitializedClock && !_clockCore.IsInitialized())
+            {
+                return ResultCode.UninitializedClock;
+            }
+
+            ResultCode result = _clockCore.GetClockContext(context.Thread, out SystemClockContext clockContext);
 
             if (result == ResultCode.Success)
             {
@@ -84,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         }
 
         [Command(3)]
-        // SetSystemClockContext(nn::time::SystemClockContext)
+        // SetClockContext(nn::time::SystemClockContext)
         public ResultCode SetSystemClockContext(ServiceCtx context)
         {
             if (!_writePermission)
@@ -92,14 +82,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.PermissionDenied;
             }
 
+            if (!_bypassUninitializedClock && !_clockCore.IsInitialized())
+            {
+                return ResultCode.UninitializedClock;
+            }
+
             SystemClockContext clockContext = context.RequestData.ReadStruct<SystemClockContext>();
 
             ResultCode result = _clockCore.SetSystemClockContext(clockContext);
-
-            if (result == ResultCode.Success)
-            {
-                result = _clockCore.Flush(clockContext);
-            }
 
             return result;
         }

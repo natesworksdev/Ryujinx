@@ -19,7 +19,7 @@
 
         public EphemeralNetworkSystemClockCore(SteadyClockCore steadyClockCore) : base(steadyClockCore) { }
 
-        public override ResultCode Flush(SystemClockContext context)
+        protected override ResultCode Flush(SystemClockContext context)
         {
             return ResultCode.Success;
         }

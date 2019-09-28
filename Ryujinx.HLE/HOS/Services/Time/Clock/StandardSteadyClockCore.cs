@@ -5,11 +5,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardSteadyClockCore : SteadyClockCore
     {
-        private long         _setupValue;
-        private ResultCode   _setupResultCode;
-        private bool         _isRtcResetDetected;
+        private TimeSpanType _setupValue;
+        // TODO: move this to glue when we will have psc fully done
+        //private ResultCode   _setupResultCode;
         private TimeSpanType _testOffset;
         private TimeSpanType _internalOffset;
+        private TimeSpanType _cachedRawTimePoint;
 
         private static StandardSteadyClockCore _instance;
 
@@ -28,21 +29,19 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         private StandardSteadyClockCore()
         {
-            _testOffset     = new TimeSpanType(0);
-            _internalOffset = new TimeSpanType(0);
+            _setupValue         = new TimeSpanType(0);
+            _testOffset         = new TimeSpanType(0);
+            _internalOffset     = new TimeSpanType(0);
+            _cachedRawTimePoint = new TimeSpanType(0);
         }
 
         public override SteadyClockTimePoint GetTimePoint(KThread thread)
         {
             SteadyClockTimePoint result = new SteadyClockTimePoint
             {
-                TimePoint     = 0,
+                TimePoint     = GetCurrentRawTimePoint(thread).ToSeconds(),
                 ClockSourceId = GetClockSourceId()
             };
-
-            TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.CntpctEl0, thread.Context.CntfrqEl0);
-
-            result.TimePoint = _setupValue + ticksTimeSpan.ToSeconds();
 
             return result;
         }
@@ -57,16 +56,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _testOffset = testOffset;
         }
 
-        public override ResultCode GetRtcValue(out ulong rtcValue)
-        {
-            return (ResultCode)IRtcManager.GetExternalRtcValue(out rtcValue);
-        }
-
-        public bool IsRtcResetDetected()
-        {
-            return _isRtcResetDetected;
-        }
-
         public override TimeSpanType GetInternalOffset()
         {
             return _internalOffset;
@@ -77,12 +66,24 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _internalOffset = internalOffset;
         }
 
-        public override ResultCode GetSetupResultValue()
+        public override TimeSpanType GetCurrentRawTimePoint(KThread thread)
         {
-            return _setupResultCode;
+            TimeSpanType ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.CntpctEl0, thread.Context.CntfrqEl0);
+
+            TimeSpanType rawTimePoint = new TimeSpanType(_setupValue.NanoSeconds + ticksTimeSpan.NanoSeconds);
+
+            if (rawTimePoint.NanoSeconds < _cachedRawTimePoint.NanoSeconds)
+            {
+                rawTimePoint.NanoSeconds = _cachedRawTimePoint.NanoSeconds;
+            }
+
+            _cachedRawTimePoint = rawTimePoint;
+
+            return rawTimePoint;
         }
 
-        public void ConfigureSetupValue()
+        // TODO: move this to glue when we will have psc fully done
+        /*public void ConfigureSetupValue()
         {
             int retry = 0;
 
@@ -94,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
                 if (result == ResultCode.Success)
                 {
-                    _setupValue = (long)rtcValue;
+                    _setupValue = TimeSpanType.FromSeconds((long)rtcValue);
                     break;
                 }
 
@@ -102,6 +103,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             }
 
             _setupResultCode = result;
-        }
+        }*/
     }
 }

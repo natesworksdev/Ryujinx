@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _standardNetworkClockSufficientAccuracy = new TimeSpanType(0);
         }
 
-        public override ResultCode Flush(SystemClockContext context)
+        protected override ResultCode Flush(SystemClockContext context)
         {
             // TODO: set:sys SetNetworkSystemClockContext
 
@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             bool isStandardNetworkClockSufficientAccuracy = false;
 
-            ResultCode result = GetSystemClockContext(thread, out SystemClockContext context);
+            ResultCode result = GetClockContext(thread, out SystemClockContext context);
 
             if (result == ResultCode.Success && context.SteadyTimePoint.GetSpanBetween(currentTimePoint, out long outSpan) == ResultCode.Success)
             {

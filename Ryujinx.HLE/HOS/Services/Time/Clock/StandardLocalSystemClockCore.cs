@@ -19,7 +19,7 @@
 
         public StandardLocalSystemClockCore(StandardSteadyClockCore steadyClockCore) : base(steadyClockCore) {}
 
-        public override ResultCode Flush(SystemClockContext context)
+        protected override ResultCode Flush(SystemClockContext context)
         {
             // TODO: set:sys SetUserSystemClockContext
 

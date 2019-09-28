@@ -30,12 +30,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _autoCorrectionEnabled  = false;
         }
 
-        public override ResultCode Flush(SystemClockContext context)
+        protected override ResultCode Flush(SystemClockContext context)
         {
             return ResultCode.NotImplemented;
         }
 
-        public override ResultCode GetSystemClockContext(KThread thread, out SystemClockContext context)
+        public override ResultCode GetClockContext(KThread thread, out SystemClockContext context)
         {
             ResultCode result = ApplyAutomaticCorrection(thread, false);
 
@@ -43,13 +43,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             if (result == ResultCode.Success)
             {
-                return _localSystemClockCore.GetSystemClockContext(thread, out context);
+                return _localSystemClockCore.GetClockContext(thread, out context);
             }
 
             return result;
         }
 
-        public override ResultCode SetSystemClockContext(SystemClockContext context)
+        public override ResultCode SetClockContext(SystemClockContext context)
         {
             return ResultCode.NotImplemented;
         }
@@ -60,11 +60,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
             if (_autoCorrectionEnabled != autoCorrectionEnabled && _networkSystemClockCore.IsClockSetup(thread))
             {
-                result = _networkSystemClockCore.GetSystemClockContext(thread, out SystemClockContext context);
+                result = _networkSystemClockCore.GetClockContext(thread, out SystemClockContext context);
 
                 if (result == ResultCode.Success)
                 {
-                    _localSystemClockCore.SetSystemClockContext(context);
+                    _localSystemClockCore.SetClockContext(context);
                 }
             }
 
