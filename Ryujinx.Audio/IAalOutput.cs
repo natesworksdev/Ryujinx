@@ -20,7 +20,7 @@ namespace Ryujinx.Audio
 
         float GetVolume();
 
-        void SetVolume(float volume);
+        void SetVolume(float gain);
 
         PlaybackState GetState(int trackId);
     }

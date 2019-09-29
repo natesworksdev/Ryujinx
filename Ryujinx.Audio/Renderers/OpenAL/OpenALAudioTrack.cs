@@ -104,7 +104,7 @@ namespace Ryujinx.Audio
 
             if (releasedCount > 0)
             {
-                // NOTE: If we signal, then we also need to have released buffers available
+                // If we signal, then we also need to have released buffers available
                 // to return when GetReleasedBuffers is called.
                 // If playback needs to be re-started due to all buffers being processed,
                 // then OpenAL zeros the counts (ReleasedCount), so we keep it on the queue.

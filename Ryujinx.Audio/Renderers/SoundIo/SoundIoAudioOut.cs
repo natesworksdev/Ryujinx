@@ -21,6 +21,11 @@ namespace Ryujinx.Audio
         private float _volume = 1.0f;
 
         /// <summary>
+        /// True if the volume of audio renderer have changed
+        /// </summary>
+        private bool _volumeChanged;
+
+        /// <summary>
         /// The <see cref="SoundIO"/> audio context
         /// </summary>
         private SoundIO _audioContext;
@@ -74,7 +79,7 @@ namespace Ryujinx.Audio
                 return -1;
             }
 
-            // NOTE: Open the output. We currently only support 16-bit signed LE
+            // Open the output. We currently only support 16-bit signed LE
             track.Open(sampleRate, channels, callback, SoundIOFormat.S16LE);
 
             return track.TrackID;
@@ -88,10 +93,10 @@ namespace Ryujinx.Audio
         {
             if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
             {
-                // NOTE: Close and dispose of the track
+                // Close and dispose of the track
                 track.Close();
 
-                // NOTE: Recycle the track back into the pool
+                // Recycle the track back into the pool
                 _trackPool.Put(track);
             }
         }
@@ -145,7 +150,13 @@ namespace Ryujinx.Audio
         {
             if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
             {
-                track.AudioStream.SetVolume(_volume);
+                if (_volumeChanged)
+                {
+                    track.AudioStream.SetVolume(_volume);
+
+                    _volumeChanged = false;
+                }
+                    
                 track.AppendBuffer(bufferTag, buffer);
             }
         }
@@ -182,10 +193,18 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Set playback volume
         /// </summary>
-        /// <param name="volume">The volume of the playback</param>
-        public void SetVolume(float volume)
+        /// <param name="gain">The gain of the playback</param>
+        public void SetVolume(float gain)
         {
-            _volume = Math.Clamp(_volume - (_volume * volume), 0.0f, 1.0f);
+            if (!_volumeChanged)
+            {
+                // Games send a gain value here, so we need to apply it on the current volume value.
+                // In that way we have to multiply the gain by the volume to get the real gain value.
+                // And then we substract the real gain value to our current volume value.
+                _volume = Math.Clamp(_volume - (_volume * gain), 0.0f, 1.0f);
+
+                _volumeChanged = true;
+            }
         }
 
         /// <summary>
@@ -253,12 +272,10 @@ namespace Ryujinx.Audio
 
             try
             {
-                context = new SoundIO
-                {
-                    OnBackendDisconnect = (i) =>
-                    {
-                        backendDisconnected = true;
-                    }
+                context = new SoundIO();
+
+                context.OnBackendDisconnect = (i) => {
+                    backendDisconnected = true;
                 };
 
                 context.Connect();

@@ -43,6 +43,11 @@ namespace Ryujinx.Audio
         private float _volume = 1.0f;
 
         /// <summary>
+        /// True if the volume of audio renderer have changed
+        /// </summary>
+        private bool _volumeChanged;
+
+        /// <summary>
         /// True if OpenAL is supported on the device
         /// </summary>
         public static bool IsSupported
@@ -82,7 +87,7 @@ namespace Ryujinx.Audio
                     }
                 }
 
-                // NOTE: If it's not slept it will waste cycles.
+                // If it's not slept it will waste cycles.
                 Thread.Sleep(10);
             }
             while (_keepPolling);
@@ -231,7 +236,12 @@ namespace Ryujinx.Audio
 
             if (State != ALSourceState.Playing && track.State == PlaybackState.Playing)
             {
-                AL.Source(track.SourceId, ALSourcef.Gain, _volume);
+                if (_volumeChanged)
+                {
+                    AL.Source(track.SourceId, ALSourcef.Gain, _volume);
+
+                    _volumeChanged = false;
+                }
 
                 AL.SourcePlay(track.SourceId);
             }
@@ -262,10 +272,18 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Set playback volume
         /// </summary>
-        /// <param name="volume">The volume of the playback</param>
-        public void SetVolume(float volume)
+        /// <param name="gain">The gain of the playback</param>
+        public void SetVolume(float gain)
         {
-            _volume = Math.Clamp(_volume - (_volume * volume), 0.0f, 1.0f);
+            if (!_volumeChanged)
+            {
+                // Games send a gain value here, so we need to apply it on the current volume value.
+                // In that way we have to multiply the gain by the volume to get the real gain value.
+                // And then we substract the real gain value to our current volume value.
+                _volume = Math.Clamp(_volume - (_volume * gain), 0.0f, 1.0f);
+
+                _volumeChanged = true;
+            }
         }
 
         /// <summary>

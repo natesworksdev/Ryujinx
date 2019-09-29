@@ -83,9 +83,9 @@ namespace Ryujinx.Audio
 
         public float GetVolume() => _volume;
 
-        public void SetVolume(float volume)
+        public void SetVolume(float gain)
         {
-            _volume = Math.Clamp(_volume - (_volume * volume), 0.0f, 1.0f);
+            _volume = Math.Clamp(_volume - (_volume * gain), 0.0f, 1.0f);
         }
 
         public void Dispose()
