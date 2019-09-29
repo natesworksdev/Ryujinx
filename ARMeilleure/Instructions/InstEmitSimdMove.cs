@@ -385,12 +385,12 @@ namespace ARMeilleure.Instructions
 
         public static void Tbl_V(ArmEmitterContext context)
         {
-            EmitTableVectorLookup(context, extension: false);
+            EmitTableVectorLookup(context, isTbl: true);
         }
 
         public static void Tbx_V(ArmEmitterContext context)
         {
-            EmitTableVectorLookup(context, extension: true);
+            EmitTableVectorLookup(context, isTbl: false);
         }
 
         public static void Trn1_V(ArmEmitterContext context)
@@ -511,7 +511,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), mask);
         }
 
-        private static void EmitTableVectorLookup(ArmEmitterContext context, bool extension)
+        private static void EmitTableVectorLookup(ArmEmitterContext context, bool isTbl)
         {
             OpCodeSimdTbl op = (OpCodeSimdTbl)context.CurrOp;
 
@@ -550,7 +550,7 @@ namespace ARMeilleure.Instructions
                     res = context.AddIntrinsic(Intrinsic.X86Por, res, res2);
                 }
 
-                if (extension)
+                if (!isTbl)
                 {
                     Operand idxMask  = X86GetAllElements(context, (0x1010101010101010L * op.Size) - 0x0101010101010101L);
                     Operand zeroMask = context.VectorZero();
@@ -578,7 +578,7 @@ namespace ARMeilleure.Instructions
 
                 List<Operand> args = new List<Operand>();
 
-                if (extension)
+                if (!isTbl)
                 {
                     args.Add(d);
                 }
@@ -596,22 +596,22 @@ namespace ARMeilleure.Instructions
 
                 switch (op.Size)
                 {
-                    case 1: dlg = !extension
+                    case 1: dlg = isTbl
                         ? (Delegate)new _V128_V128_S32_V128     (SoftFallback.Tbl1)
                         : (Delegate)new _V128_V128_V128_S32_V128(SoftFallback.Tbx1);
                         break;
 
-                    case 2: dlg = !extension
+                    case 2: dlg = isTbl
                         ? (Delegate)new _V128_V128_S32_V128_V128     (SoftFallback.Tbl2)
                         : (Delegate)new _V128_V128_V128_S32_V128_V128(SoftFallback.Tbx2);
                         break;
 
-                    case 3: dlg = !extension
+                    case 3: dlg = isTbl
                         ? (Delegate)new _V128_V128_S32_V128_V128_V128     (SoftFallback.Tbl3)
                         : (Delegate)new _V128_V128_V128_S32_V128_V128_V128(SoftFallback.Tbx3);
                         break;
 
-                    case 4: dlg = !extension
+                    case 4: dlg = isTbl
                         ? (Delegate)new _V128_V128_S32_V128_V128_V128_V128     (SoftFallback.Tbl4)
                         : (Delegate)new _V128_V128_V128_S32_V128_V128_V128_V128(SoftFallback.Tbx4);
                         break;
