@@ -1,4 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
@@ -16,13 +17,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _networkSystemClockCore = networkSystemClockCore;
             _autoCorrectionEnabled  = false;
             _autoCorrectionTime     = SteadyClockTimePoint.GetRandom();
-
-            _autoCorrectionEvent = null;
+            _autoCorrectionEvent    = null;
         }
 
         protected override ResultCode Flush(SystemClockContext context)
         {
-            return ResultCode.NotImplemented;
+            // As UserSystemClock isn't a real system clock, this shouldn't happens.
+            throw new NotImplementedException();
         }
 
         public override ResultCode GetClockContext(KThread thread, out SystemClockContext context)
@@ -81,6 +82,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public bool IsAutomaticCorrectionEnabled()
         {
             return _autoCorrectionEnabled;
+        }
+
+        public KReadableEvent GetAutomaticCorrectionReadableEvent()
+        {
+            return _autoCorrectionEvent.ReadableEvent;
         }
 
         public void SetAutomaticCorrectionUpdatedTime(SteadyClockTimePoint steadyClockTimePoint)

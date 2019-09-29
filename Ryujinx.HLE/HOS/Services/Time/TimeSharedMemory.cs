@@ -42,5 +42,15 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             // TODO
         }
+
+        public void UpdateLocalSystemClockContext(SystemClockContext context)
+        {
+            // TODO
+        }
+
+        public void UpdateNetworkSystemClockContext(SystemClockContext context)
+        {
+            // TODO
+        }
     }
 }

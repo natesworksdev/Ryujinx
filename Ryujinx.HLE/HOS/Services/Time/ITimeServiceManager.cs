@@ -154,7 +154,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             if (_automaticCorrectionEvent == 0)
             {
-                if (context.Process.HandleTable.GenerateHandle(_timeManager.SharedMemory.GetSharedMemory(), out _automaticCorrectionEvent) != KernelResult.Success)
+                if (context.Process.HandleTable.GenerateHandle(_timeManager.StandardUserSystemClock.GetAutomaticCorrectionReadableEvent(), out _automaticCorrectionEvent) != KernelResult.Success)
                 {
                     throw new InvalidOperationException("Out of handles!");
                 }

@@ -13,6 +13,7 @@ using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
+    // TODO: rewrite it for psc/glue changes + readd a correct locking around this
     public sealed class TimeZoneManager
     {
         private const long TimeZoneBinaryTitleId = 0x010000000000080E;

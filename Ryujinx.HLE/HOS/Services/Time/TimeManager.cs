@@ -24,16 +24,18 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
         }
 
-        public StandardSteadyClockCore         StandardSteadyClock         { get; private set; }
-        public TickBasedSteadyClockCore        TickBasedSteadyClock        { get; private set; }
-        public StandardLocalSystemClockCore    StandardLocalSystemClock    { get; private set; }
-        public StandardNetworkSystemClockCore  StandardNetworkSystemClock  { get; private set; }
-        public StandardUserSystemClockCore     StandardUserSystemClock     { get; private set; }
-        public TimeZoneManager                 TimeZone                    { get; private set; }
-        public EphemeralNetworkSystemClockCore EphemeralNetworkSystemClock { get; private set; }
-        public TimeSharedMemory                SharedMemory                { get; private set; }
-
-        // TODO: 9.0.0+ power state, alarms, clock writers
+        public StandardSteadyClockCore                  StandardSteadyClock         { get; private set; }
+        public TickBasedSteadyClockCore                 TickBasedSteadyClock        { get; private set; }
+        public StandardLocalSystemClockCore             StandardLocalSystemClock    { get; private set; }
+        public StandardNetworkSystemClockCore           StandardNetworkSystemClock  { get; private set; }
+        public StandardUserSystemClockCore              StandardUserSystemClock     { get; private set; }
+        public TimeZoneManager                          TimeZone                    { get; private set; }
+        public EphemeralNetworkSystemClockCore          EphemeralNetworkSystemClock { get; private set; }
+        public TimeSharedMemory                         SharedMemory                { get; private set; }
+        // TODO: 9.0.0+ power states and alarms
+        public LocalSystemClockContextWriter            LocalClockContextWriter     { get; private set; }
+        public NetworkSystemClockContextWriter          NetworkClockContextWriter   { get; private set; }
+        public EphemeralNetworkSystemClockContextWriter EphemeralClockContextWriter { get; private set; }
 
         public TimeManager()
         {
@@ -45,6 +47,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
             TimeZone                    = new TimeZoneManager();
             EphemeralNetworkSystemClock = new EphemeralNetworkSystemClockCore(StandardSteadyClock);
             SharedMemory                = new TimeSharedMemory();
+            LocalClockContextWriter     = new LocalSystemClockContextWriter(SharedMemory);
+            NetworkClockContextWriter   = new NetworkSystemClockContextWriter(SharedMemory);
+            EphemeralClockContextWriter = new EphemeralNetworkSystemClockContextWriter();
         }
 
         public void Initialize(Switch device, Horizon system, KSharedMemory sharedMemory, long timeSharedMemoryAddress, int timeSharedMemorySize)
@@ -87,6 +92,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public void SetupStandardLocalSystemClock(KThread thread, SystemClockContext clockContext, long posixTime)
         {
+            StandardLocalSystemClock.SetUpdateCallbackInstance(LocalClockContextWriter);
+
             SteadyClockTimePoint currentTimePoint = StandardLocalSystemClock.GetSteadyClockCore().GetCurrentTimePoint(thread);
             if (currentTimePoint.ClockSourceId == clockContext.SteadyTimePoint.ClockSourceId)
             {
@@ -106,6 +113,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public void SetupStandardNetworkSystemClock(SystemClockContext clockContext, TimeSpanType sufficientAccuracy)
         {
+            StandardNetworkSystemClock.SetUpdateCallbackInstance(NetworkClockContextWriter);
+
             // TODO: if the result of this is wrong, abort
             StandardNetworkSystemClock.SetSystemClockContext(clockContext);
 
@@ -118,6 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public void SetupEphemeralNetworkSystemClock()
         {
+            EphemeralNetworkSystemClock.SetUpdateCallbackInstance(EphemeralClockContextWriter);
             EphemeralNetworkSystemClock.MarkInitialized();
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"

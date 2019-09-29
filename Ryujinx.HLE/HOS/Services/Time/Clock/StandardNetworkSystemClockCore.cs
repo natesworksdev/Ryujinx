@@ -11,13 +11,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _standardNetworkClockSufficientAccuracy = new TimeSpanType(0);
         }
 
-        protected override ResultCode Flush(SystemClockContext context)
-        {
-            // TODO: set:sys SetNetworkSystemClockContext
-
-            return ResultCode.Success;
-        }
-
         public bool IsStandardNetworkSystemClockAccuracySufficient(KThread thread)
         {
             SteadyClockCore      steadyClockCore  = GetSteadyClockCore();
