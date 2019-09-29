@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetUserStaticService() -> object<nn::timesrv::detail::service::IStaticService>
         public ResultCode GetUserStaticService(ServiceCtx context)
         {
-            MakeObject(context, new IStaticService(_timeManager, TimePermissions.User));
+            MakeObject(context, new IStaticServiceForPsc(_timeManager, TimePermissions.User));
 
             return ResultCode.Success;
         }
@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetAdminStaticService() -> object<nn::timesrv::detail::service::IStaticService>
         public ResultCode GetAdminStaticService(ServiceCtx context)
         {
-            MakeObject(context, new IStaticService(_timeManager, TimePermissions.Admin));
+            MakeObject(context, new IStaticServiceForPsc(_timeManager, TimePermissions.Admin));
 
             return ResultCode.Success;
         }
@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetRepairStaticService() -> object<nn::timesrv::detail::service::IStaticService>
         public ResultCode GetRepairStaticService(ServiceCtx context)
         {
-            MakeObject(context, new IStaticService(_timeManager, TimePermissions.Repair));
+            MakeObject(context, new IStaticServiceForPsc(_timeManager, TimePermissions.Repair));
 
             return ResultCode.Success;
         }
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetManufactureStaticService() -> object<nn::timesrv::detail::service::IStaticService>
         public ResultCode GetManufactureStaticService(ServiceCtx context)
         {
-            MakeObject(context, new IStaticService(_timeManager, TimePermissions.Manufacture));
+            MakeObject(context, new IStaticServiceForPsc(_timeManager, TimePermissions.Manufacture));
 
             return ResultCode.Success;
         }

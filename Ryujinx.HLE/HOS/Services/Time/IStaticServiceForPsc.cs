@@ -12,20 +12,18 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    //[Service("time:a", TimePermissions.Admin)]
     [Service("time:s", TimePermissions.System)]
-    //[Service("time:u", TimePermissions.User)]
     [Service("time:su", TimePermissions.SystemUpdate)]
-    class IStaticService : IpcService
+    class IStaticServiceForPsc : IpcService
     {
         private TimeManager     _timeManager;
         private TimePermissions _permissions;
 
         private int _timeSharedMemoryNativeHandle = 0;
 
-        public IStaticService(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) {}
+        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) {}
 
-        public IStaticService(TimeManager manager, TimePermissions permissions)
+        public IStaticServiceForPsc(TimeManager manager, TimePermissions permissions)
         {
             _permissions = permissions;
             _timeManager = manager;

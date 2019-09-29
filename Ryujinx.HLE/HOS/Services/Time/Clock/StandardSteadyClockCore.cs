@@ -5,8 +5,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
     class StandardSteadyClockCore : SteadyClockCore
     {
         private TimeSpanType _setupValue;
-        // TODO: move this to glue when we will have psc fully done
-        private ResultCode   _setupResultCode;
         private TimeSpanType _testOffset;
         private TimeSpanType _internalOffset;
         private TimeSpanType _cachedRawTimePoint;
