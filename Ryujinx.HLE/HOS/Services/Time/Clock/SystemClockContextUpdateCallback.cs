@@ -1,4 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -6,13 +7,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SystemClockContextUpdateCallback
     {
-        private   List<KEvent>       _operationEventList;
-        protected SystemClockContext _context;
-        private   bool               _hasContext;
+        private   List<KWritableEvent> _operationEventList;
+        protected SystemClockContext   _context;
+        private   bool                 _hasContext;
 
         public SystemClockContextUpdateCallback()
         {
-            _operationEventList = new List<KEvent>();
+            _operationEventList = new List<KWritableEvent>();
             _context            = new SystemClockContext();
             _hasContext         = false;
         }
@@ -27,13 +28,20 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return true;
         }
 
+        public void RegisterOperationEvent(KWritableEvent writableEvent)
+        {
+            Monitor.Enter(_operationEventList);
+            _operationEventList.Add(writableEvent);
+            Monitor.Exit(_operationEventList);
+        }
+
         private void BroadcastOperationEvent()
         {
             Monitor.Enter(_operationEventList);
 
-            foreach (KEvent e in _operationEventList)
+            foreach (KWritableEvent e in _operationEventList)
             {
-                e.WritableEvent.Signal();
+                e.Signal();
             }
 
             Monitor.Exit(_operationEventList);
