@@ -6,7 +6,7 @@ using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 {
-    class TimeZoneManagerForPsc
+    class TimeZoneManager
     {
         private bool                 _isInitialized;
         private TimeZoneRule         _myRules;
@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private SteadyClockTimePoint _timeZoneUpdateTimePoint;
         private object               _lock;
 
-        public TimeZoneManagerForPsc()
+        public TimeZoneManager()
         {
             _isInitialized       = false;
             _deviceLocationName  = null;

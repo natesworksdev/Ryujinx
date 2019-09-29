@@ -19,11 +19,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         private Switch   _device;
         private string[] _locationNameCache;
 
-        public TimeZoneManagerForPsc Manager { get; private set; }
+        public TimeZoneManager Manager { get; private set; }
 
         public TimeZoneContentManager()
         {
-            Manager = new TimeZoneManagerForPsc();
+            Manager = new TimeZoneManager();
         }
 
         internal void Initialize(TimeManager timeManager, Switch device)

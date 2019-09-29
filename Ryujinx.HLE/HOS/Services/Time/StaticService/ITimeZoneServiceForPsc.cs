@@ -13,10 +13,10 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ITimeZoneServiceForPsc : IpcService
     {
-        private TimeZoneManagerForPsc _timeZoneManager;
-        private bool                  _writePermission;
+        private TimeZoneManager _timeZoneManager;
+        private bool            _writePermission;
 
-        public ITimeZoneServiceForPsc(TimeZoneManagerForPsc timeZoneManager, bool writePermission)
+        public ITimeZoneServiceForPsc(TimeZoneManager timeZoneManager, bool writePermission)
         {
             _timeZoneManager = timeZoneManager;
             _writePermission = writePermission;
