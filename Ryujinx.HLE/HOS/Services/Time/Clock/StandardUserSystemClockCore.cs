@@ -92,6 +92,15 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         public void SetAutomaticCorrectionUpdatedTime(SteadyClockTimePoint steadyClockTimePoint)
         {
             _autoCorrectionTime = steadyClockTimePoint;
+        }
+
+        public SteadyClockTimePoint GetAutomaticCorrectionUpdatedTime()
+        {
+            return _autoCorrectionTime;
+        }
+
+        public void SignalAutomaticCorrectionEvent()
+        {
             _autoCorrectionEvent.WritableEvent.Signal();
         }
     }

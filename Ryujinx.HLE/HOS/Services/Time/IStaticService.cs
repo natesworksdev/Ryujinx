@@ -102,6 +102,22 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return ResultCode.Success;
         }
 
+        [Command(50)] // 4.0.0+
+        // SetStandardSteadyClockInternalOffset(nn::TimeSpanType internal_offset)
+        public ResultCode SetStandardSteadyClockInternalOffset(ServiceCtx context)
+        {
+            // This is only implemented in glue's StaticService.
+            return ResultCode.NotImplemented;
+        }
+
+        [Command(51)] // 9.0.0+
+        // GetStandardSteadyClockRtcValue() -> u64
+        public ResultCode GetStandardSteadyClockRtcValue(ServiceCtx context)
+        {
+            // This is only implemented in glue's StaticService.
+            return ResultCode.NotImplemented;
+        }
+
         [Command(100)]
         // IsStandardUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsStandardUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
@@ -137,7 +153,27 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             bool autoCorrectionEnabled = context.RequestData.ReadBoolean();
 
-            return userClock.SetAutomaticCorrectionEnabled(context.Thread, autoCorrectionEnabled);
+            ResultCode result = userClock.SetAutomaticCorrectionEnabled(context.Thread, autoCorrectionEnabled);
+
+            if (result == ResultCode.Success)
+            {
+                _timeManager.SharedMemory.SetAutomaticCorrectionEnabled(autoCorrectionEnabled);
+
+                SteadyClockTimePoint currentTimePoint = userClock.GetSteadyClockCore().GetCurrentTimePoint(context.Thread);
+
+                userClock.SetAutomaticCorrectionUpdatedTime(currentTimePoint);
+                userClock.SignalAutomaticCorrectionEvent();
+            }
+
+            return result;
+        }
+
+        [Command(102)] // 5.0.0+
+        // GetStandardUserSystemClockInitialYear() -> u32
+        public ResultCode GetStandardUserSystemClockInitialYear(ServiceCtx context)
+        {
+            // This is only implemented in glue's StaticService.
+            return ResultCode.NotImplemented;
         }
 
         [Command(200)] // 3.0.0+
@@ -145,6 +181,22 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public ResultCode IsStandardNetworkSystemClockAccuracySufficient(ServiceCtx context)
         {
             context.ResponseData.Write(_timeManager.StandardNetworkSystemClock.IsStandardNetworkSystemClockAccuracySufficient(context.Thread));
+
+            return ResultCode.Success;
+        }
+
+        [Command(201)] // 6.0.0+
+        // GetStandardUserSystemClockAutomaticCorrectionUpdatedTime() -> nn::time::SteadyClockTimePoint
+        public ResultCode GetStandardUserSystemClockAutomaticCorrectionUpdatedTime(ServiceCtx context)
+        {
+            StandardUserSystemClockCore userClock = _timeManager.StandardUserSystemClock;
+
+            if (!userClock.IsInitialized())
+            {
+                return ResultCode.UninitializedClock;
+            }
+
+            context.ResponseData.WriteStruct(userClock.GetAutomaticCorrectionUpdatedTime());
 
             return ResultCode.Success;
         }
@@ -172,7 +224,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
                 context.ResponseData.Write(baseTimePoint);
 
-                result = 0;
+                result = ResultCode.Success;
             }
 
             return result;
