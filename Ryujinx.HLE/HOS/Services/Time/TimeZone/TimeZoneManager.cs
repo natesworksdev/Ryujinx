@@ -222,7 +222,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                     IFileSystem romfs      = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
                     Stream      tzIfStream = romfs.OpenFile($"zoneinfo/{locationName}", OpenMode.Read).AsStream();
 
-                    if (!TimeZone.LoadTimeZoneRules(out outRules, tzIfStream))
+                    if (!TimeZone.ParseTimeZoneBinary(out outRules, tzIfStream))
                     {
                         return ResultCode.TimeZoneConversionFailed;
                     }

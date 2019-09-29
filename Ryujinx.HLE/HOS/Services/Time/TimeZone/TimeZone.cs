@@ -903,7 +903,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return ParsePosixName(name.ToCharArray(), out outRules, false);
         }
 
-        internal static unsafe bool LoadTimeZoneRules(out TimeZoneRule outRules, Stream inputData)
+        internal static unsafe bool ParseTimeZoneBinary(out TimeZoneRule outRules, Stream inputData)
         {
             outRules = new TimeZoneRule
             {
