@@ -7,13 +7,13 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
-    class ITimeZoneService : IpcService
+    class ITimeZoneServiceForGlue : IpcService
     {
         private TimeZoneContentManager  _timeZoneContentManager;
         private ITimeZoneServiceForPsc  _inner;
         private bool                    _writePermission;
 
-        public ITimeZoneService(TimeZoneContentManager timeZoneContentManager, bool writePermission)
+        public ITimeZoneServiceForGlue(TimeZoneContentManager timeZoneContentManager, bool writePermission)
         {
             _timeZoneContentManager = timeZoneContentManager;
             _writePermission        = writePermission;

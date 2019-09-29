@@ -2,6 +2,7 @@
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
+using Ryujinx.HLE.HOS.Services.Time.StaticService;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
@@ -44,8 +45,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetTimeZoneService() -> object<nn::timesrv::detail::service::ITimeZoneService>
         public ResultCode GetTimeZoneService(ServiceCtx context)
         {
-            // TODO: ITimeZoneService is wrapped, apply 9.0.0 ITimeZoneService separation.
-            return _inner.GetTimeZoneService(context);
+            MakeObject(context, new ITimeZoneServiceForGlue(TimeManager.Instance.TimeZone, (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
+
+            return ResultCode.Success;
         }
 
         [Command(4)]

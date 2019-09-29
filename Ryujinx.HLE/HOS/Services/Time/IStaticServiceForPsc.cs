@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetTimeZoneService() -> object<nn::timesrv::detail::service::ITimeZoneService>
         public ResultCode GetTimeZoneService(ServiceCtx context)
         {
-            MakeObject(context, new ITimeZoneService(_timeManager.TimeZone, (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
+            MakeObject(context, new ITimeZoneServiceForPsc(_timeManager.TimeZone.Manager, (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
 
             return ResultCode.Success;
         }
