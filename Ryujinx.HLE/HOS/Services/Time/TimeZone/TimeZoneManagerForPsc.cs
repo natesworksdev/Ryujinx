@@ -37,12 +37,22 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public bool IsInitialized()
         {
-            return _isInitialized;
+            Monitor.Enter(_lock);
+
+            bool res = _isInitialized;
+
+            Monitor.Exit(_lock);
+
+            return res;
         }
 
         public void MarkInitialized()
         {
+            Monitor.Enter(_lock);
+
             _isInitialized = true;
+
+            Monitor.Exit(_lock);
         }
 
         public ResultCode GetDeviceLocationName(out string deviceLocationName)
@@ -87,7 +97,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         public void SetTotalLocationNameCount(uint totalLocationNameCount)
         {
             Monitor.Enter(_lock);
+
             _totalLocationNameCount = totalLocationNameCount;
+
             Monitor.Exit(_lock);
         }
 
@@ -110,13 +122,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             return result;
         }
 
-        public ResultCode SetUpdatedTime(SteadyClockTimePoint timeZoneUpdatedTimePoint)
+        public ResultCode SetUpdatedTime(SteadyClockTimePoint timeZoneUpdatedTimePoint, bool bypassUninitialized = false)
         {
             ResultCode result = ResultCode.UninitializedClock;
 
             Monitor.Enter(_lock);
 
-            if (_isInitialized)
+            if (_isInitialized || bypassUninitialized)
             {
                 _timeZoneUpdateTimePoint = timeZoneUpdatedTimePoint;
                 result                   = ResultCode.Success;

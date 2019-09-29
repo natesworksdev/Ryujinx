@@ -5,7 +5,6 @@ using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.Utilities;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
@@ -195,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, bufferPosition);
 
-            ResultCode resultCode = TimeZoneManager.ToCalendarTime(rules, posixTime, out CalendarInfo calendar);
+            ResultCode resultCode = _timeZoneManager.ToCalendarTime(rules, posixTime, out CalendarInfo calendar);
 
             if (resultCode == 0)
             {
@@ -240,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, inBufferPosition);
 
-            ResultCode resultCode = TimeZoneManager.ToPosixTime(rules, calendarTime, out long posixTime);
+            ResultCode resultCode = _timeZoneManager.ToPosixTime(rules, calendarTime, out long posixTime);
 
             if (resultCode == 0)
             {
@@ -282,7 +281,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             int padding = 0x24 - locationNameArray.Length;
 
-            Debug.Assert(padding < 0, "LocationName exceeded limit (0x24 bytes)");
+            Debug.Assert(padding >= 0, "LocationName exceeded limit (0x24 bytes)");
 
             context.ResponseData.Write(locationNameArray);
 

@@ -9,36 +9,22 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ITimeZoneService : IpcService
     {
-        private TimeZoneManager _timeZoneManager;
-        private bool            _writePermission;
+        private TimeZoneContentManager  _timeZoneContentManager;
+        private ITimeZoneServiceForPsc  _inner;
+        private bool                    _writePermission;
 
-        public ITimeZoneService(TimeZoneManager timeZoneManager, bool writePermission)
+        public ITimeZoneService(TimeZoneContentManager timeZoneContentManager, bool writePermission)
         {
-            _timeZoneManager = timeZoneManager;
-            _writePermission = writePermission;
+            _timeZoneContentManager = timeZoneContentManager;
+            _writePermission        = writePermission;
+            _inner                  = new ITimeZoneServiceForPsc(timeZoneContentManager.Manager, writePermission);
         }
 
         [Command(0)]
         // GetDeviceLocationName() -> nn::time::LocationName
         public ResultCode GetDeviceLocationName(ServiceCtx context)
         {
-            char[] tzName = _timeZoneManager.GetDeviceLocationName().ToCharArray();
-
-            int padding = 0x24 - tzName.Length;
-
-            if (padding < 0)
-            {
-                return ResultCode.LocationNameTooLong;
-            }
-
-            context.ResponseData.Write(tzName);
-
-            for (int index = 0; index < padding; index++)
-            {
-                context.ResponseData.Write((byte)0);
-            }
-
-            return ResultCode.Success;
+            return _inner.GetDeviceLocationName(context);
         }
 
         [Command(1)]
@@ -52,16 +38,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
 
-            return _timeZoneManager.SetDeviceLocationName(locationName);
+            return _timeZoneContentManager.SetDeviceLocationName(locationName);
         }
 
         [Command(2)]
         // GetTotalLocationNameCount() -> u32
         public ResultCode GetTotalLocationNameCount(ServiceCtx context)
         {
-            context.ResponseData.Write(_timeZoneManager.GetTotalLocationNameCount());
-
-            return ResultCode.Success;
+            return _inner.GetTotalLocationNameCount(context);
         }
 
         [Command(3)]
@@ -72,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferSize     = context.Request.ReceiveBuff[0].Size;
 
-            ResultCode errorCode = _timeZoneManager.LoadLocationNameList(index, out string[] locationNameArray, (uint)bufferSize / 0x24);
+            ResultCode errorCode = _timeZoneContentManager.LoadLocationNameList(index, out string[] locationNameArray, (uint)bufferSize / 0x24);
 
             if (errorCode == 0)
             {
@@ -114,13 +98,12 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 throw new InvalidOperationException();
             }
 
-
             string locationName = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
 
-            ResultCode resultCode = _timeZoneManager.LoadTimeZoneRules(out TimeZoneRule rules, locationName);
+            ResultCode resultCode = _timeZoneContentManager.LoadTimeZoneRule(out TimeZoneRule rules, locationName);
 
             // Write TimeZoneRule if success
-            if (resultCode == 0)
+            if (resultCode == ResultCode.Success)
             {
                 MemoryHelper.Write(context.Memory, bufferPosition, rules);
             }
@@ -132,99 +115,28 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         // ToCalendarTime(nn::time::PosixTime time, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
         public ResultCode ToCalendarTime(ServiceCtx context)
         {
-            long posixTime      = context.RequestData.ReadInt64();
-            long bufferPosition = context.Request.SendBuff[0].Position;
-            long bufferSize     = context.Request.SendBuff[0].Size;
-
-            if (bufferSize != 0x4000)
-            {
-                // TODO: find error code here
-                Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{bufferSize:x} (expected 0x4000)");
-
-                throw new InvalidOperationException();
-            }
-
-            TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, bufferPosition);
-
-            ResultCode resultCode = TimeZoneManager.ToCalendarTime(rules, posixTime, out CalendarInfo calendar);
-
-            if (resultCode == 0)
-            {
-                context.ResponseData.WriteStruct(calendar);
-            }
-
-            return resultCode;
+            return _inner.ToCalendarTime(context);
         }
 
         [Command(101)]
         // ToCalendarTimeWithMyRule(nn::time::PosixTime) -> (nn::time::CalendarTime, nn::time::sf::CalendarAdditionalInfo)
         public ResultCode ToCalendarTimeWithMyRule(ServiceCtx context)
         {
-            long posixTime = context.RequestData.ReadInt64();
-
-            ResultCode resultCode = _timeZoneManager.ToCalendarTimeWithMyRules(posixTime, out CalendarInfo calendar);
-
-            if (resultCode == 0)
-            {
-                context.ResponseData.WriteStruct(calendar);
-            }
-
-            return resultCode;
+            return _inner.ToCalendarTimeWithMyRule(context);
         }
 
         [Command(201)]
         // ToPosixTime(nn::time::CalendarTime calendarTime, buffer<nn::time::TimeZoneRule, 0x15> rules) -> (u32 outCount, buffer<nn::time::PosixTime, 0xa>)
         public ResultCode ToPosixTime(ServiceCtx context)
         {
-            long inBufferPosition = context.Request.SendBuff[0].Position;
-            long inBufferSize     = context.Request.SendBuff[0].Size;
-
-            CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
-
-            if (inBufferSize != 0x4000)
-            {
-                // TODO: find error code here
-                Logger.PrintError(LogClass.ServiceTime, $"TimeZoneRule buffer size is 0x{inBufferSize:x} (expected 0x4000)");
-
-                throw new InvalidOperationException();
-            }
-
-            TimeZoneRule rules = MemoryHelper.Read<TimeZoneRule>(context.Memory, inBufferPosition);
-
-            ResultCode resultCode = TimeZoneManager.ToPosixTime(rules, calendarTime, out long posixTime);
-
-            if (resultCode == 0)
-            {
-                long outBufferPosition = context.Request.RecvListBuff[0].Position;
-                long outBufferSize     = context.Request.RecvListBuff[0].Size;
-
-                context.Memory.WriteInt64(outBufferPosition, posixTime);
-                context.ResponseData.Write(1);
-            }
-
-            return resultCode;
+            return _inner.ToPosixTime(context);
         }
 
         [Command(202)]
         // ToPosixTimeWithMyRule(nn::time::CalendarTime calendarTime) -> (u32 outCount, buffer<nn::time::PosixTime, 0xa>)
         public ResultCode ToPosixTimeWithMyRule(ServiceCtx context)
         {
-            CalendarTime calendarTime = context.RequestData.ReadStruct<CalendarTime>();
-
-            ResultCode resultCode = _timeZoneManager.ToPosixTimeWithMyRules(calendarTime, out long posixTime);
-
-            if (resultCode == 0)
-            {
-                long outBufferPosition = context.Request.RecvListBuff[0].Position;
-                long outBufferSize     = context.Request.RecvListBuff[0].Size;
-
-                context.Memory.WriteInt64(outBufferPosition, posixTime);
-
-                // There could be only one result on one calendar as leap seconds aren't supported.
-                context.ResponseData.Write(1);
-            }
-
-            return resultCode;
+            return _inner.ToPosixTimeWithMyRule(context);
         }
     }
 }

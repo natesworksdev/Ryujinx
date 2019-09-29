@@ -5,6 +5,8 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.Utilities;
 using System;
+using System.IO;
+using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
@@ -108,11 +110,22 @@ namespace Ryujinx.HLE.HOS.Services.Time
         }
 
         [Command(14)]
-        // SetupTimeZoneManager(nn::time::LocationName location_name, u32 total_location_name_count, nn::time::TimeZoneRuleVersion timezone_rule_version, buffer<nn::time::TimeZoneBinary, 0x21> timezone_binary)
+        // SetupTimeZoneManager(nn::time::LocationName location_name, nn::time::SteadyClockTimePoint timezone_update_timepoint, u32 total_location_name_count, nn::time::TimeZoneRuleVersion timezone_rule_version, buffer<nn::time::TimeZoneBinary, 0x21> timezone_binary)
         public ResultCode SetupTimeZoneManager(ServiceCtx context)
         {
-            // TODO
-            return ResultCode.NotImplemented;
+            string               locationName            = Encoding.ASCII.GetString(context.RequestData.ReadBytes(0x24)).TrimEnd('\0');
+            SteadyClockTimePoint timeZoneUpdateTimePoint = context.RequestData.ReadStruct<SteadyClockTimePoint>();
+            uint                 totalLocationNameCount  = context.RequestData.ReadUInt32();
+            UInt128              timeZoneRuleVersion     = context.RequestData.ReadStruct<UInt128>();
+
+            (long bufferPosition, long bufferSize) = context.Request.GetBufferType0x21();
+
+            using (MemoryStream timeZoneBinaryStream = new MemoryStream(context.Memory.ReadBytes(bufferPosition, bufferSize)))
+            {
+                _timeManager.SetupTimeZoneManager(locationName, timeZoneUpdateTimePoint, totalLocationNameCount, timeZoneRuleVersion, timeZoneBinaryStream);
+            }
+
+            return ResultCode.Success;
         }
 
         [Command(15)]

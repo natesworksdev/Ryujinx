@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 }
             }
 
-            TimeManager.Instance.TimeZone.Initialize(_device);
+            TimeManager.Instance.InitializeTimeZone(_device);
         }
 
         public void ClearEntry(long titleId, ContentType contentType, StorageId storageId)

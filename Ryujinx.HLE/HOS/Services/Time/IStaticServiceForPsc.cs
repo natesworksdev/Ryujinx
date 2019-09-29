@@ -339,18 +339,25 @@ namespace Ryujinx.HLE.HOS.Services.Time
             clockSnapshot.UserContext                  = userContext;
             clockSnapshot.NetworkContext               = networkContext;
 
-            char[] tzName       = _timeManager.TimeZone.GetDeviceLocationName().ToCharArray();
+            ResultCode result = _timeManager.TimeZone.Manager.GetDeviceLocationName(out string deviceLocationName);
+
+            if (result != ResultCode.Success)
+            {
+                return result;
+            }
+
+            char[] tzName       = deviceLocationName.ToCharArray();
             char[] locationName = new char[0x24];
 
             Array.Copy(tzName, locationName, tzName.Length);
 
             clockSnapshot.LocationName = locationName;
 
-            ResultCode result = ClockSnapshot.GetCurrentTime(out clockSnapshot.UserTime, currentTimePoint, clockSnapshot.UserContext);
+            result = ClockSnapshot.GetCurrentTime(out clockSnapshot.UserTime, currentTimePoint, clockSnapshot.UserContext);
 
             if (result == ResultCode.Success)
             {
-                result = _timeManager.TimeZone.ToCalendarTimeWithMyRules(clockSnapshot.UserTime, out CalendarInfo userCalendarInfo);
+                result = _timeManager.TimeZone.Manager.ToCalendarTimeWithMyRules(clockSnapshot.UserTime, out CalendarInfo userCalendarInfo);
 
                 if (result == ResultCode.Success)
                 {
@@ -362,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
                         clockSnapshot.NetworkTime = 0;
                     }
 
-                    result = _timeManager.TimeZone.ToCalendarTimeWithMyRules(clockSnapshot.NetworkTime, out CalendarInfo networkCalendarInfo);
+                    result = _timeManager.TimeZone.Manager.ToCalendarTimeWithMyRules(clockSnapshot.NetworkTime, out CalendarInfo networkCalendarInfo);
 
                     if (result == ResultCode.Success)
                     {

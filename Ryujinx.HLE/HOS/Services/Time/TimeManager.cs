@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
@@ -29,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public StandardLocalSystemClockCore             StandardLocalSystemClock    { get; private set; }
         public StandardNetworkSystemClockCore           StandardNetworkSystemClock  { get; private set; }
         public StandardUserSystemClockCore              StandardUserSystemClock     { get; private set; }
-        public TimeZoneManager                          TimeZone                    { get; private set; }
+        public TimeZoneContentManager                   TimeZone                    { get; private set; }
         public EphemeralNetworkSystemClockCore          EphemeralNetworkSystemClock { get; private set; }
         public TimeSharedMemory                         SharedMemory                { get; private set; }
         // TODO: 9.0.0+ power states and alarms
@@ -44,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             StandardLocalSystemClock    = new StandardLocalSystemClockCore(StandardSteadyClock);
             StandardNetworkSystemClock  = new StandardNetworkSystemClockCore(StandardSteadyClock);
             StandardUserSystemClock     = new StandardUserSystemClockCore(StandardLocalSystemClock, StandardNetworkSystemClock);
-            TimeZone                    = new TimeZoneManager();
+            TimeZone                    = new TimeZoneContentManager();
             EphemeralNetworkSystemClock = new EphemeralNetworkSystemClockCore(StandardSteadyClock);
             SharedMemory                = new TimeSharedMemory();
             LocalClockContextWriter     = new LocalSystemClockContextWriter(SharedMemory);
@@ -58,6 +59,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             // Here we use system on purpose as device.System isn't initialized at this point.
             StandardUserSystemClock.CreateAutomaticCorrectionEvent(system);
+        }
+
+        public void InitializeTimeZone(Switch device)
+        {
+            TimeZone.Initialize(this, device);
         }
 
 
@@ -120,6 +126,20 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             StandardNetworkSystemClock.SetStandardNetworkClockSufficientAccuracy(sufficientAccuracy);
             StandardNetworkSystemClock.MarkInitialized();
+
+            // TODO: propagate IPC late binding of "time:s" and "time:p"
+
+        }
+
+        public void SetupTimeZoneManager(string locationName, SteadyClockTimePoint timeZoneUpdatedTimePoint, uint totalLocationNameCount, UInt128 timeZoneRuleVersion, Stream timeZoneBinaryStream)
+        {
+            // TODO: if the result of this is wrong, abort
+            TimeZone.Manager.SetDeviceLocationNameWithTimeZoneRule(locationName, timeZoneBinaryStream);
+
+            TimeZone.Manager.SetUpdatedTime(timeZoneUpdatedTimePoint, true);
+            TimeZone.Manager.SetTotalLocationNameCount(totalLocationNameCount);
+            TimeZone.Manager.SetTimeZoneRuleVersion(timeZoneRuleVersion);
+            TimeZone.Manager.MarkInitialized();
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
 
