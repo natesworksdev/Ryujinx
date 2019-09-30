@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
@@ -33,10 +34,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public TimeZoneContentManager                   TimeZone                    { get; private set; }
         public EphemeralNetworkSystemClockCore          EphemeralNetworkSystemClock { get; private set; }
         public TimeSharedMemory                         SharedMemory                { get; private set; }
-        // TODO: 9.0.0+ power states and alarms
         public LocalSystemClockContextWriter            LocalClockContextWriter     { get; private set; }
         public NetworkSystemClockContextWriter          NetworkClockContextWriter   { get; private set; }
         public EphemeralNetworkSystemClockContextWriter EphemeralClockContextWriter { get; private set; }
+
+        // TODO: 9.0.0+ power states and alarms
 
         public TimeManager()
         {
@@ -67,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         }
 
 
-        public ResultCode SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
+        public void SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
         {
             SetupInternalStandardSteadyClock(clockSourceId, setupValue, internalOffset, testOffset, isRtcResetDetected);
 
@@ -76,7 +78,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             SharedMemory.SetupStandardSteadyClock(thread, clockSourceId, currentTimePoint);
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
-            return ResultCode.Success;
         }
 
         private void SetupInternalStandardSteadyClock(UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
@@ -107,8 +108,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
             else
             {
-                // TODO: if the result of this is wrong, abort
-                StandardLocalSystemClock.SetCurrentTime(thread, posixTime);
+                if (StandardLocalSystemClock.SetCurrentTime(thread, posixTime) != ResultCode.Success)
+                {
+                    throw new InternalServiceException("Cannot set current local time");
+                }
             }
 
             StandardLocalSystemClock.MarkInitialized();
@@ -121,8 +124,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             StandardNetworkSystemClock.SetUpdateCallbackInstance(NetworkClockContextWriter);
 
-            // TODO: if the result of this is wrong, abort
-            StandardNetworkSystemClock.SetSystemClockContext(clockContext);
+            if (StandardNetworkSystemClock.SetSystemClockContext(clockContext) != ResultCode.Success)
+            {
+                throw new InternalServiceException("Cannot set network SystemClockContext");
+            }
 
             StandardNetworkSystemClock.SetStandardNetworkClockSufficientAccuracy(sufficientAccuracy);
             StandardNetworkSystemClock.MarkInitialized();
@@ -133,8 +138,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public void SetupTimeZoneManager(string locationName, SteadyClockTimePoint timeZoneUpdatedTimePoint, uint totalLocationNameCount, UInt128 timeZoneRuleVersion, Stream timeZoneBinaryStream)
         {
-            // TODO: if the result of this is wrong, abort
-            TimeZone.Manager.SetDeviceLocationNameWithTimeZoneRule(locationName, timeZoneBinaryStream);
+            if (TimeZone.Manager.SetDeviceLocationNameWithTimeZoneRule(locationName, timeZoneBinaryStream) != ResultCode.Success)
+            {
+                throw new InternalServiceException("Cannot set DeviceLocationName with a given TimeZoneBinary");
+            }
 
             TimeZone.Manager.SetUpdatedTime(timeZoneUpdatedTimePoint, true);
             TimeZone.Manager.SetTotalLocationNameCount(totalLocationNameCount);
@@ -156,8 +163,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         public void SetupStandardUserSystemClock(KThread thread, bool isAutomaticCorrectionEnabled, SteadyClockTimePoint steadyClockTimePoint)
         {
-            // TODO: if the result of this is wrong, abort
-            StandardUserSystemClock.SetAutomaticCorrectionEnabled(thread, isAutomaticCorrectionEnabled);
+            if (StandardUserSystemClock.SetAutomaticCorrectionEnabled(thread, isAutomaticCorrectionEnabled) != ResultCode.Success)
+            {
+                throw new InternalServiceException("Cannot set automatic user time correction state");
+            }
 
             StandardUserSystemClock.SetAutomaticCorrectionUpdatedTime(steadyClockTimePoint);
             StandardUserSystemClock.MarkInitialized();
