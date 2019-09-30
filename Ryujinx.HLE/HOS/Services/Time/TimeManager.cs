@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint(thread);
 
-            SharedMemory.SetupStandardSteadyClock(clockSourceId, currentTimePoint);
+            SharedMemory.SetupStandardSteadyClock(thread, clockSourceId, currentTimePoint);
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
             return ResultCode.Success;
@@ -174,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint(thread);
 
-            SharedMemory.SetSteadyClockRawTimePoint(currentTimePoint);
+            SharedMemory.SetSteadyClockRawTimePoint(thread, currentTimePoint);
         }
     }
 }
