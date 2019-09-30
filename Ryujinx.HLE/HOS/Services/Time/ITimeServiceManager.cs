@@ -68,7 +68,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
             TimeSpanType testOffset         = context.RequestData.ReadStruct<TimeSpanType>();
             bool         isRtcResetDetected = context.RequestData.ReadBoolean();
 
-            return _timeManager.SetupStandardSteadyClock(context.Thread, clockSourceId, setupValue, internalOffset, testOffset, isRtcResetDetected);
+            _timeManager.SetupStandardSteadyClock(context.Thread, clockSourceId, setupValue, internalOffset, testOffset, isRtcResetDetected);
+
+            return ResultCode.Success;
         }
 
         [Command(11)]

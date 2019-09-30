@@ -1357,10 +1357,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             int[] ip = MonthsLengths[IsLeap((int)year)];
 
-            while (dayOfYear >= ip[calendarTime.Month])
+            for (calendarTime.Month = 0; dayOfYear >= ip[calendarTime.Month]; ++calendarTime.Month)
             {
-                calendarTime.Month += 1;
-
                 dayOfYear -= ip[calendarTime.Month];
             }
 
@@ -1709,7 +1707,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                 Time = new CalendarTime()
                 {
                     Year   = (short)calendarTime.Year,
-                    Month  = calendarTime.Month,
+                    Month  = (sbyte)(calendarTime.Month + 1),
                     Day    = calendarTime.Day,
                     Hour   = calendarTime.Hour,
                     Minute = calendarTime.Minute,
