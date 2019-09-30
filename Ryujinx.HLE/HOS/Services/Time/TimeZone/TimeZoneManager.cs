@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         public TimeZoneManager()
         {
             _isInitialized       = false;
-            _deviceLocationName  = null;
+            _deviceLocationName  = "UTC";
             _timeZoneRuleVersion = new UInt128();
             _lock                = new object();
 
