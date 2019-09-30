@@ -5,6 +5,7 @@ using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Spl;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,17 +28,17 @@ namespace Ryujinx.UI
 
         public struct ApplicationData
         {
-            public bool   Fav;
-            public byte[] Icon;
-            public string TitleName;
-            public string TitleId;
-            public string Developer;
-            public string Version;
-            public string TimePlayed;
-            public string LastPlayed;
-            public string FileExt;
-            public string FileSize;
-            public string Path;
+            public bool   Fav        { get; set; }
+            public byte[] Icon       { get; set; }
+            public string TitleName  { get; set; }
+            public string TitleId    { get; set; }
+            public string Developer  { get; set; }
+            public string Version    { get; set; }
+            public string TimePlayed { get; set; }
+            public string LastPlayed { get; set; }
+            public string FileExt    { get; set; }
+            public string FileSize   { get; set; }
+            public string Path       { get; set; }
         }
 
         public static List<ApplicationData> ApplicationLibraryData { get; private set; }
@@ -51,9 +52,9 @@ namespace Ryujinx.UI
 
         private struct ApplicationMetadata
         {
-            public bool   Fav;
-            public double TimePlayed;
-            public string LastPlayed;
+            public bool   Fav        { get; set; }
+            public double TimePlayed { get; set; }
+            public string LastPlayed { get; set; }
         }
 
         private static ApplicationMetadata AppMetadata;
@@ -84,12 +85,12 @@ namespace Ryujinx.UI
                 string[] apps = Directory.GetFiles(appDir, "*.*", SearchOption.AllDirectories);
                 foreach (string app in apps)
                 {
-                    if ((Path.GetExtension(app.ToString()) == ".xci") ||
-                        (Path.GetExtension(app.ToString()) == ".nca") ||
-                        (Path.GetExtension(app.ToString()) == ".nsp") ||
-                        (Path.GetExtension(app.ToString()) == ".pfs0")||
-                        (Path.GetExtension(app.ToString()) == ".nro") ||
-                        (Path.GetExtension(app.ToString()) == ".nso"))
+                    if ((Path.GetExtension(app) == ".xci") ||
+                        (Path.GetExtension(app) == ".nca") ||
+                        (Path.GetExtension(app) == ".nsp") ||
+                        (Path.GetExtension(app) == ".pfs0")||
+                        (Path.GetExtension(app) == ".nro") ||
+                        (Path.GetExtension(app) == ".nso"))
                     {
                         applications.Add(app);
                     }
@@ -401,7 +402,7 @@ namespace Ryujinx.UI
 
         private static (bool, string, string) GetMetadata(string TitleId)
         {
-            string metadataFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", TitleId, "gui");
+            string metadataFolder = Path.Combine(new VirtualFileSystem().GetBasePath(), "games", TitleId, "gui");
             string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
 
             IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });

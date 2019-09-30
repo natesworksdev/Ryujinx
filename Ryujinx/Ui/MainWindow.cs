@@ -6,6 +6,7 @@ using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
 using System;
 using System.Diagnostics;
@@ -48,12 +49,10 @@ namespace Ryujinx.UI
 
         private struct ApplicationMetadata
         {
-            public bool   Fav;
-            public double TimePlayed;
-            public string LastPlayed;
+            public bool   Fav        { get; set; }
+            public double TimePlayed { get; set; }
+            public string LastPlayed { get; set; }
         }
-
-        private static ApplicationMetadata AppMetadata;
 
         public static bool DiscordIntegrationEnabled { get; set; }
 
@@ -342,10 +341,11 @@ namespace Ryujinx.UI
                     DiscordClient.SetPresence(DiscordPresence);
                 }
 
-                string metadataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", _device.System.TitleID, "gui");
+                string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleID, "gui");
                 string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
                 IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+                ApplicationMetadata AppMetadata = new ApplicationMetadata();
 
                 if (!File.Exists(metadataFile))
                 {
@@ -394,10 +394,11 @@ namespace Ryujinx.UI
 
                 if (_gameLoaded)
                 {
-                    string metadataFolder = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", _device.System.TitleID, "gui");
+                    string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleID, "gui");
                     string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
                     IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+                    ApplicationMetadata AppMetadata = new ApplicationMetadata();
 
                     if (!File.Exists(metadataFile))
                     {
@@ -459,10 +460,11 @@ namespace Ryujinx.UI
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
             string titleid      = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
-            string metadataPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "games", titleid, "gui", "metadata.json");
+            string metadataPath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", titleid, "gui", "metadata.json");
 
             IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-
+            ApplicationMetadata AppMetadata = new ApplicationMetadata();
+            
             using (Stream stream = File.OpenRead(metadataPath))
             {
                 AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
@@ -529,7 +531,7 @@ namespace Ryujinx.UI
         {
             Process.Start(new ProcessStartInfo()
             {
-                FileName        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs"),
+                FileName        = new VirtualFileSystem().GetBasePath(),
                 UseShellExecute = true,
                 Verb            = "open"
             });
@@ -576,7 +578,7 @@ namespace Ryujinx.UI
 
         private void Update_Pressed(object o, EventArgs args)
         {
-            string ryuUpdater = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "RyuUpdater.exe");
+            string ryuUpdater = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "RyuUpdater.exe");
 
             try
             {
