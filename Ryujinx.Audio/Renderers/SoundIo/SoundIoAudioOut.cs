@@ -193,16 +193,12 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Set playback volume
         /// </summary>
-        /// <param name="gain">The gain of the playback</param>
-        public void SetVolume(float gain)
+        /// <param name="volume">The volume of the playback</param>
+        public void SetVolume(float volume)
         {
             if (!_volumeChanged)
             {
-                // Games send a gain value here, so we need to apply it on the current volume value.
-                // In that way we have to multiply the gain by the volume to get the real gain value.
-                // And then we substract the real gain value to our current volume value.
-                _volume = Math.Clamp(_volume - (_volume * gain), 0.0f, 1.0f);
-
+                _volume        = volume;
                 _volumeChanged = true;
             }
         }

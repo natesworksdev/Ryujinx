@@ -151,9 +151,13 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         // SetAudioOutVolume(s32)
         public ResultCode SetAudioOutVolume(ServiceCtx context)
         {
-            float volume = context.RequestData.ReadSingle();
+            // Games send a gain value here, so we need to apply it on the current volume value.
 
-            _audioOut.SetVolume(volume);
+            float gain          = context.RequestData.ReadSingle();
+            float currentVolume = _audioOut.GetVolume();
+            float newVolume     = Math.Clamp(currentVolume + gain, 0.0f, 1.0f);
+
+            _audioOut.SetVolume(newVolume);
 
             return ResultCode.Success;
         }
