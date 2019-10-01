@@ -12,6 +12,7 @@
         protected override ResultCode Update()
         {
             _sharedMemory.UpdateLocalSystemClockContext(_context);
+
             return ResultCode.Success;
         }
     }

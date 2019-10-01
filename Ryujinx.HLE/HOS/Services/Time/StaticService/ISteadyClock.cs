@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
     {
         private SteadyClockCore _steadyClock;
         private bool            _writePermission;
-        private bool           _bypassUninitializedClock;
+        private bool            _bypassUninitializedClock;
 
         public ISteadyClock(SteadyClockCore steadyClock, bool writePermission, bool bypassUninitializedClock)
         {

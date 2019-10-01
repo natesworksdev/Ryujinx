@@ -102,6 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public ResultCode SetupStandardUserSystemClock(ServiceCtx context)
         {
             bool isAutomaticCorrectionEnabled = context.RequestData.ReadBoolean();
+
             context.RequestData.BaseStream.Position += 7;
 
             SteadyClockTimePoint steadyClockTimePoint = context.RequestData.ReadStruct<SteadyClockTimePoint>();
@@ -196,7 +197,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public ResultCode GetAlarmRegistrationEvent(ServiceCtx context)
         {
             // TODO
-            return ResultCode.NotImplemented;
+            throw new ServiceNotImplementedException(context);
         }
 
         [Command(201)]
@@ -204,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public ResultCode UpdateSteadyAlarms(ServiceCtx context)
         {
             // TODO
-            return ResultCode.NotImplemented;
+            throw new ServiceNotImplementedException(context);
         }
 
         [Command(202)]
@@ -212,7 +213,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         public ResultCode TryGetNextSteadyClockAlarmSnapshot(ServiceCtx context)
         {
             // TODO
-            return ResultCode.NotImplemented;
+            throw new ServiceNotImplementedException(context);
         }
     }
 }

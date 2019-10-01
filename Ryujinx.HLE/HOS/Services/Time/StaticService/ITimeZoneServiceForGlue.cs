@@ -9,9 +9,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
     class ITimeZoneServiceForGlue : IpcService
     {
-        private TimeZoneContentManager  _timeZoneContentManager;
-        private ITimeZoneServiceForPsc  _inner;
-        private bool                    _writePermission;
+        private TimeZoneContentManager _timeZoneContentManager;
+        private ITimeZoneServiceForPsc _inner;
+        private bool                   _writePermission;
 
         public ITimeZoneServiceForGlue(TimeZoneContentManager timeZoneContentManager, bool writePermission)
         {

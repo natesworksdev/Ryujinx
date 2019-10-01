@@ -117,7 +117,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             StandardLocalSystemClock.MarkInitialized();
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
-
         }
 
         public void SetupStandardNetworkSystemClock(SystemClockContext clockContext, TimeSpanType sufficientAccuracy)
@@ -133,7 +132,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             StandardNetworkSystemClock.MarkInitialized();
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
-
         }
 
         public void SetupTimeZoneManager(string locationName, SteadyClockTimePoint timeZoneUpdatedTimePoint, uint totalLocationNameCount, UInt128 timeZoneRuleVersion, Stream timeZoneBinaryStream)
@@ -149,7 +147,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             TimeZone.Manager.MarkInitialized();
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
-
         }
 
         public void SetupEphemeralNetworkSystemClock()
@@ -158,7 +155,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             EphemeralNetworkSystemClock.MarkInitialized();
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
-
         }
 
         public void SetupStandardUserSystemClock(KThread thread, bool isAutomaticCorrectionEnabled, SteadyClockTimePoint steadyClockTimePoint)
@@ -174,7 +170,6 @@ namespace Ryujinx.HLE.HOS.Services.Time
             SharedMemory.SetAutomaticCorrectionEnabled(isAutomaticCorrectionEnabled);
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
-
         }
 
         public void SetStandardSteadyClockRtcOffset(KThread thread, TimeSpanType rtcOffset)

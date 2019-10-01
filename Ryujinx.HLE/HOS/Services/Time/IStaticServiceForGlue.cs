@@ -121,9 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             if (!NxSettings.Settings.TryGetValue("time!standard_user_clock_initial_year", out object standardUserSystemClockInitialYear))
             {
-                // Fallback if not found in settings (nintendo actually abort here)
-                standardUserSystemClockInitialYear = 2019;
-                //throw new System.InvalidOperationException("standard_user_clock_initial_year isn't defined in system settings!");
+                throw new System.InvalidOperationException("standard_user_clock_initial_year isn't defined in system settings!");
             }
 
             context.ResponseData.Write((int)standardUserSystemClockInitialYear);
