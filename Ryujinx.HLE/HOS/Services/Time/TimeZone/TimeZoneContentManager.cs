@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             {
                 _locationNameCache = new string[0];
 
-                Logger.PrintWarning(LogClass.ServiceTime, "TimeZoneBinary system archive not found! TimeZone conversions will not work, provide the system archive to fix.");
+                Logger.PrintWarning(LogClass.ServiceTime, "TimeZoneBinary system title not found! TimeZone conversions will not work, provide the system archive to fix this warning. (See https://github.com/Ryujinx/Ryujinx#requirements for more informations)");
             }
         }
 
@@ -175,7 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             if (!HasTimeZoneBinaryTitle())
             {
-                throw new InvalidSystemResourceException($"TimeZoneBinary system archive not found! Please provide it.");
+                throw new InvalidSystemResourceException($"TimeZoneBinary system title not found! Please provide it. (See https://github.com/Ryujinx/Ryujinx#requirements for more informations)");
             }
 
             ResultCode result = GetTimeZoneBinary(locationName, out Stream timeZoneBinaryStream);
