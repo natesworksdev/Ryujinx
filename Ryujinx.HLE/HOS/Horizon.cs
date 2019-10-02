@@ -8,12 +8,14 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sm;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
+using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -23,10 +25,7 @@ using System.Reflection;
 using System.Threading;
 
 using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
-
-using NxStaticObject = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
-using Ryujinx.HLE.Utilities;
-using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
+using NxStaticObject     = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
 
 namespace Ryujinx.HLE.HOS
 {
