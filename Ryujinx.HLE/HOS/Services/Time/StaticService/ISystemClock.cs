@@ -14,11 +14,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         private bool            _bypassUninitializedClock;
         private int             _operationEventReadableHandle;
 
-        public ISystemClock(SystemClockCore clockCore, bool writePermission, bool bypassUninitializedCloc)
+        public ISystemClock(SystemClockCore clockCore, bool writePermission, bool bypassUninitializedClock)
         {
             _clockCore                    = clockCore;
             _writePermission              = writePermission;
-            _bypassUninitializedClock     = bypassUninitializedCloc;
+            _bypassUninitializedClock     = bypassUninitializedClock;
             _operationEventReadableHandle = 0;
         }
 

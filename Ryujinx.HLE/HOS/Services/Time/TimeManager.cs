@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             SharedMemory.Initialize(device, sharedMemory, timeSharedMemoryAddress, timeSharedMemorySize);
 
-            // Here we use system on purpose as device.System isn't initialized at this point.
+            // Here we use system on purpose as device. System isn't initialized at this point.
             StandardUserSystemClock.CreateAutomaticCorrectionEvent(system);
         }
 

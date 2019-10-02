@@ -3,6 +3,7 @@ using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.StaticService;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
@@ -121,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         {
             if (!NxSettings.Settings.TryGetValue("time!standard_user_clock_initial_year", out object standardUserSystemClockInitialYear))
             {
-                throw new System.InvalidOperationException("standard_user_clock_initial_year isn't defined in system settings!");
+                throw new InvalidOperationException("standard_user_clock_initial_year isn't defined in system settings!");
             }
 
             context.ResponseData.Write((int)standardUserSystemClockInitialYear);

@@ -74,6 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             else
             {
                 _locationNameCache = new string[0];
+
                 Logger.PrintWarning(LogClass.ServiceTime, "TimeZoneBinary system archive not found! TimeZone conversions will not work, provide the system archive to fix.");
             }
         }
