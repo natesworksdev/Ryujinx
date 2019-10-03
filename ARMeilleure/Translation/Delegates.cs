@@ -1,5 +1,4 @@
 using ARMeilleure.Instructions;
-using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -41,7 +40,7 @@ namespace ARMeilleure.Translation
             }
             else
             {
-                funcPtr = default(IntPtr);
+                funcPtr = default;
 
                 return false;
             }
@@ -49,71 +48,99 @@ namespace ARMeilleure.Translation
 
         public static DelegateInfo GetMathDelegateInfo(string key)
         {
-            if (key != null && _mathDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            if (key == null)
             {
-                return dlgInfo;
+                throw new ArgumentNullException();
             }
 
-            throw new Exception();
+            if (!_mathDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            {
+                throw new Exception();
+            }
+
+            return dlgInfo;
         }
 
         public static DelegateInfo GetNativeInterfaceDelegateInfo(string key)
         {
-            if (key != null && _nativeInterfaceDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            if (key == null)
             {
-                return dlgInfo;
+                throw new ArgumentNullException();
             }
 
-            throw new Exception();
+            if (!_nativeInterfaceDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            {
+                throw new Exception();
+            }
+
+            return dlgInfo;
         }
 
         public static DelegateInfo GetSoftFallbackDelegateInfo(string key)
         {
-            if (key != null && _softFallbackDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            if (key == null)
             {
-                return dlgInfo;
+                throw new ArgumentNullException();
             }
 
-            throw new Exception();
+            if (!_softFallbackDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            {
+                throw new Exception();
+            }
+
+            return dlgInfo;
         }
 
         public static DelegateInfo GetSoftFloatDelegateInfo(string key)
         {
-            if (key != null && _softFloatDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            if (key == null)
             {
-                return dlgInfo;
+                throw new ArgumentNullException();
             }
 
-            throw new Exception();
+            if (!_softFloatDelegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            {
+                throw new Exception();
+            }
+
+            return dlgInfo;
         }
 
-        private static void SetMathDelegateInfo(Delegate dlg)
+        private static void SetMathDelegateInfo(Type type, string name, Type[] types)
         {
-            if (dlg == null || !_mathDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
+            Delegate dlg = DelegateHelpers.GetDelegate(type, name, types);
+
+            if (!_mathDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
             {
                 throw new Exception();
             }
         }
 
-        private static void SetNativeInterfaceDelegateInfo(Delegate dlg)
+        private static void SetNativeInterfaceDelegateInfo(string name)
         {
-            if (dlg == null || !_nativeInterfaceDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
+            Delegate dlg = DelegateHelpers.GetDelegate(typeof(NativeInterface), name);
+
+            if (!_nativeInterfaceDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
             {
                 throw new Exception();
             }
         }
 
-        private static void SetSoftFallbackDelegateInfo(Delegate dlg)
+        private static void SetSoftFallbackDelegateInfo(string name)
         {
-            if (dlg == null || !_softFallbackDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
+            Delegate dlg = DelegateHelpers.GetDelegate(typeof(SoftFallback), name);
+
+            if (!_softFallbackDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
             {
                 throw new Exception();
             }
         }
 
-        private static void SetSoftFloatDelegateInfo(Delegate dlg)
+        private static void SetSoftFloatDelegateInfo(Type type, string name)
         {
-            if (dlg == null || !_softFloatDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
+            Delegate dlg = DelegateHelpers.GetDelegate(type, name);
+
+            if (!_softFloatDelegates.TryAdd(GetKey(dlg.Method), new DelegateInfo(dlg)))
             {
                 throw new Exception();
             }
@@ -136,250 +163,177 @@ namespace ARMeilleure.Translation
             _softFallbackDelegates    = new Dictionary<string, DelegateInfo>();
             _softFloatDelegates       = new Dictionary<string, DelegateInfo>();
 
-            SetMathDelegateInfo(new _F64_F64                 (Math.Floor));
-            SetMathDelegateInfo(new _F64_F64                 (Math.Ceiling));
-            SetMathDelegateInfo(new _F64_F64                 (Math.Abs));
-            SetMathDelegateInfo(new _F64_F64                 (Math.Truncate));
-            SetMathDelegateInfo(new _F64_F64_MidpointRounding(Math.Round));
+            SetMathDelegateInfo(typeof(Math), nameof(Math.Abs),      new Type[] { typeof(double) });
+            SetMathDelegateInfo(typeof(Math), nameof(Math.Ceiling),  new Type[] { typeof(double) });
+            SetMathDelegateInfo(typeof(Math), nameof(Math.Floor),    new Type[] { typeof(double) });
+            SetMathDelegateInfo(typeof(Math), nameof(Math.Round),    new Type[] { typeof(double), typeof(MidpointRounding) });
+            SetMathDelegateInfo(typeof(Math), nameof(Math.Truncate), new Type[] { typeof(double) });
 
-            SetMathDelegateInfo(new _F32_F32                 (MathF.Floor));
-            SetMathDelegateInfo(new _F32_F32                 (MathF.Ceiling));
-            SetMathDelegateInfo(new _F32_F32                 (MathF.Abs));
-            SetMathDelegateInfo(new _F32_F32                 (MathF.Truncate));
-            SetMathDelegateInfo(new _F32_F32_MidpointRounding(MathF.Round));
+            SetMathDelegateInfo(typeof(MathF), nameof(MathF.Abs),      new Type[] { typeof(float) });
+            SetMathDelegateInfo(typeof(MathF), nameof(MathF.Ceiling),  new Type[] { typeof(float) });
+            SetMathDelegateInfo(typeof(MathF), nameof(MathF.Floor),    new Type[] { typeof(float) });
+            SetMathDelegateInfo(typeof(MathF), nameof(MathF.Round),    new Type[] { typeof(float), typeof(MidpointRounding) });
+            SetMathDelegateInfo(typeof(MathF), nameof(MathF.Truncate), new Type[] { typeof(float) });
 
-            SetNativeInterfaceDelegateInfo(new _S32_U64_U8   (NativeInterface.WriteByteExclusive));
-            SetNativeInterfaceDelegateInfo(new _S32_U64_U16  (NativeInterface.WriteUInt16Exclusive));
-            SetNativeInterfaceDelegateInfo(new _S32_U64_U32  (NativeInterface.WriteUInt32Exclusive));
-            SetNativeInterfaceDelegateInfo(new _S32_U64_U64  (NativeInterface.WriteUInt64Exclusive));
-            SetNativeInterfaceDelegateInfo(new _S32_U64_V128 (NativeInterface.WriteVector128Exclusive));
-            SetNativeInterfaceDelegateInfo(new _U16_U64      (NativeInterface.ReadUInt16Exclusive));
-            SetNativeInterfaceDelegateInfo(new _U16_U64      (NativeInterface.ReadUInt16));
-            SetNativeInterfaceDelegateInfo(new _U32_U64      (NativeInterface.ReadUInt32Exclusive));
-            SetNativeInterfaceDelegateInfo(new _U32_U64      (NativeInterface.ReadUInt32));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetCtrEl0));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetDczidEl0));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetFpcr));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetFpsr));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetTpidrEl0));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetTpidr));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetCntfrqEl0));
-            SetNativeInterfaceDelegateInfo(new _U64          (NativeInterface.GetCntpctEl0));
-            SetNativeInterfaceDelegateInfo(new _U64_U64      (NativeInterface.ReadUInt64Exclusive));
-            SetNativeInterfaceDelegateInfo(new _U64_U64      (NativeInterface.ReadUInt64));
-            SetNativeInterfaceDelegateInfo(new _U8_U64       (NativeInterface.ReadByteExclusive));
-            SetNativeInterfaceDelegateInfo(new _U8_U64       (NativeInterface.ReadByte));
-            SetNativeInterfaceDelegateInfo(new _V128_U64     (NativeInterface.ReadVector128Exclusive));
-            SetNativeInterfaceDelegateInfo(new _V128_U64     (NativeInterface.ReadVector128));
-            SetNativeInterfaceDelegateInfo(new _Void         (NativeInterface.ClearExclusive));
-            SetNativeInterfaceDelegateInfo(new _Void         (NativeInterface.CheckSynchronization));
-            SetNativeInterfaceDelegateInfo(new _Void_U64     (NativeInterface.SetFpcr));
-            SetNativeInterfaceDelegateInfo(new _Void_U64     (NativeInterface.SetFpsr));
-            SetNativeInterfaceDelegateInfo(new _Void_U64     (NativeInterface.SetTpidrEl0));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_S32 (NativeInterface.Break));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_S32 (NativeInterface.SupervisorCall));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_S32 (NativeInterface.Undefined));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_U16 (NativeInterface.WriteUInt16));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_U32 (NativeInterface.WriteUInt32));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_U64 (NativeInterface.WriteUInt64));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_U8  (NativeInterface.WriteByte));
-            SetNativeInterfaceDelegateInfo(new _Void_U64_V128(NativeInterface.WriteVector128));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.Break));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.CheckSynchronization));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ClearExclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetCntfrqEl0));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetCntpctEl0));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetCtrEl0));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetDczidEl0));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetFpcr));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetFpsr));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetTpidr));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.GetTpidrEl0));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadByte));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadByteExclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadUInt16));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadUInt16Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadUInt32));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadUInt32Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadUInt64));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadUInt64Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadVector128));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.ReadVector128Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.SetFpcr));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.SetFpsr));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.SetTpidrEl0));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.SupervisorCall));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.Undefined));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteByte));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteByteExclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteUInt16));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteUInt16Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteUInt32));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteUInt32Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteUInt64));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteUInt64Exclusive));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteVector128));
+            SetNativeInterfaceDelegateInfo(nameof(NativeInterface.WriteVector128Exclusive));
 
-            SetSoftFallbackDelegateInfo(new _F64_F64                      (SoftFallback.Round));
-            SetSoftFallbackDelegateInfo(new _F32_F32                      (SoftFallback.RoundF));
-            SetSoftFallbackDelegateInfo(new _S32_F32                      (SoftFallback.SatF32ToS32));
-            SetSoftFallbackDelegateInfo(new _S32_F64                      (SoftFallback.SatF64ToS32));
-            SetSoftFallbackDelegateInfo(new _S64_F32                      (SoftFallback.SatF32ToS64));
-            SetSoftFallbackDelegateInfo(new _S64_F64                      (SoftFallback.SatF64ToS64));
-            SetSoftFallbackDelegateInfo(new _S64_S64                      (SoftFallback.UnarySignedSatQAbsOrNeg));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S32                  (SoftFallback.SignedSrcSignedDstSatQ));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64                  (SoftFallback.MaxS64));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64                  (SoftFallback.MinS64));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64                  (SoftFallback.BinarySignedSatQAdd));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64                  (SoftFallback.BinarySignedSatQSub));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64_Bool_S32         (SoftFallback.SignedShlRegSatQ));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64_Bool_S32         (SoftFallback.SignedShlReg));
-            SetSoftFallbackDelegateInfo(new _S64_S64_S64_S32              (SoftFallback.SignedShrImm64));
-            SetSoftFallbackDelegateInfo(new _S64_U64_S32                  (SoftFallback.UnsignedSrcSignedDstSatQ));
-            SetSoftFallbackDelegateInfo(new _S64_U64_S64                  (SoftFallback.BinarySignedSatQAcc));
-            SetSoftFallbackDelegateInfo(new _U32_F32                      (SoftFallback.SatF32ToU32));
-            SetSoftFallbackDelegateInfo(new _U32_F64                      (SoftFallback.SatF64ToU32));
-            SetSoftFallbackDelegateInfo(new _U32_U32                      (SoftFallback.ReverseBits32));
-            SetSoftFallbackDelegateInfo(new _U32_U32                      (SoftFallback.ReverseBytes16_32));
-            SetSoftFallbackDelegateInfo(new _U32_U32                      (SoftFallback.FixedRotate));
-            SetSoftFallbackDelegateInfo(new _U32_U32                      (SoftFallback.ReverseBits8));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U16                  (SoftFallback.Crc32h));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U16                  (SoftFallback.Crc32ch));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U32                  (SoftFallback.Crc32w));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U32                  (SoftFallback.Crc32cw));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U64                  (SoftFallback.Crc32x));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U64                  (SoftFallback.Crc32cx));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U8                   (SoftFallback.Crc32b));
-            SetSoftFallbackDelegateInfo(new _U32_U32_U8                   (SoftFallback.Crc32cb));
-            SetSoftFallbackDelegateInfo(new _U64_F32                      (SoftFallback.SatF32ToU64));
-            SetSoftFallbackDelegateInfo(new _U64_F64                      (SoftFallback.SatF64ToU64));
-            SetSoftFallbackDelegateInfo(new _U64_S64_S32                  (SoftFallback.SignedSrcUnsignedDstSatQ));
-            SetSoftFallbackDelegateInfo(new _U64_S64_U64                  (SoftFallback.BinaryUnsignedSatQAcc));
-            SetSoftFallbackDelegateInfo(new _U64_U64                      (SoftFallback.ReverseBits64));
-            SetSoftFallbackDelegateInfo(new _U64_U64                      (SoftFallback.ReverseBytes16_64));
-            SetSoftFallbackDelegateInfo(new _U64_U64                      (SoftFallback.ReverseBytes32_64));
-            SetSoftFallbackDelegateInfo(new _U64_U64                      (SoftFallback.CountSetBits8));
-            SetSoftFallbackDelegateInfo(new _U64_U64_S32                  (SoftFallback.CountLeadingSigns));
-            SetSoftFallbackDelegateInfo(new _U64_U64_S32                  (SoftFallback.CountLeadingZeros));
-            SetSoftFallbackDelegateInfo(new _U64_U64_S32                  (SoftFallback.UnsignedSrcUnsignedDstSatQ));
-            SetSoftFallbackDelegateInfo(new _U64_U64_S64_S32              (SoftFallback.UnsignedShrImm64));
-            SetSoftFallbackDelegateInfo(new _U64_U64_U64                  (SoftFallback.MaxU64));
-            SetSoftFallbackDelegateInfo(new _U64_U64_U64                  (SoftFallback.MinU64));
-            SetSoftFallbackDelegateInfo(new _U64_U64_U64                  (SoftFallback.BinaryUnsignedSatQAdd));
-            SetSoftFallbackDelegateInfo(new _U64_U64_U64                  (SoftFallback.BinaryUnsignedSatQSub));
-            SetSoftFallbackDelegateInfo(new _U64_U64_U64_Bool_S32         (SoftFallback.UnsignedShlRegSatQ));
-            SetSoftFallbackDelegateInfo(new _U64_U64_U64_Bool_S32         (SoftFallback.UnsignedShlReg));
-            SetSoftFallbackDelegateInfo(new _V128_V128                    (SoftFallback.InverseMixColumns));
-            SetSoftFallbackDelegateInfo(new _V128_V128                    (SoftFallback.MixColumns));
-            SetSoftFallbackDelegateInfo(new _V128_V128_U32_V128           (SoftFallback.HashChoose));
-            SetSoftFallbackDelegateInfo(new _V128_V128_U32_V128           (SoftFallback.HashMajority));
-            SetSoftFallbackDelegateInfo(new _V128_V128_U32_V128           (SoftFallback.HashParity));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128               (SoftFallback.Decrypt));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128               (SoftFallback.Encrypt));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128               (SoftFallback.Sha1SchedulePart2));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128               (SoftFallback.Sha256SchedulePart1));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128               (SoftFallback.Tbl1_V64));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128               (SoftFallback.Tbl1_V128));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128          (SoftFallback.Sha1SchedulePart1));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128          (SoftFallback.HashLower));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128          (SoftFallback.HashUpper));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128          (SoftFallback.Sha256SchedulePart2));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128          (SoftFallback.Tbl2_V64));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128          (SoftFallback.Tbl2_V128));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128_V128     (SoftFallback.Tbl3_V64));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128_V128     (SoftFallback.Tbl3_V128));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128_V128_V128(SoftFallback.Tbl4_V64));
-            SetSoftFallbackDelegateInfo(new _V128_V128_V128_V128_V128_V128(SoftFallback.Tbl4_V128));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.BinarySignedSatQAcc));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.BinarySignedSatQAdd));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.BinarySignedSatQSub));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.BinaryUnsignedSatQAcc));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.BinaryUnsignedSatQAdd));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.BinaryUnsignedSatQSub));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.CountLeadingSigns));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.CountLeadingZeros));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.CountSetBits8));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32b));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32cb));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32ch));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32cw));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32cx));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32h));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32w));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Crc32x));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Decrypt));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Encrypt));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.FixedRotate));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.HashChoose));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.HashLower));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.HashMajority));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.HashParity));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.HashUpper));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.InverseMixColumns));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.MaxS64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.MaxU64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.MinS64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.MinU64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.MixColumns));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBits32));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBits64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBits8));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBytes16_32));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBytes16_64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBytes32_64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Round));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.RoundF));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF32ToS32));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF32ToS64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF32ToU32));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF32ToU64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF64ToS32));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF64ToS64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF64ToU32));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF64ToU64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Sha1SchedulePart1));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Sha1SchedulePart2));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Sha256SchedulePart1));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Sha256SchedulePart2));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SignedShlReg));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SignedShlRegSatQ));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SignedShrImm64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SignedSrcSignedDstSatQ));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.SignedSrcUnsignedDstSatQ));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbl1));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbl2));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbl3));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbl4));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbx1));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbx2));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbx3));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.Tbx4));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.UnarySignedSatQAbsOrNeg));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.UnsignedShlReg));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.UnsignedShlRegSatQ));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.UnsignedShrImm64));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.UnsignedSrcSignedDstSatQ));
+            SetSoftFallbackDelegateInfo(nameof(SoftFallback.UnsignedSrcUnsignedDstSatQ));
 
-            SetSoftFloatDelegateInfo(new _F32_U16(SoftFloat16_32.FPConvert));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat16_32), nameof(SoftFloat16_32.FPConvert));
 
-            SetSoftFloatDelegateInfo(new _F32_F32         (SoftFloat32.FPRecipEstimate));
-            SetSoftFloatDelegateInfo(new _F32_F32         (SoftFloat32.FPRecpX));
-            SetSoftFloatDelegateInfo(new _F32_F32         (SoftFloat32.FPRSqrtEstimate));
-            SetSoftFloatDelegateInfo(new _F32_F32         (SoftFloat32.FPSqrt));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPCompareEQ));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPCompareGE));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPCompareGT));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPCompareLE));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPCompareLT));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPSub));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPAdd));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPDiv));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPMax));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPMaxNum));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPMin));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPMinNum));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPMul));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPMulX));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPRecipStepFused));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32     (SoftFloat32.FPRSqrtStepFused));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32_F32 (SoftFloat32.FPMulAdd));
-            SetSoftFloatDelegateInfo(new _F32_F32_F32_F32 (SoftFloat32.FPMulSub));
-            SetSoftFloatDelegateInfo(new _S32_F32_F32_Bool(SoftFloat32.FPCompare));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPAdd));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPCompare));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPCompareEQ));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPCompareGE));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPCompareGT));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPCompareLE));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPCompareLT));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPDiv));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMax));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMaxNum));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMin));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMinNum));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMul));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMulAdd));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMulSub));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMulX));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRecipEstimate));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRecipStepFused));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRecpX));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRSqrtEstimate));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRSqrtStepFused));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPSqrt));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPSub));
 
-            SetSoftFloatDelegateInfo(new _U16_F32(SoftFloat32_16.FPConvert));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32_16), nameof(SoftFloat32_16.FPConvert));
 
-            SetSoftFloatDelegateInfo(new _F64_F64         (SoftFloat64.FPRecipEstimate));
-            SetSoftFloatDelegateInfo(new _F64_F64         (SoftFloat64.FPRecpX));
-            SetSoftFloatDelegateInfo(new _F64_F64         (SoftFloat64.FPRSqrtEstimate));
-            SetSoftFloatDelegateInfo(new _F64_F64         (SoftFloat64.FPSqrt));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPCompareEQ));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPCompareGE));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPCompareGT));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPCompareLE));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPCompareLT));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPSub));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPAdd));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPDiv));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPMax));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPMaxNum));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPMin));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPMinNum));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPMul));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPMulX));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPRecipStepFused));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64     (SoftFloat64.FPRSqrtStepFused));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64_F64 (SoftFloat64.FPMulAdd));
-            SetSoftFloatDelegateInfo(new _F64_F64_F64_F64 (SoftFloat64.FPMulSub));
-            SetSoftFloatDelegateInfo(new _S32_F64_F64_Bool(SoftFloat64.FPCompare));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPAdd));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPCompare));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPCompareEQ));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPCompareGE));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPCompareGT));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPCompareLE));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPCompareLT));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPDiv));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMax));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMaxNum));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMin));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMinNum));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMul));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMulAdd));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMulSub));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMulX));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRecipEstimate));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRecipStepFused));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRecpX));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRSqrtEstimate));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRSqrtStepFused));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPSqrt));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPSub));
         }
-
-        private delegate double _F64_F64(double a1);
-        private delegate double _F64_F64_F64(double a1, double a2);
-        private delegate double _F64_F64_F64_F64(double a1, double a2, double a3);
-        private delegate double _F64_F64_MidpointRounding(double a1, MidpointRounding a2);
-
-        private delegate float _F32_F32(float a1);
-        private delegate float _F32_F32_F32(float a1, float a2);
-        private delegate float _F32_F32_F32_F32(float a1, float a2, float a3);
-        private delegate float _F32_F32_MidpointRounding(float a1, MidpointRounding a2);
-        private delegate float _F32_U16(ushort a1);
-
-        private delegate int _S32_F32(float a1);
-        private delegate int _S32_F32_F32_Bool(float a1, float a2, bool a3);
-        private delegate int _S32_F64(double a1);
-        private delegate int _S32_F64_F64_Bool(double a1, double a2, bool a3);
-        private delegate int _S32_U64_U16(ulong a1, ushort a2);
-        private delegate int _S32_U64_U32(ulong a1, uint a2);
-        private delegate int _S32_U64_U64(ulong a1, ulong a2);
-        private delegate int _S32_U64_U8(ulong a1, byte a2);
-        private delegate int _S32_U64_V128(ulong a1, V128 a2);
-
-        private delegate long _S64_F32(float a1);
-        private delegate long _S64_F64(double a1);
-        private delegate long _S64_S64(long a1);
-        private delegate long _S64_S64_S32(long a1, int a2);
-        private delegate long _S64_S64_S64(long a1, long a2);
-        private delegate long _S64_S64_S64_Bool_S32(long a1, long a2, bool a3, int a4);
-        private delegate long _S64_S64_S64_S32(long a1, long a2, int a3);
-        private delegate long _S64_U64_S32(ulong a1, int a2);
-        private delegate long _S64_U64_S64(ulong a1, long a2);
-
-        private delegate ushort _U16_F32(float a1);
-        private delegate ushort _U16_U64(ulong a1);
-
-        private delegate uint _U32_F32(float a1);
-        private delegate uint _U32_F64(double a1);
-        private delegate uint _U32_U32(uint a1);
-        private delegate uint _U32_U32_U16(uint a1, ushort a2);
-        private delegate uint _U32_U32_U32(uint a1, uint a2);
-        private delegate uint _U32_U32_U64(uint a1, ulong a2);
-        private delegate uint _U32_U32_U8(uint a1, byte a2);
-        private delegate uint _U32_U64(ulong a1);
-
-        private delegate ulong _U64();
-        private delegate ulong _U64_F32(float a1);
-        private delegate ulong _U64_F64(double a1);
-        private delegate ulong _U64_S64_S32(long a1, int a2);
-        private delegate ulong _U64_S64_U64(long a1, ulong a2);
-        private delegate ulong _U64_U64(ulong a1);
-        private delegate ulong _U64_U64_S32(ulong a1, int a2);
-        private delegate ulong _U64_U64_S64_S32(ulong a1, long a2, int a3);
-        private delegate ulong _U64_U64_U64(ulong a1, ulong a2);
-        private delegate ulong _U64_U64_U64_Bool_S32(ulong a1, ulong a2, bool a3, int a4);
-
-        private delegate byte _U8_U64(ulong a1);
-
-        private delegate V128 _V128_U64(ulong a1);
-        private delegate V128 _V128_V128(V128 a1);
-        private delegate V128 _V128_V128_U32_V128(V128 a1, uint a2, V128 a3);
-        private delegate V128 _V128_V128_V128(V128 a1, V128 a2);
-        private delegate V128 _V128_V128_V128_V128(V128 a1, V128 a2, V128 a3);
-        private delegate V128 _V128_V128_V128_V128_V128(V128 a1, V128 a2, V128 a3, V128 a4);
-        private delegate V128 _V128_V128_V128_V128_V128_V128(V128 a1, V128 a2, V128 a3, V128 a4, V128 a5);
-
-        private delegate void _Void();
-        private delegate void _Void_U64(ulong a1);
-        private delegate void _Void_U64_S32(ulong a1, int a2);
-        private delegate void _Void_U64_U16(ulong a1, ushort a2);
-        private delegate void _Void_U64_U32(ulong a1, uint a2);
-        private delegate void _Void_U64_U64(ulong a1, ulong a2);
-        private delegate void _Void_U64_U8(ulong a1, byte a2);
-        private delegate void _Void_U64_V128(ulong a1, V128 a2);
     }
 }
