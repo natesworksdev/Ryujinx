@@ -101,6 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
                 long objectOffset = indexOffset + 4 + padding + (index & 1) * Marshal.SizeOf<T>();
 
                 result = _device.Memory.ReadStruct<T>(objectOffset);
+
                 Thread.MemoryBarrier();
 
                 possiblyNewIndex = _device.Memory.ReadUInt32(indexOffset);

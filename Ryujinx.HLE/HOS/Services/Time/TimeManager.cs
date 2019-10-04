@@ -26,17 +26,17 @@ namespace Ryujinx.HLE.HOS.Services.Time
             }
         }
 
-        public StandardSteadyClockCore                  StandardSteadyClock         { get; private set; }
-        public TickBasedSteadyClockCore                 TickBasedSteadyClock        { get; private set; }
-        public StandardLocalSystemClockCore             StandardLocalSystemClock    { get; private set; }
-        public StandardNetworkSystemClockCore           StandardNetworkSystemClock  { get; private set; }
-        public StandardUserSystemClockCore              StandardUserSystemClock     { get; private set; }
-        public TimeZoneContentManager                   TimeZone                    { get; private set; }
-        public EphemeralNetworkSystemClockCore          EphemeralNetworkSystemClock { get; private set; }
-        public TimeSharedMemory                         SharedMemory                { get; private set; }
-        public LocalSystemClockContextWriter            LocalClockContextWriter     { get; private set; }
-        public NetworkSystemClockContextWriter          NetworkClockContextWriter   { get; private set; }
-        public EphemeralNetworkSystemClockContextWriter EphemeralClockContextWriter { get; private set; }
+        public StandardSteadyClockCore                  StandardSteadyClock         { get; }
+        public TickBasedSteadyClockCore                 TickBasedSteadyClock        { get; }
+        public StandardLocalSystemClockCore             StandardLocalSystemClock    { get; }
+        public StandardNetworkSystemClockCore           StandardNetworkSystemClock  { get; }
+        public StandardUserSystemClockCore              StandardUserSystemClock     { get; }
+        public TimeZoneContentManager                   TimeZone                    { get; }
+        public EphemeralNetworkSystemClockCore          EphemeralNetworkSystemClock { get; }
+        public TimeSharedMemory                         SharedMemory                { get; }
+        public LocalSystemClockContextWriter            LocalClockContextWriter     { get; }
+        public NetworkSystemClockContextWriter          NetworkClockContextWriter   { get; }
+        public EphemeralNetworkSystemClockContextWriter EphemeralClockContextWriter { get; }
 
         // TODO: 9.0.0+ power states and alarms
 

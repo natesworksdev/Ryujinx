@@ -33,7 +33,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardUserSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardUserSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(_timeManager.StandardUserSystemClock, (_permissions & TimePermissions.UserSystemClockWritableMask) != 0, (_permissions & TimePermissions.BypassUninitialized) != 0));
+            MakeObject(context, new ISystemClock(_timeManager.StandardUserSystemClock,
+                (_permissions & TimePermissions.UserSystemClockWritableMask) != 0,
+                (_permissions & TimePermissions.BypassUninitialized) != 0));
 
             return ResultCode.Success;
         }
@@ -42,7 +44,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardNetworkSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardNetworkSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(_timeManager.StandardNetworkSystemClock, (_permissions & TimePermissions.NetworkSystemClockWritableMask) != 0, (_permissions & TimePermissions.BypassUninitialized) != 0));
+            MakeObject(context, new ISystemClock(_timeManager.StandardNetworkSystemClock,
+                (_permissions & TimePermissions.NetworkSystemClockWritableMask) != 0,
+                (_permissions & TimePermissions.BypassUninitialized) != 0));
 
             return ResultCode.Success;
         }
@@ -51,7 +55,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardSteadyClock() -> object<nn::timesrv::detail::service::ISteadyClock>
         public ResultCode GetStandardSteadyClock(ServiceCtx context)
         {
-            MakeObject(context, new ISteadyClock(_timeManager.StandardSteadyClock, (_permissions & TimePermissions.SteadyClockWritableMask) != 0, (_permissions & TimePermissions.BypassUninitialized) != 0));
+            MakeObject(context, new ISteadyClock(_timeManager.StandardSteadyClock,
+                (_permissions & TimePermissions.SteadyClockWritableMask) != 0,
+                (_permissions & TimePermissions.BypassUninitialized) != 0));
 
             return ResultCode.Success;
         }
@@ -60,7 +66,8 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetTimeZoneService() -> object<nn::timesrv::detail::service::ITimeZoneService>
         public ResultCode GetTimeZoneService(ServiceCtx context)
         {
-            MakeObject(context, new ITimeZoneServiceForPsc(_timeManager.TimeZone.Manager, (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
+            MakeObject(context, new ITimeZoneServiceForPsc(_timeManager.TimeZone.Manager,
+                (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
 
             return ResultCode.Success;
         }
@@ -69,7 +76,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardLocalSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetStandardLocalSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(_timeManager.StandardLocalSystemClock, (_permissions & TimePermissions.LocalSystemClockWritableMask) != 0, (_permissions & TimePermissions.BypassUninitialized) != 0));
+            MakeObject(context, new ISystemClock(_timeManager.StandardLocalSystemClock,
+                (_permissions & TimePermissions.LocalSystemClockWritableMask) != 0,
+                (_permissions & TimePermissions.BypassUninitialized) != 0));
 
             return ResultCode.Success;
         }
@@ -78,7 +87,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetEphemeralNetworkSystemClock() -> object<nn::timesrv::detail::service::ISystemClock>
         public ResultCode GetEphemeralNetworkSystemClock(ServiceCtx context)
         {
-            MakeObject(context, new ISystemClock(_timeManager.StandardNetworkSystemClock, (_permissions & TimePermissions.NetworkSystemClockWritableMask) != 0, (_permissions & TimePermissions.BypassUninitialized) != 0));
+            MakeObject(context, new ISystemClock(_timeManager.StandardNetworkSystemClock,
+                (_permissions & TimePermissions.NetworkSystemClockWritableMask) != 0,
+                (_permissions & TimePermissions.BypassUninitialized) != 0));
 
             return ResultCode.Success;
         }

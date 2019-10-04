@@ -1,7 +1,6 @@
 ﻿using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.Utilities;
 using System.IO;
-using System.Threading;
 using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
@@ -37,22 +36,22 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public bool IsInitialized()
         {
-            Monitor.Enter(_lock);
+            bool res;
 
-            bool res = _isInitialized;
-
-            Monitor.Exit(_lock);
+            lock (_lock)
+            {
+                res = _isInitialized;
+            }
 
             return res;
         }
 
         public void MarkInitialized()
         {
-            Monitor.Enter(_lock);
-
-            _isInitialized = true;
-
-            Monitor.Exit(_lock);
+            lock (_lock)
+            {
+                _isInitialized = true;
+            }
         }
 
         public ResultCode GetDeviceLocationName(out string deviceLocationName)
@@ -61,15 +60,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             deviceLocationName = null;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized)
+            lock (_lock)
             {
-                deviceLocationName = _deviceLocationName;
-                result             = ResultCode.Success;
+                if (_isInitialized)
+                {
+                    deviceLocationName = _deviceLocationName;
+                    result             = ResultCode.Success;
+                }
             }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
@@ -78,29 +76,27 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             ResultCode result = ResultCode.TimeZoneConversionFailed;
 
-            Monitor.Enter(_lock);
-
-            bool timeZoneConversionSuccess = TimeZone.ParseTimeZoneBinary(out TimeZoneRule rules, timeZoneBinaryStream);
-
-            if (timeZoneConversionSuccess)
+            lock (_lock)
             {
-                _deviceLocationName = locationName;
-                _myRules            = rules;
-                result              = ResultCode.Success;
-            }
+                bool timeZoneConversionSuccess = TimeZone.ParseTimeZoneBinary(out TimeZoneRule rules, timeZoneBinaryStream);
 
-            Monitor.Exit(_lock);
+                if (timeZoneConversionSuccess)
+                {
+                    _deviceLocationName = locationName;
+                    _myRules            = rules;
+                    result              = ResultCode.Success;
+                }
+            }
 
             return result;
         }
 
         public void SetTotalLocationNameCount(uint totalLocationNameCount)
         {
-            Monitor.Enter(_lock);
-
-            _totalLocationNameCount = totalLocationNameCount;
-
-            Monitor.Exit(_lock);
+            lock (_lock)
+            {
+                _totalLocationNameCount = totalLocationNameCount;
+            }
         }
 
         public ResultCode GetTotalLocationNameCount(out uint totalLocationNameCount)
@@ -109,15 +105,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
             totalLocationNameCount = 0;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized)
+            lock (_lock)
             {
-                totalLocationNameCount = _totalLocationNameCount;
-                result                 = ResultCode.Success;
+                if (_isInitialized)
+                {
+                    totalLocationNameCount = _totalLocationNameCount;
+                    result                 = ResultCode.Success;
+                }
             }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
@@ -126,15 +121,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             ResultCode result = ResultCode.UninitializedClock;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized || bypassUninitialized)
+            lock (_lock)
             {
-                _timeZoneUpdateTimePoint = timeZoneUpdatedTimePoint;
-                result                   = ResultCode.Success;
+                if (_isInitialized || bypassUninitialized)
+                {
+                    _timeZoneUpdateTimePoint = timeZoneUpdatedTimePoint;
+                    result                   = ResultCode.Success;
+                }
             }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
@@ -143,20 +137,19 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             ResultCode result;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized)
+            lock (_lock)
             {
-                timeZoneUpdatedTimePoint = _timeZoneUpdateTimePoint;
-                result                   = ResultCode.Success;
+                if (_isInitialized)
+                {
+                    timeZoneUpdatedTimePoint = _timeZoneUpdateTimePoint;
+                    result                   = ResultCode.Success;
+                }
+                else
+                {
+                    timeZoneUpdatedTimePoint = SteadyClockTimePoint.GetRandom();
+                    result                   = ResultCode.UninitializedClock;
+                }
             }
-            else
-            {
-                timeZoneUpdatedTimePoint = SteadyClockTimePoint.GetRandom();
-                result                   = ResultCode.UninitializedClock;
-            }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
@@ -165,45 +158,44 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             ResultCode result = ResultCode.Success;
 
-            Monitor.Enter(_lock);
-
-            bool timeZoneConversionSuccess = TimeZone.ParseTimeZoneBinary(out outRules, timeZoneBinaryStream);
-
-            if (!timeZoneConversionSuccess)
+            lock (_lock)
             {
-                result = ResultCode.TimeZoneConversionFailed;
-            }
+                bool timeZoneConversionSuccess = TimeZone.ParseTimeZoneBinary(out outRules, timeZoneBinaryStream);
 
-            Monitor.Exit(_lock);
+                if (!timeZoneConversionSuccess)
+                {
+                    result = ResultCode.TimeZoneConversionFailed;
+                }
+            }
 
             return result;
         }
 
         public void SetTimeZoneRuleVersion(UInt128 timeZoneRuleVersion)
         {
-            Monitor.Enter(_lock);
-            _timeZoneRuleVersion = timeZoneRuleVersion;
-            Monitor.Exit(_lock);
+            lock (_lock)
+            {
+                _timeZoneRuleVersion = timeZoneRuleVersion;
+            }
         }
 
         public ResultCode GetTimeZoneRuleVersion(out UInt128 timeZoneRuleVersion)
         {
             ResultCode result;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized)
+            lock (_lock)
             {
-                timeZoneRuleVersion = _timeZoneRuleVersion;
-                result              = ResultCode.Success;
+                if (_isInitialized)
+                {
+                    timeZoneRuleVersion = _timeZoneRuleVersion;
+                    result              = ResultCode.Success;
+                }
+                else
+                {
+                    timeZoneRuleVersion = new UInt128();
+                    result              = ResultCode.UninitializedClock;
+                }
             }
-            else
-            {
-                timeZoneRuleVersion = new UInt128();
-                result              = ResultCode.UninitializedClock;
-            }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
@@ -212,30 +204,30 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             ResultCode result;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized)
+            lock (_lock)
             {
-                result = ToCalendarTime(_myRules, time, out calendar);
+                if (_isInitialized)
+                {
+                    result = ToCalendarTime(_myRules, time, out calendar);
+                }
+                else
+                {
+                    calendar = new CalendarInfo();
+                    result   = ResultCode.UninitializedClock;
+                }
             }
-            else
-            {
-                calendar = new CalendarInfo();
-                result   = ResultCode.UninitializedClock;
-            }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
 
         public ResultCode ToCalendarTime(TimeZoneRule rules, long time, out CalendarInfo calendar)
         {
-            Monitor.Enter(_lock);
+            ResultCode result;
 
-            ResultCode result = TimeZone.ToCalendarTime(rules, time, out calendar);
-
-            Monitor.Exit(_lock);
+            lock (_lock)
+            {
+                result = TimeZone.ToCalendarTime(rules, time, out calendar);
+            }
 
             return result;
         }
@@ -244,30 +236,30 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             ResultCode result;
 
-            Monitor.Enter(_lock);
-
-            if (_isInitialized)
+            lock (_lock)
             {
-                result = ToPosixTime(_myRules, calendarTime, out posixTime);
+                if (_isInitialized)
+                {
+                    result = ToPosixTime(_myRules, calendarTime, out posixTime);
+                }
+                else
+                {
+                    posixTime = 0;
+                    result    = ResultCode.UninitializedClock;
+                }
             }
-            else
-            {
-                posixTime = 0;
-                result    = ResultCode.UninitializedClock;
-            }
-
-            Monitor.Exit(_lock);
 
             return result;
         }
 
         public ResultCode ToPosixTime(TimeZoneRule rules, CalendarTime calendarTime, out long posixTime)
         {
-            Monitor.Enter(_lock);
+            ResultCode result;
 
-            ResultCode result = TimeZone.ToPosixTime(rules, calendarTime, out posixTime);
-
-            Monitor.Exit(_lock);
+            lock (_lock)
+            {
+                result = TimeZone.ToPosixTime(rules, calendarTime, out posixTime);
+            }
 
             return result;
         }
