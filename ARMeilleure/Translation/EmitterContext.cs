@@ -90,20 +90,20 @@ namespace ARMeilleure.Translation
 
         public Operand NativeInterfaceCall(string funcName, params Operand[] callArgs)
         {
-            funcName = $"{nameof(NativeInterface)}.{funcName}";
+            string name = $"{nameof(NativeInterface)}.{funcName}";
 
-            DelegateInfo dlgInfo = Delegates.GetNativeInterfaceDelegateInfo(funcName);
+            DelegateInfo dlgInfo = Delegates.GetNativeInterfaceDelegateInfo(name);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, funcName), dlgInfo.RetType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
         }
 
         public Operand SoftFallbackCall(string funcName, params Operand[] callArgs)
         {
-            funcName = $"{nameof(SoftFallback)}.{funcName}";
+            string name = $"{nameof(SoftFallback)}.{funcName}";
 
-            DelegateInfo dlgInfo = Delegates.GetSoftFallbackDelegateInfo(funcName);
+            DelegateInfo dlgInfo = Delegates.GetSoftFallbackDelegateInfo(name);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, funcName), dlgInfo.RetType, callArgs);
+            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
         }
 
         public Operand SoftFloatCall(string className, string funcName, params Operand[] callArgs)
