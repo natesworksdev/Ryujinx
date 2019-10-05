@@ -86,9 +86,9 @@ namespace Ryujinx.UI
 
         private SwitchSettings(Builder builder, HLE.Switch device) : base(builder.GetObject("_settingsWin").Handle)
         {
-            Device = device;
-
             builder.Autoconnect(this);
+
+            Device = device;
 
             _settingsWin.Icon        = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
             _controller1Image.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);

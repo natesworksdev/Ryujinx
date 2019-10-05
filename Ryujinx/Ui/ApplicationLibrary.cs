@@ -28,17 +28,17 @@ namespace Ryujinx.UI
 
         public struct ApplicationData
         {
-            public bool   Fav        { get; set; }
-            public byte[] Icon       { get; set; }
-            public string TitleName  { get; set; }
-            public string TitleId    { get; set; }
-            public string Developer  { get; set; }
-            public string Version    { get; set; }
-            public string TimePlayed { get; set; }
-            public string LastPlayed { get; set; }
-            public string FileExt    { get; set; }
-            public string FileSize   { get; set; }
-            public string Path       { get; set; }
+            public bool   Favorite      { get; set; }
+            public byte[] Icon          { get; set; }
+            public string TitleName     { get; set; }
+            public string TitleId       { get; set; }
+            public string Developer     { get; set; }
+            public string Version       { get; set; }
+            public string TimePlayed    { get; set; }
+            public string LastPlayed    { get; set; }
+            public string FileExtension { get; set; }
+            public string FileSize      { get; set; }
+            public string Path          { get; set; }
         }
 
         public static List<ApplicationData> ApplicationLibraryData { get; private set; }
@@ -52,7 +52,7 @@ namespace Ryujinx.UI
 
         private struct ApplicationMetadata
         {
-            public bool   Fav        { get; set; }
+            public bool   Favorite   { get; set; }
             public double TimePlayed { get; set; }
             public string LastPlayed { get; set; }
         }
@@ -339,17 +339,17 @@ namespace Ryujinx.UI
 
                 ApplicationData data = new ApplicationData()
                 {
-                    Fav        = metaData.Item1,
-                    Icon       = applicationIcon,
-                    TitleName  = titleName,
-                    TitleId    = titleId,
-                    Developer  = developer,
-                    Version    = version,
-                    TimePlayed = metaData.Item2,
-                    LastPlayed = metaData.Item3,
-                    FileExt    = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
-                    FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
-                    Path       = applicationPath,
+                    Favorite      = metaData.Item1,
+                    Icon          = applicationIcon,
+                    TitleName     = titleName,
+                    TitleId       = titleId,
+                    Developer     = developer,
+                    Version       = version,
+                    TimePlayed    = metaData.Item2,
+                    LastPlayed    = metaData.Item3,
+                    FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
+                    FileSize      = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
+                    Path          = applicationPath,
                 };
 
                 ApplicationLibraryData.Add(data);
@@ -413,7 +413,7 @@ namespace Ryujinx.UI
 
                 AppMetadata = new ApplicationMetadata
                 {
-                    Fav        = false,
+                    Favorite   = false,
                     TimePlayed = 0,
                     LastPlayed = "Never"
                 };
@@ -446,7 +446,7 @@ namespace Ryujinx.UI
                 timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerDay, 2, MidpointRounding.AwayFromZero)} days";
             }
 
-            return (AppMetadata.Fav, timePlayed, AppMetadata.LastPlayed);
+            return (AppMetadata.Favorite, timePlayed, AppMetadata.LastPlayed);
         }
 
         private static byte[] NspOrXciIcon(string applicationPath)

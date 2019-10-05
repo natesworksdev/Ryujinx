@@ -49,7 +49,7 @@ namespace Ryujinx.UI
 
         private struct ApplicationMetadata
         {
-            public bool   Fav        { get; set; }
+            public bool   Favorite   { get; set; }
             public double TimePlayed { get; set; }
             public string LastPlayed { get; set; }
         }
@@ -81,18 +81,22 @@ namespace Ryujinx.UI
 
         private MainWindow(Builder builder, string[] args, Application gtkApplication) : base(builder.GetObject("_mainWin").Handle)
         {
+            builder.Autoconnect(this);
+
+            DeleteEvent += Window_Close;
+
             _renderer = new OglRenderer();
 
             _audioOut = InitializeAudioEngine();
 
             _device = new HLE.Switch(_renderer, _audioOut);
 
+            _gtkApplication = gtkApplication;
+
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
 
             ApplicationLibrary.Init(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage);
-
-            _gtkApplication = gtkApplication;
 
             ApplyTheme();
 
@@ -114,10 +118,6 @@ namespace Ryujinx.UI
                 DiscordClient.Initialize();
                 DiscordClient.SetPresence(DiscordPresence);
             }
-
-            builder.Autoconnect(this);
-
-            DeleteEvent += Window_Close;
 
             _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
             _stopEmulation.Sensitive = false;
@@ -223,7 +223,7 @@ namespace Ryujinx.UI
 
             foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
             {
-                _tableStore.AppendValues(AppData.Fav, new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExt, AppData.FileSize, AppData.Path);
+                _tableStore.AppendValues(AppData.Favorite, new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExtension, AppData.FileSize, AppData.Path);
             }
 
             _tableStore.SetSortFunc(5, TimePlayedSort);
@@ -353,7 +353,7 @@ namespace Ryujinx.UI
 
                     AppMetadata = new ApplicationMetadata
                     {
-                        Fav        = false,
+                        Favorite   = false,
                         TimePlayed = 0,
                         LastPlayed = "Never"
                     };
@@ -406,7 +406,7 @@ namespace Ryujinx.UI
 
                         AppMetadata = new ApplicationMetadata
                         {
-                            Fav        = false,
+                            Favorite   = false,
                             TimePlayed = 0,
                             LastPlayed = "Never"
                         };
@@ -474,13 +474,13 @@ namespace Ryujinx.UI
             {
                 _tableStore.SetValue(treeIter, 0, false);
 
-                AppMetadata.Fav = false;
+                AppMetadata.Favorite = false;
             }
             else
             {
                 _tableStore.SetValue(treeIter, 0, true);
 
-                AppMetadata.Fav = true;
+                AppMetadata.Favorite = true;
             }
 
             byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);

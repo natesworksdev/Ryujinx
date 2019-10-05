@@ -126,7 +126,7 @@
                       <object class="GtkMenuItem" id="GUIColumns">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
-                        <property name="tooltip_text" translatable="yes">Select which GUI columns to enable (restart Ryujinx for these changes to take effect)</property>
+                        <property name="tooltip_text" translatable="yes">Select which GUI columns to enable</property>
                         <property name="label" translatable="yes">Enable GUI Columns</property>
                         <property name="use_underline">True</property>
                         <child type="submenu">
