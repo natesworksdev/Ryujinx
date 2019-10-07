@@ -21,7 +21,7 @@
 
 ## Usage
 
-To run this emulator, you need the [.NET Core 2.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).  
+To run this emulator, you need the [.NET Core 3.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).  
 
 If you use a pre-built version, you can use the graphical interface to run your games/homebrew apps.  
 
@@ -76,7 +76,6 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
   The CPU emulator emulates an ARMv8 CPU, and only the new 64-bits ARMv8 instructions are implemented (with a few instructions still missing). It translates the ARM code to a custom IR and then it performs a few optimizations and turns that into x86 code.  
   To handle that we use our own JIT called ARMeilleure, which has the custom IR and compiles the code to x86.  
-  ChocolArm is the old ARM emulator, is being replaced by ARMeilleure (It can still be enabled inside the configuration menu/file) and it works by translating the ARM code to .NET IL. The runtime JIT then compiles that to the platform CPU code. On .NET Core, the JIT is called RyuJIT (hence the project name, Ryujinx).
 
 - **GPU**  
 

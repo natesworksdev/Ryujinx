@@ -1,5 +1,4 @@
 using ARMeilleure.Memory;
-using ARMeilleure.State;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Elf;
@@ -40,7 +39,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _images = new List<Image>();
         }
 
-        public string GetGuestStackTrace(IExecutionContext context)
+        public string GetGuestStackTrace(ARMeilleure.State.ExecutionContext context)
         {
             EnsureLoaded();
 

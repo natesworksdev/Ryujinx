@@ -112,8 +112,6 @@ namespace Ryujinx.HLE.HOS
 
         public int GlobalAccessLogMode { get; set; }
 
-        public bool UseLegacyJit { get; set; }
-
         internal long HidBaseAddress { get; private set; }
 
         public Horizon(Switch device)

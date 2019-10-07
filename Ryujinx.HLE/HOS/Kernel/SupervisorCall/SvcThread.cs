@@ -427,7 +427,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return KernelResult.Success;
         }
 
-        private static int GetPsr(IExecutionContext context)
+        private static int GetPsr(ExecutionContext context)
         {
             return (context.GetPstateFlag(PState.NFlag) ? (1 << 31) : 0) |
                    (context.GetPstateFlag(PState.ZFlag) ? (1 << 30) : 0) |
