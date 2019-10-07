@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public bool IsPaused { get; private set; }
 
-        public IMemoryManager CpuMemory { get; private set; }
+        public MemoryManager CpuMemory { get; private set; }
 
         public Translator Translator { get; private set; }
 
@@ -1024,7 +1024,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             CpuMemory = new MemoryManager(_system.Device.Memory.RamPointer, addrSpaceBits, useFlatPageTable);
 
-            Translator = new Translator((MemoryManager)CpuMemory);
+            Translator = new Translator(CpuMemory);
 
             MemoryManager = new KMemoryManager(_system, CpuMemory);
         }

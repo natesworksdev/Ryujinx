@@ -348,7 +348,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidThread;
             }
 
-            IMemoryManager memory = currentProcess.CpuMemory;
+            MemoryManager memory = currentProcess.CpuMemory;
 
             memory.WriteUInt64((long)address + 0x0,  thread.Context.GetX(0));
             memory.WriteUInt64((long)address + 0x8,  thread.Context.GetX(1));
