@@ -1,6 +1,6 @@
 using LibHac;
-using LibHac.Fs;
-using LibHac.Fs.NcaUtils;
+using LibHac.FsSystem;
+using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
@@ -184,14 +184,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             byte[]    padding   = context.RequestData.ReadBytes(7);
             long      titleId   = context.RequestData.ReadInt64();
 
-            ContentType contentType = ContentType.Data;
+            NcaContentType contentType = NcaContentType.Data;
 
             StorageId installedStorage =
                 context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
 
             if (installedStorage == StorageId.None)
             {
-                contentType = ContentType.PublicData;
+                contentType = NcaContentType.PublicData;
 
                 installedStorage =
                     context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);

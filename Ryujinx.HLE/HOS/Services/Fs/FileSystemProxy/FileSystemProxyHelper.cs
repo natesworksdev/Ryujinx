@@ -1,10 +1,12 @@
 ﻿using LibHac;
 using LibHac.Fs;
-using LibHac.Fs.NcaUtils;
+using LibHac.FsSystem;
+using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Utilities;
 using System.IO;
+using LibHac.Spl;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
@@ -25,7 +27,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             try
             {
                 LocalFileSystem       fileSystem     = new LocalFileSystem(savePath);
-                LibHac.Fs.IFileSystem saveFileSystem = new DirectorySaveDataFileSystem(fileSystem);
+
+                Result rc = DirectorySaveDataFileSystem.CreateNew(out DirectorySaveDataFileSystem dirFileSystem, fileSystem);
+                if (rc.IsFailure()) return (ResultCode)rc.Value;
+
+                LibHac.Fs.IFileSystem saveFileSystem = dirFileSystem;
 
                 if (readOnly)
                 {
@@ -111,13 +117,13 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
                     PartitionFileSystem nsp = new PartitionFileSystem(pfsFile.AsStorage());
 
                     ImportTitleKeysFromNsp(nsp, context.Device.System.KeySet);
-                    
+
                     string filename = fullPath.Replace(archivePath.FullName, string.Empty).TrimStart('\\');
 
-                    if (nsp.FileExists(filename))
-                    {
-                        return OpenNcaFs(context, fullPath, nsp.OpenFile(filename, OpenMode.Read).AsStorage(), out openedFileSystem);
-                    }
+                    Result rc = nsp.OpenFile(out LibHac.Fs.IFile ncaFile, filename, OpenMode.Read);
+                    if (rc.IsFailure()) return (ResultCode)rc.Value;
+
+                    return OpenNcaFs(context, fullPath, ncaFile.AsStorage(), out openedFileSystem);
                 }
                 catch (HorizonResultException ex)
                 {
@@ -130,14 +136,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
         public static void ImportTitleKeysFromNsp(LibHac.Fs.IFileSystem nsp, Keyset keySet)
         {
-            foreach (DirectoryEntry ticketEntry in nsp.EnumerateEntries("*.tik"))
+            foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
             {
-                Ticket ticket = new Ticket(nsp.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
+                Result rc = nsp.OpenFile(out LibHac.Fs.IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (rc.IsFailure()) continue;
 
-                if (!keySet.TitleKeys.ContainsKey(ticket.RightsId))
-                {
-                    keySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(keySet));
-                }
+                Ticket ticket = new Ticket(ticketFile.AsStream());
+
+                keySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(keySet)));
             }
         }
     }

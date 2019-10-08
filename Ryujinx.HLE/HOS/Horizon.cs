@@ -1,6 +1,8 @@
 using LibHac;
 using LibHac.Fs;
-using LibHac.Fs.NcaUtils;
+using LibHac.FsSystem;
+using LibHac.FsSystem.NcaUtils;
+using LibHac.Spl;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
@@ -283,25 +285,26 @@ namespace Ryujinx.HLE.HOS
 
             XciPartition securePartition = xci.OpenPartition(XciPartitionType.Secure);
 
-            foreach (DirectoryEntry ticketEntry in securePartition.EnumerateEntries("*.tik"))
+            foreach (DirectoryEntryEx ticketEntry in securePartition.EnumerateEntries("/", "*.tik"))
             {
-                Ticket ticket = new Ticket(securePartition.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
+                Result rc = securePartition.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (rc.IsFailure()) continue;
 
-                if (!KeySet.TitleKeys.ContainsKey(ticket.RightsId))
-                {
-                    KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(KeySet));
-                }
+                Ticket ticket = new Ticket(ticketFile.AsStream());
+
+                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
             }
 
-            foreach (DirectoryEntry fileEntry in securePartition.EnumerateEntries("*.nca"))
+            foreach (DirectoryEntryEx fileEntry in securePartition.EnumerateEntries("/", "*.nca"))
             {
-                IStorage ncaStorage = securePartition.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage();
+                Result rc = securePartition.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read);
+                if (rc.IsFailure()) continue;
 
-                Nca nca = new Nca(KeySet, ncaStorage);
+                Nca nca = new Nca(KeySet, ncaFile.AsStorage());
 
-                if (nca.Header.ContentType == ContentType.Program)
+                if (nca.Header.ContentType == NcaContentType.Program)
                 {
-                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, ContentType.Program);
+                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
                     if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                     {
@@ -312,7 +315,7 @@ namespace Ryujinx.HLE.HOS
                         mainNca = nca;
                     }
                 }
-                else if (nca.Header.ContentType == ContentType.Control)
+                else if (nca.Header.ContentType == NcaContentType.Control)
                 {
                     controlNca = nca;
                 }
@@ -335,7 +338,8 @@ namespace Ryujinx.HLE.HOS
         {
             IFileSystem controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, FsIntegrityCheckLevel);
 
-            IFile controlFile = controlFs.OpenFile("/control.nacp", OpenMode.Read);
+            Result rc = controlFs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read);
+            if (rc.IsFailure()) return;
 
             ControlData = new Nacp(controlFile.AsStream());
 
@@ -357,29 +361,29 @@ namespace Ryujinx.HLE.HOS
 
             PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
-            foreach (DirectoryEntry ticketEntry in nsp.EnumerateEntries("*.tik"))
+            foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
             {
-                Ticket ticket = new Ticket(nsp.OpenFile(ticketEntry.FullPath, OpenMode.Read).AsStream());
+                Result rc = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (rc.IsFailure()) continue;
 
-                if (!KeySet.TitleKeys.ContainsKey(ticket.RightsId))
-                {
-                    KeySet.TitleKeys.Add(ticket.RightsId, ticket.GetTitleKey(KeySet));
-                }
+                Ticket ticket = new Ticket(ticketFile.AsStream());
+
+                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
             }
 
             Nca mainNca    = null;
             Nca patchNca   = null;
             Nca controlNca = null;
 
-            foreach (DirectoryEntry fileEntry in nsp.EnumerateEntries("*.nca"))
+            foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
             {
-                IStorage ncaStorage = nsp.OpenFile(fileEntry.FullPath, OpenMode.Read).AsStorage();
+                nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(KeySet, ncaStorage);
+                Nca nca = new Nca(KeySet, ncaFile.AsStorage());
 
-                if (nca.Header.ContentType == ContentType.Program)
+                if (nca.Header.ContentType == NcaContentType.Program)
                 {
-                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, ContentType.Program);
+                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
                     if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                     {
@@ -390,7 +394,7 @@ namespace Ryujinx.HLE.HOS
                         mainNca = nca;
                     }
                 }
-                else if (nca.Header.ContentType == ContentType.Control)
+                else if (nca.Header.ContentType == NcaContentType.Control)
                 {
                     controlNca = nca;
                 }
@@ -409,7 +413,7 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
         {
-            if (mainNca.Header.ContentType != ContentType.Program)
+            if (mainNca.Header.ContentType != NcaContentType.Program)
             {
                 Logger.PrintError(LogClass.Loader, "Selected NCA is not a \"Program\" NCA");
 
@@ -466,7 +470,7 @@ namespace Ryujinx.HLE.HOS
             {
                 IFileSystem controlRomfs = controlNca.OpenFileSystem(NcaSectionType.Data, FsIntegrityCheckLevel);
 
-                IFile controlFile = controlRomfs.OpenFile("/control.nacp", OpenMode.Read);
+                controlRomfs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read).ThrowIfFailure();
 
                 Nacp controlData = new Nacp(controlFile.AsStream());
 
@@ -493,24 +497,24 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
         {
-            if (codeFs.FileExists("/main.npdm"))
-            {
-                Logger.PrintInfo(LogClass.Loader, "Loading main.npdm...");
+            Result rc = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
 
-                metaData = new Npdm(codeFs.OpenFile("/main.npdm", OpenMode.Read).AsStream());
-            }
-            else
+            if (rc == ResultFs.PathNotFound)
             {
                 Logger.PrintWarning(LogClass.Loader, "NPDM file not found, using default values!");
 
                 metaData = GetDefaultNpdm();
+            }
+            else
+            {
+                metaData = new Npdm(npdmFile.AsStream());
             }
 
             List<IExecutable> staticObjects = new List<IExecutable>();
 
             void LoadNso(string filename)
             {
-                foreach (DirectoryEntry file in codeFs.EnumerateEntries($"{filename}*"))
+                foreach (DirectoryEntryEx file in codeFs.EnumerateEntries("/", $"{filename}*"))
                 {
                     if (Path.GetExtension(file.Name) != string.Empty)
                     {
@@ -519,7 +523,9 @@ namespace Ryujinx.HLE.HOS
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
-                    NxStaticObject staticObject = new NxStaticObject(codeFs.OpenFile(file.FullPath, OpenMode.Read).AsStream());
+                    codeFs.OpenFile(out IFile nsoFile, file.FullPath, OpenMode.Read).ThrowIfFailure();
+
+                    NxStaticObject staticObject = new NxStaticObject(nsoFile.AsStream());
 
                     staticObjects.Add(staticObject);
                 }
@@ -654,7 +660,7 @@ namespace Ryujinx.HLE.HOS
             LoadSetAtPath(Path.Combine(home, ".switch"));
             LoadSetAtPath(Device.FileSystem.GetSystemPath());
 
-            KeySet = ExternalKeys.ReadKeyFile(keyFile, titleKeyFile, consoleKeyFile);
+            KeySet = ExternalKeyReader.ReadKeyFile(keyFile, titleKeyFile, consoleKeyFile);
 
             void LoadSetAtPath(string basePath)
             {
