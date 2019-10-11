@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             Nca         nca   = new Nca(_device.System.KeySet, ncaFile);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
 
-            timeZoneBinaryStream = romfs.OpenFile($"zoneinfo/{locationName}", OpenMode.Read).AsStream();
+            timeZoneBinaryStream = romfs.OpenFile($"/zoneinfo/{locationName}", OpenMode.Read).AsStream();
 
             return ResultCode.Success;
         }
