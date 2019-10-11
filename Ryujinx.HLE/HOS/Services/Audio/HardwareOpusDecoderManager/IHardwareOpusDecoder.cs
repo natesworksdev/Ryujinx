@@ -1,7 +1,6 @@
 using Concentus;
 using Concentus.Enums;
 using Concentus.Structs;
-using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Services.Audio.Types;
 using System;
 using System.IO;
@@ -11,8 +10,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 {
     class IHardwareOpusDecoder : IpcService
     {
-        private const int FixedSampleRate = 48000;
-
         private int  _sampleRate;
         private int  _channelsCount;
         private bool _reset;
@@ -25,12 +22,12 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
             _channelsCount = channelsCount;
             _reset         = false;
 
-            _decoder = new OpusDecoder(FixedSampleRate, channelsCount);
+            _decoder = new OpusDecoder(sampleRate, channelsCount);
         }
 
         private ResultCode GetPacketNumSamples(out int numSamples, byte[] packet)
         {
-            int result = OpusPacketInfo.GetNumSamples(packet, 0, packet.Length, _sampleRate);
+            int result = OpusPacketInfo.GetNumSamples(_decoder, packet, 0, packet.Length);
 
             numSamples = result;
 
