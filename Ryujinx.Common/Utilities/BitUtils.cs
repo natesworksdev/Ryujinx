@@ -144,9 +144,7 @@ namespace Ryujinx.Common
 
             if (BitConverter.IsLittleEndian)
             {
-                byte[] bytes = BitConverter.GetBytes(result);
-                Array.Reverse(bytes, 0, bytes.Length);
-                result = BitConverter.ToUInt32(bytes, 0);
+                result = (uint)EndianSwap.Swap32((int)result);
             }
 
             return result;
