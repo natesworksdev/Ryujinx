@@ -45,9 +45,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.HardwareOpusDecoderManager
 
         private ResultCode DecodeInterleavedInternal(BinaryReader input, out short[] outPcmData, long outputSize, out uint outConsumed, out int outSamples)
         {
-            outPcmData   = null;
-            outConsumed  = 0;
-            outSamples   = 0;
+            outPcmData  = null;
+            outConsumed = 0;
+            outSamples  = 0;
 
             long streamSize = input.BaseStream.Length;
 
