@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Common
+﻿using System;
+
+namespace Ryujinx.Common
 {
     public static class EndianSwap
     {
@@ -12,6 +14,18 @@
                          ((uintVal >>  8) & 0x0000ff00) |
                          ((uintVal <<  8) & 0x00ff0000) |
                          ((uintVal << 24) & 0xff000000));
+        }
+
+        public static uint FromBigEndianToPlatformEndian(uint value)
+        {
+            uint result = value;
+
+            if (BitConverter.IsLittleEndian)
+            {
+                result = (uint)EndianSwap.Swap32((int)result);
+            }
+
+            return result;
         }
     }
 }

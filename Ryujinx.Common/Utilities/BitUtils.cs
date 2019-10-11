@@ -1,5 +1,3 @@
-using System;
-
 namespace Ryujinx.Common
 {
     public static class BitUtils
@@ -136,18 +134,6 @@ namespace Ryujinx.Common
             value = ((value & 0xffff0000ffff0000) >> 16) | ((value & 0x0000ffff0000ffff) << 16);
 
             return (value >> 32) | (value << 32);
-        }
-
-        public static uint FromBigEndianToPlatformEndian(uint data)
-        {
-            uint result = data;
-
-            if (BitConverter.IsLittleEndian)
-            {
-                result = (uint)EndianSwap.Swap32((int)result);
-            }
-
-            return result;
         }
     }
 }

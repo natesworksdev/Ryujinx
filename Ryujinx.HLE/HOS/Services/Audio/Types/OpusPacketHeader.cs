@@ -15,8 +15,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.Types
         {
             OpusPacketHeader header = reader.ReadStruct<OpusPacketHeader>();
 
-            header.length     = BitUtils.FromBigEndianToPlatformEndian(header.length);
-            header.finalRange = BitUtils.FromBigEndianToPlatformEndian(header.finalRange);
+            header.length     = EndianSwap.FromBigEndianToPlatformEndian(header.length);
+            header.finalRange = EndianSwap.FromBigEndianToPlatformEndian(header.finalRange);
 
             return header;
         }
