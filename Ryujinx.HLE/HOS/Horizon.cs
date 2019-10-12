@@ -105,8 +105,6 @@ namespace Ryujinx.HLE.HOS
 
         public Nacp ControlData { get; set; }
 
-        public string CurrentTitle { get; private set; }
-
         public string TitleName { get; private set; }
 
         public string TitleID { get; private set; }
@@ -366,7 +364,7 @@ namespace Ryujinx.HLE.HOS
             {
                 ControlData = new Nacp(controlFile.AsStream());
 
-                TitleName = CurrentTitle = ControlData.Descriptions[(int) State.DesiredTitleLanguage].Title;
+                TitleName = ControlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
             }
         }
 
@@ -500,12 +498,12 @@ namespace Ryujinx.HLE.HOS
 
                 Nacp controlData = new Nacp(controlFile.AsStream());
 
-                TitleName = CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
+                TitleName = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
                 TitleID   = metaData.Aci0.TitleId.ToString("x16");
 
-                if (string.IsNullOrWhiteSpace(CurrentTitle))
+                if (string.IsNullOrWhiteSpace(TitleName))
                 {
-                    TitleName = CurrentTitle = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                    TitleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
                 }
 
                 return controlData;
@@ -517,7 +515,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+                TitleID = metaData.Aci0.TitleId.ToString("x16");
             }
         }
 
@@ -557,7 +555,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+            TitleID = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
             LoadNso("main");
@@ -659,7 +657,7 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries();
 
-            TitleName = CurrentTitle = metaData.TitleName;
+            TitleName = metaData.TitleName;
             TitleID   = metaData.Aci0.TitleId.ToString("x16");
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });

@@ -297,10 +297,13 @@ namespace Ryujinx.UI
             double hostFps = _device.Statistics.GetSystemFrameRate();
             double gameFps = _device.Statistics.GetGameFrameRate();
 
-            string titleSection = string.IsNullOrWhiteSpace(_device.System.CurrentTitle) ? string.Empty
-                : " | " + _device.System.CurrentTitle;
+            string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
+                : " | " + _device.System.TitleName;
 
-            _newTitle = $"Ryujinx{titleSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
+            string titleIDSection = string.IsNullOrWhiteSpace(_device.System.TitleID) ? string.Empty
+                : " | " + _device.System.TitleID.ToUpper();
+
+            _newTitle = $"Ryujinx{titleNameSection}{titleIDSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
                 $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";
 
             _titleEvent = true;
