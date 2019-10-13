@@ -1,8 +1,9 @@
 using Gtk;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
-using Ryujinx.Graphics.Gal;
-using Ryujinx.Graphics.Gal.OpenGL;
+using Ryujinx.Graphics.Gpu;
+using Ryujinx.Graphics.OpenGL;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
 using System;
 using System.IO;
@@ -15,7 +16,6 @@ using System.Threading.Tasks;
 using Utf8Json;
 using JsonPrettyPrinterPlus;
 using Utf8Json.Resolvers;
-using Ryujinx.HLE.FileSystem;
 
 
 using GUI = Gtk.Builder.ObjectAttribute;
@@ -26,7 +26,7 @@ namespace Ryujinx.Ui
     {
         private static HLE.Switch _device;
 
-        private static IGalRenderer _renderer;
+        private static Renderer _renderer;
 
         private static IAalOutput _audioOut;
 
@@ -74,7 +74,7 @@ namespace Ryujinx.Ui
 
             _gameTable.ButtonReleaseEvent += Row_Clicked;
 
-            _renderer = new OglRenderer();
+            _renderer = new Renderer();
 
             _audioOut = InitializeAudioEngine();
 
@@ -389,11 +389,11 @@ namespace Ryujinx.Ui
         /// <returns>An <see cref="IAalOutput"/> supported by this machine</returns>
         private static IAalOutput InitializeAudioEngine()
         {
-            if (SoundIoAudioOut.IsSupported)
+            /*if (SoundIoAudioOut.IsSupported)
             {
                 return new SoundIoAudioOut();
             }
-            else if (OpenALAudioOut.IsSupported)
+            else*/ if (OpenALAudioOut.IsSupported)
             {
                 return new OpenALAudioOut();
             }
@@ -435,7 +435,7 @@ namespace Ryujinx.Ui
             IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
 
             ApplicationMetadata appMetadata;
-            
+
             using (Stream stream = File.OpenRead(metadataPath))
             {
                 appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
