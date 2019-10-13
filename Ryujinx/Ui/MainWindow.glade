@@ -154,7 +154,7 @@
                               </object>
                             </child>
                             <child>
-                              <object class="GtkCheckMenuItem" id="_titleToggle">
+                              <object class="GtkCheckMenuItem" id="_appToggle">
                                 <property name="visible">True</property>
                                 <property name="can_focus">False</property>
                                 <property name="tooltip_text" translatable="yes">Enable or Disable Title Name/ID Column in the game list</property>

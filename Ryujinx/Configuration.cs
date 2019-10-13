@@ -124,7 +124,7 @@ namespace Ryujinx
         /// <summary>
         /// Used to toggle columns in the GUI
         /// </summary>
-        public List<bool> GuiColumns { get; set; }
+        public GuiColumns GuiColumns { get; set; }
 
         /// <summary>
         /// A list of directories containing games to be used to load games into the games list
