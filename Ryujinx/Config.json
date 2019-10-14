@@ -77,8 +77,8 @@
             "stick_button": "Button9",
             "button_a": "Button1",
             "button_b": "Button0",
-            "button_x": "Button2",
-            "button_y": "Button3",
+            "button_x": "Button3",
+            "button_y": "Button2",
             "button_plus": "Button7",
             "button_r": "Button5",
             "button_zr": "Axis5"
