@@ -1,4 +1,6 @@
 using LibHac;
+using LibHac.Fs;
+using LibHac.FsService;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
@@ -14,7 +16,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
     [Service("fsp-srv")]
     class IFileSystemProxy : IpcService
     {
-        public IFileSystemProxy(ServiceCtx context) { }
+        private LibHac.FsService.IFileSystemProxy _baseFileSystemProxy;
+
+        public IFileSystemProxy(ServiceCtx context)
+        {
+            _baseFileSystemProxy = context.Device.System.FsServer.CreateFileSystemProxyService();
+        }
 
         [Command(1)]
         // Initialize(u64, pid)
@@ -121,6 +128,21 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             LocalFileSystem fileSystem = new LocalFileSystem(sdCardPath);
 
             MakeObject(context, new FileSystemProxy.IFileSystem(fileSystem));
+
+            return ResultCode.Success;
+        }
+
+        [Command(30)]
+        // OpenGameCardStorage(u32, u32) -> object<nn::fssrv::sf::IStorage>
+        public ResultCode OpenGameCardStorage(ServiceCtx context)
+        {
+            GameCardHandle handle = new GameCardHandle(context.RequestData.ReadInt32());
+            GameCardPartitionRaw partitionId = (GameCardPartitionRaw) context.RequestData.ReadInt32();
+
+            Result rc = _baseFileSystemProxy.OpenGameCardStorage(out LibHac.Fs.IStorage storage, handle, partitionId);
+            if (rc.IsFailure()) return (ResultCode)rc.Value;
+
+            MakeObject(context, new FileSystemProxy.IStorage(storage));
 
             return ResultCode.Success;
         }
@@ -244,6 +266,18 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             MakeObject(context, new FileSystemProxy.IStorage(context.Device.FileSystem.RomFs.AsStorage()));
 
             return ResultCode.Success;
+        }
+
+        [Command(400)]
+        // OpenDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage> dataStorage
+        public ResultCode OpenDeviceOperator(ServiceCtx context)
+        {
+            Result rc = _baseFileSystemProxy.OpenDeviceOperator(out LibHac.FsService.IDeviceOperator deviceOperator);
+            if (rc.IsFailure()) return (ResultCode)rc.Value;
+
+            MakeObject(context, new IDeviceOperator(deviceOperator));
+
+            return 0;
         }
 
         [Command(1005)]

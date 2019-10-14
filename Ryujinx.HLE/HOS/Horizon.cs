@@ -1,5 +1,6 @@
 using LibHac;
 using LibHac.Fs;
+using LibHac.FsService;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Spl;
@@ -118,6 +119,9 @@ namespace Ryujinx.HLE.HOS
 
         internal long HidBaseAddress { get; private set; }
 
+        internal FileSystemServer FsServer { get; private set; }
+        internal EmulatedGameCard GameCard { get; private set; }
+
         public Horizon(Switch device)
         {
             ControlData = new Nacp();
@@ -230,6 +234,20 @@ namespace Ryujinx.HLE.HOS
             // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
 
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
+
+            LocalFileSystem baseFs = new LocalFileSystem(device.FileSystem.GetBasePath());
+            DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(baseFs, KeySet);
+
+            GameCard = fsServerObjects.GameCard;
+
+            FileSystemServerConfig fsServerConfig = new FileSystemServerConfig
+            {
+                FsCreators = fsServerObjects.FsCreators,
+                DeviceOperator = fsServerObjects.DeviceOperator,
+                ExternalKeySet = KeySet.ExternalKeySet
+            };
+
+            FsServer = new FileSystemServer(fsServerConfig);
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
