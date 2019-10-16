@@ -6,6 +6,7 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using System.Collections.Generic;
 using System.IO;
+
 using static Ryujinx.HLE.Utilities.FontUtils;
 
 namespace Ryujinx.HLE.HOS.Font
