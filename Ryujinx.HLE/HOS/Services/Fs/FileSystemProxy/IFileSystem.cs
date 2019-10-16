@@ -90,11 +90,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             string name = ReadUtf8String(context);
 
-            Result rc = _fileSystem.GetEntryType(out DirectoryEntryType entryType, name);
+            Result result = _fileSystem.GetEntryType(out DirectoryEntryType entryType, name);
 
             context.ResponseData.Write((int)entryType);
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
 
         [Command(8)]
@@ -105,8 +105,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             string name = ReadUtf8String(context);
 
-            Result rc = _fileSystem.OpenFile(out LibHac.Fs.IFile file, name, mode);
-            if (rc.IsFailure()) return (ResultCode)rc.Value;
+            Result result = _fileSystem.OpenFile(out LibHac.Fs.IFile file, name, mode);
+            if (result.IsFailure()) return (ResultCode)result.Value;
 
             IFile fileInterface = new IFile(file);
 
@@ -123,8 +123,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             string name = ReadUtf8String(context);
 
-            Result rc = _fileSystem.OpenDirectory(out LibHac.Fs.IDirectory dir, name, mode);
-            if (rc.IsFailure()) return (ResultCode)rc.Value;
+            Result result = _fileSystem.OpenDirectory(out LibHac.Fs.IDirectory dir, name, mode);
+            if (result.IsFailure()) return (ResultCode)result.Value;
 
             IDirectory dirInterface = new IDirectory(dir);
 
@@ -146,11 +146,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             string name = ReadUtf8String(context);
 
-            Result rc = _fileSystem.GetFreeSpaceSize(out long size, name);
+            Result result = _fileSystem.GetFreeSpaceSize(out long size, name);
 
             context.ResponseData.Write(size);
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
 
         [Command(12)]
@@ -159,11 +159,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             string name = ReadUtf8String(context);
 
-            Result rc = _fileSystem.GetTotalSpaceSize(out long size, name);
+            Result result = _fileSystem.GetTotalSpaceSize(out long size, name);
 
             context.ResponseData.Write(size);
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
 
         [Command(13)]
@@ -181,8 +181,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             string name = ReadUtf8String(context);
 
-            Result rc = _fileSystem.GetFileTimeStampRaw(out FileTimeStampRaw timestamp, name);
-            if (rc.IsFailure()) return (ResultCode)rc.Value;
+            Result result = _fileSystem.GetFileTimeStampRaw(out FileTimeStampRaw timestamp, name);
+            if (result.IsFailure()) return (ResultCode)result.Value;
 
             context.ResponseData.Write(timestamp.Created);
             context.ResponseData.Write(timestamp.Modified);

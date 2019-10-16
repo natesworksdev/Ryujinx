@@ -164,11 +164,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
             Nca         nca   = new Nca(_device.System.KeySet, ncaFile);
             IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
 
-            Result rc = romfs.OpenFile(out IFile timeZoneBinaryFile, $"/zoneinfo/{locationName}", OpenMode.Read);
+            Result result = romfs.OpenFile(out IFile timeZoneBinaryFile, $"/zoneinfo/{locationName}", OpenMode.Read);
 
             timeZoneBinaryStream = timeZoneBinaryFile.AsStream();
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
 
         internal ResultCode LoadTimeZoneRule(out TimeZoneRule outRules, string locationName)

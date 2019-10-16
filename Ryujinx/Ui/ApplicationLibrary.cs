@@ -350,8 +350,8 @@ namespace Ryujinx.UI
             // Add keys to keyset if needed
             foreach (DirectoryEntryEx ticketEntry in Pfs.EnumerateEntries("/", "*.tik"))
             {
-                Result rc = Pfs.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (rc.IsFailure()) continue;
+                Result result = Pfs.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (result.IsFailure()) continue;
 
                 Ticket ticket = new Ticket(ticketFile.AsStream());
 

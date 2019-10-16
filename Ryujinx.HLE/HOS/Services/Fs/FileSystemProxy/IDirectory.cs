@@ -24,23 +24,23 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             byte[] entriesBytes = new byte[bufferLen];
             Span<DirectoryEntry> entries = MemoryMarshal.Cast<byte, DirectoryEntry>(entriesBytes);
 
-            Result rc = _baseDirectory.Read(out long entriesRead, entries);
+            Result result = _baseDirectory.Read(out long entriesRead, entries);
 
             context.Memory.WriteBytes(bufferPosition, entriesBytes);
             context.ResponseData.Write(entriesRead);
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
 
         [Command(1)]
         // GetEntryCount() -> u64
         public ResultCode GetEntryCount(ServiceCtx context)
         {
-            Result rc = _baseDirectory.GetEntryCount(out long entryCount);
+            Result result = _baseDirectory.GetEntryCount(out long entryCount);
 
             context.ResponseData.Write(entryCount);
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
     }
 }

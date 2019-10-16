@@ -305,8 +305,8 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx ticketEntry in securePartition.EnumerateEntries("/", "*.tik"))
             {
-                Result rc = securePartition.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (rc.IsFailure()) continue;
+                Result result = securePartition.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (result.IsFailure()) continue;
 
                 Ticket ticket = new Ticket(ticketFile.AsStream());
 
@@ -315,8 +315,8 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx fileEntry in securePartition.EnumerateEntries("/", "*.nca"))
             {
-                Result rc = securePartition.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read);
-                if (rc.IsFailure()) continue;
+                Result result = securePartition.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read);
+                if (result.IsFailure()) continue;
 
                 Nca nca = new Nca(KeySet, ncaFile.AsStorage());
 
@@ -356,8 +356,8 @@ namespace Ryujinx.HLE.HOS
         {
             IFileSystem controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, FsIntegrityCheckLevel);
 
-            Result rc = controlFs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read);
-            if (rc.IsFailure()) return;
+            Result result = controlFs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read);
+            if (result.IsFailure()) return;
 
             ControlData = new Nacp(controlFile.AsStream());
 
@@ -381,8 +381,8 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
             {
-                Result rc = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (rc.IsFailure()) continue;
+                Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (result.IsFailure()) continue;
 
                 Ticket ticket = new Ticket(ticketFile.AsStream());
 
@@ -515,9 +515,9 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
         {
-            Result rc = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
+            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
 
-            if (rc == ResultFs.PathNotFound)
+            if (result == ResultFs.PathNotFound)
             {
                 Logger.PrintWarning(LogClass.Loader, "NPDM file not found, using default values!");
 

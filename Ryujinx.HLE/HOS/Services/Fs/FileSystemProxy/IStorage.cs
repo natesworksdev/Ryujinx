@@ -31,11 +31,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
                 byte[] data = new byte[size];
 
-                Result rc = _baseStorage.Read(offset, data);
+                Result result = _baseStorage.Read(offset, data);
 
                 context.Memory.WriteBytes(buffDesc.Position, data);
 
-                return (ResultCode)rc.Value;
+                return (ResultCode)result.Value;
             }
 
             return ResultCode.Success;
@@ -45,11 +45,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         // GetSize() -> u64 size
         public ResultCode GetSize(ServiceCtx context)
         {
-            Result rc = _baseStorage.GetSize(out long size);
+            Result result = _baseStorage.GetSize(out long size);
 
             context.ResponseData.Write(size);
 
-            return (ResultCode)rc.Value;
+            return (ResultCode)result.Value;
         }
     }
 }

@@ -28,8 +28,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             {
                 LocalFileSystem       fileSystem     = new LocalFileSystem(savePath);
 
-                Result rc = DirectorySaveDataFileSystem.CreateNew(out DirectorySaveDataFileSystem dirFileSystem, fileSystem);
-                if (rc.IsFailure()) return (ResultCode)rc.Value;
+                Result result = DirectorySaveDataFileSystem.CreateNew(out DirectorySaveDataFileSystem dirFileSystem, fileSystem);
+                if (result.IsFailure()) return (ResultCode)result.Value;
 
                 LibHac.Fs.IFileSystem saveFileSystem = dirFileSystem;
 
@@ -120,8 +120,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
                     string filename = fullPath.Replace(archivePath.FullName, string.Empty).TrimStart('\\');
 
-                    Result rc = nsp.OpenFile(out LibHac.Fs.IFile ncaFile, filename, OpenMode.Read);
-                    if (rc.IsFailure()) return (ResultCode)rc.Value;
+                    Result result = nsp.OpenFile(out LibHac.Fs.IFile ncaFile, filename, OpenMode.Read);
+                    if (result.IsFailure()) return (ResultCode)result.Value;
 
                     return OpenNcaFs(context, fullPath, ncaFile.AsStorage(), out openedFileSystem);
                 }
@@ -138,8 +138,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         {
             foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
             {
-                Result rc = nsp.OpenFile(out LibHac.Fs.IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (rc.IsFailure()) continue;
+                Result result = nsp.OpenFile(out LibHac.Fs.IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                if (result.IsFailure()) continue;
 
                 Ticket ticket = new Ticket(ticketFile.AsStream());
 
