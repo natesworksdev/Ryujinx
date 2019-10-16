@@ -140,11 +140,13 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             GameCardPartitionRaw partitionId = (GameCardPartitionRaw)context.RequestData.ReadInt32();
 
             Result result = _baseFileSystemProxy.OpenGameCardStorage(out LibHac.Fs.IStorage storage, handle, partitionId);
-            if (result.IsFailure()) return (ResultCode)result.Value;
 
-            MakeObject(context, new FileSystemProxy.IStorage(storage));
+            if (result.IsSuccess())
+            {
+                MakeObject(context, new FileSystemProxy.IStorage(storage));
+            }
 
-            return ResultCode.Success;
+            return (ResultCode)result.Value;
         }
 
         [Command(51)]
@@ -273,11 +275,13 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         public ResultCode OpenDeviceOperator(ServiceCtx context)
         {
             Result result = _baseFileSystemProxy.OpenDeviceOperator(out LibHac.FsService.IDeviceOperator deviceOperator);
-            if (result.IsFailure()) return (ResultCode)result.Value;
 
-            MakeObject(context, new IDeviceOperator(deviceOperator));
+            if (result.IsSuccess())
+            {
+                MakeObject(context, new IDeviceOperator(deviceOperator));
+            }
 
-            return 0;
+            return (ResultCode)result.Value;
         }
 
         [Command(1005)]

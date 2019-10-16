@@ -106,13 +106,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             string name = ReadUtf8String(context);
 
             Result result = _fileSystem.OpenFile(out LibHac.Fs.IFile file, name, mode);
-            if (result.IsFailure()) return (ResultCode)result.Value;
 
-            IFile fileInterface = new IFile(file);
+            if (result.IsSuccess())
+            {
+                IFile fileInterface = new IFile(file);
 
-            MakeObject(context, fileInterface);
+                MakeObject(context, fileInterface);
+            }
 
-            return ResultCode.Success;
+            return (ResultCode)result.Value;
         }
 
         [Command(9)]
@@ -124,13 +126,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             string name = ReadUtf8String(context);
 
             Result result = _fileSystem.OpenDirectory(out LibHac.Fs.IDirectory dir, name, mode);
-            if (result.IsFailure()) return (ResultCode)result.Value;
 
-            IDirectory dirInterface = new IDirectory(dir);
+            if (result.IsSuccess())
+            {
+                IDirectory dirInterface = new IDirectory(dir);
 
-            MakeObject(context, dirInterface);
+                MakeObject(context, dirInterface);
+            }
 
-            return ResultCode.Success;
+            return (ResultCode)result.Value;
         }
 
         [Command(10)]
@@ -182,7 +186,6 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             string name = ReadUtf8String(context);
 
             Result result = _fileSystem.GetFileTimeStampRaw(out FileTimeStampRaw timestamp, name);
-            if (result.IsFailure()) return (ResultCode)result.Value;
 
             context.ResponseData.Write(timestamp.Created);
             context.ResponseData.Write(timestamp.Modified);
@@ -195,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 
             context.ResponseData.Write(data);
 
-            return ResultCode.Success;
+            return (ResultCode)result.Value;
         }
     }
 }

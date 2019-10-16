@@ -353,11 +353,13 @@ namespace Ryujinx.UI
             foreach (DirectoryEntryEx ticketEntry in Pfs.EnumerateEntries("/", "*.tik"))
             {
                 Result result = Pfs.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (result.IsFailure()) continue;
 
-                Ticket ticket = new Ticket(ticketFile.AsStream());
+                if (result.IsSuccess())
+                {
+                    Ticket ticket = new Ticket(ticketFile.AsStream());
 
-                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                    KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                }
             }
 
             // Find the Control NCA and store it in variable called controlNca

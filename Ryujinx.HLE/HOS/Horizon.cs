@@ -307,17 +307,22 @@ namespace Ryujinx.HLE.HOS
             foreach (DirectoryEntryEx ticketEntry in securePartition.EnumerateEntries("/", "*.tik"))
             {
                 Result result = securePartition.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (result.IsFailure()) continue;
 
-                Ticket ticket = new Ticket(ticketFile.AsStream());
+                if (result.IsSuccess())
+                {
+                    Ticket ticket = new Ticket(ticketFile.AsStream());
 
-                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                    KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                }
             }
 
             foreach (DirectoryEntryEx fileEntry in securePartition.EnumerateEntries("/", "*.nca"))
             {
                 Result result = securePartition.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read);
-                if (result.IsFailure()) continue;
+                if (result.IsFailure())
+                {
+                    continue;
+                }
 
                 Nca nca = new Nca(KeySet, ncaFile.AsStorage());
 
@@ -358,11 +363,13 @@ namespace Ryujinx.HLE.HOS
             IFileSystem controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, FsIntegrityCheckLevel);
 
             Result result = controlFs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read);
-            if (result.IsFailure()) return;
 
-            ControlData = new Nacp(controlFile.AsStream());
+            if (result.IsSuccess())
+            {
+                ControlData = new Nacp(controlFile.AsStream());
 
-            TitleName = CurrentTitle = ControlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
+                TitleName = CurrentTitle = ControlData.Descriptions[(int) State.DesiredTitleLanguage].Title;
+            }
         }
 
         public void LoadNca(string ncaFile)
@@ -383,11 +390,13 @@ namespace Ryujinx.HLE.HOS
             foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
             {
                 Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
-                if (result.IsFailure()) continue;
 
-                Ticket ticket = new Ticket(ticketFile.AsStream());
+                if (result.IsSuccess())
+                {
+                    Ticket ticket = new Ticket(ticketFile.AsStream());
 
-                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                    KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                }
             }
 
             Nca mainNca    = null;
