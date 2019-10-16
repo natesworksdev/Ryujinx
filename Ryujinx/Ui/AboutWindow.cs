@@ -21,7 +21,7 @@ namespace Ryujinx.UI
     {
         public static Info Information { get; private set; }
 
-#pragma warning disable 649
+#pragma warning disable CS0649
         [GUI] Window _aboutWin;
         [GUI] Label  _versionText;
         [GUI] Image  _ryujinxLogo;
@@ -29,7 +29,7 @@ namespace Ryujinx.UI
         [GUI] Image  _gitHubLogo;
         [GUI] Image  _discordLogo;
         [GUI] Image  _twitterLogo;
-#pragma warning restore 649
+#pragma warning restore CS0649
 
         public AboutWindow() : this(new Builder("Ryujinx.Ui.AboutWindow.glade")) { }
 

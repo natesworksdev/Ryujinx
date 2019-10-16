@@ -17,6 +17,8 @@ using System.Text;
 using System.Threading;
 using Utf8Json;
 using Utf8Json.Resolvers;
+using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace Ryujinx.UI
 {
@@ -74,7 +76,7 @@ namespace Ryujinx.UI
 
         public static RichPresence DiscordPresence;
 
-#pragma warning disable 649
+#pragma warning disable CS0649
         [GUI] Window        _mainWin;
         [GUI] CheckMenuItem _fullScreen;
         [GUI] MenuItem      _stopEmulation;
@@ -89,7 +91,9 @@ namespace Ryujinx.UI
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
         [GUI] TreeView      _gameTable;
-#pragma warning restore 649
+        [GUI] Label         _progressLabel;
+        [GUI] LevelBar      _progressBar;
+#pragma warning restore CS0649
 
         public MainWindow(string[] args, Application gtkApplication) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), args, gtkApplication) { }
 
@@ -98,6 +102,8 @@ namespace Ryujinx.UI
             builder.Autoconnect(this);
 
             DeleteEvent += Window_Close;
+
+            ApplicationLibrary.ApplicationAdded += Application_Added;
 
             _renderer = new OglRenderer();
 
@@ -109,8 +115,6 @@ namespace Ryujinx.UI
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
-
-            ApplicationLibrary.Init(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage);
 
             ApplyTheme();
 
@@ -138,7 +142,7 @@ namespace Ryujinx.UI
 
             if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { _favToggle.Active        = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns.IconColumn)       { _iconToggle.Active       = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)      { _appToggle.Active      = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)        { _appToggle.Active        = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns.DevColumn)        { _developerToggle.Active  = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns.VersionColumn)    { _versionToggle.Active    = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns.TimePlayedColumn) { _timePlayedToggle.Active = true; }
@@ -150,7 +154,9 @@ namespace Ryujinx.UI
             _gameTable.Model = _tableStore = new ListStore(typeof(bool), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
 
             UpdateColumns();
+#pragma warning disable CS4014
             UpdateGameTable();
+#pragma warning restore CS4014
         }
 
         public static void CreateErrorDialog(string errorMessage)
@@ -230,19 +236,16 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { pathColumn.SortColumnId       = 9; }
         }
 
-        public static void UpdateGameTable()
+        public static async Task UpdateGameTable()
         {
             _tableStore.Clear();
-            ApplicationLibrary.Init(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage);
-
-            foreach (ApplicationLibrary.ApplicationData AppData in ApplicationLibrary.ApplicationLibraryData)
-            {
-                _tableStore.AppendValues(AppData.Favorite, new Gdk.Pixbuf(AppData.Icon, 75, 75), $"{AppData.TitleName}\n{AppData.TitleId.ToUpper()}", AppData.Developer, AppData.Version, AppData.TimePlayed, AppData.LastPlayed, AppData.FileExtension, AppData.FileSize, AppData.Path);
-            }
-
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
             _tableStore.SetSortFunc(8, FileSizeSort);
+            ApplicationLibrary.NumApplicationsLoaded = 0;
+            ApplicationLibrary.NumApplicationsFound  = 0;
+
+            await Task.Run(() => { ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage); });
         }
 
         internal void LoadApplication(string path)
@@ -470,6 +473,13 @@ namespace Ryujinx.UI
         }
 
         //Events
+        private void Application_Added(object sender, ApplicationAddedEventArgs e)
+        {
+            _tableStore.AppendValues(e.AppData.Favorite, new Gdk.Pixbuf(e.AppData.Icon, 75, 75), $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}", e.AppData.Developer, e.AppData.Version, e.AppData.TimePlayed, e.AppData.LastPlayed, e.AppData.FileExtension, e.AppData.FileSize, e.AppData.Path);
+            _progressLabel.Text = $"{e.AppsLoaded}/{ApplicationLibrary.NumApplicationsFound} Games Loaded";
+            _progressBar.Value  = e.AppsLoaded / ApplicationLibrary.NumApplicationsFound;
+        }
+
         private void FavToggle_Toggled(object o, ToggledArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));

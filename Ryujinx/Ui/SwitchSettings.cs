@@ -21,7 +21,7 @@ namespace Ryujinx.UI
 
         private static bool _listeningForKeypress;
 
-#pragma warning disable 649
+#pragma warning disable CS0649
         [GUI] Window       _settingsWin;
         [GUI] CheckButton  _errorLogToggle;
         [GUI] CheckButton  _warningLogToggle;
@@ -78,7 +78,7 @@ namespace Ryujinx.UI
         [GUI] ToggleButton _plus1;
         [GUI] ToggleButton _r1;
         [GUI] ToggleButton _zR1;
-#pragma warning restore 649
+#pragma warning restore CS0649
 
         public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
 

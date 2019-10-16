@@ -1,4 +1,4 @@
-﻿using JsonPrettyPrinterPlus;
+using JsonPrettyPrinterPlus;
 using LibHac;
 using LibHac.Fs;
 using LibHac.FsSystem;
@@ -20,6 +20,8 @@ namespace Ryujinx.UI
 {
     public class ApplicationLibrary
     {
+        public static event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
+
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
         public static byte[] RyujinxNcaIcon { get; private set; }
@@ -41,7 +43,8 @@ namespace Ryujinx.UI
             public string Path          { get; set; }
         }
 
-        public static List<ApplicationData> ApplicationLibraryData { get; private set; }
+        public static float NumApplicationsFound  { get; set; }
+        public static float NumApplicationsLoaded { get; set; }
 
         private static Keyset KeySet;
         private static SystemState.TitleLanguage DesiredTitleLanguage;
@@ -59,7 +62,7 @@ namespace Ryujinx.UI
 
         private static ApplicationMetadata AppMetadata;
 
-        public static void Init(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
+        public static void LoadApplications(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
         {
             KeySet               = keySet;
             DesiredTitleLanguage = desiredTitleLanguage;
@@ -86,19 +89,29 @@ namespace Ryujinx.UI
                 foreach (string app in apps)
                 {
                     if ((Path.GetExtension(app) == ".xci") ||
-                        (Path.GetExtension(app) == ".nca") ||
                         (Path.GetExtension(app) == ".nsp") ||
                         (Path.GetExtension(app) == ".pfs0")||
                         (Path.GetExtension(app) == ".nro") ||
                         (Path.GetExtension(app) == ".nso"))
                     {
                         applications.Add(app);
+                        NumApplicationsFound++;
+                    }
+                    else if (Path.GetExtension(app) == ".nca")
+                    {
+                        Nca nca = new Nca(KeySet, new FileStream(app, FileMode.Open, FileAccess.Read).AsStorage());
+                        if (nca.Header.ContentType != NcaContentType.Program)
+                        {
+                            continue;
+                        }
+
+                        applications.Add(app);
+                        NumApplicationsFound++;
                     }
                 }
             }
 
-            // Loops through applications list, creating a struct for each application and then adding the struct to a list of structs
-            ApplicationLibraryData = new List<ApplicationData>();
+            // Loops through applications list, creating a struct and then firing an event containing the struct for each application
             foreach (string applicationPath in applications)
             {
                 double filesize        = new FileInfo(applicationPath).Length * 0.000000000931;
@@ -308,12 +321,6 @@ namespace Ryujinx.UI
                     {
                         if (Path.GetExtension(applicationPath) == ".nca")
                         {
-                            Nca nca = new Nca(KeySet, new FileStream(applicationPath, FileMode.Open, FileAccess.Read).AsStorage(false));
-                            if (nca.Header.ContentType != NcaContentType.Program)
-                            {
-                                continue;
-                            }
-
                             applicationIcon = RyujinxNcaIcon;
                         }
                         else if (Path.GetExtension(applicationPath) == ".nso")
@@ -352,8 +359,19 @@ namespace Ryujinx.UI
                     Path          = applicationPath,
                 };
 
-                ApplicationLibraryData.Add(data);
+                NumApplicationsLoaded++;
+
+                OnApplicationAdded(new ApplicationAddedEventArgs()
+                { 
+                    AppData    = data,
+                    AppsLoaded = NumApplicationsLoaded
+                });
             }
+        }
+
+        protected static void OnApplicationAdded(ApplicationAddedEventArgs e)
+        {
+            ApplicationAdded?.Invoke(null, e);
         }
 
         private static byte[] GetResourceBytes(string resourceName)
@@ -460,5 +478,11 @@ namespace Ryujinx.UI
                 return RyujinxNspIcon;
             }
         }
+    }
+
+    public class ApplicationAddedEventArgs : EventArgs
+    {
+        public ApplicationLibrary.ApplicationData AppData { get; set; }
+        public float AppsLoaded { get; set; }
     }
 }
