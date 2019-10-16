@@ -21,8 +21,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferLen      = context.Request.ReceiveBuff[0].Size;
 
-            byte[] entriesBytes = new byte[bufferLen];
-            Span<DirectoryEntry> entries = MemoryMarshal.Cast<byte, DirectoryEntry>(entriesBytes);
+            byte[]               entriesBytes = new byte[bufferLen];
+            Span<DirectoryEntry> entries      = MemoryMarshal.Cast<byte, DirectoryEntry>(entriesBytes);
 
             Result result = _baseDirectory.Read(out long entriesRead, entries);
 

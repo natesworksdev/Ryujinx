@@ -235,14 +235,15 @@ namespace Ryujinx.HLE.HOS
 
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
 
-            LocalFileSystem baseFs = new LocalFileSystem(device.FileSystem.GetBasePath());
-            DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(baseFs, KeySet);
+            LocalFileSystem serverBaseFs = new LocalFileSystem(device.FileSystem.GetBasePath());
+
+            DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(serverBaseFs, KeySet);
 
             GameCard = fsServerObjects.GameCard;
 
             FileSystemServerConfig fsServerConfig = new FileSystemServerConfig
             {
-                FsCreators = fsServerObjects.FsCreators,
+                FsCreators     = fsServerObjects.FsCreators,
                 DeviceOperator = fsServerObjects.DeviceOperator,
                 ExternalKeySet = KeySet.ExternalKeySet
             };

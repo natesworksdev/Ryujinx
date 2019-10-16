@@ -1,4 +1,5 @@
-﻿using LibHac.Fs;
+﻿using LibHac;
+using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
@@ -8,7 +9,7 @@ using Ryujinx.HLE.Resource;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
 using System.IO;
-using LibHac;
+
 using static Ryujinx.HLE.HOS.Services.Time.TimeZone.TimeZoneRule;
 
 namespace Ryujinx.HLE.HOS.Services.Time.TimeZone

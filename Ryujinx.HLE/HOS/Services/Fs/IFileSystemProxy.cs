@@ -136,8 +136,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         // OpenGameCardStorage(u32, u32) -> object<nn::fssrv::sf::IStorage>
         public ResultCode OpenGameCardStorage(ServiceCtx context)
         {
-            GameCardHandle handle = new GameCardHandle(context.RequestData.ReadInt32());
-            GameCardPartitionRaw partitionId = (GameCardPartitionRaw) context.RequestData.ReadInt32();
+            GameCardHandle       handle      = new GameCardHandle(context.RequestData.ReadInt32());
+            GameCardPartitionRaw partitionId = (GameCardPartitionRaw)context.RequestData.ReadInt32();
 
             Result result = _baseFileSystemProxy.OpenGameCardStorage(out LibHac.Fs.IStorage storage, handle, partitionId);
             if (result.IsFailure()) return (ResultCode)result.Value;

@@ -154,6 +154,7 @@ namespace Ryujinx.UI
                             try
                             {
                                 controlFs.OpenFile(out IFile icon, $"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read).ThrowIfFailure();
+
                                 using (MemoryStream stream = new MemoryStream())
                                 {
                                     icon.AsStream().CopyTo(stream);
@@ -170,6 +171,7 @@ namespace Ryujinx.UI
                                     }
 
                                     controlFs.OpenFile(out IFile icon, entry.FullPath, OpenMode.Read).ThrowIfFailure();
+
                                     using (MemoryStream stream = new MemoryStream())
                                     {
                                         icon.AsStream().CopyTo(stream);
@@ -362,7 +364,9 @@ namespace Ryujinx.UI
             foreach (DirectoryEntryEx fileEntry in Pfs.EnumerateEntries("/", "*.nca"))
             {
                 Pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
+
                 Nca nca = new Nca(KeySet, ncaFile.AsStorage());
+
                 if (nca.Header.ContentType == NcaContentType.Control)
                 {
                     controlNca = nca;
