@@ -119,7 +119,8 @@ namespace Ryujinx.UI
 
                             // Creates NACP class from the NACP file
                             controlFs.OpenFile(out IFile controlNacpFile, "/control.nacp", OpenMode.Read).ThrowIfFailure();
-                            Nacp  controlData = new Nacp(controlNacpFile.AsStream());
+
+                            Nacp controlData = new Nacp(controlNacpFile.AsStream());
 
                             // Get the title name, title ID, developer name and version number from the NACP
                             version = controlData.DisplayVersion;

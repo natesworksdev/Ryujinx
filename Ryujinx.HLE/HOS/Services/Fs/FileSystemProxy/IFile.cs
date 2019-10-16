@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
         public ResultCode Write(ServiceCtx context)
         {
             long position = context.Request.SendBuff[0].Position;
-            
+
             WriteOption writeOption = (WriteOption)context.RequestData.ReadInt32();
             context.RequestData.BaseStream.Position += 4;
 
