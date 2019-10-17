@@ -2,11 +2,11 @@
 using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
+using LibHac.Spl;
 using Ryujinx.Common;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Utilities;
 using System.IO;
-using LibHac.Spl;
 
 namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
 {
