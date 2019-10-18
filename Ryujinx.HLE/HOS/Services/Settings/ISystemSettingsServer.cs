@@ -118,7 +118,6 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             NxSettings.Settings.TryGetValue(askedSetting, out object nxSetting);
 
-
             if (nxSetting != null)
             {
                 ulong settingSize;

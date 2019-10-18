@@ -82,14 +82,14 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                 return ResultCode.NoInternetConnection;
             }
 
-            InternetConnectionStatus result = new InternetConnectionStatus
+            InternetConnectionStatus internetConnectionStatus = new InternetConnectionStatus
             {
                 Type         = InternetConnectionType.WiFi,
                 WifiStrength = 3,
                 State        = InternetConnectionState.Connected,
             };
 
-            context.ResponseData.WriteStruct(result);
+            context.ResponseData.WriteStruct(internetConnectionStatus);
 
             return ResultCode.Success;
         }
