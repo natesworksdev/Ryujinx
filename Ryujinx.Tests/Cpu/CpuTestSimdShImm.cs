@@ -218,7 +218,7 @@ namespace Ryujinx.Tests.Cpu
             return new uint[]
             {
                 0x5F405400u, // SHL D0, D0, #0
-                //0x7F405400u  // SLI D0, D0, #0
+                0x7F405400u  // SLI D0, D0, #0
             };
         }
 
@@ -289,7 +289,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
-                //0x7F404400u, // SRI   D0, D0, #64
+                0x7F404400u, // SRI   D0, D0, #64
                 0x5F402400u, // SRSHR D0, D0, #64
                 0x5F403400u, // SRSRA D0, D0, #64
                 0x5F400400u, // SSHR  D0, D0, #64
