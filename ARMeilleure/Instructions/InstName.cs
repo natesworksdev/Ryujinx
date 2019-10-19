@@ -354,6 +354,7 @@ namespace ARMeilleure.Instructions
         Sqxtun_S,
         Sqxtun_V,
         Srhadd_V,
+        Sri_V,
         Srshl_V,
         Srshr_S,
         Srshr_V,
