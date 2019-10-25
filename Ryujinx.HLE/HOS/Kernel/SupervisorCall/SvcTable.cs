@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         generator.Emit(OpCodes.Ldarg_1);
                         generator.Emit(OpCodes.Ldc_I4, index);
 
-                        MethodInfo info = typeof(IExecutionContext).GetMethod(nameof(IExecutionContext.GetX));
+                        MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
                         generator.Emit(OpCodes.Call, info);
 
