@@ -154,5 +154,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
                 }
             }
         }
+
+        public static Result ReadFsPath(out FsPath path, ServiceCtx context, int index = 0)
+        {
+            long position = context.Request.SendBuff[index].Position;
+            long size     = context.Request.SendBuff[index].Size;
+
+            byte[] pathBytes = context.Memory.ReadBytes(position, size);
+
+            return FsPath.FromSpan(out path, pathBytes);
+        }
     }
 }
