@@ -63,19 +63,25 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             long outputPosition = context.Request.RecvListBuff[0].Position;
             long outputSize     = context.Request.RecvListBuff[0].Size;
 
-            ulong offset = 0;
+            ulong offset = 0UL;
 
             foreach (UserProfile userProfile in profiles)
             {
-                if (offset + 0x10 > (ulong)outputSize)
+                if (offset + 0x10UL > (ulong)outputSize)
                 {
                     break;
                 }
 
-                context.Memory.WriteInt64(outputPosition + (long)offset,     userProfile.UserId.Low);
-                context.Memory.WriteInt64(outputPosition + (long)offset + 8, userProfile.UserId.High);
+                context.Memory.WriteInt64(outputPosition + (long)offset,      userProfile.UserId.Low);
+                context.Memory.WriteInt64(outputPosition + (long)offset + 8L, userProfile.UserId.High);
 
                 offset += 0x10;
+            }
+
+            for ( ; offset + 0x10UL <= (ulong)outputSize; offset += 0x10UL)
+            {
+                context.Memory.WriteInt64(outputPosition + (long)offset,      0L);
+                context.Memory.WriteInt64(outputPosition + (long)offset + 8L, 0L);
             }
 
             return ResultCode.Success;
