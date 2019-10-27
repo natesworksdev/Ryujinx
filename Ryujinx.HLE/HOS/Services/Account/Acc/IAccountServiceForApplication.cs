@@ -1,3 +1,4 @@
+using ARMeilleure.Memory;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Arp;
 using Ryujinx.HLE.Utilities;
