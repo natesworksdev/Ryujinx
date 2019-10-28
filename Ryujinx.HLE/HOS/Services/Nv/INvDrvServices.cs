@@ -458,10 +458,49 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         }
 
         [Command(12)] // 3.0.0+
-        // Ioctl2(s32 fd, u32 ioctl_cmd, buffer<bytes, 0x21> in_args) -> (u32 error_code, buffer<bytes, 0x22> out_args,  buffer<bytes, 0x22> out_additional_buffer)
+        // Ioctl3(s32 fd, u32 ioctl_cmd, buffer<bytes, 0x21> in_args) -> (u32 error_code, buffer<bytes, 0x22> out_args,  buffer<bytes, 0x22> inline_out_buffer)
         public ResultCode Ioctl3(ServiceCtx context)
         {
-            throw new ServiceNotImplementedException(context);
+            NvResult errorCode = EnsureInitialized();
+
+            if (errorCode == NvResult.Success)
+            {
+                int fd = context.RequestData.ReadInt32();
+                NvIoctl ioctlCommand = context.RequestData.ReadStruct<NvIoctl>();
+
+                (long inlineOutBufferPosition, long inlineOutBufferSize) = context.Request.GetBufferType0x22(1);
+
+                errorCode = GetIoctlArgument(context, ioctlCommand, out Span<byte> arguments);
+
+                Span<byte> inlineOutBuffer = new Span<byte>(context.Memory.ReadBytes(inlineOutBufferPosition, inlineOutBufferSize));
+
+                if (errorCode == NvResult.Success)
+                {
+                    errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+
+                    if (errorCode == NvResult.Success)
+                    {
+                        NvInternalResult internalResult = fileDevice.Ioctl3(ioctlCommand, arguments, inlineOutBuffer);
+
+                        if (internalResult == NvInternalResult.NotImplemented)
+                        {
+                            throw new NvIoctlNotImplementedException(context, fileDevice, ioctlCommand);
+                        }
+
+                        errorCode = ConvertInternalErrorCode(internalResult);
+
+                        if (errorCode == NvResult.Success && (ioctlCommand.GetDirectionValue() & NvIoctl.Direction.Write) != 0)
+                        {
+                            context.Memory.WriteBytes(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
+                            context.Memory.WriteBytes(inlineOutBufferPosition, inlineOutBuffer.ToArray());
+                        }
+                    }
+                }
+            }
+
+            context.ResponseData.Write((uint)errorCode);
+
+            return ResultCode.Success;
         }
 
         [Command(13)] // 3.0.0+
