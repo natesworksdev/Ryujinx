@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
-    abstract class NvFileDevice : IDisposable
+    abstract class NvFileDevice
     {
         protected KProcess _owner;
 
@@ -62,10 +62,5 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         }
 
         public abstract void Close();
-
-        public void Dispose()
-        {
-            Close();
-        }
     }
 }

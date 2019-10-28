@@ -24,33 +24,37 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            switch (command.GetNumberValue())
+            if (command.GetTypeValue() == NvIoctl.NvGpuAsMagic)
             {
-                case 0x1:
-                    result = CallIoctlMethod<BindChannelArguments>(BindChannel, arguments);
-                    break;
-                case 0x2:
-                    result = CallIoctlMethod<AllocSpaceArguments>(AllocSpace, arguments);
-                    break;
-                case 0x3:
-                    result = CallIoctlMethod<FreeSpaceArguments>(FreeSpace, arguments);
-                    break;
-                case 0x5:
-                    result = CallIoctlMethod<UnmapBufferArguments>(UnmapBuffer, arguments);
-                    break;
-                case 0x6:
-                    result = CallIoctlMethod<MapBufferExArguments>(MapBufferEx, arguments);
-                    break;
-                case 0x8:
-                    result = CallIoctlMethod<GetVaRegionsArguments>(GetVaRegions, arguments);
-                    break;
-                case 0x9:
-                    result = CallIoctlMethod<InitializeExArguments>(InitializeEx, arguments);
-                    break;
-                case 0x14:
-                    result = CallIoctlMethod<RemapArguments>(Remap, arguments);
-                    break;
+                switch (command.GetNumberValue())
+                {
+                    case 0x1:
+                        result = CallIoctlMethod<BindChannelArguments>(BindChannel, arguments);
+                        break;
+                    case 0x2:
+                        result = CallIoctlMethod<AllocSpaceArguments>(AllocSpace, arguments);
+                        break;
+                    case 0x3:
+                        result = CallIoctlMethod<FreeSpaceArguments>(FreeSpace, arguments);
+                        break;
+                    case 0x5:
+                        result = CallIoctlMethod<UnmapBufferArguments>(UnmapBuffer, arguments);
+                        break;
+                    case 0x6:
+                        result = CallIoctlMethod<MapBufferExArguments>(MapBufferEx, arguments);
+                        break;
+                    case 0x8:
+                        result = CallIoctlMethod<GetVaRegionsArguments>(GetVaRegions, arguments);
+                        break;
+                    case 0x9:
+                        result = CallIoctlMethod<InitializeExArguments>(InitializeEx, arguments);
+                        break;
+                    case 0x14:
+                        result = CallIoctlMethod<RemapArguments>(Remap, arguments);
+                        break;
+                }
             }
+
             return result;
         }
 

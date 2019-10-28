@@ -5,9 +5,9 @@ using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
+using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
@@ -28,13 +28,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         private static Dictionary<string, Type> _fileDeviceRegistry =
                    new Dictionary<string, Type>()
         {
-                       { "/dev/nvhost-as-gpu",   typeof(NvHostAsGpuFileDevice)   },
+                       { "/dev/nvmap",           typeof(NvMapFileDevice)         },
                        { "/dev/nvhost-ctrl",     typeof(NvHostCtrlFileDevice)    },
                        { "/dev/nvhost-ctrl-gpu", typeof(NvHostCtrlGpuFileDevice) },
-                       //{ "/dev/nvhost-gpu",      typeof(NvMapFileDevice) },
-                       //{ "/dev/nvhost-nvdec",    typeof(NvMapFileDevice) },
-                       //{ "/dev/nvhost-vic",      typeof(NvMapFileDevice) },
-                       { "/dev/nvmap",           typeof(NvMapFileDevice) }
+                       { "/dev/nvhost-as-gpu",   typeof(NvHostAsGpuFileDevice)   },
+                       { "/dev/nvhost-gpu",      typeof(NvHostChannelFileDevice) },
+                       //{ "/dev/nvhost-msenc",    typeof(NvHostChannelFileDevice) },
+                       { "/dev/nvhost-nvdec",    typeof(NvHostChannelFileDevice) },
+                       //{ "/dev/nvhost-nvjpg",    typeof(NvHostChannelFileDevice) },
+                       { "/dev/nvhost-vic",      typeof(NvHostChannelFileDevice) },
+                       //{ "/dev/nvhost-display",  typeof(NvHostChannelFileDevice) },
         };
 
         private static IdDictionary _fileDeviceIdRegistry = new IdDictionary();
@@ -287,6 +290,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 if (errorCode == NvResult.Success)
                 {
                     fileDevice.Close();
+
+                    _fileDeviceIdRegistry.Delete(fd);
                 }
             }
 

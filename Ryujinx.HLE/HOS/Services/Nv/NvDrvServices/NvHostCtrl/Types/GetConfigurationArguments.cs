@@ -3,18 +3,18 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types
 {
-    class NvHostCtrlGetConfigurationArgument
+    class GetConfigurationArguments
     {
         public string Domain;
         public string Parameter;
         public byte[] Configuration;
 
-        public static NvHostCtrlGetConfigurationArgument FromSpan(Span<byte> span)
+        public static GetConfigurationArguments FromSpan(Span<byte> span)
         {
             string domain        = Encoding.ASCII.GetString(span.Slice(0, 0x41));
             string parameter     = Encoding.ASCII.GetString(span.Slice(0x41, 0x41));
 
-            NvHostCtrlGetConfigurationArgument result = new NvHostCtrlGetConfigurationArgument
+            GetConfigurationArguments result = new GetConfigurationArguments
             {
                 Domain        = domain.Substring(0, domain.IndexOf('\0')),
                 Parameter     = parameter.Substring(0, parameter.IndexOf('\0')),

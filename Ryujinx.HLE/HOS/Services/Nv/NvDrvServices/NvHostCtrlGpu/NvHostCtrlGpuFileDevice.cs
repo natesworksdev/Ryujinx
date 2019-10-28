@@ -24,29 +24,32 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            switch (command.GetNumberValue())
+            if (command.GetTypeValue() == NvIoctl.NvGpuMagic)
             {
-                case 0x1:
-                    result = CallIoctlMethod<ZcullGetCtxSizeArguments>(ZcullGetCtxSize, arguments);
-                    break;
-                case 0x2:
-                    result = CallIoctlMethod<ZcullGetInfoArguments>(ZcullGetInfo, arguments);
-                    break;
-                case 0x3:
-                    result = CallIoctlMethod<ZbcSetTableArguments>(ZbcSetTable, arguments);
-                    break;
-                case 0x5:
-                    result = CallIoctlMethod<GetCharacteristicsArguments>(GetCharacteristics, arguments);
-                    break;
-                case 0x6:
-                    result = CallIoctlMethod<GetTpcMasksArguments>(GetTpcMasks, arguments);
-                    break;
-                case 0x14:
-                    result = CallIoctlMethod<GetActiveSlotMaskArguments>(GetActiveSlotMask, arguments);
-                    break;
-                case 0x1c:
-                    result = CallIoctlMethod<GetGpuTimeArguments>(GetGpuTime, arguments);
-                    break;
+                switch (command.GetNumberValue())
+                {
+                    case 0x1:
+                        result = CallIoctlMethod<ZcullGetCtxSizeArguments>(ZcullGetCtxSize, arguments);
+                        break;
+                    case 0x2:
+                        result = CallIoctlMethod<ZcullGetInfoArguments>(ZcullGetInfo, arguments);
+                        break;
+                    case 0x3:
+                        result = CallIoctlMethod<ZbcSetTableArguments>(ZbcSetTable, arguments);
+                        break;
+                    case 0x5:
+                        result = CallIoctlMethod<GetCharacteristicsArguments>(GetCharacteristics, arguments);
+                        break;
+                    case 0x6:
+                        result = CallIoctlMethod<GetTpcMasksArguments>(GetTpcMasks, arguments);
+                        break;
+                    case 0x14:
+                        result = CallIoctlMethod<GetActiveSlotMaskArguments>(GetActiveSlotMask, arguments);
+                        break;
+                    case 0x1c:
+                        result = CallIoctlMethod<GetGpuTimeArguments>(GetGpuTime, arguments);
+                        break;
+                }
             }
 
             return result;

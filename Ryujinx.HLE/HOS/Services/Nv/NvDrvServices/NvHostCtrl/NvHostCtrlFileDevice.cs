@@ -23,26 +23,29 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            switch (command.GetNumberValue())
+            if (command.GetTypeValue() == NvIoctl.NvHostMagic)
             {
-                case 0x1b:
-                    // As Marshal cannot handle unaligned arrays, we do everything by hand here.
-                    NvHostCtrlGetConfigurationArgument configArgument = NvHostCtrlGetConfigurationArgument.FromSpan(arguments);
-                    result = GetConfig(configArgument);
+                switch (command.GetNumberValue())
+                {
+                    case 0x1b:
+                        // As Marshal cannot handle unaligned arrays, we do everything by hand here.
+                        GetConfigurationArguments configArgument = GetConfigurationArguments.FromSpan(arguments);
+                        result = GetConfig(configArgument);
 
-                    if (result == NvInternalResult.Success)
-                    {
-                        configArgument.CopyTo(arguments);
-                    }
-                    break;
-                default:
-                    break;
+                        if (result == NvInternalResult.Success)
+                        {
+                            configArgument.CopyTo(arguments);
+                        }
+                        break;
+                    default:
+                        break;
+                }
             }
 
             return result;
         }
 
-        private NvInternalResult GetConfig(NvHostCtrlGetConfigurationArgument arguments)
+        private NvInternalResult GetConfig(GetConfigurationArguments arguments)
         {
             if (!_isProductionMode && NxSettings.Settings.TryGetValue($"{arguments.Domain}!{arguments.Parameter}".ToLower(), out object nvSetting))
             {

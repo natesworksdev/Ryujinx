@@ -6,6 +6,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv
     [StructLayout(LayoutKind.Sequential)]
     struct NvIoctl
     {
+        public const int NvHostMagic  = 0x00;
+        public const int NvMapMagic   = 0x01;
+        public const int NvGpuAsMagic = 0x41;
+        public const int NvGpuMagic   = 0x47;
+
         private const int NumberBits    = 8;
         private const int TypeBits      = 8;
         private const int SizeBits      = 14;

@@ -24,38 +24,41 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            switch (command.GetNumberValue())
+            if (command.GetTypeValue() == NvIoctl.NvMapMagic)
             {
-                case 0x1:
-                    result = CallIoctlMethod<NvMapCreate>(Create, arguments);
-                    break;
-                case 0x3:
-                    result = CallIoctlMethod<NvMapFromId>(FromId, arguments);
-                    break;
-                case 0x4:
-                    result = CallIoctlMethod<NvMapAlloc>(Alloc, arguments);
-                    break;
-                case 0x5:
-                    result = CallIoctlMethod<NvMapFree>(Free, arguments);
-                    break;
-                case 0x9:
-                    result = CallIoctlMethod<NvMapParam>(Param, arguments);
-                    break;
-                case 0xe:
-                    result = CallIoctlMethod<NvMapGetId>(GetId, arguments);
-                    break;
-                case 0x2:
-                case 0x6:
-                case 0x7:
-                case 0x8:
-                case 0xa:
-                case 0xc:
-                case 0xd:
-                case 0xf:
-                case 0x10:
-                case 0x11:
-                    result = NvInternalResult.NotSupported;
-                    break;
+                switch (command.GetNumberValue())
+                {
+                    case 0x1:
+                        result = CallIoctlMethod<NvMapCreate>(Create, arguments);
+                        break;
+                    case 0x3:
+                        result = CallIoctlMethod<NvMapFromId>(FromId, arguments);
+                        break;
+                    case 0x4:
+                        result = CallIoctlMethod<NvMapAlloc>(Alloc, arguments);
+                        break;
+                    case 0x5:
+                        result = CallIoctlMethod<NvMapFree>(Free, arguments);
+                        break;
+                    case 0x9:
+                        result = CallIoctlMethod<NvMapParam>(Param, arguments);
+                        break;
+                    case 0xe:
+                        result = CallIoctlMethod<NvMapGetId>(GetId, arguments);
+                        break;
+                    case 0x2:
+                    case 0x6:
+                    case 0x7:
+                    case 0x8:
+                    case 0xa:
+                    case 0xc:
+                    case 0xd:
+                    case 0xf:
+                    case 0x10:
+                    case 0x11:
+                        result = NvInternalResult.NotSupported;
+                        break;
+                }
             }
 
             return result;
