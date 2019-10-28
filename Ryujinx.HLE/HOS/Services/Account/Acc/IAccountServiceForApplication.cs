@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             foreach (UserProfile userProfile in profiles)
             {
-                if (offset + 0x10UL > (ulong)outputSize)
+                if (offset + 0x10 > (ulong)outputSize)
                 {
                     break;
                 }
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 context.Memory.WriteInt64(outputPosition + (long)offset,      userProfile.UserId.Low);
                 context.Memory.WriteInt64(outputPosition + (long)offset + 8L, userProfile.UserId.High);
 
-                offset += 0x10UL;
+                offset += 0x10;
             }
 
             return ResultCode.Success;
