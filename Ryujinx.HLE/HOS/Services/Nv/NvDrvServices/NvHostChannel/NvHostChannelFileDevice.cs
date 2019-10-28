@@ -243,17 +243,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             SubmitGpfifoArguments gpfifoSubmissionHeader    = MemoryMarshal.Cast<byte, SubmitGpfifoArguments>(arguments)[0];
             Span<long>            gpfifoEntries             = MemoryMarshal.Cast<byte, long>(arguments.Slice(headerSize)).Slice(0, gpfifoSubmissionHeader.NumEntries);
 
-            NvGpuVmm vmm = NvHostAsGpuFileDevice.GetAddressSpaceContext(_owner).Vmm;
-
-            foreach (long entry in gpfifoEntries)
-            {
-                _gpu.Pusher.Push(vmm, entry);
-            }
-
-            gpfifoSubmissionHeader.Fence.Id    = 0;
-            gpfifoSubmissionHeader.Fence.Value = 0;
-
-            return NvInternalResult.Success;
+            return SubmitGpfifo(ref gpfifoSubmissionHeader, gpfifoEntries);
         }
 
         private NvInternalResult AllocObjCtx(ref AllocObjCtxArguments arguments)
@@ -334,6 +324,21 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         private NvInternalResult SetUserData(ref ulong userData)
         {
             Logger.PrintStub(LogClass.ServiceNv);
+
+            return NvInternalResult.Success;
+        }
+
+        protected NvInternalResult SubmitGpfifo(ref SubmitGpfifoArguments header, Span<long> entries)
+        {
+            NvGpuVmm vmm = NvHostAsGpuFileDevice.GetAddressSpaceContext(_owner).Vmm;
+
+            foreach (long entry in entries)
+            {
+                _gpu.Pusher.Push(vmm, entry);
+            }
+
+            header.Fence.Id = 0;
+            header.Fence.Value = 0;
 
             return NvInternalResult.Success;
         }

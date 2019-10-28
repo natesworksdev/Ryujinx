@@ -9,12 +9,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types
         public int MapAddress;
     }
 
-    [StructLayout(LayoutKind.Sequential)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     struct MapCommandBufferArguments
     {
         public int   NumEntries;
         public int   DataAddress; // Ignored by the driver.
-        public bool  AttachHostChDas;
+        [MarshalAs(UnmanagedType.I1)]
+        public bool AttachHostChDas;
         public byte  Padding1;
         public short Padding2;
     }

@@ -37,6 +37,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
         {
             StringBuilder sb = new StringBuilder();
 
+            sb.AppendLine($"Device File: {FileDevice.GetType().Name}");
+            sb.AppendLine();
+
             sb.AppendLine($"Ioctl (0x{Command.RawValue:x8})");
             sb.AppendLine($"\tNumber: 0x{Command.GetNumberValue():x8}");
             sb.AppendLine($"\tType: 0x{Command.GetTypeValue():x8}");

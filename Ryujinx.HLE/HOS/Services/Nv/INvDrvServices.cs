@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                        { "/dev/nvhost-ctrl",     typeof(NvHostCtrlFileDevice)    },
                        { "/dev/nvhost-ctrl-gpu", typeof(NvHostCtrlGpuFileDevice) },
                        { "/dev/nvhost-as-gpu",   typeof(NvHostAsGpuFileDevice)   },
-                       { "/dev/nvhost-gpu",      typeof(NvHostChannelFileDevice) },
+                       { "/dev/nvhost-gpu",      typeof(NvHostGpuFileDevice) },
                        //{ "/dev/nvhost-msenc",    typeof(NvHostChannelFileDevice) },
                        { "/dev/nvhost-nvdec",    typeof(NvHostChannelFileDevice) },
                        //{ "/dev/nvhost-nvjpg",    typeof(NvHostChannelFileDevice) },
@@ -67,12 +67,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 }
                 else
                 {
-
+                    Logger.PrintWarning(LogClass.ServiceNv, $"Cannot find file device \"{path}\"!");
                 }
             }
-
-
-            Logger.PrintWarning(LogClass.ServiceNv, $"Cannot find file device \"{path}\"!");
 
             return -1;
         }
@@ -85,8 +82,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             NvIoctl.Direction ioctlDirection = ioctlCommand.GetDirectionValue();
             uint              ioctlSize      = ioctlCommand.GetSizeValue();
 
-            bool isRead  = (ioctlDirection & NvIoctl.Direction.Read) == NvIoctl.Direction.Read;
-            bool isWrite = (ioctlDirection & NvIoctl.Direction.Write) == NvIoctl.Direction.Write;
+            bool isRead  = (ioctlDirection & NvIoctl.Direction.Read) != 0;
+            bool isWrite = (ioctlDirection & NvIoctl.Direction.Write) != 0;
 
             if ((isWrite && ioctlSize > outputDataSize) || (isRead && ioctlSize > inputDataSize))
             {
@@ -403,7 +400,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // DumpGraphicsMemoryInfo()
         public ResultCode DumpGraphicsMemoryInfo(ServiceCtx context)
         {
-            throw new ServiceNotImplementedException(context);
+            Logger.PrintStub(LogClass.ServiceNv);
+
+            return ResultCode.Success;
         }
 
         [Command(10)] // 3.0.0+
@@ -414,10 +413,48 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         }
 
         [Command(11)] // 3.0.0+
-        // Ioctl2(s32 fd, u32 ioctl_cmd, buffer<bytes, 0x21> in_args, buffer<bytes, 0x21> in_additional_buffer) -> (u32 error_code, buffer<bytes, 0x22> out_args)
+        // Ioctl2(s32 fd, u32 ioctl_cmd, buffer<bytes, 0x21> in_args, buffer<bytes, 0x21> inline_in_buffer) -> (u32 error_code, buffer<bytes, 0x22> out_args)
         public ResultCode Ioctl2(ServiceCtx context)
         {
-            throw new ServiceNotImplementedException(context);
+            NvResult errorCode = EnsureInitialized();
+
+            if (errorCode == NvResult.Success)
+            {
+                int     fd           = context.RequestData.ReadInt32();
+                NvIoctl ioctlCommand = context.RequestData.ReadStruct<NvIoctl>();
+
+                (long inlineInBufferPosition, long inlineInBufferSize) = context.Request.GetBufferType0x21(1);
+
+                errorCode = GetIoctlArgument(context, ioctlCommand, out Span<byte> arguments);
+
+                Span<byte> inlineInBuffer = new Span<byte>(context.Memory.ReadBytes(inlineInBufferPosition, inlineInBufferSize));
+
+                if (errorCode == NvResult.Success)
+                {
+                    errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+
+                    if (errorCode == NvResult.Success)
+                    {
+                        NvInternalResult internalResult = fileDevice.Ioctl2(ioctlCommand, arguments, inlineInBuffer);
+
+                        if (internalResult == NvInternalResult.NotImplemented)
+                        {
+                            throw new NvIoctlNotImplementedException(context, fileDevice, ioctlCommand);
+                        }
+
+                        errorCode = ConvertInternalErrorCode(internalResult);
+
+                        if (errorCode == NvResult.Success && (ioctlCommand.GetDirectionValue() & NvIoctl.Direction.Write) != 0)
+                        {
+                            context.Memory.WriteBytes(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
+                        }
+                    }
+                }
+            }
+
+            context.ResponseData.Write((uint)errorCode);
+
+            return ResultCode.Success;
         }
 
         [Command(12)] // 3.0.0+
@@ -431,7 +468,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // FinishInitialize(unknown<8>)
         public ResultCode FinishInitialize(ServiceCtx context)
         {
-            throw new ServiceNotImplementedException(context);
+            Logger.PrintStub(LogClass.ServiceNv);
+
+            return ResultCode.Success;
         }
     }
 }
