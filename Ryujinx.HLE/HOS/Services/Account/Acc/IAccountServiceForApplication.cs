@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
-            ulong offset = 0UL;
+            ulong offset = 0;
 
             foreach (UserProfile userProfile in profiles)
             {
@@ -75,8 +75,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                     break;
                 }
 
-                context.Memory.WriteInt64(outputPosition + (long)offset,      userProfile.UserId.Low);
-                context.Memory.WriteInt64(outputPosition + (long)offset + 8L, userProfile.UserId.High);
+                context.Memory.WriteInt64(outputPosition + (long)offset,     userProfile.UserId.Low);
+                context.Memory.WriteInt64(outputPosition + (long)offset + 8, userProfile.UserId.High);
 
                 offset += 0x10;
             }
