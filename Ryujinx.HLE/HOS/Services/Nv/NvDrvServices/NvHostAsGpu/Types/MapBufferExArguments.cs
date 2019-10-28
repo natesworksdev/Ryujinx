@@ -1,6 +1,9 @@
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS
+﻿using System.Runtime.InteropServices;
+
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
 {
-    struct NvGpuASMapBufferEx
+    [StructLayout(LayoutKind.Sequential)]
+    struct MapBufferExArguments
     {
         public int  Flags;
         public int  Kind;

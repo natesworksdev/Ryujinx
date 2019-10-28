@@ -1,9 +1,10 @@
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu
+﻿using System.Runtime.InteropServices;
+
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types
 {
-    struct NvGpuGpuGetCharacteristics
+    [StructLayout(LayoutKind.Sequential)]
+    struct GpuCharacteristics
     {
-        public long BufferSize;
-        public long BufferAddress;
         public int  Arch;
         public int  Impl;
         public int  Rev;
@@ -39,5 +40,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu
         public int  RopL2EnMask1;
         public long ChipName;
         public long GrCompbitStoreBaseHw;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct GetCharacteristicsArguments
+    {
+        public long               BufferSize;
+        public long               BufferAddress;
+        public GpuCharacteristics Characteristics;
     }
 }

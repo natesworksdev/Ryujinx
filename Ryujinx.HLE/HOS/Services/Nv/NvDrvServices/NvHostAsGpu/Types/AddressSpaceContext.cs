@@ -1,28 +1,32 @@
+﻿using ARMeilleure.Memory;
 using Ryujinx.Graphics.Memory;
+using Ryujinx.HLE.HOS.Kernel.Process;
+using System;
 using System.Collections.Generic;
+using System.Text;
 
-namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
 {
-    class NvGpuASCtx
+    class AddressSpaceContext
     {
         public NvGpuVmm Vmm { get; private set; }
 
         private class Range
         {
-            public ulong Start  { get; private set; }
-            public ulong End    { get; private set; }
+            public ulong Start { get; private set; }
+            public ulong End { get; private set; }
 
             public Range(long position, long size)
             {
                 Start = (ulong)position;
-                End   = (ulong)size + Start;
+                End = (ulong)size + Start;
             }
         }
 
         private class MappedMemory : Range
         {
             public long PhysicalAddress { get; private set; }
-            public bool VaAllocated  { get; private set; }
+            public bool VaAllocated { get; private set; }
 
             public MappedMemory(
                 long position,
@@ -31,18 +35,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS
                 bool vaAllocated) : base(position, size)
             {
                 PhysicalAddress = physicalAddress;
-                VaAllocated     = vaAllocated;
+                VaAllocated = vaAllocated;
             }
         }
 
         private SortedList<long, Range> _maps;
         private SortedList<long, Range> _reservations;
 
-        public NvGpuASCtx(ServiceCtx context)
+        public AddressSpaceContext(KProcess process)
         {
-            Vmm = new NvGpuVmm(context.Memory);
+            Vmm = new NvGpuVmm(process.CpuMemory);
 
-            _maps         = new SortedList<long, Range>();
+            _maps = new SortedList<long, Range>();
             _reservations = new SortedList<long, Range>();
         }
 
@@ -135,7 +139,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS
 
         private Range BinarySearch(SortedList<long, Range> lst, long position)
         {
-            int left  = 0;
+            int left = 0;
             int right = lst.Count - 1;
 
             while (left <= right)
@@ -168,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuAS
         {
             Range ltRg = null;
 
-            int left  = 0;
+            int left = 0;
             int right = lst.Count - 1;
 
             while (left <= right)

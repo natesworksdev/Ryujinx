@@ -1,6 +1,9 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvGpuGpu
+﻿using System.Runtime.InteropServices;
+
+namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types
 {
-    struct NvGpuGpuZcullGetInfo
+    [StructLayout(LayoutKind.Sequential)]
+    struct ZcullGetInfoArguments
     {
         public int WidthAlignPixels;
         public int HeightAlignPixels;
