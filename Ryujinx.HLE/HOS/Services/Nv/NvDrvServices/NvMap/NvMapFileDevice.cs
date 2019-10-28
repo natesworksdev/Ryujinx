@@ -13,9 +13,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private static ConcurrentDictionary<KProcess, IdDictionary> _maps = new ConcurrentDictionary<KProcess, IdDictionary>();
 
-        public NvMapFileDevice(KProcess owner) : base(owner)
+        public NvMapFileDevice(ServiceCtx context) : base(context)
         {
-            IdDictionary dict = _maps.GetOrAdd(owner, (key) => new IdDictionary());
+            IdDictionary dict = _maps.GetOrAdd(_owner, (key) => new IdDictionary());
 
             dict.Add(0, new NvMapHandle());
         }
@@ -24,36 +24,36 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvMapMagic)
+            if (command.GetTypeValue() == NvIoctl.NvMapCustomMagic)
             {
                 switch (command.GetNumberValue())
                 {
-                    case 0x1:
+                    case 0x01:
                         result = CallIoctlMethod<NvMapCreate>(Create, arguments);
                         break;
-                    case 0x3:
+                    case 0x03:
                         result = CallIoctlMethod<NvMapFromId>(FromId, arguments);
                         break;
-                    case 0x4:
+                    case 0x04:
                         result = CallIoctlMethod<NvMapAlloc>(Alloc, arguments);
                         break;
-                    case 0x5:
+                    case 0x05:
                         result = CallIoctlMethod<NvMapFree>(Free, arguments);
                         break;
-                    case 0x9:
+                    case 0x09:
                         result = CallIoctlMethod<NvMapParam>(Param, arguments);
                         break;
-                    case 0xe:
+                    case 0x0e:
                         result = CallIoctlMethod<NvMapGetId>(GetId, arguments);
                         break;
-                    case 0x2:
-                    case 0x6:
-                    case 0x7:
-                    case 0x8:
-                    case 0xa:
-                    case 0xc:
-                    case 0xd:
-                    case 0xf:
+                    case 0x02:
+                    case 0x06:
+                    case 0x07:
+                    case 0x08:
+                    case 0x0a:
+                    case 0x0c:
+                    case 0x0d:
+                    case 0x0f:
                     case 0x10:
                     case 0x11:
                         result = NvInternalResult.NotSupported;

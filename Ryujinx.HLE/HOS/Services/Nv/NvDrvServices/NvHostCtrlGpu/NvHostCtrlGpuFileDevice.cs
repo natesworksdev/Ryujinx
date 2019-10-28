@@ -11,8 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         private static Stopwatch _pTimer    = new Stopwatch();
         private static double    _ticksToNs = (1.0 / Stopwatch.Frequency) * 1_000_000_000;
 
-        public NvHostCtrlGpuFileDevice(KProcess owner) : base(owner)
+        public NvHostCtrlGpuFileDevice(ServiceCtx context) : base(context)
         {
+
         }
 
         static NvHostCtrlGpuFileDevice()
@@ -28,19 +29,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
             {
                 switch (command.GetNumberValue())
                 {
-                    case 0x1:
+                    case 0x01:
                         result = CallIoctlMethod<ZcullGetCtxSizeArguments>(ZcullGetCtxSize, arguments);
                         break;
-                    case 0x2:
+                    case 0x02:
                         result = CallIoctlMethod<ZcullGetInfoArguments>(ZcullGetInfo, arguments);
                         break;
-                    case 0x3:
+                    case 0x03:
                         result = CallIoctlMethod<ZbcSetTableArguments>(ZbcSetTable, arguments);
                         break;
-                    case 0x5:
+                    case 0x05:
                         result = CallIoctlMethod<GetCharacteristicsArguments>(GetCharacteristics, arguments);
                         break;
-                    case 0x6:
+                    case 0x06:
                         result = CallIoctlMethod<GetTpcMasksArguments>(GetTpcMasks, arguments);
                         break;
                     case 0x14:

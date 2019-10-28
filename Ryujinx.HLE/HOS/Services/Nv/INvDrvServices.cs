@@ -53,16 +53,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             // TODO: dynamically generate _channelRegistry with attribute
         }
 
-        private int Open(string path)
+        private int Open(ServiceCtx context, string path)
         {
-            if (_fileDeviceRegistry.TryGetValue(path, out Type fileDeviceClass))
+            if (context.Process == _owner)
             {
-                ConstructorInfo constructor = fileDeviceClass.GetConstructor(new Type[] { typeof(KProcess) });
+                if (_fileDeviceRegistry.TryGetValue(path, out Type fileDeviceClass))
+                {
+                    ConstructorInfo constructor = fileDeviceClass.GetConstructor(new Type[] { typeof(ServiceCtx) });
 
-                NvFileDevice fileDevice = (NvFileDevice)constructor.Invoke(new object[] { _owner });
+                    NvFileDevice fileDevice = (NvFileDevice)constructor.Invoke(new object[] { context });
 
-                return _fileDeviceIdRegistry.Add(fileDevice);
+                    return _fileDeviceIdRegistry.Add(fileDevice);
+                }
+                else
+                {
+
+                }
             }
+
 
             Logger.PrintWarning(LogClass.ServiceNv, $"Cannot find file device \"{path}\"!");
 
@@ -220,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 string path = MemoryHelper.ReadAsciiString(context.Memory, pathPtr);
 
-                fd = Open(path);
+                fd = Open(context, path);
 
                 if (fd == -1)
                 {

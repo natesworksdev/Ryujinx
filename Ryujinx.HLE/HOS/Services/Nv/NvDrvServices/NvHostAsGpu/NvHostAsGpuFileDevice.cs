@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private static ConcurrentDictionary<KProcess, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<KProcess, AddressSpaceContext>();
 
-        public NvHostAsGpuFileDevice(KProcess owner) : base(owner)
+        public NvHostAsGpuFileDevice(ServiceCtx context) : base(context)
         {
 
         }
@@ -28,25 +28,25 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             {
                 switch (command.GetNumberValue())
                 {
-                    case 0x1:
+                    case 0x01:
                         result = CallIoctlMethod<BindChannelArguments>(BindChannel, arguments);
                         break;
-                    case 0x2:
+                    case 0x02:
                         result = CallIoctlMethod<AllocSpaceArguments>(AllocSpace, arguments);
                         break;
-                    case 0x3:
+                    case 0x03:
                         result = CallIoctlMethod<FreeSpaceArguments>(FreeSpace, arguments);
                         break;
-                    case 0x5:
+                    case 0x05:
                         result = CallIoctlMethod<UnmapBufferArguments>(UnmapBuffer, arguments);
                         break;
-                    case 0x6:
+                    case 0x06:
                         result = CallIoctlMethod<MapBufferExArguments>(MapBufferEx, arguments);
                         break;
-                    case 0x8:
+                    case 0x08:
                         result = CallIoctlMethod<GetVaRegionsArguments>(GetVaRegions, arguments);
                         break;
-                    case 0x9:
+                    case 0x09:
                         result = CallIoctlMethod<InitializeExArguments>(InitializeEx, arguments);
                         break;
                     case 0x14:

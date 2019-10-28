@@ -10,9 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
     {
         protected KProcess _owner;
 
-        public NvFileDevice(KProcess owner)
+        public NvFileDevice(ServiceCtx context)
         {
-            _owner = owner;
+            _owner = context.Process;
         }
 
         public KProcess GetOwner()
