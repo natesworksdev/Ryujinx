@@ -1,4 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
 using Ryujinx.HLE.HOS.Services.Settings;
@@ -16,6 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         private bool          _isProductionMode;
         private NvHostSyncpt  _syncpt;
         private NvHostEvent[] _events;
+        private KEvent        _dummyEvent;
 
         public NvHostCtrlFileDevice(ServiceCtx context) : base(context)
         {
@@ -28,8 +31,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 _isProductionMode = true;
             }
 
-            _syncpt = new NvHostSyncpt();
-            _events = new NvHostEvent[EventsCount];
+            _syncpt     = new NvHostSyncpt();
+            _events     = new NvHostEvent[EventsCount];
+            _dummyEvent = new KEvent(context.Device.System);
         }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
@@ -80,6 +84,28 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             return result;
+        }
+
+        public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
+        {
+            // TODO: implement SyncPts <=> KEvent logic accurately. For now we return a dummy event.
+            KEvent targetEvent = _dummyEvent;
+
+            if (targetEvent != null)
+            {
+                if (_owner.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+            else
+            {
+                eventHandle = 0;
+
+                return NvInternalResult.InvalidInput;
+            }
+
+            return NvInternalResult.Success;
         }
 
         private NvInternalResult SyncptRead(ref NvFence arguments)

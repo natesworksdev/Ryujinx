@@ -24,7 +24,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv
     [Service("nvdrv:t")]
     class INvDrvServices : IpcService
     {
-        // TODO: everything
         private static Dictionary<string, Type> _fileDeviceRegistry =
                    new Dictionary<string, Type>()
         {
@@ -329,7 +328,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 if (errorCode == NvResult.Success)
                 {
-                    errorCode = ConvertInternalErrorCode(fileDevice.QueryEvent(out int eventHandle, eventId));
+                    NvInternalResult internalResult = fileDevice.QueryEvent(out int eventHandle, eventId);
+
+                    if (internalResult == NvInternalResult.NotImplemented)
+                    {
+                        throw new NvQueryEventlNotImplementedException(context, fileDevice, eventId);
+                    }
+
+                    errorCode = ConvertInternalErrorCode(internalResult);
 
                     if (errorCode == NvResult.Success)
                     {

@@ -1,5 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types;
 using System;
 using System.Diagnostics;
@@ -11,9 +13,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         private static Stopwatch _pTimer    = new Stopwatch();
         private static double    _ticksToNs = (1.0 / Stopwatch.Frequency) * 1_000_000_000;
 
+        private KEvent _errorEvent;
+        private KEvent _unknownEvent;
+
         public NvHostCtrlGpuFileDevice(ServiceCtx context) : base(context)
         {
-
+            _errorEvent   = new KEvent(context.Device.System);
+            _unknownEvent = new KEvent(context.Device.System);
         }
 
         static NvHostCtrlGpuFileDevice()
@@ -74,6 +80,38 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
             }
 
             return result;
+        }
+
+        public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
+        {
+            // TODO: accurately represent and implement those events.
+            KEvent targetEvent = null;
+
+            switch (eventId)
+            {
+                case 0x1:
+                    targetEvent = _errorEvent;
+                    break;
+                case 0x2:
+                    targetEvent = _unknownEvent;
+                    break;
+            }
+
+            if (targetEvent != null)
+            {
+                if (_owner.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+            else
+            {
+                eventHandle = 0;
+
+                return NvInternalResult.InvalidInput;
+            }
+
+            return NvInternalResult.Success;
         }
 
         public override void Close()
