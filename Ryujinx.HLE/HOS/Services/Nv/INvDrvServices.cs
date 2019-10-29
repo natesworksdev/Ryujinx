@@ -394,7 +394,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // SetClientPID(u64, pid) -> u32 error_code
         public ResultCode SetClientPid(ServiceCtx context)
         {
-            throw new ServiceNotImplementedException(context);
+            long pid = context.RequestData.ReadInt64();
+
+            context.ResponseData.Write(0);
+
+            return ResultCode.Success;
         }
 
         [Command(9)]
