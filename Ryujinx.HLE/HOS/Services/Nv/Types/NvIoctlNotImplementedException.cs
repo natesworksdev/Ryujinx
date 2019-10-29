@@ -7,18 +7,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
     class NvIoctlNotImplementedException : Exception
     {
         public ServiceCtx   Context    { get; }
-        public NvFileDevice FileDevice { get; }
+        public NvDeviceFile DeviceFile { get; }
         public NvIoctl      Command    { get; }
 
-        public NvIoctlNotImplementedException(ServiceCtx context, NvFileDevice fileDevice, NvIoctl command)
-            : this(context, fileDevice, command, "The ioctl is not implemented.")
+        public NvIoctlNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, NvIoctl command)
+            : this(context, deviceFile, command, "The ioctl is not implemented.")
         { }
 
-        public NvIoctlNotImplementedException(ServiceCtx context, NvFileDevice fileDevice, NvIoctl command, string message)
+        public NvIoctlNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, NvIoctl command, string message)
             : base(message)
         {
             Context    = context;
-            FileDevice = fileDevice;
+            DeviceFile = deviceFile;
             Command    = command;
         }
 
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"Device File: {FileDevice.GetType().Name}");
+            sb.AppendLine($"Device File: {DeviceFile.GetType().Name}");
             sb.AppendLine();
 
             sb.AppendLine($"Ioctl (0x{Command.RawValue:x8})");

@@ -5,13 +5,13 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
-    internal class NvHostGpuFileDevice : NvHostChannelFileDevice
+    internal class NvHostGpuDeviceFile : NvHostChannelDeviceFile
     {
         private KEvent _smExceptionBptIntReportEvent;
         private KEvent _smExceptionBptPauseReportEvent;
         private KEvent _errorNotifierEvent;
 
-        public NvHostGpuFileDevice(ServiceCtx context) : base(context)
+        public NvHostGpuDeviceFile(ServiceCtx context) : base(context)
         {
             _smExceptionBptIntReportEvent   = new KEvent(context.Device.System);
             _smExceptionBptPauseReportEvent = new KEvent(context.Device.System);

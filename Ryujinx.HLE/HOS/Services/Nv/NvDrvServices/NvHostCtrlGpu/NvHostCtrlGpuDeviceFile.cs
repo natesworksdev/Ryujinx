@@ -8,7 +8,7 @@ using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 {
-    class NvHostCtrlGpuFileDevice : NvFileDevice
+    class NvHostCtrlGpuDeviceFile : NvDeviceFile
     {
         private static Stopwatch _pTimer    = new Stopwatch();
         private static double    _ticksToNs = (1.0 / Stopwatch.Frequency) * 1_000_000_000;
@@ -16,13 +16,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         private KEvent _errorEvent;
         private KEvent _unknownEvent;
 
-        public NvHostCtrlGpuFileDevice(ServiceCtx context) : base(context)
+        public NvHostCtrlGpuDeviceFile(ServiceCtx context) : base(context)
         {
             _errorEvent   = new KEvent(context.Device.System);
             _unknownEvent = new KEvent(context.Device.System);
         }
 
-        static NvHostCtrlGpuFileDevice()
+        static NvHostCtrlGpuDeviceFile()
         {
             _pTimer.Start();
         }

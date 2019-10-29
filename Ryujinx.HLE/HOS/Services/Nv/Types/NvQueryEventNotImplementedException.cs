@@ -7,18 +7,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
     class NvQueryEventlNotImplementedException : Exception
     {
         public ServiceCtx   Context    { get; }
-        public NvFileDevice FileDevice { get; }
+        public NvDeviceFile DeviceFile { get; }
         public uint         EventId    { get; }
 
-        public NvQueryEventlNotImplementedException(ServiceCtx context, NvFileDevice fileDevice, uint eventId)
-            : this(context, fileDevice, eventId, "The ioctl is not implemented.")
+        public NvQueryEventlNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, uint eventId)
+            : this(context, deviceFile, eventId, "This query event is not implemented.")
         { }
 
-        public NvQueryEventlNotImplementedException(ServiceCtx context, NvFileDevice fileDevice, uint eventId, string message)
+        public NvQueryEventlNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, uint eventId, string message)
             : base(message)
         {
             Context    = context;
-            FileDevice = fileDevice;
+            DeviceFile = deviceFile;
             EventId    = eventId;
         }
 
@@ -37,7 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine($"Device File: {FileDevice.GetType().Name}");
+            sb.AppendLine($"Device File: {DeviceFile.GetType().Name}");
             sb.AppendLine();
 
             sb.AppendLine($"Event ID: (0x{EventId:x8})");

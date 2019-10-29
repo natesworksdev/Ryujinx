@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
-    abstract class NvFileDevice
+    abstract class NvDeviceFile
     {
         protected KProcess _owner;
 
-        public NvFileDevice(ServiceCtx context)
+        public NvDeviceFile(ServiceCtx context)
         {
             _owner = context.Process;
         }

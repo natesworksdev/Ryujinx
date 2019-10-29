@@ -11,7 +11,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    internal class NvHostCtrlFileDevice : NvFileDevice
+    internal class NvHostCtrlDeviceFile : NvDeviceFile
     {
         private const int EventsCount = 64;
 
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         private NvHostEvent[] _events;
         private KEvent        _dummyEvent;
 
-        public NvHostCtrlFileDevice(ServiceCtx context) : base(context)
+        public NvHostCtrlDeviceFile(ServiceCtx context) : base(context)
         {
             if (NxSettings.Settings.TryGetValue("nv!rmos_set_production_mode", out object productionModeSetting))
             {

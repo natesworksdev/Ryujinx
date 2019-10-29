@@ -8,14 +8,14 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 {
-    class NvHostAsGpuFileDevice : NvFileDevice
+    class NvHostAsGpuDeviceFile : NvDeviceFile
     {
         private const int FlagFixedOffset   = 1;
         private const int FlagRemapSubRange = 0x100;
 
         private static ConcurrentDictionary<KProcess, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<KProcess, AddressSpaceContext>();
 
-        public NvHostAsGpuFileDevice(ServiceCtx context) : base(context)
+        public NvHostAsGpuDeviceFile(ServiceCtx context) : base(context)
         {
 
         }
@@ -175,7 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
             AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(_owner);
 
-            NvMapHandle map = NvMapFileDevice.GetMapFromHandle(_owner, arguments.NvMapHandle, true);
+            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(_owner, arguments.NvMapHandle, true);
 
             if (map == null)
             {
@@ -290,7 +290,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             {
                 NvGpuVmm vmm = GetAddressSpaceContext(_owner).Vmm;
 
-                NvMapHandle map = NvMapFileDevice.GetMapFromHandle(_owner, arguments[index].NvMapHandle, true);
+                NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(_owner, arguments[index].NvMapHandle, true);
 
                 if (map == null)
                 {

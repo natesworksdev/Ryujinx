@@ -24,22 +24,22 @@ namespace Ryujinx.HLE.HOS.Services.Nv
     [Service("nvdrv:t")]
     class INvDrvServices : IpcService
     {
-        private static Dictionary<string, Type> _fileDeviceRegistry =
+        private static Dictionary<string, Type> _deviceFileRegistry =
                    new Dictionary<string, Type>()
         {
-                       { "/dev/nvmap",           typeof(NvMapFileDevice)         },
-                       { "/dev/nvhost-ctrl",     typeof(NvHostCtrlFileDevice)    },
-                       { "/dev/nvhost-ctrl-gpu", typeof(NvHostCtrlGpuFileDevice) },
-                       { "/dev/nvhost-as-gpu",   typeof(NvHostAsGpuFileDevice)   },
-                       { "/dev/nvhost-gpu",      typeof(NvHostGpuFileDevice) },
-                       //{ "/dev/nvhost-msenc",    typeof(NvHostChannelFileDevice) },
-                       { "/dev/nvhost-nvdec",    typeof(NvHostChannelFileDevice) },
-                       //{ "/dev/nvhost-nvjpg",    typeof(NvHostChannelFileDevice) },
-                       { "/dev/nvhost-vic",      typeof(NvHostChannelFileDevice) },
-                       //{ "/dev/nvhost-display",  typeof(NvHostChannelFileDevice) },
+                       { "/dev/nvmap",           typeof(NvMapDeviceFile)         },
+                       { "/dev/nvhost-ctrl",     typeof(NvHostCtrlDeviceFile)    },
+                       { "/dev/nvhost-ctrl-gpu", typeof(NvHostCtrlGpuDeviceFile) },
+                       { "/dev/nvhost-as-gpu",   typeof(NvHostAsGpuDeviceFile)   },
+                       { "/dev/nvhost-gpu",      typeof(NvHostGpuDeviceFile)     },
+                       //{ "/dev/nvhost-msenc",    typeof(NvHostChannelDeviceFile) },
+                       { "/dev/nvhost-nvdec",    typeof(NvHostChannelDeviceFile) },
+                       //{ "/dev/nvhost-nvjpg",    typeof(NvHostChannelDeviceFile) },
+                       { "/dev/nvhost-vic",      typeof(NvHostChannelDeviceFile) },
+                       //{ "/dev/nvhost-display",  typeof(NvHostChannelDeviceFile) },
         };
 
-        private static IdDictionary _fileDeviceIdRegistry = new IdDictionary();
+        private static IdDictionary _deviceFileIdRegistry = new IdDictionary();
         private KProcess _owner;
 
         public INvDrvServices(ServiceCtx context)
@@ -51,13 +51,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         {
             if (context.Process == _owner)
             {
-                if (_fileDeviceRegistry.TryGetValue(path, out Type fileDeviceClass))
+                if (_deviceFileRegistry.TryGetValue(path, out Type deviceFileClass))
                 {
-                    ConstructorInfo constructor = fileDeviceClass.GetConstructor(new Type[] { typeof(ServiceCtx) });
+                    ConstructorInfo constructor = deviceFileClass.GetConstructor(new Type[] { typeof(ServiceCtx) });
 
-                    NvFileDevice fileDevice = (NvFileDevice)constructor.Invoke(new object[] { context });
+                    NvDeviceFile deviceFile = (NvDeviceFile)constructor.Invoke(new object[] { context });
 
-                    return _fileDeviceIdRegistry.Add(fileDevice);
+                    return _deviceFileIdRegistry.Add(deviceFile);
                 }
                 else
                 {
@@ -119,25 +119,25 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             return NvResult.Success;
         }
 
-        private NvResult GetFileDeviceFromFd(int fd, out NvFileDevice fileDevice)
+        private NvResult GetDeviceFileFromFd(int fd, out NvDeviceFile deviceFile)
         {
-            fileDevice = null;
+            deviceFile = null;
 
             if (fd < 0)
             {
                 return NvResult.InvalidParameter;
             }
 
-            fileDevice = _fileDeviceIdRegistry.GetData<NvFileDevice>(fd);
+            deviceFile = _deviceFileIdRegistry.GetData<NvDeviceFile>(fd);
 
-            if (fileDevice == null)
+            if (deviceFile == null)
             {
                 Logger.PrintWarning(LogClass.ServiceNv, $"Invalid file descriptor {fd}");
 
                 return NvResult.NotImplemented;
             }
 
-            if (fileDevice.GetOwner().Pid != _owner.Pid)
+            if (deviceFile.GetOwner().Pid != _owner.Pid)
             {
                 return NvResult.AccessDenied;
             }
@@ -248,15 +248,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 if (errorCode == NvResult.Success)
                 {
-                    errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+                    errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
                     if (errorCode == NvResult.Success)
                     {
-                        NvInternalResult internalResult = fileDevice.Ioctl(ioctlCommand, arguments);
+                        NvInternalResult internalResult = deviceFile.Ioctl(ioctlCommand, arguments);
 
                         if (internalResult == NvInternalResult.NotImplemented)
                         {
-                            throw new NvIoctlNotImplementedException(context, fileDevice, ioctlCommand);
+                            throw new NvIoctlNotImplementedException(context, deviceFile, ioctlCommand);
                         }
 
                         errorCode = ConvertInternalErrorCode(internalResult);
@@ -284,13 +284,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             {
                 int fd = context.RequestData.ReadInt32();
 
-                errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+                errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
                 if (errorCode == NvResult.Success)
                 {
-                    fileDevice.Close();
+                    deviceFile.Close();
 
-                    _fileDeviceIdRegistry.Delete(fd);
+                    _deviceFileIdRegistry.Delete(fd);
                 }
             }
 
@@ -324,15 +324,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 int  fd      = context.RequestData.ReadInt32();
                 uint eventId = context.RequestData.ReadUInt32();
 
-                errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+                errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
                 if (errorCode == NvResult.Success)
                 {
-                    NvInternalResult internalResult = fileDevice.QueryEvent(out int eventHandle, eventId);
+                    NvInternalResult internalResult = deviceFile.QueryEvent(out int eventHandle, eventId);
 
                     if (internalResult == NvInternalResult.NotImplemented)
                     {
-                        throw new NvQueryEventlNotImplementedException(context, fileDevice, eventId);
+                        throw new NvQueryEventlNotImplementedException(context, deviceFile, eventId);
                     }
 
                     errorCode = ConvertInternalErrorCode(internalResult);
@@ -361,13 +361,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 uint argument           = context.RequestData.ReadUInt32();
                 int  sharedMemoryHandle = context.Request.HandleDesc.ToCopy[0];
 
-                errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+                errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
                 if (errorCode == NvResult.Success)
                 {
                     KSharedMemory sharedMemory = context.Process.HandleTable.GetObject<KSharedMemory>(sharedMemoryHandle);
 
-                    errorCode = ConvertInternalErrorCode(fileDevice.MapSharedMemory(sharedMemory, argument));
+                    errorCode = ConvertInternalErrorCode(deviceFile.MapSharedMemory(sharedMemory, argument));
                 }
             }
 
@@ -432,15 +432,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 if (errorCode == NvResult.Success)
                 {
-                    errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+                    errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
                     if (errorCode == NvResult.Success)
                     {
-                        NvInternalResult internalResult = fileDevice.Ioctl2(ioctlCommand, arguments, inlineInBuffer);
+                        NvInternalResult internalResult = deviceFile.Ioctl2(ioctlCommand, arguments, inlineInBuffer);
 
                         if (internalResult == NvInternalResult.NotImplemented)
                         {
-                            throw new NvIoctlNotImplementedException(context, fileDevice, ioctlCommand);
+                            throw new NvIoctlNotImplementedException(context, deviceFile, ioctlCommand);
                         }
 
                         errorCode = ConvertInternalErrorCode(internalResult);
@@ -477,15 +477,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 if (errorCode == NvResult.Success)
                 {
-                    errorCode = GetFileDeviceFromFd(fd, out NvFileDevice fileDevice);
+                    errorCode = GetDeviceFileFromFd(fd, out NvDeviceFile deviceFile);
 
                     if (errorCode == NvResult.Success)
                     {
-                        NvInternalResult internalResult = fileDevice.Ioctl3(ioctlCommand, arguments, inlineOutBuffer);
+                        NvInternalResult internalResult = deviceFile.Ioctl3(ioctlCommand, arguments, inlineOutBuffer);
 
                         if (internalResult == NvInternalResult.NotImplemented)
                         {
-                            throw new NvIoctlNotImplementedException(context, fileDevice, ioctlCommand);
+                            throw new NvIoctlNotImplementedException(context, deviceFile, ioctlCommand);
                         }
 
                         errorCode = ConvertInternalErrorCode(internalResult);

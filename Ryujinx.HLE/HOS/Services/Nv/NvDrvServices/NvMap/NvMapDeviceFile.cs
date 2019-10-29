@@ -7,13 +7,13 @@ using System.Collections.Concurrent;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 {
-    internal class NvMapFileDevice : NvFileDevice
+    internal class NvMapDeviceFile : NvDeviceFile
     {
         private const int FlagNotFreedYet = 1;
 
         private static ConcurrentDictionary<KProcess, IdDictionary> _maps = new ConcurrentDictionary<KProcess, IdDictionary>();
 
-        public NvMapFileDevice(ServiceCtx context) : base(context)
+        public NvMapDeviceFile(ServiceCtx context) : base(context)
         {
             IdDictionary dict = _maps.GetOrAdd(_owner, (key) => new IdDictionary());
 
@@ -230,7 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         public override void Close()
         {
-            // TODO: refcount NvMapFileDevice instances and remove when closing
+            // TODO: refcount NvMapDeviceFile instances and remove when closing
             // _maps.TryRemove(GetOwner(), out _);
         }
 
