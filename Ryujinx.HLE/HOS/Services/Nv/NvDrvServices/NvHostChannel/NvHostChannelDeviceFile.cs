@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
@@ -31,9 +32,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvHostCustomMagic)
+            if (command.Type == NvIoctl.NvHostCustomMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x01:
                         result = Submit(arguments);
@@ -55,9 +56,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                         break;
                 }
             }
-            else if (command.GetTypeValue() == NvIoctl.NvHostMagic)
+            else if (command.Type == NvIoctl.NvHostMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x01:
                         result = CallIoctlMethod<int>(SetNvMapFd, arguments);
@@ -91,9 +92,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                         break;
                 }
             }
-            else if (command.GetTypeValue() == NvIoctl.NvGpuMagic)
+            else if (command.Type == NvIoctl.NvGpuMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x14:
                         result = CallIoctlMethod<ulong>(SetUserData, arguments);
@@ -106,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult Submit(Span<byte> arguments)
         {
-            int                 headerSize           = Marshal.SizeOf<SubmitArguments>();
+            int                 headerSize           = Unsafe.SizeOf<SubmitArguments>();
             SubmitArguments     submitHeader         = MemoryMarshal.Cast<byte, SubmitArguments>(arguments)[0];
             Span<CommandBuffer> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBuffer>(arguments.Slice(headerSize)).Slice(0, submitHeader.CmdBufsCount);
             NvGpuVmm            vmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(_owner).Vmm;
@@ -157,7 +158,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult MapCommandBuffer(Span<byte> arguments)
         {
-            int                       headerSize           = Marshal.SizeOf<MapCommandBufferArguments>();
+            int                       headerSize           = Unsafe.SizeOf<MapCommandBufferArguments>();
             MapCommandBufferArguments commandBufferHeader  = MemoryMarshal.Cast<byte, MapCommandBufferArguments>(arguments)[0];
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
             NvGpuVmm                  vmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(_owner).Vmm;
@@ -189,7 +190,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult UnmapCommandBuffer(Span<byte> arguments)
         {
-            int                       headerSize           = Marshal.SizeOf<MapCommandBufferArguments>();
+            int                       headerSize           = Unsafe.SizeOf<MapCommandBufferArguments>();
             MapCommandBufferArguments commandBufferHeader  = MemoryMarshal.Cast<byte, MapCommandBufferArguments>(arguments)[0];
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
             NvGpuVmm                  vmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(_owner).Vmm;
@@ -239,7 +240,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult SubmitGpfifo(Span<byte> arguments)
         {
-            int                   headerSize                = Marshal.SizeOf<SubmitGpfifoArguments>();
+            int                   headerSize                = Unsafe.SizeOf<SubmitGpfifoArguments>();
             SubmitGpfifoArguments gpfifoSubmissionHeader    = MemoryMarshal.Cast<byte, SubmitGpfifoArguments>(arguments)[0];
             Span<long>            gpfifoEntries             = MemoryMarshal.Cast<byte, long>(arguments.Slice(headerSize)).Slice(0, gpfifoSubmissionHeader.NumEntries);
 

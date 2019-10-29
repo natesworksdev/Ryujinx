@@ -27,9 +27,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
             get
             {
                 return base.Message +
-                        Environment.NewLine +
-                        Environment.NewLine +
-                        BuildMessage();
+                    Environment.NewLine +
+                    Environment.NewLine +
+                    BuildMessage();
             }
         }
 
@@ -41,10 +41,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
             sb.AppendLine();
 
             sb.AppendLine($"Ioctl (0x{Command.RawValue:x8})");
-            sb.AppendLine($"\tNumber: 0x{Command.GetNumberValue():x8}");
-            sb.AppendLine($"\tType: 0x{Command.GetTypeValue():x8}");
-            sb.AppendLine($"\tSize: 0x{Command.GetSizeValue():x8}");
-            sb.AppendLine($"\tDirection: {Command.GetDirectionValue()}");
+            sb.AppendLine($"\tNumber: 0x{Command.Number:x8}");
+            sb.AppendLine($"\tType: 0x{Command.Type:x8}");
+            sb.AppendLine($"\tSize: 0x{Command.Size:x8}");
+            sb.AppendLine($"\tDirection: {Command.DirectionValue}");
 
             sb.AppendLine("Guest Stack Trace:");
             sb.AppendLine(Context.Thread.GetGuestStackTrace());

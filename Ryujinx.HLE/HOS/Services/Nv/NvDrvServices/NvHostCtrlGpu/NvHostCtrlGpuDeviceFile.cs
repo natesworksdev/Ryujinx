@@ -31,9 +31,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvGpuMagic)
+            if (command.Type == NvIoctl.NvGpuMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x01:
                         result = CallIoctlMethod<ZcullGetCtxSizeArguments>(ZcullGetCtxSize, arguments);
@@ -66,9 +66,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvGpuMagic)
+            if (command.Type == NvIoctl.NvGpuMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x05:
                         result = CallIoctlMethod<GetCharacteristicsArguments, GpuCharacteristics>(GetCharacteristics, arguments, inlineOutBuffer);

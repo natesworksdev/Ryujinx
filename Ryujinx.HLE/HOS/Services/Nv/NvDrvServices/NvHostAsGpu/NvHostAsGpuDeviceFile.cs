@@ -24,9 +24,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvGpuAsMagic)
+            if (command.Type == NvIoctl.NvGpuAsMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x01:
                         result = CallIoctlMethod<BindChannelArguments>(BindChannel, arguments);
@@ -62,9 +62,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvGpuAsMagic)
+            if (command.Type == NvIoctl.NvGpuAsMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x08:
                         // This is the same as the one in ioctl as inlineOutBuffer is empty.

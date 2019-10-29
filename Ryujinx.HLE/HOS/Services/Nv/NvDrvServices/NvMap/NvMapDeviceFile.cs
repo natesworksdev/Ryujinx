@@ -24,9 +24,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvMapCustomMagic)
+            if (command.Type == NvIoctl.NvMapCustomMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x01:
                         result = CallIoctlMethod<NvMapCreate>(Create, arguments);

@@ -22,9 +22,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvHostMagic)
+            if (command.Type == NvIoctl.NvHostMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x1b:
                         result = CallIoctlMethod<SubmitGpfifoArguments, long>(SubmitGpfifoEx, arguments, inlineInBuffer);

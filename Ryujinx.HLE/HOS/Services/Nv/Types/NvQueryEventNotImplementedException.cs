@@ -27,9 +27,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
             get
             {
                 return base.Message +
-                        Environment.NewLine +
-                        Environment.NewLine +
-                        BuildMessage();
+                    Environment.NewLine +
+                    Environment.NewLine +
+                    BuildMessage();
             }
         }
 

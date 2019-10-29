@@ -40,9 +40,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             NvInternalResult result = NvInternalResult.NotImplemented;
 
-            if (command.GetTypeValue() == NvIoctl.NvHostCustomMagic)
+            if (command.Type == NvIoctl.NvHostCustomMagic)
             {
-                switch (command.GetNumberValue())
+                switch (command.Number)
                 {
                     case 0x14:
                         result = CallIoctlMethod<NvFence>(SyncptRead, arguments);

@@ -73,8 +73,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             (long inputDataPosition,  long inputDataSize)  = context.Request.GetBufferType0x21(0);
             (long outputDataPosition, long outputDataSize) = context.Request.GetBufferType0x22(0);
 
-            NvIoctl.Direction ioctlDirection = ioctlCommand.GetDirectionValue();
-            uint              ioctlSize      = ioctlCommand.GetSizeValue();
+            NvIoctl.Direction ioctlDirection = ioctlCommand.DirectionValue;
+            uint              ioctlSize      = ioctlCommand.Size;
 
             bool isRead  = (ioctlDirection & NvIoctl.Direction.Read) != 0;
             bool isWrite = (ioctlDirection & NvIoctl.Direction.Write) != 0;
@@ -261,7 +261,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                         errorCode = ConvertInternalErrorCode(internalResult);
 
-                        if (errorCode == NvResult.Success && (ioctlCommand.GetDirectionValue() & NvIoctl.Direction.Write) == NvIoctl.Direction.Write)
+                        if (errorCode == NvResult.Success && (ioctlCommand.DirectionValue & NvIoctl.Direction.Write) != 0)
                         {
                             context.Memory.WriteBytes(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
                         }
@@ -449,7 +449,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                         errorCode = ConvertInternalErrorCode(internalResult);
 
-                        if (errorCode == NvResult.Success && (ioctlCommand.GetDirectionValue() & NvIoctl.Direction.Write) != 0)
+                        if (errorCode == NvResult.Success && (ioctlCommand.DirectionValue & NvIoctl.Direction.Write) != 0)
                         {
                             context.Memory.WriteBytes(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
                         }
@@ -494,7 +494,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                         errorCode = ConvertInternalErrorCode(internalResult);
 
-                        if (errorCode == NvResult.Success && (ioctlCommand.GetDirectionValue() & NvIoctl.Direction.Write) != 0)
+                        if (errorCode == NvResult.Success && (ioctlCommand.DirectionValue & NvIoctl.Direction.Write) != 0)
                         {
                             context.Memory.WriteBytes(context.Request.GetBufferType0x22(0).Position, arguments.ToArray());
                             context.Memory.WriteBytes(inlineOutBufferPosition, inlineOutBuffer.ToArray());
