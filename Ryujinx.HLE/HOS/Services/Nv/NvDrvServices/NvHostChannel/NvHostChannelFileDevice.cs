@@ -345,7 +345,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public override void Close()
         {
-            // TODO
+
         }
     }
 }

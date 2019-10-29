@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 
         public override void Close()
         {
-            // TODO
+
         }
 
         private NvInternalResult ZcullGetCtxSize(ref ZcullGetCtxSizeArguments arguments)

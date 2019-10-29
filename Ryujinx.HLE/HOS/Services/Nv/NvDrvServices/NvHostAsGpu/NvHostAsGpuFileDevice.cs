@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         public override void Close()
         {
-            // TODO
+
         }
 
         public static AddressSpaceContext GetAddressSpaceContext(KProcess process)

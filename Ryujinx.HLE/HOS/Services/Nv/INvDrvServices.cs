@@ -48,11 +48,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             _owner = null;
         }
 
-        static INvDrvServices()
-        {
-            // TODO: dynamically generate _channelRegistry with attribute
-        }
-
         private int Open(ServiceCtx context, string path)
         {
             if (context.Process == _owner)
