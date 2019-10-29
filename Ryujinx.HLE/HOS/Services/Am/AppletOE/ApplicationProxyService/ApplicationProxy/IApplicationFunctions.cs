@@ -1,12 +1,17 @@
+using LibHac;
+using LibHac.Account;
+using LibHac.Ncm;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage;
 using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
 using Ryujinx.HLE.Utilities;
 using System;
+
+using static LibHac.Fs.ApplicationSaveDataManagement;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy
 {
@@ -24,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode PopLaunchParameter(ServiceCtx context)
         {
             // Only the first 0x18 bytes of the Data seems to be actually used.
-            MakeObject(context, new IStorage(StorageHelper.MakeLaunchParams()));
+            MakeObject(context, new AppletAE.IStorage(StorageHelper.MakeLaunchParams()));
 
             return ResultCode.Success;
         }
@@ -33,13 +38,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // EnsureSaveData(nn::account::Uid) -> u64
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
-            UInt128 userId = new UInt128(context.RequestData.ReadBytes(0x10));
+            Uid     userId  = context.RequestData.ReadStruct<Uid>();
+            TitleId titleId = new TitleId(context.Process.TitleId);
 
-            context.ResponseData.Write(0L);
+            Result result = EnsureApplicationSaveData(context.Device.System.FsClient, out long requiredSize, titleId,
+                ref context.Device.System.ControlData.Value, ref userId);
 
-            Logger.PrintStub(LogClass.ServiceAm, new { userId });
+            context.ResponseData.Write(requiredSize);
 
-            return ResultCode.Success;
+            return (ResultCode)result.Value;
         }
 
         [Command(21)]

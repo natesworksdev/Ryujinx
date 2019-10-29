@@ -1,8 +1,10 @@
 using LibHac;
+using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsService;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
+using LibHac.Ns;
 using LibHac.Spl;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem.Content;
@@ -103,7 +105,7 @@ namespace Ryujinx.HLE.HOS
 
         private bool _hasStarted;
 
-        public Nacp ControlData { get; set; }
+        public BlitStruct<ApplicationControlProperty> ControlData { get; set; }
 
         public string CurrentTitle { get; private set; }
 
@@ -118,11 +120,13 @@ namespace Ryujinx.HLE.HOS
         internal long HidBaseAddress { get; private set; }
 
         internal FileSystemServer FsServer { get; private set; }
+        internal FileSystemClient FsClient { get; private set; }
+
         internal EmulatedGameCard GameCard { get; private set; }
 
         public Horizon(Switch device)
         {
-            ControlData = new Nacp();
+            ControlData = new BlitStruct<ApplicationControlProperty>(1);
 
             Device = device;
 
@@ -247,6 +251,7 @@ namespace Ryujinx.HLE.HOS
             };
 
             FsServer = new FileSystemServer(fsServerConfig);
+            FsClient = FsServer.CreateFileSystemClient();
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -364,9 +369,13 @@ namespace Ryujinx.HLE.HOS
 
             if (result.IsSuccess())
             {
-                ControlData = new Nacp(controlFile.AsStream());
+                result = controlFile.Read(out long bytesRead, 0, ControlData.ByteSpan, ReadOption.None);
 
-                TitleName = CurrentTitle = ControlData.Descriptions[(int) State.DesiredTitleLanguage].Title;
+                if (result.IsSuccess() && bytesRead == ControlData.ByteSpan.Length)
+                {
+                    TitleName = CurrentTitle = ControlData.Value
+                        .GetTitles()[(int) State.DesiredTitleLanguage].Name.ToString();
+                }
             }
         }
 
@@ -615,28 +624,28 @@ namespace Ryujinx.HLE.HOS
                             if (nacpSize != 0)
                             {
                                 input.Seek(obj.FileSize + (long)nacpOffset, SeekOrigin.Begin);
-                                using (MemoryStream stream = new MemoryStream(reader.ReadBytes((int)nacpSize)))
-                                {
-                                    ControlData = new Nacp(stream);
-                                }
 
-                                metaData.TitleName = ControlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
+                                reader.Read(ControlData.ByteSpan);
+
+                                ref ApplicationControlProperty nacp = ref ControlData.Value;
+
+                                metaData.TitleName = nacp.GetTitles()[(int)State.DesiredTitleLanguage].Name.ToString();
 
                                 if (string.IsNullOrWhiteSpace(metaData.TitleName))
                                 {
-                                    metaData.TitleName = ControlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                                    metaData.TitleName = nacp.GetTitles().ToArray().FirstOrDefault(x => x.Name[0] != 0).ToString();
                                 }
 
-                                metaData.Aci0.TitleId = ControlData.PresenceGroupId;
+                                metaData.Aci0.TitleId = nacp.PresenceGroupId;
 
                                 if (metaData.Aci0.TitleId == 0)
                                 {
-                                    metaData.Aci0.TitleId = ControlData.SaveDataOwnerId;
+                                    metaData.Aci0.TitleId = nacp.SaveDataOwnerId.Value;
                                 }
 
                                 if (metaData.Aci0.TitleId == 0)
                                 {
-                                    metaData.Aci0.TitleId = ControlData.AddOnContentBaseId - 0x1000;
+                                    metaData.Aci0.TitleId = nacp.AddOnContentBaseId - 0x1000;
                                 }
 
                                 if (metaData.Aci0.TitleId.ToString("x16") == "fffffffffffff000")

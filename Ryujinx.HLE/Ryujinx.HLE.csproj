@@ -51,7 +51,7 @@
 
   <ItemGroup>
     <PackageReference Include="Concentus" Version="1.1.7" />
-    <PackageReference Include="LibHac" Version="0.7.0--save-tweaks.20" />
+    <PackageReference Include="LibHac" Version="0.7.0--save-tweaks.22" />
     <PackageReference Include="TimeZoneConverter.Posix" Version="2.1.0" />
   </ItemGroup>
 
