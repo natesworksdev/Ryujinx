@@ -56,6 +56,26 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
             return result;
         }
 
+        public override NvInternalResult Ioctl3(NvIoctl command, Span<byte> arguments, Span<byte> inlineOutBuffer)
+        {
+            NvInternalResult result = NvInternalResult.NotImplemented;
+
+            if (command.GetTypeValue() == NvIoctl.NvGpuMagic)
+            {
+                switch (command.GetNumberValue())
+                {
+                    case 0x05:
+                        result = CallIoctlMethod<GetCharacteristicsArguments, GpuCharacteristics>(GetCharacteristics, arguments, inlineOutBuffer);
+                        break;
+                    case 0x06:
+                        result = CallIoctlMethod<GetTpcMasksArguments, int>(GetTpcMasks, arguments, inlineOutBuffer);
+                        break;
+                }
+            }
+
+            return result;
+        }
+
         public override void Close()
         {
             // TODO
@@ -93,53 +113,67 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 
         private NvInternalResult GetCharacteristics(ref GetCharacteristicsArguments arguments)
         {
-            arguments.BufferSize = 0xa0;
+            return GetCharacteristics(ref arguments, ref arguments.Characteristics);
+        }
 
-            arguments.Characteristics.Arch                   = 0x120;
-            arguments.Characteristics.Impl                   = 0xb;
-            arguments.Characteristics.Rev                    = 0xa1;
-            arguments.Characteristics.NumGpc                 = 0x1;
-            arguments.Characteristics.L2CacheSize            = 0x40000;
-            arguments.Characteristics.OnBoardVideoMemorySize = 0x0;
-            arguments.Characteristics.NumTpcPerGpc           = 0x2;
-            arguments.Characteristics.BusType                = 0x20;
-            arguments.Characteristics.BigPageSize            = 0x20000;
-            arguments.Characteristics.CompressionPageSize    = 0x20000;
-            arguments.Characteristics.PdeCoverageBitCount    = 0x1b;
-            arguments.Characteristics.AvailableBigPageSizes  = 0x30000;
-            arguments.Characteristics.GpcMask                = 0x1;
-            arguments.Characteristics.SmArchSmVersion        = 0x503;
-            arguments.Characteristics.SmArchSpaVersion       = 0x503;
-            arguments.Characteristics.SmArchWarpCount        = 0x80;
-            arguments.Characteristics.GpuVaBitCount          = 0x28;
-            arguments.Characteristics.Reserved               = 0x0;
-            arguments.Characteristics.Flags                  = 0x55;
-            arguments.Characteristics.TwodClass              = 0x902d;
-            arguments.Characteristics.ThreedClass            = 0xb197;
-            arguments.Characteristics.ComputeClass           = 0xb1c0;
-            arguments.Characteristics.GpfifoClass            = 0xb06f;
-            arguments.Characteristics.InlineToMemoryClass    = 0xa140;
-            arguments.Characteristics.DmaCopyClass           = 0xb0b5;
-            arguments.Characteristics.MaxFbpsCount           = 0x1;
-            arguments.Characteristics.FbpEnMask              = 0x0;
-            arguments.Characteristics.MaxLtcPerFbp           = 0x2;
-            arguments.Characteristics.MaxLtsPerLtc           = 0x1;
-            arguments.Characteristics.MaxTexPerTpc           = 0x0;
-            arguments.Characteristics.MaxGpcCount            = 0x1;
-            arguments.Characteristics.RopL2EnMask0           = 0x21d70;
-            arguments.Characteristics.RopL2EnMask1           = 0x0;
-            arguments.Characteristics.ChipName               = 0x6230326d67;
-            arguments.Characteristics.GrCompbitStoreBaseHw   = 0x0;
+        private NvInternalResult GetCharacteristics(ref GetCharacteristicsArguments arguments, ref GpuCharacteristics characteristics)
+        {
+            arguments.Header.BufferSize = 0xa0;
+
+            characteristics.Arch                   = 0x120;
+            characteristics.Impl                   = 0xb;
+            characteristics.Rev                    = 0xa1;
+            characteristics.NumGpc                 = 0x1;
+            characteristics.L2CacheSize            = 0x40000;
+            characteristics.OnBoardVideoMemorySize = 0x0;
+            characteristics.NumTpcPerGpc           = 0x2;
+            characteristics.BusType                = 0x20;
+            characteristics.BigPageSize            = 0x20000;
+            characteristics.CompressionPageSize    = 0x20000;
+            characteristics.PdeCoverageBitCount    = 0x1b;
+            characteristics.AvailableBigPageSizes  = 0x30000;
+            characteristics.GpcMask                = 0x1;
+            characteristics.SmArchSmVersion        = 0x503;
+            characteristics.SmArchSpaVersion       = 0x503;
+            characteristics.SmArchWarpCount        = 0x80;
+            characteristics.GpuVaBitCount          = 0x28;
+            characteristics.Reserved               = 0x0;
+            characteristics.Flags                  = 0x55;
+            characteristics.TwodClass              = 0x902d;
+            characteristics.ThreedClass            = 0xb197;
+            characteristics.ComputeClass           = 0xb1c0;
+            characteristics.GpfifoClass            = 0xb06f;
+            characteristics.InlineToMemoryClass    = 0xa140;
+            characteristics.DmaCopyClass           = 0xb0b5;
+            characteristics.MaxFbpsCount           = 0x1;
+            characteristics.FbpEnMask              = 0x0;
+            characteristics.MaxLtcPerFbp           = 0x2;
+            characteristics.MaxLtsPerLtc           = 0x1;
+            characteristics.MaxTexPerTpc           = 0x0;
+            characteristics.MaxGpcCount            = 0x1;
+            characteristics.RopL2EnMask0           = 0x21d70;
+            characteristics.RopL2EnMask1           = 0x0;
+            characteristics.ChipName               = 0x6230326d67;
+            characteristics.GrCompbitStoreBaseHw   = 0x0;
+
+            arguments.Characteristics = characteristics;
 
             return NvInternalResult.Success;
         }
 
         private NvInternalResult GetTpcMasks(ref GetTpcMasksArguments arguments)
         {
+            return GetTpcMasks(ref arguments, ref arguments.TpcMask);
+        }
+
+        private NvInternalResult GetTpcMasks(ref GetTpcMasksArguments arguments, ref int tpcMask)
+        {
             if (arguments.MaskBufferSize != 0)
             {
-                arguments.TpcMask = 3;
+                tpcMask           = 3;
+                arguments.TpcMask = tpcMask;
             }
+
 
             return NvInternalResult.Success;
         }

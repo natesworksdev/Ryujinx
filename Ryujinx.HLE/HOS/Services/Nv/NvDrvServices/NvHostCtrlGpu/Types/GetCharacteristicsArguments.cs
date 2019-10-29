@@ -42,11 +42,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types
         public long GrCompbitStoreBaseHw;
     }
 
+    struct CharacteristicsHeader
+    {
+        public long BufferSize;
+        public long BufferAddress;
+    }
+
     [StructLayout(LayoutKind.Sequential)]
     struct GetCharacteristicsArguments
     {
-        public long               BufferSize;
-        public long               BufferAddress;
-        public GpuCharacteristics Characteristics;
+        public CharacteristicsHeader Header;
+        public GpuCharacteristics    Characteristics;
     }
 }

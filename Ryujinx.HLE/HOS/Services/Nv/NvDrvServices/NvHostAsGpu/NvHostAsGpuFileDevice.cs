@@ -58,6 +58,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             return result;
         }
 
+        public override NvInternalResult Ioctl3(NvIoctl command, Span<byte> arguments, Span<byte> inlineOutBuffer)
+        {
+            NvInternalResult result = NvInternalResult.NotImplemented;
+
+            if (command.GetTypeValue() == NvIoctl.NvGpuAsMagic)
+            {
+                switch (command.GetNumberValue())
+                {
+                    case 0x08:
+                        // This is the same as the one in ioctl as inlineOutBuffer is empty.
+                        result = CallIoctlMethod<GetVaRegionsArguments>(GetVaRegions, arguments);
+                        break;
+                }
+            }
+
+            return result;
+        }
+
         private NvInternalResult BindChannel(ref BindChannelArguments arguments)
         {
             Logger.PrintStub(LogClass.ServiceNv);
