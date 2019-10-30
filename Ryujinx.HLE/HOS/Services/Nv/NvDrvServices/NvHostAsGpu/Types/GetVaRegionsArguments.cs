@@ -14,10 +14,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
     [StructLayout(LayoutKind.Sequential)]
     struct GetVaRegionsArguments
     {
-        public ulong      Unused;
-        public uint       BufferSize;
-        public uint       Padding;
-        public VaRegion   Region0;
-        public VaRegion   Region1;
+        public ulong     Unused;
+        public uint      BufferSize;
+        public uint      Padding;
+        public VaRegion  Region0;
+        public VaRegion  Region1;
     }
 }
