@@ -33,9 +33,9 @@ namespace Ryujinx.Ui
             if (!IsMigrationNeeded(basePath))
                 return;
 
-            MigrateDirectories(basePath);
-
             BackupSaves(basePath, backupPath);
+
+            MigrateDirectories(basePath);
 
             MigrateSaves(Device.System.FsClient, backupUserSavePath);
         }
@@ -64,6 +64,7 @@ namespace Ryujinx.Ui
                 return true;
             }
 
+            Directory.CreateDirectory(Path.GetDirectoryName(newDir));
             Directory.Move(oldDir, newDir);
 
             return true;
@@ -73,16 +74,16 @@ namespace Ryujinx.Ui
         {
             Directory.CreateDirectory(backupPath);
 
-            string userSaveDir = Path.Combine(basePath, "bis/user/save");
-            string backupUserSaveDir = Path.Combine(backupPath, "userSaves");
+            string userSaveDir = Path.Combine(basePath, "nand/user/save");
+            string backupUserSaveDir = Path.Combine(backupPath, "nand/user/save");
 
             if (Directory.Exists(userSaveDir))
             {
                 RenameDirectory(userSaveDir, backupUserSaveDir);
             }
 
-            string systemSaveDir = Path.Combine(basePath, "bis/system/save");
-            string backupSystemSaveDir = Path.Combine(backupPath, "systemSaves");
+            string systemSaveDir = Path.Combine(basePath, "nand/system/save");
+            string backupSystemSaveDir = Path.Combine(backupPath, "nand/system/save");
 
             if (Directory.Exists(systemSaveDir))
             {
