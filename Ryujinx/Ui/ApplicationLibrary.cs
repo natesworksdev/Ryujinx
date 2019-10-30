@@ -382,6 +382,8 @@ namespace Ryujinx.UI
 
         private static string[] GetPlayedData(string TitleId, string UserId)
         {
+            return new string[] { "Unknown", "Unknown" };
+
             try
             {
                 string[] playedData = new string[2];

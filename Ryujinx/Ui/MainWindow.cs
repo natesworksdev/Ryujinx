@@ -307,6 +307,8 @@ namespace Ryujinx.UI
                     DiscordClient.SetPresence(DiscordPresence);
                 }
 
+                return;
+
                 try
                 {
                     string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleID);
