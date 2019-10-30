@@ -8,8 +8,8 @@ namespace Ryujinx.HLE.FileSystem
     public class VirtualFileSystem : IDisposable
     {
         public const string BasePath   = "RyuFs";
-        public const string NandPath   = "nand";
-        public const string SdCardPath = "sdmc";
+        public const string NandPath   = "bis";
+        public const string SdCardPath = "sdcard";
         public const string SystemPath = "system";
 
         public static string SafeNandPath   = Path.Combine(NandPath, "safe");
