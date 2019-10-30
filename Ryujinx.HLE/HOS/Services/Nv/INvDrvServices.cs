@@ -471,7 +471,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             if (errorCode == NvResult.Success)
             {
-                int fd = context.RequestData.ReadInt32();
+                int     fd           = context.RequestData.ReadInt32();
                 NvIoctl ioctlCommand = context.RequestData.ReadStruct<NvIoctl>();
 
                 (long inlineOutBufferPosition, long inlineOutBufferSize) = context.Request.GetBufferType0x22(1);
