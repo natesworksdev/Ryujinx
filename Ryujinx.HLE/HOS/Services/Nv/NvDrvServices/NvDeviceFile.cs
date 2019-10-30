@@ -9,16 +9,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
     abstract class NvDeviceFile
     {
-        protected KProcess _owner;
+        public readonly KProcess Owner;
 
         public NvDeviceFile(ServiceCtx context)
         {
-            _owner = context.Process;
-        }
-
-        public KProcess GetOwner()
-        {
-            return _owner;
+            Owner = context.Process;
         }
 
         public virtual NvInternalResult QueryEvent(out int eventHandle, uint eventId)

@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult AllocSpace(ref AllocSpaceArguments arguments)
         {
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(_owner);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Owner);
 
             ulong size = (ulong)arguments.Pages * (ulong)arguments.PageSize;
 
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult FreeSpace(ref FreeSpaceArguments arguments)
         {
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(_owner);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Owner);
 
             NvInternalResult result = NvInternalResult.Success;
 
@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult UnmapBuffer(ref UnmapBufferArguments arguments)
         {
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(_owner);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Owner);
 
             lock (addressSpaceContext)
             {
@@ -167,9 +167,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             const string mapErrorMsg = "Failed to map fixed buffer with offset 0x{0:x16} and size 0x{1:x16}!";
 
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(_owner);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Owner);
 
-            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(_owner, arguments.NvMapHandle, true);
+            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments.NvMapHandle, true);
 
             if (map == null)
             {
@@ -282,9 +282,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             for (int index = 0; index < arguments.Length; index++)
             {
-                NvGpuVmm vmm = GetAddressSpaceContext(_owner).Vmm;
+                NvGpuVmm vmm = GetAddressSpaceContext(Owner).Vmm;
 
-                NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(_owner, arguments[index].NvMapHandle, true);
+                NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments[index].NvMapHandle, true);
 
                 if (map == null)
                 {

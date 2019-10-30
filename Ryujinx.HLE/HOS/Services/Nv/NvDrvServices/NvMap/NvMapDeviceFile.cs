@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         public NvMapDeviceFile(ServiceCtx context) : base(context)
         {
-            IdDictionary dict = _maps.GetOrAdd(_owner, (key) => new IdDictionary());
+            IdDictionary dict = _maps.GetOrAdd(Owner, (key) => new IdDictionary());
 
             dict.Add(0, new NvMapHandle());
         }
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult FromId(ref NvMapFromId arguments)
         {
-            NvMapHandle map = GetMapFromHandle(_owner, arguments.Id);
+            NvMapHandle map = GetMapFromHandle(Owner, arguments.Id);
 
             if (map == null)
             {
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult Alloc(ref NvMapAlloc arguments)
         {
-            NvMapHandle map = GetMapFromHandle(_owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
 
             if (map == null)
             {
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult Free(ref NvMapFree arguments)
         {
-            NvMapHandle map = GetMapFromHandle(_owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
 
             if (map == null)
             {
@@ -187,7 +187,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult Param(ref NvMapParam arguments)
         {
-            NvMapHandle map = GetMapFromHandle(_owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
 
             if (map == null)
             {
@@ -214,7 +214,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private NvInternalResult GetId(ref NvMapGetId arguments)
         {
-            NvMapHandle map = GetMapFromHandle(_owner, arguments.Handle);
+            NvMapHandle map = GetMapFromHandle(Owner, arguments.Handle);
 
             if (map == null)
             {
@@ -236,7 +236,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private int CreateHandleFromMap(NvMapHandle map)
         {
-            IdDictionary dict = _maps.GetOrAdd(_owner, (key) =>
+            IdDictionary dict = _maps.GetOrAdd(Owner, (key) =>
             {
                 IdDictionary newDict = new IdDictionary();
 
@@ -250,7 +250,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private bool DeleteMapWithHandle(int handle)
         {
-            if (_maps.TryGetValue(_owner, out IdDictionary dict))
+            if (_maps.TryGetValue(Owner, out IdDictionary dict))
             {
                 return dict.Delete(handle) != null;
             }

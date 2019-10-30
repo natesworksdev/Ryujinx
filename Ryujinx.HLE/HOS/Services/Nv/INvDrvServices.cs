@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 return NvResult.NotImplemented;
             }
 
-            if (deviceFile.GetOwner().Pid != _owner.Pid)
+            if (deviceFile.Owner.Pid != _owner.Pid)
             {
                 return NvResult.AccessDenied;
             }
