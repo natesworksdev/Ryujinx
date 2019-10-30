@@ -253,6 +253,22 @@
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Tools</property>
                 <property name="use_underline">True</property>
+                <child type="submenu">
+                  <object class="GtkMenu">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <child>
+                      <object class="GtkMenuItem" id="DoMigration">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Migrate files from an old layout</property>
+                        <property name="label" translatable="yes">Migrate Files</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Migration_Pressed" swapped="no"/>
+                      </object>
+                    </child>
+                  </object>
+                </child>
               </object>
             </child>
             <child>

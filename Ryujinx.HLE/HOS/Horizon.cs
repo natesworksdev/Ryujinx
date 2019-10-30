@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS
         internal long HidBaseAddress { get; private set; }
 
         internal FileSystemServer FsServer { get; private set; }
-        internal FileSystemClient FsClient { get; private set; }
+        public FileSystemClient FsClient { get; private set; }
 
         internal EmulatedGameCard GameCard { get; private set; }
 

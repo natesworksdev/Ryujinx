@@ -6,6 +6,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.Profiler;
+using Ryujinx.Ui;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -522,6 +523,13 @@ namespace Ryujinx.UI
             {
                 CreateErrorDialog("Update canceled by user or updater was not found");
             }
+        }
+
+        private void Migration_Pressed(object o, EventArgs args)
+        {
+            Migration migration = new Migration(_device);
+
+            migration.Migrate();
         }
 
         private void About_Pressed(object o, EventArgs args)
