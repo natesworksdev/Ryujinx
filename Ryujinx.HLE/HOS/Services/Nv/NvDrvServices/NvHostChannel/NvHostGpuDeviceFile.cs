@@ -31,6 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                         break;
                 }
             }
+
             return result;
         }
 

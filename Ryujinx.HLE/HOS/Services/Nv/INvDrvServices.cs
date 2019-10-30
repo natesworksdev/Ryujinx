@@ -32,14 +32,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                        { "/dev/nvhost-ctrl-gpu", typeof(NvHostCtrlGpuDeviceFile) },
                        { "/dev/nvhost-as-gpu",   typeof(NvHostAsGpuDeviceFile)   },
                        { "/dev/nvhost-gpu",      typeof(NvHostGpuDeviceFile)     },
-                       //{ "/dev/nvhost-msenc",    typeof(NvHostChannelDeviceFile) },
+                     //{ "/dev/nvhost-msenc",    typeof(NvHostChannelDeviceFile) },
                        { "/dev/nvhost-nvdec",    typeof(NvHostChannelDeviceFile) },
-                       //{ "/dev/nvhost-nvjpg",    typeof(NvHostChannelDeviceFile) },
+                     //{ "/dev/nvhost-nvjpg",    typeof(NvHostChannelDeviceFile) },
                        { "/dev/nvhost-vic",      typeof(NvHostChannelDeviceFile) },
-                       //{ "/dev/nvhost-display",  typeof(NvHostChannelDeviceFile) },
+                     //{ "/dev/nvhost-display",  typeof(NvHostChannelDeviceFile) },
         };
 
         private static IdDictionary _deviceFileIdRegistry = new IdDictionary();
+
         private KProcess _owner;
 
         public INvDrvServices(ServiceCtx context)
@@ -76,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
             NvIoctl.Direction ioctlDirection = ioctlCommand.DirectionValue;
             uint              ioctlSize      = ioctlCommand.Size;
 
-            bool isRead  = (ioctlDirection & NvIoctl.Direction.Read) != 0;
+            bool isRead  = (ioctlDirection & NvIoctl.Direction.Read)  != 0;
             bool isWrite = (ioctlDirection & NvIoctl.Direction.Write) != 0;
 
             if ((isWrite && ioctlSize > outputDataSize) || (isRead && ioctlSize > inputDataSize))
@@ -332,7 +333,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                     if (internalResult == NvInternalResult.NotImplemented)
                     {
-                        throw new NvQueryEventlNotImplementedException(context, deviceFile, eventId);
+                        throw new NvQueryEventNotImplementedException(context, deviceFile, eventId);
                     }
 
                     errorCode = ConvertInternalErrorCode(internalResult);

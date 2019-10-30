@@ -5,12 +5,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
     [StructLayout(LayoutKind.Sequential)]
     struct MapBufferExArguments
     {
-        public int  Flags;
-        public int  Kind;
-        public int  NvMapHandle;
-        public int  PageSize;
-        public long BufferOffset;
-        public long MappingSize;
-        public long Offset;
+        public AddressSpaceFlags Flags;
+        public int               Kind;
+        public int               NvMapHandle;
+        public int               PageSize;
+        public long              BufferOffset;
+        public long              MappingSize;
+        public long              Offset;
     }
 }

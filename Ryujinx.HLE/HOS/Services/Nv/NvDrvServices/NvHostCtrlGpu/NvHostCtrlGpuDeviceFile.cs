@@ -114,10 +114,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
             return NvInternalResult.Success;
         }
 
-        public override void Close()
-        {
-
-        }
+        public override void Close() { }
 
         private NvInternalResult ZcullGetCtxSize(ref ZcullGetCtxSizeArguments arguments)
         {
@@ -211,7 +208,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
                 tpcMask           = 3;
                 arguments.TpcMask = tpcMask;
             }
-
 
             return NvInternalResult.Success;
         }

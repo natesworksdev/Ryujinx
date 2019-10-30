@@ -10,15 +10,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 {
     class NvHostAsGpuDeviceFile : NvDeviceFile
     {
-        private const int FlagFixedOffset   = 1;
-        private const int FlagRemapSubRange = 0x100;
-
         private static ConcurrentDictionary<KProcess, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<KProcess, AddressSpaceContext>();
 
-        public NvHostAsGpuDeviceFile(ServiceCtx context) : base(context)
-        {
-
-        }
+        public NvHostAsGpuDeviceFile(ServiceCtx context) : base(context) { }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
         {
@@ -95,7 +89,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             {
                 // Note: When the fixed offset flag is not set,
                 // the Offset field holds the alignment size instead.
-                if ((arguments.Flags & FlagFixedOffset) != 0)
+                if ((arguments.Flags & AddressSpaceFlags.FixedOffset) != 0)
                 {
                     arguments.Offset = addressSpaceContext.Vmm.ReserveFixed(arguments.Offset, (long)size);
                 }
@@ -184,23 +178,23 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 return NvInternalResult.InvalidInput;
             }
 
-            long pa;
+            long physicalAddress;
 
-            if ((arguments.Flags & FlagRemapSubRange) != 0)
+            if ((arguments.Flags & AddressSpaceFlags.RemapSubRange) != 0)
             {
                 lock (addressSpaceContext)
                 {
-                    if (addressSpaceContext.TryGetMapPhysicalAddress(arguments.Offset, out pa))
+                    if (addressSpaceContext.TryGetMapPhysicalAddress(arguments.Offset, out physicalAddress))
                     {
-                        long va = arguments.Offset + arguments.BufferOffset;
+                        long virtualAddress = arguments.Offset + arguments.BufferOffset;
 
-                        pa += arguments.BufferOffset;
+                        physicalAddress += arguments.BufferOffset;
 
-                        if (addressSpaceContext.Vmm.Map(pa, va, arguments.MappingSize) < 0)
+                        if (addressSpaceContext.Vmm.Map(physicalAddress, virtualAddress, arguments.MappingSize) < 0)
                         {
-                            string msg = string.Format(mapErrorMsg, va, arguments.MappingSize);
+                            string message = string.Format(mapErrorMsg, virtualAddress, arguments.MappingSize);
 
-                            Logger.PrintWarning(LogClass.ServiceNv, msg);
+                            Logger.PrintWarning(LogClass.ServiceNv, message);
 
                             return NvInternalResult.InvalidInput;
                         }
@@ -216,7 +210,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
             }
 
-            pa = map.Address + arguments.BufferOffset;
+            physicalAddress = map.Address + arguments.BufferOffset;
 
             long size = arguments.MappingSize;
 
@@ -231,26 +225,26 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             {
                 // Note: When the fixed offset flag is not set,
                 // the Offset field holds the alignment size instead.
-                bool vaAllocated = (arguments.Flags & FlagFixedOffset) == 0;
+                bool virtualAddressAllocated = (arguments.Flags & AddressSpaceFlags.FixedOffset) == 0;
 
-                if (!vaAllocated)
+                if (!virtualAddressAllocated)
                 {
                     if (addressSpaceContext.ValidateFixedBuffer(arguments.Offset, size))
                     {
-                        arguments.Offset = addressSpaceContext.Vmm.Map(pa, arguments.Offset, size);
+                        arguments.Offset = addressSpaceContext.Vmm.Map(physicalAddress, arguments.Offset, size);
                     }
                     else
                     {
-                        string msg = string.Format(mapErrorMsg, arguments.Offset, size);
+                        string message = string.Format(mapErrorMsg, arguments.Offset, size);
 
-                        Logger.PrintWarning(LogClass.ServiceNv, msg);
+                        Logger.PrintWarning(LogClass.ServiceNv, message);
 
                         result = NvInternalResult.InvalidInput;
                     }
                 }
                 else
                 {
-                    arguments.Offset = addressSpaceContext.Vmm.Map(pa, size);
+                    arguments.Offset = addressSpaceContext.Vmm.Map(physicalAddress, size);
                 }
 
                 if (arguments.Offset < 0)
@@ -263,7 +257,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    addressSpaceContext.AddMap(arguments.Offset, size, pa, vaAllocated);
+                    addressSpaceContext.AddMap(arguments.Offset, size, physicalAddress, virtualAddressAllocated);
                 }
             }
 
@@ -314,10 +308,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             return NvInternalResult.Success;
         }
 
-        public override void Close()
-        {
-
-        }
+        public override void Close() { }
 
         public static AddressSpaceContext GetAddressSpaceContext(KProcess process)
         {

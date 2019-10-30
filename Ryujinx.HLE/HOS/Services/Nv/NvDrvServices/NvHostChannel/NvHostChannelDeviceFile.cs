@@ -21,11 +21,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public NvHostChannelDeviceFile(ServiceCtx context) : base(context)
         {
-            _gpu            = context.Device.Gpu;
-            _memory         = context.Memory;
-            _timeout        = 3000;
-            _submitTimeout  = 0;
-            _timeslice      = 0;
+            _gpu           = context.Device.Gpu;
+            _memory        = context.Memory;
+            _timeout       = 3000;
+            _submitTimeout = 0;
+            _timeslice     = 0;
         }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
@@ -116,14 +116,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             {
                 NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(_owner, commandBufferEntry.MemoryId);
 
-                int[] cmdBufData = new int[commandBufferEntry.WordsCount];
+                int[] commandBufferData = new int[commandBufferEntry.WordsCount];
 
-                for (int offset = 0; offset < cmdBufData.Length; offset++)
+                for (int offset = 0; offset < commandBufferData.Length; offset++)
                 {
-                    cmdBufData[offset] = _memory.ReadInt32(map.Address + commandBufferEntry.Offset + offset * 4);
+                    commandBufferData[offset] = _memory.ReadInt32(map.Address + commandBufferEntry.Offset + offset * 4);
                 }
 
-                _gpu.PushCommandBuffer(vmm, cmdBufData);
+                _gpu.PushCommandBuffer(vmm, commandBufferData);
             }
 
             return NvInternalResult.Success;
@@ -195,8 +195,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
             NvGpuVmm                  vmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(_owner).Vmm;
 
-            // TODO
-
             foreach (ref CommandBufferHandle commandBufferEntry in commandBufferEntries)
             {
                 NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(_owner, commandBufferEntry.MapHandle);
@@ -240,9 +238,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult SubmitGpfifo(Span<byte> arguments)
         {
-            int                   headerSize                = Unsafe.SizeOf<SubmitGpfifoArguments>();
-            SubmitGpfifoArguments gpfifoSubmissionHeader    = MemoryMarshal.Cast<byte, SubmitGpfifoArguments>(arguments)[0];
-            Span<long>            gpfifoEntries             = MemoryMarshal.Cast<byte, long>(arguments.Slice(headerSize)).Slice(0, gpfifoSubmissionHeader.NumEntries);
+            int                   headerSize             = Unsafe.SizeOf<SubmitGpfifoArguments>();
+            SubmitGpfifoArguments gpfifoSubmissionHeader = MemoryMarshal.Cast<byte, SubmitGpfifoArguments>(arguments)[0];
+            Span<long>            gpfifoEntries          = MemoryMarshal.Cast<byte, long>(arguments.Slice(headerSize)).Slice(0, gpfifoSubmissionHeader.NumEntries);
 
             return SubmitGpfifo(ref gpfifoSubmissionHeader, gpfifoEntries);
         }
@@ -344,9 +342,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return NvInternalResult.Success;
         }
 
-        public override void Close()
-        {
-
-        }
+        public override void Close() { }
     }
 }

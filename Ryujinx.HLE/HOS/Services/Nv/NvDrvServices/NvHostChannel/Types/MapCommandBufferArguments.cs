@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types
     {
         public int   NumEntries;
         public int   DataAddress; // Ignored by the driver.
-        public bool AttachHostChDas;
+        public bool  AttachHostChDas;
         public byte  Padding1;
         public short Padding2;
     }

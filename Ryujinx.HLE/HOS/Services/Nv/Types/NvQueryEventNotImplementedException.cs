@@ -4,17 +4,17 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.Types
 {
-    class NvQueryEventlNotImplementedException : Exception
+    class NvQueryEventNotImplementedException : Exception
     {
         public ServiceCtx   Context    { get; }
         public NvDeviceFile DeviceFile { get; }
         public uint         EventId    { get; }
 
-        public NvQueryEventlNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, uint eventId)
+        public NvQueryEventNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, uint eventId)
             : this(context, deviceFile, eventId, "This query event is not implemented.")
         { }
 
-        public NvQueryEventlNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, uint eventId, string message)
+        public NvQueryEventNotImplementedException(ServiceCtx context, NvDeviceFile deviceFile, uint eventId, string message)
             : base(message)
         {
             Context    = context;

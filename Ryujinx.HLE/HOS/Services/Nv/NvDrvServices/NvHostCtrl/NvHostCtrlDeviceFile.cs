@@ -78,8 +78,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     case 0x1f:
                         result = CallIoctlMethod<uint>(EventRegister, arguments);
                         break;
-                    default:
-                        break;
                 }
             }
 
@@ -398,9 +396,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return null;
         }
 
-        public override void Close()
-        {
-
-        }
+        public override void Close() { }
     }
 }

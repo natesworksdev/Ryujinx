@@ -11,8 +11,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types
 
         public static GetConfigurationArguments FromSpan(Span<byte> span)
         {
-            string domain        = Encoding.ASCII.GetString(span.Slice(0, 0x41));
-            string parameter     = Encoding.ASCII.GetString(span.Slice(0x41, 0x41));
+            string domain    = Encoding.ASCII.GetString(span.Slice(0, 0x41));
+            string parameter = Encoding.ASCII.GetString(span.Slice(0x41, 0x41));
 
             GetConfigurationArguments result = new GetConfigurationArguments
             {
