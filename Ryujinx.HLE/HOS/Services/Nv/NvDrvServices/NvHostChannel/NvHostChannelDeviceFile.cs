@@ -336,7 +336,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 _gpu.Pusher.Push(vmm, entry);
             }
 
-            header.Fence.Id = 0;
+            header.Fence.Id    = 0;
             header.Fence.Value = 0;
 
             return NvInternalResult.Success;

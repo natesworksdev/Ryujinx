@@ -198,11 +198,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
             switch (arguments.Param)
             {
-                case NvMapHandleParam.Size:  arguments.Result = map.Size; break;
-                case NvMapHandleParam.Align: arguments.Result = map.Align; break;
+                case NvMapHandleParam.Size:  arguments.Result = map.Size;   break;
+                case NvMapHandleParam.Align: arguments.Result = map.Align;  break;
                 case NvMapHandleParam.Heap:  arguments.Result = 0x40000000; break;
-                case NvMapHandleParam.Kind:  arguments.Result = map.Kind; break;
-                case NvMapHandleParam.Compr: arguments.Result = 0; break;
+                case NvMapHandleParam.Kind:  arguments.Result = map.Kind;   break;
+                case NvMapHandleParam.Compr: arguments.Result = 0;          break;
 
                 // Note: Base is not supported and returns an error.
                 // Any other value also returns an error.
