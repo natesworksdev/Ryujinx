@@ -374,7 +374,7 @@ namespace Ryujinx.HLE.HOS
                 if (result.IsSuccess() && bytesRead == ControlData.ByteSpan.Length)
                 {
                     TitleName = CurrentTitle = ControlData.Value
-                        .GetTitles()[(int) State.DesiredTitleLanguage].Name.ToString();
+                        .Titles[(int) State.DesiredTitleLanguage].Name.ToString();
                 }
             }
         }
@@ -629,11 +629,11 @@ namespace Ryujinx.HLE.HOS
 
                                 ref ApplicationControlProperty nacp = ref ControlData.Value;
 
-                                metaData.TitleName = nacp.GetTitles()[(int)State.DesiredTitleLanguage].Name.ToString();
+                                metaData.TitleName = nacp.Titles[(int)State.DesiredTitleLanguage].Name.ToString();
 
                                 if (string.IsNullOrWhiteSpace(metaData.TitleName))
                                 {
-                                    metaData.TitleName = nacp.GetTitles().ToArray().FirstOrDefault(x => x.Name[0] != 0).ToString();
+                                    metaData.TitleName = nacp.Titles.ToArray().FirstOrDefault(x => x.Name[0] != 0).ToString();
                                 }
 
                                 metaData.Aci0.TitleId = nacp.PresenceGroupId;
