@@ -16,7 +16,7 @@ namespace ARMeilleure.Translation
 {
     using AOT;
 
-    public class Translator : ITranslator
+    public class Translator
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
 
@@ -74,10 +74,8 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public void Execute(IExecutionContext ctx, ulong address)
+        public void Execute(State.ExecutionContext context, ulong address)
         {
-            State.ExecutionContext context = (State.ExecutionContext)ctx;
-
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
                 Thread backgroundTranslatorThread = new Thread(TranslateQueuedSubs);

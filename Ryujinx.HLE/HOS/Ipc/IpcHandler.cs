@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Ipc
         public static KernelResult IpcCall(
             Switch         device,
             KProcess       process,
-            IMemoryManager memory,
+            MemoryManager  memory,
             KThread        thread,
             KClientSession session,
             IpcMessage     request,
@@ -67,7 +67,7 @@ namespace Ryujinx.HLE.HOS.Ipc
 
                         case 3:
                         {
-                            request = FillResponse(response, 0, 0x500);
+                            request = FillResponse(response, 0, 0x1000);
 
                             break;
                         }
