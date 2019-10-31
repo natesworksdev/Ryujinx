@@ -43,10 +43,6 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
  
    Everything on the Switch is encrypted, so if you want to run anything other than homebrew, you have to dump encryption keys from your console. To get more information please take a look at our [Keys Documentation](KEYS.md) *(Outdated)*
    
- - **Shared Fonts**  
- 
-   Some games draw text using font files called Shared Fonts. You can dump your own with [SharedFontDumper](https://github.com/simontime/SharedFontDumper), or download custom ones based on publicly available fonts [here](https://ryujinx.org/ryujinx_shared_fonts.zip). You then need to copy the .bin or .ttf files to `RyuFs\system\fonts`.
-   
  - **FFmpeg Dependencies**  
  
    Ryujinx has a basic implementation of `NVDEC`, a video decoder used by the Switch's GPU. Many games include videos that use it, so you need to download [Zeranoe's FFmpeg Builds](http://ffmpeg.zeranoe.com/builds/) for **Shared** linking and your computer's operating system. When it's done, extract the contents of the `bin` folder directly into your Ryujinx folder.
