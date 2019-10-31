@@ -440,5 +440,17 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             return ResultCode.Success;
         }
+
+        [Command(1011)]
+        public ResultCode GetProgramIndexForAccessLog(ServiceCtx context)
+        {
+            int programIndex = 0;
+            int programCount = 1;
+
+            context.ResponseData.Write(programIndex);
+            context.ResponseData.Write(programCount);
+
+            return ResultCode.Success;
+        }
     }
 }
