@@ -17,7 +17,8 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public PlayerSelect(Horizon system)
         {
-            _inputStack = new Stack<IStorage>();
+            _system      = system;
+            _inputStack  = new Stack<IStorage>();
             _outputStack = new Stack<IStorage>();
         }
 
