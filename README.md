@@ -87,7 +87,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
  
    The emulator has settings for dumping shaders, enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`.
 
-For more information [you can go here](CONFIG.md) *(Outdated)*.
+   For more information [you can go here](CONFIG.md) *(Outdated)*.
 
 ## Compatibility
 
