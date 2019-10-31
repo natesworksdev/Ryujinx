@@ -71,7 +71,7 @@ namespace ARMeilleure.Translation.AOT
             _disposed = false;
         }
 
-        public static void Init(string titleId, bool enabled, bool readOnlyMode = false)
+        public static void Init(string titleId, bool enabled = true, bool readOnlyMode = false)
         {
             if (!String.IsNullOrEmpty(titleId))
             {
