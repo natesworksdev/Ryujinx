@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 return (IApplet)Activator.CreateInstance(appletClass, system);
             }
 
-            return new StubApplet();
+            throw new NotImplementedException($"{applet} applet is not implemented.");
         }
     }
 }

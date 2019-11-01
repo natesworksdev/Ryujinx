@@ -69,14 +69,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopOutData(ServiceCtx context)
         {
-            var result = _applet.PopOutData(out IStorage storage);
+            ResultCode result = (ResultCode)_applet.PopOutData(out IStorage storage);
 
-            if(storage != null)
+            if (result == ResultCode.Success && storage != null)
             {
                 MakeObject(context, storage);
             }
             
-            return (ResultCode)result;
+            return result;
         }
     }
 }

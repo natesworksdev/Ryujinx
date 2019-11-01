@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+﻿using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -7,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Applets
 {
     internal class PlayerSelect : IApplet
     {
-        private Horizon _system;
+        private Horizon         _system;
         private Queue<IStorage> _inputStack;
         private Queue<IStorage> _outputStack;
 
@@ -57,14 +58,13 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private byte[] BuildResponse()
         {
-            var currentUser = _system.State.Account.LastOpenedUser;
+            UserProfile currentUser = _system.State.Account.LastOpenedUser;
 
-            using (var ms = new MemoryStream())
+            using (MemoryStream ms = new MemoryStream())
             {
-                var writer = new BinaryWriter(ms);
+                BinaryWriter writer = new BinaryWriter(ms);
 
-                // Result (0 = Success, 2 = Failure)
-                writer.Write(0UL);
+                writer.Write((ulong)PlayerSelectResult.Success);
                 // UserID Low (long) High (long)
                 currentUser.UserId.Write(writer);
 
