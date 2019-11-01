@@ -73,7 +73,6 @@
         },
         "right_joycon": {
             "stick": "Axis3",
-            "stick_y": "Button0",
             "stick_button": "Button9",
             "button_a": "Button1",
             "button_b": "Button0",
