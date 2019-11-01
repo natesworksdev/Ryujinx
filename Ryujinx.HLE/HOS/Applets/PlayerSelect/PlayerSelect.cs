@@ -9,21 +9,21 @@ namespace Ryujinx.HLE.HOS.Applets
     internal class PlayerSelect : IApplet
     {
         private Horizon         _system;
-        private Queue<IStorage> _inputStack;
-        private Queue<IStorage> _outputStack;
+        private Queue<IStorage> _inputQueue;
+        private Queue<IStorage> _outputQueue;
 
         public event EventHandler AppletStateChanged;
 
         public PlayerSelect(Horizon system)
         {
             _system      = system;
-            _inputStack  = new Queue<IStorage>();
-            _outputStack = new Queue<IStorage>();
+            _inputQueue  = new Queue<IStorage>();
+            _outputQueue = new Queue<IStorage>();
         }
 
         public ResultCode Start()
         {
-            _outputStack.Enqueue(new IStorage(BuildResponse()));
+            _outputQueue.Enqueue(new IStorage(BuildResponse()));
 
             AppletStateChanged?.Invoke(this, null);
 
@@ -37,16 +37,16 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public ResultCode PushInData(IStorage data)
         {
-            _inputStack.Enqueue(data);
+            _inputQueue.Enqueue(data);
 
             return ResultCode.Success;
         }
 
         public ResultCode PopOutData(out IStorage data)
         {
-            if (_outputStack.Count > 0)
+            if (_outputQueue.Count > 0)
             {
-                data = _outputStack.Dequeue();
+                data = _outputQueue.Dequeue();
             }
             else
             {
