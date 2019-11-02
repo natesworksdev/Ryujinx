@@ -500,29 +500,10 @@ namespace Ryujinx.HLE.HOS
             }
 
             LoadExeFs(codeFs, out Npdm metaData);
-
-            Nacp ReadControlData()
-            {
-                IFileSystem controlRomfs = controlNca.OpenFileSystem(NcaSectionType.Data, FsIntegrityCheckLevel);
-
-                controlRomfs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read).ThrowIfFailure();
-
-                Nacp controlData = new Nacp(controlFile.AsStream());
-
-                TitleName = CurrentTitle = controlData.Descriptions[(int)State.DesiredTitleLanguage].Title;
-                TitleID   = metaData.Aci0.TitleId.ToString("x16");
-
-                if (string.IsNullOrWhiteSpace(CurrentTitle))
-                {
-                    TitleName = CurrentTitle = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                }
-
-                return controlData;
-            }
-
+            
             if (controlNca != null)
             {
-                ReadControlData();
+                ReadControlData(controlNca);
             }
             else
             {
