@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleName { get; private set; }
 
-        public string TitleID { get; private set; }
+        public string TitleId { get; private set; }
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
@@ -375,6 +375,12 @@ namespace Ryujinx.HLE.HOS
                 {
                     TitleName = CurrentTitle = ControlData.Value
                         .Titles[(int) State.DesiredTitleLanguage].Name.ToString();
+
+                    if (string.IsNullOrWhiteSpace(TitleName))
+                    {
+                        TitleName = CurrentTitle = ControlData.Value.Titles.ToArray()
+                            .FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
+                    }
                 }
             }
         }
@@ -501,13 +507,15 @@ namespace Ryujinx.HLE.HOS
 
             LoadExeFs(codeFs, out Npdm metaData);
             
+            TitleId = metaData.Aci0.TitleId.ToString("x16");
+
             if (controlNca != null)
             {
                 ReadControlData(controlNca);
             }
             else
             {
-                TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+                CurrentTitle = TitleId;
             }
         }
 
@@ -547,7 +555,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+            TitleId = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
             LoadNso("main");
@@ -614,7 +622,7 @@ namespace Ryujinx.HLE.HOS
 
                                 if (string.IsNullOrWhiteSpace(metaData.TitleName))
                                 {
-                                    metaData.TitleName = nacp.Titles.ToArray().FirstOrDefault(x => x.Name[0] != 0).ToString();
+                                    metaData.TitleName = nacp.Titles.ToArray().FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                                 }
 
                                 metaData.Aci0.TitleId = nacp.PresenceGroupId;
@@ -650,7 +658,7 @@ namespace Ryujinx.HLE.HOS
             ContentManager.LoadEntries();
 
             TitleName = CurrentTitle = metaData.TitleName;
-            TitleID   = metaData.Aci0.TitleId.ToString("x16");
+            TitleId   = metaData.Aci0.TitleId.ToString("x16");
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }

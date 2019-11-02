@@ -274,12 +274,12 @@ namespace Ryujinx.UI
 
                 if (DiscordIntegrationEnabled)
                 {
-                    if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleID))
+                    if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleId))
                     {
-                        DiscordPresence.Assets.LargeImageKey = _device.System.TitleID;
+                        DiscordPresence.Assets.LargeImageKey = _device.System.TitleId;
                     }
 
-                    string state = _device.System.TitleID;
+                    string state = _device.System.TitleId;
 
                     if (state == null)
                     {
@@ -311,7 +311,7 @@ namespace Ryujinx.UI
 
                 try
                 {
-                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleID);
+                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleId);
 
                     if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
                     {
@@ -341,7 +341,7 @@ namespace Ryujinx.UI
                 }
                 catch (ArgumentNullException)
                 {
-                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleId}");
                 }
             }
         }
@@ -364,7 +364,7 @@ namespace Ryujinx.UI
             {
                 try
                 {
-                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleID);
+                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleId);
                     double currentPlayTime = 0;
 
                     using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
@@ -393,7 +393,7 @@ namespace Ryujinx.UI
                 }
                 catch (ArgumentNullException)
                 {
-                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleID}");
+                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleId}");
                 }
             }
 
