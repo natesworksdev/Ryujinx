@@ -15,6 +15,7 @@ using System.Text;
 using Utf8Json;
 using Utf8Json.Resolvers;
 using SystemState = Ryujinx.HLE.HOS.SystemState;
+using ApplicationData = Ryujinx.UI.ApplicationLibrary.ApplicationData;
 
 namespace Ryujinx.UI
 {
@@ -476,8 +477,8 @@ namespace Ryujinx.UI
 
     public class ApplicationAddedEventArgs : EventArgs
     {
-        public ApplicationLibrary.ApplicationData AppData { get; set; }
-        public float NumAppsFound  { get; set; }
-        public float NumAppsLoaded { get; set; }
+        public ApplicationData AppData { get; set; }
+        public float NumAppsFound      { get; set; }
+        public float NumAppsLoaded     { get; set; }
     }
 }
