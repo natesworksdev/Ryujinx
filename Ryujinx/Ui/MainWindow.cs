@@ -360,7 +360,7 @@ namespace Ryujinx.UI
 
         private static void End()
         {
-            if (_gameLoaded)
+            if (false)
             {
                 try
                 {
