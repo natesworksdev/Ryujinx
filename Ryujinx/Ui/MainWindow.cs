@@ -18,7 +18,6 @@ using System.Threading;
 using Utf8Json;
 using Utf8Json.Resolvers;
 using System.Threading.Tasks;
-using System.Collections.Generic;
 
 namespace Ryujinx.UI
 {
@@ -38,7 +37,7 @@ namespace Ryujinx.UI
     
     public class MainWindow : Window
     {
-        internal static HLE.Switch _device;
+        private static HLE.Switch _device;
 
         private static IGalRenderer _renderer;
 
@@ -49,6 +48,8 @@ namespace Ryujinx.UI
         private static Application _gtkApplication;
 
         private static ListStore _tableStore;
+
+        private static Task UpdateGameTableTask;
 
         private static bool _gameLoaded = false;
         private static bool _ending     = false;
@@ -152,6 +153,10 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { _pathToggle.Active       = true; }
 
             _gameTable.Model = _tableStore = new ListStore(typeof(bool), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+            
+            _tableStore.SetSortFunc(5, TimePlayedSort);
+            _tableStore.SetSortFunc(6, LastPlayedSort);
+            _tableStore.SetSortFunc(8, FileSizeSort);
 
             UpdateColumns();
 #pragma warning disable CS4014
@@ -159,12 +164,14 @@ namespace Ryujinx.UI
 #pragma warning restore CS4014
         }
 
-        public static void CreateErrorDialog(string errorMessage)
+        internal static void CreateErrorDialog(string errorMessage)
         {
-            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, errorMessage)
+            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, null)
             {
                 Title          = "Ryujinx - Error",
                 Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png"),
+                Text           = "Ryujinx has encountered an Error",
+                SecondaryText  = errorMessage,
                 WindowPosition = WindowPosition.Center
             };
             errorDialog.SetSizeRequest(100, 20);
@@ -172,7 +179,7 @@ namespace Ryujinx.UI
             errorDialog.Dispose();
         }
 
-        public static void ApplyTheme()
+        internal static void ApplyTheme()
         {
             CssProvider cssProvider = new CssProvider();
 
@@ -236,16 +243,14 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { pathColumn.SortColumnId       = 9; }
         }
 
-        public static async Task UpdateGameTable()
+        internal static async Task UpdateGameTable()
         {
-            _tableStore.Clear();
-            _tableStore.SetSortFunc(5, TimePlayedSort);
-            _tableStore.SetSortFunc(6, LastPlayedSort);
-            _tableStore.SetSortFunc(8, FileSizeSort);
-            ApplicationLibrary.NumApplicationsLoaded = 0;
-            ApplicationLibrary.NumApplicationsFound  = 0;
+            if (UpdateGameTableTask != null && !UpdateGameTableTask.IsCompleted) return;
 
-            await Task.Run(() => { ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage); });
+            _tableStore.Clear();
+
+            UpdateGameTableTask = Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
+            await UpdateGameTableTask;
         }
 
         internal void LoadApplication(string path)
@@ -476,11 +481,11 @@ namespace Ryujinx.UI
         private void Application_Added(object sender, ApplicationAddedEventArgs e)
         {
             _tableStore.AppendValues(e.AppData.Favorite, new Gdk.Pixbuf(e.AppData.Icon, 75, 75), $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}", e.AppData.Developer, e.AppData.Version, e.AppData.TimePlayed, e.AppData.LastPlayed, e.AppData.FileExtension, e.AppData.FileSize, e.AppData.Path);
-            _progressLabel.Text = $"{e.AppsLoaded}/{ApplicationLibrary.NumApplicationsFound} Games Loaded";
-            _progressBar.Value  = e.AppsLoaded / ApplicationLibrary.NumApplicationsFound;
+            _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
+            _progressBar.Value  = e.NumAppsLoaded / e.NumAppsFound;
         }
 
-        private void FavToggle_Toggled(object o, ToggledArgs args)
+        private void FavToggle_Toggled(object sender, ToggledArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
             string titleid      = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
@@ -511,7 +516,7 @@ namespace Ryujinx.UI
             File.WriteAllText(metadataPath, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
         }
 
-        private void Row_Activated(object o, RowActivatedArgs args)
+        private void Row_Activated(object sender, RowActivatedArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path.ToString()));
             string path = (string)_tableStore.GetValue(treeIter, 9);
@@ -519,7 +524,7 @@ namespace Ryujinx.UI
             LoadApplication(path);
         }
 
-        private void Load_Application_File(object o, EventArgs args)
+        private void Load_Application_File(object sender, EventArgs args)
         {
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
@@ -539,7 +544,7 @@ namespace Ryujinx.UI
             fileChooser.Dispose();
         }
 
-        private void Load_Application_Folder(object o, EventArgs args)
+        private void Load_Application_Folder(object sender, EventArgs args)
         {
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
@@ -551,7 +556,7 @@ namespace Ryujinx.UI
             fileChooser.Dispose();
         }
 
-        private void Open_Ryu_Folder(object o, EventArgs args)
+        private void Open_Ryu_Folder(object sender, EventArgs args)
         {
             Process.Start(new ProcessStartInfo()
             {
@@ -561,24 +566,24 @@ namespace Ryujinx.UI
             });
         }
 
-        private void Exit_Pressed(object o, EventArgs args)
+        private void Exit_Pressed(object sender, EventArgs args)
         {
             _screen?.Exit();
             End();
         }
 
-        private void Window_Close(object o, DeleteEventArgs args)
+        private void Window_Close(object sender, DeleteEventArgs args)
         {
             _screen?.Exit();
             End();
         }
 
-        private void StopEmulation_Pressed(object o, EventArgs args)
+        private void StopEmulation_Pressed(object sender, EventArgs args)
         {
             // TODO: Write logic to kill running game
         }
 
-        private void FullScreen_Toggled(object o, EventArgs args)
+        private void FullScreen_Toggled(object sender, EventArgs args)
         {
             if (_fullScreen.Active)
             {
@@ -590,7 +595,7 @@ namespace Ryujinx.UI
             }
         }
 
-        private void Settings_Pressed(object o, EventArgs args)
+        private void Settings_Pressed(object sender, EventArgs args)
         {
             SwitchSettings SettingsWin = new SwitchSettings(_device);
 
@@ -600,7 +605,7 @@ namespace Ryujinx.UI
             SettingsWin.Show();
         }
 
-        private void Update_Pressed(object o, EventArgs args)
+        private void Update_Pressed(object sender, EventArgs args)
         {
             string ryuUpdater = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "RyuUpdater.exe");
 
@@ -614,7 +619,7 @@ namespace Ryujinx.UI
             }
         }
 
-        private void About_Pressed(object o, EventArgs args)
+        private void About_Pressed(object sender, EventArgs args)
         {
             AboutWindow AboutWin = new AboutWindow();
 
@@ -624,7 +629,7 @@ namespace Ryujinx.UI
             AboutWin.Show();
         }
 
-        private void Fav_Toggled(object o, EventArgs args)
+        private void Fav_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.FavColumn  = _favToggle.Active;
@@ -635,7 +640,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void Icon_Toggled(object o, EventArgs args)
+        private void Icon_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.IconColumn = _iconToggle.Active;
@@ -646,7 +651,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void Title_Toggled(object o, EventArgs args)
+        private void Title_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.AppColumn  = _appToggle.Active;
@@ -657,7 +662,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void Developer_Toggled(object o, EventArgs args)
+        private void Developer_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.DevColumn  = _developerToggle.Active;
@@ -668,7 +673,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void Version_Toggled(object o, EventArgs args)
+        private void Version_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns    = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.VersionColumn = _versionToggle.Active;
@@ -679,7 +684,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void TimePlayed_Toggled(object o, EventArgs args)
+        private void TimePlayed_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns       = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.TimePlayedColumn = _timePlayedToggle.Active;
@@ -690,7 +695,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void LastPlayed_Toggled(object o, EventArgs args)
+        private void LastPlayed_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns       = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.LastPlayedColumn = _lastPlayedToggle.Active;
@@ -701,7 +706,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void FileExt_Toggled(object o, EventArgs args)
+        private void FileExt_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns    = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.FileExtColumn = _fileExtToggle.Active;
@@ -712,7 +717,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void FileSize_Toggled(object o, EventArgs args)
+        private void FileSize_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns     = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.FileSizeColumn = _fileSizeToggle.Active;
@@ -723,7 +728,7 @@ namespace Ryujinx.UI
             UpdateColumns();
         }
 
-        private void Path_Toggled(object o, EventArgs args)
+        private void Path_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
             updatedColumns.PathColumn = _pathToggle.Active;
@@ -733,7 +738,14 @@ namespace Ryujinx.UI
 
             UpdateColumns();
         }
-        
+
+        private void RefreshList_Pressed(object sender, ButtonReleaseEventArgs args)
+        {
+#pragma warning disable CS4014
+            UpdateGameTable();
+#pragma warning restore CS4014
+        }
+
         private static int TimePlayedSort(ITreeModel model, TreeIter a, TreeIter b)
         {
             string aValue = model.GetValue(a, 5).ToString();

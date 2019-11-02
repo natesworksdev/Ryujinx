@@ -22,12 +22,6 @@ namespace Ryujinx.UI
     {
         public static event EventHandler<ApplicationAddedEventArgs> ApplicationAdded;
 
-        public static byte[] RyujinxNspIcon { get; private set; }
-        public static byte[] RyujinxXciIcon { get; private set; }
-        public static byte[] RyujinxNcaIcon { get; private set; }
-        public static byte[] RyujinxNroIcon { get; private set; }
-        public static byte[] RyujinxNsoIcon { get; private set; }
-
         public struct ApplicationData
         {
             public bool   Favorite      { get; set; }
@@ -43,8 +37,11 @@ namespace Ryujinx.UI
             public string Path          { get; set; }
         }
 
-        public static float NumApplicationsFound  { get; set; }
-        public static float NumApplicationsLoaded { get; set; }
+        private static byte[] RyujinxNspIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSPIcon.png");
+        private static byte[] RyujinxXciIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxXCIIcon.png");
+        private static byte[] RyujinxNcaIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNCAIcon.png");
+        private static byte[] RyujinxNroIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNROIcon.png");
+        private static byte[] RyujinxNsoIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSOIcon.png");
 
         private static Keyset KeySet;
         private static SystemState.TitleLanguage DesiredTitleLanguage;
@@ -64,15 +61,11 @@ namespace Ryujinx.UI
 
         public static void LoadApplications(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
         {
-            KeySet               = keySet;
-            DesiredTitleLanguage = desiredTitleLanguage;
+            float numApplicationsFound  = 0;
+            float numApplicationsLoaded = 0;
 
-            // Loads the default application Icons
-            RyujinxNspIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSPIcon.png");
-            RyujinxXciIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxXCIIcon.png");
-            RyujinxNcaIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNCAIcon.png");
-            RyujinxNroIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNROIcon.png");
-            RyujinxNsoIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSOIcon.png");
+            KeySet = keySet;
+            DesiredTitleLanguage = desiredTitleLanguage;
 
             // Builds the applications list with paths to found applications
             List<string> applications = new List<string>();
@@ -95,7 +88,7 @@ namespace Ryujinx.UI
                         (Path.GetExtension(app) == ".nso"))
                     {
                         applications.Add(app);
-                        NumApplicationsFound++;
+                        numApplicationsFound++;
                     }
                     else if (Path.GetExtension(app) == ".nca")
                     {
@@ -106,7 +99,7 @@ namespace Ryujinx.UI
                         }
 
                         applications.Add(app);
-                        NumApplicationsFound++;
+                        numApplicationsFound++;
                     }
                 }
             }
@@ -359,12 +352,13 @@ namespace Ryujinx.UI
                     Path          = applicationPath,
                 };
 
-                NumApplicationsLoaded++;
+                numApplicationsLoaded++;
 
                 OnApplicationAdded(new ApplicationAddedEventArgs()
                 { 
-                    AppData    = data,
-                    AppsLoaded = NumApplicationsLoaded
+                    AppData       = data,
+                    NumAppsFound  = numApplicationsFound,
+                    NumAppsLoaded = numApplicationsLoaded
                 });
             }
         }
@@ -483,6 +477,7 @@ namespace Ryujinx.UI
     public class ApplicationAddedEventArgs : EventArgs
     {
         public ApplicationLibrary.ApplicationData AppData { get; set; }
-        public float AppsLoaded { get; set; }
+        public float NumAppsFound  { get; set; }
+        public float NumAppsLoaded { get; set; }
     }
 }

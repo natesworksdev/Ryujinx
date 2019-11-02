@@ -18,7 +18,6 @@
     "enable_multicore_scheduling": true,
     "enable_fs_integrity_checks": true,
     "fs_global_access_log_mode": 0,
-    "enable_legacy_jit": false,
     "ignore_missing_services": false,
     "controller_type": "Handheld",
     "gui_columns": {
@@ -72,7 +71,7 @@
             "toggle_vsync": "Tab"
         }
     },
-        "joystick_controls": {
+    "joystick_controls": {
         "enabled": true,
         "index": 0,
         "deadzone": 0.05,
@@ -90,6 +89,7 @@
         },
         "right_joycon": {
             "stick": "Axis3",
+            "stick_y": "Button0",
             "stick_button": "Button9",
             "button_a": "Button1",
             "button_b": "Button0",

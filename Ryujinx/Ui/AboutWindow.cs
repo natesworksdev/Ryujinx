@@ -10,16 +10,16 @@ using System.IO;
 
 namespace Ryujinx.UI
 {
-    public struct Info
-    {
-        public string InstallVersion;
-        public string InstallCommit;
-        public string InstallBranch;
-    }
-
     public class AboutWindow : Window
     {
-        public static Info Information { get; private set; }
+        private struct Info
+        {
+            public string InstallVersion;
+            public string InstallCommit;
+            public string InstallBranch;
+        }
+
+        private static Info Information { get; set; }
 
 #pragma warning disable CS0649
         [GUI] Window _aboutWin;
@@ -61,7 +61,7 @@ namespace Ryujinx.UI
             }
         }
 
-        public void OpenUrl(string url)
+        private void OpenUrl(string url)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -78,37 +78,37 @@ namespace Ryujinx.UI
         }
 
         //Events
-        private void RyujinxButton_Pressed(object obj, ButtonPressEventArgs args)
+        private void RyujinxButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://ryujinx.org");
         }
 
-        private void PatreonButton_Pressed(object obj, ButtonPressEventArgs args)
+        private void PatreonButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://www.patreon.com/ryujinx");
         }
 
-        private void GitHubButton_Pressed(object obj, ButtonPressEventArgs args)
+        private void GitHubButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://github.com/Ryujinx/Ryujinx");
         }
 
-        private void DiscordButton_Pressed(object obj, ButtonPressEventArgs args)
+        private void DiscordButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://discordapp.com/invite/N2FmfVc");
         }
 
-        private void TwitterButton_Pressed(object obj, ButtonPressEventArgs args)
+        private void TwitterButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://twitter.com/RyujinxEmu");
         }
 
-        private void ContributersButton_Pressed(object obj, ButtonPressEventArgs args)
+        private void ContributersButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://github.com/Ryujinx/Ryujinx/graphs/contributors?type=a");
         }
 
-        private void CloseToggle_Activated(object obj, EventArgs args)
+        private void CloseToggle_Activated(object sender, EventArgs args)
         {
             Dispose();
         }
