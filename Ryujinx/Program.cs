@@ -23,18 +23,19 @@ namespace Ryujinx
 
             Application.Init();
 
+            string appDataPath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "system", "prod.keys");
+            string userProfilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
+            if (!File.Exists(appDataPath) && !File.Exists(userProfilePath))
+            {
+                MainWindow.CreateErrorDialog($"Key file was not found. Please refer to `KEYS.md` for more info");
+            }
+
             Application gtkApplication = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-            MainWindow  mainWindow     = new MainWindow(args, gtkApplication);
+            MainWindow  mainWindow     = new MainWindow(gtkApplication);
 
             gtkApplication.Register(GLib.Cancellable.Current);
             gtkApplication.AddWindow(mainWindow);
             mainWindow.Show();
-
-            if (!File.Exists(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "system", "prod.keys")))
-            {
-                Logger.PrintWarning(LogClass.Application, "Key file was not found");
-                MainWindow.CreateErrorDialog($"Key file was not found. Please refer to `KEYS.md` for more info");
-            }
 
             if (args.Length == 1)
             {
@@ -51,7 +52,7 @@ namespace Ryujinx
 
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            var exception = e.ExceptionObject as Exception;
+            Exception exception = e.ExceptionObject as Exception;
 
             Logger.PrintError(LogClass.Emulation, $"Unhandled exception caught: {exception}");
 

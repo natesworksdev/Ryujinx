@@ -14,8 +14,8 @@ using System.Reflection;
 using System.Text;
 using Utf8Json;
 using Utf8Json.Resolvers;
-using SystemState = Ryujinx.HLE.HOS.SystemState;
 using ApplicationData = Ryujinx.UI.ApplicationLibrary.ApplicationData;
+using SystemState = Ryujinx.HLE.HOS.SystemState;
 
 namespace Ryujinx.UI
 {
@@ -38,18 +38,14 @@ namespace Ryujinx.UI
             public string Path          { get; set; }
         }
 
-        private static byte[] RyujinxNspIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSPIcon.png");
-        private static byte[] RyujinxXciIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxXCIIcon.png");
-        private static byte[] RyujinxNcaIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNCAIcon.png");
-        private static byte[] RyujinxNroIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNROIcon.png");
-        private static byte[] RyujinxNsoIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSOIcon.png");
+        private static readonly byte[] _ryujinxNspIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSPIcon.png");
+        private static readonly byte[] _ryujinxXciIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxXCIIcon.png");
+        private static readonly byte[] _ryujinxNcaIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNCAIcon.png");
+        private static readonly byte[] _ryujinxNroIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNROIcon.png");
+        private static readonly byte[] _ryujinxNsoIcon = GetResourceBytes("Ryujinx.Ui.assets.ryujinxNSOIcon.png");
 
-        private static Keyset KeySet;
-        private static SystemState.TitleLanguage DesiredTitleLanguage;
-
-        private const double SecondsPerMinute = 60.0;
-        private const double SecondsPerHour   = SecondsPerMinute * 60;
-        private const double SecondsPerDay    = SecondsPerHour * 24;
+        private static Keyset _keySet;
+        private static SystemState.TitleLanguage _desiredTitleLanguage;
 
         private struct ApplicationMetadata
         {
@@ -58,19 +54,19 @@ namespace Ryujinx.UI
             public string LastPlayed { get; set; }
         }
 
-        private static ApplicationMetadata AppMetadata;
+        private static ApplicationMetadata _appMetadata;
 
-        public static void LoadApplications(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
+        public static void LoadApplications(List<string> appDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
         {
-            float numApplicationsFound  = 0;
-            float numApplicationsLoaded = 0;
+            int numApplicationsFound  = 0;
+            int numApplicationsLoaded = 0;
 
-            KeySet = keySet;
-            DesiredTitleLanguage = desiredTitleLanguage;
+            _keySet = keySet;
+            _desiredTitleLanguage = desiredTitleLanguage;
 
             // Builds the applications list with paths to found applications
             List<string> applications = new List<string>();
-            foreach (string appDir in AppDirs)
+            foreach (string appDir in appDirs)
             {
                 if (Directory.Exists(appDir) == false)
                 {
@@ -83,20 +79,56 @@ namespace Ryujinx.UI
                 foreach (string app in apps)
                 {
                     if ((Path.GetExtension(app) == ".xci") ||
-                        (Path.GetExtension(app) == ".nsp") ||
-                        (Path.GetExtension(app) == ".pfs0")||
                         (Path.GetExtension(app) == ".nro") ||
                         (Path.GetExtension(app) == ".nso"))
                     {
                         applications.Add(app);
                         numApplicationsFound++;
                     }
+                    else if ((Path.GetExtension(app) == ".nsp") || (Path.GetExtension(app) == ".pfs0"))
+                    {
+                        try
+                        {
+                            bool hasMainNca = false;
+
+                            PartitionFileSystem nsp = new PartitionFileSystem(new FileStream(app, FileMode.Open, FileAccess.Read).AsStorage());
+                            foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                            {
+                                nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
+                                Nca nca = new Nca(_keySet, ncaFile.AsStorage());
+                                int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+
+                                if (nca.Header.ContentType == NcaContentType.Program && !nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                                {
+                                    hasMainNca = true;
+                                }
+                            }
+
+                            if (!hasMainNca) continue;
+                        }
+                        catch (InvalidDataException)
+                        {
+                            Logger.PrintWarning(LogClass.Application, "The header key is incorrect or missing and therefore the NCA header content type check has failed.");
+                        }
+
+                        applications.Add(app);
+                        numApplicationsFound++;
+                    }
                     else if (Path.GetExtension(app) == ".nca")
                     {
-                        Nca nca = new Nca(KeySet, new FileStream(app, FileMode.Open, FileAccess.Read).AsStorage());
-                        if (nca.Header.ContentType != NcaContentType.Program)
+                        try
                         {
-                            continue;
+                            Nca nca = new Nca(_keySet, new FileStream(app, FileMode.Open, FileAccess.Read).AsStorage());
+                            int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+
+                            if (nca.Header.ContentType != NcaContentType.Program || nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                            {
+                                continue;
+                            }
+                        }
+                        catch (InvalidDataException)
+                        {
+                            Logger.PrintWarning(LogClass.Application, "The header key is incorrect or missing and therefore the NCA header content type check has failed.");
                         }
 
                         applications.Add(app);
@@ -108,7 +140,7 @@ namespace Ryujinx.UI
             // Loops through applications list, creating a struct and then firing an event containing the struct for each application
             foreach (string applicationPath in applications)
             {
-                double filesize        = new FileInfo(applicationPath).Length * 0.000000000931;
+                double fileSize        = new FileInfo(applicationPath).Length * 0.000000000931;
                 string titleName       = null;
                 string titleId         = null;
                 string developer       = null;
@@ -123,12 +155,12 @@ namespace Ryujinx.UI
                     {
                         try
                         {
-                            IFileSystem controlFs = null;
+                            IFileSystem controlFs;
 
                             // Store the ControlFS in variable called controlFs
                             if (Path.GetExtension(applicationPath) == ".xci")
                             {
-                                Xci xci = new Xci(KeySet, file.AsStorage());
+                                Xci xci = new Xci(_keySet, file.AsStorage());
 
                                 controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
                             }
@@ -145,7 +177,7 @@ namespace Ryujinx.UI
                             // Get the title name, title ID, developer name and version number from the NACP
                             version = controlData.DisplayVersion;
 
-                            titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
+                            titleName = controlData.Descriptions[(int)_desiredTitleLanguage].Title;
 
                             if (string.IsNullOrWhiteSpace(titleName))
                             {
@@ -164,7 +196,7 @@ namespace Ryujinx.UI
                                 titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
                             }
 
-                            developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
+                            developer = controlData.Descriptions[(int)_desiredTitleLanguage].Developer;
 
                             if (string.IsNullOrWhiteSpace(developer))
                             {
@@ -174,13 +206,11 @@ namespace Ryujinx.UI
                             // Read the icon from the ControlFS and store it as a byte array
                             try
                             {
-                                controlFs.OpenFile(out IFile icon, $"/icon_{DesiredTitleLanguage}.dat", OpenMode.Read).ThrowIfFailure();
+                                controlFs.OpenFile(out IFile icon, $"/icon_{_desiredTitleLanguage}.dat", OpenMode.Read).ThrowIfFailure();
 
-                                using (MemoryStream stream = new MemoryStream())
-                                {
-                                    icon.AsStream().CopyTo(stream);
-                                    applicationIcon = stream.ToArray();
-                                }
+                                using MemoryStream stream = new MemoryStream();
+                                icon.AsStream().CopyTo(stream);
+                                applicationIcon = stream.ToArray();
                             }
                             catch (HorizonResultException)
                             {
@@ -229,81 +259,73 @@ namespace Ryujinx.UI
                             version         = "?";
                             applicationIcon = NspOrXciIcon(applicationPath);
 
-                            Logger.PrintWarning(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
-                        }
-                        catch (Exception exception)
-                        {
-                            Logger.PrintWarning(LogClass.Application, $"This warning usualy means that you have a DLC in one of you game directories\n{exception}");
-
-                            continue;
+                            Logger.PrintWarning(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {applicationPath}");
                         }
                     }
                     else if (Path.GetExtension(applicationPath) == ".nro")
                     {
                         BinaryReader reader = new BinaryReader(file);
 
-                        byte[] Read(long Position, int Size)
+                        byte[] Read(long position, int size)
                         {
-                            file.Seek(Position, SeekOrigin.Begin);
+                            file.Seek(position, SeekOrigin.Begin);
 
-                            return reader.ReadBytes(Size);
+                            return reader.ReadBytes(size);
                         }
 
                         file.Seek(24, SeekOrigin.Begin);
-                        int AssetOffset = reader.ReadInt32();
+                        int assetOffset = reader.ReadInt32();
 
-                        if (Encoding.ASCII.GetString(Read(AssetOffset, 4)) == "ASET")
+                        if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
                         {
-                            byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
+                            byte[] iconSectionInfo = Read(assetOffset + 8, 0x10);
 
-                            long iconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
-                            long iconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
+                            long iconOffset = BitConverter.ToInt64(iconSectionInfo, 0);
+                            long iconSize   = BitConverter.ToInt64(iconSectionInfo, 8);
 
                             ulong nacpOffset = reader.ReadUInt64();
                             ulong nacpSize   = reader.ReadUInt64();
 
                             // Reads and stores game icon as byte array
-                            applicationIcon = Read(AssetOffset + iconOffset, (int)iconSize);
+                            applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
 
                             // Creates memory stream out of byte array which is the NACP
-                            using (MemoryStream stream = new MemoryStream(Read(AssetOffset + (int)nacpOffset, (int)nacpSize)))
+                            using MemoryStream stream = new MemoryStream(Read(assetOffset + (int)nacpOffset, (int)nacpSize));
+                            // Creates NACP class from the memory stream
+                            Nacp controlData = new Nacp(stream);
+
+                            // Get the title name, title ID, developer name and version number from the NACP
+                            version = controlData.DisplayVersion;
+
+                            titleName = controlData.Descriptions[(int)_desiredTitleLanguage].Title;
+
+                            if (string.IsNullOrWhiteSpace(titleName))
                             {
-                                // Creates NACP class from the memory stream
-                                Nacp controlData = new Nacp(stream);
+                                titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                            }
 
-                                // Get the title name, title ID, developer name and version number from the NACP
-                                version = controlData.DisplayVersion;
+                            titleId = controlData.PresenceGroupId.ToString("x16");
 
-                                titleName = controlData.Descriptions[(int)DesiredTitleLanguage].Title;
+                            if (string.IsNullOrWhiteSpace(titleId))
+                            {
+                                titleId = controlData.SaveDataOwnerId.ToString("x16");
+                            }
 
-                                if (string.IsNullOrWhiteSpace(titleName))
-                                {
-                                    titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                                }
+                            if (string.IsNullOrWhiteSpace(titleId))
+                            {
+                                titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
+                            }
 
-                                titleId = controlData.PresenceGroupId.ToString("x16");
+                            developer = controlData.Descriptions[(int)_desiredTitleLanguage].Developer;
 
-                                if (string.IsNullOrWhiteSpace(titleId))
-                                {
-                                    titleId = controlData.SaveDataOwnerId.ToString("x16");
-                                }
-
-                                if (string.IsNullOrWhiteSpace(titleId))
-                                {
-                                    titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
-                                }
-
-                                developer = controlData.Descriptions[(int)DesiredTitleLanguage].Developer;
-
-                                if (string.IsNullOrWhiteSpace(developer))
-                                {
-                                    developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
-                                }
+                            if (string.IsNullOrWhiteSpace(developer))
+                            {
+                                developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
                             }
                         }
                         else
                         {
-                            applicationIcon = RyujinxNroIcon;
+                            applicationIcon = _ryujinxNroIcon;
                             titleName       = "Application";
                             titleId         = "0000000000000000";
                             developer       = "Unknown";
@@ -315,11 +337,11 @@ namespace Ryujinx.UI
                     {
                         if (Path.GetExtension(applicationPath) == ".nca")
                         {
-                            applicationIcon = RyujinxNcaIcon;
+                            applicationIcon = _ryujinxNcaIcon;
                         }
                         else if (Path.GetExtension(applicationPath) == ".nso")
                         {
-                            applicationIcon = RyujinxNsoIcon;
+                            applicationIcon = _ryujinxNsoIcon;
                         }
 
                         string fileName = Path.GetFileName(applicationPath);
@@ -336,20 +358,20 @@ namespace Ryujinx.UI
                     }
                 }
 
-                (bool, string, string) metaData = GetMetadata(titleId);
+                (bool fav, string timePlayed, string lastPlayed) metaData = GetMetadata(titleId);
 
                 ApplicationData data = new ApplicationData()
                 {
-                    Favorite      = metaData.Item1,
+                    Favorite      = metaData.fav,
                     Icon          = applicationIcon,
                     TitleName     = titleName,
                     TitleId       = titleId,
                     Developer     = developer,
                     Version       = version,
-                    TimePlayed    = metaData.Item2,
-                    LastPlayed    = metaData.Item3,
+                    TimePlayed    = metaData.timePlayed,
+                    LastPlayed    = metaData.lastPlayed,
                     FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
-                    FileSize      = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
+                    FileSize      = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + "MB" : fileSize.ToString("0.##") + "GB",
                     Path          = applicationPath,
                 };
 
@@ -379,29 +401,29 @@ namespace Ryujinx.UI
             return resourceByteArray;
         }
 
-        private static IFileSystem GetControlFs(PartitionFileSystem Pfs)
+        private static IFileSystem GetControlFs(PartitionFileSystem pfs)
         {
             Nca controlNca = null;
 
-            // Add keys to keyset if needed
-            foreach (DirectoryEntryEx ticketEntry in Pfs.EnumerateEntries("/", "*.tik"))
+            // Add keys to key set if needed
+            foreach (DirectoryEntryEx ticketEntry in pfs.EnumerateEntries("/", "*.tik"))
             {
-                Result result = Pfs.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                Result result = pfs.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
 
                 if (result.IsSuccess())
                 {
                     Ticket ticket = new Ticket(ticketFile.AsStream());
 
-                    KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                    _keySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(_keySet)));
                 }
             }
 
             // Find the Control NCA and store it in variable called controlNca
-            foreach (DirectoryEntryEx fileEntry in Pfs.EnumerateEntries("/", "*.nca"))
+            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
             {
-                Pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
+                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(KeySet, ncaFile.AsStorage());
+                Nca nca = new Nca(_keySet, ncaFile.AsStorage());
 
                 if (nca.Header.ContentType == NcaContentType.Control)
                 {
@@ -413,72 +435,80 @@ namespace Ryujinx.UI
             return controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
         }
 
-        private static (bool, string, string) GetMetadata(string TitleId)
+        private static (bool fav, string timePlayed, string lastPlayed) GetMetadata(string titleId)
         {
-            string metadataFolder = Path.Combine(new VirtualFileSystem().GetBasePath(), "games", TitleId, "gui");
+            string metadataFolder = Path.Combine(new VirtualFileSystem().GetBasePath(), "games", titleId, "gui");
             string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
 
-            IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+            IJsonFormatterResolver resolver = CompositeResolver.Create(StandardResolver.AllowPrivateSnakeCase);
 
             if (!File.Exists(metadataFile))
             {
                 Directory.CreateDirectory(metadataFolder);
 
-                AppMetadata = new ApplicationMetadata
+                _appMetadata = new ApplicationMetadata
                 {
                     Favorite   = false,
                     TimePlayed = 0,
                     LastPlayed = "Never"
                 };
 
-                byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+                byte[] saveData = JsonSerializer.Serialize(_appMetadata, resolver);
                 File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
             }
 
             using (Stream stream = File.OpenRead(metadataFile))
             {
-                AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                _appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
             }
 
-            string timePlayed;
-
-            if (AppMetadata.TimePlayed < SecondsPerMinute)
-            {
-                timePlayed = $"{AppMetadata.TimePlayed}s";
-            }
-            else if (AppMetadata.TimePlayed < SecondsPerHour)
-            {
-                timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
-            }
-            else if (AppMetadata.TimePlayed < SecondsPerDay)
-            {
-                timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerHour, 2, MidpointRounding.AwayFromZero)} hrs";
-            }
-            else
-            {
-                timePlayed = $"{Math.Round(AppMetadata.TimePlayed / SecondsPerDay, 2, MidpointRounding.AwayFromZero)} days";
-            }
-
-            return (AppMetadata.Favorite, timePlayed, AppMetadata.LastPlayed);
+            return (_appMetadata.Favorite, ConvertSecondsToReadableString(_appMetadata.TimePlayed), _appMetadata.LastPlayed);
         }
 
         private static byte[] NspOrXciIcon(string applicationPath)
         {
             if (Path.GetExtension(applicationPath) == ".xci")
             {
-                return RyujinxXciIcon;
+                return _ryujinxXciIcon;
             }
             else
             {
-                return RyujinxNspIcon;
+                return _ryujinxNspIcon;
             }
+        }
+
+        private static string ConvertSecondsToReadableString(double seconds)
+        {
+            const int secondsPerMinute = 60;
+            const int secondsPerHour   = secondsPerMinute * 60;
+            const int secondsPerDay    = secondsPerHour * 24;
+            string readableString;
+
+            if (seconds < secondsPerMinute)
+            {
+                readableString = $"{seconds}s";
+            }
+            else if (seconds < secondsPerHour)
+            {
+                readableString = $"{Math.Round(seconds / secondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
+            }
+            else if (seconds < secondsPerDay)
+            {
+                readableString = $"{Math.Round(seconds / secondsPerHour, 2, MidpointRounding.AwayFromZero)} hrs";
+            }
+            else
+            {
+                readableString = $"{Math.Round(seconds / secondsPerDay, 2, MidpointRounding.AwayFromZero)} days";
+            }
+
+            return readableString;
         }
     }
 
     public class ApplicationAddedEventArgs : EventArgs
     {
         public ApplicationData AppData { get; set; }
-        public float NumAppsFound      { get; set; }
-        public float NumAppsLoaded     { get; set; }
+        public int NumAppsFound        { get; set; }
+        public int NumAppsLoaded       { get; set; }
     }
 }

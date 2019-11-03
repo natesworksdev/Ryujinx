@@ -15,13 +15,14 @@ namespace Ryujinx.UI
     {
         internal static Configuration SwitchConfig { get; set; }
 
-        private HLE.Switch _device;
+        private readonly HLE.Switch _device;
 
         private static ListStore _gameDirsBoxStore;
 
         private static bool _listeningForKeypress;
 
 #pragma warning disable CS0649
+#pragma warning disable IDE0044
         [GUI] Window       _settingsWin;
         [GUI] CheckButton  _errorLogToggle;
         [GUI] CheckButton  _warningLogToggle;
@@ -79,8 +80,9 @@ namespace Ryujinx.UI
         [GUI] ToggleButton _r1;
         [GUI] ToggleButton _zR1;
 #pragma warning restore CS0649
+#pragma warning restore IDE0044
 
-        public static void ConfigureSettings(Configuration Instance) { SwitchConfig = Instance; }
+        public static void ConfigureSettings(Configuration instance) { SwitchConfig = instance; }
 
         public SwitchSettings(HLE.Switch device) : this(new Builder("Ryujinx.Ui.SwitchSettings.glade"), device) { }
 
@@ -200,18 +202,18 @@ namespace Ryujinx.UI
 
                 _listeningForKeypress = true;
 
-                void On_KeyPress(object Sender, KeyPressEventArgs KeyPressed)
+                void On_KeyPress(object o, KeyPressEventArgs keyPressed)
                 {
-                    string key    = KeyPressed.Event.Key.ToString();
+                    string key    = keyPressed.Event.Key.ToString();
                     string capKey = key.First().ToString().ToUpper() + key.Substring(1);
 
                     if (Enum.IsDefined(typeof(OpenTK.Input.Key), capKey))
                     {
                         button.Label = capKey;
                     }
-                    else if (GdkToOpenTKInput.ContainsKey(key))
+                    else if (GdkToOpenTkInput.ContainsKey(key))
                     {
-                        button.Label = GdkToOpenTKInput[key];
+                        button.Label = GdkToOpenTkInput[key];
                     }
                     else
                     {
@@ -233,21 +235,20 @@ namespace Ryujinx.UI
 
         private void Controller_Changed(object sender, EventArgs args, string controllerType, Image controllerImage)
         {
-            if (controllerType == "ProController")
+            switch (controllerType)
             {
-                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ProCon.png", 500, 500);
-            }
-            else if (controllerType == "NpadLeft")
-            {
-                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.BlueCon.png", 500, 500);
-            }
-            else if (controllerType == "NpadRight")
-            {
-                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RedCon.png", 500, 500);
-            }
-            else
-            {
-                controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
+                case "ProController":
+                    controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ProCon.png", 500, 500);
+                    break;
+                case "NpadLeft":
+                    controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.BlueCon.png", 500, 500);
+                    break;
+                case "NpadRight":
+                    controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.RedCon.png", 500, 500);
+                    break;
+                default:
+                    controllerImage.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.JoyCon.png", 500, 500);
+                    break;
             }
         }
 
@@ -383,7 +384,9 @@ namespace Ryujinx.UI
             Configuration.Configure(_device, SwitchConfig);
 
             MainWindow.ApplyTheme();
+#pragma warning disable CS4014
             MainWindow.UpdateGameTable();
+#pragma warning restore CS4014
             Dispose();
         }
 
@@ -392,7 +395,7 @@ namespace Ryujinx.UI
             Dispose();
         }
 
-        public readonly Dictionary<string, string> GdkToOpenTKInput = new Dictionary<string, string>()
+        public readonly Dictionary<string, string> GdkToOpenTkInput = new Dictionary<string, string>()
         {
             { "Key_0",       "Number0"        },
             { "Key_1",       "Number1"        },

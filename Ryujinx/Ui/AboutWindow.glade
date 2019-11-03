@@ -523,11 +523,11 @@ Andy A (BaronKiko)</property>
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkEventBox" id="ContributersButton">
+                      <object class="GtkEventBox" id="ContributorsButton">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="valign">start</property>
-                        <signal name="button-press-event" handler="ContributersButton_Pressed" swapped="no"/>
+                        <signal name="button-press-event" handler="ContributorsButton_Pressed" swapped="no"/>
                         <child>
                           <object class="GtkLabel">
                             <property name="visible">True</property>

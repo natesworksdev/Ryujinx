@@ -22,6 +22,7 @@ namespace Ryujinx.UI
         private static Info Information { get; set; }
 
 #pragma warning disable CS0649
+#pragma warning disable IDE0044
         [GUI] Window _aboutWin;
         [GUI] Label  _versionText;
         [GUI] Image  _ryujinxLogo;
@@ -30,6 +31,7 @@ namespace Ryujinx.UI
         [GUI] Image  _discordLogo;
         [GUI] Image  _twitterLogo;
 #pragma warning restore CS0649
+#pragma warning restore IDE0044
 
         public AboutWindow() : this(new Builder("Ryujinx.Ui.AboutWindow.glade")) { }
 
@@ -103,7 +105,7 @@ namespace Ryujinx.UI
             OpenUrl("https://twitter.com/RyujinxEmu");
         }
 
-        private void ContributersButton_Pressed(object sender, ButtonPressEventArgs args)
+        private void ContributorsButton_Pressed(object sender, ButtonPressEventArgs args)
         {
             OpenUrl("https://github.com/Ryujinx/Ryujinx/graphs/contributors?type=a");
         }

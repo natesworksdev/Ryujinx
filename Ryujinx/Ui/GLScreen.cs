@@ -300,8 +300,8 @@ namespace Ryujinx.UI
             string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
                 : " | " + _device.System.TitleName;
 
-            string titleIDSection = string.IsNullOrWhiteSpace(_device.System.TitleID) ? string.Empty
-                : " | " + _device.System.TitleID.ToUpper();
+            string titleIDSection = string.IsNullOrWhiteSpace(_device.System.TitleId) ? string.Empty
+                : " | " + _device.System.TitleId.ToUpper();
 
             _newTitle = $"Ryujinx{titleNameSection}{titleIDSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
                 $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";

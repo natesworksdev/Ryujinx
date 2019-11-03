@@ -49,20 +49,22 @@ namespace Ryujinx.UI
 
         private static ListStore _tableStore;
 
-        private static Task UpdateGameTableTask;
+        private static Task _updateGameTableTask;
 
-        private static bool _gameLoaded = false;
-        private static bool _ending     = false;
+        private static bool _gameLoaded;
+        private static bool _ending;
 
-        private static TreeViewColumn favColumn;
-        private static TreeViewColumn appColumn;
-        private static TreeViewColumn devColumn;
-        private static TreeViewColumn versionColumn;
-        private static TreeViewColumn timePlayedColumn;
-        private static TreeViewColumn lastPlayedColumn;
-        private static TreeViewColumn fileExtColumn;
-        private static TreeViewColumn fileSizeColumn;
-        private static TreeViewColumn pathColumn;
+        private static TreeViewColumn _favColumn;
+        private static TreeViewColumn _appColumn;
+        private static TreeViewColumn _devColumn;
+        private static TreeViewColumn _versionColumn;
+        private static TreeViewColumn _timePlayedColumn;
+        private static TreeViewColumn _lastPlayedColumn;
+        private static TreeViewColumn _fileExtColumn;
+        private static TreeViewColumn _fileSizeColumn;
+        private static TreeViewColumn _pathColumn;
+
+        private static TreeView _treeView;
 
         private struct ApplicationMetadata
         {
@@ -78,6 +80,7 @@ namespace Ryujinx.UI
         public static RichPresence DiscordPresence;
 
 #pragma warning disable CS0649
+#pragma warning disable IDE0044
         [GUI] Window        _mainWin;
         [GUI] CheckMenuItem _fullScreen;
         [GUI] MenuItem      _stopEmulation;
@@ -95,10 +98,11 @@ namespace Ryujinx.UI
         [GUI] Label         _progressLabel;
         [GUI] LevelBar      _progressBar;
 #pragma warning restore CS0649
+#pragma warning restore IDE0044
 
-        public MainWindow(string[] args, Application gtkApplication) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), args, gtkApplication) { }
+        public MainWindow(Application gtkApplication) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), gtkApplication) { }
 
-        private MainWindow(Builder builder, string[] args, Application gtkApplication) : base(builder.GetObject("_mainWin").Handle)
+        private MainWindow(Builder builder, Application gtkApplication) : base(builder.GetObject("_mainWin").Handle)
         {
             builder.Autoconnect(this);
 
@@ -113,6 +117,8 @@ namespace Ryujinx.UI
             _device = new HLE.Switch(_renderer, _audioOut);
 
             _gtkApplication = gtkApplication;
+
+            _treeView = _gameTable;
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
             Configuration.InitialConfigure(_device);
@@ -181,10 +187,10 @@ namespace Ryujinx.UI
 
         internal static void ApplyTheme()
         {
-            CssProvider cssProvider = new CssProvider();
-
             if (SwitchSettings.SwitchConfig.EnableCustomTheme)
             {
+                CssProvider cssProvider = new CssProvider();
+
                 if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
                 {
                     cssProvider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
@@ -193,9 +199,9 @@ namespace Ryujinx.UI
                 {
                     Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
                 }
-            }
 
-            StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
+                StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
+            }
         }
 
         private void UpdateColumns()
@@ -221,36 +227,39 @@ namespace Ryujinx.UI
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
-                     if (column.Title == "Fav")         { favColumn        = column; }
-                else if (column.Title == "Application") { appColumn        = column; }
-                else if (column.Title == "Developer")   { devColumn        = column; }
-                else if (column.Title == "Version")     { versionColumn    = column; }
-                else if (column.Title == "Time Played") { timePlayedColumn = column; }
-                else if (column.Title == "Last Played") { lastPlayedColumn = column; }
-                else if (column.Title == "File Ext")    { fileExtColumn    = column; }
-                else if (column.Title == "File Size")   { fileSizeColumn   = column; }
-                else if (column.Title == "Path")        { pathColumn       = column; }
+                     if (column.Title == "Fav")         { _favColumn        = column; }
+                else if (column.Title == "Application") { _appColumn        = column; }
+                else if (column.Title == "Developer")   { _devColumn        = column; }
+                else if (column.Title == "Version")     { _versionColumn    = column; }
+                else if (column.Title == "Time Played") { _timePlayedColumn = column; }
+                else if (column.Title == "Last Played") { _lastPlayedColumn = column; }
+                else if (column.Title == "File Ext")    { _fileExtColumn    = column; }
+                else if (column.Title == "File Size")   { _fileSizeColumn   = column; }
+                else if (column.Title == "Path")        { _pathColumn       = column; }
             }
 
-            if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { favColumn.SortColumnId        = 0; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.IconColumn)       { appColumn.SortColumnId        = 2; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)        { devColumn.SortColumnId        = 3; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.DevColumn)        { versionColumn.SortColumnId    = 4; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.TimePlayedColumn) { timePlayedColumn.SortColumnId = 5; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.LastPlayedColumn) { lastPlayedColumn.SortColumnId = 6; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileExtColumn)    { fileExtColumn.SortColumnId    = 7; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileSizeColumn)   { fileSizeColumn.SortColumnId   = 8; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { pathColumn.SortColumnId       = 9; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { _favColumn.SortColumnId        = 0; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.IconColumn)       { _appColumn.SortColumnId        = 2; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)        { _devColumn.SortColumnId        = 3; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.DevColumn)        { _versionColumn.SortColumnId    = 4; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.TimePlayedColumn) { _timePlayedColumn.SortColumnId = 5; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.LastPlayedColumn) { _lastPlayedColumn.SortColumnId = 6; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.FileExtColumn)    { _fileExtColumn.SortColumnId    = 7; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.FileSizeColumn)   { _fileSizeColumn.SortColumnId   = 8; }
+            if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { _pathColumn.SortColumnId       = 9; }
         }
 
         internal static async Task UpdateGameTable()
         {
-            if (UpdateGameTableTask != null && !UpdateGameTableTask.IsCompleted) return;
+            if (_updateGameTableTask != null && !_updateGameTableTask.IsCompleted) return;
 
             _tableStore.Clear();
+            _treeView.HeadersClickable = false;
 
-            UpdateGameTableTask = Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
-            await UpdateGameTableTask;
+            _updateGameTableTask = Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
+            await _updateGameTableTask;
+
+            _treeView.HeadersClickable = true;
         }
 
         internal void LoadApplication(string path)
@@ -322,7 +331,7 @@ namespace Ryujinx.UI
 #if MACOS_BUILD
                 CreateGameWindow();
 #else
-                new Thread(new ThreadStart(CreateGameWindow)).Start();
+                new Thread(CreateGameWindow).Start();
 #endif
 
                 _gameLoaded              = true;
@@ -330,12 +339,12 @@ namespace Ryujinx.UI
 
                 if (DiscordIntegrationEnabled)
                 {
-                    if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleID))
+                    if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleId))
                     {
-                        DiscordPresence.Assets.LargeImageKey = _device.System.TitleID;
+                        DiscordPresence.Assets.LargeImageKey = _device.System.TitleId;
                     }
 
-                    string state = _device.System.TitleID;
+                    string state = _device.System.TitleId;
 
                     if (state == null)
                     {
@@ -363,35 +372,35 @@ namespace Ryujinx.UI
                     DiscordClient.SetPresence(DiscordPresence);
                 }
 
-                string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleID, "gui");
+                string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
                 string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
                 IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-                ApplicationMetadata AppMetadata = new ApplicationMetadata();
+                ApplicationMetadata appMetadata;
 
                 if (!File.Exists(metadataFile))
                 {
                     Directory.CreateDirectory(metadataFolder);
 
-                    AppMetadata = new ApplicationMetadata
+                    appMetadata = new ApplicationMetadata
                     {
                         Favorite   = false,
                         TimePlayed = 0,
                         LastPlayed = "Never"
                     };
 
-                    byte[] data = JsonSerializer.Serialize(AppMetadata, resolver);
+                    byte[] data = JsonSerializer.Serialize(appMetadata, resolver);
                     File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
                 }
 
                 using (Stream stream = File.OpenRead(metadataFile))
                 {
-                    AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                    appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
                 }
 
-                AppMetadata.LastPlayed = DateTime.UtcNow.ToString();
+                appMetadata.LastPlayed = DateTime.UtcNow.ToString();
 
-                byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+                byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
                 File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
             }
         }
@@ -416,35 +425,35 @@ namespace Ryujinx.UI
 
                 if (_gameLoaded)
                 {
-                    string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleID, "gui");
+                    string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
                     string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
                     IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-                    ApplicationMetadata AppMetadata = new ApplicationMetadata();
+                    ApplicationMetadata appMetadata;
 
                     if (!File.Exists(metadataFile))
                     {
                         Directory.CreateDirectory(metadataFolder);
 
-                        AppMetadata = new ApplicationMetadata
+                        appMetadata = new ApplicationMetadata
                         {
                             Favorite   = false,
                             TimePlayed = 0,
                             LastPlayed = "Never"
                         };
 
-                        byte[] data = JsonSerializer.Serialize(AppMetadata, resolver);
+                        byte[] data = JsonSerializer.Serialize(appMetadata, resolver);
                         File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
                     }
 
                     using (Stream stream = File.OpenRead(metadataFile))
                     {
-                        AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                        appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
                     }
 
-                    AppMetadata.TimePlayed += Math.Round(DateTime.UtcNow.Subtract(DateTime.Parse(AppMetadata.LastPlayed)).TotalSeconds, MidpointRounding.AwayFromZero);
+                    appMetadata.TimePlayed += Math.Round(DateTime.UtcNow.Subtract(DateTime.Parse(appMetadata.LastPlayed)).TotalSeconds, MidpointRounding.AwayFromZero);
 
-                    byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+                    byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
                     File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
                 }
 
@@ -482,7 +491,7 @@ namespace Ryujinx.UI
         {
             _tableStore.AppendValues(e.AppData.Favorite, new Gdk.Pixbuf(e.AppData.Icon, 75, 75), $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}", e.AppData.Developer, e.AppData.Version, e.AppData.TimePlayed, e.AppData.LastPlayed, e.AppData.FileExtension, e.AppData.FileSize, e.AppData.Path);
             _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
-            _progressBar.Value  = e.NumAppsLoaded / e.NumAppsFound;
+            _progressBar.Value  = (float)e.NumAppsLoaded / e.NumAppsFound;
         }
 
         private void FavToggle_Toggled(object sender, ToggledArgs args)
@@ -492,27 +501,27 @@ namespace Ryujinx.UI
             string metadataPath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", titleid, "gui", "metadata.json");
 
             IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-            ApplicationMetadata AppMetadata = new ApplicationMetadata();
+            ApplicationMetadata appMetadata;
             
             using (Stream stream = File.OpenRead(metadataPath))
             {
-                AppMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
             }
 
             if ((bool)_tableStore.GetValue(treeIter, 0))
             {
                 _tableStore.SetValue(treeIter, 0, false);
 
-                AppMetadata.Favorite = false;
+                appMetadata.Favorite = false;
             }
             else
             {
                 _tableStore.SetValue(treeIter, 0, true);
 
-                AppMetadata.Favorite = true;
+                appMetadata.Favorite = true;
             }
 
-            byte[] saveData = JsonSerializer.Serialize(AppMetadata, resolver);
+            byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
             File.WriteAllText(metadataPath, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
         }
 
@@ -597,12 +606,12 @@ namespace Ryujinx.UI
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SwitchSettings SettingsWin = new SwitchSettings(_device);
+            SwitchSettings settingsWin = new SwitchSettings(_device);
 
             _gtkApplication.Register(GLib.Cancellable.Current);
-            _gtkApplication.AddWindow(SettingsWin);
+            _gtkApplication.AddWindow(settingsWin);
 
-            SettingsWin.Show();
+            settingsWin.Show();
         }
 
         private void Update_Pressed(object sender, EventArgs args)
@@ -621,12 +630,12 @@ namespace Ryujinx.UI
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            AboutWindow AboutWin = new AboutWindow();
+            AboutWindow aboutWin = new AboutWindow();
 
             _gtkApplication.Register(GLib.Cancellable.Current);
-            _gtkApplication.AddWindow(AboutWin);
+            _gtkApplication.AddWindow(aboutWin);
 
-            AboutWin.Show();
+            aboutWin.Show();
         }
 
         private void Fav_Toggled(object sender, EventArgs args)
@@ -785,7 +794,7 @@ namespace Ryujinx.UI
                 bValue = bValue.Substring(0, bValue.Length - 1);
             }
 
-                 if (float.Parse(aValue) > float.Parse(bValue)) return -1;
+            if (float.Parse(aValue) > float.Parse(bValue)) return -1;
             else if (float.Parse(bValue) > float.Parse(aValue)) return 1;
             else return 0;
         }
@@ -808,15 +817,15 @@ namespace Ryujinx.UI
 
             if (aValue.Substring(aValue.Length - 2) == "GB")
             {
-                aValue = (float.Parse(aValue.Substring(0, aValue.Length - 2)) * 1024).ToString();
+                aValue = (float.Parse(aValue[0..^2]) * 1024).ToString();
             }
-            else aValue = aValue.Substring(0, aValue.Length - 2);
+            else aValue = aValue[0..^2];
 
             if (bValue.Substring(bValue.Length - 2) == "GB")
             {
-                bValue = (float.Parse(bValue.Substring(0, bValue.Length - 2)) * 1024).ToString();
+                bValue = (float.Parse(bValue[0..^2]) * 1024).ToString();
             }
-            else bValue = bValue.Substring(0, bValue.Length - 2);
+            else bValue = bValue[0..^2];
 
                  if (float.Parse(aValue) > float.Parse(bValue)) return -1;
             else if (float.Parse(bValue) > float.Parse(aValue)) return 1;
