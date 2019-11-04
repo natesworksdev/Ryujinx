@@ -203,7 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             while (retryCount++ < MaxMapRetries)
             {
-                ResultCode result = MapCodeMemoryInProcess(process, out nroMappedAddress, info.NroAddress, info.NroSize);
+                ResultCode result = MapCodeMemoryInProcess(process, info.NroAddress, info.NroSize, out nroMappedAddress);
 
                 if (result != ResultCode.Success)
                 {
@@ -257,7 +257,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return false;
         }
 
-        private ResultCode MapCodeMemoryInProcess(KProcess process, out ulong targetAddress, ulong baseAddress, ulong size)
+        private ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
         {
             KMemoryManager memMgr = process.MemoryManager;
 
@@ -265,11 +265,13 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             int retryCount;
 
+            int addressSpacePageLimit = (int)((memMgr.GetAddrSpaceSize() - size) >> 12);
+
             for (retryCount = 0; retryCount < MaxMapRetries; retryCount++)
             {
                 while (true)
                 {
-                    targetAddress = memMgr.GetAddrSpaceBaseAddr() + (ulong)(_random.Next((int)((memMgr.GetAddrSpaceSize() - size) >> 12)) << 12);
+                    targetAddress = memMgr.GetAddrSpaceBaseAddr() + (ulong)(_random.Next(addressSpacePageLimit) << 12);
 
                     if (memMgr.InsideAddrSpace(targetAddress, size) && !memMgr.InsideHeapRegion(targetAddress, size) && !memMgr.InsideAliasRegion(targetAddress, size))
                     {
@@ -559,6 +561,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             {
                 UnmapNroFromInfo(info);
             }
+
+            _nroInfos.Clear();
         }
     }
 }
