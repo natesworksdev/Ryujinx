@@ -25,6 +25,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             _outData = new AppletFifo<byte[]>();
             
             _applet.AppletStateChanged += OnAppletStateChanged;
+            
+            Logger.PrintInfo(LogClass.ServiceAm, $"Applet '{appletId}' created.");
         }
 
         private void OnAppletStateChanged(object sender, EventArgs e)
