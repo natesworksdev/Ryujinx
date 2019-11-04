@@ -66,9 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PushInData(object<nn::am::service::IStorage>)
         public ResultCode PushInData(ServiceCtx context)
         {
-            var data = GetObject<IStorage>(context, 0);
-
-            Logger.PrintWarning(LogClass.ServiceAm, $"PushInData size: {data.Data.Length} bytes");
+            IStorage data = GetObject<IStorage>(context, 0);
 
             _inData.Push(data.Data);
 
