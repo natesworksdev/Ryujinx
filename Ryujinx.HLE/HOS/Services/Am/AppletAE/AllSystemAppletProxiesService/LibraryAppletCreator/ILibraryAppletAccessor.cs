@@ -11,13 +11,19 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
     {
         private IApplet _applet;
 
+        private AppletFifo<byte[]> _inData;
+        private AppletFifo<byte[]> _outData;
+
         private KEvent _stateChangedEvent;
 
         public ILibraryAppletAccessor(AppletId appletId, Horizon system)
         {
             _stateChangedEvent = new KEvent(system);
-            _applet            = AppletManager.Create(appletId, system);
 
+            _applet  = AppletManager.Create(appletId, system);
+            _inData  = new AppletFifo<byte[]>();
+            _outData = new AppletFifo<byte[]>();
+            
             _applet.AppletStateChanged += OnAppletStateChanged;
         }
 
@@ -46,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // Start()
         public ResultCode Start(ServiceCtx context)
         {
-            return (ResultCode)_applet.Start();
+            return (ResultCode)_applet.Start(_inData, _outData);
         }
 
         [Command(30)]
@@ -60,7 +66,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PushInData(object<nn::am::service::IStorage>)
         public ResultCode PushInData(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceAm);
+            var data = GetObject<IStorage>(context, 0);
+
+            Logger.PrintWarning(LogClass.ServiceAm, $"PushInData size: {data.Data.Length} bytes");
+
+            _inData.Push(data.Data);
 
             return ResultCode.Success;
         }
@@ -69,14 +79,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopOutData(ServiceCtx context)
         {
-            ResultCode result = (ResultCode)_applet.PopOutData(out IStorage storage);
+            byte[] data = _outData.Pop();
 
-            if (result == ResultCode.Success && storage != null)
-            {
-                MakeObject(context, storage);
-            }
+            MakeObject(context, new IStorage(data));
             
-            return result;
+            return ResultCode.Success;
         }
     }
 }
