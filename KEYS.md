@@ -8,8 +8,19 @@ Keysets are stored as text files. These 3 filenames are automatically read:
 `title.keys` - Contains game-specific keys.
 
 Ryujinx will first look for keys in `RyuFS/system`, and if it doesn't find any there it will look in `$HOME/.switch`.
-
-A guide to assist with dumping your own keys can be found [here](https://gist.github.com/roblabla/d8358ab058bbe3b00614740dcba4f208).
+To dump your `prod.keys` and `title.keys` please follow these following steps.
+1.	First off learn how to boot into RCM mode and inject payloads if you haven't already. This can be done [here](https://switch.homebrew.guide/).
+2.	Make sure you have an SD card with the latest release of [https://github.com/AtlasNX/Kosmos/releases](https://github.com/AtlasNX/Kosmos/releases) inserted into your Nintendo Switch.
+3.	Download the latest release of [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/releases).
+4.	Boot into RCM mode.
+5.	Inject the `Lockpick_RCM.bin` that you have downloaded at `Step 3.` using your preffered payload injector. We recommend [TegraRCMGUI](https://github.com/eliboa/TegraRcmGUI/releases) as it easy to use and has cool feautures.
+6.	Using the `Vol+/-` buttons to navigate and the `Power` button to select, select `Dump from SysNAND | Key generation: X` ("X" depends on your Nintendo Switch's firmware version)
+7.	The dumping process may take a while depending on how many titles you have installed.
+8.	After its completion press any button to return to the main menu of Lockpick_RCM.
+9.	Navigate to and select `Power off` if you have an SD card reader. Or you could Navigate and select `Reboot (RCM)` if you want to mount your SD card using `TegraRCMGUI > Tools > Memloader V3 > MMC - SD Card`.
+10.	You can find your keys in `sd:/switch/prod.keys` and `sd:/switch/title.keys` respectively.
+11. Copy these files and paste them in `RyuFS/system`.
+And you're done!
 
 ## Common keys
 
@@ -41,9 +52,9 @@ Title keys are stored in the format `rights_id,key`.
 For example:
 
 ```
-01000000000100000000000000000003,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-01000000000108000000000000000003,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-01000000000108000000000000000004,XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+01000000000100000000000000000003 = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+01000000000108000000000000000003 = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
+01000000000108000000000000000004 = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
 ## Complete key list
