@@ -322,7 +322,7 @@ namespace ARMeilleure.Instructions
 
         public static void Fcmge_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: true);
             }
@@ -334,7 +334,7 @@ namespace ARMeilleure.Instructions
 
         public static void Fcmge_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: false);
             }
@@ -346,7 +346,7 @@ namespace ARMeilleure.Instructions
 
         public static void Fcmgt_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: true);
             }
@@ -358,7 +358,7 @@ namespace ARMeilleure.Instructions
 
         public static void Fcmgt_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: false);
             }
@@ -372,7 +372,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: true, isLeOrLt: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThanOrEqual, scalar: true);
             }
             else
             {
@@ -384,7 +384,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThanOrEqual, scalar: false, isLeOrLt: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThanOrEqual, scalar: false);
             }
             else
             {
@@ -396,7 +396,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: true, isLeOrLt: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThan, scalar: true);
             }
             else
             {
@@ -408,7 +408,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitCmpSseOrSse2OpF(context, CmpCondition.GreaterThan, scalar: false, isLeOrLt: true);
+                EmitCmpSseOrSse2OpF(context, CmpCondition.LessThan, scalar: false);
             }
             else
             {
@@ -426,7 +426,23 @@ namespace ARMeilleure.Instructions
             EmitFcmpOrFcmpe(context, signalNaNs: true);
         }
 
-        public static void EmitFccmpOrFccmpe(ArmEmitterContext context, bool signalNaNs)
+        private enum CmpCondition
+        {
+            // Legacy Sse.
+            Equal              = 0, // Ordered, non-signaling.
+            LessThan           = 1, // Ordered, signaling.
+            LessThanOrEqual    = 2, // Ordered, signaling.
+            NotLessThan        = 5, // Unordered, signaling.
+            NotLessThanOrEqual = 6, // Unordered, signaling.
+            OrderedQ           = 7, // Non-signaling.
+
+            // Vex.
+            GreaterThanOrEqual = 13, // Ordered, signaling.
+            GreaterThan        = 14, // Ordered, signaling.
+            OrderedS           = 23  // Signaling.
+        }
+
+        private static void EmitFccmpOrFccmpe(ArmEmitterContext context, bool signalNaNs)
         {
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
@@ -450,21 +466,21 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
-            const int cmpOrdered = 7;
-
             bool cmpWithZero = !(op is OpCodeSimdFcond) ? op.Bit3 : false;
 
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseAvx)
             {
                 Operand n = GetVec(op.Rn);
                 Operand m = cmpWithZero ? context.VectorZero() : GetVec(op.Rm);
+
+                CmpCondition cmpOrdered = signalNaNs ? CmpCondition.OrderedS : CmpCondition.OrderedQ;
 
                 Operand lblNaN = Label();
                 Operand lblEnd = Label();
 
                 if (op.Size == 0)
                 {
-                    Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpss, n, m, Const(cmpOrdered));
+                    Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpss, n, m, Const((int)cmpOrdered));
 
                     Operand isOrdered = context.VectorExtract16(ordMask, 0);
 
@@ -481,7 +497,7 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (op.Size == 1) */
                 {
-                    Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpsd, n, m, Const(cmpOrdered));
+                    Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpsd, n, m, Const((int)cmpOrdered));
 
                     Operand isOrdered = context.VectorExtract16(ordMask, 0);
 
@@ -653,18 +669,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private enum CmpCondition
-        {
-            Equal              = 0,
-            GreaterThanOrEqual = 5,
-            GreaterThan        = 6
-        }
-
-        private static void EmitCmpSseOrSse2OpF(
-            ArmEmitterContext context,
-            CmpCondition cond,
-            bool scalar,
-            bool isLeOrLt = false)
+        private static void EmitCmpSseOrSse2OpF(ArmEmitterContext context, CmpCondition cond, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -677,9 +682,7 @@ namespace ARMeilleure.Instructions
             {
                 Intrinsic inst = scalar ? Intrinsic.X86Cmpss : Intrinsic.X86Cmpps;
 
-                Operand res = isLeOrLt
-                    ? context.AddIntrinsic(inst, m, n, Const((int)cond))
-                    : context.AddIntrinsic(inst, n, m, Const((int)cond));
+                Operand res = context.AddIntrinsic(inst, n, m, Const((int)cond));
 
                 if (scalar)
                 {
@@ -696,9 +699,7 @@ namespace ARMeilleure.Instructions
             {
                 Intrinsic inst = scalar ? Intrinsic.X86Cmpsd : Intrinsic.X86Cmppd;
 
-                Operand res = isLeOrLt
-                    ? context.AddIntrinsic(inst, m, n, Const((int)cond))
-                    : context.AddIntrinsic(inst, n, m, Const((int)cond));
+                Operand res = context.AddIntrinsic(inst, n, m, Const((int)cond));
 
                 if (scalar)
                 {
