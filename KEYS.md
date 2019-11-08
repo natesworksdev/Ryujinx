@@ -2,7 +2,7 @@
 
 Keys are required for decrypting most of the file formats used by the Nintendo Switch.
 
-Keysets are stored as text files. These 3 filenames are automatically read:  
+ Keysets are stored as text files. These 2 filenames are automatically read:  
 * `prod.keys` - Contains common keys used by all Nintendo Switch devices.
 * `title.keys` - Contains game-specific keys.
 
