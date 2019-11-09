@@ -451,7 +451,7 @@ namespace ARMeilleure.Instructions
 
             context.BranchIfTrue(lblTrue, InstEmitFlowHelper.GetCondTrue(context, op.Cond));
 
-            EmitSetNzcv(context, Const(op.Nzcv));
+            EmitSetNzcv(context, op.Nzcv);
 
             context.Branch(lblEnd);
 
@@ -462,13 +462,33 @@ namespace ARMeilleure.Instructions
             context.MarkLabel(lblEnd);
         }
 
+        private static void EmitSetNzcv(ArmEmitterContext context, int nzcv)
+        {
+            Operand Extract(int value, int bit)
+            {
+                if (bit != 0)
+                {
+                    value >>= bit;
+                }
+
+                value &= 1;
+
+                return Const(value);
+            }
+
+            SetFlag(context, PState.VFlag, Extract(nzcv, 0));
+            SetFlag(context, PState.CFlag, Extract(nzcv, 1));
+            SetFlag(context, PState.ZFlag, Extract(nzcv, 2));
+            SetFlag(context, PState.NFlag, Extract(nzcv, 3));
+        }
+
         private static void EmitFcmpOrFcmpe(ArmEmitterContext context, bool signalNaNs)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
             bool cmpWithZero = !(op is OpCodeSimdFcond) ? op.Bit3 : false;
 
-            if (Optimizations.FastFP && Optimizations.UseAvx)
+            if (Optimizations.FastFP && (signalNaNs ? Optimizations.UseAvx : Optimizations.UseSse2))
             {
                 Operand n = GetVec(op.Rn);
                 Operand m = cmpWithZero ? context.VectorZero() : GetVec(op.Rm);
@@ -482,7 +502,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpss, n, m, Const((int)cmpOrdered));
 
-                    Operand isOrdered = context.VectorExtract16(ordMask, 0);
+                    Operand isOrdered = context.AddIntrinsicInt(Intrinsic.X86Cvtsi2si, ordMask);
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
@@ -499,7 +519,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand ordMask = context.AddIntrinsic(Intrinsic.X86Cmpsd, n, m, Const((int)cmpOrdered));
 
-                    Operand isOrdered = context.VectorExtract16(ordMask, 0);
+                    Operand isOrdered = context.AddIntrinsicLong(Intrinsic.X86Cvtsi2si, ordMask);
 
                     context.BranchIfFalse(lblNaN, isOrdered);
 
