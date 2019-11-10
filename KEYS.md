@@ -23,6 +23,8 @@ And you're done!
 
 ## Title keys
 
+These are only used for games that are not dumped from cartridges but from games downloaded from the Nintendo eShop, these are also only used if the eShop dump does *not* have a `ticket`. If the game does have a ticket, Ryujinx will read the key directly from that ticket.
+
 Title keys are stored in the format `rights_id = key`.
 
 For example:
@@ -33,10 +35,6 @@ For example:
 01000000000108000000000000000004 = XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ```
 
-#About keys
-There are 2 types of key files:
-`prod.keys` and `title.keys`.
-* `prod.keys`
-These are typically used to decrypt system files and encrypted game files. Almost every major firmware update adds a new `master_key` so be sure to keep your keys updated if you want to play newer games!
-* `title.keys`
-These are only used for games that are not dumped from cartridges but from games downloaded from the Nintendo eShop, these are also only used if the eShop dump does *not* have a `ticket`. If the game does have a ticket, Ryujinx will read the key directly from that ticket.
+##Prod keys
+
+These are typically used to decrypt system files and encrypted game files. These keys get changed in about every major system update, so make sure to keep your keys up-to-date if you want to play newer games!
