@@ -426,22 +426,6 @@ namespace ARMeilleure.Instructions
             EmitFcmpOrFcmpe(context, signalNaNs: true);
         }
 
-        private enum CmpCondition
-        {
-            // Legacy Sse.
-            Equal              = 0, // Ordered, non-signaling.
-            LessThan           = 1, // Ordered, signaling.
-            LessThanOrEqual    = 2, // Ordered, signaling.
-            NotLessThan        = 5, // Unordered, signaling.
-            NotLessThanOrEqual = 6, // Unordered, signaling.
-            OrderedQ           = 7, // Non-signaling.
-
-            // Vex.
-            GreaterThanOrEqual = 13, // Ordered, signaling.
-            GreaterThan        = 14, // Ordered, signaling.
-            OrderedS           = 23  // Signaling.
-        }
-
         private static void EmitFccmpOrFccmpe(ArmEmitterContext context, bool signalNaNs)
         {
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
