@@ -12,7 +12,7 @@ To dump your `prod.keys` and `title.keys` please follow these following steps.
 2.	Make sure you have an SD card with the latest release of [Atmosphere](https://github.com/Atmosphere-NX/Atmosphere/releases) inserted into your Nintendo Switch.
 3.	Download the latest release of [Lockpick_RCM](https://github.com/shchmue/Lockpick_RCM/releases).
 4.	Boot into RCM mode.
-5.	Inject the `Lockpick_RCM.bin` that you have downloaded at `Step 3.` using your preferred payload injector. We recommend [TegraRCMGUI](https://github.com/eliboa/TegraRcmGUI/releases) as it easy to use and has a decent feature set.
+5.	Inject the `Lockpick_RCM.bin` that you have downloaded at `Step 3.` using your preferred payload injector. We recommend [TegraRCMGUI](https://github.com/eliboa/TegraRcmGUI/releases) as it is easy to use and has a decent feature set.
 6.	Using the `Vol+/-` buttons to navigate and the `Power` button to select, select `Dump from SysNAND | Key generation: X` ("X" depends on your Nintendo Switch's firmware version)
 7.	The dumping process may take a while depending on how many titles you have installed.
 8.	After its completion press any button to return to the main menu of Lockpick_RCM.
