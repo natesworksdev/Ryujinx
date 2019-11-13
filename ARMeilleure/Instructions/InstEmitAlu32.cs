@@ -80,6 +80,18 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void Teq(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+
+            Operand res = context.BitwiseExclusiveOr(n, m);
+
+            EmitNZFlagsCheck(context, res);
+        }
+
         private static void EmitAluStore(ArmEmitterContext context, Operand value)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;

@@ -116,6 +116,8 @@ namespace ARMeilleure.Instructions
                     return Const(op.Immediate);
                 }
 
+                case OpCode32AluImm16 op: return Const(op.Immediate);
+
                 case OpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
 
                 case OpCodeT16AluImm8 op: return Const(op.Immediate);
@@ -171,7 +173,7 @@ namespace ARMeilleure.Instructions
         {
             Operand m = GetIntA32(context, op.Rm);
 
-            int shift = op.Imm;
+            int shift = op.Immediate;
 
             if (shift == 0)
             {
@@ -193,7 +195,7 @@ namespace ARMeilleure.Instructions
                     case ShiftType.Lsr: m = GetLsrC(context, m, setCarry, shift); break;
                     case ShiftType.Asr: m = GetAsrC(context, m, setCarry, shift); break;
                     case ShiftType.Ror:
-                        if (op.Imm != 0)
+                        if (op.Immediate != 0)
                         {
                             m = GetRorC(context, m, setCarry, shift);
                         }

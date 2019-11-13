@@ -458,6 +458,7 @@ namespace ARMeilleure.Instructions
         Stm,
         Strb,
         Strd,
-        Strh
+        Strh,
+        Teq
     }
 }
