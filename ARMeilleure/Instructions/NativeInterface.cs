@@ -77,25 +77,6 @@ namespace ARMeilleure.Instructions
             return (ulong)GetContext().DczidEl0;
         }
 
-        public static ulong GetNzcv()
-        {
-            void Insert(ref ulong value, PState bit, bool flag)
-            {
-                value |= (flag ? 1UL : 0UL) << (int)bit;
-            }
-
-            ExecutionContext context = GetContext();
-
-            ulong value = 0UL;
-
-            Insert(ref value, PState.VFlag, context.GetPstateFlag(PState.VFlag));
-            Insert(ref value, PState.CFlag, context.GetPstateFlag(PState.CFlag));
-            Insert(ref value, PState.ZFlag, context.GetPstateFlag(PState.ZFlag));
-            Insert(ref value, PState.NFlag, context.GetPstateFlag(PState.NFlag));
-
-            return value;
-        }
-
         public static ulong GetFpcr()
         {
             return (ulong)GetContext().Fpcr;
@@ -124,25 +105,6 @@ namespace ARMeilleure.Instructions
         public static ulong GetCntpctEl0()
         {
             return GetContext().CntpctEl0;
-        }
-
-        public static void SetNzcv(ulong value)
-        {
-            bool Extract(ulong value, PState bit)
-            {
-                value >>= (int)bit;
-
-                value &= 1UL;
-
-                return value != 0UL;
-            }
-
-            ExecutionContext context = GetContext();
-
-            context.SetPstateFlag(PState.VFlag, Extract(value, PState.VFlag));
-            context.SetPstateFlag(PState.CFlag, Extract(value, PState.CFlag));
-            context.SetPstateFlag(PState.ZFlag, Extract(value, PState.ZFlag));
-            context.SetPstateFlag(PState.NFlag, Extract(value, PState.NFlag));
         }
 
         public static void SetFpcr(ulong value)
