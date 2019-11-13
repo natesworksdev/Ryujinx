@@ -32,6 +32,7 @@ namespace ARMeilleure.Instructions
             {
                 case 0b11_011_0000_0000_001: dlg = new _U64(NativeInterface.GetCtrEl0);    break;
                 case 0b11_011_0000_0000_111: dlg = new _U64(NativeInterface.GetDczidEl0);  break;
+                case 0b11_011_0100_0010_000: dlg = new _U64(NativeInterface.GetNzcv);      break;
                 case 0b11_011_0100_0100_000: dlg = new _U64(NativeInterface.GetFpcr);      break;
                 case 0b11_011_0100_0100_001: dlg = new _U64(NativeInterface.GetFpsr);      break;
                 case 0b11_011_1101_0000_010: dlg = new _U64(NativeInterface.GetTpidrEl0);  break;
@@ -53,6 +54,7 @@ namespace ARMeilleure.Instructions
 
             switch (GetPackedId(op))
             {
+                case 0b11_011_0100_0010_000: dlg = new _Void_U64(NativeInterface.SetNzcv);     break;
                 case 0b11_011_0100_0100_000: dlg = new _Void_U64(NativeInterface.SetFpcr);     break;
                 case 0b11_011_0100_0100_001: dlg = new _Void_U64(NativeInterface.SetFpsr);     break;
                 case 0b11_011_1101_0000_010: dlg = new _Void_U64(NativeInterface.SetTpidrEl0); break;
