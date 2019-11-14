@@ -11,10 +11,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // CreateLibraryApplet(u32, u32) -> object<nn::am::service::ILibraryAppletAccessor>
         public ResultCode CreateLibraryApplet(ServiceCtx context)
         {
-            int appletId          = context.RequestData.ReadInt32();
-            int libraryAppletMode = context.RequestData.ReadInt32();
+            AppletId appletId          = (AppletId)context.RequestData.ReadInt32();
+            int      libraryAppletMode = context.RequestData.ReadInt32();
 
-            MakeObject(context, new ILibraryAppletAccessor((AppletId)appletId, context.Device.System));
+            MakeObject(context, new ILibraryAppletAccessor(appletId, context.Device.System));
 
             return ResultCode.Success;
         }

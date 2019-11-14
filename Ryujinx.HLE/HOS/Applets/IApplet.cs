@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Services.Am;
+﻿using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 
 namespace Ryujinx.HLE.HOS.Applets

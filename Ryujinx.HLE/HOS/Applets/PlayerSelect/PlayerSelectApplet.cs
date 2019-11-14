@@ -1,5 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Services.Account.Acc;
-using Ryujinx.HLE.HOS.Services.Am;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.IO;
 
