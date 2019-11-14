@@ -1,10 +1,11 @@
 ﻿using Ryujinx.HLE.HOS.Services.Account.Acc;
+using Ryujinx.HLE.HOS.Services.Am;
 using System;
 using System.IO;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
-    internal class PlayerSelect : IApplet
+    internal class PlayerSelectApplet : IApplet
     {
         private Horizon _system;
 
@@ -13,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public event EventHandler AppletStateChanged;
 
-        public PlayerSelect(Horizon system)
+        public PlayerSelectApplet(Horizon system)
         {
             _system = system;
         }
