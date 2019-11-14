@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 
             if (queryCapability == PlayLogQueryCapability.WhiteList)
             {
-                // Check if input titleids are in the whitelist
+                // Check if input title ids are in the whitelist.
                 foreach (ulong titleId in titleIds)
                 {
                     if (!context.Device.System.ControlData.PlayLogQueryableApplicationId.Contains(titleId))
@@ -53,16 +53,16 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
-            // return ResultCode.ServiceUnavailable if data is locked by another process.
-            IEnumerable<KeyValuePair<UInt128, ApplicationPlayStatistics>> filteredApplicationPlayStatistics;
+            // Return ResultCode.ServiceUnavailable if data is locked by another process.
+            var filteredApplicationPlayStatistics = applicationPlayStatistics.AsEnumerable();
 
             if (queryCapability == PlayLogQueryCapability.None)
             {
-                filteredApplicationPlayStatistics = applicationPlayStatistics.Where(kv => kv.Value.TitleId == context.Process.TitleId);
+                filteredApplicationPlayStatistics = filteredApplicationPlayStatistics.Where(kv => kv.Value.TitleId == context.Process.TitleId);
             }
             else // PlayLogQueryCapability.All
             {
-                filteredApplicationPlayStatistics = applicationPlayStatistics.Where(kv => titleIds.Contains(kv.Value.TitleId));
+                filteredApplicationPlayStatistics = filteredApplicationPlayStatistics.Where(kv => titleIds.Contains(kv.Value.TitleId));
             }
 
             if (byUserId)
