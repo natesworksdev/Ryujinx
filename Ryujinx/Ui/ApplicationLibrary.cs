@@ -6,6 +6,7 @@ using LibHac.FsSystem.NcaUtils;
 using LibHac.Spl;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -80,7 +81,8 @@ namespace Ryujinx.UI
                 {
                     if ((Path.GetExtension(app) == ".xci") ||
                         (Path.GetExtension(app) == ".nro") ||
-                        (Path.GetExtension(app) == ".nso"))
+                        (Path.GetExtension(app) == ".nso") ||
+                        (Path.GetFileName(app)  == "hbl.nsp"))
                     {
                         applications.Add(app);
                         numApplicationsFound++;
@@ -141,10 +143,10 @@ namespace Ryujinx.UI
             foreach (string applicationPath in applications)
             {
                 double fileSize        = new FileInfo(applicationPath).Length * 0.000000000931;
-                string titleName       = null;
-                string titleId         = null;
-                string developer       = null;
-                string version         = null;
+                string titleName       = "Unknown";
+                string titleId         = "0000000000000000";
+                string developer       = "Unknown";
+                string version         = "?";
                 byte[] applicationIcon = null;
 
                 using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
@@ -155,109 +157,123 @@ namespace Ryujinx.UI
                     {
                         try
                         {
-                            IFileSystem controlFs;
-
-                            // Store the ControlFS in variable called controlFs
+                            PartitionFileSystem pfs;
+                             
                             if (Path.GetExtension(applicationPath) == ".xci")
                             {
                                 Xci xci = new Xci(_keySet, file.AsStorage());
 
-                                controlFs = GetControlFs(xci.OpenPartition(XciPartitionType.Secure));
+                                pfs = xci.OpenPartition(XciPartitionType.Secure);
                             }
                             else
                             {
-                                controlFs = GetControlFs(new PartitionFileSystem(file.AsStorage()));
+                                pfs = new PartitionFileSystem(file.AsStorage());
                             }
 
-                            // Creates NACP class from the NACP file
-                            controlFs.OpenFile(out IFile controlNacpFile, "/control.nacp", OpenMode.Read).ThrowIfFailure();
+                            // Store the ControlFS in variable called controlFs
+                            IFileSystem controlFs = GetControlFs(pfs);
 
-                            Nacp controlData = new Nacp(controlNacpFile.AsStream());
-
-                            // Get the title name, title ID, developer name and version number from the NACP
-                            version = controlData.DisplayVersion;
-
-                            titleName = controlData.Descriptions[(int)_desiredTitleLanguage].Title;
-
-                            if (string.IsNullOrWhiteSpace(titleName))
+                            // If this is null then this is probably not a normal NSP, it's probably an ExeFS as an NSP
+                            if (controlFs == null)
                             {
-                                titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                            }
+                                applicationIcon = _ryujinxNspIcon;
 
-                            titleId = controlData.PresenceGroupId.ToString("x16");
+                                Result result = pfs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
 
-                            if (string.IsNullOrWhiteSpace(titleId))
-                            {
-                                titleId = controlData.SaveDataOwnerId.ToString("x16");
-                            }
-
-                            if (string.IsNullOrWhiteSpace(titleId))
-                            {
-                                titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
-                            }
-
-                            developer = controlData.Descriptions[(int)_desiredTitleLanguage].Developer;
-
-                            if (string.IsNullOrWhiteSpace(developer))
-                            {
-                                developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
-                            }
-
-                            // Read the icon from the ControlFS and store it as a byte array
-                            try
-                            {
-                                controlFs.OpenFile(out IFile icon, $"/icon_{_desiredTitleLanguage}.dat", OpenMode.Read).ThrowIfFailure();
-
-                                using MemoryStream stream = new MemoryStream();
-                                icon.AsStream().CopyTo(stream);
-                                applicationIcon = stream.ToArray();
-                            }
-                            catch (HorizonResultException)
-                            {
-                                foreach (DirectoryEntryEx entry in controlFs.EnumerateEntries("/", "*"))
+                                if (result != ResultFs.PathNotFound)
                                 {
-                                    if (entry.Name == "control.nacp")
-                                    {
-                                        continue;
-                                    }
+                                    Npdm npdm = new Npdm(npdmFile.AsStream());
 
-                                    controlFs.OpenFile(out IFile icon, entry.FullPath, OpenMode.Read).ThrowIfFailure();
+                                    titleName = npdm.TitleName;
+                                    titleId   = npdm.Aci0.TitleId.ToString("x16");
+                                }
+                            }
+                            else
+                            {
+                                // Creates NACP class from the NACP file
+                                controlFs.OpenFile(out IFile controlNacpFile, "/control.nacp", OpenMode.Read).ThrowIfFailure();
+
+                                Nacp controlData = new Nacp(controlNacpFile.AsStream());
+
+                                // Get the title name, title ID, developer name and version number from the NACP
+                                version = controlData.DisplayVersion;
+
+                                titleName = controlData.Descriptions[(int)_desiredTitleLanguage].Title;
+
+                                if (string.IsNullOrWhiteSpace(titleName))
+                                {
+                                    titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+                                }
+
+                                titleId = controlData.PresenceGroupId.ToString("x16");
+
+                                if (string.IsNullOrWhiteSpace(titleId))
+                                {
+                                    titleId = controlData.SaveDataOwnerId.ToString("x16");
+                                }
+
+                                if (string.IsNullOrWhiteSpace(titleId))
+                                {
+                                    titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
+                                }
+
+                                developer = controlData.Descriptions[(int)_desiredTitleLanguage].Developer;
+
+                                if (string.IsNullOrWhiteSpace(developer))
+                                {
+                                    developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
+                                }
+
+                                // Read the icon from the ControlFS and store it as a byte array
+                                try
+                                {
+                                    controlFs.OpenFile(out IFile icon, $"/icon_{_desiredTitleLanguage}.dat", OpenMode.Read).ThrowIfFailure();
 
                                     using (MemoryStream stream = new MemoryStream())
                                     {
                                         icon.AsStream().CopyTo(stream);
                                         applicationIcon = stream.ToArray();
                                     }
-
-                                    if (applicationIcon != null)
-                                    {
-                                        break;
-                                    }
                                 }
-
-                                if (applicationIcon == null)
+                                catch (HorizonResultException)
                                 {
-                                    applicationIcon = NspOrXciIcon(applicationPath);
+                                    foreach (DirectoryEntryEx entry in controlFs.EnumerateEntries("/", "*"))
+                                    {
+                                        if (entry.Name == "control.nacp")
+                                        {
+                                            continue;
+                                        }
+
+                                        controlFs.OpenFile(out IFile icon, entry.FullPath, OpenMode.Read).ThrowIfFailure();
+
+                                        using (MemoryStream stream = new MemoryStream())
+                                        {
+                                            icon.AsStream().CopyTo(stream);
+                                            applicationIcon = stream.ToArray();
+                                        }
+
+                                        if (applicationIcon != null)
+                                        {
+                                            break;
+                                        }
+                                    }
+
+                                    if (applicationIcon == null)
+                                    {
+                                        applicationIcon = Path.GetExtension(applicationPath) == ".xci" ? _ryujinxXciIcon : _ryujinxNspIcon;
+                                    }
                                 }
                             }
                         }
                         catch (MissingKeyException exception)
                         {
-                            titleName       = "Unknown";
-                            titleId         = "Unknown";
-                            developer       = "Unknown";
-                            version         = "?";
-                            applicationIcon = NspOrXciIcon(applicationPath);
+                            applicationIcon = Path.GetExtension(applicationPath) == ".xci" ? _ryujinxXciIcon : _ryujinxNspIcon;
 
                             Logger.PrintWarning(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                         }
                         catch (InvalidDataException)
                         {
-                            titleName       = "Unknown";
-                            titleId         = "Unknown";
-                            developer       = "Unknown";
-                            version         = "?";
-                            applicationIcon = NspOrXciIcon(applicationPath);
+                            applicationIcon = Path.GetExtension(applicationPath) == ".xci" ? _ryujinxXciIcon : _ryujinxNspIcon;
 
                             Logger.PrintWarning(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {applicationPath}");
                         }
@@ -326,50 +342,28 @@ namespace Ryujinx.UI
                         else
                         {
                             applicationIcon = _ryujinxNroIcon;
-                            titleName       = "Application";
-                            titleId         = "0000000000000000";
-                            developer       = "Unknown";
-                            version         = "?";
                         }
                     }
                     // If its an NCA or NSO we just set defaults
                     else if ((Path.GetExtension(applicationPath) == ".nca") || (Path.GetExtension(applicationPath) == ".nso"))
                     {
-                        if (Path.GetExtension(applicationPath) == ".nca")
-                        {
-                            applicationIcon = _ryujinxNcaIcon;
-                        }
-                        else if (Path.GetExtension(applicationPath) == ".nso")
-                        {
-                            applicationIcon = _ryujinxNsoIcon;
-                        }
-
-                        string fileName = Path.GetFileName(applicationPath);
-                        string fileExt  = Path.GetExtension(applicationPath);
-
-                        StringBuilder titlename = new StringBuilder();
-                        titlename.Append(fileName);
-                        titlename.Remove(fileName.Length - fileExt.Length, fileExt.Length);
-
-                        titleName = titlename.ToString();
-                        titleId   = "0000000000000000";
-                        version   = "?";
-                        developer = "Unknown";
+                        applicationIcon = Path.GetExtension(applicationPath) == ".nca" ? _ryujinxNcaIcon : _ryujinxNsoIcon;
+                        titleName       = Path.GetFileNameWithoutExtension(applicationPath);
                     }
                 }
 
-                (bool fav, string timePlayed, string lastPlayed) metaData = GetMetadata(titleId);
+                (bool fav, string timePlayed, string lastPlayed) = GetMetadata(titleId);
 
                 ApplicationData data = new ApplicationData()
                 {
-                    Favorite      = metaData.fav,
+                    Favorite      = fav,
                     Icon          = applicationIcon,
                     TitleName     = titleName,
                     TitleId       = titleId,
                     Developer     = developer,
                     Version       = version,
-                    TimePlayed    = metaData.timePlayed,
-                    LastPlayed    = metaData.lastPlayed,
+                    TimePlayed    = timePlayed,
+                    LastPlayed    = lastPlayed,
                     FileExtension = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
                     FileSize      = (fileSize < 1) ? (fileSize * 1024).ToString("0.##") + "MB" : fileSize.ToString("0.##") + "GB",
                     Path          = applicationPath,
@@ -432,7 +426,7 @@ namespace Ryujinx.UI
             }
 
             // Return the ControlFS
-            return controlNca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
+            return controlNca?.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);
         }
 
         private static (bool fav, string timePlayed, string lastPlayed) GetMetadata(string titleId)
@@ -463,18 +457,6 @@ namespace Ryujinx.UI
             }
 
             return (_appMetadata.Favorite, ConvertSecondsToReadableString(_appMetadata.TimePlayed), _appMetadata.LastPlayed);
-        }
-
-        private static byte[] NspOrXciIcon(string applicationPath)
-        {
-            if (Path.GetExtension(applicationPath) == ".xci")
-            {
-                return _ryujinxXciIcon;
-            }
-            else
-            {
-                return _ryujinxNspIcon;
-            }
         }
 
         private static string ConvertSecondsToReadableString(double seconds)
