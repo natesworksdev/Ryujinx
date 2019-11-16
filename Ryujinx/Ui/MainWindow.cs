@@ -49,8 +49,7 @@ namespace Ryujinx.UI
 
         private static ListStore _tableStore;
 
-        private static Task _updateGameTableTask;
-
+        private static bool _updatingGameTable;
         private static bool _gameLoaded;
         private static bool _ending;
 
@@ -163,6 +162,7 @@ namespace Ryujinx.UI
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
             _tableStore.SetSortFunc(8, FileSizeSort);
+            _tableStore.SetSortColumnId(0, SortType.Descending);
 
             UpdateColumns();
 #pragma warning disable CS4014
@@ -187,20 +187,19 @@ namespace Ryujinx.UI
 
         internal static void ApplyTheme()
         {
-            if (SwitchSettings.SwitchConfig.EnableCustomTheme)
+            if (!SwitchSettings.SwitchConfig.EnableCustomTheme) return;
+
+            if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
             {
                 CssProvider cssProvider = new CssProvider();
 
-                if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
-                {
-                    cssProvider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
-                }
-                else
-                {
-                    Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
-                }
+                cssProvider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
 
                 StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
+            }
+            else
+            {
+                Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
             }
         }
 
@@ -251,15 +250,16 @@ namespace Ryujinx.UI
 
         internal static async Task UpdateGameTable()
         {
-            if (_updateGameTableTask != null && !_updateGameTableTask.IsCompleted) return;
+            if (_updatingGameTable) return;
 
-            _tableStore.Clear();
+            _updatingGameTable         = true;
             _treeView.HeadersClickable = false;
+            _tableStore.Clear();
 
-            _updateGameTableTask = Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
-            await _updateGameTableTask;
+            await Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
 
             _treeView.HeadersClickable = true;
+            _updatingGameTable         = false;
         }
 
         internal void LoadApplication(string path)
@@ -419,51 +419,50 @@ namespace Ryujinx.UI
 
         private static void End()
         {
-            if (!_ending)
+            if (_ending) return;
+
+            _ending = true;
+
+            if (_gameLoaded)
             {
-                _ending = true;
+                string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
+                string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
-                if (_gameLoaded)
+                IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+                ApplicationMetadata appMetadata;
+
+                if (!File.Exists(metadataFile))
                 {
-                    string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
-                    string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
+                    Directory.CreateDirectory(metadataFolder);
 
-                    IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-                    ApplicationMetadata appMetadata;
-
-                    if (!File.Exists(metadataFile))
+                    appMetadata = new ApplicationMetadata
                     {
-                        Directory.CreateDirectory(metadataFolder);
+                        Favorite   = false,
+                        TimePlayed = 0,
+                        LastPlayed = "Never"
+                    };
 
-                        appMetadata = new ApplicationMetadata
-                        {
-                            Favorite   = false,
-                            TimePlayed = 0,
-                            LastPlayed = "Never"
-                        };
-
-                        byte[] data = JsonSerializer.Serialize(appMetadata, resolver);
-                        File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
-                    }
-
-                    using (Stream stream = File.OpenRead(metadataFile))
-                    {
-                        appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
-                    }
-
-                    appMetadata.TimePlayed += Math.Round(DateTime.UtcNow.Subtract(DateTime.Parse(appMetadata.LastPlayed)).TotalSeconds, MidpointRounding.AwayFromZero);
-
-                    byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
-                    File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
+                    byte[] data = JsonSerializer.Serialize(appMetadata, resolver);
+                    File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
                 }
 
-                Profile.FinishProfiling();
-                _device.Dispose();
-                _audioOut.Dispose();
-                DiscordClient?.Dispose();
-                Logger.Shutdown();
-                Environment.Exit(0);
+                using (Stream stream = File.OpenRead(metadataFile))
+                {
+                    appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                }
+
+                appMetadata.TimePlayed += Math.Round(DateTime.UtcNow.Subtract(DateTime.Parse(appMetadata.LastPlayed)).TotalSeconds, MidpointRounding.AwayFromZero);
+
+                byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
+                File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
             }
+
+            Profile.FinishProfiling();
+            _device.Dispose();
+            _audioOut.Dispose();
+            DiscordClient?.Dispose();
+            Logger.Shutdown();
+            Environment.Exit(0);
         }
 
         /// <summary>
@@ -590,6 +589,8 @@ namespace Ryujinx.UI
         private void StopEmulation_Pressed(object sender, EventArgs args)
         {
             // TODO: Write logic to kill running game
+
+            _gameLoaded = false;
         }
 
         private void FullScreen_Toggled(object sender, EventArgs args)
