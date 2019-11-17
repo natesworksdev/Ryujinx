@@ -90,16 +90,17 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void OnInteractiveData(object sender, EventArgs e)
         {
-            if(_state == SoftwareKeyboardState.ValidationPending)
+            // Obtain the validation status response, 
+            var data = _interactiveSession.Pop();
+
+            if (_state == SoftwareKeyboardState.ValidationPending)
             {
                 // TODO(jduncantor):
                 // If application rejects our "attempt", submit another attempt,
                 // and put the applet back in PendingValidation state.
 
-                // Obtain the validation status response, for now we assume
-                // success and carry on our merry way.
-                _interactiveSession.Pop();
-
+                // For now we assume success, so we push the final result 
+                // to the standard output buffer and carry on our merry way.
                 _normalSession.Push(BuildResponse(_textValue, false));
                 AppletStateChanged?.Invoke(this, null);
 
