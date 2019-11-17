@@ -2,6 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
+    // TODO(jduncanator): Define all fields
     [StructLayout(LayoutKind.Explicit)]
     struct SoftwareKeyboardConfig
     {
