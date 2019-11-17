@@ -62,8 +62,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.PrintInfo(LogClass.ServiceAm, $"GetAppletStateChangedEvent called.");
-
             return ResultCode.Success;
         }
 
@@ -71,8 +69,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // Start()
         public ResultCode Start(ServiceCtx context)
         {
-            Logger.PrintInfo(LogClass.ServiceAm, $"Start called.");
-
             return (ResultCode)_applet.Start(_normalSession.GetConsumer(),
                                              _interactiveSession.GetConsumer());
         }
@@ -81,8 +77,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // GetResult()
         public ResultCode GetResult(ServiceCtx context)
         {
-            Logger.PrintInfo(LogClass.ServiceAm, $"GetResult called.");
-
             return (ResultCode)_applet.GetResult();
         }
 
@@ -93,8 +87,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             IStorage data = GetObject<IStorage>(context, 0);
 
             _normalSession.Push(data.Data);
-
-            Logger.PrintInfo(LogClass.ServiceAm, $"PushInData called.");
 
             return ResultCode.Success;
         }
@@ -109,8 +101,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             _normalOutDataEvent.WritableEvent.Clear();
 
-            Logger.PrintInfo(LogClass.ServiceAm, $"PopOutData called.");
-
             return ResultCode.Success;
         }
 
@@ -122,8 +112,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             _interactiveSession.Push(data.Data);
 
-            Logger.PrintInfo(LogClass.ServiceAm, $"PushInteractiveInData called.");
-
             return ResultCode.Success;
         }
 
@@ -134,8 +122,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             byte[] data = _interactiveSession.Pop();
 
             MakeObject(context, new IStorage(data));
-
-            Logger.PrintInfo(LogClass.ServiceAm, $"PopInteractiveOutData called.");
 
             _interactiveOutDataEvent.WritableEvent.Clear();
 
@@ -153,8 +139,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.PrintInfo(LogClass.ServiceAm, $"GetPopOutDataEvent called.");
-
             return ResultCode.Success;
         }
 
@@ -168,8 +152,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
-
-            Logger.PrintInfo(LogClass.ServiceAm, $"GetPopInteractiveOutDataEvent called.");
 
             return ResultCode.Success;
         }
