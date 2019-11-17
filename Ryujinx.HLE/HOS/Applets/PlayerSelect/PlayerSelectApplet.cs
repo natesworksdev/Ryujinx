@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Applets
             _interactiveSession = interactiveSession;
 
             // TODO(jduncanator): Parse PlayerSelectConfig from input data
-            normalSession.Push(BuildResponse());
+            _normalSession.Push(BuildResponse());
             AppletStateChanged?.Invoke(this, null);
 
             return ResultCode.Success;

@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     [StructLayout(LayoutKind.Explicit)]
     struct SoftwareKeyboardConfig
     {
-        [FieldOffset(0)]
+        [FieldOffset(0x0)]
         public SoftwareKeyboardType Type;
         
         [FieldOffset(0x3AC)]
