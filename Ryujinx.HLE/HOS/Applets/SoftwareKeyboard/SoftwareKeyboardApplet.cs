@@ -61,6 +61,11 @@ namespace Ryujinx.HLE.HOS.Applets
                 _textValue = DEFAULT_NUMB;
             }
 
+            if (_keyboardConfig.StringLengthMax == 0)
+            {
+                _keyboardConfig.StringLengthMax = 100;
+            }
+
             if (_textValue.Length > _keyboardConfig.StringLengthMax)
             {
                 _textValue = _textValue.Substring(0, (int)_keyboardConfig.StringLengthMax);
