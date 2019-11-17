@@ -56,16 +56,22 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void Execute()
         {
+            // If the keyboard type is numbers only, we swap to a default
+            // text that only contains numbers.
             if (_keyboardConfig.Type == SoftwareKeyboardType.NumbersOnly)
             {
                 _textValue = DEFAULT_NUMB;
             }
 
+            // If the max string length is 0, we set it to a large default
+            // length.
             if (_keyboardConfig.StringLengthMax == 0)
             {
                 _keyboardConfig.StringLengthMax = 100;
             }
 
+            // If our default text is longer than the allowed length,
+            // we trunacte it.
             if (_textValue.Length > _keyboardConfig.StringLengthMax)
             {
                 _textValue = _textValue.Substring(0, (int)_keyboardConfig.StringLengthMax);
@@ -120,6 +126,7 @@ namespace Ryujinx.HLE.HOS.Applets
             }
             else
             {
+                // We shouldn't be able to get here through standard swkbd execution.
                 throw new InvalidOperationException("Software Keyboard is in an invalid state.");
             }
         }
