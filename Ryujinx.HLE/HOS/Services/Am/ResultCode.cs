@@ -7,6 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
 
         Success = 0,
 
+        NotAvailble         = (2   << ErrorCodeShift) | ModuleId,
         NoMessages          = (3   << ErrorCodeShift) | ModuleId,
         ObjectInvalid       = (500 << ErrorCodeShift) | ModuleId,
         OutOfBounds         = (503 << ErrorCodeShift) | ModuleId,

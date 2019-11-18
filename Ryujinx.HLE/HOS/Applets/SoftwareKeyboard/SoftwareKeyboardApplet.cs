@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Applets
             }
 
             // If our default text is longer than the allowed length,
-            // we trunacte it.
+            // we truncate it.
             if (_textValue.Length > _keyboardConfig.StringLengthMax)
             {
                 _textValue = _textValue.Substring(0, (int)_keyboardConfig.StringLengthMax);

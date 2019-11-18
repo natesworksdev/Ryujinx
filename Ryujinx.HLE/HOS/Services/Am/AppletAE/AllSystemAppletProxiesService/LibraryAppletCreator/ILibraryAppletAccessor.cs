@@ -95,13 +95,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopOutData(ServiceCtx context)
         {
-            byte[] data = _normalSession.Pop();
+            if(_normalSession.TryPop(out byte[] data))
+            {
+                MakeObject(context, new IStorage(data));
 
-            MakeObject(context, new IStorage(data));
+                _normalOutDataEvent.WritableEvent.Clear();
 
-            _normalOutDataEvent.WritableEvent.Clear();
+                return ResultCode.Success;
+            }
 
-            return ResultCode.Success;
+            return ResultCode.NotAvailble;
         }
 
         [Command(103)]
@@ -119,13 +122,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInteractiveOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopInteractiveOutData(ServiceCtx context)
         {
-            byte[] data = _interactiveSession.Pop();
+            if(_interactiveSession.TryPop(out byte[] data))
+            {
+                MakeObject(context, new IStorage(data));
 
-            MakeObject(context, new IStorage(data));
+                _interactiveOutDataEvent.WritableEvent.Clear();
 
-            _interactiveOutDataEvent.WritableEvent.Clear();
+                return ResultCode.Success;
+            }
 
-            return ResultCode.Success;
+            return ResultCode.NotAvailble;
         }
 
         [Command(105)]
