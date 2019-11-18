@@ -20,17 +20,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         public ILibraryAppletAccessor(AppletId appletId, Horizon system)
         {
-            _stateChangedEvent = new KEvent(system);
-            _normalOutDataEvent = new KEvent(system);
+            _stateChangedEvent       = new KEvent(system);
+            _normalOutDataEvent      = new KEvent(system);
             _interactiveOutDataEvent = new KEvent(system);
 
-            _applet  = AppletManager.Create(appletId, system);
+            _applet = AppletManager.Create(appletId, system);
 
-            _normalSession = new AppletSession();
+            _normalSession      = new AppletSession();
             _interactiveSession = new AppletSession();
 
-            _applet.AppletStateChanged += OnAppletStateChanged;
-            _normalSession.DataAvailable += OnNormalOutData;
+            _applet.AppletStateChanged        += OnAppletStateChanged;
+            _normalSession.DataAvailable      += OnNormalOutData;
             _interactiveSession.DataAvailable += OnInteractiveOutData;
             
             Logger.PrintInfo(LogClass.ServiceAm, $"Applet '{appletId}' created.");

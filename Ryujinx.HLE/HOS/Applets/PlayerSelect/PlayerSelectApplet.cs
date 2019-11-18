@@ -22,11 +22,12 @@ namespace Ryujinx.HLE.HOS.Applets
         public ResultCode Start(AppletSession normalSession,
                                 AppletSession interactiveSession)
         {
-            _normalSession = normalSession;
+            _normalSession      = normalSession;
             _interactiveSession = interactiveSession;
 
             // TODO(jduncanator): Parse PlayerSelectConfig from input data
             _normalSession.Push(BuildResponse());
+
             AppletStateChanged?.Invoke(this, null);
 
             return ResultCode.Success;

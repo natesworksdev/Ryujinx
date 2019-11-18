@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private const string DEFAULT_NUMB = "1";
         private const string DEFAULT_TEXT = "Ryujinx";
 
-        private const int STANDARD_BUFFER_SIZE = 0x7D8;
+        private const int STANDARD_BUFFER_SIZE    = 0x7D8;
         private const int INTERACTIVE_BUFFER_SIZE = 0x7D4;
 
         private SoftwareKeyboardState _state = SoftwareKeyboardState.Uninitialized;
@@ -31,12 +31,12 @@ namespace Ryujinx.HLE.HOS.Applets
         public ResultCode Start(AppletSession normalSession,
                                 AppletSession interactiveSession)
         {
-            _normalSession = normalSession;
+            _normalSession      = normalSession;
             _interactiveSession = interactiveSession;
 
             _interactiveSession.DataAvailable += OnInteractiveData;
 
-            var launchParams = _normalSession.Pop();
+            var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
             var transferMemory = _normalSession.Pop();
 
@@ -85,6 +85,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 _state = SoftwareKeyboardState.Complete;
 
                 _normalSession.Push(BuildResponse(_textValue, false));
+
                 AppletStateChanged?.Invoke(this, null);
             }
             else
@@ -113,6 +114,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 // For now we assume success, so we push the final result 
                 // to the standard output buffer and carry on our merry way.
                 _normalSession.Push(BuildResponse(_textValue, false));
+
                 AppletStateChanged?.Invoke(this, null);
 
                 _state = SoftwareKeyboardState.Complete;
@@ -122,6 +124,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 // If we have already completed, we push the result text
                 // back on the output buffer and poll the application.
                 _normalSession.Push(BuildResponse(_textValue, false));
+
                 AppletStateChanged?.Invoke(this, null);
             }
             else
