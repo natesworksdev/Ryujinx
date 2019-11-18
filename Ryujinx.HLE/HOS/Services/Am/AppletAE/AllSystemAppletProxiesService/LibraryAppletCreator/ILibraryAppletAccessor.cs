@@ -104,7 +104,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 return ResultCode.Success;
             }
 
-            return ResultCode.NotAvailble;
+            return ResultCode.NotAvailable;
         }
 
         [Command(103)]
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
                 return ResultCode.Success;
             }
 
-            return ResultCode.NotAvailble;
+            return ResultCode.NotAvailable;
         }
 
         [Command(105)]
