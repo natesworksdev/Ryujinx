@@ -40,9 +40,9 @@ namespace Ryujinx.UI
         public static RichPresence DiscordPresence;
 
 #pragma warning disable 649
-        [GUI] Window        _mainWin;
+        [GUI] Window _mainWin;
         [GUI] CheckMenuItem _fullScreen;
-        [GUI] MenuItem      _stopEmulation;
+        [GUI] MenuItem _stopEmulation;
         [GUI] CheckMenuItem _iconToggle;
         [GUI] CheckMenuItem _titleToggle;
         [GUI] CheckMenuItem _developerToggle;
@@ -52,9 +52,9 @@ namespace Ryujinx.UI
         [GUI] CheckMenuItem _fileExtToggle;
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
-        [GUI] Box           _box;
-        [GUI] TreeView      _gameTable;
-        [GUI] GLArea        _glScreen;
+        [GUI] Box _box;
+        [GUI] TreeView _gameTable;
+        [GUI] GLArea _glScreen;
 #pragma warning restore 649
 
         public MainWindow(string[] args, Application gtkApplication) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), args, gtkApplication) { }
@@ -78,16 +78,16 @@ namespace Ryujinx.UI
 
             if (DiscordIntegrationEnabled)
             {
-                DiscordClient   = new DiscordRpcClient("568815339807309834");
+                DiscordClient = new DiscordRpcClient("568815339807309834");
                 DiscordPresence = new RichPresence
                 {
                     Assets = new Assets
                     {
-                        LargeImageKey  = "ryujinx",
+                        LargeImageKey = "ryujinx",
                         LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
                     },
-                    Details    = "Main Menu",
-                    State      = "Idling",
+                    Details = "Main Menu",
+                    State = "Idling",
                     Timestamps = new Timestamps(DateTime.UtcNow)
                 };
 
@@ -99,35 +99,35 @@ namespace Ryujinx.UI
 
             DeleteEvent += Window_Close;
 
-            _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
+            _mainWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
             _stopEmulation.Sensitive = false;
 
-            if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _iconToggle.Active       = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _titleToggle.Active      = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _developerToggle.Active  = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _versionToggle.Active    = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _iconToggle.Active = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _titleToggle.Active = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _developerToggle.Active = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _versionToggle.Active = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns[4]) { _timePlayedToggle.Active = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns[5]) { _lastPlayedToggle.Active = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _fileExtToggle.Active    = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _fileSizeToggle.Active   = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _pathToggle.Active       = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _fileExtToggle.Active = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _fileSizeToggle.Active = true; }
+            if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _pathToggle.Active = true; }
 
             if (args.Length == 1)
             {
                 // Temporary code section start, remove this section when game is rendered to the GLArea in the GUI
                 _box.Remove(_glScreen);
 
-                if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 0); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   1); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   2); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   3); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[4]) { _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   4); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[5]) { _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   5); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   6); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   7); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   8); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _gameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _gameTable.AppendColumn("Application", new CellRendererText(), "text", 1); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _gameTable.AppendColumn("Developer", new CellRendererText(), "text", 2); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _gameTable.AppendColumn("Version", new CellRendererText(), "text", 3); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[4]) { _gameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[5]) { _gameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _gameTable.AppendColumn("File Ext", new CellRendererText(), "text", 6); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _gameTable.AppendColumn("File Size", new CellRendererText(), "text", 7); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _gameTable.AppendColumn("Path", new CellRendererText(), "text", 8); }
 
-                _tableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _tableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 _gameTable.Model = _tableStore;
 
                 UpdateGameTable();
@@ -137,17 +137,17 @@ namespace Ryujinx.UI
             {
                 _box.Remove(_glScreen);
 
-                if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 0); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   1); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   2); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   3); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[4]) { _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   4); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[5]) { _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   5); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   6); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   7); }
-                if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   8); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[0]) { _gameTable.AppendColumn("Icon", new CellRendererPixbuf(), "pixbuf", 0); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[1]) { _gameTable.AppendColumn("Application", new CellRendererText(), "text", 1); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[2]) { _gameTable.AppendColumn("Developer", new CellRendererText(), "text", 2); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[3]) { _gameTable.AppendColumn("Version", new CellRendererText(), "text", 3); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[4]) { _gameTable.AppendColumn("Time Played", new CellRendererText(), "text", 4); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[5]) { _gameTable.AppendColumn("Last Played", new CellRendererText(), "text", 5); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[6]) { _gameTable.AppendColumn("File Ext", new CellRendererText(), "text", 6); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[7]) { _gameTable.AppendColumn("File Size", new CellRendererText(), "text", 7); }
+                if (SwitchSettings.SwitchConfig.GuiColumns[8]) { _gameTable.AppendColumn("Path", new CellRendererText(), "text", 8); }
 
-                _tableStore      = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+                _tableStore = new ListStore(typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
                 _gameTable.Model = _tableStore;
 
                 UpdateGameTable();
@@ -158,8 +158,8 @@ namespace Ryujinx.UI
         {
             MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, errorMessage)
             {
-                Title          = "Ryujinx - Error",
-                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png"),
+                Title = "Ryujinx - Error",
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png"),
                 WindowPosition = WindowPosition.Center
             };
             errorDialog.SetSizeRequest(100, 20);
@@ -269,7 +269,7 @@ namespace Ryujinx.UI
 
                 new Thread(new ThreadStart(CreateGameWindow)).Start();
 
-                _gameLoaded              = true;
+                _gameLoaded = true;
                 _stopEmulation.Sensitive = true;
 
                 if (DiscordIntegrationEnabled)
@@ -297,59 +297,59 @@ namespace Ryujinx.UI
                         details = $"Playing {_device.System.TitleName}";
                     }
 
-                    DiscordPresence.Details               = details;
-                    DiscordPresence.State                 = state;
+                    DiscordPresence.Details = details;
+                    DiscordPresence.State = state;
                     DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
-                    DiscordPresence.Assets.SmallImageKey  = "ryujinx";
+                    DiscordPresence.Assets.SmallImageKey = "ryujinx";
                     DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                    DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
+                    DiscordPresence.Timestamps = new Timestamps(DateTime.UtcNow);
 
                     DiscordClient.SetPresence(DiscordPresence);
                 }
 
-                return;
+                // TODO: Update GUI to store these files in another location
 
-                try
-                {
-                    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleId);
+                //try
+                //{
+                //    string savePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleId);
 
-                    if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
-                    {
-                        Directory.CreateDirectory(savePath);
-                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                        {
-                            stream.Write(Encoding.ASCII.GetBytes("0"));
-                        }
-                    }
+                //    if (File.Exists(System.IO.Path.Combine(savePath, "TimePlayed.dat")) == false)
+                //    {
+                //        Directory.CreateDirectory(savePath);
+                //        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+                //        {
+                //            stream.Write(Encoding.ASCII.GetBytes("0"));
+                //        }
+                //    }
 
-                    if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
-                    {
-                        Directory.CreateDirectory(savePath);
-                        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
-                        {
-                            stream.Write(Encoding.ASCII.GetBytes("Never"));
-                        }
-                    }
+                //    if (File.Exists(System.IO.Path.Combine(savePath, "LastPlayed.dat")) == false)
+                //    {
+                //        Directory.CreateDirectory(savePath);
+                //        using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                //        {
+                //            stream.Write(Encoding.ASCII.GetBytes("Never"));
+                //        }
+                //    }
 
-                    using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
-                    {
-                        using (StreamWriter writer = new StreamWriter(stream))
-                        {
-                            writer.WriteLine(DateTime.UtcNow);
-                        }
-                    }
-                }
-                catch (ArgumentNullException)
-                {
-                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleId}");
-                }
+                //    using (FileStream stream = File.OpenWrite(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+                //    {
+                //        using (StreamWriter writer = new StreamWriter(stream))
+                //        {
+                //            writer.WriteLine(DateTime.UtcNow);
+                //        }
+                //    }
+                //}
+                //catch (ArgumentNullException)
+                //{
+                //    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleId}");
+                //}
             }
         }
 
         private static void CreateGameWindow()
         {
             Configuration.ConfigureHid(_device, SwitchSettings.SwitchConfig);
-            
+
             using (GlScreen screen = new GlScreen(_device, _renderer))
             {
                 screen.MainLoop();
@@ -360,42 +360,44 @@ namespace Ryujinx.UI
 
         private static void End()
         {
-            if (false)
-            {
-                try
-                {
-                    string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleId);
-                    double currentPlayTime = 0;
+            // TODO: Update GUI to store these files in another location
 
-                    using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
-                    {
-                        using (StreamReader reader = new StreamReader(stream))
-                        {
-                            DateTime startTime = DateTime.Parse(reader.ReadLine());
+            //if (_gameLoaded)
+            //{
+            //    try
+            //    {
+            //        string savePath        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", _userId, _device.System.TitleId);
+            //        double currentPlayTime = 0;
 
-                            using (FileStream lastPlayedStream = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                            {
-                                using (StreamReader lastPlayedReader = new StreamReader(lastPlayedStream))
-                                {
-                                    currentPlayTime = double.Parse(lastPlayedReader.ReadLine());
-                                }
-                            }
+            //        using (FileStream stream = File.OpenRead(System.IO.Path.Combine(savePath, "LastPlayed.dat")))
+            //        {
+            //            using (StreamReader reader = new StreamReader(stream))
+            //            {
+            //                DateTime startTime = DateTime.Parse(reader.ReadLine());
 
-                            using (FileStream timePlayedStream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
-                            {
-                                using (StreamWriter timePlayedWriter = new StreamWriter(timePlayedStream))
-                                {
-                                    timePlayedWriter.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
-                                }
-                            }
-                        }
-                    }
-                }
-                catch (ArgumentNullException)
-                {
-                    Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleId}");
-                }
-            }
+            //                using (FileStream lastPlayedStream = File.OpenRead(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+            //                {
+            //                    using (StreamReader lastPlayedReader = new StreamReader(lastPlayedStream))
+            //                    {
+            //                        currentPlayTime = double.Parse(lastPlayedReader.ReadLine());
+            //                    }
+            //                }
+
+            //                using (FileStream timePlayedStream = File.OpenWrite(System.IO.Path.Combine(savePath, "TimePlayed.dat")))
+            //                {
+            //                    using (StreamWriter timePlayedWriter = new StreamWriter(timePlayedStream))
+            //                    {
+            //                        timePlayedWriter.WriteLine(currentPlayTime + Math.Round(DateTime.UtcNow.Subtract(startTime).TotalSeconds, MidpointRounding.AwayFromZero));
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //    catch (ArgumentNullException)
+            //    {
+            //        Logger.PrintWarning(LogClass.Application, $"Could not access save path to retrieve time/last played data using: UserID: {_userId}, TitleID: {_device.System.TitleId}");
+            //    }
+            //}
 
             Profile.FinishProfiling();
             _device.Dispose();
@@ -439,12 +441,12 @@ namespace Ryujinx.UI
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
             fileChooser.Filter = new FileFilter();
-            fileChooser.Filter.AddPattern("*.nsp" );
+            fileChooser.Filter.AddPattern("*.nsp");
             fileChooser.Filter.AddPattern("*.pfs0");
-            fileChooser.Filter.AddPattern("*.xci" );
-            fileChooser.Filter.AddPattern("*.nca" );
-            fileChooser.Filter.AddPattern("*.nro" );
-            fileChooser.Filter.AddPattern("*.nso" );
+            fileChooser.Filter.AddPattern("*.xci");
+            fileChooser.Filter.AddPattern("*.nca");
+            fileChooser.Filter.AddPattern("*.nro");
+            fileChooser.Filter.AddPattern("*.nso");
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
@@ -470,9 +472,9 @@ namespace Ryujinx.UI
         {
             Process.Start(new ProcessStartInfo()
             {
-                FileName        = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs"),
+                FileName = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs"),
                 UseShellExecute = true,
-                Verb            = "open"
+                Verb = "open"
             });
         }
 
@@ -521,7 +523,7 @@ namespace Ryujinx.UI
             {
                 Process.Start(new ProcessStartInfo(ryuUpdater, "/U") { UseShellExecute = true });
             }
-            catch(System.ComponentModel.Win32Exception)
+            catch (System.ComponentModel.Win32Exception)
             {
                 CreateErrorDialog("Update canceled by user or updater was not found");
             }

@@ -21,8 +21,8 @@ namespace Ryujinx.UI
         private static SystemState.TitleLanguage DesiredTitleLanguage;
 
         private const double SecondsPerMinute = 60.0;
-        private const double SecondsPerHour   = SecondsPerMinute * 60;
-        private const double SecondsPerDay    = SecondsPerHour   * 24;
+        private const double SecondsPerHour = SecondsPerMinute * 60;
+        private const double SecondsPerDay = SecondsPerHour * 24;
 
         public static byte[] RyujinxNspIcon { get; private set; }
         public static byte[] RyujinxXciIcon { get; private set; }
@@ -48,7 +48,7 @@ namespace Ryujinx.UI
 
         public static void Init(List<string> AppDirs, Keyset keySet, SystemState.TitleLanguage desiredTitleLanguage)
         {
-            KeySet               = keySet;
+            KeySet = keySet;
             DesiredTitleLanguage = desiredTitleLanguage;
 
             // Loads the default application Icons
@@ -72,11 +72,11 @@ namespace Ryujinx.UI
                 DirectoryInfo AppDirInfo = new DirectoryInfo(appDir);
                 foreach (FileInfo App in AppDirInfo.GetFiles())
                 {
-                    if ((Path.GetExtension(App.ToString()) == ".xci")  ||
-                        (Path.GetExtension(App.ToString()) == ".nca")  ||
-                        (Path.GetExtension(App.ToString()) == ".nsp")  ||
+                    if ((Path.GetExtension(App.ToString()) == ".xci") ||
+                        (Path.GetExtension(App.ToString()) == ".nca") ||
+                        (Path.GetExtension(App.ToString()) == ".nsp") ||
                         (Path.GetExtension(App.ToString()) == ".pfs0") ||
-                        (Path.GetExtension(App.ToString()) == ".nro")  ||
+                        (Path.GetExtension(App.ToString()) == ".nro") ||
                         (Path.GetExtension(App.ToString()) == ".nso"))
                     {
                         applications.Add(App.ToString());
@@ -88,16 +88,16 @@ namespace Ryujinx.UI
             ApplicationLibraryData = new List<ApplicationData>();
             foreach (string applicationPath in applications)
             {
-                double filesize        = new FileInfo(applicationPath).Length * 0.000000000931;
-                string titleName       = null;
-                string titleId         = null;
-                string developer       = null;
-                string version         = null;
+                double filesize = new FileInfo(applicationPath).Length * 0.000000000931;
+                string titleName = null;
+                string titleId = null;
+                string developer = null;
+                string version = null;
                 byte[] applicationIcon = null;
 
                 using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                 {
-                    if ((Path.GetExtension(applicationPath) == ".nsp")  ||
+                    if ((Path.GetExtension(applicationPath) == ".nsp") ||
                         (Path.GetExtension(applicationPath) == ".pfs0") ||
                         (Path.GetExtension(applicationPath) == ".xci"))
                     {
@@ -193,20 +193,20 @@ namespace Ryujinx.UI
                         }
                         catch (MissingKeyException exception)
                         {
-                            titleName       = "Unknown";
-                            titleId         = "Unknown";
-                            developer       = "Unknown";
-                            version         = "?";
+                            titleName = "Unknown";
+                            titleId = "Unknown";
+                            developer = "Unknown";
+                            version = "?";
                             applicationIcon = NspOrXciIcon(applicationPath);
 
                             Logger.PrintWarning(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                         }
                         catch (InvalidDataException)
                         {
-                            titleName       = "Unknown";
-                            titleId         = "Unknown";
-                            developer       = "Unknown";
-                            version         = "?";
+                            titleName = "Unknown";
+                            titleId = "Unknown";
+                            developer = "Unknown";
+                            version = "?";
                             applicationIcon = NspOrXciIcon(applicationPath);
 
                             Logger.PrintWarning(LogClass.Application, $"The file is not an NCA file or the header key is incorrect. Errored File: {applicationPath}");
@@ -237,10 +237,10 @@ namespace Ryujinx.UI
                             byte[] IconSectionInfo = Read(AssetOffset + 8, 0x10);
 
                             long iconOffset = BitConverter.ToInt64(IconSectionInfo, 0);
-                            long iconSize   = BitConverter.ToInt64(IconSectionInfo, 8);
+                            long iconSize = BitConverter.ToInt64(IconSectionInfo, 8);
 
                             ulong nacpOffset = reader.ReadUInt64();
-                            ulong nacpSize   = reader.ReadUInt64();
+                            ulong nacpSize = reader.ReadUInt64();
 
                             // Reads and stores game icon as byte array
                             applicationIcon = Read(AssetOffset + iconOffset, (int)iconSize);
@@ -284,10 +284,10 @@ namespace Ryujinx.UI
                         else
                         {
                             applicationIcon = RyujinxNroIcon;
-                            titleName       = "Application";
-                            titleId         = "0000000000000000";
-                            developer       = "Unknown";
-                            version         = "?";
+                            titleName = "Application";
+                            titleId = "0000000000000000";
+                            developer = "Unknown";
+                            version = "?";
                         }
                     }
                     // If its an NCA or NSO we just set defaults
@@ -303,15 +303,15 @@ namespace Ryujinx.UI
                         }
 
                         string fileName = Path.GetFileName(applicationPath);
-                        string fileExt  = Path.GetExtension(applicationPath);
+                        string fileExt = Path.GetExtension(applicationPath);
 
                         StringBuilder titlename = new StringBuilder();
                         titlename.Append(fileName);
                         titlename.Remove(fileName.Length - fileExt.Length, fileExt.Length);
 
                         titleName = titlename.ToString();
-                        titleId   = "0000000000000000";
-                        version   = "?";
+                        titleId = "0000000000000000";
+                        version = "?";
                         developer = "Unknown";
                     }
                 }
@@ -320,16 +320,16 @@ namespace Ryujinx.UI
 
                 ApplicationData data = new ApplicationData()
                 {
-                    Icon       = applicationIcon,
-                    TitleName  = titleName,
-                    TitleId    = titleId,
-                    Developer  = developer,
-                    Version    = version,
+                    Icon = applicationIcon,
+                    TitleName = titleName,
+                    TitleId = titleId,
+                    Developer = developer,
+                    Version = version,
                     TimePlayed = playedData[0],
                     LastPlayed = playedData[1],
-                    FileExt    = Path.GetExtension(applicationPath).ToUpper().Remove(0 ,1),
-                    FileSize   = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
-                    Path       = applicationPath,
+                    FileExt = Path.GetExtension(applicationPath).ToUpper().Remove(0, 1),
+                    FileSize = (filesize < 1) ? (filesize * 1024).ToString("0.##") + "MB" : filesize.ToString("0.##") + "GB",
+                    Path = applicationPath,
                 };
 
                 ApplicationLibraryData.Add(data);
@@ -338,7 +338,7 @@ namespace Ryujinx.UI
 
         private static byte[] GetResourceBytes(string resourceName)
         {
-            Stream resourceStream    = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
+            Stream resourceStream = Assembly.GetCallingAssembly().GetManifestResourceStream(resourceName);
             byte[] resourceByteArray = new byte[resourceStream.Length];
 
             resourceStream.Read(resourceByteArray);
@@ -384,67 +384,69 @@ namespace Ryujinx.UI
         {
             return new string[] { "Unknown", "Unknown" };
 
-            try
-            {
-                string[] playedData = new string[2];
-                string savePath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", UserId, TitleId);
+            // TODO: Update GUI to store these files in another location
 
-                if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
-                {
-                    Directory.CreateDirectory(savePath);
-                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat")))
-                    {
-                        file.Write(Encoding.ASCII.GetBytes("0"));
-                    }
-                }
-                using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
-                {
-                    using (StreamReader sr = new StreamReader(fs))
-                    {
-                        float timePlayed = float.Parse(sr.ReadLine());
+            //try
+            //{
+            //    string[] playedData = new string[2];
+            //    string savePath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "nand", "user", "save", "0000000000000000", UserId, TitleId);
 
-                        if (timePlayed < SecondsPerMinute)
-                        {
-                            playedData[0] = $"{timePlayed}s";
-                        }
-                        else if (timePlayed < SecondsPerHour)
-                        {
-                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
-                        }
-                        else if (timePlayed < SecondsPerDay)
-                        {
-                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";
-                        }
-                        else
-                        {
-                            playedData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days";
-                        }
-                    }
-                }
+            //    if (File.Exists(Path.Combine(savePath, "TimePlayed.dat")) == false)
+            //    {
+            //        Directory.CreateDirectory(savePath);
+            //        using (FileStream file = File.OpenWrite(Path.Combine(savePath, "TimePlayed.dat")))
+            //        {
+            //            file.Write(Encoding.ASCII.GetBytes("0"));
+            //        }
+            //    }
+            //    using (FileStream fs = File.OpenRead(Path.Combine(savePath, "TimePlayed.dat")))
+            //    {
+            //        using (StreamReader sr = new StreamReader(fs))
+            //        {
+            //            float timePlayed = float.Parse(sr.ReadLine());
 
-                if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
-                {
-                    Directory.CreateDirectory(savePath);
-                    using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat")))
-                    {
-                        file.Write(Encoding.ASCII.GetBytes("Never"));
-                    }
-                }
+            //            if (timePlayed < SecondsPerMinute)
+            //            {
+            //                playedData[0] = $"{timePlayed}s";
+            //            }
+            //            else if (timePlayed < SecondsPerHour)
+            //            {
+            //                playedData[0] = $"{Math.Round(timePlayed / SecondsPerMinute, 2, MidpointRounding.AwayFromZero)} mins";
+            //            }
+            //            else if (timePlayed < SecondsPerDay)
+            //            {
+            //                playedData[0] = $"{Math.Round(timePlayed / SecondsPerHour  , 2, MidpointRounding.AwayFromZero)} hrs";
+            //            }
+            //            else
+            //            {
+            //                playedData[0] = $"{Math.Round(timePlayed / SecondsPerDay   , 2, MidpointRounding.AwayFromZero)} days";
+            //            }
+            //        }
+            //    }
 
-                using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
-                {
-                    using (StreamReader sr = new StreamReader(fs))
-                    {
-                        playedData[1] = sr.ReadLine();
-                    }
-                }
+            //    if (File.Exists(Path.Combine(savePath, "LastPlayed.dat")) == false)
+            //    {
+            //        Directory.CreateDirectory(savePath);
+            //        using (FileStream file = File.OpenWrite(Path.Combine(savePath, "LastPlayed.dat")))
+            //        {
+            //            file.Write(Encoding.ASCII.GetBytes("Never"));
+            //        }
+            //    }
 
-                return playedData;
-            }
-            catch
-            {
-                return new string[] { "Unknown", "Unknown" };
-            }
+            //    using (FileStream fs = File.OpenRead(Path.Combine(savePath, "LastPlayed.dat")))
+            //    {
+            //        using (StreamReader sr = new StreamReader(fs))
+            //        {
+            //            playedData[1] = sr.ReadLine();
+            //        }
+            //    }
+
+            //    return playedData;
+            //}
+            //catch
+            //{
+            //    return new string[] { "Unknown", "Unknown" };
+            //}
         }
 
         private static byte[] NspOrXciIcon(string applicationPath)
