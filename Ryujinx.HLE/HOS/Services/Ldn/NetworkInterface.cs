@@ -7,24 +7,25 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
 {
     internal class NetworkInterface
     {
-        public ResultCode NetworkInterfaceState { get; set; }
-        public KEvent     StateChangeEvent      { get; private set; }
+        public ResultCode NifmState        { get; set; }
+        public KEvent     StateChangeEvent { get; private set; }
 
         private NetworkState _state;
 
         public NetworkInterface(Horizon system)
         {
-            NetworkInterfaceState = ResultCode.Success;
-            StateChangeEvent      = new KEvent(system);
+            // TODO(Ac_K): Determine where the internal state is set.
+            NifmState        = ResultCode.Success;
+            StateChangeEvent = new KEvent(system);
 
             _state = NetworkState.None;
         }
 
         public ResultCode Initialize(int unknown, int version = 0, IPAddress ipv4Address = null, IPAddress subnetMaskAddress = null)
         {
-            // TODO: Call nn::nifm::InitializeSystem().
-            //       If the call failed, it returns the result code.
-            //       If the call succeed, it signal and clear an event then start a new thread named nn.ldn.NetworkInterfaceMonitor.
+            // TODO(Ac_K): Call nn::nifm::InitializeSystem().
+            //             If the call failed, it returns the result code.
+            //             If the call succeed, it signal and clear an event then start a new thread named nn.ldn.NetworkInterfaceMonitor.
 
             Logger.PrintStub(LogClass.ServiceLdn, new { version });
 
@@ -43,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
 
         public ResultCode Finalize()
         {
-            // TODO: Finalize nifm service then kill the thread named nn.ldn.NetworkInterfaceMonitor.
+            // TODO(Ac_K): Finalize nifm service then kill the thread named nn.ldn.NetworkInterfaceMonitor.
 
             _state = NetworkState.None;
 

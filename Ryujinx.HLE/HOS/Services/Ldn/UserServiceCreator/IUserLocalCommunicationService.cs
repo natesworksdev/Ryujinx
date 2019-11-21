@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     class IUserLocalCommunicationService : IpcService
     {
-        // TODO: Determine what the hardcoded unknown value is.
+        // TODO(Ac_K): Determine what the hardcoded unknown value is.
         private const int UnknownValue = 90;
 
         private NetworkInterface _networkInterface;
@@ -24,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetState() -> s32 state
         public ResultCode GetState(ServiceCtx context)
         {
-            if (_networkInterface.NetworkInterfaceState != ResultCode.Success)
+            if (_networkInterface.NifmState != ResultCode.Success)
             {
                 context.ResponseData.Write((int)NetworkState.Error);
 
@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // Initialize(u64 ip_addresses, u64, pid)
         public ResultCode Initialize(ServiceCtx context)
         {
-            // TODO: Determine what addresses are.
+            // TODO(Ac_K): Determine what addresses are.
 
             ulong ipAddresses = context.RequestData.ReadUInt64();
 
