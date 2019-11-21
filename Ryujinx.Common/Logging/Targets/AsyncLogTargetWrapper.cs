@@ -72,5 +72,10 @@ namespace Ryujinx.Common.Logging
             _messageQueue.CompleteAdding();
             _messageThread.Join();
         }
+
+        public string GetName()
+        {
+            return _target.GetName();
+        }
     }
 }

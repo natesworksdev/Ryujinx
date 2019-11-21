@@ -1,8 +1,11 @@
+using LibHac.FsSystem;
 using Ryujinx.Audio;
 using Ryujinx.Graphics;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS;
+using Ryujinx.HLE.HOS.Services;
+using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
 using System;
 using System.Threading;
@@ -58,6 +61,29 @@ namespace Ryujinx.HLE
             Hid = new Hid(this, System.HidBaseAddress);
 
             VsyncEvent = new AutoResetEvent(true);
+        }
+
+        // TODO: Use Configuration when it will be moved to Common.
+        public void Initialize(SystemLanguage language, bool enableMulticoreScheduling, bool enableDockedMode, bool enableVsync, bool enableFsIntegrityChecks, int fsGlobalAccessLogMode, bool ignoreMissingServices)
+        {
+            System.State.SetLanguage(language);
+
+            EnableDeviceVsync = enableVsync;
+
+            System.State.DockedMode = enableDockedMode;
+
+            if (enableMulticoreScheduling)
+            {
+                System.EnableMultiCoreScheduling();
+            }
+
+            System.FsIntegrityCheckLevel = enableFsIntegrityChecks
+                ? IntegrityCheckLevel.ErrorOnInvalid
+                : IntegrityCheckLevel.None;
+
+            System.GlobalAccessLogMode = fsGlobalAccessLogMode;
+
+            ServiceConfiguration.IgnoreMissingServices = ignoreMissingServices;
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)

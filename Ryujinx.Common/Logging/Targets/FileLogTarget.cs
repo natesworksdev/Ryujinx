@@ -9,13 +9,15 @@ namespace Ryujinx.Common.Logging
 
         private readonly StreamWriter  _logWriter;
         private readonly ILogFormatter _formatter;
+        private readonly string        _name;
 
-        public FileLogTarget(string path)
-            : this(path, FileShare.Read, FileMode.Append)
+        public FileLogTarget(string path, string name)
+            : this(path, name, FileShare.Read, FileMode.Append)
         { }
 
-        public FileLogTarget(string path, FileShare fileShare, FileMode fileMode)
+        public FileLogTarget(string path, string name, FileShare fileShare, FileMode fileMode)
         {
+            _name      = name;
             _logWriter = new StreamWriter(File.Open(path, fileMode, FileAccess.Write, fileShare));
             _formatter = new DefaultLogFormatter();
         }
@@ -31,6 +33,11 @@ namespace Ryujinx.Common.Logging
             _logWriter.WriteLine("---- End of Log ----");
             _logWriter.Flush();
             _logWriter.Dispose();
+        }
+
+        public string GetName()
+        {
+            return _name;
         }
     }
 }
