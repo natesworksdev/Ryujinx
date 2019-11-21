@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_stateChangeEventHandle);
 
-            // Return ResultCode.InvalidArgument if handle is null, doesn't occur in our case.
+            // Return ResultCode.InvalidArgument if handle is null, doesn't occur in our case since we already throw an Exception.
 
             return ResultCode.Success;
         }
@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // InitializeOld(u64, pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
-            return _networkInterface.Initialize(UnknownValue);
+            return _networkInterface.Initialize(UnknownValue, 0, null, null);
         }
 
         [Command(401)]
@@ -79,11 +79,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         public ResultCode Initialize(ServiceCtx context)
         {
             // TODO(Ac_K): Determine what addresses are.
-
-            ulong ipAddresses = context.RequestData.ReadUInt64();
-
-            IPAddress unknownAddress1 = new IPAddress((uint)(ipAddresses & uint.MaxValue));
-            IPAddress unknownAddress2 = new IPAddress((uint)(ipAddresses >> 32));
+            IPAddress unknownAddress1 = new IPAddress(context.RequestData.ReadUInt32());
+            IPAddress unknownAddress2 = new IPAddress(context.RequestData.ReadUInt32());
 
             return _networkInterface.Initialize(UnknownValue, version: 1, unknownAddress1, unknownAddress2);
         }
