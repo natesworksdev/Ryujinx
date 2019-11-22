@@ -110,7 +110,7 @@ namespace Ryujinx.UI
                         }
                         catch (InvalidDataException)
                         {
-                            Logger.PrintWarning(LogClass.Application, "The header key is incorrect or missing and therefore the NCA header content type check has failed.");
+                            Logger.PrintWarning(LogClass.Application, $"{app}: The header key is incorrect or missing and therefore the NCA header content type check has failed.");
                         }
 
                         applications.Add(app);
@@ -130,7 +130,7 @@ namespace Ryujinx.UI
                         }
                         catch (InvalidDataException)
                         {
-                            Logger.PrintWarning(LogClass.Application, "The header key is incorrect or missing and therefore the NCA header content type check has failed.");
+                            Logger.PrintWarning(LogClass.Application, $"{app}: The header key is incorrect or missing and therefore the NCA header content type check has failed.");
                         }
 
                         applications.Add(app);
