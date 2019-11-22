@@ -12,48 +12,46 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
     [Service("prepo:u")]
     class IPrepoService : IpcService
     {
-        private bool _withUserId;
-
         public IPrepoService(ServiceCtx context) { }
 
         [Command(10100)] // 1.0.0-5.1.0
         // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportOld(ServiceCtx context)
         {
-            _withUserId = false;
-
             // We don't care about the differences since we don't use the play report.
-            return SaveReportWithUser(context);
+            return ProcessReport(context, withUserID: false);
         }
 
         [Command(10101)] // 1.0.0-5.1.0
         // SaveReportWithUserOld(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportWithUserOld(ServiceCtx context)
         {
-            _withUserId = true;
-
             // We don't care about the differences since we don't use the play report.
-            return SaveReportWithUser(context);
+            return ProcessReport(context, withUserID: true);
         }
 
         [Command(10102)] // 6.0.0+
         // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReport(ServiceCtx context)
         {
-            _withUserId = false;
-
             // We don't care about the differences since we don't use the play report.
-            return SaveReportWithUser(context);
+            return ProcessReport(context, withUserID: false);
         }
 
         [Command(10103)] // 6.0.0+
         // SaveReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportWithUser(ServiceCtx context)
         {
-            UInt128 userId   = _withUserId ? new UInt128(context.RequestData.ReadBytes(0x10)) : new UInt128();
+            // We don't care about the differences since we don't use the play report.
+            return ProcessReport(context, withUserID: true);
+        }
+
+        private ResultCode ProcessReport(ServiceCtx context, bool withUserID)
+        {
+            UInt128 userId   = withUserID ? new UInt128(context.RequestData.ReadBytes(0x10)) : new UInt128();
             string  gameRoom = StringUtils.ReadUtf8String(context);
 
-            if (_withUserId)
+            if (withUserID)
             {
                 if (userId.IsNull)
                 {
@@ -87,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
             sb.AppendLine("\nPlayReport log:");
 
-            if (_withUserId)
+            if (!userId.IsNull)
             {
                 sb.AppendLine($" UserId: {userId.ToString()}");
             }
