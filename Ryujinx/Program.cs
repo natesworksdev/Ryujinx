@@ -38,8 +38,9 @@ namespace Ryujinx
             }
             else
             {
-                // No configuration, we load the default values.
+                // No configuration, we load the default values and save it on disk
                 ConfigurationState.Instance.LoadDefault();
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(configurationPath);
             }
 
 
