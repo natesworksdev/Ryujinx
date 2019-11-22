@@ -1,5 +1,6 @@
 using LibHac.FsSystem;
 using Ryujinx.Audio;
+using Ryujinx.Configuration;
 using Ryujinx.Graphics;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.FileSystem;
@@ -63,27 +64,27 @@ namespace Ryujinx.HLE
             VsyncEvent = new AutoResetEvent(true);
         }
 
-        // TODO: Use Configuration when it will be moved to Common.
-        public void Initialize(SystemLanguage language, bool enableMulticoreScheduling, bool enableDockedMode, bool enableVsync, bool enableFsIntegrityChecks, int fsGlobalAccessLogMode, bool ignoreMissingServices)
+        public void Initialize()
         {
-            System.State.SetLanguage(language);
+            System.State.SetLanguage((SystemLanguage)ConfigurationState.Instance.System.Language.Value);
 
-            EnableDeviceVsync = enableVsync;
+            EnableDeviceVsync = ConfigurationState.Instance.Graphics.EnableVsync;
 
-            System.State.DockedMode = enableDockedMode;
+            // TODO: Make this relodable and implement Docking/UnDocking logic.
+            System.State.DockedMode = ConfigurationState.Instance.System.EnableDockedMode;
 
-            if (enableMulticoreScheduling)
+            if (ConfigurationState.Instance.System.EnableMulticoreScheduling)
             {
                 System.EnableMultiCoreScheduling();
             }
 
-            System.FsIntegrityCheckLevel = enableFsIntegrityChecks
+            System.FsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid
                 : IntegrityCheckLevel.None;
 
-            System.GlobalAccessLogMode = fsGlobalAccessLogMode;
+            System.GlobalAccessLogMode = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
 
-            ServiceConfiguration.IgnoreMissingServices = ignoreMissingServices;
+            ServiceConfiguration.IgnoreMissingServices = ConfigurationState.Instance.System.IgnoreMissingServices;
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)

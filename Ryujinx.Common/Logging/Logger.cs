@@ -75,10 +75,6 @@ namespace Ryujinx.Common.Logging
         {
             ILogTarget logTarget = GetTarget(target);
 
-            // TODO: remove this
-            if (logTarget == null)
-                throw new Exception();
-
             if (logTarget != null)
             {
                 Updated -= logTarget.Log;
