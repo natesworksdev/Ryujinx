@@ -484,9 +484,12 @@ namespace Ryujinx.UI
         //Events
         private void Application_Added(object sender, ApplicationAddedEventArgs e)
         {
-            _tableStore.AppendValues(e.AppData.Favorite, new Gdk.Pixbuf(e.AppData.Icon, 75, 75), $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}", e.AppData.Developer, e.AppData.Version, e.AppData.TimePlayed, e.AppData.LastPlayed, e.AppData.FileExtension, e.AppData.FileSize, e.AppData.Path);
-            _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
-            _progressBar.Value  = (float)e.NumAppsLoaded / e.NumAppsFound;
+            Application.Invoke(delegate {
+                _tableStore.AppendValues(e.AppData.Favorite, new Gdk.Pixbuf(e.AppData.Icon, 75, 75), $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}", e.AppData.Developer, e.AppData.Version, e.AppData.TimePlayed, e.AppData.LastPlayed, e.AppData.FileExtension, e.AppData.FileSize, e.AppData.Path);
+
+                _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
+                _progressBar.Value  = (float)e.NumAppsLoaded / e.NumAppsFound;
+            });
         }
 
         private void FavToggle_Toggled(object sender, ToggledArgs args)
