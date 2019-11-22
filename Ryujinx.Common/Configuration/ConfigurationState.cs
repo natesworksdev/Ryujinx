@@ -410,7 +410,7 @@ namespace Ryujinx.Configuration
 
             Hid.JoystickControls.Value = new NpadController
             {
-                Enabled           = true,
+                Enabled          = true,
                 Index            = 0,
                 Deadzone         = 0.05f,
                 TriggerThreshold = 0.5f,
@@ -425,7 +425,6 @@ namespace Ryujinx.Configuration
                     ButtonMinus = ControllerInputId.Button6,
                     ButtonL     = ControllerInputId.Button4,
                     ButtonZl    = ControllerInputId.Axis2,
-
                 },
                 RightJoycon      = new NpadControllerRight
                 {
@@ -446,7 +445,7 @@ namespace Ryujinx.Configuration
         {
             if (configurationFileFormat.Version != 1 && configurationFileFormat.Version != 0)
             {
-                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default!");
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default.");
 
                 LoadDefault();
 
@@ -495,7 +494,7 @@ namespace Ryujinx.Configuration
         {
             if (Instance != null)
             {
-                throw new InvalidOperationException("Configuration is already initialized!");
+                throw new InvalidOperationException("Configuration is already initialized");
             }
 
             Instance = new ConfigurationState();

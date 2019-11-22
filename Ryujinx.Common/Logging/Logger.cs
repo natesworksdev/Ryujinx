@@ -42,8 +42,7 @@ namespace Ryujinx.Common.Logging
             AddTarget(new AsyncLogTargetWrapper(
                 new ConsoleLogTarget("console"),
                 1000,
-                AsyncLogTargetOverflowAction.Block
-            ));
+                AsyncLogTargetOverflowAction.Block));
         }
 
         public static void RestartTime()
