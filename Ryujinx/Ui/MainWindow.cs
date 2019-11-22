@@ -45,8 +45,6 @@ namespace Ryujinx.UI
 
         private static GlScreen _screen;
 
-        private static Application _gtkApplication;
-
         private static ListStore _tableStore;
 
         private static bool _updatingGameTable;
@@ -99,9 +97,9 @@ namespace Ryujinx.UI
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
 
-        public MainWindow(Application gtkApplication) : this(new Builder("Ryujinx.Ui.MainWindow.glade"), gtkApplication) { }
+        public MainWindow() : this(new Builder("Ryujinx.Ui.MainWindow.glade")) { }
 
-        private MainWindow(Builder builder, Application gtkApplication) : base(builder.GetObject("_mainWin").Handle)
+        private MainWindow(Builder builder) : base(builder.GetObject("_mainWin").Handle)
         {
             builder.Autoconnect(this);
 
@@ -114,8 +112,6 @@ namespace Ryujinx.UI
             _audioOut = InitializeAudioEngine();
 
             _device = new HLE.Switch(_renderer, _audioOut);
-
-            _gtkApplication = gtkApplication;
 
             _treeView = _gameTable;
 
@@ -608,10 +604,6 @@ namespace Ryujinx.UI
         private void Settings_Pressed(object sender, EventArgs args)
         {
             SwitchSettings settingsWin = new SwitchSettings(_device);
-
-            _gtkApplication.Register(GLib.Cancellable.Current);
-            _gtkApplication.AddWindow(settingsWin);
-
             settingsWin.Show();
         }
 
@@ -632,10 +624,6 @@ namespace Ryujinx.UI
         private void About_Pressed(object sender, EventArgs args)
         {
             AboutWindow aboutWin = new AboutWindow();
-
-            _gtkApplication.Register(GLib.Cancellable.Current);
-            _gtkApplication.AddWindow(aboutWin);
-
             aboutWin.Show();
         }
 

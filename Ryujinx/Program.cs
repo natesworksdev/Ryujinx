@@ -18,6 +18,7 @@ namespace Ryujinx
 
             AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
             AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
+            GLib.ExceptionManager.UnhandledException   += Glib_UnhandledException;
 
             Profile.Initialize();
 
@@ -30,11 +31,7 @@ namespace Ryujinx
                 MainWindow.CreateErrorDialog($"Key file was not found. Please refer to `KEYS.md` for more info");
             }
 
-            Application gtkApplication = new Application("Ryujinx.Ryujinx", GLib.ApplicationFlags.None);
-            MainWindow  mainWindow     = new MainWindow(gtkApplication);
-
-            gtkApplication.Register(GLib.Cancellable.Current);
-            gtkApplication.AddWindow(mainWindow);
+            MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
             if (args.Length == 1)
@@ -55,6 +52,18 @@ namespace Ryujinx
             Exception exception = e.ExceptionObject as Exception;
 
             Logger.PrintError(LogClass.Emulation, $"Unhandled exception caught: {exception}");
+
+            if (e.IsTerminating)
+            {
+                Logger.Shutdown();
+            }
+        }
+
+        private static void Glib_UnhandledException(GLib.UnhandledExceptionArgs e)
+        {
+            Exception exception = e.ExceptionObject as Exception;
+
+            Logger.PrintError(LogClass.Application, $"Unhandled exception caught: {exception}");
 
             if (e.IsTerminating)
             {
