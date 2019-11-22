@@ -334,12 +334,123 @@ namespace Ryujinx.Configuration
             return configurationFile;
         }
 
+        public void LoadDefault()
+        {
+            Graphics.ShadersDumpPath.Value         = "";
+            Logger.EnableDebug.Value               = false;
+            Logger.EnableStub.Value                = true;
+            Logger.EnableInfo.Value                = true;
+            Logger.EnableWarn.Value                = true;
+            Logger.EnableError.Value               = true;
+            Logger.EnableGuest.Value               = true;
+            Logger.EnableFsAccessLog.Value         = false;
+            Logger.FilteredClasses.Value           = new LogClass[] { };
+            Logger.EnableFileLog.Value             = true;
+            System.Language.Value                  = Language.AmericanEnglish;
+            System.EnableDockedMode.Value          = false;
+            EnableDiscordIntegration.Value         = true;
+            Graphics.EnableVsync.Value             = true;
+            System.EnableMulticoreScheduling.Value = true;
+            System.EnableFsIntegrityChecks.Value   = true;
+            System.FsGlobalAccessLogMode.Value     = 0;
+            System.IgnoreMissingServices.Value     = false;
+            Hid.ControllerType.Value               = ControllerType.Handheld;
+            Ui.GuiColumns.FavColumn.Value          = true;
+            Ui.GuiColumns.IconColumn.Value         = true;
+            Ui.GuiColumns.AppColumn.Value          = true;
+            Ui.GuiColumns.DevColumn.Value          = true;
+            Ui.GuiColumns.VersionColumn.Value      = true;
+            Ui.GuiColumns.TimePlayedColumn.Value   = true;
+            Ui.GuiColumns.LastPlayedColumn.Value   = true;
+            Ui.GuiColumns.FileExtColumn.Value      = true;
+            Ui.GuiColumns.FileSizeColumn.Value     = true;
+            Ui.GuiColumns.PathColumn.Value         = true;
+            Ui.GameDirs.Value                      = new List<string>();
+            Ui.EnableCustomTheme.Value             = false;
+            Ui.CustomThemePath.Value               = "";
+            Hid.EnableKeyboard.Value               = false;
+
+            Hid.KeyboardControls.Value = new NpadKeyboard
+            {
+                LeftJoycon  = new NpadKeyboardLeft
+                {
+                    StickUp     = Key.W,
+                    StickDown   = Key.S,
+                    StickLeft   = Key.A,
+                    StickRight  = Key.D,
+                    StickButton = Key.F,
+                    DPadUp      = Key.Up,
+                    DPadDown    = Key.Down,
+                    DPadLeft    = Key.Left,
+                    DPadRight   = Key.Right,
+                    ButtonMinus = Key.Minus,
+                    ButtonL     = Key.E,
+                    ButtonZl    = Key.Q,
+                },
+                RightJoycon = new NpadKeyboardRight
+                {
+                    StickUp     = Key.I,
+                    StickDown   = Key.K,
+                    StickLeft   = Key.J,
+                    StickRight  = Key.L,
+                    StickButton = Key.H,
+                    ButtonA     = Key.Z,
+                    ButtonB     = Key.X,
+                    ButtonX     = Key.C,
+                    ButtonY     = Key.V,
+                    ButtonPlus  = Key.Plus,
+                    ButtonR     = Key.U,
+                    ButtonZr    = Key.O,
+                },
+                Hotkeys     = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.Tab
+                }
+            };
+
+            Hid.JoystickControls.Value = new NpadController
+            {
+                Enabled           = true,
+                Index            = 0,
+                Deadzone         = 0.05f,
+                TriggerThreshold = 0.5f,
+                LeftJoycon       = new NpadControllerLeft
+                {
+                    Stick       = ControllerInputId.Axis0,
+                    StickButton = ControllerInputId.Button8,
+                    DPadUp      = ControllerInputId.Hat0Up,
+                    DPadDown    = ControllerInputId.Hat0Down,
+                    DPadLeft    = ControllerInputId.Hat0Left,
+                    DPadRight   = ControllerInputId.Hat0Right,
+                    ButtonMinus = ControllerInputId.Button6,
+                    ButtonL     = ControllerInputId.Button4,
+                    ButtonZl    = ControllerInputId.Axis2,
+
+                },
+                RightJoycon      = new NpadControllerRight
+                {
+                    Stick       = ControllerInputId.Axis3,
+                    StickButton = ControllerInputId.Button9,
+                    ButtonA     = ControllerInputId.Button1,
+                    ButtonB     = ControllerInputId.Button0,
+                    ButtonX     = ControllerInputId.Button3,
+                    ButtonY     = ControllerInputId.Button2,
+                    ButtonPlus  = ControllerInputId.Button7,
+                    ButtonR     = ControllerInputId.Button5,
+                    ButtonZr    = ControllerInputId.Axis5,
+                }
+            };
+        }
+
         public void Load(ConfigurationFileFormat configurationFileFormat)
         {
             if (configurationFileFormat.Version != 1 && configurationFileFormat.Version != 0)
             {
-                // TODO: load default configuration
-                throw new NotSupportedException($"Unsupported configuration version {configurationFileFormat.Version}");
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Unsupported configuration version {configurationFileFormat.Version}, loading default!");
+
+                LoadDefault();
+
+                return;
             }
 
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;

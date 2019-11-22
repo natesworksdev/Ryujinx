@@ -5,16 +5,16 @@ namespace Ryujinx.UI.Input
         /// <summary>
         /// Left JoyCon Keyboard Bindings
         /// </summary>
-        public Configuration.Hid.NpadKeyboardLeft LeftJoycon { get; set; }
+        public Configuration.Hid.NpadKeyboardLeft LeftJoycon;
 
         /// <summary>
         /// Right JoyCon Keyboard Bindings
         /// </summary>
-        public Configuration.Hid.NpadKeyboardRight RightJoycon { get; set; }
+        public Configuration.Hid.NpadKeyboardRight RightJoycon;
 
         /// <summary>
         /// Hotkey Keyboard Bindings
         /// </summary>
-        public Configuration.Hid.KeyboardHotkeys Hotkeys { get; private set; }
+        public Configuration.Hid.KeyboardHotkeys Hotkeys;
     }
 }

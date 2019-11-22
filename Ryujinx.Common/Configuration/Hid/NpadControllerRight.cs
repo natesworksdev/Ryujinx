@@ -3,7 +3,6 @@
     public struct NpadControllerRight
     {
         public ControllerInputId Stick;
-        public ControllerInputId StickY;
         public ControllerInputId StickButton;
         public ControllerInputId ButtonA;
         public ControllerInputId ButtonB;

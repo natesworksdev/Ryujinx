@@ -28,9 +28,20 @@ namespace Ryujinx
             // Initialize Discord integration
             DiscordIntegrationModule.Initialize();
 
+            string configurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+
             // Now load the configuration as the other subsystem are now registered
-            ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-            ConfigurationState.Instance.Load(configurationFileFormat);
+            if (File.Exists(configurationPath))
+            {
+                ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(configurationPath);
+                ConfigurationState.Instance.Load(configurationFileFormat);
+            }
+            else
+            {
+                // No configuration, we load the default values.
+                ConfigurationState.Instance.LoadDefault();
+            }
+
 
             Profile.Initialize();
 
