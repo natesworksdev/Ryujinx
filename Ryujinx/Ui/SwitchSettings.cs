@@ -9,6 +9,8 @@ using System.Linq;
 using System.Reflection;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Configuration.System;
+using Ryujinx.Configuration.Hid;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -202,7 +204,7 @@ namespace Ryujinx.Ui
                     string key    = keyPressed.Event.Key.ToString();
                     string capKey = key.First().ToString().ToUpper() + key.Substring(1);
 
-                    if (Enum.IsDefined(typeof(OpenTK.Input.Key), capKey))
+                    if (Enum.IsDefined(typeof(Configuration.Hid.Key), capKey))
                     {
                         button.Label = capKey;
                     }
@@ -338,38 +340,38 @@ namespace Ryujinx.Ui
 
             ConfigurationState.Instance.Hid.KeyboardControls.Value.LeftJoycon = new NpadKeyboardLeft()
             {
-                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickUp1.Label),
-                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickDown1.Label),
-                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickLeft1.Label),
-                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickRight1.Label),
-                StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _lStickButton1.Label),
-                DPadUp      = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadUp1.Label),
-                DPadDown    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadDown1.Label),
-                DPadLeft    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadLeft1.Label),
-                DPadRight   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _dpadRight1.Label),
-                ButtonMinus = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _minus1.Label),
-                ButtonL     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _l1.Label),
-                ButtonZl    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _zL1.Label),
+                StickUp     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickUp1.Label),
+                StickDown   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickDown1.Label),
+                StickLeft   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickLeft1.Label),
+                StickRight  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickRight1.Label),
+                StickButton = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _lStickButton1.Label),
+                DPadUp      = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadUp1.Label),
+                DPadDown    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadDown1.Label),
+                DPadLeft    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadLeft1.Label),
+                DPadRight   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _dpadRight1.Label),
+                ButtonMinus = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _minus1.Label),
+                ButtonL     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _l1.Label),
+                ButtonZl    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zL1.Label),
             };
 
             ConfigurationState.Instance.Hid.KeyboardControls.Value.RightJoycon = new NpadKeyboardRight()
             {
-                StickUp     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickUp1.Label),
-                StickDown   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickDown1.Label),
-                StickLeft   = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickLeft1.Label),
-                StickRight  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickRight1.Label),
-                StickButton = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _rStickButton1.Label),
-                ButtonA     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _a1.Label),
-                ButtonB     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _b1.Label),
-                ButtonX     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _x1.Label),
-                ButtonY     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _y1.Label),
-                ButtonPlus  = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _plus1.Label),
-                ButtonR     = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _r1.Label),
-                ButtonZr    = (OpenTK.Input.Key)Enum.Parse(typeof(OpenTK.Input.Key), _zR1.Label),
+                StickUp     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickUp1.Label),
+                StickDown   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickDown1.Label),
+                StickLeft   = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickLeft1.Label),
+                StickRight  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickRight1.Label),
+                StickButton = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _rStickButton1.Label),
+                ButtonA     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _a1.Label),
+                ButtonB     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _b1.Label),
+                ButtonX     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _x1.Label),
+                ButtonY     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _y1.Label),
+                ButtonPlus  = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _plus1.Label),
+                ButtonR     = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _r1.Label),
+                ButtonZr    = (Configuration.Hid.Key)Enum.Parse(typeof(Configuration.Hid.Key), _zR1.Label),
             };
 
-            ConfigurationState.Instance.System.Language.Value              = (SystemLanguage)Enum.Parse(typeof(SystemLanguage), _systemLanguageSelect.ActiveId);
-            ConfigurationState.Instance.Hid.ControllerType.Value           = (ControllerStatus)Enum.Parse(typeof(ControllerStatus), _controller1Type.ActiveId);
+            ConfigurationState.Instance.System.Language.Value              = (Language)Enum.Parse(typeof(Language), _systemLanguageSelect.ActiveId);
+            ConfigurationState.Instance.Hid.ControllerType.Value           = (ControllerType)Enum.Parse(typeof(ControllerType), _controller1Type.ActiveId);
             ConfigurationState.Instance.Ui.CustomThemePath.Value           = _custThemePath.Buffer.Text;
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value     = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                  = gameDirs;

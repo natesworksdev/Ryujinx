@@ -1,8 +1,10 @@
 ﻿using Ryujinx.Common;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.SystemState;
-using Ryujinx.HLE.Input;
-using Ryujinx.Ui.Input;
+using Ryujinx.Configuration.Hid;
+using Ryujinx.Configuration.System;
+using Ryujinx.Configuration.Ui;
+using Ryujinx.UI.Input;
 using System;
 using System.Collections.Generic;
 
@@ -145,7 +147,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Change System Language
             /// </summary>
-            public ReactiveObject<SystemLanguage> Language { get; private set; }
+            public ReactiveObject<Language> Language { get; private set; }
 
             /// <summary>
             /// Enables or disables Docked Mode
@@ -174,7 +176,7 @@ namespace Ryujinx.Configuration
 
             public SystemSection()
             {
-                Language                  = new ReactiveObject<SystemLanguage>();
+                Language                  = new ReactiveObject<Language>();
                 EnableDockedMode          = new ReactiveObject<bool>();
                 EnableMulticoreScheduling = new ReactiveObject<bool>();
                 EnableFsIntegrityChecks   = new ReactiveObject<bool>();
@@ -191,7 +193,7 @@ namespace Ryujinx.Configuration
             /// <summary>
             ///  The primary controller's type
             /// </summary>
-            public ReactiveObject<ControllerStatus> ControllerType { get; private set; }
+            public ReactiveObject<ControllerType> ControllerType { get; private set; }
 
             /// <summary>
             /// Enable or disable keyboard support (Independent from controllers binding)
@@ -206,14 +208,14 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Controller control bindings
             /// </summary>
-            public ReactiveObject<Ui.Input.NpadController> JoystickControls { get; private set; }
+            public ReactiveObject<NpadController> JoystickControls { get; private set; }
 
             public HidSection()
             {
-                ControllerType   = new ReactiveObject<ControllerStatus>();
+                ControllerType   = new ReactiveObject<ControllerType>();
                 EnableKeyboard   = new ReactiveObject<bool>();
                 KeyboardControls = new ReactiveObject<NpadKeyboard>();
-                JoystickControls = new ReactiveObject<Ui.Input.NpadController>();
+                JoystickControls = new ReactiveObject<NpadController>();
             }
         }
 
@@ -308,7 +310,7 @@ namespace Ryujinx.Configuration
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 ControllerType            = Hid.ControllerType,
-                GuiColumns                = new Ui.GuiColumns()
+                GuiColumns                = new GuiColumns()
                 {
                     FavColumn        =  Ui.GuiColumns.FavColumn,
                     IconColumn       =  Ui.GuiColumns.IconColumn,
@@ -337,7 +339,7 @@ namespace Ryujinx.Configuration
             if (configurationFileFormat.Version != 1 && configurationFileFormat.Version != 0)
             {
                 // TODO: load default configuration
-                throw new System.NotSupportedException($"Unsupported configuration version {configurationFileFormat.Version}");
+                throw new NotSupportedException($"Unsupported configuration version {configurationFileFormat.Version}");
             }
 
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;

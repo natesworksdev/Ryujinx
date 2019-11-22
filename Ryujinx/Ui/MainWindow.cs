@@ -13,13 +13,17 @@ using Ryujinx.Configuration;
 using System.Diagnostics;
 using OpenTK.Input;
 using Ryujinx.Ui.Input;
-
-using GUI = Gtk.Builder.ObjectAttribute;
 using System.Threading.Tasks;
 using Utf8Json;
 using JsonPrettyPrinterPlus;
 using Utf8Json.Resolvers;
 using Ryujinx.HLE.FileSystem;
+
+
+using GUI = Gtk.Builder.ObjectAttribute;
+using Ryujinx.HLE.Input;
+using Ryujinx.Configuration.Hid;
+using Ryujinx.HLE.HOS.SystemState;
 
 namespace Ryujinx.Ui
 {
@@ -202,8 +206,7 @@ namespace Ryujinx.Ui
         {
             HLE.Switch instance = new HLE.Switch(_renderer, _audioOut);
 
-            instance.Initialize(ConfigurationState.Instance.System.Language, ConfigurationState.Instance.System.EnableMulticoreScheduling, ConfigurationState.Instance.System.EnableDockedMode, ConfigurationState.Instance.Graphics.EnableVsync, ConfigurationState.Instance.System.EnableFsIntegrityChecks, ConfigurationState.Instance.System.FsGlobalAccessLogMode, ConfigurationState.Instance.System.IgnoreMissingServices);
-            
+            instance.Initialize((SystemLanguage)ConfigurationState.Instance.System.Language.Value, ConfigurationState.Instance.System.EnableMulticoreScheduling, ConfigurationState.Instance.System.EnableDockedMode, ConfigurationState.Instance.Graphics.EnableVsync, ConfigurationState.Instance.System.EnableFsIntegrityChecks, ConfigurationState.Instance.System.FsGlobalAccessLogMode, ConfigurationState.Instance.System.IgnoreMissingServices);
             return instance;
         }
 
@@ -233,7 +236,7 @@ namespace Ryujinx.Ui
             {
                 Logger.RestartTime();
 
-                // TODO: move this somewhere else + reloadable
+                // TODO: move this somewhere else + reloadable?
                 GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
@@ -340,17 +343,27 @@ namespace Ryujinx.Ui
         // TODO: Make HLE.Switch handle the state itself + reloading
         private static void ConfigureHid()
         {
-            NpadController controller = ConfigurationState.Instance.Hid.JoystickControls.Value;
-
-            if (controller.Enabled)
-            {
-                if (!Joystick.GetState(controller.Index).IsConnected)
-                {
-                    controller.SetEnabled(false);
-                }
-            }
-            _device.Hid.InitializePrimaryController(ConfigurationState.Instance.Hid.ControllerType);
+            _device.Hid.InitializePrimaryController(ConvertControllerTypeToState(ConfigurationState.Instance.Hid.ControllerType));
             _device.Hid.InitializeKeyboard();
+        }
+
+        private static ControllerStatus ConvertControllerTypeToState(ControllerType controllerType)
+        {
+            switch (controllerType)
+            {
+                case ControllerType.Handheld:
+                    return ControllerStatus.Handheld;
+                case ControllerType.NpadLeft:
+                    return ControllerStatus.NpadLeft;
+                case ControllerType.NpadRight:
+                    return ControllerStatus.NpadRight;
+                case ControllerType.NpadPair:
+                    return ControllerStatus.NpadPair;
+                case ControllerType.ProController:
+                    return ControllerStatus.ProController;
+                default:
+                    throw new NotImplementedException();
+            }
         }
 
         private static void CreateGameWindow()

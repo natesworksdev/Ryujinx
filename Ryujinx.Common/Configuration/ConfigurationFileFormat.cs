@@ -1,20 +1,16 @@
 using JsonPrettyPrinterPlus;
-using LibHac.FsSystem;
-using OpenTK.Input;
-using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE;
-using Ryujinx.HLE.HOS.SystemState;
-using Ryujinx.HLE.HOS.Services;
-using Ryujinx.HLE.Input;
-using Ryujinx.Ui;
-using Ryujinx.Ui.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using Utf8Json;
 using Utf8Json.Resolvers;
+using Ryujinx.Configuration.System;
+using Ryujinx.Configuration.Hid;
+using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.UI.Input;
+using Ryujinx.Configuration.Ui;
 
 namespace Ryujinx.Configuration
 {
@@ -75,7 +71,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Change System Language
         /// </summary>
-        public SystemLanguage SystemLanguage { get; set; }
+        public Language SystemLanguage { get; set; }
 
         /// <summary>
         /// Enables or disables Docked Mode
@@ -115,7 +111,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         ///  The primary controller's type
         /// </summary>
-        public ControllerStatus ControllerType { get; set; }
+        public ControllerType ControllerType { get; set; }
 
         /// <summary>
         /// Used to toggle columns in the GUI
@@ -150,7 +146,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Controller control bindings
         /// </summary>
-        public Ui.Input.NpadController JoystickControls { get; set; }
+        public NpadController JoystickControls { get; set; }
 
         /// <summary>
         /// Loads a configuration file from disk
