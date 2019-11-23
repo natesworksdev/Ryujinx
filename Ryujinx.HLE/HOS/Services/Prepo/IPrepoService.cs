@@ -1,11 +1,9 @@
-using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Buffers.Binary;
 using System.IO;
 using System.Text;
-using System.Text.RegularExpressions;
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
 {
