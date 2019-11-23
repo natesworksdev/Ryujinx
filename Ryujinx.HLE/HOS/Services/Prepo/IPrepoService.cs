@@ -1,6 +1,8 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Utilities;
+using System;
+using System.Buffers.Binary;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -59,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                 }
             }
 
-            if (gameRoom == "")
+            if (gameRoom == string.Empty)
             {
                 return ResultCode.InvalidState;
             }
@@ -83,7 +85,8 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         {
             StringBuilder sb = new StringBuilder();
 
-            sb.AppendLine("\nPlayReport log:");
+            sb.AppendLine();
+            sb.AppendLine("PlayReport log:");
 
             if (!userId.IsNull)
             {
@@ -104,11 +107,11 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
                 while (stream.Position != stream.Length)
                 {
-                    byte flag = reader.ReadByte();
+                    byte descriptor = reader.ReadByte();
 
                     if (!isValue)
                     {
-                        byte[] key = reader.ReadBytes(flag - 0xA0);
+                        byte[] key = reader.ReadBytes(descriptor - 0xA0);
 
                         fieldStr = $"  Key: {Encoding.ASCII.GetString(key)}";
 
@@ -116,19 +119,19 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                     }
                     else
                     {
-                        if (flag > 0xD0) // Int value.
+                        if (descriptor > 0xD0) // Int value.
                         {
-                            if (flag - 0xD0 == 1)
+                            if (descriptor - 0xD0 == 1)
                             {
-                                fieldStr += $", Value: {EndianSwap.Swap16(reader.ReadUInt16())}";
+                                fieldStr += $", Value: {BinaryPrimitives.ReverseEndianness(reader.ReadUInt16())}";
                             }
-                            else if (flag - 0xD0 == 2)
+                            else if (descriptor - 0xD0 == 2)
                             {
-                                fieldStr += $", Value: {EndianSwap.Swap32(reader.ReadInt32())}";
+                                fieldStr += $", Value: {BinaryPrimitives.ReverseEndianness(reader.ReadInt32())}";
                             }
-                            else if (flag - 0xD0 == 4)
+                            else if (descriptor - 0xD0 == 4)
                             {
-                                fieldStr += $", Value: {reader.ReadInt64()}";
+                                fieldStr += $", Value: {BinaryPrimitives.ReverseEndianness(reader.ReadInt64())}";
                             }
                             else
                             {
@@ -136,17 +139,42 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                                 break;
                             }
                         }
-                        else if (flag > 0xA0 && flag < 0xD0) // String value, max size = 0x20 bytes ?
+                        else if (descriptor > 0xA0 && descriptor < 0xD0) // String value, max size = 0x20 bytes ?
                         {
-                            byte[] valueBuffer = reader.ReadBytes(flag - 0xA0);
-                            string value       = Encoding.ASCII.GetString(valueBuffer);
+                            int    size      = descriptor - 0xA0;
+                            string value     = "";
+                            byte[] rawValues = new byte[0];
+
+                            for (int i = 0; i < size; i++)
+                            {
+                                byte chr = reader.ReadByte();
+
+                                if (chr >= 0x20 && chr < 0x7f)
+                                {
+                                    value += (char)chr;
+                                }
+                                else
+                                {
+                                    Array.Resize(ref rawValues, rawValues.Length + 1);
+
+                                    rawValues[rawValues.Length - 1] = chr;
+                                }
+                            }
+
+                            if (value != string.Empty)
+                            { 
+                                fieldStr += $", Value: {value}";
+                            }
 
                             // TODO: Find why there is no alpha-numeric value sometimes.
-                            fieldStr += $", Value: {Regex.Replace(value, "[^A-Za-z0-9 -~]", "")}";
+                            if (rawValues.Length > 0)
+                            {
+                                fieldStr += $", RawValue: 0x{BitConverter.ToString(rawValues).Replace("-", "")}";
+                            }
                         }
                         else // Byte value.
                         {
-                            fieldStr += $", Value: {flag}";
+                            fieldStr += $", Value: {descriptor}";
                         }
 
                         sb.AppendLine(fieldStr);
