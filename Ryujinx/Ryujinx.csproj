@@ -18,7 +18,7 @@
     <Optimize>false</Optimize>
   </PropertyGroup>
 
-  <!-- Due to GtkSharp. -->
+  <!-- Due to .net core 3.0 embedded resource loading -->
   <PropertyGroup>
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
   </PropertyGroup>
@@ -70,7 +70,7 @@
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.0.121" />
     <PackageReference Include="GtkSharp" Version="3.22.25.24" />
-    <PackageReference Include="GtkSharp.Dependencies" Version="1.0.1" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
+    <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="JsonPrettyPrinter" Version="1.0.1.1" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.4" />
   </ItemGroup>
