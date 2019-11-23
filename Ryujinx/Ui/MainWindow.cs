@@ -21,20 +21,6 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.UI
 {
-    public struct GuiColumns
-    {
-        public bool FavColumn;
-        public bool IconColumn;
-        public bool AppColumn;
-        public bool DevColumn;
-        public bool VersionColumn;
-        public bool TimePlayedColumn;
-        public bool LastPlayedColumn;
-        public bool FileExtColumn;
-        public bool FileSizeColumn;
-        public bool PathColumn;
-    }
-    
     public class MainWindow : Window
     {
         private static HLE.Switch _device;
@@ -62,13 +48,6 @@ namespace Ryujinx.UI
         private static TreeViewColumn _pathColumn;
 
         private static TreeView _treeView;
-
-        private struct ApplicationMetadata
-        {
-            public bool   Favorite   { get; set; }
-            public double TimePlayed { get; set; }
-            public string LastPlayed { get; set; }
-        }
 
         public static bool DiscordIntegrationEnabled { get; set; }
 
@@ -139,7 +118,7 @@ namespace Ryujinx.UI
                 DiscordClient.SetPresence(DiscordPresence);
             }
 
-            _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png");
+            _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _stopEmulation.Sensitive = false;
 
             if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { _favToggle.Active        = true; }
@@ -171,7 +150,7 @@ namespace Ryujinx.UI
             MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, null)
             {
                 Title          = "Ryujinx - Error",
-                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.ryujinxIcon.png"),
+                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
                 Text           = "Ryujinx has encountered an Error",
                 SecondaryText  = errorMessage,
                 WindowPosition = WindowPosition.Center
@@ -183,7 +162,10 @@ namespace Ryujinx.UI
 
         internal static void ApplyTheme()
         {
-            if (!SwitchSettings.SwitchConfig.EnableCustomTheme) return;
+            if (!SwitchSettings.SwitchConfig.EnableCustomTheme)
+            {
+                return;
+            }
 
             if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
             {
@@ -222,7 +204,7 @@ namespace Ryujinx.UI
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
-                     if (column.Title == "Fav")         { _favColumn        = column; }
+                if (column.Title == "Fav")              { _favColumn        = column; }
                 else if (column.Title == "Application") { _appColumn        = column; }
                 else if (column.Title == "Developer")   { _devColumn        = column; }
                 else if (column.Title == "Version")     { _versionColumn    = column; }
@@ -246,16 +228,18 @@ namespace Ryujinx.UI
 
         internal static async Task UpdateGameTable()
         {
-            if (_updatingGameTable) return;
+            if (_updatingGameTable)
+            {
+                return;
+            }
 
-            _updatingGameTable         = true;
-            _treeView.HeadersClickable = false;
+            _updatingGameTable = true;
+
             _tableStore.Clear();
 
             await Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
 
-            _treeView.HeadersClickable = true;
-            _updatingGameTable         = false;
+            _updatingGameTable = false;
         }
 
         internal void LoadApplication(string path)
@@ -372,6 +356,7 @@ namespace Ryujinx.UI
                 string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
                 IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
                 ApplicationMetadata appMetadata;
 
                 if (!File.Exists(metadataFile))
@@ -415,7 +400,10 @@ namespace Ryujinx.UI
 
         private static void End()
         {
-            if (_ending) return;
+            if (_ending)
+            {
+                return;
+            }
 
             _ending = true;
 
@@ -425,6 +413,7 @@ namespace Ryujinx.UI
                 string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
 
                 IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
                 ApplicationMetadata appMetadata;
 
                 if (!File.Exists(metadataFile))
@@ -495,10 +484,12 @@ namespace Ryujinx.UI
         private void FavToggle_Toggled(object sender, ToggledArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
-            string titleid      = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
-            string metadataPath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", titleid, "gui", "metadata.json");
+
+            string titleId      = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
+            string metadataPath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", titleId, "gui", "metadata.json");
 
             IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+
             ApplicationMetadata appMetadata;
             
             using (Stream stream = File.OpenRead(metadataPath))
@@ -633,7 +624,8 @@ namespace Ryujinx.UI
         private void Fav_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.FavColumn  = _favToggle.Active;
+
+            updatedColumns.FavColumn               = _favToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -644,7 +636,8 @@ namespace Ryujinx.UI
         private void Icon_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.IconColumn = _iconToggle.Active;
+
+            updatedColumns.IconColumn              = _iconToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -655,7 +648,8 @@ namespace Ryujinx.UI
         private void Title_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.AppColumn  = _appToggle.Active;
+
+            updatedColumns.AppColumn               = _appToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -666,7 +660,8 @@ namespace Ryujinx.UI
         private void Developer_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.DevColumn  = _developerToggle.Active;
+
+            updatedColumns.DevColumn               = _developerToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -676,8 +671,9 @@ namespace Ryujinx.UI
 
         private void Version_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns    = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.VersionColumn = _versionToggle.Active;
+            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+
+            updatedColumns.VersionColumn           = _versionToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -687,8 +683,9 @@ namespace Ryujinx.UI
 
         private void TimePlayed_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns       = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.TimePlayedColumn = _timePlayedToggle.Active;
+            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+
+            updatedColumns.TimePlayedColumn        = _timePlayedToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -698,8 +695,9 @@ namespace Ryujinx.UI
 
         private void LastPlayed_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns       = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.LastPlayedColumn = _lastPlayedToggle.Active;
+            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+
+            updatedColumns.LastPlayedColumn        = _lastPlayedToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -709,8 +707,9 @@ namespace Ryujinx.UI
 
         private void FileExt_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns    = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.FileExtColumn = _fileExtToggle.Active;
+            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+
+            updatedColumns.FileExtColumn           = _fileExtToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -720,8 +719,9 @@ namespace Ryujinx.UI
 
         private void FileSize_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns     = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.FileSizeColumn = _fileSizeToggle.Active;
+            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+
+            updatedColumns.FileSizeColumn          = _fileSizeToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -732,7 +732,8 @@ namespace Ryujinx.UI
         private void Path_Toggled(object sender, EventArgs args)
         {
             GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
-            updatedColumns.PathColumn = _pathToggle.Active;
+
+            updatedColumns.PathColumn              = _pathToggle.Active;
             SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
 
             Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
@@ -786,9 +787,18 @@ namespace Ryujinx.UI
                 bValue = bValue.Substring(0, bValue.Length - 1);
             }
 
-            if (float.Parse(aValue) > float.Parse(bValue)) return -1;
-            else if (float.Parse(bValue) > float.Parse(aValue)) return 1;
-            else return 0;
+            if (float.Parse(aValue) > float.Parse(bValue))
+            {
+                return -1;
+            }
+            else if (float.Parse(bValue) > float.Parse(aValue))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         private static int LastPlayedSort(ITreeModel model, TreeIter a, TreeIter b)
@@ -796,8 +806,15 @@ namespace Ryujinx.UI
             string aValue = model.GetValue(a, 6).ToString();
             string bValue = model.GetValue(b, 6).ToString();
 
-            if (aValue == "Never") aValue = DateTime.UnixEpoch.ToString();
-            if (bValue == "Never") bValue = DateTime.UnixEpoch.ToString();
+            if (aValue == "Never")
+            {
+                aValue = DateTime.UnixEpoch.ToString();
+            }
+
+            if (bValue == "Never")
+            {
+                bValue = DateTime.UnixEpoch.ToString();
+            }
 
             return DateTime.Compare(DateTime.Parse(bValue), DateTime.Parse(aValue));
         }
@@ -811,17 +828,32 @@ namespace Ryujinx.UI
             {
                 aValue = (float.Parse(aValue[0..^2]) * 1024).ToString();
             }
-            else aValue = aValue[0..^2];
+            else
+            {
+                aValue = aValue[0..^2];
+            }
 
             if (bValue.Substring(bValue.Length - 2) == "GB")
             {
                 bValue = (float.Parse(bValue[0..^2]) * 1024).ToString();
             }
-            else bValue = bValue[0..^2];
+            else
+            {
+                bValue = bValue[0..^2];
+            }
 
-                 if (float.Parse(aValue) > float.Parse(bValue)) return -1;
-            else if (float.Parse(bValue) > float.Parse(aValue)) return 1;
-            else return 0;
+            if (float.Parse(aValue) > float.Parse(bValue))
+            {
+                return -1;
+            }
+            else if (float.Parse(bValue) > float.Parse(aValue))
+            {
+                return 1;
+            }
+            else
+            {
+                return 0;
+            }
         }
     }
 }
