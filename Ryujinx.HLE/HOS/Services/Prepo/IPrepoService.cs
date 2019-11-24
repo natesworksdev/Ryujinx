@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
                 bool isValue = false;
 
-                string fieldStr = "";
+                string fieldStr = string.Empty;
 
                 while (stream.Position != stream.Length)
                 {
@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                                 fieldStr += $", Value: {value}";
                             }
 
-                            // TODO: Find why there is no alpha-numeric value sometimes.
+                            // TODO(Ac_k): Determine why there are non-alphanumeric values sometimes.
                             if (rawValues.Length > 0)
                             {
                                 fieldStr += $", RawValue: 0x{BitConverter.ToString(rawValues).Replace("-", "")}";
