@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                                 fieldStr += $", Value: {value}";
                             }
 
-                            // TODO(Ac_k): Determine why there are non-alphanumeric values sometimes.
+                            // TODO(Ac_K): Determine why there are non-alphanumeric values sometimes.
                             if (rawValues.Length > 0)
                             {
                                 fieldStr += $", RawValue: 0x{BitConverter.ToString(rawValues).Replace("-", "")}";
