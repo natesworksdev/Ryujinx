@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
                         else if (descriptor > 0xA0 && descriptor < 0xD0) // String value, max size = 0x20 bytes ?
                         {
                             int    size      = descriptor - 0xA0;
-                            string value     = "";
+                            string value     = string.Empty;
                             byte[] rawValues = new byte[0];
 
                             for (int i = 0; i < size; i++)
