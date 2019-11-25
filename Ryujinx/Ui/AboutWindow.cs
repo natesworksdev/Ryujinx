@@ -12,14 +12,7 @@ namespace Ryujinx.UI
 {
     public class AboutWindow : Window
     {
-        private struct Info
-        {
-            public string InstallVersion;
-            public string InstallCommit;
-            public string InstallBranch;
-        }
-
-        private static Info Information { get; set; }
+        private static AboutInfo AboutInformation { get; set; }
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -52,10 +45,10 @@ namespace Ryujinx.UI
 
                 using (Stream stream = File.OpenRead(System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFS", "Installer", "Config", "Config.json")))
                 {
-                    Information = JsonSerializer.Deserialize<Info>(stream, resolver);
+                    AboutInformation = JsonSerializer.Deserialize<AboutInfo>(stream, resolver);
                 }
 
-                _versionText.Text = $"Version {Information.InstallVersion} - {Information.InstallBranch} ({Information.InstallCommit})";
+                _versionText.Text = $"Version {AboutInformation.InstallVersion} - {AboutInformation.InstallBranch} ({AboutInformation.InstallCommit})";
             }
             catch
             {
