@@ -272,9 +272,9 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             {
                 while (true)
                 {
-                    int randomOffset = _random.Next(0, (int)addressSpacePageLimit) << 12;
+                    ulong randomOffset = (ulong)(uint)_random.Next(0, (int)addressSpacePageLimit) << 12;
 
-                    targetAddress = memMgr.GetAddrSpaceBaseAddr() + (ulong)randomOffset;
+                    targetAddress = memMgr.GetAddrSpaceBaseAddr() + randomOffset;
 
                     if (memMgr.InsideAddrSpace(targetAddress, size) && !memMgr.InsideHeapRegion(targetAddress, size) && !memMgr.InsideAliasRegion(targetAddress, size))
                     {
