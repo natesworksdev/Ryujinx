@@ -1,5 +1,4 @@
 ﻿using Gtk;
-using GUI = Gtk.Builder.ObjectAttribute;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
 using Ryujinx.UI.Input;
@@ -8,6 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+
+using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.UI
 {

@@ -1,12 +1,13 @@
 ﻿using Gtk;
-using GUI = Gtk.Builder.ObjectAttribute;
 using System;
 using System.Diagnostics;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using Utf8Json;
 using Utf8Json.Resolvers;
-using System.IO;
+
+using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.UI
 {

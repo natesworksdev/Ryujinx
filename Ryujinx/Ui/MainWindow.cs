@@ -1,11 +1,10 @@
-using JsonPrettyPrinterPlus;
 using DiscordRPC;
 using Gtk;
-using GUI = Gtk.Builder.ObjectAttribute;
+using JsonPrettyPrinterPlus;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
-using Ryujinx.Graphics.Gal;
 using Ryujinx.Graphics.Gal.OpenGL;
+using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
 using System;
@@ -14,10 +13,12 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using System.Threading;
 using Utf8Json;
 using Utf8Json.Resolvers;
-using System.Threading.Tasks;
+
+using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.UI
 {
