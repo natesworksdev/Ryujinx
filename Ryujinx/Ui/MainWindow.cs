@@ -20,7 +20,7 @@ using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
-namespace Ryujinx.UI
+namespace Ryujinx.Ui
 {
     public class MainWindow : Window
     {
@@ -133,7 +133,17 @@ namespace Ryujinx.UI
             if (SwitchSettings.SwitchConfig.GuiColumns.FileSizeColumn)   { _fileSizeToggle.Active   = true; }
             if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { _pathToggle.Active       = true; }
 
-            _gameTable.Model = _tableStore = new ListStore(typeof(bool), typeof(Gdk.Pixbuf), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string), typeof(string));
+            _gameTable.Model = _tableStore = new ListStore(
+                typeof(bool), 
+                typeof(Gdk.Pixbuf), 
+                typeof(string), 
+                typeof(string), 
+                typeof(string), 
+                typeof(string), 
+                typeof(string), 
+                typeof(string), 
+                typeof(string), 
+                typeof(string));
             
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
@@ -144,21 +154,6 @@ namespace Ryujinx.UI
 #pragma warning disable CS4014
             UpdateGameTable();
 #pragma warning restore CS4014
-        }
-
-        internal static void CreateErrorDialog(string errorMessage)
-        {
-            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, null)
-            {
-                Title          = "Ryujinx - Error",
-                Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
-                Text           = "Ryujinx has encountered an Error",
-                SecondaryText  = errorMessage,
-                WindowPosition = WindowPosition.Center
-            };
-            errorDialog.SetSizeRequest(100, 20);
-            errorDialog.Run();
-            errorDialog.Dispose();
         }
 
         internal static void ApplyTheme()
@@ -178,7 +173,7 @@ namespace Ryujinx.UI
             }
             else
             {
-                Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\"");
+                Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\".");
             }
         }
 
@@ -247,7 +242,7 @@ namespace Ryujinx.UI
         {
             if (_gameLoaded)
             {
-                CreateErrorDialog("A game has already been loaded. Please close the emulator and try again");
+                GtkDialog.CreateErrorDialog("A game has already been loaded. Please close the emulator and try again");
             }
             else
             {
@@ -437,7 +432,10 @@ namespace Ryujinx.UI
                     appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
                 }
 
-                appMetadata.TimePlayed += Math.Round(DateTime.UtcNow.Subtract(DateTime.Parse(appMetadata.LastPlayed)).TotalSeconds, MidpointRounding.AwayFromZero);
+                DateTime lastPlayedDateTime = DateTime.Parse(appMetadata.LastPlayed);
+                double   sessionTimePlayed  = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
+
+                appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
 
                 byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
                 File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
@@ -474,8 +472,19 @@ namespace Ryujinx.UI
         //Events
         private void Application_Added(object sender, ApplicationAddedEventArgs e)
         {
-            Application.Invoke(delegate {
-                _tableStore.AppendValues(e.AppData.Favorite, new Gdk.Pixbuf(e.AppData.Icon, 75, 75), $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}", e.AppData.Developer, e.AppData.Version, e.AppData.TimePlayed, e.AppData.LastPlayed, e.AppData.FileExtension, e.AppData.FileSize, e.AppData.Path);
+            Application.Invoke(delegate
+            {
+                _tableStore.AppendValues(
+                    e.AppData.Favorite,
+                    new Gdk.Pixbuf(e.AppData.Icon, 75, 75),
+                    $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}",
+                    e.AppData.Developer,
+                    e.AppData.Version,
+                    e.AppData.TimePlayed,
+                    e.AppData.LastPlayed,
+                    e.AppData.FileExtension,
+                    e.AppData.FileSize,
+                    e.AppData.Path);
 
                 _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
                 _progressBar.Value  = (float)e.NumAppsLoaded / e.NumAppsFound;
@@ -612,7 +621,7 @@ namespace Ryujinx.UI
             }
             catch(System.ComponentModel.Win32Exception)
             {
-                CreateErrorDialog("Update canceled by user or updater was not found");
+                GtkDialog.CreateErrorDialog("Update canceled by user or updater was not found");
             }
         }
 

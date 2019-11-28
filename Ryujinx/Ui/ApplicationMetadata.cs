@@ -1,6 +1,6 @@
-﻿namespace Ryujinx.UI
+﻿namespace Ryujinx.Ui
 {
-    public struct ApplicationMetadata
+    internal struct ApplicationMetadata
     {
         public bool   Favorite   { get; set; }
         public double TimePlayed { get; set; }

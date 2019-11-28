@@ -7,8 +7,8 @@ using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.Input;
-using Ryujinx.UI;
-using Ryujinx.UI.Input;
+using Ryujinx.Ui;
+using Ryujinx.Ui.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -154,7 +154,7 @@ namespace Ryujinx
         /// <summary>
         /// Controller control bindings
         /// </summary>
-        public UI.Input.NpadController JoystickControls { get; private set; }
+        public Ui.Input.NpadController JoystickControls { get; private set; }
 
         /// <summary>
         /// Loads a configuration file from disk

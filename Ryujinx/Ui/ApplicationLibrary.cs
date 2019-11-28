@@ -18,7 +18,7 @@ using Utf8Json.Resolvers;
 
 using TitleLanguage = Ryujinx.HLE.HOS.SystemState.TitleLanguage;
 
-namespace Ryujinx.UI
+namespace Ryujinx.Ui
 {
     public class ApplicationLibrary
     {
@@ -286,7 +286,7 @@ namespace Ryujinx.UI
                             applicationIcon = Read(assetOffset + iconOffset, (int)iconSize);
 
                             // Creates memory stream out of byte array which is the NACP
-                            using (MemoryStream stream = new MemoryStream(Read(assetOffset + (int) nacpOffset, (int) nacpSize)))
+                            using (MemoryStream stream = new MemoryStream(Read(assetOffset + (int)nacpOffset, (int)nacpSize)))
                             {
                                 // Creates NACP class from the memory stream
                                 Nacp controlData = new Nacp(stream);

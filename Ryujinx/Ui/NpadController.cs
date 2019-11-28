@@ -3,7 +3,7 @@ using OpenTK.Input;
 using Ryujinx.HLE.Input;
 using System;
 
-namespace Ryujinx.UI.Input
+namespace Ryujinx.Ui.Input
 {
     public enum ControllerInputId
     {

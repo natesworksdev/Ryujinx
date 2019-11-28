@@ -1,6 +1,6 @@
-﻿namespace Ryujinx.UI
+﻿namespace Ryujinx.Ui
 {
-    public struct AboutInfo
+    internal struct AboutInfo
     {
         public string InstallVersion;
         public string InstallCommit;

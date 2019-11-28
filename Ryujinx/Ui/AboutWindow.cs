@@ -9,7 +9,7 @@ using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
-namespace Ryujinx.UI
+namespace Ryujinx.Ui
 {
     public class AboutWindow : Window
     {

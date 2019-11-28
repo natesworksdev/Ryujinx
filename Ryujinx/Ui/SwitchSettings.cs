@@ -1,7 +1,7 @@
 ﻿using Gtk;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
-using Ryujinx.UI.Input;
+using Ryujinx.Ui.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,7 +10,7 @@ using System.Reflection;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
-namespace Ryujinx.UI
+namespace Ryujinx.Ui
 {
     public class SwitchSettings : Window
     {
@@ -124,22 +124,22 @@ namespace Ryujinx.UI
             _controller1Type.Changed += (sender, args) => Controller_Changed(sender, args, _controller1Type.ActiveId, _controller1Image);
 
             //Setup Currents
-            if (SwitchConfig.EnableFileLog)             { _fileLogToggle.Click();        }
-            if (SwitchConfig.LoggingEnableError)        { _errorLogToggle.Click();       }
-            if (SwitchConfig.LoggingEnableWarn)         { _warningLogToggle.Click();     }
-            if (SwitchConfig.LoggingEnableInfo)         { _infoLogToggle.Click();        }
-            if (SwitchConfig.LoggingEnableStub)         { _stubLogToggle.Click();        }
-            if (SwitchConfig.LoggingEnableDebug)        { _debugLogToggle.Click();       }
-            if (SwitchConfig.LoggingEnableGuest)        { _guestLogToggle.Click();       }
-            if (SwitchConfig.LoggingEnableFsAccessLog)  { _fsAccessLogToggle.Click();    }
-            if (SwitchConfig.DockedMode)                { _dockedModeToggle.Click();     }
-            if (SwitchConfig.EnableDiscordIntegration)  { _discordToggle.Click();        }
-            if (SwitchConfig.EnableVsync)               { _vSyncToggle.Click();          }
-            if (SwitchConfig.EnableMulticoreScheduling) { _multiSchedToggle.Click();     }
-            if (SwitchConfig.EnableFsIntegrityChecks)   { _fsicToggle.Click();           }
-            if (SwitchConfig.IgnoreMissingServices)     { _ignoreToggle.Click();         }
-            if (SwitchConfig.EnableKeyboard)            { _directKeyboardAccess.Click(); }
-            if (SwitchConfig.EnableCustomTheme)         { _custThemeToggle.Click();      }
+            if (SwitchConfig.EnableFileLog)             _fileLogToggle.Click();
+            if (SwitchConfig.LoggingEnableError)        _errorLogToggle.Click();
+            if (SwitchConfig.LoggingEnableWarn)         _warningLogToggle.Click();
+            if (SwitchConfig.LoggingEnableInfo)         _infoLogToggle.Click();
+            if (SwitchConfig.LoggingEnableStub)         _stubLogToggle.Click();
+            if (SwitchConfig.LoggingEnableDebug)        _debugLogToggle.Click();
+            if (SwitchConfig.LoggingEnableGuest)        _guestLogToggle.Click();
+            if (SwitchConfig.LoggingEnableFsAccessLog)  _fsAccessLogToggle.Click();
+            if (SwitchConfig.DockedMode)                _dockedModeToggle.Click();
+            if (SwitchConfig.EnableDiscordIntegration)  _discordToggle.Click();
+            if (SwitchConfig.EnableVsync)               _vSyncToggle.Click();
+            if (SwitchConfig.EnableMulticoreScheduling) _multiSchedToggle.Click();
+            if (SwitchConfig.EnableFsIntegrityChecks)   _fsicToggle.Click();
+            if (SwitchConfig.IgnoreMissingServices)     _ignoreToggle.Click();
+            if (SwitchConfig.EnableKeyboard)            _directKeyboardAccess.Click();
+            if (SwitchConfig.EnableCustomTheme)         _custThemeToggle.Click();
 
             _systemLanguageSelect.SetActiveId(SwitchConfig.SystemLanguage.ToString());
             _controller1Type     .SetActiveId(SwitchConfig.ControllerType.ToString());
