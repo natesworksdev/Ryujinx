@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS
 
         public string TitleName { get; private set; }
 
-        public string TitleId { get; private set; }
+        public string TitleID { get; private set; }
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
@@ -507,7 +507,7 @@ namespace Ryujinx.HLE.HOS
 
             LoadExeFs(codeFs, out Npdm metaData);
             
-            TitleId = metaData.Aci0.TitleId.ToString("x16");
+            TitleID = metaData.Aci0.TitleId.ToString("x16");
 
             if (controlNca != null)
             {
@@ -515,7 +515,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                CurrentTitle = TitleId;
+                CurrentTitle = TitleID;
             }
         }
 
@@ -555,7 +555,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleId = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
             LoadNso("main");
@@ -658,7 +658,7 @@ namespace Ryujinx.HLE.HOS
             ContentManager.LoadEntries();
 
             TitleName = CurrentTitle = metaData.TitleName;
-            TitleId   = metaData.Aci0.TitleId.ToString("x16");
+            TitleID   = metaData.Aci0.TitleId.ToString("x16");
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }
