@@ -107,11 +107,9 @@ namespace Ryujinx.HLE.HOS
 
         public BlitStruct<ApplicationControlProperty> ControlData { get; set; }
 
-        public string CurrentTitle { get; private set; }
-
         public string TitleName { get; private set; }
 
-        public string TitleID { get; private set; }
+        public string TitleId { get; private set; }
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
@@ -373,12 +371,12 @@ namespace Ryujinx.HLE.HOS
 
                 if (result.IsSuccess() && bytesRead == ControlData.ByteSpan.Length)
                 {
-                    TitleName = CurrentTitle = ControlData.Value
+                    TitleName = ControlData.Value
                         .Titles[(int) State.DesiredTitleLanguage].Name.ToString();
 
                     if (string.IsNullOrWhiteSpace(TitleName))
                     {
-                        TitleName = CurrentTitle = ControlData.Value.Titles.ToArray()
+                        TitleName = ControlData.Value.Titles.ToArray()
                             .FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                     }
                 }
@@ -507,15 +505,11 @@ namespace Ryujinx.HLE.HOS
 
             LoadExeFs(codeFs, out Npdm metaData);
             
-            TitleID = metaData.Aci0.TitleId.ToString("x16");
+            TitleId = metaData.Aci0.TitleId.ToString("x16");
 
             if (controlNca != null)
             {
                 ReadControlData(controlNca);
-            }
-            else
-            {
-                CurrentTitle = TitleID;
             }
         }
 
@@ -555,7 +549,7 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleID = CurrentTitle = metaData.Aci0.TitleId.ToString("x16");
+            TitleId = metaData.Aci0.TitleId.ToString("x16");
 
             LoadNso("rtld");
             LoadNso("main");
@@ -657,8 +651,8 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries();
 
-            TitleName = CurrentTitle = metaData.TitleName;
-            TitleID   = metaData.Aci0.TitleId.ToString("x16");
+            TitleName = metaData.TitleName;
+            TitleId   = metaData.Aci0.TitleId.ToString("x16");
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }

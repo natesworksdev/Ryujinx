@@ -28,7 +28,7 @@ namespace Ryujinx.Ui
         {
             string basePath = Device.FileSystem.GetBasePath();
             string backupPath = Path.Combine(basePath, "Migration backup (Can delete if successful)");
-            string backupUserSavePath = Path.Combine(backupPath, "userSaves");
+            string backupUserSavePath = Path.Combine(backupPath, "nand/user/save");
 
             if (!IsMigrationNeeded(basePath))
                 return;
