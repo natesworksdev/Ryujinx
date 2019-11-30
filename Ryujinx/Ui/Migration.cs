@@ -38,9 +38,10 @@ namespace Ryujinx.Ui
                 dialog.Title = "Data Migration Needed";
                 dialog.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
                 dialog.Text =
-                    "The folder structure of Ryujinx's RyuFs folder has been updated. Your RyuFs folder must be migrated to the new structure. Would you like to do the migration now?\n\n" +
-                    "Select \"Yes\" to automatically perform the migration. A backup of your old saves will be placed in your RyuFs folder.\n\n" +
-                    "Selecting \"No\" will exit Ryujinx without changing the contents of your RyuFs folder.";
+                    "The folder structure of Ryujinx's RyuFs folder has been updated and renamed to \"Ryujinx\". " +
+                    "Your RyuFs folder must be copied and migrated to the new \"Ryujinx\" structure. Would you like to do the migration now?\n\n" +
+                    "Select \"Yes\" to automatically perform the migration. Your old RyuFs folder will remain as it is.\n\n" +
+                    "Selecting \"No\" will exit Ryujinx without changing anything.";
 
                 dialogResponse = dialog.Run();
             }

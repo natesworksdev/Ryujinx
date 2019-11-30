@@ -24,7 +24,7 @@ namespace Ryujinx
 
             Application.Init();
 
-            string appDataPath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "RyuFs", "system", "prod.keys");
+            string appDataPath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx", "system", "prod.keys");
             string userProfilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
             if (!File.Exists(appDataPath) && !File.Exists(userProfilePath))
             {
