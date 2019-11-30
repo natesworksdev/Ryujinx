@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.FileSystem
 {
     public class VirtualFileSystem : IDisposable
     {
-        public const string BasePath   = "RyuFs";
+        public const string BasePath   = "Ryujinx";
         public const string NandPath   = "bis";
         public const string SdCardPath = "sdcard";
         public const string SystemPath = "system";

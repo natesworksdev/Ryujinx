@@ -1,18 +1,9 @@
 ﻿using Gtk;
 using LibHac;
-using LibHac.Common;
-using LibHac.Fs;
-using LibHac.Fs.Shim;
-using LibHac.FsSystem;
-using LibHac.FsSystem.Save;
-using LibHac.Ncm;
-using Ryujinx.HLE.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 
 using Switch = Ryujinx.HLE.Switch;
 
@@ -27,14 +18,17 @@ namespace Ryujinx.Ui
             Device = device;
         }
 
-        public static bool TryMigrateForStartup(Window parentWindow, Switch device)
+        public static bool PromptIfMigrationNeededForStartup(Window parentWindow, out bool isMigrationNeeded)
         {
             const int responseYes = -8;
 
-            if (!IsMigrationNeeded(device.FileSystem.GetBasePath()))
+            if (!IsMigrationNeeded())
             {
+                isMigrationNeeded = false;
                 return true;
             }
+
+            isMigrationNeeded = true;
 
             int dialogResponse;
 
@@ -51,11 +45,11 @@ namespace Ryujinx.Ui
                 dialogResponse = dialog.Run();
             }
 
-            if (dialogResponse != responseYes)
-            {
-                return false;
-            }
+            return dialogResponse == responseYes;
+        }
 
+        public static bool DoMigrationForStartup(Window parentWindow, Switch device)
+        {
             try
             {
                 Migration migration = new Migration(device);
@@ -83,259 +77,107 @@ namespace Ryujinx.Ui
         // Returns the number of saves migrated
         public int Migrate()
         {
-            string basePath = Device.FileSystem.GetBasePath();
-            string backupPath = Path.Combine(basePath, "Migration backup (Can delete if successful)");
-            string backupUserSavePath = Path.Combine(backupPath, "nand/user/save");
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            if (!IsMigrationNeeded(basePath))
-                return 0;
+            string oldBasePath = Path.Combine(appDataPath, "RyuFs");
+            string newBasePath = Path.Combine(appDataPath, "Ryujinx");
 
-            BackupSaves(basePath, backupPath);
+            string oldSaveDir = Path.Combine(oldBasePath, "nand/user/save");
 
-            MigrateDirectories(basePath);
+            CopyRyuFs(oldBasePath, newBasePath);
 
-            return MigrateSaves(Device.System.FsClient, backupUserSavePath);
+            var importer = new SaveImporter(oldSaveDir, Device.System.FsClient);
+            return importer.Import();
         }
 
-        private static bool IsMigrationNeeded(string basePath)
+        private static void CopyRyuFs(string oldPath, string newPath)
         {
-            bool missingNewDirs = !Directory.Exists(Path.Combine(basePath, "bis")) &&
-                                  !Directory.Exists(Path.Combine(basePath, "sdcard"));
+            Directory.CreateDirectory(newPath);
 
-            bool hasOldDirs = Directory.Exists(Path.Combine(basePath, "nand")) ||
-                              Directory.Exists(Path.Combine(basePath, "sdmc"));
+            CopyExcept(oldPath, newPath, "nand", "sdmc");
 
-            return missingNewDirs && hasOldDirs;
+            string oldNandPath = Path.Combine(oldPath, "nand");
+            string newNandPath = Path.Combine(newPath, "bis");
+
+            CopyExcept(oldNandPath, newNandPath, "system", "user");
+
+            string oldSdPath = Path.Combine(oldPath, "sdmc");
+            string newSdPath = Path.Combine(newPath, "sdcard");
+
+            CopyDirectory(oldSdPath, newSdPath);
+
+            string oldSystemPath = Path.Combine(oldNandPath, "system");
+            string newSystemPath = Path.Combine(newNandPath, "system");
+
+            CopyExcept(oldSystemPath, newSystemPath, "save");
+
+            string oldUserPath = Path.Combine(oldNandPath, "user");
+            string newUserPath = Path.Combine(newNandPath, "user");
+
+            CopyExcept(oldUserPath, newUserPath, "save");
         }
 
-        private static void MigrateDirectories(string basePath)
+        private static void CopyExcept(string srcPath, string dstPath, params string[] exclude)
         {
-            RenameDirectory(Path.Combine(basePath, "nand"), Path.Combine(basePath, "bis"));
-            RenameDirectory(Path.Combine(basePath, "sdmc"), Path.Combine(basePath, "sdcard"));
-        }
+            exclude = exclude.Select(x => x.ToLowerInvariant()).ToArray();
 
-        private static bool RenameDirectory(string oldDir, string newDir)
-        {
-            if (Directory.Exists(newDir))
-                return false;
+            DirectoryInfo srcDir = new DirectoryInfo(srcPath);
 
-            if (!Directory.Exists(oldDir))
+            if (!srcDir.Exists)
             {
-                Directory.CreateDirectory(newDir);
-
-                return true;
+                return;
             }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(newDir));
-            Directory.Move(oldDir, newDir);
+            Directory.CreateDirectory(dstPath);
 
-            return true;
-        }
-
-        private static void BackupSaves(string basePath, string backupPath)
-        {
-            Directory.CreateDirectory(backupPath);
-
-            string userSaveDir = Path.Combine(basePath, "nand/user/save");
-            string backupUserSaveDir = Path.Combine(backupPath, "nand/user/save");
-
-            if (Directory.Exists(userSaveDir))
+            foreach (DirectoryInfo subDir in srcDir.EnumerateDirectories())
             {
-                RenameDirectory(userSaveDir, backupUserSaveDir);
-            }
-
-            string systemSaveDir = Path.Combine(basePath, "nand/system/save");
-            string backupSystemSaveDir = Path.Combine(backupPath, "nand/system/save");
-
-            if (Directory.Exists(systemSaveDir))
-            {
-                RenameDirectory(systemSaveDir, backupSystemSaveDir);
-            }
-        }
-
-        // Returns the number of saves migrated
-        private static int MigrateSaves(FileSystemClient fsClient, string rootSaveDir)
-        {
-            if (!Directory.Exists(rootSaveDir))
-            {
-                return 0;
-            }
-
-            SaveFinder finder = new SaveFinder();
-            finder.FindSaves(rootSaveDir);
-
-            foreach (SaveToMigrate save in finder.Saves)
-            {
-                Result migrateResult = MigrateSave(fsClient, save);
-
-                if (migrateResult.IsFailure())
+                if (exclude.Contains(subDir.Name.ToLowerInvariant()))
                 {
-                    throw new HorizonResultException(migrateResult, $"Error migrating save {save.Path}");
-                }
-            }
-
-            return finder.Saves.Count;
-        }
-
-        private static Result MigrateSave(FileSystemClient fs, SaveToMigrate save)
-        {
-            SaveDataAttribute key = save.Attribute;
-
-            Result result = fs.CreateSaveData(key.TitleId, key.UserId, key.TitleId, 0, 0, 0);
-            if (result.IsFailure()) return result;
-
-            bool isOldMounted = false;
-            bool isNewMounted = false;
-
-            try
-            {
-                result = fs.Register("OldSave".ToU8Span(), new LocalFileSystem(save.Path));
-                if (result.IsFailure()) return result;
-
-                isOldMounted = true;
-
-                result = fs.MountSaveData("NewSave".ToU8Span(), key.TitleId, key.UserId);
-                if (result.IsFailure()) return result;
-
-                isNewMounted = true;
-
-                result = fs.CopyDirectory("OldSave:/", "NewSave:/");
-                if (result.IsFailure()) return result;
-
-                result = fs.Commit("NewSave");
-            }
-            finally
-            {
-                if (isOldMounted)
-                {
-                    fs.Unmount("OldSave");
+                    continue;
                 }
 
-                if (isNewMounted)
-                {
-                    fs.Unmount("NewSave");
-                }
+                CopyDirectory(subDir.FullName, Path.Combine(dstPath, subDir.Name));
             }
 
-            return result;
-        }
-
-        private class SaveFinder
-        {
-            public List<SaveToMigrate> Saves { get; } = new List<SaveToMigrate>();
-
-            public void FindSaves(string rootPath)
+            foreach (FileInfo file in srcDir.EnumerateFiles())
             {
-                foreach (string subDir in Directory.EnumerateDirectories(rootPath))
-                {
-                    if (TryGetUInt64(subDir, out ulong saveDataId))
-                    {
-                        SearchSaveId(subDir, saveDataId);
-                    }
-                }
-            }
-
-            private void SearchSaveId(string path, ulong saveDataId)
-            {
-                foreach (string subDir in Directory.EnumerateDirectories(path))
-                {
-                    if (TryGetUserId(subDir, out UserId userId))
-                    {
-                        SearchUser(subDir, saveDataId, userId);
-                    }
-                }
-            }
-
-            private void SearchUser(string path, ulong saveDataId, UserId userId)
-            {
-                foreach (string subDir in Directory.EnumerateDirectories(path))
-                {
-                    if (TryGetUInt64(subDir, out ulong titleId) && TryGetDataPath(subDir, out string dataPath))
-                    {
-                        SaveDataAttribute attribute = new SaveDataAttribute
-                        {
-                            Type = SaveDataType.SaveData,
-                            UserId = userId,
-                            TitleId = new TitleId(titleId)
-                        };
-
-                        SaveToMigrate save = new SaveToMigrate(dataPath, attribute);
-
-                        Saves.Add(save);
-                    }
-                }
-            }
-
-            private static bool TryGetDataPath(string path, out string dataPath)
-            {
-                string committedPath = Path.Combine(path, "0");
-                string workingPath = Path.Combine(path, "1");
-
-                if (Directory.Exists(committedPath) && Directory.EnumerateFileSystemEntries(committedPath).Any())
-                {
-                    dataPath = committedPath;
-                    return true;
-                }
-
-                if (Directory.Exists(workingPath) && Directory.EnumerateFileSystemEntries(workingPath).Any())
-                {
-                    dataPath = workingPath;
-                    return true;
-                }
-
-                dataPath = default;
-                return false;
-            }
-
-            private static bool TryGetUInt64(string path, out ulong converted)
-            {
-                string name = Path.GetFileName(path);
-
-                if (name.Length == 16)
-                {
-                    try
-                    {
-                        converted = Convert.ToUInt64(name, 16);
-                        return true;
-                    }
-                    catch { }
-                }
-
-                converted = default;
-                return false;
-            }
-
-            private static bool TryGetUserId(string path, out UserId userId)
-            {
-                string name = Path.GetFileName(path);
-
-                if (name.Length == 32)
-                {
-                    try
-                    {
-                        UInt128 id = new UInt128(name);
-
-                        userId = Unsafe.As<UInt128, UserId>(ref id);
-                        return true;
-                    }
-                    catch { }
-                }
-
-                userId = default;
-                return false;
+                file.CopyTo(Path.Combine(dstPath, file.Name));
             }
         }
 
-        private class SaveToMigrate
+        private static void CopyDirectory(string srcPath, string dstPath)
         {
-            public string Path { get; }
-            public SaveDataAttribute Attribute { get; }
+            Directory.CreateDirectory(dstPath);
 
-            public SaveToMigrate(string path, SaveDataAttribute attribute)
+            DirectoryInfo srcDir = new DirectoryInfo(srcPath);
+
+            if (!srcDir.Exists)
             {
-                Path = path;
-                Attribute = attribute;
+                return;
             }
+
+            Directory.CreateDirectory(dstPath);
+
+            foreach (DirectoryInfo subDir in srcDir.EnumerateDirectories())
+            {
+                CopyDirectory(subDir.FullName, Path.Combine(dstPath, subDir.Name));
+            }
+
+            foreach (FileInfo file in srcDir.EnumerateFiles())
+            {
+                file.CopyTo(Path.Combine(dstPath, file.Name));
+            }
+        }
+
+        private static bool IsMigrationNeeded()
+        {
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+
+            string oldBasePath = Path.Combine(appDataPath, "RyuFs");
+            string newBasePath = Path.Combine(appDataPath, "Ryujinx");
+
+            return Directory.Exists(oldBasePath) && !Directory.Exists(newBasePath);
         }
     }
 }

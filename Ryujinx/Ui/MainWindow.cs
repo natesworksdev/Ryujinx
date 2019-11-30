@@ -7,7 +7,6 @@ using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.Graphics.Gal;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
-using Ryujinx.Ui;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -88,16 +87,26 @@ namespace Ryujinx.Ui
 
             ApplicationLibrary.ApplicationAdded += Application_Added;
 
+            bool continueWithStartup = Migration.PromptIfMigrationNeededForStartup(this, out bool migrationNeeded);
+            if (!continueWithStartup)
+            {
+                End();
+            }
+
             _renderer = new OglRenderer();
 
             _audioOut = InitializeAudioEngine();
 
             _device = new HLE.Switch(_renderer, _audioOut);
 
-            bool continueAfterMigration = Migration.TryMigrateForStartup(this, _device);
-            if (!continueAfterMigration)
+            if (migrationNeeded)
             {
-                End();
+                bool migrationSuccessful = Migration.DoMigrationForStartup(this, _device);
+
+                if (!migrationSuccessful)
+                {
+                    End();
+                }
             }
 
             _treeView = _gameTable;
@@ -449,8 +458,8 @@ namespace Ryujinx.Ui
             }
 
             Profile.FinishProfiling();
-            _device.Dispose();
-            _audioOut.Dispose();
+            _device?.Dispose();
+            _audioOut?.Dispose();
             DiscordClient?.Dispose();
             Logger.Shutdown();
             Environment.Exit(0);
