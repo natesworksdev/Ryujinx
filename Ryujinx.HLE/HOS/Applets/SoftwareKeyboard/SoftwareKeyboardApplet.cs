@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.IO;
@@ -22,7 +23,8 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private SoftwareKeyboardConfig _keyboardConfig;
 
-        private string _textValue = DEFAULT_TEXT;
+        private string  _textValue = DEFAULT_TEXT;
+        private Encoding _encoding = Encoding.Unicode;
 
         public event EventHandler AppletStateChanged;
 
@@ -41,6 +43,7 @@ namespace Ryujinx.HLE.HOS.Applets
             var transferMemory = _normalSession.Pop();
 
             _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+            _encoding = _keyboardConfig.UseUtf8 ? Encoding.UTF8 : Encoding.Unicode;
 
             _state = SoftwareKeyboardState.Ready;
 
@@ -58,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             // If the keyboard type is numbers only, we swap to a default
             // text that only contains numbers.
-            if (_keyboardConfig.Type == SoftwareKeyboardType.NumbersOnly)
+            if (_keyboardConfig.Mode == KeyboardMode.NumbersOnly)
             {
                 _textValue = DEFAULT_NUMB;
             }
@@ -70,6 +73,15 @@ namespace Ryujinx.HLE.HOS.Applets
                 _keyboardConfig.StringLengthMax = 100;
             }
 
+            // If the game requests a string with a minimum length less
+            // than our default text, repeat our default text until we meet
+            // the minimum length requirement. 
+            // This should always be done before the text truncation step.
+            while (_textValue.Length < _keyboardConfig.StringLengthMin)
+            {
+                _textValue = String.Join(" ", _textValue, _textValue);
+            }
+
             // If our default text is longer than the allowed length,
             // we truncate it.
             if (_textValue.Length > _keyboardConfig.StringLengthMax)
@@ -77,6 +89,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 _textValue = _textValue.Substring(0, (int)_keyboardConfig.StringLengthMax);
             }
 
+            // Does the application want to validate the text itself?
             if (!_keyboardConfig.CheckText)
             {
                 // If the application doesn't need to validate the response,
@@ -136,12 +149,12 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private byte[] BuildResponse(string text, bool interactive)
         {
-            int bufferSize = !interactive ? STANDARD_BUFFER_SIZE : INTERACTIVE_BUFFER_SIZE;
+            int bufferSize = interactive ? INTERACTIVE_BUFFER_SIZE : STANDARD_BUFFER_SIZE;
 
             using (MemoryStream stream = new MemoryStream(new byte[bufferSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
-                byte[] output = Encoding.Unicode.GetBytes(text);
+                byte[] output = _encoding.GetBytes(text);
 
                 if (!interactive)
                 {
