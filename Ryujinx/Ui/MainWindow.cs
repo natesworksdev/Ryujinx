@@ -249,7 +249,9 @@ namespace Ryujinx.Ui
 
             _tableStore.Clear();
 
-            await Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
+            await Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs,
+                _device.System.KeySet, _device.System.State.DesiredTitleLanguage, _device.System.FsClient,
+                _device.FileSystem));
 
             _updatingGameTable = false;
         }
