@@ -1,17 +1,20 @@
-﻿using LibHac;
+﻿using Gtk;
+using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
 using LibHac.FsSystem.Save;
 using LibHac.Ncm;
-using Ryujinx.HLE;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
+
+using Switch = Ryujinx.HLE.Switch;
 
 namespace Ryujinx.Ui
 {
@@ -24,26 +27,85 @@ namespace Ryujinx.Ui
             Device = device;
         }
 
-        public void Migrate()
+        public static bool TryMigrateForStartup(Window parentWindow, Switch device)
+        {
+            const int responseYes = -8;
+
+            if (!IsMigrationNeeded(device.FileSystem.GetBasePath()))
+            {
+                return true;
+            }
+
+            int dialogResponse;
+
+            using (MessageDialog dialog = new MessageDialog(parentWindow, DialogFlags.Modal, MessageType.Question,
+                ButtonsType.YesNo, "What's this?"))
+            {
+                dialog.Title = "Data Migration Needed";
+                dialog.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+                dialog.Text =
+                    "The folder structure of Ryujinx's RyuFs folder has been updated. Your RyuFs folder must be migrated to the new structure. Would you like to do the migration now?\n\n" +
+                    "Select \"Yes\" to automatically perform the migration. A backup of your old saves will be placed in your RyuFs folder.\n\n" +
+                    "Selecting \"No\" will exit Ryujinx without changing the contents of your RyuFs folder.";
+
+                dialogResponse = dialog.Run();
+            }
+
+            if (dialogResponse != responseYes)
+            {
+                return false;
+            }
+
+            try
+            {
+                Migration migration = new Migration(device);
+                int saveCount = migration.Migrate();
+
+                using MessageDialog dialogSuccess = new MessageDialog(parentWindow, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, null)
+                {
+                    Title = "Migration Success",
+                    Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                    Text = $"Data migration was successful. {saveCount} saves were migrated.",
+                };
+
+                dialogSuccess.Run();
+
+                return true;
+            }
+            catch (HorizonResultException ex)
+            {
+                GtkDialog.CreateErrorDialog(ex.Message);
+
+                return false;
+            }
+        }
+
+        // Returns the number of saves migrated
+        public int Migrate()
         {
             string basePath = Device.FileSystem.GetBasePath();
             string backupPath = Path.Combine(basePath, "Migration backup (Can delete if successful)");
             string backupUserSavePath = Path.Combine(backupPath, "nand/user/save");
 
             if (!IsMigrationNeeded(basePath))
-                return;
+                return 0;
 
             BackupSaves(basePath, backupPath);
 
             MigrateDirectories(basePath);
 
-            MigrateSaves(Device.System.FsClient, backupUserSavePath);
+            return MigrateSaves(Device.System.FsClient, backupUserSavePath);
         }
 
         private static bool IsMigrationNeeded(string basePath)
         {
-            return !Directory.Exists(Path.Combine(basePath, "bis")) &&
-                   !Directory.Exists(Path.Combine(basePath, "sdcard"));
+            bool missingNewDirs = !Directory.Exists(Path.Combine(basePath, "bis")) &&
+                                  !Directory.Exists(Path.Combine(basePath, "sdcard"));
+
+            bool hasOldDirs = Directory.Exists(Path.Combine(basePath, "nand")) ||
+                              Directory.Exists(Path.Combine(basePath, "sdmc"));
+
+            return missingNewDirs && hasOldDirs;
         }
 
         private static void MigrateDirectories(string basePath)
@@ -91,11 +153,12 @@ namespace Ryujinx.Ui
             }
         }
 
-        private static void MigrateSaves(FileSystemClient fsClient, string rootSaveDir)
+        // Returns the number of saves migrated
+        private static int MigrateSaves(FileSystemClient fsClient, string rootSaveDir)
         {
             if (!Directory.Exists(rootSaveDir))
             {
-                return;
+                return 0;
             }
 
             SaveFinder finder = new SaveFinder();
@@ -110,6 +173,8 @@ namespace Ryujinx.Ui
                     throw new HorizonResultException(migrateResult, $"Error migrating save {save.Path}");
                 }
             }
+
+            return finder.Saves.Count;
         }
 
         private static Result MigrateSave(FileSystemClient fs, SaveToMigrate save)

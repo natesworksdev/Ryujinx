@@ -94,6 +94,12 @@ namespace Ryujinx.Ui
 
             _device = new HLE.Switch(_renderer, _audioOut);
 
+            bool continueAfterMigration = Migration.TryMigrateForStartup(this, _device);
+            if (!continueAfterMigration)
+            {
+                End();
+            }
+
             _treeView = _gameTable;
 
             Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
