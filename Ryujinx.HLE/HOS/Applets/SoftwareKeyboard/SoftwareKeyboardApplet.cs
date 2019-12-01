@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
+﻿using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.IO;
@@ -43,7 +42,11 @@ namespace Ryujinx.HLE.HOS.Applets
             var transferMemory = _normalSession.Pop();
 
             _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
-            _encoding = _keyboardConfig.UseUtf8 ? Encoding.UTF8 : Encoding.Unicode;
+
+            if (_keyboardConfig.UseUtf8)
+            {
+                _encoding = Encoding.UTF8;
+            }
 
             _state = SoftwareKeyboardState.Ready;
 
@@ -90,7 +93,17 @@ namespace Ryujinx.HLE.HOS.Applets
             }
 
             // Does the application want to validate the text itself?
-            if (!_keyboardConfig.CheckText)
+            if (_keyboardConfig.CheckText)
+            {
+                // The application needs to validate the response, so we
+                // submit it to the interactive output buffer, and poll it
+                // for validation. Once validated, the application will submit
+                // back a validation status, which is handled in OnInteractiveDataPushIn.
+                _state = SoftwareKeyboardState.ValidationPending;
+
+                _interactiveSession.Push(BuildResponse(_textValue, true));
+            }
+            else
             {
                 // If the application doesn't need to validate the response,
                 // we push the data to the non-interactive output buffer
@@ -100,16 +113,6 @@ namespace Ryujinx.HLE.HOS.Applets
                 _normalSession.Push(BuildResponse(_textValue, false));
 
                 AppletStateChanged?.Invoke(this, null);
-            }
-            else
-            {
-                // The application needs to validate the response, so we
-                // submit it to the interactive output buffer, and poll it
-                // for validation. Once validated, the application will submit
-                // back a validation status, which is handled in OnInteractiveDataPushIn.
-                _state = SoftwareKeyboardState.ValidationPending;
-
-                _interactiveSession.Push(BuildResponse(_textValue, true));
             }
         }
 
