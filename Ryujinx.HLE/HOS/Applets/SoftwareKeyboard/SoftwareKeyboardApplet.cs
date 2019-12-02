@@ -12,8 +12,8 @@ namespace Ryujinx.HLE.HOS.Applets
         private const string DefaultNumb = "1";
         private const string DefaultText = "Ryujinx";
 
-        private const int STANDARD_BUFFER_SIZE    = 0x7D8;
-        private const int INTERACTIVE_BUFFER_SIZE = 0x7D4;
+        private const int StandardBufferSize    = 0x7D8;
+        private const int InteractiveBufferSize = 0x7D4;
 
         private SoftwareKeyboardState _state = SoftwareKeyboardState.Uninitialized;
 
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private byte[] BuildResponse(string text, bool interactive)
         {
-            int bufferSize = interactive ? INTERACTIVE_BUFFER_SIZE : STANDARD_BUFFER_SIZE;
+            int bufferSize = interactive ? InteractiveBufferSize : StandardBufferSize;
 
             using (MemoryStream stream = new MemoryStream(new byte[bufferSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
