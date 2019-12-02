@@ -66,6 +66,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
         [GUI] TreeView      _gameTable;
+        [GUI] TreeSelection _gameTableSelection;
         [GUI] Label         _progressLabel;
         [GUI] LevelBar      _progressBar;
 #pragma warning restore CS0649
@@ -80,6 +81,8 @@ namespace Ryujinx.Ui
             DeleteEvent += Window_Close;
 
             ApplicationLibrary.ApplicationAdded += Application_Added;
+
+            _gameTable.ButtonReleaseEvent += Row_Clicked;
 
             _renderer = new OglRenderer();
 
@@ -421,24 +424,24 @@ namespace Ryujinx.Ui
         }
 
         //Events
-        private void Application_Added(object sender, ApplicationAddedEventArgs e)
+        private void Application_Added(object sender, ApplicationAddedEventArgs args)
         {
             Application.Invoke(delegate
             {
                 _tableStore.AppendValues(
-                    e.AppData.Favorite,
-                    new Gdk.Pixbuf(e.AppData.Icon, 75, 75),
-                    $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}",
-                    e.AppData.Developer,
-                    e.AppData.Version,
-                    e.AppData.TimePlayed,
-                    e.AppData.LastPlayed,
-                    e.AppData.FileExtension,
-                    e.AppData.FileSize,
-                    e.AppData.Path);
+                    args.AppData.Favorite,
+                    new Gdk.Pixbuf(args.AppData.Icon, 75, 75),
+                    $"{args.AppData.TitleName}\n{args.AppData.TitleId.ToUpper()}",
+                    args.AppData.Developer,
+                    args.AppData.Version,
+                    args.AppData.TimePlayed,
+                    args.AppData.LastPlayed,
+                    args.AppData.FileExtension,
+                    args.AppData.FileSize,
+                    args.AppData.Path);
 
-                _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
-                _progressBar.Value  = (float)e.NumAppsLoaded / e.NumAppsFound;
+                _progressLabel.Text = $"{args.NumAppsLoaded}/{args.NumAppsFound} Games Loaded";
+                _progressBar.Value  = (float)args.NumAppsLoaded / args.NumAppsFound;
             });
         }
 
@@ -477,10 +480,21 @@ namespace Ryujinx.Ui
 
         private void Row_Activated(object sender, RowActivatedArgs args)
         {
-            _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path.ToString()));
+            _gameTableSelection.GetSelected(out TreeIter treeIter);
             string path = (string)_tableStore.GetValue(treeIter, 9);
 
             LoadApplication(path);
+        }
+
+        private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
+        {
+            if (args.Event.Button != 3) return;
+
+            _gameTableSelection.GetSelected(out TreeIter treeIter);
+
+            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, treeIter);
+            contextMenu.ShowAll();
+            contextMenu.PopupAtPointer(null);
         }
 
         private void Load_Application_File(object sender, EventArgs args)
