@@ -3,6 +3,7 @@ using Ryujinx.HLE.FileSystem;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -40,17 +41,34 @@ namespace Ryujinx.Ui
 
             if (!Directory.Exists(saveDir))
             {
-                GtkDialog.CreateErrorDialog($"Could not find save location for {titleName} [{titleId}]");
-            }
-            else
-            {
-                Process.Start(new ProcessStartInfo()
+                MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, null)
                 {
-                    FileName        = saveDir,
-                    UseShellExecute = true,
-                    Verb            = "open"
-                });
+                    Title          = "Ryujinx",
+                    Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                    Text           = $"Could not find save directory for {titleName} [{titleId}]",
+                    SecondaryText  = "Would you like to create the directory?",
+                    WindowPosition = WindowPosition.Center
+                };
+
+                if (messageDialog.Run() == (int)ResponseType.Yes)
+                {
+                    Directory.CreateDirectory(saveDir);
+                }
+                else
+                {
+                    messageDialog.Dispose();
+                    return;
+                }
+
+                messageDialog.Dispose();
             }
+
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName        = saveDir,
+                UseShellExecute = true,
+                Verb            = "open"
+            });
         }
     }
 }
