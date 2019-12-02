@@ -3,7 +3,7 @@
     /// <summary>
     /// Identifies the software keyboard state.
     /// </summary>
-    internal enum SoftwareKeyboardState
+    enum SoftwareKeyboardState
     {
         /// <summary>
         /// swkbd is uninitialized.

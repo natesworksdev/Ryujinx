@@ -3,7 +3,7 @@
     /// <summary>
     /// Identifies the variant of keyboard displayed on screen.
     /// </summary>
-    internal enum KeyboardMode : uint
+    enum KeyboardMode : uint
     {
         /// <summary>
         /// A full alpha-numeric keyboard.

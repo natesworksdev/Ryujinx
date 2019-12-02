@@ -3,7 +3,7 @@
     /// <summary>
     /// Identifies the text entry mode.
     /// </summary>
-    internal enum InputFormMode : uint
+    enum InputFormMode : uint
     {
         /// <summary>
         /// Displays the text entry area as a single-line field.

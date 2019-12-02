@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     /// Identifies prohibited character sets.
     /// </summary>
     [Flags]
-    internal enum InvalidCharFlags : uint
+    enum InvalidCharFlags : uint
     {
         /// <summary>
         /// No characters are prohibited.

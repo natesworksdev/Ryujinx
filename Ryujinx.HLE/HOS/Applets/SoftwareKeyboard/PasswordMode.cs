@@ -3,7 +3,7 @@
     /// <summary>
     /// Identifies the display mode of text in a password field.
     /// </summary>
-    internal enum PasswordMode : uint
+    enum PasswordMode : uint
     {
         /// <summary>
         /// Display input characters.
