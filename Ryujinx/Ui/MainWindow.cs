@@ -38,16 +38,6 @@ namespace Ryujinx.Ui
         private static bool _gameLoaded;
         private static bool _ending;
 
-        private static TreeViewColumn _favColumn;
-        private static TreeViewColumn _appColumn;
-        private static TreeViewColumn _devColumn;
-        private static TreeViewColumn _versionColumn;
-        private static TreeViewColumn _timePlayedColumn;
-        private static TreeViewColumn _lastPlayedColumn;
-        private static TreeViewColumn _fileExtColumn;
-        private static TreeViewColumn _fileSizeColumn;
-        private static TreeViewColumn _pathColumn;
-
         private static TreeView _treeView;
 
 #pragma warning disable CS0649
@@ -176,26 +166,16 @@ namespace Ryujinx.Ui
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
-                if (column.Title == "Fav")              _favColumn        = column;
-                else if (column.Title == "Application") _appColumn        = column;
-                else if (column.Title == "Developer")   _devColumn        = column;
-                else if (column.Title == "Version")     _versionColumn    = column;
-                else if (column.Title == "Time Played") _timePlayedColumn = column;
-                else if (column.Title == "Last Played") _lastPlayedColumn = column;
-                else if (column.Title == "File Ext")    _fileExtColumn    = column;
-                else if (column.Title == "File Size")   _fileSizeColumn   = column;
-                else if (column.Title == "Path")        _pathColumn       = column;
+                if      (column.Title == "Fav"         && ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        column.SortColumnId = 0;
+                else if (column.Title == "Application" && ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        column.SortColumnId = 2;
+                else if (column.Title == "Developer"   && ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        column.SortColumnId = 3;
+                else if (column.Title == "Version"     && ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    column.SortColumnId = 4;
+                else if (column.Title == "Time Played" && ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) column.SortColumnId = 5;
+                else if (column.Title == "Last Played" && ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) column.SortColumnId = 6;
+                else if (column.Title == "File Ext"    && ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    column.SortColumnId = 7;
+                else if (column.Title == "File Size"   && ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   column.SortColumnId = 8;
+                else if (column.Title == "Path"        && ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       column.SortColumnId = 9;
             }
-
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favColumn.SortColumnId        = 0;
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _appColumn.SortColumnId        = 2;
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _devColumn.SortColumnId        = 3;
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _versionColumn.SortColumnId    = 4;
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _timePlayedColumn.SortColumnId = 5;
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedColumn.SortColumnId = 6;
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtColumn.SortColumnId    = 7;
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeColumn.SortColumnId   = 8;
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathColumn.SortColumnId       = 9;
         }
 
         private HLE.Switch InitializeSwitchInstance()
