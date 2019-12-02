@@ -9,8 +9,8 @@ namespace Ryujinx.HLE.HOS.Applets
 {
     internal class SoftwareKeyboardApplet : IApplet
     {
-        private const string DEFAULT_NUMB = "1";
-        private const string DEFAULT_TEXT = "Ryujinx";
+        private const string DefaultNumb = "1";
+        private const string DefaultText = "Ryujinx";
 
         private const int STANDARD_BUFFER_SIZE    = 0x7D8;
         private const int INTERACTIVE_BUFFER_SIZE = 0x7D4;
@@ -22,8 +22,8 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private SoftwareKeyboardConfig _keyboardConfig;
 
-        private string  _textValue = DEFAULT_TEXT;
-        private Encoding _encoding = Encoding.Unicode;
+        private string   _textValue = DefaultText;
+        private Encoding _encoding  = Encoding.Unicode;
 
         public event EventHandler AppletStateChanged;
 
@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Applets
             // text that only contains numbers.
             if (_keyboardConfig.Mode == KeyboardMode.NumbersOnly)
             {
-                _textValue = DEFAULT_NUMB;
+                _textValue = DefaultNumb;
             }
 
             // If the max string length is 0, we set it to a large default
