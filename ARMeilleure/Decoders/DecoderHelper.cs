@@ -37,7 +37,7 @@ namespace ARMeilleure.Decoders
             return tbl;
         }
 
-        // abcdefgh -> aBbbbbbc defgh000 00000000 00000000
+        // abcdefgh -> aBbbbbbc defgh000 00000000 00000000 (B = ~b)
         private static uint ExpandImm8ToFP32(uint imm)
         {
             uint MoveBit(uint bits, int from, int to)
@@ -54,7 +54,7 @@ namespace ARMeilleure.Decoders
                    MoveBit(imm, 0, 19);
         }
 
-        // abcdefgh -> aBbbbbbb bbcdefgh 00000000 00000000 00000000 00000000 00000000 00000000
+        // abcdefgh -> aBbbbbbb bbcdefgh 00000000 00000000 00000000 00000000 00000000 00000000 (B = ~b)
         private static ulong ExpandImm8ToFP64(ulong imm)
         {
             ulong MoveBit(ulong bits, int from, int to)
