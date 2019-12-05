@@ -27,6 +27,8 @@ namespace Ryujinx.Common.Logging
 
         private readonly int _overflowTimeout;
 
+        string ILogTarget.Name { get => _target.Name; set => throw new NotImplementedException(); }
+
         public AsyncLogTargetWrapper(ILogTarget target)
             : this(target, -1, AsyncLogTargetOverflowAction.Block)
         { }
@@ -71,11 +73,6 @@ namespace Ryujinx.Common.Logging
         {
             _messageQueue.CompleteAdding();
             _messageThread.Join();
-        }
-
-        public string GetName()
-        {
-            return _target.GetName();
         }
     }
 }

@@ -54,7 +54,7 @@ namespace Ryujinx.Common.Logging
         {
             foreach (var target in m_LogTargets)
             {
-                if (target.GetName().Equals(targetName))
+                if (target.Name.Equals(targetName))
                 {
                     return target;
                 }

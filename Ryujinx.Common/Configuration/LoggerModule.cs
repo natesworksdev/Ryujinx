@@ -25,49 +25,49 @@ namespace Ryujinx.Configuration
 
         private static void ReloadEnableDebug(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.Debug, e.Value);
+            Logger.SetEnable(LogLevel.Debug, e.NewValue);
         }
 
         private static void ReloadEnableStub(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.Stub, e.Value);
+            Logger.SetEnable(LogLevel.Stub, e.NewValue);
         }
 
         private static void ReloadEnableInfo(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.Info, e.Value);
+            Logger.SetEnable(LogLevel.Info, e.NewValue);
         }
 
         private static void ReloadEnableWarning(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.Warning, e.Value);
+            Logger.SetEnable(LogLevel.Warning, e.NewValue);
         }
 
         private static void ReloadEnableError(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.Error, e.Value);
+            Logger.SetEnable(LogLevel.Error, e.NewValue);
         }
 
         private static void ReloadEnableGuest(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.Guest, e.Value);
+            Logger.SetEnable(LogLevel.Guest, e.NewValue);
         }
 
         private static void ReloadEnableFsAccessLog(object sender, ReactiveEventArgs<bool> e)
         {
-            Logger.SetEnable(LogLevel.AccessLog, e.Value);
+            Logger.SetEnable(LogLevel.AccessLog, e.NewValue);
         }
 
         private static void ReloadFilteredClasses(object sender, ReactiveEventArgs<LogClass[]> e)
         {
-            bool noFilter = e.Value.Length == 0;
+            bool noFilter = e.NewValue.Length == 0;
 
             foreach (var logClass in EnumExtensions.GetValues<LogClass>())
             {
                 Logger.SetEnable(logClass, noFilter);
             }
 
-            foreach (var logClass in e.Value)
+            foreach (var logClass in e.NewValue)
             {
                 Logger.SetEnable(logClass, true);
             }
@@ -75,20 +75,17 @@ namespace Ryujinx.Configuration
 
         private static void ReloadFileLogger(object sender, ReactiveEventArgs<bool> e)
         {
-            if (e.Value != e.OldValue)
+            if (e.NewValue)
             {
-                if (e.Value)
-                {
-                    Logger.AddTarget(new AsyncLogTargetWrapper(
-                        new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log"), "file"),
-                        1000,
-                        AsyncLogTargetOverflowAction.Block
-                    ));
-                }
-                else
-                {
-                    Logger.RemoveTarget("file");
-                }
+                Logger.AddTarget(new AsyncLogTargetWrapper(
+                    new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log"), "file"),
+                    1000,
+                    AsyncLogTargetOverflowAction.Block
+                ));
+            }
+            else
+            {
+                Logger.RemoveTarget("file");
             }
         }
 

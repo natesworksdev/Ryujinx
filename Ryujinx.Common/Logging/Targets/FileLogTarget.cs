@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Text;
 
 namespace Ryujinx.Common.Logging
@@ -10,6 +11,8 @@ namespace Ryujinx.Common.Logging
         private readonly StreamWriter  _logWriter;
         private readonly ILogFormatter _formatter;
         private readonly string        _name;
+
+        string ILogTarget.Name { get => _name; set => throw new NotImplementedException(); }
 
         public FileLogTarget(string path, string name)
             : this(path, name, FileShare.Read, FileMode.Append)
@@ -33,11 +36,6 @@ namespace Ryujinx.Common.Logging
             _logWriter.WriteLine("---- End of Log ----");
             _logWriter.Flush();
             _logWriter.Dispose();
-        }
-
-        public string GetName()
-        {
-            return _name;
         }
     }
 }

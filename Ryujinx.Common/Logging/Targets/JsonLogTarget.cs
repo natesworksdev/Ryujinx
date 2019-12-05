@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Utf8Json;
 
 namespace Ryujinx.Common.Logging
@@ -8,6 +9,8 @@ namespace Ryujinx.Common.Logging
         private Stream _stream;
         private bool   _leaveOpen;
         private string _name;
+
+        string ILogTarget.Name { get => _name; set => throw new NotImplementedException(); }
 
         public JsonLogTarget(Stream stream, string name)
         {
@@ -32,11 +35,6 @@ namespace Ryujinx.Common.Logging
             {
                 _stream.Dispose();
             }
-        }
-
-        public string GetName()
-        {
-            return _name;
         }
     }
 }

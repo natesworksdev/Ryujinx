@@ -11,6 +11,8 @@ namespace Ryujinx.Common.Logging
 
         private readonly string _name;
 
+        string ILogTarget.Name { get => _name; set => throw new NotImplementedException(); }
+
         static ConsoleLogTarget()
         {
             _logColors = new ConcurrentDictionary<LogLevel, ConsoleColor> {
@@ -46,11 +48,6 @@ namespace Ryujinx.Common.Logging
         public void Dispose()
         {
             Console.ResetColor();
-        }
-
-        public string GetName()
-        {
-            return _name;
         }
     }
 }

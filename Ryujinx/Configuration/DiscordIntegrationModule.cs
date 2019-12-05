@@ -31,7 +31,7 @@ namespace Ryujinx.Configuration
 
         private static void Update(object sender, ReactiveEventArgs<bool> e)
         {
-            if (e.OldValue != e.Value)
+            if (e.OldValue != e.NewValue)
             {
                 // If the integration was active, disable it and unload everything
                 if (e.OldValue)
@@ -42,7 +42,7 @@ namespace Ryujinx.Configuration
                 }
 
                 // If we need to activate it and the client isn't active, initialize it
-                if (e.Value && DiscordClient == null)
+                if (e.NewValue && DiscordClient == null)
                 {
                     DiscordClient = new DiscordRpcClient("568815339807309834");
 
@@ -81,7 +81,7 @@ namespace Ryujinx.Configuration
             DiscordPresence.State                 = state;
             DiscordPresence.Assets.LargeImageText = titleName;
             DiscordPresence.Assets.SmallImageKey  = "ryujinx";
-            DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
+            DiscordPresence.Assets.SmallImageText = "Ryujinx is a Nintendo Switch emulator";
             DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
 
             DiscordClient?.SetPresence(DiscordPresence);
