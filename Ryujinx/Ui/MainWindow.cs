@@ -1,7 +1,6 @@
 using Gtk;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
-using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
@@ -214,7 +213,7 @@ namespace Ryujinx.Ui
                 Logger.RestartTime();
 
                 // TODO: Move this somewhere else + reloadable?
-                GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+                Ryujinx.Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
                 {
