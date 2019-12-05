@@ -120,22 +120,85 @@ namespace Ryujinx.Ui
             _controller1Type.Changed += (sender, args) => Controller_Changed(sender, args, _controller1Type.ActiveId, _controller1Image);
 
             //Setup Currents
-            if (ConfigurationState.Instance.Logger.EnableFileLog)             { _fileLogToggle.Click();        }
-            if (ConfigurationState.Instance.Logger.EnableError)               { _errorLogToggle.Click();       }
-            if (ConfigurationState.Instance.Logger.EnableWarn)                { _warningLogToggle.Click();     }
-            if (ConfigurationState.Instance.Logger.EnableInfo)                { _infoLogToggle.Click();        }
-            if (ConfigurationState.Instance.Logger.EnableStub)                { _stubLogToggle.Click();        }
-            if (ConfigurationState.Instance.Logger.EnableDebug)               { _debugLogToggle.Click();       }
-            if (ConfigurationState.Instance.Logger.EnableGuest)               { _guestLogToggle.Click();       }
-            if (ConfigurationState.Instance.Logger.EnableFsAccessLog)         { _fsAccessLogToggle.Click();    }
-            if (ConfigurationState.Instance.System.EnableDockedMode)          { _dockedModeToggle.Click();     }
-            if (ConfigurationState.Instance.EnableDiscordIntegration)         { _discordToggle.Click();        }
-            if (ConfigurationState.Instance.Graphics.EnableVsync)             { _vSyncToggle.Click();          }
-            if (ConfigurationState.Instance.System.EnableMulticoreScheduling) { _multiSchedToggle.Click();     }
-            if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)   { _fsicToggle.Click();           }
-            if (ConfigurationState.Instance.System.IgnoreMissingServices)     { _ignoreToggle.Click();         }
-            if (ConfigurationState.Instance.Hid.EnableKeyboard)               { _directKeyboardAccess.Click(); }
-            if (ConfigurationState.Instance.Ui.EnableCustomTheme)             { _custThemeToggle.Click();      }
+            if (ConfigurationState.Instance.Logger.EnableFileLog)
+            {
+                _fileLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableError)
+            {
+                _errorLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableWarn)
+            {
+                _warningLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableInfo)
+            {
+                _infoLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableStub)
+            {
+                _stubLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableDebug)
+            {
+                _debugLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableGuest)
+            {
+                _guestLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableFsAccessLog)
+            {
+                _fsAccessLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableDockedMode)
+            {
+                _dockedModeToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.EnableDiscordIntegration)
+            {
+                _discordToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Graphics.EnableVsync)
+            {
+                _vSyncToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableMulticoreScheduling)
+            {
+                _multiSchedToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
+            {
+                _fsicToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.IgnoreMissingServices)
+            {
+                _ignoreToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Hid.EnableKeyboard)
+            {
+                _directKeyboardAccess.Click();
+            }
+
+            if (ConfigurationState.Instance.Ui.EnableCustomTheme)
+            {
+                _custThemeToggle.Click();
+            }
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _controller1Type     .SetActiveId(ConfigurationState.Instance.Hid.ControllerType.Value.ToString());
