@@ -44,7 +44,7 @@ namespace Ryujinx.Configuration
                 // If we need to activate it and the client isn't active, initialize it
                 if (e.Value && DiscordClient == null)
                 {
-                    DiscordClient   = new DiscordRpcClient("568815339807309834");
+                    DiscordClient = new DiscordRpcClient("568815339807309834");
 
                     DiscordClient.Initialize();
                     DiscordClient.SetPresence(DiscordPresence);

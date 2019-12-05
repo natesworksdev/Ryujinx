@@ -65,9 +65,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem _fileExtToggle;
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
-        [GUI] Box           _box;
         [GUI] TreeView      _gameTable;
-        [GUI] GLArea        _glScreen;
         [GUI] Label         _progressLabel;
         [GUI] LevelBar      _progressBar;
 #pragma warning restore CS0649
@@ -97,7 +95,7 @@ namespace Ryujinx.Ui
             _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _stopEmulation.Sensitive = false;
 
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        { _favToggle.Active       = true; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        { _favToggle.Active        = true; }
             if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       { _iconToggle.Active       = true; }
             if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        { _appToggle.Active        = true; }
             if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        { _developerToggle.Active  = true; }
@@ -187,9 +185,9 @@ namespace Ryujinx.Ui
             }
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        { _favColumn.SortColumnId        = 0; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       { _appColumn.SortColumnId        = 2; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        { _devColumn.SortColumnId        = 3; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        { _versionColumn.SortColumnId    = 4; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        { _appColumn.SortColumnId        = 2; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        { _devColumn.SortColumnId        = 3; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    { _versionColumn.SortColumnId    = 4; }
             if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) { _timePlayedColumn.SortColumnId = 5; }
             if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) { _lastPlayedColumn.SortColumnId = 6; }
             if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    { _fileExtColumn.SortColumnId    = 7; }
@@ -481,7 +479,7 @@ namespace Ryujinx.Ui
         private void Row_Activated(object sender, RowActivatedArgs args)
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path.ToString()));
-            string path = (string)_tableStore.GetValue(treeIter, 8);
+            string path = (string)_tableStore.GetValue(treeIter, 9);
 
             LoadApplication(path);
         }
@@ -567,7 +565,7 @@ namespace Ryujinx.Ui
 
         private void Update_Pressed(object o, EventArgs args)
         {
-            string ryuUpdater = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "RyuFS", "RyuUpdater.exe");
+            string ryuUpdater = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "RyuUpdater.exe");
 
             try
             {
