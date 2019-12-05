@@ -1654,7 +1654,7 @@ namespace ARMeilleure.CodeGen.X86
 
             for (int offset = PageSize; offset < size; offset += PageSize)
             {
-                Operand memOp = new MemoryOperand(OperandType.I32, rsp, null, Multiplier.x1, -offset);;
+                Operand memOp = new MemoryOperand(OperandType.I32, rsp, null, Multiplier.x1, -offset);
 
                 context.Assembler.Mov(temp, memOp, OperandType.I32);
             }

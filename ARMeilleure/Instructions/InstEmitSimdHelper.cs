@@ -907,7 +907,7 @@ namespace ARMeilleure.Instructions
 
             Operand res = context.VectorZero();
 
-            Operand me = EmitVectorExtract(context, op.Rm, op.Index, op.Size, signed);;
+            Operand me = EmitVectorExtract(context, op.Rm, op.Index, op.Size, signed);
 
             int elems = 8 >> op.Size;
 
@@ -939,7 +939,7 @@ namespace ARMeilleure.Instructions
 
             Operand res = context.VectorZero();
 
-            Operand me = EmitVectorExtract(context, op.Rm, op.Index, op.Size, signed);;
+            Operand me = EmitVectorExtract(context, op.Rm, op.Index, op.Size, signed);
 
             int elems = 8 >> op.Size;
 
