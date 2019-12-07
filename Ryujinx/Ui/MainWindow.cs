@@ -95,16 +95,16 @@ namespace Ryujinx.Ui
             _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _stopEmulation.Sensitive = false;
 
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        { _favToggle.Active        = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       { _iconToggle.Active       = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        { _appToggle.Active        = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        { _developerToggle.Active  = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    { _versionToggle.Active    = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) { _timePlayedToggle.Active = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) { _lastPlayedToggle.Active = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    { _fileExtToggle.Active    = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   { _fileSizeToggle.Active   = true; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       { _pathToggle.Active       = true; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _appToggle.Active        = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _developerToggle.Active  = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _versionToggle.Active    = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _timePlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtToggle.Active    = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
 
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
@@ -184,15 +184,15 @@ namespace Ryujinx.Ui
                 else if (column.Title == "Path")        { _pathColumn       = column; }
             }
 
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        { _favColumn.SortColumnId        = 0; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        { _appColumn.SortColumnId        = 2; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        { _devColumn.SortColumnId        = 3; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    { _versionColumn.SortColumnId    = 4; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) { _timePlayedColumn.SortColumnId = 5; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) { _lastPlayedColumn.SortColumnId = 6; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    { _fileExtColumn.SortColumnId    = 7; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   { _fileSizeColumn.SortColumnId   = 8; }
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       { _pathColumn.SortColumnId       = 9; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favColumn.SortColumnId        = 0;
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _appColumn.SortColumnId        = 2;
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _devColumn.SortColumnId        = 3;
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _versionColumn.SortColumnId    = 4;
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _timePlayedColumn.SortColumnId = 5;
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedColumn.SortColumnId = 6;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtColumn.SortColumnId    = 7;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeColumn.SortColumnId   = 8;
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathColumn.SortColumnId       = 9;
         }
 
         private HLE.Switch InitializeSwitchInstance()
@@ -563,7 +563,7 @@ namespace Ryujinx.Ui
             settingsWin.Show();
         }
 
-        private void Update_Pressed(object o, EventArgs args)
+        private void Update_Pressed(object sender, EventArgs args)
         {
             string ryuUpdater = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "RyuUpdater.exe");
 
@@ -647,7 +647,7 @@ namespace Ryujinx.Ui
             UpdateColumns();
         }
 
-        private void FileSize_Toggled(object o, EventArgs args)
+        private void FileSize_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn.Value = _fileSizeToggle.Active;
 
@@ -655,7 +655,7 @@ namespace Ryujinx.Ui
             UpdateColumns();
         }
 
-        private void Path_Toggled(object o, EventArgs args)
+        private void Path_Toggled(object sender, EventArgs args)
         {
             ConfigurationState.Instance.Ui.GuiColumns.PathColumn.Value = _pathToggle.Active;
 

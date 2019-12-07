@@ -48,7 +48,6 @@ namespace Ryujinx.Configuration
             /// <summary>
             /// Used to toggle columns in the GUI
             /// </summary>
-            // TODO: UPDATE THIS TO MASTER
             public Columns GuiColumns { get; private set; }
 
             /// <summary>

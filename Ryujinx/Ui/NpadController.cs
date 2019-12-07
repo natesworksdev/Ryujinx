@@ -24,11 +24,6 @@ namespace Ryujinx.Ui.Input
             return _inner.Enabled && Joystick.GetState(_inner.Index).IsConnected;
         }
 
-        public void Initialize()
-        {
-
-        }
-
         public ControllerButtons GetButtons()
         {
             if (!IsEnabled())

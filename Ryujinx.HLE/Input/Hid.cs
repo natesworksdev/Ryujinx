@@ -53,18 +53,12 @@ namespace Ryujinx.HLE.Input
         {
             switch (controllerType)
             {
-                case ControllerType.Handheld:
-                    return ControllerStatus.Handheld;
-                case ControllerType.NpadLeft:
-                    return ControllerStatus.NpadLeft;
-                case ControllerType.NpadRight:
-                    return ControllerStatus.NpadRight;
-                case ControllerType.NpadPair:
-                    return ControllerStatus.NpadPair;
-                case ControllerType.ProController:
-                    return ControllerStatus.ProController;
-                default:
-                    throw new NotImplementedException();
+                case ControllerType.Handheld:      return ControllerStatus.Handheld;
+                case ControllerType.NpadLeft:      return ControllerStatus.NpadLeft;
+                case ControllerType.NpadRight:     return ControllerStatus.NpadRight;
+                case ControllerType.NpadPair:      return ControllerStatus.NpadPair;
+                case ControllerType.ProController: return ControllerStatus.ProController;
+                default:                           throw new NotImplementedException();
             }
         }
 
