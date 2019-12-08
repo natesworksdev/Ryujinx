@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Lm.LogService
     {
         public ILogger() { }
 
-        private int ReadEncodedInt(BinaryReader reader)
+        private static int ReadEncodedInt(BinaryReader reader)
         {
             int result   = 0;
             int position = 0;
@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Lm.LogService
 
                 position++;
 
-            } while ((encoded & -128) != 0);
+            } while ((encoded & 0x80) != 0);
 
             return result;
         }
