@@ -1087,7 +1087,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarTernaryRaOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPNegMulAdd, SoftFloat64.FPNegMulAdd, op1, op2, op3);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPNegMulAdd), op1, op2, op3);
                 });
             }
         }
@@ -1130,7 +1130,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarTernaryRaOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPNegMulSub, SoftFloat64.FPNegMulSub, op1, op2, op3);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPNegMulSub), op1, op2, op3);
                 });
             }
         }

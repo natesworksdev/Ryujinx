@@ -301,6 +301,8 @@ namespace ARMeilleure.Translation
             SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMulAdd));
             SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMulSub));
             SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPMulX));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPNegMulAdd));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPNegMulSub));
             SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRecipEstimate));
             SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRecipStepFused));
             SetSoftFloatDelegateInfo(typeof(SoftFloat32), nameof(SoftFloat32.FPRecpX));
@@ -327,6 +329,8 @@ namespace ARMeilleure.Translation
             SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMulAdd));
             SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMulSub));
             SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPMulX));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPNegMulAdd));
+            SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPNegMulSub));
             SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRecipEstimate));
             SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRecipStepFused));
             SetSoftFloatDelegateInfo(typeof(SoftFloat64), nameof(SoftFloat64.FPRecpX));
