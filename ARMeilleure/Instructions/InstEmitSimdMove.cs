@@ -176,7 +176,7 @@ namespace ARMeilleure.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
-                    nShifted = context.AddIntrinsic(Intrinsic.X86Movlhps, nShifted, context.VectorZero());
+                    nShifted = context.VectorZeroUpper64(nShifted);
                 }
 
                 nShifted = context.AddIntrinsic(Intrinsic.X86Psrldq, nShifted, Const(op.Imm4));
@@ -187,7 +187,7 @@ namespace ARMeilleure.Instructions
 
                 if (op.RegisterSize == RegisterSize.Simd64)
                 {
-                    mShifted = context.AddIntrinsic(Intrinsic.X86Movlhps, mShifted, context.VectorZero());
+                    mShifted = context.VectorZeroUpper64(mShifted);
                 }
 
                 Operand res = context.AddIntrinsic(Intrinsic.X86Por, nShifted, mShifted);
@@ -276,9 +276,10 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
+            Operand d = GetVec(op.Rd);
             Operand n = GetIntOrZR(context, op.Rn);
 
-            context.Copy(GetVec(op.Rd), EmitVectorInsert(context, GetVec(op.Rd), n, 1, 3));
+            context.Copy(d, EmitVectorInsert(context, d, n, 1, 3));
         }
 
         public static void Fmov_S(ArmEmitterContext context)
@@ -310,18 +311,32 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
-            Operand e = Const(op.Immediate);
-
-            Operand res = context.VectorZero();
-
-            int elems = op.RegisterSize == RegisterSize.Simd128 ? 4 : 2;
-
-            for (int index = 0; index < (elems >> op.Size); index++)
+            if (Optimizations.UseSse2)
             {
-                res = EmitVectorInsert(context, res, e, index, op.Size + 2);
+                if (op.RegisterSize == RegisterSize.Simd128)
+                {
+                    context.Copy(GetVec(op.Rd), X86GetAllElements(context, op.Immediate));
+                }
+                else
+                {
+                    context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
+                }
             }
+            else
+            {
+                Operand e = Const(op.Immediate);
 
-            context.Copy(GetVec(op.Rd), res);
+                Operand res = context.VectorZero();
+
+                int elems = op.RegisterSize == RegisterSize.Simd128 ? 2 : 1;
+
+                for (int index = 0; index < elems; index++)
+                {
+                    res = EmitVectorInsert(context, res, e, index, 3);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
+            }
         }
 
         public static void Ins_Gp(ArmEmitterContext context)
@@ -348,7 +363,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitMoviMvni(context, not: false);
+                EmitSse2MoviMvni(context, not: false);
             }
             else
             {
@@ -360,7 +375,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitMoviMvni(context, not: true);
+                EmitSse2MoviMvni(context, not: true);
             }
             else
             {
@@ -429,13 +444,11 @@ namespace ARMeilleure.Instructions
             {
                 Operand d = GetVec(op.Rd);
 
-                Operand res = context.AddIntrinsic(Intrinsic.X86Movlhps, d, context.VectorZero());
-
-                Operand n = GetVec(op.Rn);
+                Operand res = context.VectorZeroUpper64(d);
 
                 Operand mask = X86GetAllElements(context, _masksE0_TrnUzpXtn[op.Size]);
 
-                Operand res2 = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask);
+                Operand res2 = context.AddIntrinsic(Intrinsic.X86Pshufb, GetVec(op.Rn), mask);
 
                 Intrinsic movInst = op.RegisterSize == RegisterSize.Simd128
                     ? Intrinsic.X86Movlhps
@@ -443,7 +456,7 @@ namespace ARMeilleure.Instructions
 
                 res = context.AddIntrinsic(movInst, res, res2);
 
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(d, res);
             }
             else
             {
@@ -451,7 +464,9 @@ namespace ARMeilleure.Instructions
 
                 int part = op.RegisterSize == RegisterSize.Simd128 ? elems : 0;
 
-                Operand res = part == 0 ? context.VectorZero() : context.Copy(GetVec(op.Rd));
+                Operand d = GetVec(op.Rd);
+
+                Operand res = part == 0 ? context.VectorZero() : context.Copy(d);
 
                 for (int index = 0; index < elems; index++)
                 {
@@ -460,7 +475,7 @@ namespace ARMeilleure.Instructions
                     res = EmitVectorInsert(context, res, ne, part + index, op.Size);
                 }
 
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(d, res);
             }
         }
 
@@ -474,7 +489,7 @@ namespace ARMeilleure.Instructions
             EmitVectorZip(context, part: 1);
         }
 
-        private static void EmitMoviMvni(ArmEmitterContext context, bool not)
+        private static void EmitSse2MoviMvni(ArmEmitterContext context, bool not)
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
