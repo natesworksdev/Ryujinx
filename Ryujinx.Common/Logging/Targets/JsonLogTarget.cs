@@ -10,7 +10,7 @@ namespace Ryujinx.Common.Logging
         private bool   _leaveOpen;
         private string _name;
 
-        string ILogTarget.Name { get => _name; set => throw new NotImplementedException(); }
+        string ILogTarget.Name { get => _name; }
 
         public JsonLogTarget(Stream stream, string name)
         {

@@ -30,7 +30,7 @@ namespace Ryujinx
 
             string configurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
 
-            // Now load the configuration as the other subsystem are now registered
+            // Now load the configuration as the other subsystems are now registered
             if (File.Exists(configurationPath))
             {
                 ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(configurationPath);

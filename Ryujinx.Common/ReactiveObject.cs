@@ -14,7 +14,7 @@ namespace Ryujinx.Common
         {
             get
             {
-                _readerWriterLock.AcquireReaderLock(int.MaxValue);
+                _readerWriterLock.AcquireReaderLock(Timeout.Infinite);
                 T value = _value;
                 _readerWriterLock.ReleaseReaderLock();
 
@@ -22,7 +22,7 @@ namespace Ryujinx.Common
             }
             set
             {
-                _readerWriterLock.AcquireWriterLock(int.MaxValue);
+                _readerWriterLock.AcquireWriterLock(Timeout.Infinite);
 
                 T oldValue = _value;
                 
@@ -45,8 +45,8 @@ namespace Ryujinx.Common
 
     public class ReactiveEventArgs<T>
     {
-        public T OldValue { get; private set; }
-        public T NewValue { get; private set; }
+        public T OldValue { get; }
+        public T NewValue { get; }
 
         public ReactiveEventArgs(T oldValue, T newValue)
         {

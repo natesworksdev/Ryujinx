@@ -38,7 +38,7 @@ namespace Ryujinx.Common.Logging
 
             m_Time = Stopwatch.StartNew();
 
-            // logger should log to console by default
+            // Logger should log to console by default
             AddTarget(new AsyncLogTargetWrapper(
                 new ConsoleLogTarget("console"),
                 1000,

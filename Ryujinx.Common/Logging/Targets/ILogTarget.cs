@@ -6,6 +6,6 @@ namespace Ryujinx.Common.Logging
     {
         void Log(object sender, LogEventArgs args);
 
-        string Name { get; protected set; }
+        string Name { get; }
     }
 }

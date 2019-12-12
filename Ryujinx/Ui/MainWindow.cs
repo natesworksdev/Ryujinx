@@ -160,28 +160,28 @@ namespace Ryujinx.Ui
             CellRendererToggle favToggle = new CellRendererToggle();
             favToggle.Toggled += FavToggle_Toggled;
 
-            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        { _gameTable.AppendColumn("Fav",         favToggle,                "active", 0); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       { _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        { _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        { _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   3); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    { _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   4); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) { _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   5); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) { _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   6); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    { _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   7); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   { _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   8); }
-            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       { _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   9); }
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _gameTable.AppendColumn("Fav",         favToggle,                "active", 0);
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1);
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2);
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   3);
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   4);
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   5);
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   6);
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   7);
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   8);
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   9);
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
-                if (column.Title == "Fav")              { _favColumn        = column; }
-                else if (column.Title == "Application") { _appColumn        = column; }
-                else if (column.Title == "Developer")   { _devColumn        = column; }
-                else if (column.Title == "Version")     { _versionColumn    = column; }
-                else if (column.Title == "Time Played") { _timePlayedColumn = column; }
-                else if (column.Title == "Last Played") { _lastPlayedColumn = column; }
-                else if (column.Title == "File Ext")    { _fileExtColumn    = column; }
-                else if (column.Title == "File Size")   { _fileSizeColumn   = column; }
-                else if (column.Title == "Path")        { _pathColumn       = column; }
+                if (column.Title == "Fav")              _favColumn        = column;
+                else if (column.Title == "Application") _appColumn        = column;
+                else if (column.Title == "Developer")   _devColumn        = column;
+                else if (column.Title == "Version")     _versionColumn    = column;
+                else if (column.Title == "Time Played") _timePlayedColumn = column;
+                else if (column.Title == "Last Played") _lastPlayedColumn = column;
+                else if (column.Title == "File Ext")    _fileExtColumn    = column;
+                else if (column.Title == "File Size")   _fileSizeColumn   = column;
+                else if (column.Title == "Path")        _pathColumn       = column;
             }
 
             if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favColumn.SortColumnId        = 0;
@@ -230,7 +230,7 @@ namespace Ryujinx.Ui
             {
                 Logger.RestartTime();
 
-                // TODO: move this somewhere else + reloadable?
+                // TODO: Move this somewhere else + reloadable?
                 GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
@@ -345,7 +345,6 @@ namespace Ryujinx.Ui
                 End();
             }
         }
-
 
         private static void End()
         {

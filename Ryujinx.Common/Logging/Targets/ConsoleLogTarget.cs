@@ -11,7 +11,7 @@ namespace Ryujinx.Common.Logging
 
         private readonly string _name;
 
-        string ILogTarget.Name { get => _name; set => throw new NotImplementedException(); }
+        string ILogTarget.Name { get => _name; }
 
         static ConsoleLogTarget()
         {

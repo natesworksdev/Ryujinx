@@ -6,6 +6,6 @@
         Handheld,
         NpadPair,
         NpadLeft,
-        NpadRight,
+        NpadRight
     }
 }

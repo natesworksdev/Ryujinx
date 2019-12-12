@@ -12,7 +12,7 @@ namespace Ryujinx.Common.Logging
         private readonly ILogFormatter _formatter;
         private readonly string        _name;
 
-        string ILogTarget.Name { get => _name; set => throw new NotImplementedException(); }
+        string ILogTarget.Name { get => _name; }
 
         public FileLogTarget(string path, string name)
             : this(path, name, FileShare.Read, FileMode.Append)

@@ -1,14 +1,10 @@
 ﻿using Gtk;
-using Ryujinx.HLE.HOS.SystemState;
-using Ryujinx.HLE.Input;
-using Ryujinx.Ui.Input;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Ryujinx.Configuration;
-using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.System;
 using Ryujinx.Configuration.Hid;
 
