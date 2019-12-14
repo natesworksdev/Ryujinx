@@ -10,7 +10,7 @@ namespace Ryujinx.Configuration
     {
         private static DiscordRpcClient DiscordClient;
 
-        private static string LARGE_DESCRIPTION = "Ryujinx is a Nintendo Switch emulator.";
+        private static string LargeDescription = "Ryujinx is a Nintendo Switch emulator.";
 
         public static RichPresence DiscordPresence { get; private set; }
 
@@ -21,7 +21,7 @@ namespace Ryujinx.Configuration
                 Assets     = new Assets
                 {
                     LargeImageKey  = "ryujinx",
-                    LargeImageText = LARGE_DESCRIPTION
+                    LargeImageText = LargeDescription
                 },
                 Details    = "Main Menu",
                 State      = "Idling",
@@ -83,7 +83,7 @@ namespace Ryujinx.Configuration
             DiscordPresence.State                 = state;
             DiscordPresence.Assets.LargeImageText = titleName;
             DiscordPresence.Assets.SmallImageKey  = "ryujinx";
-            DiscordPresence.Assets.SmallImageText = LARGE_DESCRIPTION;
+            DiscordPresence.Assets.SmallImageText = LargeDescription;
             DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
 
             DiscordClient?.SetPresence(DiscordPresence);
