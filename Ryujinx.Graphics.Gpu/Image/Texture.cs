@@ -245,8 +245,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!_context.Capabilities.SupportsAstcCompression && _info.FormatInfo.Format.IsAstc())
             {
-                if (!AstcDecoder.TryDecodeToRgba8(
-                    data,
+                if (!AstcDecoder.TryDecodeToRgba8P(
+                    data.ToArray(),
                     _info.FormatInfo.BlockWidth,
                     _info.FormatInfo.BlockHeight,
                     _info.Width,
