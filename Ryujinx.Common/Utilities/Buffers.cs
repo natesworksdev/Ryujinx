@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace LibHac.Common
+namespace Ryujinx.Common.Utilities
 {
     [DebuggerDisplay("{ToString()}")]
     [StructLayout(LayoutKind.Sequential, Size = 16)]

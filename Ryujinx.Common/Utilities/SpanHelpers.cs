@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace LibHac.Common
+namespace Ryujinx.Common.Utilities
 {
     public static class SpanHelpers
     {

@@ -1,4 +1,4 @@
-﻿using LibHac.Common;
+﻿using Ryujinx.Common.Utilities;
 using System;
 using System.Diagnostics;
 
