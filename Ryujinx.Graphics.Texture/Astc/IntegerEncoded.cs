@@ -218,17 +218,11 @@ namespace Ryujinx.Graphics.Texture.Astc
 
         private static ReadOnlySpan<byte> GetTritEncoding(int index)
         {
-            Debug.Assert((uint)index < 0x100);
-
-            return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(TritEncodings), index * 5), 5);
             return TritEncodings.Slice(index * 5, 5);
         }
 
         private static ReadOnlySpan<byte> GetQuintEncoding(int index)
         {
-            Debug.Assert((uint)index < 0x100);
-
-            return MemoryMarshal.CreateSpan(ref Unsafe.Add(ref MemoryMarshal.GetReference(QuintEncodings), index * 3), 3);
             return QuintEncodings.Slice(index * 3, 3);
         }
 

@@ -5,7 +5,6 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-
 namespace Ryujinx.Graphics.Texture.Astc
 {
     // https://github.com/GammaUNC/FasTC/blob/master/ASTCEncoder/src/Decompressor.cpp
@@ -25,23 +24,23 @@ namespace Ryujinx.Graphics.Texture.Astc
         public AstcDecoder(
             ReadOnlyMemory<byte> inputBuffer,
             Memory<byte> outputBuffer,
-            int blockX,
-            int blockY,
-            int x,
-            int y,
-            int z,
+            int blockWidth,
+            int blockHeight,
+            int width,
+            int height,
+            int depth,
             int levels)
         {
-            if (blockX > 12 || blockY > 12)
+            if ((uint)blockWidth > 12 || (uint)blockHeight > 12)
             {
-                throw new AstcDecoderException("Block size unsupported!");
+                throw new AstcDecoderException("Invalid block size.");
             }
 
             InputBuffer = inputBuffer;
             OutputBuffer = outputBuffer;
 
-            BlockSizeX = blockX;
-            BlockSizeY = blockY;
+            BlockSizeX = blockWidth;
+            BlockSizeY = blockHeight;
 
             Levels = new AstcLevel[levels];
 
@@ -53,12 +52,12 @@ namespace Ryujinx.Graphics.Texture.Astc
             {
                 ref AstcLevel level = ref Levels[i];
 
-                level.ImageSizeX = Math.Max(1, x >> i);
-                level.ImageSizeY = Math.Max(1, y >> i);
-                level.ImageSizeZ = Math.Max(1, z >> i);
+                level.ImageSizeX = Math.Max(1, width >> i);
+                level.ImageSizeY = Math.Max(1, height >> i);
+                level.ImageSizeZ = Math.Max(1, depth >> i);
 
-                level.BlockCountX = (level.ImageSizeX + blockX - 1) / blockX;
-                level.BlockCountY = (level.ImageSizeY + blockY - 1) / blockY;
+                level.BlockCountX = (level.ImageSizeX + blockWidth - 1) / blockWidth;
+                level.BlockCountY = (level.ImageSizeY + blockHeight - 1) / blockHeight;
 
                 level.StartBlock = currentInputBlock;
                 level.OutputByteOffset = currentOutputOffset;
@@ -1126,7 +1125,6 @@ namespace Ryujinx.Graphics.Texture.Astc
             }
 
             // We now have enough to decode our integer sequence.
-            //IntegerSequence integerEncodedSequence = new IntegerSequence();
             IntegerSequence integerEncodedSequence;
             unsafe { _ = &integerEncodedSequence; } // Skip struct initialization
             integerEncodedSequence.Reset();
