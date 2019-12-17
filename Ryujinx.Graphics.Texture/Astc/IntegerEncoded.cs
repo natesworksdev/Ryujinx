@@ -111,8 +111,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int numberBitsPerValue)
         {
             // Implement the algorithm in section C.2.12
-            var mBuf = new Buffer20();
-            Span<int> m = mBuf.AsSpan<int>();
+            Span<int> m = stackalloc int[5];
 
             m[0] = bitStream.ReadBits(numberBitsPerValue);
             int encoded = bitStream.ReadBits(2);
