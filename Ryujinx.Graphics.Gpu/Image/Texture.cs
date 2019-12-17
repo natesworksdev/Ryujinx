@@ -246,9 +246,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!_context.Capabilities.SupportsAstcCompression && _info.FormatInfo.Format.IsAstc())
             {
-                Logger.PrintInfo(LogClass.Gpu, "Decoding ASTC texture");
-                var watch = Stopwatch.StartNew();
-
                 if (!AstcDecoder.TryDecodeToRgba8(
                     data.ToArray(),
                     _info.FormatInfo.BlockWidth,
@@ -261,10 +258,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     // TODO: Error.
                 }
-
-                watch.Stop();
-
-                Logger.PrintInfo(LogClass.Gpu, $"Decoded texture in {watch.Elapsed.TotalSeconds} seconds");
 
                 data = decoded;
             }
