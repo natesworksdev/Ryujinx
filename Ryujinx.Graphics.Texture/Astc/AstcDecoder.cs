@@ -149,7 +149,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int pixelCordY = blockCordY * BlockSizeY;
 
             int outputPixelsX = Math.Min(pixelCordX + BlockSizeX, level.ImageSizeX) - pixelCordX;
-            int outputPixelsY = Math.Min(pixelCordY + BlockSizeY, level.ImageSizeY) - pixelCordY;
+            int outputPixelsY = Math.Min(pixelCordY + BlockSizeY, level.ImageSizeY * level.ImageSizeZ) - pixelCordY;
 
             int outputStart = pixelCordX * 4 + pixelCordY * stride;
             int outputOffset = outputStart;
