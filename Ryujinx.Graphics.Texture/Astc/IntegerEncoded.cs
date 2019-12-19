@@ -1,9 +1,5 @@
-﻿using Ryujinx.Common.Utilities;
-using System;
-using System.Diagnostics;
+﻿using System;
 using System.Numerics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Texture.Astc
 {
@@ -168,6 +164,7 @@ namespace Ryujinx.Graphics.Texture.Astc
                     BitValue = m[i],
                     QuintValue = encodings[i]
                 };
+
                 listIntegerEncoded.Add(ref intEncoded);
             }
         }

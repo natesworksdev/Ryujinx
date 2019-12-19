@@ -339,7 +339,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             int partitionIndex;
             Span<uint> colorEndpointMode = stackalloc uint[4];
 
-            var colorEndpointStream = new BitStream128();
+            BitStream128 colorEndpointStream = new BitStream128();
 
             // Read extra config data...
             uint baseColorEndpointMode = 0;
@@ -488,7 +488,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             unsafe { _ = &texelWeightValues; } // Skip struct initialization
             texelWeightValues.Reset();
 
-            var weightBitStream = new BitStream128(texelWeightData);
+            BitStream128 weightBitStream = new BitStream128(texelWeightData);
 
             IntegerEncoded.DecodeIntegerSequence(ref texelWeightValues, ref weightBitStream, texelParams.MaxWeight, texelParams.GetNumWeightValues());
 
