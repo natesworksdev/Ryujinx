@@ -16,13 +16,6 @@ namespace ARMeilleure.Instructions
     static partial class InstEmit
     {
 #region "Masks"
-        private static readonly long[] _masks_RshrnShrn = new long[]
-        {
-            14L << 56 | 12L << 48 | 10L << 40 | 08L << 32 | 06L << 24 | 04L << 16 | 02L << 8 | 00L << 0,
-            13L << 56 | 12L << 48 | 09L << 40 | 08L << 32 | 05L << 24 | 04L << 16 | 01L << 8 | 00L << 0,
-            11L << 56 | 10L << 48 | 09L << 40 | 08L << 32 | 03L << 24 | 02L << 16 | 01L << 8 | 00L << 0
-        };
-
         private static readonly long[] _masks_SliSri = new long[] // Replication masks.
         {
             0x0101010101010101L, 0x0001000100010001L, 0x0000000100000001L, 0x0000000000000001L
@@ -61,7 +54,7 @@ namespace ARMeilleure.Instructions
 
                 res = context.AddIntrinsic(srlInst, res, Const(shift));
 
-                Operand mask2 = X86GetAllElements(context, _masks_RshrnShrn[op.Size]);
+                Operand mask2 = X86GetAllElements(context, EvenMasks[op.Size]);
 
                 res = context.AddIntrinsic(Intrinsic.X86Pshufb, res, mask2);
 
@@ -163,7 +156,7 @@ namespace ARMeilleure.Instructions
 
                 Operand nShifted = context.AddIntrinsic(srlInst, n, Const(shift));
 
-                Operand mask = X86GetAllElements(context, _masks_RshrnShrn[op.Size]);
+                Operand mask = X86GetAllElements(context, EvenMasks[op.Size]);
 
                 Operand res = context.AddIntrinsic(Intrinsic.X86Pshufb, nShifted, mask);
 

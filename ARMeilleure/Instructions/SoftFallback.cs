@@ -1250,27 +1250,6 @@ namespace ARMeilleure.Instructions
             return (value >> 4) | ((value & 0x0f) << 4);
         }
 
-        public static uint ReverseBits32(uint value)
-        {
-            value = ((value & 0xaaaaaaaa) >> 1) | ((value & 0x55555555) << 1);
-            value = ((value & 0xcccccccc) >> 2) | ((value & 0x33333333) << 2);
-            value = ((value & 0xf0f0f0f0) >> 4) | ((value & 0x0f0f0f0f) << 4);
-            value = ((value & 0xff00ff00) >> 8) | ((value & 0x00ff00ff) << 8);
-
-            return (value >> 16) | (value << 16);
-        }
-
-        public static ulong ReverseBits64(ulong value)
-        {
-            value = ((value & 0xaaaaaaaaaaaaaaaa) >> 1 ) | ((value & 0x5555555555555555) << 1 );
-            value = ((value & 0xcccccccccccccccc) >> 2 ) | ((value & 0x3333333333333333) << 2 );
-            value = ((value & 0xf0f0f0f0f0f0f0f0) >> 4 ) | ((value & 0x0f0f0f0f0f0f0f0f) << 4 );
-            value = ((value & 0xff00ff00ff00ff00) >> 8 ) | ((value & 0x00ff00ff00ff00ff) << 8 );
-            value = ((value & 0xffff0000ffff0000) >> 16) | ((value & 0x0000ffff0000ffff) << 16);
-
-            return (value >> 32) | (value << 32);
-        }
-
         public static uint ReverseBytes16_32(uint value) => (uint)ReverseBytes16_64(value);
 
         public static ulong ReverseBytes16_64(ulong value) => ReverseBytes(value, RevSize.Rev16);
