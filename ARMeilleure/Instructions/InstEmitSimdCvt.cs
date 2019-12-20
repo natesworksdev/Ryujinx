@@ -876,15 +876,15 @@ namespace ARMeilleure.Instructions
             Operand longL = context.AddIntrinsicLong  (Intrinsic.X86Cvtsd2si, opF); // opFL
             Operand res   = context.VectorCreateScalar(longL);
 
-	        if (!scalar)
-	        {
-		        Operand opFH  = context.AddIntrinsic      (Intrinsic.X86Movhlps,  res, opF); // res doesn't matter.
-		        Operand longH = context.AddIntrinsicLong  (Intrinsic.X86Cvtsd2si, opFH);
-		        Operand resH  = context.VectorCreateScalar(longH);
+            if (!scalar)
+            {
+                Operand opFH  = context.AddIntrinsic      (Intrinsic.X86Movhlps,  res, opF); // res doesn't matter.
+                Operand longH = context.AddIntrinsicLong  (Intrinsic.X86Cvtsd2si, opFH);
+                Operand resH  = context.VectorCreateScalar(longH);
                         res   = context.AddIntrinsic      (Intrinsic.X86Movlhps,  res, resH);
-	        }
+            }
 
-	        return res;
+            return res;
         }
 
         private static Operand EmitSse2CvtInt64ToDoubleOp(ArmEmitterContext context, Operand op, bool scalar)
@@ -894,15 +894,15 @@ namespace ARMeilleure.Instructions
             Operand longL = context.AddIntrinsicLong(Intrinsic.X86Cvtsi2si, op); // opL
             Operand res   = context.AddIntrinsic    (Intrinsic.X86Cvtsi2sd, context.VectorZero(), longL);
 
-	        if (!scalar)
-	        {
-		        Operand opH   = context.AddIntrinsic    (Intrinsic.X86Movhlps,  res, op);    // res doesn't matter.
-		        Operand longH = context.AddIntrinsicLong(Intrinsic.X86Cvtsi2si, opH);
-		        Operand resH  = context.AddIntrinsic    (Intrinsic.X86Cvtsi2sd, res, longH); // res doesn't matter.
+            if (!scalar)
+            {
+                Operand opH   = context.AddIntrinsic    (Intrinsic.X86Movhlps,  res, op);    // res doesn't matter.
+                Operand longH = context.AddIntrinsicLong(Intrinsic.X86Cvtsi2si, opH);
+                Operand resH  = context.AddIntrinsic    (Intrinsic.X86Cvtsi2sd, res, longH); // res doesn't matter.
                         res   = context.AddIntrinsic    (Intrinsic.X86Movlhps,  res, resH);
-	        }
+            }
 
-	        return res;
+            return res;
         }
 
         private static void EmitSse2Scvtf(ArmEmitterContext context, bool scalar)
