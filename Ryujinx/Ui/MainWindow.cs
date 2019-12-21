@@ -472,6 +472,8 @@ namespace Ryujinx.Ui
 
             _gameTableSelection.GetSelected(out TreeIter treeIter);
 
+            if (treeIter.UserData == IntPtr.Zero) return;
+
             GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, treeIter);
             contextMenu.ShowAll();
             contextMenu.PopupAtPointer(null);
