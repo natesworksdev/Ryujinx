@@ -152,14 +152,15 @@ namespace ARMeilleure.Instructions
             OpCode32Mem op = (OpCode32Mem)context.CurrOp;
 
             Operand n = context.Copy(GetIntA32(context, op.Rn));
+            Operand m = GetMemM(context, setCarry: false);
 
             Operand temp = null;
 
             if (op.Index || op.WBack)
             {
                 temp = op.Add
-                    ? context.Add     (n, Const(op.Immediate))
-                    : context.Subtract(n, Const(op.Immediate));
+                    ? context.Add     (n, m)
+                    : context.Subtract(n, m);
             }
 
             if (op.WBack)

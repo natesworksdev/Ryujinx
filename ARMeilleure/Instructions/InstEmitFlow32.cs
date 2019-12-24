@@ -1,4 +1,5 @@
 using ARMeilleure.Decoders;
+using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 
@@ -20,7 +21,6 @@ namespace ARMeilleure.Instructions
             else
             {
                 context.StoreToContext();
-
                 context.Return(Const(op.Immediate));
             }
         }
@@ -66,6 +66,29 @@ namespace ARMeilleure.Instructions
             }
 
             InstEmitFlowHelper.EmitCall(context, (ulong)op.Immediate);
+        }
+
+        public static void Blxr(ArmEmitterContext context)
+        {
+            IOpCode32BReg op = (IOpCode32BReg)context.CurrOp;
+
+            uint pc = op.GetPc();
+
+            Operand addr = GetIntA32(context, op.Rm);
+            Operand bitOne = context.BitwiseAnd(addr, Const(0));
+
+            bool isThumb = IsThumb(context.CurrOp);
+
+            uint currentPc = isThumb
+                ? op.GetPc() | 1
+                : op.GetPc() - 4;
+
+            SetIntOrSP(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
+
+            SetFlag(context, PState.TFlag, bitOne);
+
+            addr = context.BitwiseOr(addr, Const(1)); // set call flag
+            context.Return(addr); // call
         }
     }
 }

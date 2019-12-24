@@ -122,6 +122,8 @@ namespace ARMeilleure.Instructions
 
                 case OpCodeT16AluImm8 op: return Const(op.Immediate);
 
+                case OpCode32AluReg op: return GetIntA32(context, op.Rm);
+
                 // ARM64.
                 case IOpCodeAluImm op:
                 {
@@ -169,7 +171,7 @@ namespace ARMeilleure.Instructions
         }
 
         // ARM32 helpers.
-        private static Operand GetMShiftedByImmediate(ArmEmitterContext context, OpCode32AluRsImm op, bool setCarry)
+        public static Operand GetMShiftedByImmediate(ArmEmitterContext context, OpCode32AluRsImm op, bool setCarry)
         {
             Operand m = GetIntA32(context, op.Rm);
 
@@ -210,7 +212,7 @@ namespace ARMeilleure.Instructions
             return m;
         }
 
-        private static Operand GetLslC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
+        public static Operand GetLslC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift > 32)
             {
@@ -240,7 +242,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand GetLsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
+        public static Operand GetLsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift > 32)
             {
@@ -276,7 +278,7 @@ namespace ARMeilleure.Instructions
             return Const(0);
         }
 
-        private static Operand GetAsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
+        public static Operand GetAsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift >= 32)
             {
@@ -300,7 +302,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand GetRorC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
+        public static Operand GetRorC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             shift &= 0x1f;
 
@@ -314,7 +316,7 @@ namespace ARMeilleure.Instructions
             return m;
         }
 
-        private static Operand GetRrxC(ArmEmitterContext context, Operand m, bool setCarry)
+        public static Operand GetRrxC(ArmEmitterContext context, Operand m, bool setCarry)
         {
             // Rotate right by 1 with carry.
             Operand cIn = context.Copy(GetFlag(PState.CFlag));

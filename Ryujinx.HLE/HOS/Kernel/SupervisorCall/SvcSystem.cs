@@ -240,6 +240,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             OutputDebugString(strPtr, size);
         }
 
+        public void OutputDebugString32(uint strPtr, uint size)
+        {
+            OutputDebugString(strPtr, size);
+        }
+
         private void OutputDebugString(ulong strPtr, ulong size)
         {
             string str = MemoryHelper.ReadAsciiString(_process.CpuMemory, (long)strPtr, (long)size);

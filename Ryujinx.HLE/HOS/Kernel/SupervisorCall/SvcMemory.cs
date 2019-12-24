@@ -148,6 +148,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return QueryMemory(infoPtr, position);
         }
 
+        public KernelResult QueryMemory32(uint infoPtr, uint x1, uint position)
+        {
+            return QueryMemory(infoPtr, position);
+        }
+
         private KernelResult QueryMemory(ulong infoPtr, ulong position)
         {
             KMemoryInfo blkInfo = _process.MemoryManager.QueryMemory(position);

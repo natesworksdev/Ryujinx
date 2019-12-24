@@ -11,10 +11,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
     static class SvcTable
     {
         private const int SvcFuncMaxArguments = 8;
+        private const int SvcFuncMaxArguments32 = 4;
 
         private static Dictionary<int, string> _svcFuncs64;
+        private static Dictionary<int, string> _svcFuncs32;
 
         private static Action<SvcHandler, ExecutionContext>[] _svcTable64;
+        private static Action<SvcHandler, ExecutionContext>[] _svcTable32;
 
         static SvcTable()
         {
@@ -78,25 +81,40 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x7B, nameof(SvcHandler.TerminateProcess64)              }
             };
 
+            _svcFuncs32 = new Dictionary<int, string>
+            {
+                { 0x06, nameof(SvcHandler.QueryMemory32)                   },
+                { 0x27, nameof(SvcHandler.OutputDebugString32)             }
+            };
+
             _svcTable64 = new Action<SvcHandler, ExecutionContext>[0x80];
+            _svcTable32 = new Action<SvcHandler, ExecutionContext>[0x80];
         }
 
-        public static Action<SvcHandler, ExecutionContext> GetSvcFunc(int svcId)
+        public static Action<SvcHandler, ExecutionContext> GetSvcFunc(int svcId, bool aarch32)
         {
-            if (_svcTable64[svcId] != null)
+            Action<SvcHandler, ExecutionContext>[] table = aarch32 ? _svcTable32 : _svcTable64;
+            if (table[svcId] != null)
             {
-                return _svcTable64[svcId];
+                return table[svcId];
             }
 
-            if (_svcFuncs64.TryGetValue(svcId, out string svcName))
+            Dictionary<int, string> funcTable = aarch32 ? _svcFuncs32 : _svcFuncs64;
+            if (funcTable.TryGetValue(svcId, out string svcName))
             {
-                return _svcTable64[svcId] = GenerateMethod(svcName);
+                return table[svcId] = GenerateMethod(svcName, aarch32);
+            }
+
+            if (aarch32 && _svcFuncs64.TryGetValue(svcId, out string svcName64))
+            {
+                Logger.PrintWarning(LogClass.KernelSvc, $"Svc \"{svcName64}\" ({svcId}) does not have a 32-bit call signature defined - fell back to 64-bit.");
+                return table[svcId] = GenerateMethod(svcName64, aarch32);
             }
 
             return null;
         }
 
-        private static Action<SvcHandler, ExecutionContext> GenerateMethod(string svcName)
+        private static Action<SvcHandler, ExecutionContext> GenerateMethod(string svcName, bool aarch32)
         {
             Type[] argTypes = new Type[] { typeof(SvcHandler), typeof(ExecutionContext) };
 
@@ -106,9 +124,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             ParameterInfo[] methodArgs = methodInfo.GetParameters();
 
-            if (methodArgs.Length > SvcFuncMaxArguments)
+            int maxArgs = aarch32 ? SvcFuncMaxArguments32 : SvcFuncMaxArguments;
+
+            if (methodArgs.Length > maxArgs)
             {
-                throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is 8.");
+                throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is {maxArgs}.");
             }
 
             ILGenerator generator = method.GetILGenerator();
@@ -308,7 +328,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             // Zero out the remaining unused registers.
-            while (outRegIndex < SvcFuncMaxArguments)
+            while (outRegIndex < maxArgs)
             {
                 generator.Emit(OpCodes.Ldarg_1);
                 generator.Emit(OpCodes.Ldc_I4, outRegIndex++);

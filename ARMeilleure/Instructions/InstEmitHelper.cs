@@ -47,6 +47,11 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static Operand GetVecA32(int regIndex)
+        {
+            return Register(regIndex, RegisterType.Vector, OperandType.V128);
+        }
+
         public static void SetIntA32(ArmEmitterContext context, int regIndex, Operand value)
         {
             if (regIndex == RegisterAlias.Aarch32Pc)

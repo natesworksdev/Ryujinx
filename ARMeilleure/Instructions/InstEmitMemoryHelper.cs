@@ -505,5 +505,65 @@ namespace ARMeilleure.Instructions
                 SetIntOrZR(context, rt, value);
             }
         }
+
+        // ARM32 helpers.
+        public static Operand GetMemM(ArmEmitterContext context, bool setCarry = true)
+        {
+            switch (context.CurrOp)
+            {
+                // ARM32.
+                case OpCode32MemRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
+
+                case OpCode32Mem op: return Const(op.Immediate);
+
+                default: throw InvalidOpCodeType(context.CurrOp);
+            }
+        }
+
+        private static Exception InvalidOpCodeType(OpCode opCode)
+        {
+            return new InvalidOperationException($"Invalid OpCode type \"{opCode?.GetType().Name ?? "null"}\".");
+        }
+
+        public static Operand GetMShiftedByImmediate(ArmEmitterContext context, OpCode32MemRsImm op, bool setCarry)
+        {
+            Operand m = GetIntA32(context, op.Rm);
+
+            int shift = op.Immediate;
+
+            if (shift == 0)
+            {
+                switch (op.ShiftType)
+                {
+                    case ShiftType.Lsr: shift = 32; break;
+                    case ShiftType.Asr: shift = 32; break;
+                    case ShiftType.Ror: shift = 1; break;
+                }
+            }
+
+            if (shift != 0)
+            {
+                setCarry &= false;
+
+                switch (op.ShiftType)
+                {
+                    case ShiftType.Lsl: m = InstEmitAluHelper.GetLslC(context, m, setCarry, shift); break;
+                    case ShiftType.Lsr: m = InstEmitAluHelper.GetLsrC(context, m, setCarry, shift); break;
+                    case ShiftType.Asr: m = InstEmitAluHelper.GetAsrC(context, m, setCarry, shift); break;
+                    case ShiftType.Ror:
+                        if (op.Immediate != 0)
+                        {
+                            m = InstEmitAluHelper.GetRorC(context, m, setCarry, shift);
+                        }
+                        else
+                        {
+                            m = InstEmitAluHelper.GetRrxC(context, m, setCarry);
+                        }
+                        break;
+                }
+            }
+
+            return m;
+        }
     }
 }

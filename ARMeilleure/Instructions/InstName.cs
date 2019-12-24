@@ -445,9 +445,14 @@ namespace ARMeilleure.Instructions
         Zip2_V,
 
         // Base (AArch32)
+        Bfc,
+        Bfi,
         Blx,
         Bx,
         Cmp,
+        Cmn,
+        Movt,
+        Mul,
         Ldm,
         Ldrb,
         Ldrd,
@@ -455,10 +460,19 @@ namespace ARMeilleure.Instructions
         Ldrsb,
         Ldrsh,
         Mov,
+        Mvn,
+        Rsb,
         Stm,
         Strb,
         Strd,
         Strh,
-        Teq
+        Teq,
+        Tst,
+        Umull,
+        Uxtb,
+
+        // FP & SIMD (AArch32)
+        Vstm,
+        Vldm
     }
 }
