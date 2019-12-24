@@ -343,7 +343,7 @@ namespace Ryujinx.Ui
 
                 if (ulong.TryParse(titleId, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out ulong titleIdNum))
                 {
-                    var filter = new SaveDataFilter();
+                    SaveDataFilter filter = new SaveDataFilter();
                     filter.SetUserId(new UserId(1, 0));
                     filter.SetTitleId(new TitleId(titleIdNum));
 

@@ -20,8 +20,6 @@ namespace Ryujinx.Ui
 
         public static bool PromptIfMigrationNeededForStartup(Window parentWindow, out bool isMigrationNeeded)
         {
-            const int responseYes = -8;
-
             if (!IsMigrationNeeded())
             {
                 isMigrationNeeded = false;
@@ -46,7 +44,7 @@ namespace Ryujinx.Ui
                 dialogResponse = dialog.Run();
             }
 
-            return dialogResponse == responseYes;
+            return dialogResponse == (int)ResponseType.Yes;
         }
 
         public static bool DoMigrationForStartup(Window parentWindow, Switch device)
