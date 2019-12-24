@@ -998,6 +998,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             lock (_threadingLock)
             {
                 System.CriticalSection.Enter();
+
                 foreach (KThread thread in _threads)
                 {
                     if ((thread.SchedFlags & ThreadSchedState.LowMask) != ThreadSchedState.TerminationPending)
@@ -1005,6 +1006,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         thread.PrepareForTermination();
                     }
                 }
+
                 System.CriticalSection.Leave();
             }
 

@@ -31,10 +31,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             svcFunc(this, context);
 
-            PostSvcHandler(context);
+            PostSvcHandler();
         }
 
-        private void PostSvcHandler(ExecutionContext context)
+        private void PostSvcHandler()
         {
             KThread currentThread = _system.Scheduler.GetCurrentThread();
 
