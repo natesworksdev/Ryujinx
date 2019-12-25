@@ -22,7 +22,7 @@ namespace ARMeilleure.Decoders
             Rn = (opCode >> 0) & 0xf;
 
             Msb = ((opCode >> 16) & 31);
-            Lsb = ((opCode >> 17) & 31);
+            Lsb = Msb - ((opCode >> 10) & 31);
         }
     }
 }

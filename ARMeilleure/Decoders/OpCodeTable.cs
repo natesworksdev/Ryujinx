@@ -616,6 +616,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<000100101111111111110011xxxx", InstName.Blx,   InstEmit32.Blxr,  typeof(OpCode32BReg));
             SetA32("<<<<000100101111111111110001xxxx", InstName.Bx,    InstEmit32.Bx,    typeof(OpCode32BReg));
             SetT32("xxxxxxxxxxxxxxxx010001110xxxx000", InstName.Bx,    InstEmit32.Bx,    typeof(OpCodeT16BReg));
+            SetA32("<<<<000101101111xxxx11110001xxxx", InstName.Clz,   InstEmit32.Clz,   typeof(OpCode32AluReg));
             SetA32("<<<<00110101xxxx0000xxxxxxxxxxxx", InstName.Cmp,   InstEmit32.Cmp,   typeof(OpCode32AluImm));
             SetA32("<<<<00010101xxxx0000xxxxxxx0xxxx", InstName.Cmp,   InstEmit32.Cmp,   typeof(OpCode32AluRsImm));
             //RsReg missing

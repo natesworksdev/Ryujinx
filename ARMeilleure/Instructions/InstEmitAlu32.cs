@@ -31,6 +31,16 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void Clz(ArmEmitterContext context)
+        {
+            IOpCode32AluReg op = (IOpCode32AluReg)context.CurrOp;
+
+            Operand m = GetAluM(context, setCarry: false);
+
+            Operand res = context.CountLeadingZeros(m);
+            EmitAluStore(context, res);
+        }
+
         public static void Cmp(ArmEmitterContext context)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
@@ -282,7 +292,7 @@ namespace ARMeilleure.Instructions
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
             Operand d = GetIntOrZR(context, op.Rd);
-            Operand res = context.BitwiseAnd(d, Const(~op.SourceMask));
+            Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
 
             SetIntA32(context, op.Rd, res);
         }
@@ -294,7 +304,8 @@ namespace ARMeilleure.Instructions
             Operand n = GetIntOrZR(context, op.Rn);
             Operand d = GetIntOrZR(context, op.Rd);
             Operand part = context.BitwiseAnd(n, Const(op.SourceMask));
-            Operand res = context.BitwiseAnd(d, Const(~op.SourceMask));
+            if (op.Lsb != 0) part = context.ShiftLeft(part, Const(op.Lsb));
+            Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
             res = context.BitwiseOr(res, part);
 
             SetIntA32(context, op.Rd, res);
