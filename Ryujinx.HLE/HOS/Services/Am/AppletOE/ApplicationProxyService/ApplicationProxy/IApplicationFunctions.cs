@@ -1,6 +1,8 @@
 using LibHac;
 using LibHac.Account;
+using LibHac.Common;
 using LibHac.Ncm;
+using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
@@ -8,7 +10,6 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage;
 using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
-using Ryujinx.HLE.Utilities;
 using System;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
@@ -40,6 +41,24 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         {
             Uid     userId  = context.RequestData.ReadStruct<Uid>();
             TitleId titleId = new TitleId(context.Process.TitleId);
+
+            BlitStruct<ApplicationControlProperty> controlHolder = context.Device.System.ControlData;
+
+            ref ApplicationControlProperty control = ref controlHolder.Value;
+
+            if (Util.IsEmpty(controlHolder.ByteSpan))
+            {
+                // If the current application doesn't have a loaded control property, create a dummy one
+                // and set the savedata sizes so a user savedata will be created.
+                control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
+
+                // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
+                control.UserAccountSaveDataSize        = 0x4000;
+                control.UserAccountSaveDataJournalSize = 0x4000;
+
+                Logger.PrintWarning(LogClass.ServiceAm,
+                    "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
+            }
 
             Result result = EnsureApplicationSaveData(context.Device.System.FsClient, out long requiredSize, titleId,
                 ref context.Device.System.ControlData.Value, ref userId);

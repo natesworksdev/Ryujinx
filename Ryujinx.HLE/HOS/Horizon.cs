@@ -355,6 +355,10 @@ namespace Ryujinx.HLE.HOS
             {
                 ReadControlData(controlNca);
             }
+            else
+            {
+                ControlData.ByteSpan.Clear();
+            }
 
             return (mainNca, patchNca, controlNca);
         }
@@ -380,6 +384,10 @@ namespace Ryujinx.HLE.HOS
                             .FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                     }
                 }
+            }
+            else
+            {
+                ControlData.ByteSpan.Clear();
             }
         }
 
@@ -510,6 +518,10 @@ namespace Ryujinx.HLE.HOS
             if (controlNca != null)
             {
                 ReadControlData(controlNca);
+            }
+            else
+            {
+                ControlData.ByteSpan.Clear();
             }
         }
 
