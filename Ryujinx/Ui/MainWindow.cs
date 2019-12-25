@@ -589,13 +589,6 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void Migration_Pressed(object o, EventArgs args)
-        {
-            Migration migration = new Migration(_device);
-
-            migration.Migrate();
-        }
-
         private void About_Pressed(object sender, EventArgs args)
         {
             AboutWindow aboutWin = new AboutWindow();
