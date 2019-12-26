@@ -23,6 +23,7 @@ namespace Ryujinx.Ui
             if (!IsMigrationNeeded())
             {
                 isMigrationNeeded = false;
+
                 return true;
             }
 
@@ -85,7 +86,8 @@ namespace Ryujinx.Ui
 
             CopyRyuFs(oldBasePath, newBasePath);
 
-            var importer = new SaveImporter(oldSaveDir, Device.System.FsClient);
+            SaveImporter importer = new SaveImporter(oldSaveDir, Device.System.FsClient);
+
             return importer.Import();
         }
 

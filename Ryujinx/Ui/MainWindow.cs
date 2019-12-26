@@ -70,7 +70,7 @@ namespace Ryujinx.Ui
             DeleteEvent += Window_Close;
 
             ApplicationLibrary.ApplicationAdded += Application_Added;
-            
+
             _gameTable.ButtonReleaseEvent += Row_Clicked;
 
             bool continueWithStartup = Migration.PromptIfMigrationNeededForStartup(this, out bool migrationNeeded);
