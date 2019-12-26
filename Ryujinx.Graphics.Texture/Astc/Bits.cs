@@ -49,6 +49,7 @@
                 retValue |= tempValue >> comp;
                 resLength += numberBits;
             }
+
             return retValue;
         }
 

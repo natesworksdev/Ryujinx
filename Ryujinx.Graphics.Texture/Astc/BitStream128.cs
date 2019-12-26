@@ -19,7 +19,10 @@ namespace Ryujinx.Graphics.Texture.Astc
         {
             Debug.Assert(bitCount < 32);
 
-            if (bitCount == 0) return 0;
+            if (bitCount == 0)
+            {
+                return 0;
+            }
 
             int mask = (1 << bitCount) - 1;
             int value = _data.As<int>() & mask;
@@ -31,6 +34,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             span[1] >>= bitCount;
 
             BitsLeft -= bitCount;
+
             return value;
         }
 

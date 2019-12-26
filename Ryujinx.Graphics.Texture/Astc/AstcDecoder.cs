@@ -45,6 +45,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             Levels = new AstcLevel[levels];
 
             TotalBlockCount = 0;
+
             int currentInputBlock = 0;
             int currentOutputOffset = 0;
 
@@ -224,6 +225,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             }
 
             decoded = output;
+
             return decoder.Success;
         }
 
@@ -282,6 +284,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             Enumerable.Range(0, decoder.TotalBlockCount).AsParallel().ForAll(x => decoder.ProcessBlock(x));
 
             decoded = output;
+
             return decoder.Success;
         }
 
@@ -337,6 +340,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             // Determine partitions, partition index, and color endpoint modes
             int planeIndices;
             int partitionIndex;
+
             Span<uint> colorEndpointMode = stackalloc uint[4];
 
             BitStream128 colorEndpointStream = new BitStream128();
@@ -1360,6 +1364,7 @@ namespace Ryujinx.Graphics.Texture.Astc
             if ((modeBits & 0xF) == 0)
             {
                 texelParams.Error = true;
+
                 return;
             }
 
