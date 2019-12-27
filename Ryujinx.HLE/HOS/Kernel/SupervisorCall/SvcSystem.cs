@@ -257,6 +257,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return GetInfo(id, handle, subId, out value);
         }
 
+        public KernelResult GetInfo32(uint subIdLo, uint id, int handle, uint subIdHi, out uint valueLo, out uint valueHi)
+        {
+            long value;
+            KernelResult result = GetInfo(id, handle, subIdHi | ((long)subIdLo << 32), out value);
+            valueLo = (uint)(value >> 32);
+            valueHi = (uint)value;
+            return result;
+        }
+
         private KernelResult GetInfo(uint id, int handle, long subId, out long value)
         {
             value = 0;

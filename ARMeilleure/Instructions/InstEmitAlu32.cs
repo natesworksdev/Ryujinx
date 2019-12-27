@@ -243,6 +243,51 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void Uxth(ArmEmitterContext context)
+        {
+            IOpCode32AluUx op = (IOpCode32AluUx)context.CurrOp;
+
+            Operand m = GetAluM(context);
+            Operand res;
+
+            if (op.RotateBits == 0)
+            {
+                res = m;
+            }
+            else
+            {
+                Operand rotate = Const(op.RotateBits);
+                res = context.RotateRight(m, rotate);
+            }
+
+            res = context.ZeroExtend16(OperandType.I32, res);
+
+            if (op.Add)
+            {
+                res = context.Add(res, GetAluN(context));
+            }
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Mla(ArmEmitterContext context)
+        {
+            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+            Operand a = GetIntA32(context, op.Ra);
+
+            Operand res = context.Add(context.Multiply(n, m), a);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
         public static void Movt(ArmEmitterContext context)
         {
             OpCode32AluImm16 op = (OpCode32AluImm16)context.CurrOp;
@@ -307,6 +352,19 @@ namespace ARMeilleure.Instructions
             if (op.Lsb != 0) part = context.ShiftLeft(part, Const(op.Lsb));
             Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
             res = context.BitwiseOr(res, part);
+
+            SetIntA32(context, op.Rd, res);
+        }
+
+        public static void Ubfx(ArmEmitterContext context)
+        {
+            OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
+
+            var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
+            var mask = (int)(0xFFFFFFFF >> (31 - msb)) << op.Lsb;
+
+            Operand n = GetIntOrZR(context, op.Rn);
+            Operand res = context.ShiftRightUI(context.BitwiseAnd(n, Const(mask)), Const(op.Lsb));
 
             SetIntA32(context, op.Rd, res);
         }

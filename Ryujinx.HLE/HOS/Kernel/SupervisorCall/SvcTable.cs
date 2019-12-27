@@ -3,6 +3,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -84,7 +85,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _svcFuncs32 = new Dictionary<int, string>
             {
                 { 0x06, nameof(SvcHandler.QueryMemory32)                   },
-                { 0x27, nameof(SvcHandler.OutputDebugString32)             }
+                { 0x27, nameof(SvcHandler.OutputDebugString32)             },
+                { 0x29, nameof(SvcHandler.GetInfo64)                       }
             };
 
             _svcTable64 = new Action<SvcHandler, ExecutionContext>[0x80];
@@ -126,7 +128,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             int maxArgs = aarch32 ? SvcFuncMaxArguments32 : SvcFuncMaxArguments;
 
-            if (methodArgs.Length > maxArgs)
+            if (methodArgs.Count(x => !x.IsOut) > maxArgs)
             {
                 throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is {maxArgs}.");
             }

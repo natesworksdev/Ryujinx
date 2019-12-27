@@ -72,25 +72,46 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            // TODO: ARM32.
-            long framePointer = (long)context.GetX(29);
-
             trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
-            while (framePointer != 0)
+            if (context.IsAarch32)
             {
-                if ((framePointer & 7) != 0 ||
-                    !_owner.CpuMemory.IsMapped(framePointer) ||
-                    !_owner.CpuMemory.IsMapped(framePointer + 8))
+                long framePointer = (long)context.GetX(0xd);
+                while (framePointer != 0)
                 {
-                    break;
+                    if ((framePointer & 7) != 0 ||
+                        !_owner.CpuMemory.IsMapped(framePointer) ||
+                        !_owner.CpuMemory.IsMapped(framePointer + 4))
+                    {
+                        break;
+                    }
+
+                    // Note: This is the return address, we need to subtract one instruction
+                    // worth of bytes to get the branch instruction address.
+                    AppendTrace(_owner.CpuMemory.ReadInt32(framePointer + 4) - 4);
+
+                    framePointer = _owner.CpuMemory.ReadInt32(framePointer);
                 }
+            }
+            else
+            {
+                long framePointer = (long)context.GetX(29);
 
-                // Note: This is the return address, we need to subtract one instruction
-                // worth of bytes to get the branch instruction address.
-                AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8) - 4);
+                while (framePointer != 0)
+                {
+                    if ((framePointer & 7) != 0 ||
+                        !_owner.CpuMemory.IsMapped(framePointer) ||
+                        !_owner.CpuMemory.IsMapped(framePointer + 8))
+                    {
+                        break;
+                    }
 
-                framePointer = _owner.CpuMemory.ReadInt64(framePointer);
+                    // Note: This is the return address, we need to subtract one instruction
+                    // worth of bytes to get the branch instruction address.
+                    AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8) - 4);
+
+                    framePointer = _owner.CpuMemory.ReadInt64(framePointer);
+                }
             }
 
             return trace.ToString();

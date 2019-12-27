@@ -122,7 +122,7 @@ namespace ARMeilleure.Instructions
 
                 case OpCodeT16AluImm8 op: return Const(op.Immediate);
 
-                case OpCode32AluReg op: return GetIntA32(context, op.Rm);
+                case IOpCode32AluReg op: return GetIntA32(context, op.Rm);
 
                 // ARM64.
                 case IOpCodeAluImm op:
