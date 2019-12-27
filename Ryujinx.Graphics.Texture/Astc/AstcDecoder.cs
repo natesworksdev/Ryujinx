@@ -18,8 +18,9 @@ namespace Ryujinx.Graphics.Texture.Astc
 
         private AstcLevel[] Levels { get; }
 
-        public int TotalBlockCount { get; }
         private bool Success { get; set; }
+
+        public int TotalBlockCount { get; }
 
         public AstcDecoder(
             ReadOnlyMemory<byte> inputBuffer,
