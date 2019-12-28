@@ -671,7 +671,7 @@ namespace ARMeilleure.Instructions
                         res = context.VectorZeroUpper64(res);
                     }
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
                 else /* if (sizeF == 1) */
                 {
@@ -679,7 +679,7 @@ namespace ARMeilleure.Instructions
 
                     res = context.AddIntrinsic(Intrinsic.X86Addpd, d, res);
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
             }
             else
@@ -717,7 +717,7 @@ namespace ARMeilleure.Instructions
                         res = context.VectorZeroUpper64(res);
                     }
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
                 else /* if (sizeF == 1) */
                 {
@@ -728,7 +728,7 @@ namespace ARMeilleure.Instructions
                     res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, res);
                     res = context.AddIntrinsic(Intrinsic.X86Addpd, d, res);
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
             }
             else
@@ -771,7 +771,7 @@ namespace ARMeilleure.Instructions
                         res = context.VectorZeroUpper64(res);
                     }
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
                 else /* if (sizeF == 1) */
                 {
@@ -779,7 +779,7 @@ namespace ARMeilleure.Instructions
 
                     res = context.AddIntrinsic(Intrinsic.X86Subpd, d, res);
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
             }
             else
@@ -817,7 +817,7 @@ namespace ARMeilleure.Instructions
                         res = context.VectorZeroUpper64(res);
                     }
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
                 else /* if (sizeF == 1) */
                 {
@@ -828,7 +828,7 @@ namespace ARMeilleure.Instructions
                     res = context.AddIntrinsic(Intrinsic.X86Mulpd, n, res);
                     res = context.AddIntrinsic(Intrinsic.X86Subpd, d, res);
 
-                    context.Copy(GetVec(op.Rd), res);
+                    context.Copy(d, res);
                 }
             }
             else
@@ -3055,7 +3055,9 @@ namespace ARMeilleure.Instructions
 
             int part = op.RegisterSize == RegisterSize.Simd128 ? elems : 0;
 
-            Operand res = part == 0 ? context.VectorZero() : context.Copy(GetVec(op.Rd));
+            Operand d = GetVec(op.Rd);
+
+            Operand res = part == 0 ? context.VectorZero() : context.Copy(d);
 
             long roundConst = 1L << (eSize - 1);
 
@@ -3076,7 +3078,7 @@ namespace ARMeilleure.Instructions
                 res = EmitVectorInsert(context, res, de, part + index, op.Size);
             }
 
-            context.Copy(GetVec(op.Rd), res);
+            context.Copy(d, res);
         }
 
         public static void EmitScalarRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)

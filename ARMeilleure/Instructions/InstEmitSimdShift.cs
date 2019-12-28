@@ -4,6 +4,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
+using System.Diagnostics;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -35,7 +36,7 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Operand dLow = context.AddIntrinsic(Intrinsic.X86Movlhps, d, context.VectorZero());
+                Operand dLow = context.VectorZeroUpper64(d);
 
                 Operand mask = null;
 
@@ -150,7 +151,7 @@ namespace ARMeilleure.Instructions
                 Operand d = GetVec(op.Rd);
                 Operand n = GetVec(op.Rn);
 
-                Operand dLow = context.AddIntrinsic(Intrinsic.X86Movlhps, d, context.VectorZero());
+                Operand dLow = context.VectorZeroUpper64(d);
 
                 Intrinsic srlInst = X86PsrlInstruction[op.Size + 1];
 
@@ -695,9 +696,9 @@ namespace ARMeilleure.Instructions
             for (int index = 0; index < elems; index++)
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
-                Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
+                Operand me = EmitVectorExtractSx(context, op.Rm, index << op.Size, 0);
 
-                Operand e = context.Call(new _U64_U64_U64_Bool_S32(SoftFallback.UnsignedShlReg), ne, me, Const(0), Const(op.Size));
+                Operand e = EmitUnsignedShlRegOp(context, ne, context.ConvertI64ToI32(me), op.Size);
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -872,9 +873,7 @@ namespace ARMeilleure.Instructions
                         e = context.Add(e, Const(roundConst));
                     }
 
-                    e = signed
-                        ? context.ShiftRightSI(e, Const(shift))
-                        : context.ShiftRightUI(e, Const(shift));
+                    e = signed ? context.ShiftRightSI(e, Const(shift)) : context.ShiftRightUI(e, Const(shift));
                 }
                 else /* if (op.Size == 3) */
                 {
@@ -894,6 +893,28 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
+        private static Operand EmitUnsignedShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size)
+        {
+            Debug.Assert(op.Type       == OperandType.I64);
+            Debug.Assert(shiftLsB.Type == OperandType.I32);
+            Debug.Assert((uint)size < 4u);
+
+            Operand negShiftLsB = context.Negate(shiftLsB);
+
+            Operand isPositive = context.ICompareGreaterOrEqual(shiftLsB, Const(0));
+
+            Operand shl = context.ShiftLeft   (op, shiftLsB);
+            Operand shr = context.ShiftRightUI(op, negShiftLsB);
+
+            Operand res = context.ConditionalSelect(isPositive, shl, shr);
+
+            Operand isOutOfRange = context.BitwiseOr(
+                context.ICompareGreaterOrEqual(shiftLsB,    Const(8 << size)),
+                context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size)));
+
+            return context.ConditionalSelect(isOutOfRange, Const(0UL), res);
+        }
+
         private static void EmitVectorShrImmNarrowOpZx(ArmEmitterContext context, bool round)
         {
             OpCodeSimdShImm op = (OpCodeSimdShImm)context.CurrOp;
@@ -906,7 +927,9 @@ namespace ARMeilleure.Instructions
 
             int part = op.RegisterSize == RegisterSize.Simd128 ? elems : 0;
 
-            Operand res = part == 0 ? context.VectorZero() : context.Copy(GetVec(op.Rd));
+            Operand d = GetVec(op.Rd);
+
+            Operand res = part == 0 ? context.VectorZero() : context.Copy(d);
 
             for (int index = 0; index < elems; index++)
             {
@@ -922,7 +945,7 @@ namespace ARMeilleure.Instructions
                 res = EmitVectorInsert(context, res, e, part + index, op.Size);
             }
 
-            context.Copy(GetVec(op.Rd), res);
+            context.Copy(d, res);
         }
 
         [Flags]
@@ -965,7 +988,9 @@ namespace ARMeilleure.Instructions
 
             int part = !scalar && (op.RegisterSize == RegisterSize.Simd128) ? elems : 0;
 
-            Operand res = part == 0 ? context.VectorZero() : context.Copy(GetVec(op.Rd));
+            Operand d = GetVec(op.Rd);
+
+            Operand res = part == 0 ? context.VectorZero() : context.Copy(d);
 
             for (int index = 0; index < elems; index++)
             {
@@ -978,9 +1003,7 @@ namespace ARMeilleure.Instructions
                         e = context.Add(e, Const(roundConst));
                     }
 
-                    e = signedSrc
-                        ? context.ShiftRightSI(e, Const(shift))
-                        : context.ShiftRightUI(e, Const(shift));
+                    e = signedSrc ? context.ShiftRightSI(e, Const(shift)) : context.ShiftRightUI(e, Const(shift));
                 }
                 else /* if (op.Size == 2 && round) */
                 {
@@ -992,7 +1015,7 @@ namespace ARMeilleure.Instructions
                 res = EmitVectorInsert(context, res, e, part + index, op.Size);
             }
 
-            context.Copy(GetVec(op.Rd), res);
+            context.Copy(d, res);
         }
 
         // dst64 = (Int(src64, signed) + roundConst) >> shift;

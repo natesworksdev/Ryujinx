@@ -1034,9 +1034,7 @@ namespace ARMeilleure.Instructions
                 Operand left  = context.AddIntrinsic(Intrinsic.X86Pshufb, mN, zeroEvenMask); // 0:even from m:n
                 Operand right = context.AddIntrinsic(Intrinsic.X86Pshufb, mN, zeroOddMask);  // 0:odd  from m:n
 
-                Operand res = context.AddIntrinsic(inst[op.Size], left, right);
-
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst[op.Size], left, right));
             }
             else if (op.Size < 3)
             {
@@ -1048,18 +1046,14 @@ namespace ARMeilleure.Instructions
                 Operand left  = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, oddEvenN, oddEvenM);
                 Operand right = context.AddIntrinsic(Intrinsic.X86Punpckhqdq, oddEvenN, oddEvenM);
 
-                Operand res = context.AddIntrinsic(inst[op.Size], left, right);
-
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst[op.Size], left, right));
             }
             else
             {
                 Operand left  = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, n, m);
                 Operand right = context.AddIntrinsic(Intrinsic.X86Punpckhqdq, n, m);
 
-                Operand res = context.AddIntrinsic(inst[3], left, right);
-
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(GetVec(op.Rd), context.AddIntrinsic(inst[3], left, right));
             }
         }
 
@@ -1303,8 +1297,7 @@ namespace ARMeilleure.Instructions
 
                     if (op.Size <= 2)
                     {
-                        Operand temp = add ? context.Add     (ne, me)
-                                           : context.Subtract(ne, me);
+                        Operand temp = add ? context.Add(ne, me) : context.Subtract(ne, me);
 
                         de = EmitSatQ(context, temp, op.Size, signedSrc: true, signedDst: signed);
                     }
@@ -1388,7 +1381,9 @@ namespace ARMeilleure.Instructions
 
             int part = !scalar && (op.RegisterSize == RegisterSize.Simd128) ? elems : 0;
 
-            Operand res = part == 0 ? context.VectorZero() : context.Copy(GetVec(op.Rd));
+            Operand d = GetVec(op.Rd);
+
+            Operand res = part == 0 ? context.VectorZero() : context.Copy(d);
 
             for (int index = 0; index < elems; index++)
             {
@@ -1399,7 +1394,7 @@ namespace ARMeilleure.Instructions
                 res = EmitVectorInsert(context, res, temp, part + index, op.Size);
             }
 
-            context.Copy(GetVec(op.Rd), res);
+            context.Copy(d, res);
         }
 
         // TSrc (16bit, 32bit, 64bit; signed, unsigned) > TDst (8bit, 16bit, 32bit; signed, unsigned).
