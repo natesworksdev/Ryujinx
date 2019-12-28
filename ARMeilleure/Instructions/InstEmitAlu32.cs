@@ -288,6 +288,68 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void Udiv(ArmEmitterContext context)
+        {
+            EmitDiv(context, true);
+        }
+
+        public static void Sdiv(ArmEmitterContext context)
+        {
+            EmitDiv(context, false);
+        }
+
+        public static void EmitDiv(ArmEmitterContext context, bool unsigned)
+        {
+            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+            Operand zero = Const(m.Type, 0);
+
+            Operand divisorIsZero = context.ICompareEqual(m, zero);
+
+            Operand lblBadDiv = Label();
+            Operand lblEnd = Label();
+
+            context.BranchIfTrue(lblBadDiv, divisorIsZero);
+
+            if (!unsigned)
+            {
+                // If Rn == INT_MIN && Rm == -1, Rd = INT_MIN (overflow).
+                // assume this is the same as ARM64 for now - tests to follow.
+
+                Operand intMin = Const(int.MinValue);
+                Operand minus1 = Const(-1);
+
+                Operand nIsIntMin = context.ICompareEqual(n, intMin);
+                Operand mIsMinus1 = context.ICompareEqual(m, minus1);
+
+                Operand lblGoodDiv = Label();
+
+                context.BranchIfFalse(lblGoodDiv, context.BitwiseAnd(nIsIntMin, mIsMinus1));
+
+                EmitAluStore(context, intMin);
+
+                context.Branch(lblEnd);
+
+                context.MarkLabel(lblGoodDiv);
+            }
+
+            Operand res = unsigned
+                ? context.DivideUI(n, m)
+                : context.Divide(n, m);
+
+            EmitAluStore(context, res);
+
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblBadDiv);
+
+            EmitAluStore(context, zero);
+
+            context.MarkLabel(lblEnd);
+        }
+
         public static void Movt(ArmEmitterContext context)
         {
             OpCode32AluImm16 op = (OpCode32AluImm16)context.CurrOp;
@@ -364,7 +426,7 @@ namespace ARMeilleure.Instructions
             var mask = (int)(0xFFFFFFFF >> (31 - msb)) << op.Lsb;
 
             Operand n = GetIntOrZR(context, op.Rn);
-            Operand res = context.ShiftRightUI(context.BitwiseAnd(n, Const(mask)), Const(op.Lsb));
+            Operand res = context.ShiftRightUI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));
 
             SetIntA32(context, op.Rd, res);
         }
