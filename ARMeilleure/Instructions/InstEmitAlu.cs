@@ -335,8 +335,7 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(op.Type == OperandType.I32);
 
-            Operand val = context.ZeroExtend32   (OperandType.I64, op);
-                    val = EmitReverseBytes16_64Op(context, val);
+            Operand val = EmitReverseBytes16_64Op(context, context.ZeroExtend32(OperandType.I64, op));
 
             return context.ConvertI64ToI32(val);
         }
