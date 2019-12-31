@@ -1,21 +1,20 @@
 using ARMeilleure.Translation.AOT;
-using DiscordRPC;
 using Gtk;
 using JsonPrettyPrinterPlus;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
-using Ryujinx.Graphics.Gal.OpenGL;
+using Ryujinx.Configuration;
 using Ryujinx.Graphics.Gal;
+using Ryujinx.Graphics.Gal.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.Profiler;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
 using Utf8Json;
 using Utf8Json.Resolvers;
 
@@ -39,23 +38,7 @@ namespace Ryujinx.Ui
         private static bool _gameLoaded;
         private static bool _ending;
 
-        private static TreeViewColumn _favColumn;
-        private static TreeViewColumn _appColumn;
-        private static TreeViewColumn _devColumn;
-        private static TreeViewColumn _versionColumn;
-        private static TreeViewColumn _timePlayedColumn;
-        private static TreeViewColumn _lastPlayedColumn;
-        private static TreeViewColumn _fileExtColumn;
-        private static TreeViewColumn _fileSizeColumn;
-        private static TreeViewColumn _pathColumn;
-
         private static TreeView _treeView;
-
-        public static bool DiscordIntegrationEnabled { get; set; }
-
-        public static DiscordRpcClient DiscordClient;
-
-        public static RichPresence DiscordPresence;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -73,6 +56,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem _fileSizeToggle;
         [GUI] CheckMenuItem _pathToggle;
         [GUI] TreeView      _gameTable;
+        [GUI] TreeSelection _gameTableSelection;
         [GUI] Label         _progressLabel;
         [GUI] LevelBar      _progressBar;
 #pragma warning restore CS0649
@@ -88,64 +72,45 @@ namespace Ryujinx.Ui
 
             ApplicationLibrary.ApplicationAdded += Application_Added;
 
+            _gameTable.ButtonReleaseEvent += Row_Clicked;
+
             _renderer = new OglRenderer();
 
             _audioOut = InitializeAudioEngine();
 
-            _device = new HLE.Switch(_renderer, _audioOut);
+            // TODO: Initialization and dispose of HLE.Switch when starting/stoping emulation.
+            _device = InitializeSwitchInstance();
 
             _treeView = _gameTable;
 
-            Configuration.Load(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-            Configuration.InitialConfigure(_device);
-
             ApplyTheme();
-
-            if (DiscordIntegrationEnabled)
-            {
-                DiscordClient   = new DiscordRpcClient("568815339807309834");
-                DiscordPresence = new RichPresence
-                {
-                    Assets = new Assets
-                    {
-                        LargeImageKey  = "ryujinx",
-                        LargeImageText = "Ryujinx is an emulator for the Nintendo Switch"
-                    },
-                    Details    = "Main Menu",
-                    State      = "Idling",
-                    Timestamps = new Timestamps(DateTime.UtcNow)
-                };
-
-                DiscordClient.Initialize();
-                DiscordClient.SetPresence(DiscordPresence);
-            }
 
             _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
             _stopEmulation.Sensitive = false;
 
-            if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { _favToggle.Active        = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.IconColumn)       { _iconToggle.Active       = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)        { _appToggle.Active        = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.DevColumn)        { _developerToggle.Active  = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.VersionColumn)    { _versionToggle.Active    = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.TimePlayedColumn) { _timePlayedToggle.Active = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.LastPlayedColumn) { _lastPlayedToggle.Active = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileExtColumn)    { _fileExtToggle.Active    = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileSizeColumn)   { _fileSizeToggle.Active   = true; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { _pathToggle.Active       = true; }
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _favToggle.Active        = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _iconToggle.Active       = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _appToggle.Active        = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _developerToggle.Active  = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _versionToggle.Active    = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _timePlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _lastPlayedToggle.Active = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _fileExtToggle.Active    = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
 
             _gameTable.Model = _tableStore = new ListStore(
-                typeof(bool), 
-                typeof(Gdk.Pixbuf), 
-                typeof(string), 
-                typeof(string), 
-                typeof(string), 
-                typeof(string), 
-                typeof(string), 
-                typeof(string), 
-                typeof(string), 
+                typeof(bool),
+                typeof(Gdk.Pixbuf),
+                typeof(string),
+                typeof(string),
+                typeof(string),
+                typeof(string),
+                typeof(string),
+                typeof(string),
+                typeof(string),
                 typeof(string));
-            
+
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
             _tableStore.SetSortFunc(8, FileSizeSort);
@@ -159,22 +124,22 @@ namespace Ryujinx.Ui
 
         internal static void ApplyTheme()
         {
-            if (!SwitchSettings.SwitchConfig.EnableCustomTheme)
+            if (!ConfigurationState.Instance.Ui.EnableCustomTheme)
             {
                 return;
             }
 
-            if (File.Exists(SwitchSettings.SwitchConfig.CustomThemePath) && (System.IO.Path.GetExtension(SwitchSettings.SwitchConfig.CustomThemePath) == ".css"))
+            if (File.Exists(ConfigurationState.Instance.Ui.CustomThemePath) && (System.IO.Path.GetExtension(ConfigurationState.Instance.Ui.CustomThemePath) == ".css"))
             {
                 CssProvider cssProvider = new CssProvider();
 
-                cssProvider.LoadFromPath(SwitchSettings.SwitchConfig.CustomThemePath);
+                cssProvider.LoadFromPath(ConfigurationState.Instance.Ui.CustomThemePath);
 
                 StyleContext.AddProviderForScreen(Gdk.Screen.Default, cssProvider, 800);
             }
             else
             {
-                Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{SwitchSettings.SwitchConfig.CustomThemePath}\".");
+                Logger.PrintWarning(LogClass.Application, $"The \"custom_theme_path\" section in \"Config.json\" contains an invalid path: \"{ConfigurationState.Instance.Ui.CustomThemePath}\".");
             }
         }
 
@@ -188,39 +153,38 @@ namespace Ryujinx.Ui
             CellRendererToggle favToggle = new CellRendererToggle();
             favToggle.Toggled += FavToggle_Toggled;
 
-            if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { _gameTable.AppendColumn("Fav",         favToggle,                "active", 0); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.IconColumn)       { _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)        { _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.DevColumn)        { _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   3); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.VersionColumn)    { _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   4); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.TimePlayedColumn) { _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   5); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.LastPlayedColumn) { _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   6); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileExtColumn)    { _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   7); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileSizeColumn)   { _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   8); }
-            if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   9); }
+            if (ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        _gameTable.AppendColumn("Fav",         favToggle,                "active", 0);
+            if (ConfigurationState.Instance.Ui.GuiColumns.IconColumn)       _gameTable.AppendColumn("Icon",        new CellRendererPixbuf(), "pixbuf", 1);
+            if (ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        _gameTable.AppendColumn("Application", new CellRendererText(),   "text",   2);
+            if (ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        _gameTable.AppendColumn("Developer",   new CellRendererText(),   "text",   3);
+            if (ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    _gameTable.AppendColumn("Version",     new CellRendererText(),   "text",   4);
+            if (ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) _gameTable.AppendColumn("Time Played", new CellRendererText(),   "text",   5);
+            if (ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) _gameTable.AppendColumn("Last Played", new CellRendererText(),   "text",   6);
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    _gameTable.AppendColumn("File Ext",    new CellRendererText(),   "text",   7);
+            if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _gameTable.AppendColumn("File Size",   new CellRendererText(),   "text",   8);
+            if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _gameTable.AppendColumn("Path",        new CellRendererText(),   "text",   9);
 
             foreach (TreeViewColumn column in _gameTable.Columns)
             {
-                if (column.Title == "Fav")              { _favColumn        = column; }
-                else if (column.Title == "Application") { _appColumn        = column; }
-                else if (column.Title == "Developer")   { _devColumn        = column; }
-                else if (column.Title == "Version")     { _versionColumn    = column; }
-                else if (column.Title == "Time Played") { _timePlayedColumn = column; }
-                else if (column.Title == "Last Played") { _lastPlayedColumn = column; }
-                else if (column.Title == "File Ext")    { _fileExtColumn    = column; }
-                else if (column.Title == "File Size")   { _fileSizeColumn   = column; }
-                else if (column.Title == "Path")        { _pathColumn       = column; }
+                if      (column.Title == "Fav"         && ConfigurationState.Instance.Ui.GuiColumns.FavColumn)        column.SortColumnId = 0;
+                else if (column.Title == "Application" && ConfigurationState.Instance.Ui.GuiColumns.AppColumn)        column.SortColumnId = 2;
+                else if (column.Title == "Developer"   && ConfigurationState.Instance.Ui.GuiColumns.DevColumn)        column.SortColumnId = 3;
+                else if (column.Title == "Version"     && ConfigurationState.Instance.Ui.GuiColumns.VersionColumn)    column.SortColumnId = 4;
+                else if (column.Title == "Time Played" && ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn) column.SortColumnId = 5;
+                else if (column.Title == "Last Played" && ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn) column.SortColumnId = 6;
+                else if (column.Title == "File Ext"    && ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn)    column.SortColumnId = 7;
+                else if (column.Title == "File Size"   && ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   column.SortColumnId = 8;
+                else if (column.Title == "Path"        && ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       column.SortColumnId = 9;
             }
+        }
 
-            if (SwitchSettings.SwitchConfig.GuiColumns.FavColumn)        { _favColumn.SortColumnId        = 0; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.IconColumn)       { _appColumn.SortColumnId        = 2; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.AppColumn)        { _devColumn.SortColumnId        = 3; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.DevColumn)        { _versionColumn.SortColumnId    = 4; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.TimePlayedColumn) { _timePlayedColumn.SortColumnId = 5; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.LastPlayedColumn) { _lastPlayedColumn.SortColumnId = 6; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileExtColumn)    { _fileExtColumn.SortColumnId    = 7; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.FileSizeColumn)   { _fileSizeColumn.SortColumnId   = 8; }
-            if (SwitchSettings.SwitchConfig.GuiColumns.PathColumn)       { _pathColumn.SortColumnId       = 9; }
+        private HLE.Switch InitializeSwitchInstance()
+        {
+            HLE.Switch instance = new HLE.Switch(_renderer, _audioOut);
+
+            instance.Initialize();
+
+            return instance;
         }
 
         internal static async Task UpdateGameTable()
@@ -234,7 +198,7 @@ namespace Ryujinx.Ui
 
             _tableStore.Clear();
 
-            await Task.Run(() => ApplicationLibrary.LoadApplications(SwitchSettings.SwitchConfig.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
+            await Task.Run(() => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs, _device.System.KeySet, _device.System.State.DesiredTitleLanguage));
 
             _updatingGameTable = false;
         }
@@ -248,6 +212,9 @@ namespace Ryujinx.Ui
             else
             {
                 Logger.RestartTime();
+
+                // TODO: Move this somewhere else + reloadable?
+                GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
                 {
@@ -314,40 +281,7 @@ namespace Ryujinx.Ui
                 _gameLoaded              = true;
                 _stopEmulation.Sensitive = true;
 
-                if (DiscordIntegrationEnabled)
-                {
-                    if (File.ReadAllLines(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "RPsupported.dat")).Contains(_device.System.TitleId))
-                    {
-                        DiscordPresence.Assets.LargeImageKey = _device.System.TitleId;
-                    }
-
-                    string state = _device.System.TitleId;
-
-                    if (state == null)
-                    {
-                        state = "Ryujinx";
-                    }
-                    else
-                    {
-                        state = state.ToUpper();
-                    }
-
-                    string details = "Idling";
-
-                    if (_device.System.TitleName != null)
-                    {
-                        details = $"Playing {_device.System.TitleName}";
-                    }
-
-                    DiscordPresence.Details               = details;
-                    DiscordPresence.State                 = state;
-                    DiscordPresence.Assets.LargeImageText = _device.System.TitleName;
-                    DiscordPresence.Assets.SmallImageKey  = "ryujinx";
-                    DiscordPresence.Assets.SmallImageText = "Ryujinx is an emulator for the Nintendo Switch";
-                    DiscordPresence.Timestamps            = new Timestamps(DateTime.UtcNow);
-
-                    DiscordClient.SetPresence(DiscordPresence);
-                }
+                DiscordIntegrationModule.SwitchToPlayingState(_device.System.TitleId, _device.System.TitleName);
 
                 string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
                 string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
@@ -385,8 +319,8 @@ namespace Ryujinx.Ui
 
         private static void CreateGameWindow()
         {
-            Configuration.ConfigureHid(_device, SwitchSettings.SwitchConfig);
-            
+            _device.Hid.InitializePrimaryController(ConfigurationState.Instance.Hid.ControllerType);
+
             using (_screen = new GlScreen(_device, _renderer))
             {
                 _screen.MainLoop();
@@ -443,10 +377,9 @@ namespace Ryujinx.Ui
             }
 
             Profile.FinishProfiling();
-            Aot.Dispose();
             _device.Dispose();
             _audioOut.Dispose();
-            DiscordClient?.Dispose();
+            Aot.Dispose();
             Logger.Shutdown();
             Environment.Exit(0);
         }
@@ -472,24 +405,24 @@ namespace Ryujinx.Ui
         }
 
         //Events
-        private void Application_Added(object sender, ApplicationAddedEventArgs e)
+        private void Application_Added(object sender, ApplicationAddedEventArgs args)
         {
             Application.Invoke(delegate
             {
                 _tableStore.AppendValues(
-                    e.AppData.Favorite,
-                    new Gdk.Pixbuf(e.AppData.Icon, 75, 75),
-                    $"{e.AppData.TitleName}\n{e.AppData.TitleId.ToUpper()}",
-                    e.AppData.Developer,
-                    e.AppData.Version,
-                    e.AppData.TimePlayed,
-                    e.AppData.LastPlayed,
-                    e.AppData.FileExtension,
-                    e.AppData.FileSize,
-                    e.AppData.Path);
+                    args.AppData.Favorite,
+                    new Gdk.Pixbuf(args.AppData.Icon, 75, 75),
+                    $"{args.AppData.TitleName}\n{args.AppData.TitleId.ToUpper()}",
+                    args.AppData.Developer,
+                    args.AppData.Version,
+                    args.AppData.TimePlayed,
+                    args.AppData.LastPlayed,
+                    args.AppData.FileExtension,
+                    args.AppData.FileSize,
+                    args.AppData.Path);
 
-                _progressLabel.Text = $"{e.NumAppsLoaded}/{e.NumAppsFound} Games Loaded";
-                _progressBar.Value  = (float)e.NumAppsLoaded / e.NumAppsFound;
+                _progressLabel.Text = $"{args.NumAppsLoaded}/{args.NumAppsFound} Games Loaded";
+                _progressBar.Value  = (float)args.NumAppsLoaded / args.NumAppsFound;
             });
         }
 
@@ -528,10 +461,23 @@ namespace Ryujinx.Ui
 
         private void Row_Activated(object sender, RowActivatedArgs args)
         {
-            _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path.ToString()));
+            _gameTableSelection.GetSelected(out TreeIter treeIter);
             string path = (string)_tableStore.GetValue(treeIter, 9);
 
             LoadApplication(path);
+        }
+
+        private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
+        {
+            if (args.Event.Button != 3) return;
+
+            _gameTableSelection.GetSelected(out TreeIter treeIter);
+
+            if (treeIter.UserData == IntPtr.Zero) return;
+
+            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, treeIter);
+            contextMenu.ShowAll();
+            contextMenu.PopupAtPointer(null);
         }
 
         private void Load_Application_File(object sender, EventArgs args)
@@ -609,7 +555,7 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SwitchSettings settingsWin = new SwitchSettings(_device);
+            SwitchSettings settingsWin = new SwitchSettings();
             settingsWin.Show();
         }
 
@@ -635,121 +581,81 @@ namespace Ryujinx.Ui
 
         private void Fav_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.FavColumn.Value = _favToggle.Active;
 
-            updatedColumns.FavColumn               = _favToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void Icon_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.IconColumn.Value = _iconToggle.Active;
 
-            updatedColumns.IconColumn              = _iconToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void Title_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.AppColumn.Value = _appToggle.Active;
 
-            updatedColumns.AppColumn               = _appToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void Developer_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.DevColumn.Value = _developerToggle.Active;
 
-            updatedColumns.DevColumn               = _developerToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void Version_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.VersionColumn.Value = _versionToggle.Active;
 
-            updatedColumns.VersionColumn           = _versionToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void TimePlayed_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.TimePlayedColumn.Value = _timePlayedToggle.Active;
 
-            updatedColumns.TimePlayedColumn        = _timePlayedToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void LastPlayed_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.LastPlayedColumn.Value = _lastPlayedToggle.Active;
 
-            updatedColumns.LastPlayedColumn        = _lastPlayedToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void FileExt_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.FileExtColumn.Value = _fileExtToggle.Active;
 
-            updatedColumns.FileExtColumn           = _fileExtToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void FileSize_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn.Value = _fileSizeToggle.Active;
 
-            updatedColumns.FileSizeColumn          = _fileSizeToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
         private void Path_Toggled(object sender, EventArgs args)
         {
-            GuiColumns updatedColumns = SwitchSettings.SwitchConfig.GuiColumns;
+            ConfigurationState.Instance.Ui.GuiColumns.PathColumn.Value = _pathToggle.Active;
 
-            updatedColumns.PathColumn              = _pathToggle.Active;
-            SwitchSettings.SwitchConfig.GuiColumns = updatedColumns;
-
-            Configuration.SaveConfig(SwitchSettings.SwitchConfig, System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
-
+            SaveConfig();
             UpdateColumns();
         }
 
@@ -866,6 +772,11 @@ namespace Ryujinx.Ui
             {
                 return 0;
             }
+        }
+
+        public static void SaveConfig()
+        {
+            ConfigurationState.Instance.ToFileFormat().SaveConfig(System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json"));
         }
     }
 }

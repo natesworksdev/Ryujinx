@@ -1,6 +1,7 @@
 using ARMeilleure.Translation.AOT;
 using Gtk;
 using Ryujinx.Common.Logging;
+using Ryujinx.Configuration;
 using Ryujinx.Profiler;
 using Ryujinx.Ui;
 using System;
@@ -17,9 +18,32 @@ namespace Ryujinx
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
 
-            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
-            AppDomain.CurrentDomain.ProcessExit        += CurrentDomain_ProcessExit;
-            GLib.ExceptionManager.UnhandledException   += Glib_UnhandledException;
+            GLib.ExceptionManager.UnhandledException += Glib_UnhandledException;
+
+            // Initialize the configuration
+            ConfigurationState.Initialize();
+
+            // Initialize the logger system
+            LoggerModule.Initialize();
+
+            // Initialize Discord integration
+            DiscordIntegrationModule.Initialize();
+
+            string configurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+
+            // Now load the configuration as the other subsystems are now registered
+            if (File.Exists(configurationPath))
+            {
+                ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(configurationPath);
+                ConfigurationState.Instance.Load(configurationFileFormat);
+            }
+            else
+            {
+                // No configuration, we load the default values and save it on disk
+                ConfigurationState.Instance.LoadDefault();
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(configurationPath);
+            }
+
 
             Profile.Initialize();
 
@@ -43,25 +67,6 @@ namespace Ryujinx
             Application.Run();
         }
 
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
-        {
-            Aot.Dispose();
-            Logger.Shutdown();
-        }
-
-        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
-        {
-            Exception exception = e.ExceptionObject as Exception;
-
-            Logger.PrintError(LogClass.Emulation, $"Unhandled exception caught: {exception}");
-
-            if (e.IsTerminating)
-            {
-                Aot.Dispose();
-                Logger.Shutdown();
-            }
-        }
-
         private static void Glib_UnhandledException(GLib.UnhandledExceptionArgs e)
         {
             Exception exception = e.ExceptionObject as Exception;
@@ -70,6 +75,7 @@ namespace Ryujinx
 
             if (e.IsTerminating)
             {
+                Aot.Dispose();
                 Logger.Shutdown();
             }
         }
