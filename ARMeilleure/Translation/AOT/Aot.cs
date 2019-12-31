@@ -43,8 +43,6 @@ namespace ARMeilleure.Translation.AOT
         {
             string basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            Debug.Assert(basePath != String.Empty);
-
             WorkPath = Path.Combine(basePath, WorkDir);
 
             if (!Directory.Exists(WorkPath))
