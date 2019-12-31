@@ -243,12 +243,6 @@ namespace ARMeilleure.Translation
             SetSoftFallbackDelegateInfo(nameof(SoftFallback.MinS64));
             SetSoftFallbackDelegateInfo(nameof(SoftFallback.MinU64));
             SetSoftFallbackDelegateInfo(nameof(SoftFallback.MixColumns));
-            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBits32));
-            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBits64));
-            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBits8));
-            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBytes16_32));
-            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBytes16_64));
-            SetSoftFallbackDelegateInfo(nameof(SoftFallback.ReverseBytes32_64));
             SetSoftFallbackDelegateInfo(nameof(SoftFallback.Round));
             SetSoftFallbackDelegateInfo(nameof(SoftFallback.RoundF));
             SetSoftFallbackDelegateInfo(nameof(SoftFallback.SatF32ToS32));
