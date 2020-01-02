@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.Input
             _device     = device;
             HidPosition = hidPosition;
 
-            device.Memory.FillWithZeros(hidPosition, Horizon.HidSize);
+            device.Memory.ZeroFill((ulong)hidPosition, Horizon.HidSize);
 
             _currentTouchHeader = new TouchHeader()
             {
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.Input
                 TouchCount       = points.Length
             };
 
-            _device.Memory.WriteStruct(currentTouchEntryOffset, touchEntry);
+            _device.Memory.Write((ulong)currentTouchEntryOffset, touchEntry);
 
             currentTouchEntryOffset += HidTouchEntryHeaderSize;
 
@@ -169,12 +169,12 @@ namespace Ryujinx.HLE.Input
                     Y               = points[i].Y
                 };
 
-                _device.Memory.WriteStruct(currentTouchEntryOffset, touch);
+                _device.Memory.Write((ulong)currentTouchEntryOffset, touch);
 
                 currentTouchEntryOffset += HidTouchEntryTouchSize;
             }
 
-            _device.Memory.WriteStruct(_touchScreenOffset, newTouchHeader);
+            _device.Memory.Write((ulong)_touchScreenOffset, newTouchHeader);
 
             _currentTouchHeader = newTouchHeader;
         }
@@ -191,7 +191,7 @@ namespace Ryujinx.HLE.Input
                 Timestamp         = timestamp,
             };
 
-            _device.Memory.WriteStruct(_keyboardOffset, newKeyboardHeader);
+            _device.Memory.Write((ulong)_keyboardOffset, newKeyboardHeader);
 
             long keyboardEntryOffset = _keyboardOffset + HidKeyboardHeaderSize;
             keyboardEntryOffset += newKeyboardHeader.CurrentEntryIndex * HidKeyboardEntrySize;
@@ -204,7 +204,7 @@ namespace Ryujinx.HLE.Input
                 Modifier          = keyboard.Modifier,
             };
 
-            _device.Memory.WriteStruct(keyboardEntryOffset, newkeyboardEntry);
+            _device.Memory.Write((ulong)keyboardEntryOffset, newkeyboardEntry);
 
             _currentKeyboardEntry  = newkeyboardEntry;
             _currentKeyboardHeader = newKeyboardHeader;

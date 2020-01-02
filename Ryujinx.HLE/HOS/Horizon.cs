@@ -190,13 +190,13 @@ namespace Ryujinx.HLE.HOS
 
             KSharedMemory timeSharedMemory = new KSharedMemory(this, timePageList, 0, 0, MemoryPermission.Read);
 
-            TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, (long)(timePa - DramMemoryMap.DramBase), TimeSize);
+            TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, timePa - DramMemoryMap.DramBase, TimeSize);
 
             AppletState = new AppletStateMgr(this);
 
             AppletState.SetFocus(true);
 
-            Font = new SharedFontManager(device, (long)(fontPa - DramMemoryMap.DramBase));
+            Font = new SharedFontManager(device, fontPa - DramMemoryMap.DramBase);
 
             IUserInterface.InitializePort(this);
 

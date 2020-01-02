@@ -8,6 +8,7 @@ using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Input;
+using Ryujinx.Memory;
 using System;
 using System.Threading;
 
@@ -17,7 +18,7 @@ namespace Ryujinx.HLE
     {
         internal IAalOutput AudioOut { get; private set; }
 
-        internal DeviceMemory Memory { get; private set; }
+        internal MemoryBlock Memory { get; private set; }
 
         internal NvGpu Gpu { get; private set; }
 
@@ -49,7 +50,7 @@ namespace Ryujinx.HLE
 
             AudioOut = audioOut;
 
-            Memory = new DeviceMemory();
+            Memory = new MemoryBlock(1UL << 32);
 
             Gpu = new NvGpu(renderer);
 

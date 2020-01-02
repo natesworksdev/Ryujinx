@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Font
     {
         private Switch _device;
 
-        private long _physicalAddress;
+        private ulong _physicalAddress;
 
         private string _fontsPath;
 
@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.HOS.Font
 
         private Dictionary<SharedFontType, FontInfo> _fontData;
 
-        public SharedFontManager(Switch device, long physicalAddress)
+        public SharedFontManager(Switch device, ulong physicalAddress)
         {
             _physicalAddress = physicalAddress;
 
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Font
         {
             if (_fontData == null)
             {
-                _device.Memory.FillWithZeros(_physicalAddress, Horizon.FontSize);
+                _device.Memory.ZeroFill(_physicalAddress, Horizon.FontSize);
 
                 uint fontOffset = 0;
 
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Font
 
                             for (; fontOffset - start < data.Length; fontOffset++)
                             {
-                                _device.Memory.WriteByte(_physicalAddress + fontOffset, data[fontOffset - start]);
+                                _device.Memory.Write(_physicalAddress + fontOffset, data[fontOffset - start]);
                             }
 
                             return info;
@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Font
 
                         for (; fontOffset - start < data.Length; fontOffset++)
                         {
-                            _device.Memory.WriteByte(_physicalAddress + fontOffset, data[fontOffset - start]);
+                            _device.Memory.Write(_physicalAddress + fontOffset, data[fontOffset - start]);
                         }
 
                         return info;
@@ -138,15 +138,15 @@ namespace Ryujinx.HLE.HOS.Font
             }
         }
 
-        private void WriteMagicAndSize(long position, int size)
+        private void WriteMagicAndSize(ulong address, int size)
         {
             const int decMagic = 0x18029a7f;
             const int key      = 0x49621806;
 
             int encryptedSize = BinaryPrimitives.ReverseEndianness(size ^ key);
 
-            _device.Memory.WriteInt32(position + 0, decMagic);
-            _device.Memory.WriteInt32(position + 4, encryptedSize);
+            _device.Memory.Write(address + 0, decMagic);
+            _device.Memory.Write(address + 4, encryptedSize);
         }
 
         public int GetFontSize(SharedFontType fontType)
