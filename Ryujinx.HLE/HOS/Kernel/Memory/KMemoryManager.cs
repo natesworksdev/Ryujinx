@@ -1843,7 +1843,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             {
                 ulong unusedSizeBefore = address - addressTruncated;
 
-                _system.Device.Memory.Set(dstFirstPagePa, 0, unusedSizeBefore);
+                _system.Device.Memory.ZeroFill(dstFirstPagePa, unusedSizeBefore);
 
                 ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
 
@@ -1862,7 +1862,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             if (unusedSizeAfter != 0)
             {
-                _system.Device.Memory.Set(firstPageFillAddress, 0, unusedSizeAfter);
+                _system.Device.Memory.ZeroFill(firstPageFillAddress, unusedSizeAfter);
             }
 
             KPageList pages = new KPageList();
@@ -1922,7 +1922,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     unusedSizeAfter = PageSize;
                 }
 
-                _system.Device.Memory.Set(lastPageFillAddr, 0, unusedSizeAfter);
+                _system.Device.Memory.ZeroFill(lastPageFillAddr, unusedSizeAfter);
 
                 if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
                 {

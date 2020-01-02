@@ -1111,7 +1111,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             bool useFlatPageTable = memRegion == MemoryRegion.Application;
 
-            CpuMemory = new MemoryManager(_system.Device.Memory.RamPointer, addrSpaceBits, useFlatPageTable);
+            CpuMemory = new MemoryManager(_system.Device.Memory.Pointer, addrSpaceBits, useFlatPageTable);
 
             Translator = new Translator(CpuMemory);
 
