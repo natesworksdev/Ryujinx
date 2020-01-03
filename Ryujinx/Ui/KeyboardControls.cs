@@ -221,21 +221,21 @@ namespace Ryujinx.Ui
             HLE.Input.Keyboard hidKeyboard = new HLE.Input.Keyboard
             {
                     Modifier = 0,
-                    Keys     = new int[0x8]
+                    Keys     = new uint[0x8]
             };
 
             foreach (KeyMappingEntry entry in KeyMapping)
             {
                 int value = keyboard[entry.TargetKey] ? 1 : 0;
 
-                hidKeyboard.Keys[entry.Target / 0x20] |= (value << (entry.Target % 0x20));
+                hidKeyboard.Keys[entry.Target / 0x20] |= (uint)value << (entry.Target % 0x20);
             }
 
             foreach (KeyMappingEntry entry in KeyModifierMapping)
             {
                 int value = keyboard[entry.TargetKey] ? 1 : 0;
 
-                hidKeyboard.Modifier |= value << entry.Target;
+                hidKeyboard.Modifier |= (uint)value << entry.Target;
             }
 
             return hidKeyboard;

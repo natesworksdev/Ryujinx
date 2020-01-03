@@ -2,17 +2,11 @@
 {
     public class ProController : BaseController
     {
-        private bool _wired = false;
+        private readonly NpadColor _bodyColor;
+        private readonly NpadColor _buttonColor;
 
-        private NpadColor _bodyColor;
-        private NpadColor _buttonColor;
-
-        public ProController(Switch    device,
-                             NpadColor bodyColor,
-                             NpadColor buttonColor) : base(device, ControllerStatus.ProController)
+        public ProController(Switch device, NpadColor bodyColor, NpadColor buttonColor) : base(device, ControllerStatus.ProController)
         {
-            _wired = true;
-
             _bodyColor   = bodyColor;
             _buttonColor = buttonColor;
         }
@@ -26,7 +20,8 @@
 
             ConnectionState = ControllerConnectionState.ControllerStateConnected | ControllerConnectionState.ControllerStateWired;
 
-            Initialize(false,
+            Initialize(
+                false,
                 (0, 0),
                 (0, 0),
                 singleColorDesc,

@@ -2,141 +2,100 @@
 
 namespace Ryujinx.HLE.Input
 {
-    public abstract class BaseController : IHidDevice
+    public class BaseController
     {
-        protected ControllerStatus HidControllerType;
-        protected ControllerId     ControllerId;
-
-        private long _currentLayoutOffset;
-        private long _mainLayoutOffset;
-
-        protected long DeviceStateOffset => Offset + 0x4188;
-
         protected Switch Device { get; }
 
-        public long Offset    { get; private set; }
-        public bool Connected { get; protected set; }
+        protected ControllerStatus ControllerType;
 
-        public ControllerHeader            Header             { get; private set; }
-        public ControllerStateHeader       CurrentStateHeader { get; private set; }
-        public ControllerDeviceState       DeviceState        { get; private set; }
-        public ControllerLayouts           CurrentLayout      { get; private set; }
-        public ControllerState             LastInputState     { get; set; }
-        public ControllerConnectionState   ConnectionState    { get; protected set; }
+        private ControllerId      _controllerId;
+        private ControllerLayouts _currentLayout;
+
+        private HidControllerHeader _header;
+        private HidControllerMisc   _misc;
+
+        protected ControllerConnectionState ConnectionState;
 
         public BaseController(Switch device, ControllerStatus controllerType)
         {
-            Device            = device;
-            HidControllerType = controllerType;
+            Device         = device;
+            ControllerType = controllerType;
         }
 
         protected void Initialize(
             bool isHalf,
-            (NpadColor left, NpadColor right) bodyColors,
-            (NpadColor left, NpadColor right) buttonColors,
+            (NpadColor Left, NpadColor Right) bodyColors,
+            (NpadColor Left, NpadColor Right) buttonColors,
             ControllerColorDescription        singleColorDesc   = 0,
             ControllerColorDescription        splitColorDesc    = 0,
             NpadColor                         singleBodyColor   = 0,
-            NpadColor                         singleButtonColor = 0
-            )
+            NpadColor                         singleButtonColor = 0)
         {
-            Header = new ControllerHeader()
+            _header = new HidControllerHeader()
             {
-                IsJoyConHalf           = isHalf ? 1 : 0,
-                LeftBodyColor          = bodyColors.left,
-                LeftButtonColor        = buttonColors.left,
-                RightBodyColor         = bodyColors.right,
-                RightButtonColor       = buttonColors.right,
-                Status                 = HidControllerType,
-                SingleBodyColor        = singleBodyColor,
-                SingleButtonColor      = singleButtonColor,
-                SplitColorDescription  = splitColorDesc,
-                SingleColorDescription = singleColorDesc,
+                Type                   = ControllerType,
+                IsHalf                 = isHalf,
+                LeftColorBody          = bodyColors.Left,
+                LeftColorButtons       = buttonColors.Left,
+                RightColorBody         = bodyColors.Right,
+                RightColorButtons      = buttonColors.Right,
+                SingleColorBody        = singleBodyColor,
+                SingleColorButtons     = singleButtonColor,
+                SplitColorsDescriptor  = splitColorDesc,
+                SingleColorsDescriptor = singleColorDesc
             };
 
-            CurrentStateHeader = new ControllerStateHeader
-            {
-                EntryCount        = HidEntryCount,
-                MaxEntryCount     = HidEntryCount - 1,
-                CurrentEntryIndex = -1
-            };
-
-            DeviceState = new ControllerDeviceState()
+            _misc = new HidControllerMisc()
             {
                 PowerInfo0BatteryState = BatteryState.Percent100,
                 PowerInfo1BatteryState = BatteryState.Percent100,
                 PowerInfo2BatteryState = BatteryState.Percent100,
                 DeviceType             = ControllerDeviceType.NPadLeftController | ControllerDeviceType.NPadRightController,
-                DeviceFlags            = DeviceFlags.PowerInfo0Connected
-                                            | DeviceFlags.PowerInfo1Connected
-                                            | DeviceFlags.PowerInfo2Connected
-            };
-
-            LastInputState = new ControllerState()
-            {
-                SamplesTimestamp  = -1,
-                SamplesTimestamp2 = -1
+                DeviceFlags            = DeviceFlags.PowerInfo0Connected |
+                                         DeviceFlags.PowerInfo1Connected |
+                                         DeviceFlags.PowerInfo2Connected
             };
         }
 
         public virtual void Connect(ControllerId controllerId)
         {
-            ControllerId = controllerId;
+            _controllerId = controllerId;
 
-            Offset = Device.Hid.HidPosition + HidControllersOffset + (int)controllerId * HidControllerSize;
+            ref HidSharedMemory sharedMemory = ref Device.Hid.SharedMemory;
 
-            _mainLayoutOffset = Offset + HidControllerHeaderSize
-                + ((int)ControllerLayouts.Main * HidControllerLayoutsSize);
+            ref HidController controller = ref sharedMemory.Controllers[(int)controllerId];
 
-            Device.Memory.ZeroFill((ulong)Offset, 0x5000);
-            Device.Memory.Write((ulong)Offset, Header);
-            Device.Memory.Write((ulong)DeviceStateOffset, DeviceState);
-
-            Connected = true;
+            controller.Header = _header;
+            controller.Misc   = _misc;
         }
 
         public void SetLayout(ControllerLayouts controllerLayout)
         {
-            CurrentLayout = controllerLayout;
-
-            _currentLayoutOffset = Offset + HidControllerHeaderSize
-                + ((int)controllerLayout * HidControllerLayoutsSize);
+            _currentLayout = controllerLayout;
         }
 
-        public void SendInput(
-            ControllerButtons buttons,
-            JoystickPosition  leftStick,
-            JoystickPosition  rightStick)
+        public void SendInput(ControllerButtons buttons, JoystickPosition leftStick, JoystickPosition rightStick)
         {
-            ControllerState currentInput = new ControllerState()
-            {
-                SamplesTimestamp  = (long)LastInputState.SamplesTimestamp + 1,
-                SamplesTimestamp2 = (long)LastInputState.SamplesTimestamp + 1,
-                ButtonState       = buttons,
-                ConnectionState   = ConnectionState,
-                LeftStick         = leftStick,
-                RightStick        = rightStick
-            };
+            ref HidSharedMemory sharedMemory = ref Device.Hid.SharedMemory;
 
-            ControllerStateHeader newInputStateHeader = new ControllerStateHeader
-            {
-                EntryCount        = HidEntryCount,
-                MaxEntryCount     = HidEntryCount - 1,
-                CurrentEntryIndex = (CurrentStateHeader.CurrentEntryIndex + 1) % HidEntryCount,
-                Timestamp         = GetTimestamp(),
-            };
+            ref HidControllerLayout layout = ref sharedMemory.Controllers[(int)_controllerId].Layouts[(int)_currentLayout];
 
-            Device.Memory.Write((ulong)_currentLayoutOffset, newInputStateHeader);
-            Device.Memory.Write((ulong)_mainLayoutOffset, newInputStateHeader);
+            layout.Header.NumEntries    = 17;
+            layout.Header.MaxEntryIndex = 16;
 
-            long currentInputStateOffset = HidControllersLayoutHeaderSize
-                + newInputStateHeader.CurrentEntryIndex * HidControllersInputEntrySize;
+            layout.Header.LatestEntry = (layout.Header.LatestEntry + 1) % 17;
 
-            Device.Memory.Write((ulong)(_currentLayoutOffset + currentInputStateOffset), currentInput);
-            Device.Memory.Write((ulong)(_mainLayoutOffset + currentInputStateOffset), currentInput);
+            layout.Header.TimestampTicks = GetTimestamp();
 
-            LastInputState     = currentInput;
-            CurrentStateHeader = newInputStateHeader;
+            ref HidControllerInputEntry entry = ref layout.Entries[(int)layout.Header.LatestEntry];
+
+            entry.Timestamp++;
+            entry.Timestamp2++;
+
+            entry.Buttons         = buttons;
+            entry.ConnectionState = ConnectionState;
+            entry.Joysticks[0]    = leftStick;
+            entry.Joysticks[1]    = rightStick;
         }
     }
 }

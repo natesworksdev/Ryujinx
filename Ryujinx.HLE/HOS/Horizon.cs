@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS
 
         public int GlobalAccessLogMode { get; set; }
 
-        internal long HidBaseAddress { get; private set; }
+        internal ulong HidBaseAddress { get; private set; }
 
         internal FileSystemServer FsServer { get; private set; }
         internal EmulatedGameCard GameCard { get; private set; }
@@ -172,7 +172,7 @@ namespace Ryujinx.HLE.HOS
             ulong iirsPa = region.Address + HidSize + FontSize;
             ulong timePa = region.Address + HidSize + FontSize + IirsSize;
 
-            HidBaseAddress = (long)(hidPa - DramMemoryMap.DramBase);
+            HidBaseAddress = hidPa - DramMemoryMap.DramBase;
 
             KPageList hidPageList  = new KPageList();
             KPageList fontPageList = new KPageList();

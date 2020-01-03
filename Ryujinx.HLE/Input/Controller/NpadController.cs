@@ -19,7 +19,7 @@
 
         public override void Connect(ControllerId controllerId)
         {
-            if (HidControllerType != ControllerStatus.NpadLeft && HidControllerType != ControllerStatus.NpadRight)
+            if (ControllerType != ControllerStatus.NpadLeft && ControllerType != ControllerStatus.NpadRight)
             {
                 _isHalf = false;
             }
@@ -27,7 +27,9 @@
             ConnectionState = ControllerConnectionState.ControllerStateConnected;
 
             if (controllerId == ControllerId.ControllerHandheld)
+            {
                 ConnectionState |= ControllerConnectionState.ControllerStateWired;
+            }
 
             ControllerColorDescription singleColorDesc =
                 ControllerColorDescription.ColorDescriptionColorsNonexistent;
@@ -37,32 +39,33 @@
             NpadColor singleBodyColor   = NpadColor.Black;
             NpadColor singleButtonColor = NpadColor.Black;
 
-            Initialize(_isHalf,
+            Initialize(
+                _isHalf,
                 (_npadBodyColors.Left,   _npadBodyColors.Right),
                 (_npadButtonColors.Left, _npadButtonColors.Right),
                 singleColorDesc,
                 splitColorDesc,
                 singleBodyColor,
-                singleButtonColor );
+                singleButtonColor);
 
             base.Connect(controllerId);
 
-            var _currentLayout = ControllerLayouts.HandheldJoined;
+            var currentLayout = ControllerLayouts.HandheldJoined;
 
-            switch (HidControllerType)
+            switch (ControllerType)
             {
                 case ControllerStatus.NpadLeft:
-                    _currentLayout = ControllerLayouts.Left;
+                    currentLayout = ControllerLayouts.Left;
                     break;
                 case ControllerStatus.NpadRight:
-                    _currentLayout = ControllerLayouts.Right;
+                    currentLayout = ControllerLayouts.Right;
                     break;
                 case ControllerStatus.NpadPair:
-                    _currentLayout = ControllerLayouts.Joined;
+                    currentLayout = ControllerLayouts.Joined;
                     break;
             }
 
-            SetLayout(_currentLayout);
+            SetLayout(currentLayout);
         }
     }
 }

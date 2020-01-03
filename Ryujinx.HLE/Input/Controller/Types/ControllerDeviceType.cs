@@ -7,6 +7,6 @@ namespace Ryujinx.HLE.Input
     {
         ProController       = 1 << 0,
         NPadLeftController  = 1 << 4,
-        NPadRightController = 1 << 5,
+        NPadRightController = 1 << 5
     }
 }

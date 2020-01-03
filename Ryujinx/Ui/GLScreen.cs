@@ -185,7 +185,7 @@ namespace Ryujinx.Ui
                 hidKeyboard = new HLE.Input.Keyboard
                 {
                     Modifier = 0,
-                    Keys     = new int[0x8]
+                    Keys     = new uint[0x8]
                 };
             }
             
@@ -214,7 +214,7 @@ namespace Ryujinx.Ui
                 Dy = rightJoystickDy
             };
 
-            currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);
+            currentButton |= Hid.UpdateStickButtons(leftJoystick, rightJoystick);
 
             bool hasTouch = false;
 
@@ -255,8 +255,8 @@ namespace Ryujinx.Ui
 
                     TouchPoint currentPoint = new TouchPoint
                     {
-                        X = mX,
-                        Y = mY,
+                        X = (uint)mX,
+                        Y = (uint)mY,
 
                         // Placeholder values till more data is acquired
                         DiameterX = 10,
