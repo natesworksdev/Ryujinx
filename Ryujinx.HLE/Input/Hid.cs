@@ -200,9 +200,13 @@ namespace Ryujinx.HLE.Input
             {
                 SamplesTimestamp  = _currentKeyboardEntry.SamplesTimestamp + 1,
                 SamplesTimestamp2 = _currentKeyboardEntry.SamplesTimestamp2 + 1,
-                Keys              = keyboard.Keys,
                 Modifier          = keyboard.Modifier,
             };
+
+            for (int index = 0; index < keyboard.Keys.Length; index++)
+            {
+                newkeyboardEntry.Keys[index] = keyboard.Keys[index];
+            }
 
             _device.Memory.Write((ulong)keyboardEntryOffset, newkeyboardEntry);
 

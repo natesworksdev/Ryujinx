@@ -57,9 +57,9 @@ namespace Ryujinx.Memory
         /// <param name="address">Address where the data is located</param>
         /// <returns>Data at the specified address</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public T Read<T>(ulong address)
+        public T Read<T>(ulong address) where T : unmanaged
         {
-            return GetRef<T>(address, Unsafe.SizeOf<T>());
+            return GetRef<T>(address);
         }
 
         /// <summary>
@@ -80,9 +80,9 @@ namespace Ryujinx.Memory
         /// <param name="address">Address to write the data into</param>
         /// <param name="data">Data to be written</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public void Write<T>(ulong address, T data)
+        public void Write<T>(ulong address, T data) where T : unmanaged
         {
-            GetRef<T>(address, Unsafe.SizeOf<T>()) = data;
+            GetRef<T>(address) = data;
         }
 
         /// <summary>
@@ -123,10 +123,9 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <typeparam name="T">Data type</typeparam>
         /// <param name="address">Address of the memory region</param>
-        /// <param name="size">Size in bytes of the memory region</param>
         /// <returns>A reference to the given memory region data</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe ref T GetRef<T>(ulong address, int size)
+        public unsafe ref T GetRef<T>(ulong address) where T : unmanaged
         {
             IntPtr ptr = _pointer;
 
@@ -134,6 +133,8 @@ namespace Ryujinx.Memory
             {
                 throw new ObjectDisposedException(nameof(MemoryBlock));
             }
+
+            int size = Unsafe.SizeOf<T>();
 
             ulong endAddress = address + (ulong)size;
 
