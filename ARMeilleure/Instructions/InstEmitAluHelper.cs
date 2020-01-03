@@ -119,6 +119,7 @@ namespace ARMeilleure.Instructions
                 case OpCode32AluImm16 op: return Const(op.Immediate);
 
                 case OpCode32AluRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
+                case OpCode32AluRsReg op: return GetMShiftedByReg(context, op, setCarry);
 
                 case OpCodeT16AluImm8 op: return Const(op.Immediate);
 
@@ -212,6 +213,70 @@ namespace ARMeilleure.Instructions
             return m;
         }
 
+        public static Operand GetMShiftedByReg(ArmEmitterContext context, OpCode32AluRsReg op, bool setCarry)
+        {
+            Operand m = GetIntA32(context, op.Rm);
+            Operand s = context.ZeroExtend8(OperandType.I32, GetIntA32(context, op.Rs));
+            Operand shiftIsZero = context.ICompareEqual(s, Const(0));
+
+            Operand zeroResult = m;
+            Operand shiftResult = m;
+
+            Operand shiftSkip = Label();
+            //Operand shiftZeroSkip = Label();
+
+            setCarry &= op.SetFlags;
+
+            context.BranchIfTrue(shiftSkip, shiftIsZero);
+
+            /*
+            // if zero, fudge the shift number a little
+
+            switch (op.ShiftType)
+            {
+                case ShiftType.Lsr: zeroResult = GetLsrC(context, m, setCarry, 32); break;
+                case ShiftType.Asr: zeroResult = GetAsrC(context, m, setCarry, 32); break;
+                case ShiftType.Ror:
+                    // ror 0 is rrx
+                    zeroResult = GetRrxC(context, m, setCarry);
+                    break;
+            }
+
+            context.Branch(shiftSkip);
+            context.MarkLabel(shiftZeroSkip);
+            */
+
+            switch (op.ShiftType)
+            {
+                case ShiftType.Lsl: shiftResult = EmitLslC(context, m, setCarry, s); break;
+                case ShiftType.Lsr: shiftResult = EmitLsrC(context, m, setCarry, s); break;
+                case ShiftType.Asr: shiftResult = EmitAsrC(context, m, setCarry, s); break;
+                case ShiftType.Ror: shiftResult = EmitRorC(context, m, setCarry, s); break;
+            }
+
+            context.MarkLabel(shiftSkip);
+            
+            return context.ConditionalSelect(shiftIsZero, zeroResult, shiftResult);
+        }
+
+        public static Operand EmitLslC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        {
+            Operand shiftLarge = context.ICompareGreaterOrEqual(shift, Const(32));
+
+            Operand result = context.ShiftLeft(m, shift);
+            if (setCarry)
+            {
+                Operand cOut = context.ShiftRightUI(m, context.Subtract(Const(32), shift));
+
+                cOut = context.BitwiseAnd(cOut, Const(1));
+                cOut = context.ConditionalSelect(context.ICompareGreater(shift, Const(32)), Const(0), cOut);
+
+                SetFlag(context, PState.CFlag, cOut);
+            }
+
+            return context.ConditionalSelect(shiftLarge, Const(0), result);
+        }
+
         public static Operand GetLslC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift > 32)
@@ -240,6 +305,22 @@ namespace ARMeilleure.Instructions
 
                 return context.ShiftLeft(m, Const(shift));
             }
+        }
+
+        public static Operand EmitLsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        {
+            Operand shiftLarge = context.ICompareGreaterOrEqual(shift, Const(32));
+            Operand result = context.ShiftRightUI(m, shift);
+            if (setCarry)
+            {
+                Operand cOut = context.ShiftRightUI(m, context.Subtract(shift, Const(1)));
+
+                cOut = context.BitwiseAnd(cOut, Const(1));
+                cOut = context.ConditionalSelect(context.ICompareGreater(shift, Const(32)), Const(0), cOut);
+
+                SetFlag(context, PState.CFlag, cOut);
+            }
+            return context.ConditionalSelect(shiftLarge, Const(0), result);
         }
 
         public static Operand GetLsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
@@ -278,6 +359,43 @@ namespace ARMeilleure.Instructions
             return Const(0);
         }
 
+        public static Operand EmitAsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        {
+            Operand normalShift = Label();
+            Operand end = Label();
+
+            Operand l32Result;
+            Operand ge32Result;
+
+            Operand less32 = context.ICompareLess(shift, Const(32));
+
+            context.BranchIfTrue(normalShift, less32);
+
+            ge32Result = context.ShiftRightSI(m, Const(31));
+
+            if (setCarry)
+            {
+                SetCarryMLsb(context, ge32Result);
+            }
+
+            context.Branch(end);
+            context.MarkLabel(normalShift);
+
+            l32Result = context.ShiftRightSI(m, shift);
+            if (setCarry)
+            {
+                Operand cOut = context.ShiftRightUI(m, context.Subtract(shift, Const(1)));
+
+                cOut = context.BitwiseAnd(cOut, Const(1));
+
+                SetFlag(context, PState.CFlag, cOut);
+            }
+
+            context.MarkLabel(end);
+
+            return context.ConditionalSelect(less32, l32Result, ge32Result);
+        }
+
         public static Operand GetAsrC(ArmEmitterContext context, Operand m, bool setCarry, int shift)
         {
             if ((uint)shift >= 32)
@@ -300,6 +418,18 @@ namespace ARMeilleure.Instructions
 
                 return context.ShiftRightSI(m, Const(shift));
             }
+        }
+
+        public static Operand EmitRorC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        {
+            shift = context.BitwiseAnd(shift, Const(0x1f));
+            m = context.RotateRight(m, shift);
+
+            if (setCarry)
+            {
+                SetCarryMMsb(context, m);
+            }
+            return m;
         }
 
         public static Operand GetRorC(ArmEmitterContext context, Operand m, bool setCarry, int shift)

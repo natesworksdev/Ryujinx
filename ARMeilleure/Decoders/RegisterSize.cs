@@ -5,6 +5,7 @@ namespace ARMeilleure.Decoders
         Int32,
         Int64,
         Simd64,
-        Simd128
+        Simd128,
+        Simd32
     }
 }

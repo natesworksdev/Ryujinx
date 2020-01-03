@@ -16,6 +16,11 @@ namespace ARMeilleure.Instructions
             EmitExceptionCall(context, NativeInterface.SupervisorCall);
         }
 
+        public static void Trap(ArmEmitterContext context)
+        {
+            EmitExceptionCall(context, NativeInterface.Break);
+        }
+
         private static void EmitExceptionCall(ArmEmitterContext context, _Void_U64_S32 func)
         {
             OpCode32Exception op = (OpCode32Exception)context.CurrOp;

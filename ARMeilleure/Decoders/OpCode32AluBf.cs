@@ -14,7 +14,7 @@ namespace ARMeilleure.Decoders
         public int Lsb { get; private set; }
 
         public int SourceMask => (int)(0xFFFFFFFF >> (31 - Msb));
-        public int DestMask => SourceMask << Lsb;
+        public int DestMask => SourceMask & (int)(0xFFFFFFFF << Lsb);
 
         public OpCode32AluBf(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

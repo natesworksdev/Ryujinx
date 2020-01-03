@@ -19,6 +19,18 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return CreateThread(entrypoint, argsPtr, stackTop, priority, cpuCore, out handle);
         }
 
+        public KernelResult CreateThread32(
+            ulong   entrypoint,
+            ulong   argsPtr,
+            ulong   stackTop,
+            int     cpuCore,
+            int     priority,
+            
+            out int handle)
+        {
+            return CreateThread(entrypoint, argsPtr, stackTop, priority, cpuCore, out handle);
+        }
+
         private KernelResult CreateThread(
             ulong   entrypoint,
             ulong   argsPtr,

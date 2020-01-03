@@ -31,6 +31,30 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void Adc(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context, setCarry: false);
+
+            Operand res = context.Add(n, m);
+
+            Operand carry = GetFlag(PState.CFlag);
+
+            res = context.Add(res, carry);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+
+                EmitAdcsCCheck(context, n, res);
+                EmitAddsVCheck(context, n, m, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
         public static void Clz(ArmEmitterContext context)
         {
             IOpCode32AluReg op = (IOpCode32AluReg)context.CurrOp;
@@ -100,6 +124,52 @@ namespace ARMeilleure.Instructions
 
                 EmitSubsCCheck(context, n, res);
                 EmitSubsVCheck(context, n, m, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Sbc(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context, setCarry: false);
+
+            Operand res = context.Subtract(n, m);
+
+            Operand borrow = context.BitwiseExclusiveOr(GetFlag(PState.CFlag), Const(1));
+
+            res = context.Subtract(res, borrow);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+
+                EmitSbcsCCheck(context, n, m);
+                EmitSubsVCheck(context, n, m, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Rsc(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context, setCarry: false);
+
+            Operand res = context.Subtract(m, n);
+
+            Operand borrow = context.BitwiseExclusiveOr(GetFlag(PState.CFlag), Const(1));
+
+            res = context.Subtract(res, borrow);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+
+                EmitSbcsCCheck(context, m, n);
+                EmitSubsVCheck(context, m, n, res);
             }
 
             EmitAluStore(context, res);
@@ -216,7 +286,7 @@ namespace ARMeilleure.Instructions
             EmitNZFlagsCheck(context, res);
         }
 
-        public static void Uxtb(ArmEmitterContext context)
+        private static void EmitSignExtend(ArmEmitterContext context, bool signed, int bits)
         {
             IOpCode32AluUx op = (IOpCode32AluUx)context.CurrOp;
 
@@ -226,14 +296,23 @@ namespace ARMeilleure.Instructions
             if (op.RotateBits == 0)
             {
                 res = m;
-            } 
+            }
             else
             {
                 Operand rotate = Const(op.RotateBits);
                 res = context.RotateRight(m, rotate);
             }
 
-            res = context.ZeroExtend8(OperandType.I32, res);
+            switch (bits)
+            {
+                case 8:
+                    res = (signed) ? context.SignExtend8(OperandType.I32, res) : context.ZeroExtend8(OperandType.I32, res);
+                    break;
+                case 16:
+                    res = (signed) ? context.SignExtend16(OperandType.I32, res) : context.ZeroExtend16(OperandType.I32, res);
+                    break;
+            }
+            
 
             if (op.Add)
             {
@@ -243,31 +322,24 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void Uxtb(ArmEmitterContext context)
+        {
+            EmitSignExtend(context, false, 8);
+        }
+
         public static void Uxth(ArmEmitterContext context)
         {
-            IOpCode32AluUx op = (IOpCode32AluUx)context.CurrOp;
+            EmitSignExtend(context, false, 16);
+        }
 
-            Operand m = GetAluM(context);
-            Operand res;
+        public static void Sxtb(ArmEmitterContext context)
+        {
+            EmitSignExtend(context, true, 8);
+        }
 
-            if (op.RotateBits == 0)
-            {
-                res = m;
-            }
-            else
-            {
-                Operand rotate = Const(op.RotateBits);
-                res = context.RotateRight(m, rotate);
-            }
-
-            res = context.ZeroExtend16(OperandType.I32, res);
-
-            if (op.Add)
-            {
-                res = context.Add(res, GetAluN(context));
-            }
-
-            EmitAluStore(context, res);
+        public static void Sxth(ArmEmitterContext context)
+        {
+            EmitSignExtend(context, true, 16);
         }
 
         public static void Mla(ArmEmitterContext context)
@@ -284,6 +356,19 @@ namespace ARMeilleure.Instructions
             {
                 EmitNZFlagsCheck(context, res);
             }
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Mls(ArmEmitterContext context)
+        {
+            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+            Operand a = GetIntA32(context, op.Ra);
+
+            Operand res = context.Subtract(a, context.Multiply(n, m));
 
             EmitAluStore(context, res);
         }
@@ -393,6 +478,16 @@ namespace ARMeilleure.Instructions
 
             EmitAluStore(context, res);
         }
+        public static void Rbit(ArmEmitterContext context)
+        {
+            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
+
+            Operand m = GetAluM(context);
+
+            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBits32), m);
+
+            EmitAluStore(context, res);
+        }
 
         public static void Bfc(ArmEmitterContext context)
         {
@@ -413,7 +508,7 @@ namespace ARMeilleure.Instructions
             Operand part = context.BitwiseAnd(n, Const(op.SourceMask));
             if (op.Lsb != 0) part = context.ShiftLeft(part, Const(op.Lsb));
             Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
-            res = context.BitwiseOr(res, part);
+            res = context.BitwiseOr(res, context.BitwiseAnd(part, Const(op.DestMask)));
 
             SetIntA32(context, op.Rd, res);
         }

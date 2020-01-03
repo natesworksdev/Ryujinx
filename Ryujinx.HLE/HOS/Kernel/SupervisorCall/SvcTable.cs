@@ -85,6 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _svcFuncs32 = new Dictionary<int, string>
             {
                 { 0x06, nameof(SvcHandler.QueryMemory32)                   },
+                { 0x08, nameof(SvcHandler.CreateThread32)                  },
                 { 0x27, nameof(SvcHandler.OutputDebugString32)             },
                 { 0x29, nameof(SvcHandler.GetInfo64)                       }
             };
@@ -104,6 +105,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             Dictionary<int, string> funcTable = aarch32 ? _svcFuncs32 : _svcFuncs64;
             if (funcTable.TryGetValue(svcId, out string svcName))
             {
+                if (svcId == 0x08) { }
                 return table[svcId] = GenerateMethod(svcName, aarch32);
             }
 
@@ -127,10 +129,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             ParameterInfo[] methodArgs = methodInfo.GetParameters();
 
             int maxArgs = aarch32 ? SvcFuncMaxArguments32 : SvcFuncMaxArguments;
+            int numArgs = methodArgs.Count(x => !x.IsOut);
 
-            if (methodArgs.Count(x => !x.IsOut) > maxArgs)
+            if (numArgs > maxArgs)
             {
-                throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is {maxArgs}.");
+                //throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is {maxArgs}.");
             }
 
             ILGenerator generator = method.GetILGenerator();
@@ -209,7 +212,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     generator.Emit(OpCodes.Ldc_I4, index);
 
                     generator.Emit(OpCodes.Ldarg_1);
-                    generator.Emit(OpCodes.Ldc_I4, byRefArgsCount + index);
+                    int argIndex = (aarch32 && index >= maxArgs) ? index - maxArgs : byRefArgsCount + index;
+                    generator.Emit(OpCodes.Ldc_I4, argIndex);
 
                     MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
@@ -271,7 +275,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 else
                 {
                     generator.Emit(OpCodes.Ldarg_1);
-                    generator.Emit(OpCodes.Ldc_I4, byRefArgsCount + index);
+                    int argIndex = (aarch32 && index >= maxArgs) ? index - maxArgs : byRefArgsCount + index;
+                    generator.Emit(OpCodes.Ldc_I4, argIndex);
 
                     MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
