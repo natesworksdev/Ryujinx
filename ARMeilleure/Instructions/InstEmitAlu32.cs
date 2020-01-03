@@ -480,11 +480,8 @@ namespace ARMeilleure.Instructions
         }
         public static void Rbit(ArmEmitterContext context)
         {
-            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
-
             Operand m = GetAluM(context);
-
-            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBits32), m);
+            Operand res = InstEmit.EmitReverseBits32Op(context, m);
 
             EmitAluStore(context, res);
         }
