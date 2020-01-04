@@ -72,25 +72,47 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            // TODO: ARM32.
-            long framePointer = (long)context.GetX(29);
-
             trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
-            while (framePointer != 0)
+            if (context.IsAarch32)
             {
-                if ((framePointer & 7) != 0 ||
-                    !_owner.CpuMemory.IsMapped(framePointer) ||
-                    !_owner.CpuMemory.IsMapped(framePointer + 8))
+                long framePointer = (long)context.GetX(11);
+
+                while (framePointer != 0)
                 {
-                    break;
+                    if ((framePointer & 7) != 0 ||
+                        !_owner.CpuMemory.IsMapped(framePointer) ||
+                        !_owner.CpuMemory.IsMapped(framePointer + 4))
+                    {
+                        break;
+                    }
+
+                    // Note: This is the return address, we need to subtract one instruction
+                    // worth of bytes to get the branch instruction address.
+                    AppendTrace(_owner.CpuMemory.ReadInt32(framePointer + 4) - 4);
+
+                    framePointer = _owner.CpuMemory.ReadInt32(framePointer);
                 }
+            }
+            else
+            {
+                long framePointer = (long)context.GetX(29);
 
-                // Note: This is the return address, we need to subtract one instruction
-                // worth of bytes to get the branch instruction address.
-                AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8) - 4);
+                while (framePointer != 0)
+                {
+                    if ((framePointer & 15) != 0 ||
+                        !_owner.CpuMemory.IsMapped(framePointer) ||
+                        !_owner.CpuMemory.IsMapped(framePointer + 8))
+                    {
+                        break;
+                    }
 
-                framePointer = _owner.CpuMemory.ReadInt64(framePointer);
+                    // Note: This is the return address, we need to subtract one instruction
+                    // worth of bytes to get the branch instruction address.
+                    AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8) - 4);
+
+                    framePointer = _owner.CpuMemory.ReadInt64(framePointer);
+                }
             }
 
             return trace.ToString();
@@ -242,13 +264,28 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             long ehHdrEndOffset   = memory.ReadInt32(mod0Offset + 0x14) + mod0Offset;
             long modObjOffset     = memory.ReadInt32(mod0Offset + 0x18) + mod0Offset;
 
-            // TODO: Elf32.
+            bool isAArch32 = memory.ReadUInt64(dynamicOffset) > 0xFFFFFFFF || memory.ReadUInt64(dynamicOffset + 0x10) > 0xFFFFFFFF;
+
             while (true)
             {
-                long tagVal = memory.ReadInt64(dynamicOffset + 0);
-                long value  = memory.ReadInt64(dynamicOffset + 8);
+                long tagVal;
+                long value;
 
-                dynamicOffset += 0x10;
+                if (isAArch32)
+                {
+                    tagVal = memory.ReadInt32(dynamicOffset + 0);
+                    value  = memory.ReadInt32(dynamicOffset + 4);
+
+                    dynamicOffset += 0x8;
+                }
+                else
+                {
+                    tagVal = memory.ReadInt64(dynamicOffset + 0);
+                    value  = memory.ReadInt64(dynamicOffset + 8);
+
+                    dynamicOffset += 0x10;
+                }
+
 
                 ElfDynamicTag tag = (ElfDynamicTag)tagVal;
 
