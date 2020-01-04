@@ -263,13 +263,28 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             long ehHdrEndOffset   = memory.ReadInt32(mod0Offset + 0x14) + mod0Offset;
             long modObjOffset     = memory.ReadInt32(mod0Offset + 0x18) + mod0Offset;
 
-            // TODO: Elf32.
+            bool isAArch32 = memory.ReadUInt64(dynamicOffset) > 0xFFFFFFFF || memory.ReadUInt64(dynamicOffset + 0x10) > 0xFFFFFFFF;
+
             while (true)
             {
-                long tagVal = memory.ReadInt64(dynamicOffset + 0);
-                long value  = memory.ReadInt64(dynamicOffset + 8);
+                long tagVal;
+                long value;
 
-                dynamicOffset += 0x10;
+                if (isAArch32)
+                {
+                    tagVal = memory.ReadInt32(dynamicOffset + 0);
+                    value  = memory.ReadInt32(dynamicOffset + 4);
+
+                    dynamicOffset += 0x8;
+                }
+                else
+                {
+                    tagVal = memory.ReadInt64(dynamicOffset + 0);
+                    value  = memory.ReadInt64(dynamicOffset + 8);
+
+                    dynamicOffset += 0x10;
+                }
+
 
                 ElfDynamicTag tag = (ElfDynamicTag)tagVal;
 
