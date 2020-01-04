@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             if (context.IsAarch32)
             {
-                long framePointer = (long)context.GetX(0xd);
+                long framePointer = (long)context.GetX(11);
                 while (framePointer != 0)
                 {
                     if ((framePointer & 7) != 0 ||
@@ -99,7 +99,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 while (framePointer != 0)
                 {
-                    if ((framePointer & 7) != 0 ||
+                    if ((framePointer & 15) != 0 ||
                         !_owner.CpuMemory.IsMapped(framePointer) ||
                         !_owner.CpuMemory.IsMapped(framePointer + 8))
                     {
