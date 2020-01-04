@@ -1,4 +1,5 @@
 ﻿using ARMeilleure.Decoders;
+using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 using System.Collections.Generic;
@@ -7,6 +8,7 @@ using System.Text;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
+using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -79,6 +81,23 @@ namespace ARMeilleure.Instructions
                     return EmitSoftFloatCall(context, SoftFloat32.FPDiv, SoftFloat64.FPDiv, op1, op2);
                 });
             }
+        }
+
+        //TODO: probably important to have a fast path for these instead of calling fucking standard math min/max
+        public static void VmaxminNm_S(ArmEmitterContext context)
+        {
+            bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
+            Delegate dlg = max ? new _F32_F32_F32(Math.Max) : new _F32_F32_F32(Math.Min);
+
+            EmitScalarBinaryOpF32(context, (op1, op2) => context.Call(dlg, op1, op2));
+        }
+
+        public static void VmaxminNm_V(ArmEmitterContext context)
+        {
+            bool max = (context.CurrOp.RawOpCode & (1 << 21)) == 0;
+            Delegate dlg = max ? new _F32_F32_F32(Math.Max) : new _F32_F32_F32(Math.Min);
+
+            EmitVectorBinaryOpSx32(context, (op1, op2) => context.Call(dlg, op1, op2));
         }
 
         public static void Vmul_S(ArmEmitterContext context)
@@ -190,6 +209,31 @@ namespace ARMeilleure.Instructions
         public static void Vmls_I(ArmEmitterContext context)
         {
             EmitVectorTernaryOpZx32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)));
+        }
+
+        public static void Vsel(ArmEmitterContext context)
+        {
+            var op = (OpCode32SimdSel)context.CurrOp;
+            EmitScalarBinaryOpI32(context, (op1, op2) =>
+            {
+                Operand condition = null;
+                switch (op.Cc)
+                {
+                    case OpCode32SimdSelMode.Eq:
+                        condition = GetCondTrue(context, Condition.Eq);
+                        break;
+                    case OpCode32SimdSelMode.Ge:
+                        condition = GetCondTrue(context, Condition.Ge);
+                        break;
+                    case OpCode32SimdSelMode.Gt:
+                        condition = GetCondTrue(context, Condition.Gt);
+                        break;
+                    case OpCode32SimdSelMode.Vs:
+                        condition = GetCondTrue(context, Condition.Vs);
+                        break;
+                }
+                return context.ConditionalSelect(condition, op1, op2);
+            });
         }
 
         public static void Vsqrt_S(ArmEmitterContext context)

@@ -34,7 +34,7 @@ namespace ARMeilleure.Instructions
 
         public static Operand ExtractScalar(ArmEmitterContext context, OperandType type, int reg)
         {
-            if (type == OperandType.FP64)
+            if (type == OperandType.FP64 || type == OperandType.I64)
             {
                 // from dreg
                 return context.VectorExtract(type, GetVecA32(reg >> 1), reg & 1);
@@ -49,7 +49,7 @@ namespace ARMeilleure.Instructions
         public static void InsertScalar(ArmEmitterContext context, int reg, Operand value)
         {
             Operand vec, insert;
-            if (value.Type == OperandType.FP64)
+            if (value.Type == OperandType.FP64 || value.Type == OperandType.I64)
             {
                 // from dreg
                 vec = GetVecA32(reg >> 1);
@@ -107,6 +107,19 @@ namespace ARMeilleure.Instructions
 
             InsertScalar(context, op.Vd, emit(n, m));
         }
+
+        public static void EmitScalarBinaryOpI32(ArmEmitterContext context, Func2I emit)
+        {
+            OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
+
+            OperandType type = (op.Size & 1) != 0 ? OperandType.I64 : OperandType.I32;
+
+            Operand n = ExtractScalar(context, type, op.Vn);
+            Operand m = ExtractScalar(context, type, op.Vm);
+
+            InsertScalar(context, op.Vd, emit(n, m));
+        }
+
         public static void EmitScalarTernaryOpF32(ArmEmitterContext context, Func3I emit)
         {
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;

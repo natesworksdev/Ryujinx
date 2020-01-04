@@ -99,16 +99,23 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x0d, nameof(SvcHandler.SetThreadPriority32)             },
                 { 0x0f, nameof(SvcHandler.SetThreadCoreMask32)             },
                 { 0x10, nameof(SvcHandler.GetCurrentProcessorNumber32)     },
+                { 0x13, nameof(SvcHandler.MapSharedMemory32)               },
+                { 0x14, nameof(SvcHandler.UnmapSharedMemory32)             },
                 { 0x15, nameof(SvcHandler.CreateTransferMemory32)          },
                 { 0x16, nameof(SvcHandler.CloseHandle32)                   },
                 { 0x18, nameof(SvcHandler.WaitSynchronization32)           },
+                { 0x1a, nameof(SvcHandler.ArbitrateLock32)                 },
+                { 0x1b, nameof(SvcHandler.ArbitrateUnlock32)               },
+                { 0x1c, nameof(SvcHandler.WaitProcessWideKeyAtomic32)      },
                 { 0x1d, nameof(SvcHandler.SignalProcessWideKey32)          },
                 { 0x1f, nameof(SvcHandler.ConnectToNamedPort32)            },
                 { 0x21, nameof(SvcHandler.SendSyncRequest32)               },
                 { 0x25, nameof(SvcHandler.GetThreadId32)                   },
                 { 0x26, nameof(SvcHandler.Break32)                         },
                 { 0x27, nameof(SvcHandler.OutputDebugString32)             },
-                { 0x29, nameof(SvcHandler.GetInfo32)                       }
+                { 0x29, nameof(SvcHandler.GetInfo32)                       },
+
+                { 0x5F, nameof(SvcHandler.FlushProcessDataCache32)         }
             };
 
             _svcTable64 = new Action<SvcHandler, ExecutionContext>[0x80];
@@ -126,8 +133,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             Dictionary<int, string> funcTable = aarch32 ? _svcFuncs32 : _svcFuncs64;
             if (funcTable.TryGetValue(svcId, out string svcName))
             {
-                if (svcId == 0x08) { }
-
                 Action<SvcHandler, ExecutionContext> svcFunc;
 
                 if (aarch32)

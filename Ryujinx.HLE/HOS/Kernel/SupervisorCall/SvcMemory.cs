@@ -205,6 +205,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return MapSharedMemory(handle, address, size, permission);
         }
 
+        public KernelResult MapSharedMemory32([R(0)] int handle, [R(1)] uint address, [R(2)] uint size, [R(3)] MemoryPermission permission)
+        {
+            return MapSharedMemory(handle, address, size, permission);
+        }
+
         private KernelResult MapSharedMemory(int handle, ulong address, ulong size, MemoryPermission permission)
         {
             if (!PageAligned(address))
@@ -252,6 +257,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult UnmapSharedMemory64(int handle, ulong address, ulong size)
+        {
+            return UnmapSharedMemory(handle, address, size);
+        }
+
+        public KernelResult UnmapSharedMemory32([R(0)] int handle, [R(1)] uint address, [R(2)] uint size)
         {
             return UnmapSharedMemory(handle, address, size);
         }

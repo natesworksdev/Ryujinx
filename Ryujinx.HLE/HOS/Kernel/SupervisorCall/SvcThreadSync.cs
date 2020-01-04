@@ -76,6 +76,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
 
+        public KernelResult ArbitrateLock32([R(0)] int ownerHandle, [R(1)] ulong mutexAddress, [R(2)] int requesterHandle)
+        {
+            return ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
+        }
+
         private KernelResult ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
         {
             if (IsPointingInsideKernel(mutexAddress))
@@ -94,6 +99,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult ArbitrateUnlock64(ulong mutexAddress)
+        {
+            return ArbitrateUnlock(mutexAddress);
+        }
+
+        public KernelResult ArbitrateUnlock32([R(0)] uint mutexAddress)
         {
             return ArbitrateUnlock(mutexAddress);
         }
@@ -121,6 +131,17 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             int   handle,
             long  timeout)
         {
+            return WaitProcessWideKeyAtomic(mutexAddress, condVarAddress, handle, timeout);
+        }
+
+        public KernelResult WaitProcessWideKeyAtomic32(
+            [R(0)] uint mutexAddress,
+            [R(1)] uint condVarAddress,
+            [R(2)] int handle,
+            [R(3)] uint timeoutLow,
+            [R(4)] uint timeoutHigh)
+        {
+            long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
             return WaitProcessWideKeyAtomic(mutexAddress, condVarAddress, handle, timeout);
         }
 
