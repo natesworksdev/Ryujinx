@@ -11,6 +11,17 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return SetHeapSize(size, out position);
         }
 
+        public KernelResult SetHeapSize32([R(1)] uint size, [R(1)] out uint position)
+        {
+            ulong temporaryPosition;
+
+            KernelResult result = SetHeapSize(size, out temporaryPosition);
+
+            position = (uint)temporaryPosition;
+
+            return result;
+        }
+
         private KernelResult SetHeapSize(ulong size, out ulong position)
         {
             if ((size & 0xfffffffe001fffff) != 0)
@@ -28,6 +39,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             ulong           size,
             MemoryAttribute attributeMask,
             MemoryAttribute attributeValue)
+        {
+            return SetMemoryAttribute(position, size, attributeMask, attributeValue);
+        }
+
+        public KernelResult SetMemoryAttribute32(
+            [R(0)] uint            position,
+            [R(1)] uint            size,
+            [R(2)] MemoryAttribute attributeMask,
+            [R(3)] MemoryAttribute attributeValue)
         {
             return SetMemoryAttribute(position, size, attributeMask, attributeValue);
         }
@@ -66,6 +86,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult MapMemory64(ulong dst, ulong src, ulong size)
+        {
+            return MapMemory(dst, src, size);
+        }
+
+        public KernelResult MapMemory32([R(0)] uint dst, [R(1)] uint src, [R(2)] uint size)
         {
             return MapMemory(dst, src, size);
         }
@@ -109,6 +134,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return UnmapMemory(dst, src, size);
         }
 
+        public KernelResult UnmapMemory32([R(0)] uint dst, [R(1)] uint src, [R(2)] uint size)
+        {
+            return UnmapMemory(dst, src, size);
+        }
+
         private KernelResult UnmapMemory(ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(src | dst))
@@ -148,8 +178,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return QueryMemory(infoPtr, position);
         }
 
-        public KernelResult QueryMemory32(uint infoPtr, uint x1, uint position)
+        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint position)
         {
+            // FIXME: Nintendo here bzero the pointer info structure and then copy every element one by one if QueryMemory succeed.
             return QueryMemory(infoPtr, position);
         }
 
@@ -270,6 +301,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             ulong            size,
             MemoryPermission permission,
             out int          handle)
+        {
+            return CreateTransferMemory(address, size, permission, out handle);
+        }
+
+        public KernelResult CreateTransferMemory32(
+            [R(1)] uint             address,
+            [R(2)] uint             size,
+            [R(3)] MemoryPermission permission,
+            [R(1)] out int          handle)
         {
             return CreateTransferMemory(address, size, permission, out handle);
         }

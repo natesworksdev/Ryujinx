@@ -17,6 +17,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             ExitProcess();
         }
 
+        public void ExitProcess32()
+        {
+            ExitProcess();
+        }
+
         public KernelResult TerminateProcess64(int handle)
         {
             return TerminateProcess(handle);
@@ -105,6 +110,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult CloseHandle64(int handle)
+        {
+            return CloseHandle(handle);
+        }
+
+        public KernelResult CloseHandle32([R(0)] int handle)
         {
             return CloseHandle(handle);
         }
@@ -208,6 +218,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             Break(reason);
         }
 
+        public void Break32([R(0)] uint reason, [R(1)] uint r1, [R(2)] uint info)
+        {
+            Break(reason);
+        }
+
         private void Break(ulong reason)
         {
             KThread currentThread = _system.Scheduler.GetCurrentThread();
@@ -240,7 +255,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             OutputDebugString(strPtr, size);
         }
 
-        public void OutputDebugString32(uint strPtr, uint size)
+        public void OutputDebugString32([R(0)] uint strPtr, [R(1)] uint size)
         {
             OutputDebugString(strPtr, size);
         }
@@ -257,12 +272,22 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return GetInfo(id, handle, subId, out value);
         }
 
-        public KernelResult GetInfo32(uint subIdLo, uint id, int handle, uint subIdHi, out uint valueLo, out uint valueHi)
+        public KernelResult GetInfo32(
+            [R(0)] uint subIdLow,
+            [R(1)] uint id,
+            [R(2)] int handle,
+            [R(3)] uint subIdHigh,
+            [R(1)] out uint valueLow,
+            [R(2)] out uint valueHigh)
         {
             long value;
-            KernelResult result = GetInfo(id, handle, subIdHi | ((long)subIdLo << 32), out value);
-            valueLo = (uint)(value >> 32);
-            valueHi = (uint)value;
+
+            long subId = (long)(subIdLow | ((ulong)subIdHigh << 32));
+
+            KernelResult result = GetInfo(id, handle, subId, out value);
+            valueHigh = (uint)(value >> 32);
+            valueLow  = (uint)(value & 0xFFFFFFFF);
+
             return result;
         }
 

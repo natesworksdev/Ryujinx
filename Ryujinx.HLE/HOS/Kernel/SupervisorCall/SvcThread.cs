@@ -20,13 +20,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult CreateThread32(
-            ulong   entrypoint,
-            ulong   argsPtr,
-            ulong   stackTop,
-            int     cpuCore,
-            int     priority,
-            
-            out int handle)
+            [R(1)] uint    entrypoint,
+            [R(2)] uint    argsPtr,
+            [R(3)] uint    stackTop,
+            [R(0)] int     priority,
+            [R(4)] int     cpuCore,
+
+            [R(1)] out int handle)
         {
             return CreateThread(entrypoint, argsPtr, stackTop, priority, cpuCore, out handle);
         }
@@ -95,6 +95,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return StartThread(handle);
         }
 
+        public KernelResult StartThread32([R(0)] int handle)
+        {
+            return StartThread(handle);
+        }
+
         private KernelResult StartThread(int handle)
         {
             KThread thread = _process.HandleTable.GetKThread(handle);
@@ -125,6 +130,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             ExitThread();
         }
 
+        public void ExitThread32()
+        {
+            ExitThread();
+        }
+
         private void ExitThread()
         {
             KThread currentThread = _system.Scheduler.GetCurrentThread();
@@ -136,6 +146,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public void SleepThread64(long timeout)
         {
+            SleepThread(timeout);
+        }
+
+        public void SleepThread32([R(0)] uint timeoutLow, [R(1)] uint timeoutHigh)
+        {
+            long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
+
             SleepThread(timeout);
         }
 
@@ -163,6 +180,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return GetThreadPriority(handle, out priority);
         }
 
+        public KernelResult GetThreadPriority32([R(1)] int handle, [R(1)] out int priority)
+        {
+            return GetThreadPriority(handle, out priority);
+        }
+
         private KernelResult GetThreadPriority(int handle, out int priority)
         {
             KThread thread = _process.HandleTable.GetKThread(handle);
@@ -182,6 +204,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult SetThreadPriority64(int handle, int priority)
+        {
+            return SetThreadPriority(handle, priority);
+        }
+
+        public KernelResult SetThreadPriority32([R(0)] int handle, [R(1)] int priority)
         {
             return SetThreadPriority(handle, priority);
         }
@@ -229,6 +256,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult SetThreadCoreMask64(int handle, int preferredCore, long affinityMask)
         {
+            return SetThreadCoreMask(handle, preferredCore, affinityMask);
+        }
+
+        public KernelResult SetThreadCoreMask32([R(0)] int handle, [R(1)] int preferredCore, [R(2)] uint affinityMaskLow, [R(3)] uint affinityMaskHigh)
+        {
+            long affinityMask = (long)(affinityMaskLow | ((ulong)affinityMaskHigh << 32));
+
             return SetThreadCoreMask(handle, preferredCore, affinityMask);
         }
 
@@ -283,9 +317,26 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _system.Scheduler.GetCurrentThread().CurrentCore;
         }
 
+        public int GetCurrentProcessorNumber32()
+        {
+            return _system.Scheduler.GetCurrentThread().CurrentCore;
+        }
+
         public KernelResult GetThreadId64(int handle, out long threadUid)
         {
             return GetThreadId(handle, out threadUid);
+        }
+
+        public KernelResult GetThreadId32([R(1)] int handle, [R(1)] out uint threadUidLow, [R(2)] out uint threadUidHigh)
+        {
+            long threadUid;
+
+            KernelResult result = GetThreadId(handle, out threadUid);
+
+            threadUidLow  = (uint)(threadUid >> 32);
+            threadUidHigh = (uint)(threadUid & 0xFFFFFFFF);
+
+            return result;
         }
 
         private KernelResult GetThreadId(int handle, out long threadUid)

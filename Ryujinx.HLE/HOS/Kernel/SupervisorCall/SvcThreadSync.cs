@@ -12,6 +12,18 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return WaitSynchronization(handlesPtr, handlesCount, timeout, out handleIndex);
         }
 
+        public KernelResult WaitSynchronization32(
+            [R(0)] uint timeoutLow,
+            [R(1)] uint handlesPtr,
+            [R(2)] int handlesCount,
+            [R(3)] uint timeoutHigh,
+            [R(1)] out int handleIndex)
+        {
+            long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
+
+            return WaitSynchronization(handlesPtr, handlesCount, timeout, out handleIndex);
+        }
+
         private KernelResult WaitSynchronization(ulong handlesPtr, int handlesCount, long timeout, out int handleIndex)
         {
             handleIndex = 0;
@@ -138,6 +150,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult SignalProcessWideKey64(ulong address, int count)
+        {
+            return SignalProcessWideKey(address, count);
+        }
+
+        public KernelResult SignalProcessWideKey32([R(0)] uint address, [R(1)] int count)
         {
             return SignalProcessWideKey(address, count);
         }

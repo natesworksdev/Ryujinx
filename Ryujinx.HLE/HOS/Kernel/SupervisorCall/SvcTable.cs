@@ -3,6 +3,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -11,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     static class SvcTable
     {
-        private const int SvcFuncMaxArguments = 8;
+        private const int SvcFuncMaxArguments64 = 8;
         private const int SvcFuncMaxArguments32 = 4;
 
         private static Dictionary<int, string> _svcFuncs64;
@@ -84,10 +85,30 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             _svcFuncs32 = new Dictionary<int, string>
             {
+                { 0x01, nameof(SvcHandler.SetHeapSize32)                   },
+                { 0x03, nameof(SvcHandler.SetMemoryAttribute32)            },
+                { 0x04, nameof(SvcHandler.MapMemory32)                     },
+                { 0x05, nameof(SvcHandler.UnmapMemory32)                   },
                 { 0x06, nameof(SvcHandler.QueryMemory32)                   },
+                { 0x07, nameof(SvcHandler.ExitProcess32)                   },
                 { 0x08, nameof(SvcHandler.CreateThread32)                  },
+                { 0x09, nameof(SvcHandler.StartThread32)                   },
+                { 0x0a, nameof(SvcHandler.ExitThread32)                    },
+                { 0x0b, nameof(SvcHandler.SleepThread32)                   },
+                { 0x0c, nameof(SvcHandler.GetThreadPriority32)             },
+                { 0x0d, nameof(SvcHandler.SetThreadPriority32)             },
+                { 0x0f, nameof(SvcHandler.SetThreadCoreMask32)             },
+                { 0x10, nameof(SvcHandler.GetCurrentProcessorNumber32)     },
+                { 0x15, nameof(SvcHandler.CreateTransferMemory32)          },
+                { 0x16, nameof(SvcHandler.CloseHandle32)                   },
+                { 0x18, nameof(SvcHandler.WaitSynchronization32)           },
+                { 0x1d, nameof(SvcHandler.SignalProcessWideKey32)          },
+                { 0x1f, nameof(SvcHandler.ConnectToNamedPort32)            },
+                { 0x21, nameof(SvcHandler.SendSyncRequest32)               },
+                { 0x25, nameof(SvcHandler.GetThreadId32)                   },
+                { 0x26, nameof(SvcHandler.Break32)                         },
                 { 0x27, nameof(SvcHandler.OutputDebugString32)             },
-                { 0x29, nameof(SvcHandler.GetInfo64)                       }
+                { 0x29, nameof(SvcHandler.GetInfo32)                       }
             };
 
             _svcTable64 = new Action<SvcHandler, ExecutionContext>[0x80];
@@ -106,19 +127,32 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             if (funcTable.TryGetValue(svcId, out string svcName))
             {
                 if (svcId == 0x08) { }
-                return table[svcId] = GenerateMethod(svcName, aarch32);
+
+                Action<SvcHandler, ExecutionContext> svcFunc;
+
+                if (aarch32)
+                {
+                    svcFunc = GenerateMethod32(svcName);
+                }
+                else
+                {
+                    svcFunc = GenerateMethod64(svcName);
+                }
+                table[svcId] = svcFunc;
+
+                return table[svcId] = svcFunc;
             }
 
             if (aarch32 && _svcFuncs64.TryGetValue(svcId, out string svcName64))
             {
                 Logger.PrintWarning(LogClass.KernelSvc, $"Svc \"{svcName64}\" ({svcId}) does not have a 32-bit call signature defined - fell back to 64-bit.");
-                return table[svcId] = GenerateMethod(svcName64, aarch32);
+                throw new NotImplementedException($"Svc \"{svcName64}\" ({svcId}) does not have a 32-bit call signature defined.");
             }
 
             return null;
         }
 
-        private static Action<SvcHandler, ExecutionContext> GenerateMethod(string svcName, bool aarch32)
+        private static Action<SvcHandler, ExecutionContext> GenerateMethod64(string svcName)
         {
             Type[] argTypes = new Type[] { typeof(SvcHandler), typeof(ExecutionContext) };
 
@@ -128,12 +162,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             ParameterInfo[] methodArgs = methodInfo.GetParameters();
 
-            int maxArgs = aarch32 ? SvcFuncMaxArguments32 : SvcFuncMaxArguments;
-            int numArgs = methodArgs.Count(x => !x.IsOut);
-
-            if (numArgs > maxArgs)
+            if (methodArgs.Length > SvcFuncMaxArguments64)
             {
-                //throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is {maxArgs}.");
+                throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is {SvcFuncMaxArguments64}.");
             }
 
             ILGenerator generator = method.GetILGenerator();
@@ -212,8 +243,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     generator.Emit(OpCodes.Ldc_I4, index);
 
                     generator.Emit(OpCodes.Ldarg_1);
-                    int argIndex = (aarch32 && index >= maxArgs) ? index - maxArgs : byRefArgsCount + index;
-                    generator.Emit(OpCodes.Ldc_I4, argIndex);
+                    generator.Emit(OpCodes.Ldc_I4, byRefArgsCount + index);
 
                     MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
@@ -275,8 +305,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 else
                 {
                     generator.Emit(OpCodes.Ldarg_1);
-                    int argIndex = (aarch32 && index >= maxArgs) ? index - maxArgs : byRefArgsCount + index;
-                    generator.Emit(OpCodes.Ldc_I4, argIndex);
+                    generator.Emit(OpCodes.Ldc_I4, byRefArgsCount + index);
 
                     MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
@@ -335,10 +364,277 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             // Zero out the remaining unused registers.
-            while (outRegIndex < maxArgs)
+            while (outRegIndex < SvcFuncMaxArguments64)
             {
                 generator.Emit(OpCodes.Ldarg_1);
                 generator.Emit(OpCodes.Ldc_I4, outRegIndex++);
+                generator.Emit(OpCodes.Ldc_I8, 0L);
+
+                MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
+
+                generator.Emit(OpCodes.Call, info);
+            }
+
+            generator.Emit(OpCodes.Ret);
+
+            return (Action<SvcHandler, ExecutionContext>)method.CreateDelegate(typeof(Action<SvcHandler, ExecutionContext>));
+        }
+
+        // TODO: merge 64 bits variant
+        private static Action<SvcHandler, ExecutionContext> GenerateMethod32(string svcName)
+        {
+            Type[] argTypes = new Type[] { typeof(SvcHandler), typeof(ExecutionContext) };
+
+            DynamicMethod method = new DynamicMethod(svcName, null, argTypes);
+
+            MethodInfo methodInfo = typeof(SvcHandler).GetMethod(svcName);
+
+            ParameterInfo[] methodArgs = methodInfo.GetParameters();
+            int numArgs = methodArgs.Count(x => !x.IsOut);
+
+            ILGenerator generator = method.GetILGenerator();
+
+            void ConvertToArgType(Type sourceType)
+            {
+                CheckIfTypeIsSupported(sourceType, svcName);
+
+                switch (Type.GetTypeCode(sourceType))
+                {
+                    case TypeCode.UInt32: generator.Emit(OpCodes.Conv_U4); break;
+                    case TypeCode.Int32:  generator.Emit(OpCodes.Conv_I4); break;
+                    case TypeCode.UInt16: generator.Emit(OpCodes.Conv_U2); break;
+                    case TypeCode.Int16:  generator.Emit(OpCodes.Conv_I2); break;
+                    case TypeCode.Byte:   generator.Emit(OpCodes.Conv_U1); break;
+                    case TypeCode.SByte:  generator.Emit(OpCodes.Conv_I1); break;
+
+                    case TypeCode.Boolean:
+                        generator.Emit(OpCodes.Conv_I4);
+                        generator.Emit(OpCodes.Ldc_I4_1);
+                        generator.Emit(OpCodes.And);
+                        break;
+                }
+            }
+
+            void ConvertToFieldType(Type sourceType)
+            {
+                CheckIfTypeIsSupported(sourceType, svcName);
+
+                switch (Type.GetTypeCode(sourceType))
+                {
+                    case TypeCode.UInt32:
+                    case TypeCode.Int32:
+                    case TypeCode.UInt16:
+                    case TypeCode.Int16:
+                    case TypeCode.Byte:
+                    case TypeCode.SByte:
+                    case TypeCode.Boolean:
+                        generator.Emit(OpCodes.Conv_U8);
+                        break;
+                }
+            }
+
+            RAttribute GetRegisterAttribute(ParameterInfo parameterInfo)
+            {
+                RAttribute argumentAttribute = (RAttribute)parameterInfo.GetCustomAttribute(typeof(RAttribute));
+
+                if (argumentAttribute == null)
+                {
+                    throw new InvalidOperationException($"Method \"{svcName}\" is missing a {typeof(RAttribute).Name} attribute on parameter \"{parameterInfo.Name}\"");
+                }
+
+                return argumentAttribute;
+            }
+
+            // For functions returning output values, the first registers
+            // are used to hold pointers where the value will be stored,
+            // so they can't be used to pass argument and we must
+            // skip them.
+            int byRefArgsCount = 0;
+
+            for (int index = 0; index < methodArgs.Length; index++)
+            {
+                if (methodArgs[index].ParameterType.IsByRef)
+                {
+                    byRefArgsCount++;
+                }
+            }
+
+            BindingFlags staticNonPublic = BindingFlags.NonPublic | BindingFlags.Static;
+
+            // Print all the arguments for debugging purposes.
+            int inputArgsCount = methodArgs.Length - byRefArgsCount;
+
+            if (inputArgsCount != 0)
+            {
+                generator.Emit(OpCodes.Ldc_I4, inputArgsCount);
+
+                generator.Emit(OpCodes.Newarr, typeof(object));
+
+                string argsFormat = svcName;
+
+                for (int index = 0; index < methodArgs.Length; index++)
+                {
+                    Type argType = methodArgs[index].ParameterType;
+
+                    // Ignore out argument for printing
+                    if (argType.IsByRef)
+                    {
+                        continue;
+                    }
+
+                    RAttribute registerAttribute = GetRegisterAttribute(methodArgs[index]);
+
+                    argsFormat += $" {methodArgs[index].Name}: 0x{{{index}:X8}},";
+
+                    generator.Emit(OpCodes.Dup);
+                    generator.Emit(OpCodes.Ldc_I4, index);
+
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
+
+                    MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
+
+                    generator.Emit(OpCodes.Call, info);
+
+                    generator.Emit(OpCodes.Box, typeof(ulong));
+
+                    generator.Emit(OpCodes.Stelem_Ref);
+                }
+
+                argsFormat = argsFormat.Substring(0, argsFormat.Length - 1);
+
+               generator.Emit(OpCodes.Ldstr, argsFormat);
+            }
+            else
+            {
+                generator.Emit(OpCodes.Ldnull);
+
+                generator.Emit(OpCodes.Ldstr, svcName);
+            }
+
+            MethodInfo printArgsMethod = typeof(SvcTable).GetMethod(nameof(PrintArguments), staticNonPublic);
+
+            generator.Emit(OpCodes.Call, printArgsMethod);
+
+            // Call the SVC function handler.
+            generator.Emit(OpCodes.Ldarg_0);
+
+            List<(LocalBuilder, RAttribute)> locals = new List<(LocalBuilder, RAttribute)>();
+
+            for (int index = 0; index < methodArgs.Length; index++)
+            {
+                Type argType = methodArgs[index].ParameterType;
+                RAttribute registerAttribute = GetRegisterAttribute(methodArgs[index]);
+
+                if (argType.IsByRef)
+                {
+                    argType = argType.GetElementType();
+
+                    LocalBuilder local = generator.DeclareLocal(argType);
+
+                    locals.Add((local, registerAttribute));
+
+                    if (!methodArgs[index].IsOut)
+                    {
+                        generator.Emit(OpCodes.Ldarg_1);
+                        generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
+
+                        MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
+
+                        generator.Emit(OpCodes.Call, info);
+
+                        ConvertToArgType(argType);
+
+                        generator.Emit(OpCodes.Stloc, local);
+                    }
+
+                    generator.Emit(OpCodes.Ldloca, local);
+                }
+                else
+                {
+                    generator.Emit(OpCodes.Ldarg_1);
+                    generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
+
+                    MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
+
+                    generator.Emit(OpCodes.Call, info);
+
+                    ConvertToArgType(argType);
+                }
+            }
+
+            generator.Emit(OpCodes.Call, methodInfo);
+
+            int outRegIndex = 0;
+
+            Type retType = methodInfo.ReturnType;
+
+            // Print result code.
+            if (retType == typeof(KernelResult))
+            {
+                MethodInfo printResultMethod = typeof(SvcTable).GetMethod(nameof(PrintResult), staticNonPublic);
+
+                generator.Emit(OpCodes.Dup);
+                generator.Emit(OpCodes.Ldstr, svcName);
+                generator.Emit(OpCodes.Call, printResultMethod);
+            }
+
+            // Save return value into register X0 (when the method has a return value).
+            if (retType != typeof(void))
+            {
+                CheckIfTypeIsSupported(retType, svcName);
+
+                LocalBuilder tempLocal = generator.DeclareLocal(retType);
+
+                generator.Emit(OpCodes.Stloc, tempLocal);
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldc_I4, outRegIndex++);
+                generator.Emit(OpCodes.Ldloc, tempLocal);
+
+                ConvertToFieldType(retType);
+
+                MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
+
+                generator.Emit(OpCodes.Call, info);
+            }
+
+            for (int index = 0; index < locals.Count; index++)
+            {
+                (LocalBuilder local, RAttribute attribute) = locals[index];
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldc_I4, attribute.Index);
+                generator.Emit(OpCodes.Ldloc, local);
+
+                ConvertToFieldType(local.LocalType);
+
+                MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
+
+                generator.Emit(OpCodes.Call, info);
+            }
+
+            bool IsRegisterInUse(int registerIndex)
+            {
+                for (int index = 0; index < locals.Count; index++)
+                {
+                    if (registerIndex == locals[index].Item2.Index)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            // Zero out the remaining unused registers.
+            for (int i = 0; i < SvcFuncMaxArguments32; i++)
+            {
+                if (IsRegisterInUse(i))
+                {
+                    continue;
+                }
+
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldc_I4, i);
                 generator.Emit(OpCodes.Ldc_I8, 0L);
 
                 MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));

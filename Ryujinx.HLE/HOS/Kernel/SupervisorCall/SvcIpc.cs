@@ -35,6 +35,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return ConnectToNamedPort(namePtr, out handle);
         }
 
+        public KernelResult ConnectToNamedPort32([R(1)] uint namePtr, [R(1)] out int handle)
+        {
+            return ConnectToNamedPort(namePtr, out handle);
+        }
+
         private KernelResult ConnectToNamedPort(ulong namePtr, out int handle)
         {
             handle = 0;
@@ -82,6 +87,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult SendSyncRequest64(int handle)
+        {
+            return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
+        }
+
+        public KernelResult SendSyncRequest32([R(0)] int handle)
         {
             return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
         }
