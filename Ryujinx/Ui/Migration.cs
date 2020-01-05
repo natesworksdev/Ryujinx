@@ -95,7 +95,7 @@ namespace Ryujinx.Ui
         {
             Directory.CreateDirectory(newPath);
 
-            CopyExcept(oldPath, newPath, "nand", "sdmc");
+            CopyExcept(oldPath, newPath, "nand", "bis", "sdmc", "sdcard");
 
             string oldNandPath = Path.Combine(oldPath, "nand");
             string newNandPath = Path.Combine(newPath, "bis");
