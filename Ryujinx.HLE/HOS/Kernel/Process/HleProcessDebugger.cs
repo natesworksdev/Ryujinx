@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 while (framePointer != 0)
                 {
-                    if ((framePointer & 7) != 0 ||
+                    if ((framePointer & 3) != 0 ||
                         !_owner.CpuMemory.IsMapped(framePointer) ||
                         !_owner.CpuMemory.IsMapped(framePointer + 4))
                     {
@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 while (framePointer != 0)
                 {
-                    if ((framePointer & 15) != 0 ||
+                    if ((framePointer & 7) != 0 ||
                         !_owner.CpuMemory.IsMapped(framePointer) ||
                         !_owner.CpuMemory.IsMapped(framePointer + 8))
                     {
