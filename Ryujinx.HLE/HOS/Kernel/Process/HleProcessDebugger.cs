@@ -311,7 +311,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             while ((ulong)symTblAddr < (ulong)strTblAddr)
             {
-                ElfSymbol sym = GetSymbol(memory, symTblAddr, strTblAddr);
+                ElfSymbol sym = isAArch32 ? GetSymbol32(memory, symTblAddr, strTblAddr) : GetSymbol64(memory, symTblAddr, strTblAddr);
 
                 symbols.Add(sym);
 
@@ -324,7 +324,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private ElfSymbol GetSymbol(MemoryManager memory, long address, long strTblAddr)
+        private ElfSymbol GetSymbol64(MemoryManager memory, long address, long strTblAddr)
         {
             int  nameIndex = memory.ReadInt32(address + 0);
             int  info      = memory.ReadByte (address + 4);
@@ -332,6 +332,25 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             int  shIdx     = memory.ReadInt16(address + 6);
             long value     = memory.ReadInt64(address + 8);
             long size      = memory.ReadInt64(address + 16);
+
+            string name = string.Empty;
+
+            for (int chr; (chr = memory.ReadByte(strTblAddr + nameIndex++)) != 0;)
+            {
+                name += (char)chr;
+            }
+
+            return new ElfSymbol(name, info, other, shIdx, value, size);
+        }
+
+        private ElfSymbol GetSymbol32(MemoryManager memory, long address, long strTblAddr)
+        {
+            int  nameIndex = memory.ReadInt32(address + 0);
+            int  info      = memory.ReadByte (address + 4);
+            int  other     = memory.ReadByte (address + 5);
+            int  shIdx     = memory.ReadByte (address + 12);
+            long value     = memory.ReadByte (address + 13);
+            long size      = memory.ReadInt16(address + 14);
 
             string name = string.Empty;
 
