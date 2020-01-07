@@ -1,9 +1,12 @@
 using ARMeilleure.Memory;
+using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Elf;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
 
@@ -87,9 +90,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         break;
                     }
 
-                    // Note: This is the return address, we need to subtract one instruction
-                    // worth of bytes to get the branch instruction address.
-                    AppendTrace(_owner.CpuMemory.ReadInt32(framePointer + 4) - 4);
+                    AppendTrace(_owner.CpuMemory.ReadInt32(framePointer + 4));
 
                     framePointer = _owner.CpuMemory.ReadInt32(framePointer);
                 }
@@ -107,9 +108,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                         break;
                     }
 
-                    // Note: This is the return address, we need to subtract one instruction
-                    // worth of bytes to get the branch instruction address.
-                    AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8) - 4);
+                    AppendTrace(_owner.CpuMemory.ReadInt64(framePointer + 8));
 
                     framePointer = _owner.CpuMemory.ReadInt64(framePointer);
                 }
@@ -133,9 +132,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 ElfSymbol symbol = image.Symbols[middle];
 
-                long endAddr = symbol.Value + symbol.Size;
+                ulong endAddr = symbol.Value + symbol.Size;
 
-                if ((ulong)address >= (ulong)symbol.Value && (ulong)address < (ulong)endAddr)
+                if ((ulong)address >= symbol.Value && (ulong)address < endAddr)
                 {
                     name = symbol.Name;
 
@@ -326,40 +325,40 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private ElfSymbol GetSymbol64(MemoryManager memory, long address, long strTblAddr)
         {
-            int  nameIndex = memory.ReadInt32(address + 0);
-            int  info      = memory.ReadByte (address + 4);
-            int  other     = memory.ReadByte (address + 5);
-            int  shIdx     = memory.ReadInt16(address + 6);
-            long value     = memory.ReadInt64(address + 8);
-            long size      = memory.ReadInt64(address + 16);
-
-            string name = string.Empty;
-
-            for (int chr; (chr = memory.ReadByte(strTblAddr + nameIndex++)) != 0;)
+            using (BinaryReader inputStream = new BinaryReader(new MemoryStream(memory.ReadBytes(address, Unsafe.SizeOf<ElfSymbol64>()))))
             {
-                name += (char)chr;
-            }
+                ElfSymbol64 sym = inputStream.ReadStruct<ElfSymbol64>();
 
-            return new ElfSymbol(name, info, other, shIdx, value, size);
+                uint nameIndex = sym.NameOffset;
+
+                string name = string.Empty;
+
+                for (int chr; (chr = memory.ReadByte(strTblAddr + nameIndex++)) != 0;)
+                {
+                    name += (char)chr;
+                }
+
+                return new ElfSymbol(name, sym.Info, sym.Other, sym.SectionIndex, sym.ValueAddress, sym.Size);
+            }
         }
 
         private ElfSymbol GetSymbol32(MemoryManager memory, long address, long strTblAddr)
         {
-            int  nameIndex = memory.ReadInt32(address + 0);
-            int  info      = memory.ReadByte (address + 4);
-            int  other     = memory.ReadByte (address + 5);
-            int  shIdx     = memory.ReadByte (address + 12);
-            long value     = memory.ReadByte (address + 13);
-            long size      = memory.ReadInt16(address + 14);
-
-            string name = string.Empty;
-
-            for (int chr; (chr = memory.ReadByte(strTblAddr + nameIndex++)) != 0;)
+            using (BinaryReader inputStream = new BinaryReader(new MemoryStream(memory.ReadBytes(address, Unsafe.SizeOf<ElfSymbol32>()))))
             {
-                name += (char)chr;
-            }
+                ElfSymbol32 sym = inputStream.ReadStruct<ElfSymbol32>();
 
-            return new ElfSymbol(name, info, other, shIdx, value, size);
+                uint nameIndex = sym.NameOffset;
+
+                string name = string.Empty;
+
+                for (int chr; (chr = memory.ReadByte(strTblAddr + nameIndex++)) != 0;)
+                {
+                    name += (char)chr;
+                }
+
+                return new ElfSymbol(name, sym.Info, sym.Other, sym.SectionIndex, sym.ValueAddress, sym.Size);
+            }
         }
     }
 }
