@@ -12,19 +12,28 @@ namespace ARMeilleure.Decoders
         public int Elems { get; private set; }
         public OpCode32SimdImm44(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            Vd = (opCode >> 12) & 0xf;
-            Vd |= (opCode >> 18) & 0x10;
+            Size = (opCode >> 8) & 0x3;
 
-            Size = ((opCode >> 8) & 0x3) + 1;
+            var single = Size != 3;
+            
+            if (single)
+            {
+                Vd = ((opCode >> 22) & 0x1) | ((opCode >> 11) & 0x1e);
+            }
+            else
+            {
+                Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
+            }
 
             long imm;
 
             imm = ((uint)opCode >> 0) & 0xf;
             imm |= ((uint)opCode >> 12) & 0xf0;
 
-            Immediate = OpCodeSimdHelper.VFPExpandImm(imm, 8 << (Size));
+            //OpCodeSimdHelper.VFPExpandImm(imm, 8 << (Size + 1));
+            Immediate = (Size == 3) ? (long)DecoderHelper.Imm8ToFP64Table[(int)imm] : DecoderHelper.Imm8ToFP32Table[(int)imm];
 
-            RegisterSize = (Size == 3) ? RegisterSize.Simd64 : RegisterSize.Simd32;
+            RegisterSize = (!single) ? RegisterSize.Simd64 : RegisterSize.Simd32;
             Elems = 1;
         }
     }

@@ -23,7 +23,7 @@ namespace ARMeilleure.Decoders
             Opc1 = ((opCode >> 21) & 0x3);
             Opc2 = ((opCode >> 5) & 0x3);
 
-            Vn = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);
+            Vn = ((opCode >> 7) & 0x1) | ((opCode >> 15) & 0x1e);
             Rt = (opCode >> 12) & 0xf;
         }
     }

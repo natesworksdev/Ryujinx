@@ -64,16 +64,29 @@ namespace ARMeilleure.Instructions
                 {
                     //write an element from a double simd register
                     Operand address = context.Add(n, Const(offset));
-                    int index = ((d & 1) << (3 - op.Size)) + op.Index;
-                    if (load)
+                    if (eBytes == 8)
                     {
-                        EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
+                        if (load)
+                        {
+                            EmitDVectorLoad(context, address, d);
+                        }
+                        else
+                        {
+                            EmitDVectorStore(context, address, d);
+                        }
                     }
                     else
                     {
-                        EmitStoreSimd(context, address, d >> 1, index, op.Size);
+                        int index = ((d & 1) << (3 - op.Size)) + op.Index;
+                        if (load)
+                        {
+                            EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
+                        }
+                        else
+                        {
+                            EmitStoreSimd(context, address, d >> 1, index, op.Size);
+                        }
                     }
-                    //TODO: big endian at size == 4
                     offset += eBytes;
                     d += op.Increment;
                 }
@@ -111,14 +124,29 @@ namespace ARMeilleure.Instructions
                             // write an element from a double simd register
                             // add ebytes for each element
                             Operand address = context.Add(n, Const(offset));
-                            int index = ((d & 1) << (3 - op.Size)) + elem;
-                            if (load)
+                            int index = ((elemD & 1) << (3 - op.Size)) + elem;
+                            if (eBytes == 8)
                             {
-                                EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
-                            } 
+                                if (load)
+                                {
+                                    EmitDVectorLoad(context, address, elemD);
+                                }
+                                else
+                                {
+                                    EmitDVectorStore(context, address, elemD);
+                                }
+                            }
                             else
                             {
-                                EmitStoreSimd(context, address, d >> 1, index, op.Size);
+                                
+                                if (load)
+                                {
+                                    EmitLoadSimd(context, address, GetVecA32(elemD >> 1), elemD >> 1, index, op.Size);
+                                }
+                                else
+                                {
+                                    EmitStoreSimd(context, address, elemD >> 1, index, op.Size);
+                                }
                             }
 
                             offset += eBytes;
@@ -146,13 +174,11 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdMemMult op = (OpCode32SimdMemMult)context.CurrOp;
 
-            Operand n = GetIntA32(context, op.Rn);
+            Operand n = context.Copy(GetIntA32(context, op.Rn));
 
             Operand baseAddress = context.Add(n, Const(op.Offset));
 
-            bool writesToPc = (op.RegisterRange & (1 << RegisterAlias.Aarch32Pc)) != 0;
-
-            bool writeBack = op.PostOffset != 0 && (op.Rn != RegisterAlias.Aarch32Pc || !writesToPc);
+            bool writeBack = op.PostOffset != 0;
 
             if (writeBack)
             {
@@ -160,6 +186,7 @@ namespace ARMeilleure.Instructions
             }
 
             int range = op.RegisterRange;
+
             int sReg = (op.DoubleWidth) ? (op.Vd << 1) : op.Vd;
             int offset = 0;
             int size = (op.DoubleWidth) ? DWordSizeLog2 : WordSizeLog2;
@@ -179,7 +206,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdMemMult op = (OpCode32SimdMemMult)context.CurrOp;
 
-            Operand n = GetIntA32(context, op.Rn);
+            Operand n = context.Copy(GetIntA32(context, op.Rn));
 
             Operand baseAddress = context.Add(n, Const(op.Offset));
 
@@ -217,6 +244,52 @@ namespace ARMeilleure.Instructions
             EmitVLoadOrStore(context, AccessType.Store);
         }
 
+        private static void EmitDVectorStore(ArmEmitterContext context, Operand address, int vecD)
+        {
+            int vecQ = vecD >> 1;
+            int vecSElem = (vecD & 1) << 1;
+            Operand lblBigEndian = Label();
+            Operand lblEnd = Label();
+
+            context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
+
+            EmitStoreSimd(context, address, vecQ, vecSElem, WordSizeLog2);
+            EmitStoreSimd(context, context.Add(address, Const(4)), vecQ, vecSElem | 1, WordSizeLog2);
+
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblBigEndian);
+
+            EmitStoreSimd(context, address, vecQ, vecSElem | 1, WordSizeLog2);
+            EmitStoreSimd(context, context.Add(address, Const(4)), vecQ, vecSElem, WordSizeLog2);
+
+            context.MarkLabel(lblEnd);
+        }
+
+        private static void EmitDVectorLoad(ArmEmitterContext context, Operand address, int vecD)
+        {
+            int vecQ = vecD >> 1;
+            int vecSElem = (vecD & 1) << 1;
+            Operand vec = GetVecA32(vecQ);
+
+            Operand lblBigEndian = Label();
+            Operand lblEnd = Label();
+
+            context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
+
+            EmitLoadSimd(context, address, vec, vecQ, vecSElem, WordSizeLog2);
+            EmitLoadSimd(context, context.Add(address, Const(4)), vec, vecQ, vecSElem | 1, WordSizeLog2);
+
+            context.Branch(lblEnd);
+
+            context.MarkLabel(lblBigEndian);
+
+            EmitLoadSimd(context, address, vec, vecQ, vecSElem | 1, WordSizeLog2);
+            EmitLoadSimd(context, context.Add(address, Const(4)), vec, vecQ, vecSElem, WordSizeLog2);
+
+            context.MarkLabel(lblEnd);
+        }
+
         private static void EmitVLoadOrStore(ArmEmitterContext context, AccessType accType)
         {
             OpCode32SimdMemImm op = (OpCode32SimdMemImm)context.CurrOp;
@@ -235,26 +308,7 @@ namespace ARMeilleure.Instructions
 
                 if (size == DWordSizeLog2)
                 {
-                    int vecQ = op.Vd >> 1;
-                    int vecSElem = (op.Vd & 1) << 1;
-                    Operand vec = GetVecA32(vecQ);
-
-                    Operand lblBigEndian = Label();
-                    Operand lblEnd = Label();
-
-                    context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
-
-                    EmitLoadSimd(context, address, vec, vecQ, vecSElem, WordSizeLog2);
-                    EmitLoadSimd(context, context.Add(address, Const(4)), vec, vecQ, vecSElem | 1, WordSizeLog2);
-
-                    context.Branch(lblEnd);
-
-                    context.MarkLabel(lblBigEndian);
-
-                    EmitLoadSimd(context, address, vec, vecQ, vecSElem | 1, WordSizeLog2);
-                    EmitLoadSimd(context, context.Add(address, Const(4)), vec, vecQ, vecSElem, WordSizeLog2);
-
-                    context.MarkLabel(lblEnd);
+                    EmitDVectorLoad(context, address, op.Vd);
                 }
                 else
                 {
@@ -266,24 +320,7 @@ namespace ARMeilleure.Instructions
             {
                 if (size == DWordSizeLog2)
                 {
-                    int vecQ = op.Vd >> 1;
-                    int vecSElem = (op.Vd & 1) << 1;
-                    Operand lblBigEndian = Label();
-                    Operand lblEnd = Label();
-
-                    context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
-
-                    EmitStoreSimd(context, address, vecQ, vecSElem, WordSizeLog2);
-                    EmitStoreSimd(context, context.Add(address, Const(4)), vecQ, vecSElem | 1, WordSizeLog2);
-
-                    context.Branch(lblEnd);
-
-                    context.MarkLabel(lblBigEndian);
-
-                    EmitStoreSimd(context, address, vecQ, vecSElem | 1, WordSizeLog2);
-                    EmitStoreSimd(context, context.Add(address, Const(4)), vecQ, vecSElem, WordSizeLog2);
-
-                    context.MarkLabel(lblEnd);
+                    EmitDVectorStore(context, address, op.Vd);
                 }
                 else
                 {

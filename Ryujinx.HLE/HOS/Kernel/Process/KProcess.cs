@@ -795,6 +795,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         {
             context.Interrupt      += InterruptHandler;
             context.SupervisorCall += _svcHandler.SvcCall;
+            context.Break          += (object sender, InstExceptionEventArgs e) => _svcHandler.Break64((ulong)e.Id, 0, 0);
             context.Undefined      += UndefinedInstructionHandler;
         }
 

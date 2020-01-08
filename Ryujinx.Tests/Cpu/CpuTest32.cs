@@ -5,13 +5,14 @@ using NUnit.Framework;
 using Ryujinx.Tests.Unicorn;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
     [TestFixture]
-    class CpuTest32
+    public class CpuTest32
     {
         private uint _currAddress;
         private long _size;
@@ -28,6 +29,8 @@ namespace Ryujinx.Tests.Cpu
 
         private static bool _unicornAvailable;
         private UnicornAArch32 _unicornEmu;
+
+        private bool usingMemory;
 
         static CpuTest32()
         {
@@ -47,9 +50,10 @@ namespace Ryujinx.Tests.Cpu
 
             _entryPoint = _currAddress;
 
-            _ramPointer = Marshal.AllocHGlobal(new IntPtr(_size));
-            _memory = new MemoryManager(_ramPointer);
-            _memory.Map((long)_currAddress, 0, _size);
+            _ramPointer = Marshal.AllocHGlobal(new IntPtr(_size * 2));
+            _memory = new MemoryManager(_ramPointer, addressSpaceBits: 16, useFlatPageTable: true);
+            _memory.Map((long)_currAddress, 0, _size*2);
+            //_memory.Map((long)(_currAddress + _size), _size, _size);
 
             _context = new ExecutionContext();
             _context.IsAarch32 = true;
@@ -60,6 +64,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 _unicornEmu = new UnicornAArch32();
                 _unicornEmu.MemoryMap(_currAddress, (ulong)_size, MemoryPermission.READ | MemoryPermission.EXEC);
+                _unicornEmu.MemoryMap((ulong)(_currAddress + _size), (ulong)_size, MemoryPermission.READ | MemoryPermission.WRITE);
                 _unicornEmu.PC = _entryPoint;
             }
         }
@@ -191,14 +196,31 @@ namespace Ryujinx.Tests.Cpu
                                                 bool carry = false,
                                                 bool zero = false,
                                                 bool negative = false,
-                                                int fpscr = 0)
+                                                int fpscr = 0,
+                                                bool copyFpFlags = false)
         {
             Opcode(opcode);
+            if (copyFpFlags)
+            {
+                Opcode(0xeef1fa10);
+            }
             Opcode(0xe12fff1e); // BX LR
             SetContext(r0, r1, r2, r3, sp, v0, v1, v2, v3, v4, v5, v14, v15, overflow, carry, zero, negative, fpscr);
             ExecuteOpcodes();
 
             return GetContext();
+        }
+
+        protected void SetWorkingMemory(byte[] data)
+        {
+            _memory.WriteBytes(0x2000, data);
+
+            if (_unicornAvailable)
+            {
+                _unicornEmu.MemoryWrite((ulong)(0x2000), data);
+            }
+
+            usingMemory = true; // When true, CompareAgainstUnicorn checks the working memory for equality too.
         }
 
         /// <summary>Rounding Mode control field.</summary>
@@ -247,7 +269,10 @@ namespace Ryujinx.Tests.Cpu
             Idc = 1 << 7,
 
             /// <summary>Cumulative saturation bit.</summary>
-            Qc = 1 << 27
+            Qc = 1 << 27,
+
+            /// <summary>NZCV flags</summary>
+            Nzcv = (1 << 28) | (1 << 29) | (1 << 30) | (1 << 31)
         }
 
         [Flags]
@@ -331,6 +356,16 @@ namespace Ryujinx.Tests.Cpu
             Assert.That(_context.GetPstateFlag(PState.CFlag), Is.EqualTo(_unicornEmu.CarryFlag));
             Assert.That(_context.GetPstateFlag(PState.ZFlag), Is.EqualTo(_unicornEmu.ZeroFlag));
             Assert.That(_context.GetPstateFlag(PState.NFlag), Is.EqualTo(_unicornEmu.NegativeFlag));
+
+            if (usingMemory)
+            {
+                byte[] meilleureMem = _memory.ReadBytes((long)(0x2000), _size);
+                byte[] unicornMem = _unicornEmu.MemoryRead((ulong)(0x2000), (ulong)_size);
+
+                for (int i = 0; i < _size; i++) {
+                    Assert.AreEqual(meilleureMem[i], unicornMem[i]);
+                }
+            }
         }
 
         private void ManageFpSkips(FpSkips fpSkips)

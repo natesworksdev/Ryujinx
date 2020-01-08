@@ -26,7 +26,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitVcmpOrVcmpe(ArmEmitterContext context, bool signalNaNs)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool cmpWithZero = (op.RawOpCode & (1 << 16)) != 0;
             {

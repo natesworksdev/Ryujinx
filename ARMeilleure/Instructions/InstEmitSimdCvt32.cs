@@ -14,6 +14,52 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit32
     {
+        private static int FlipVdBits(int vd, bool lowBit)
+        {
+            if (lowBit)
+            {
+                //move the low bit to the top
+                return ((vd & 0x1) << 4) | (vd >> 1);
+            } 
+            else
+            {
+                //move the high bit to the bottom
+                return ((vd & 0xf) << 1) | (vd >> 4);
+            }
+        }
+
+        public static void Vcvt_FD(ArmEmitterContext context)
+        {
+            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
+
+            int vm = op.Vm;
+            int vd;
+            if (op.Size == 3)
+            {
+                vd = FlipVdBits(op.Vd, true);
+                // double to single
+                Operand fp = ExtractScalar(context, OperandType.FP64, vm);
+
+                Operand res = context.ConvertToFP(OperandType.FP32, fp);
+
+                InsertScalar(context, vd, res);
+
+                //Operand res = context.AddIntrinsic(Intrinsic.X86Cvtsd2ss, context.VectorZero(), n);
+            }
+            else
+            {
+                vd = FlipVdBits(op.Vd, false);
+                // single to double
+                Operand fp = ExtractScalar(context, OperandType.FP32, vm);
+
+                Operand res = context.ConvertToFP(OperandType.FP64, fp);
+
+                InsertScalar(context, vd, res);
+
+                //Operand res = context.AddIntrinsic(Intrinsic.X86Cvtss2sd, context.VectorZero(), n);
+            }
+        }
+
         public static void Vcvt_FI(ArmEmitterContext context)
         {
             OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;

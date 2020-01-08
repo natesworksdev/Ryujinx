@@ -55,7 +55,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public int Fpscr
         {
-            get => (int)GetRegister(Arm32Register.FPSCR);
+            get => (int)GetRegister(Arm32Register.FPSCR) | ((int)GetRegister(Arm32Register.FPSCR_NZCV));
             set => SetRegister(Arm32Register.FPSCR, (uint)value);
         }
 
@@ -87,6 +87,8 @@ namespace Ryujinx.Tests.Unicorn
         {
             Interface.Checked(Interface.uc_open(UnicornArch.UC_ARCH_ARM, UnicornMode.UC_MODE_LITTLE_ENDIAN, out uc));
 
+            SetRegister(Arm32Register.C1_C0_2, GetRegister(Arm32Register.C1_C0_2) | 0xf00000);
+            SetRegister(Arm32Register.FPEXC, 0x40000000);
             //SetRegister(Arm32Register.FPSCR, 0x00300000);
         }
 
@@ -172,7 +174,7 @@ namespace Ryujinx.Tests.Unicorn
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            return GetVector(QRegisters[index]);
+            return GetVector((Arm32Register)((int)Arm32Register.D0 + index * 2)); //QRegisters[index]);
         }
 
         public void SetQ(int index, SimdValue value)
@@ -182,10 +184,10 @@ namespace Ryujinx.Tests.Unicorn
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            SetVector(QRegisters[index], value);
+            SetVector((Arm32Register)((int)Arm32Register.D0 + index * 2), value);
         }
 
-        private uint GetRegister(Arm32Register register)
+        public uint GetRegister(Arm32Register register)
         {
             byte[] data = new byte[4];
 
@@ -194,27 +196,31 @@ namespace Ryujinx.Tests.Unicorn
             return (uint)BitConverter.ToInt32(data, 0);
         }
 
-        private void SetRegister(Arm32Register register, uint value)
+        public void SetRegister(Arm32Register register, uint value)
         {
             byte[] data = BitConverter.GetBytes(value);
 
             Interface.Checked(Interface.uc_reg_write(uc, (int)register, data));
         }
 
-        private SimdValue GetVector(Arm32Register register)
+        public SimdValue GetVector(Arm32Register register)
         {
-            byte[] data = new byte[16];
+            byte[] data = new byte[8];
 
             Interface.Checked(Interface.uc_reg_read(uc, (int)register, data));
+            ulong lo = BitConverter.ToUInt64(data, 0);
+            Interface.Checked(Interface.uc_reg_read(uc, (int)register + 1, data));
+            ulong hi = BitConverter.ToUInt64(data, 0);
 
-            return new SimdValue(data);
+            return new SimdValue(lo, hi);
         }
 
         private void SetVector(Arm32Register register, SimdValue value)
         {
-            byte[] data = value.ToArray();
-
+            byte[] data = BitConverter.GetBytes(value.GetUInt64(0));
             Interface.Checked(Interface.uc_reg_write(uc, (int)register, data));
+            data = BitConverter.GetBytes(value.GetUInt64(1));
+            Interface.Checked(Interface.uc_reg_write(uc, (int)register + 1, data));
         }
 
         public byte[] MemoryRead(ulong address, ulong size)

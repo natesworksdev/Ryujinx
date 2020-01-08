@@ -17,11 +17,11 @@ namespace ARMeilleure.Decoders
         public bool IsLoad { get; private set; }
 
         public bool DoubleWidth { get; private set; }
+        public bool Add { get; private set; }
 
         public OpCode32SimdMemMult(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 16) & 0xf;
-            Vd = (opCode >> 12) & 0xf;
 
             bool isLoad = (opCode & (1 << 20)) != 0;
             bool w = (opCode & (1 << 21)) != 0;
@@ -30,6 +30,17 @@ namespace ARMeilleure.Decoders
 
             DoubleWidth = (opCode & (1 << 8)) != 0;
 
+            if (!DoubleWidth)
+            {
+                Vd = ((opCode >> 22) & 0x1) | ((opCode >> 11) & 0x1e);
+            }
+            else
+            {
+                Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
+            }
+
+            Add = u;
+
             RegisterRange = opCode & 0xff;
 
             int regsSize = RegisterRange * 4; // double mode is still measured in single register size
@@ -37,11 +48,6 @@ namespace ARMeilleure.Decoders
             if (!u)
             {
                 Offset -= regsSize;
-            }
-
-            if (u == p)
-            {
-                Offset += 4;
             }
 
             if (w)

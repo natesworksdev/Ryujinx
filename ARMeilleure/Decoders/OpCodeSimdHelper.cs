@@ -41,14 +41,14 @@ namespace ARMeilleure.Decoders
 
                     case 2:
                         // 2 x 32-bits floating point Immediate.
-                        size = 0 + fpBaseSize;
+                        size = 3;
                         imm = (long)DecoderHelper.Imm8ToFP32Table[(int)imm];
                         imm |= imm << 32;
                         break;
 
                     case 3:
                         // 64-bits floating point Immediate.
-                        size = 1 + fpBaseSize;
+                        size = 3;
                         imm = (long)DecoderHelper.Imm8ToFP64Table[(int)imm];
                         break;
                 }

@@ -74,12 +74,12 @@ namespace ARMeilleure.Instructions
             int elems = op.Elems;
             (int index, int subIndex) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
 
-            Operand vec = GetVec(index);
+            Operand vec = GetVecA32(index);
             Operand res = vec;
 
-            for (int item = 0; item < elems; item++, subIndex++)
+            for (int item = 0; item < elems; item++)
             {
-                res = EmitVectorInsert(context, vec, emit(imm), subIndex, op.Size);
+                res = EmitVectorInsert(context, res, emit(imm), item + subIndex * elems, op.Size);
             }
 
             context.Copy(vec, res);
@@ -153,7 +153,7 @@ namespace ARMeilleure.Instructions
 
             OperandType type = sizeF != 0 ? OperandType.FP64 : OperandType.FP32;
 
-            int elems = op.GetBytesCount() >> sizeF + 2;
+            int elems = op.GetBytesCount() >> (sizeF + 2);
 
             (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
             (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);

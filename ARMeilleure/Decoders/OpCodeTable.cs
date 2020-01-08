@@ -730,8 +730,9 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<11100x11xxxxxxxx10xxx0x0xxxx", InstName.Vadd, InstEmit32.Vadd_S, typeof(OpCode32SimdRegS));
             SetA32("111100100x0xxxxxxxxx1101xxx0xxxx", InstName.Vadd, InstEmit32.Vadd_V, typeof(OpCode32SimdReg));
             SetA32("111100100x0xxxxxxxxx1100xxx0xxxx", InstName.Vadd, InstEmit32.Vadd_I, typeof(OpCode32SimdReg));
-            SetA32("<<<<11101x11010xxxxx10xx01x0xxxx", InstName.Vcmp, InstEmit32.Vcmp,   typeof(OpCode32SimdReg));
-            SetA32("<<<<11101x11010xxxxx10xx11x0xxxx", InstName.Vcmpe,InstEmit32.Vcmpe,  typeof(OpCode32SimdReg));
+            SetA32("<<<<11101x11010xxxxx10xx01x0xxxx", InstName.Vcmp, InstEmit32.Vcmp,   typeof(OpCode32SimdS));
+            SetA32("<<<<11101x11010xxxxx10xx11x0xxxx", InstName.Vcmpe,InstEmit32.Vcmpe,  typeof(OpCode32SimdS));
+            SetA32("<<<<11101x110111xxxx101x11x0xxxx", InstName.Vcvt, InstEmit32.Vcvt_FD, typeof(OpCode32SimdS));
             SetA32("<<<<11101x11110xxxxx10xx11x0xxxx", InstName.Vcvt, InstEmit32.Vcvt_FI, typeof(OpCode32SimdCvtFI));
             SetA32("<<<<11101x111000xxxx10xxx1x0xxxx", InstName.Vcvt, InstEmit32.Vcvt_FI, typeof(OpCode32SimdCvtFI));
             SetA32("<<<<11101x00xxxxxxxx10xxx0x0xxxx", InstName.Vdiv, InstEmit32.Vdiv_S, typeof(OpCode32SimdRegS));
@@ -762,8 +763,14 @@ namespace ARMeilleure.Decoders
             SetA32("111101001x10xxxxxxxx1011xxxxxxxx", InstName.Vld4, InstEmit32.Vld4, typeof(OpCode32SimdMemSingle));
             SetA32("111101000x10xxxxxxxx000xxxxxxxxx", InstName.Vld4, InstEmit32.Vld4, typeof(OpCode32SimdMemPair)); //inc = 1/2 (itype)
 
-            SetA32("<<<<11001x11xxxxxxxx1011xxxxxxx0", InstName.Vldm,  InstEmit32.Vldm,  typeof(OpCode32SimdMemMult));
-            SetA32("<<<<11001x11xxxxxxxx1010xxxxxxxx", InstName.Vldm,  InstEmit32.Vldm,  typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11001x01xxxxxxxx1011xxxxxxx0", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11001x11xxxxxxxx1011xxxxxxx0", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11010x11xxxxxxxx1011xxxxxxx0", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
+
+            SetA32("<<<<11001x01xxxxxxxx1010xxxxxxxx", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11001x11xxxxxxxx1010xxxxxxxx", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11010x11xxxxxxxx1010xxxxxxxx", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
+
             SetA32("<<<<1101xx01xxxxxxxx10xxxxxxxxxx", InstName.Vldr,  InstEmit32.Vldr,  typeof(OpCode32SimdMemImm));
 
             SetA32("<<<<11100x00xxxxxxxx10xxx0x0xxxx", InstName.Vmla, InstEmit32.Vmla_S, typeof(OpCode32SimdRegS));
@@ -820,8 +827,13 @@ namespace ARMeilleure.Decoders
             SetA32("111101001x00xxxxxxxx1011xxxxxxxx", InstName.Vst4, InstEmit32.Vst4, typeof(OpCode32SimdMemSingle));
             SetA32("111101000x00xxxxxxxx000xxxxxxxxx", InstName.Vst4, InstEmit32.Vst4, typeof(OpCode32SimdMemPair)); //inc = 1/2 (itype)
 
-            SetA32("<<<<11010x10xxxxxxxx1011xxxxxxx0", InstName.Vstm,  InstEmit32.Vstm,  typeof(OpCode32SimdMemMult));
-            SetA32("<<<<11010x10xxxxxxxx1010xxxxxxxx", InstName.Vstm,  InstEmit32.Vstm,  typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11001x00xxxxxxxx1011xxxxxxx0", InstName.Vstm, InstEmit32.Vstm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11001x10xxxxxxxx1011xxxxxxx0", InstName.Vstm, InstEmit32.Vstm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11010x10xxxxxxxx1011xxxxxxx0", InstName.Vstm, InstEmit32.Vstm, typeof(OpCode32SimdMemMult));
+
+            SetA32("<<<<11001x00xxxxxxxx1010xxxxxxxx", InstName.Vstm, InstEmit32.Vstm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11001x10xxxxxxxx1010xxxxxxxx", InstName.Vstm, InstEmit32.Vstm, typeof(OpCode32SimdMemMult));
+            SetA32("<<<<11010x10xxxxxxxx1010xxxxxxxx", InstName.Vstm, InstEmit32.Vstm, typeof(OpCode32SimdMemMult));
 
             SetA32("<<<<1101xx00xxxxxxxx10xxxxxxxxxx", InstName.Vstr, InstEmit32.Vstr, typeof(OpCode32SimdMemImm));
             SetA32("<<<<11101x110001xxxx10xx11x0xxxx", InstName.Vsqrt, InstEmit32.Vsqrt_S, typeof(OpCode32SimdS));
