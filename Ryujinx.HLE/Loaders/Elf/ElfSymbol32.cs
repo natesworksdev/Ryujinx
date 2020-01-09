@@ -8,10 +8,5 @@
         public char   Info;
         public char   Other;
         public ushort SectionIndex;
-
-        public string GetName()
-        {
-
-        }
     }
 }
