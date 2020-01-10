@@ -331,7 +331,7 @@ namespace ARMeilleure.Instructions
             SetAluDOrZR(context, d);
         }
 
-        private static Operand EmitReverseBytes16_32Op(ArmEmitterContext context, Operand op)
+        public static Operand EmitReverseBytes16_32Op(ArmEmitterContext context, Operand op)
         {
             Debug.Assert(op.Type == OperandType.I32);
 

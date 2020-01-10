@@ -486,7 +486,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
-            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBits32), m);
+            Operand res = InstEmit.EmitReverseBits32Op(context, m);
 
             bool tbform = op.ShiftType == ShiftType.Asr;
             if (tbform)
@@ -526,7 +526,7 @@ namespace ARMeilleure.Instructions
 
             Operand m = GetAluM(context);
 
-            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBytes16_32), m);
+            Operand res = InstEmit.EmitReverseBytes16_32Op(context, m);
 
             EmitAluStore(context, res);
         }
@@ -537,7 +537,7 @@ namespace ARMeilleure.Instructions
 
             Operand m = GetAluM(context);
 
-            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBytes16_32), m);
+            Operand res = InstEmit.EmitReverseBytes16_32Op(context, m);
 
             EmitAluStore(context, context.SignExtend16(OperandType.I32, res));
         }
