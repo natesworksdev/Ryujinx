@@ -667,7 +667,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             [R(1)] uint sizeLow,
             [R(4)] uint sizeHigh)
         {
-            _process.CpuMemory.WriteBytes(addressLow, new byte[sizeLow]);
+            //_process.CpuMemory.WriteBytes(addressLow, new byte[sizeLow]);
             return KernelResult.Success;
         }
     }

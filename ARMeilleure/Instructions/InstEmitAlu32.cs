@@ -478,12 +478,68 @@ namespace ARMeilleure.Instructions
 
             EmitAluStore(context, res);
         }
+
+        public static void Pkh(ArmEmitterContext context)
+        {
+            OpCode32AluRsImm op = (OpCode32AluRsImm)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+
+            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBits32), m);
+
+            bool tbform = op.ShiftType == ShiftType.Asr;
+            if (tbform)
+            {
+                res = context.BitwiseOr(context.BitwiseAnd(n, Const(0xFFFF0000)), context.BitwiseAnd(m, Const(0xFFFF)));
+            }
+            else
+            {
+                res = context.BitwiseOr(context.BitwiseAnd(m, Const(0xFFFF0000)), context.BitwiseAnd(n, Const(0xFFFF)));
+            }
+
+            EmitAluStore(context, res);
+        }
+
         public static void Rbit(ArmEmitterContext context)
         {
             Operand m = GetAluM(context);
             Operand res = InstEmit.EmitReverseBits32Op(context, m);
 
             EmitAluStore(context, res);
+        }
+
+        public static void Rev(ArmEmitterContext context)
+        {
+            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
+
+            Operand m = GetAluM(context);
+
+            Operand res = context.Call(new _U32_U32(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness), m);
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Rev16(ArmEmitterContext context)
+        {
+            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
+
+            Operand m = GetAluM(context);
+
+            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBytes16_32), m);
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Revsh(ArmEmitterContext context)
+        {
+            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
+
+            Operand m = GetAluM(context);
+
+            Operand res = context.Call(new _U32_U32(SoftFallback.ReverseBytes16_32), m);
+
+            EmitAluStore(context, context.SignExtend16(OperandType.I32, res));
         }
 
         public static void Bfc(ArmEmitterContext context)

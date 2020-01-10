@@ -75,13 +75,13 @@ namespace ARMeilleure.Instructions
             uint pc = op.GetPc();
 
             Operand addr = GetIntA32(context, op.Rm);
-            Operand bitOne = context.BitwiseAnd(addr, Const(0));
+            Operand bitOne = context.BitwiseAnd(addr, Const(1));
 
             bool isThumb = IsThumb(context.CurrOp);
 
             uint currentPc = isThumb
-                ? op.GetPc() | 1
-                : op.GetPc() - 4;
+                ? pc | 1
+                : pc - 4;
 
             SetIntOrSP(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
 
@@ -89,6 +89,10 @@ namespace ARMeilleure.Instructions
 
             addr = context.BitwiseOr(addr, Const(1)); // set call flag
             context.Return(addr); // call
+        }
+
+        public static void Nop(ArmEmitterContext context)
+        {
         }
     }
 }

@@ -24,7 +24,7 @@ namespace ARMeilleure.Translation
 
         public bool ShouldRejit()
         {
-            return _rejit && Interlocked.Increment(ref _callCount) == MinCallsForRejit;
+            return false && Interlocked.Increment(ref _callCount) == MinCallsForRejit;
         }
     }
 }

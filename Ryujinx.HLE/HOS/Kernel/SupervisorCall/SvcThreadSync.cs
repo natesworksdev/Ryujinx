@@ -194,6 +194,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return WaitForAddress(address, type, value, timeout);
         }
 
+        public KernelResult WaitForAddress32([R(0)] uint address, [R(1)] ArbitrationType type, [R(2)] int value, [R(3)] uint timeoutLow, [R(4)] uint timeoutHigh)
+        {
+            long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
+            return WaitForAddress(address, type, value, timeout);
+        }
+
         private KernelResult WaitForAddress(ulong address, ArbitrationType type, int value, long timeout)
         {
             if (IsPointingInsideKernel(address))
@@ -233,6 +239,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult SignalToAddress64(ulong address, SignalType type, int value, int count)
+        {
+            return SignalToAddress(address, type, value, count);
+        }
+
+        public KernelResult SignalToAddress32([R(0)] uint address, [R(1)] SignalType type, [R(2)] int value, [R(3)] int count)
         {
             return SignalToAddress(address, type, value, count);
         }

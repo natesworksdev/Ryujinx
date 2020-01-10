@@ -12,6 +12,7 @@ namespace ARMeilleure.Decoders
         public int Size { get; protected set; }
         public bool Q { get; private set; }
         public bool F { get; private set; }
+        public bool U { get; private set; }
         public int Elems => GetBytesCount() >> ((Size == 1) ? 1 : 2);
 
         public OpCode32Simd(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
@@ -19,6 +20,7 @@ namespace ARMeilleure.Decoders
             Size = (opCode >> 20) & 0x1; //fvector size: 1 for 16 bit
             Q = ((opCode >> 6) & 0x1) != 0;
             F = ((opCode >> 10) & 0x1) != 0;
+            U = ((opCode >> 24) & 0x1) != 0;
 
             RegisterSize = Q ? RegisterSize.Simd128 : RegisterSize.Simd64;
 

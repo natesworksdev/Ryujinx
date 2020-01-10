@@ -114,6 +114,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x26, nameof(SvcHandler.Break32)                         },
                 { 0x27, nameof(SvcHandler.OutputDebugString32)             },
                 { 0x29, nameof(SvcHandler.GetInfo32)                       },
+                { 0x34, nameof(SvcHandler.WaitForAddress32)                },
+                { 0x35, nameof(SvcHandler.SignalToAddress32)               },
 
                 { 0x5F, nameof(SvcHandler.FlushProcessDataCache32)         }
             };

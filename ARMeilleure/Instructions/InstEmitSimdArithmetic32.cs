@@ -31,6 +31,45 @@ namespace ARMeilleure.Instructions
             EmitVectorBinaryOpZx32(context, (op1, op2) => context.Add(op1, op2));
         }
 
+        public static void Vand_I(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseAnd(op1, op2));
+        }
+
+        public static void Vdup(ArmEmitterContext context)
+        {
+            OpCode32SimdVdupGP op = (OpCode32SimdVdupGP)context.CurrOp;
+
+            Operand insert = GetIntA32(context, op.Rt);
+
+            // zero extend into an I64, then replicate. Saves the most time over elementwise inserts
+            switch (op.Size)
+            {
+                case 2:
+                    insert = context.Multiply(context.ZeroExtend32(OperandType.I64, insert), Const(0x0000000100000001u));
+                    break;
+                case 1:
+                    insert = context.Multiply(context.ZeroExtend16(OperandType.I64, insert), Const(0x0001000100010001u));
+                    break;
+                case 0:
+                    insert = context.Multiply(context.ZeroExtend8(OperandType.I64, insert), Const(0x0101010101010101u));
+                    break;
+                default:
+                    throw new Exception("Unknown Vdup Size!");
+            }
+
+            InsertScalar(context, op.Vd, insert);
+            if (op.Q)
+            {
+                InsertScalar(context, op.Vd | 1, insert);
+            }
+        }
+
+        public static void Vorr_I(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseOr(op1, op2));
+        }
+
         public static void Vmov_S(ArmEmitterContext context)
         {
             EmitScalarUnaryOpF32(context, (op1) => op1);
@@ -39,6 +78,47 @@ namespace ARMeilleure.Instructions
         public static void Vneg_S(ArmEmitterContext context)
         {
             EmitScalarUnaryOpF32(context, (op1) => context.Negate(op1));
+        }
+
+        public static void Vnmul_S(ArmEmitterContext context)
+        {
+            EmitScalarBinaryOpF32(context, (op1, op2) => context.Negate(context.Multiply(op1, op2)));
+        }
+
+        public static void Vnmla_S(ArmEmitterContext context)
+        {
+            if (false) //Optimizations.FastFP)
+            {
+                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return context.Negate(context.Add(op1, context.Multiply(op2, op3)));
+                });
+            }
+            else
+            {
+                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return EmitSoftFloatCall(context, SoftFloat32.FPNegMulAdd, SoftFloat64.FPNegMulAdd, op1, op2, op3);
+                });
+            }
+        }
+
+        public static void Vnmls_S(ArmEmitterContext context)
+        {
+            if (false)//Optimizations.FastFP)
+            {
+                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return context.Subtract(op1, context.Multiply(op2, op3));
+                });
+            }
+            else
+            {
+                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return EmitSoftFloatCall(context, SoftFloat32.FPNegMulSub, SoftFloat64.FPNegMulSub, op1, op2, op3);
+                });
+            }
         }
 
         public static void Vneg_V(ArmEmitterContext context)
@@ -132,7 +212,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vmul_I(ArmEmitterContext context)
         {
-            EmitVectorBinaryOpZx32(context, (op1, op2) => context.Multiply(op1, op2));
+            EmitVectorBinaryOpSx32(context, (op1, op2) => context.Multiply(op1, op2));
         }
 
         public static void Vmla_S(ArmEmitterContext context)

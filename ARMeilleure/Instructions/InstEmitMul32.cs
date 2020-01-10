@@ -73,20 +73,20 @@ namespace ARMeilleure.Instructions
 
             if (op.NHigh)
             {
-                n = context.ZeroExtend16(OperandType.I32, context.ShiftRightUI(n, Const(16)));
+                n = context.SignExtend16(OperandType.I32, context.ShiftRightUI(n, Const(16)));
             }
             else
             {
-                n = context.ZeroExtend16(OperandType.I32, n);
+                n = context.SignExtend16(OperandType.I32, n);
             }
 
             if (op.MHigh)
             {
-                m = context.ZeroExtend16(OperandType.I32, context.ShiftRightUI(m, Const(16)));
+                m = context.SignExtend16(OperandType.I32, context.ShiftRightUI(m, Const(16)));
             }
             else
             {
-                m = context.ZeroExtend16(OperandType.I32, m);
+                m = context.SignExtend16(OperandType.I32, m);
             }
 
             Operand res = context.Multiply(n, m);
@@ -106,22 +106,50 @@ namespace ARMeilleure.Instructions
             Operand n = GetIntA32(context, op.Rn);
             Operand m = GetIntA32(context, op.Rm);
 
+            n = context.SignExtend32(OperandType.I64, n);
+            m = context.SignExtend32(OperandType.I64, m);
+
+            Operand res = context.Multiply(n, m);
+
+            Operand toAdd = context.ShiftLeft(context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.RdHi)), Const(32));
+            toAdd = context.BitwiseOr(toAdd, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.RdLo)));
+            res = context.Add(res, toAdd);
+
+            Operand hi = context.ConvertI64ToI32(context.ShiftRightUI(res, Const(32)));
+            Operand lo = context.ConvertI64ToI32(res);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitGenericStore(context, op.RdHi, op.SetFlags, hi);
+            EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
+        }
+
+        public static void Smlalh(ArmEmitterContext context)
+        {
+            OpCode32AluUmull op = (OpCode32AluUmull)context.CurrOp;
+
+            Operand n = GetIntA32(context, op.Rn);
+            Operand m = GetIntA32(context, op.Rm);
+
             if (op.NHigh)
             {
-                n = context.ZeroExtend16(OperandType.I64, context.ShiftRightUI(n, Const(16)));
+                n = context.SignExtend16(OperandType.I64, context.ShiftRightUI(n, Const(16)));
             } 
             else
             {
-                n = context.ZeroExtend16(OperandType.I64, n);
+                n = context.SignExtend16(OperandType.I64, n);
             }
 
             if (op.MHigh)
             {
-                m = context.ZeroExtend16(OperandType.I64, context.ShiftRightUI(m, Const(16)));
+                m = context.SignExtend16(OperandType.I64, context.ShiftRightUI(m, Const(16)));
             } 
             else
             {
-                m = context.ZeroExtend16(OperandType.I64, m);
+                m = context.SignExtend16(OperandType.I64, m);
             }
 
             Operand res = context.Multiply(n, m);
