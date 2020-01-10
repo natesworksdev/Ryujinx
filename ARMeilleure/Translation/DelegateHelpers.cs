@@ -23,53 +23,19 @@ namespace ARMeilleure.Translation
             _delegateTypesCache = new Dictionary<string, Type>();
         }
 
-        public static Delegate GetDelegate(Type type, string name)
+        public static Delegate GetDelegate(MethodInfo info)
         {
-            if (type == null)
+            if (info == null)
             {
                 throw new ArgumentNullException();
             }
 
-            if (name == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            MethodInfo methodInfo = type.GetMethod(name);
-
-            return GetDelegate(methodInfo);
-        }
-
-        public static Delegate GetDelegate(Type type, string name, Type[] types)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (name == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            if (types == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            MethodInfo methodInfo = type.GetMethod(name, types);
-
-            return GetDelegate(methodInfo);
-        }
-
-        private static Delegate GetDelegate(MethodInfo methodInfo)
-        {
-            Type[] parameters = methodInfo.GetParameters().Select(pI => pI.ParameterType).ToArray();
-            Type   returnType = methodInfo.ReturnType;
+            Type[] parameters = info.GetParameters().Select(pI => pI.ParameterType).ToArray();
+            Type   returnType = info.ReturnType;
 
             Type delegateType = GetDelegateType(parameters, returnType);
 
-            return Delegate.CreateDelegate(delegateType, methodInfo);
+            return Delegate.CreateDelegate(delegateType, info);
         }
 
         private static Type GetDelegateType(Type[] parameters, Type returnType)

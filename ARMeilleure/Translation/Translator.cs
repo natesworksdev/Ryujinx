@@ -289,7 +289,7 @@ namespace ARMeilleure.Translation
 
             context.BranchIfTrue(lblNonZero, count);
 
-            context.NativeInterfaceCall(nameof(NativeInterface.CheckSynchronization));
+            context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));
 
             context.Branch(lblExit);
 

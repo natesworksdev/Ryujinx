@@ -1,7 +1,7 @@
-using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
+using System.Reflection;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -79,38 +79,11 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ByteSwap, Local(op1.Type), op1);
         }
 
-        public Operand MathCall(string className, string funcName, params Operand[] callArgs)
+        public Operand Call(MethodInfo info, params Operand[] callArgs)
         {
-            string name = $"{className}.{funcName}";
+            string name = $"{info.DeclaringType.Name}.{info.Name}";
 
-            DelegateInfo dlgInfo = Delegates.GetMathDelegateInfo(name);
-
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
-        }
-
-        public Operand NativeInterfaceCall(string funcName, params Operand[] callArgs)
-        {
-            string name = $"{nameof(NativeInterface)}.{funcName}";
-
-            DelegateInfo dlgInfo = Delegates.GetNativeInterfaceDelegateInfo(name);
-
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
-        }
-
-        public Operand SoftFallbackCall(string funcName, params Operand[] callArgs)
-        {
-            string name = $"{nameof(SoftFallback)}.{funcName}";
-
-            DelegateInfo dlgInfo = Delegates.GetSoftFallbackDelegateInfo(name);
-
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
-        }
-
-        public Operand SoftFloatCall(string className, string funcName, params Operand[] callArgs)
-        {
-            string name = $"{className}.{funcName}";
-
-            DelegateInfo dlgInfo = Delegates.GetSoftFloatDelegateInfo(name);
+            DelegateInfo dlgInfo = Delegates.GetDelegateInfo(name);
 
             return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
         }

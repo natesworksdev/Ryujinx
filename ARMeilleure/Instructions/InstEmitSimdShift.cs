@@ -5,6 +5,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
+using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -198,7 +199,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.SignedShlRegSatQ), ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlRegSatQ)), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -239,7 +240,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.SignedShlRegSatQ), ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlRegSatQ)), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -290,7 +291,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.SignedShlReg), ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlReg)), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -403,7 +404,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractSx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractSx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.SignedShlReg), ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShlReg)), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -527,7 +528,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.UnsignedShlRegSatQ), ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlRegSatQ)), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -558,7 +559,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.UnsignedShlRegSatQ), ne, me, Const(0), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlRegSatQ)), ne, me, Const(0), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -589,7 +590,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
                 Operand me = EmitVectorExtractZx(context, op.Rm, index, op.Size);
 
-                Operand e = context.SoftFallbackCall(nameof(SoftFallback.UnsignedShlReg), ne, me, Const(1), Const(op.Size));
+                Operand e = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShlReg)), ne, me, Const(1), Const(op.Size));
 
                 res = EmitVectorInsert(context, res, e, index, op.Size);
             }
@@ -1026,9 +1027,11 @@ namespace ARMeilleure.Instructions
             long roundConst,
             int shift)
         {
-            string name = signed ? nameof(SoftFallback.SignedShrImm64) : nameof(SoftFallback.UnsignedShrImm64);
+            MethodInfo info = signed
+                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedShrImm64))
+                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedShrImm64));
 
-            return context.SoftFallbackCall(name, value, Const(roundConst), Const(shift));
+            return context.Call(info, value, Const(roundConst), Const(shift));
         }
 
         private static void EmitVectorShImmWidenBinarySx(ArmEmitterContext context, Func2I emit, int imm)

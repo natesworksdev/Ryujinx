@@ -6,6 +6,8 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
+using System.Diagnostics;
+using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -106,7 +108,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Operand de = context.SoftFallbackCall(nameof(SoftFallback.CountLeadingSigns), ne, Const(eSize));
+                Operand de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingSigns)), ne, Const(eSize));
 
                 res = EmitVectorInsert(context, res, de, index, op.Size);
             }
@@ -128,7 +130,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Operand de = context.SoftFallbackCall(nameof(SoftFallback.CountLeadingZeros), ne, Const(eSize));
+                Operand de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingZeros)), ne, Const(eSize));
 
                 res = EmitVectorInsert(context, res, de, index, op.Size);
             }
@@ -156,7 +158,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    de = context.SoftFallbackCall(nameof(SoftFallback.CountSetBits8), ne);
+                    de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountSetBits8)), ne);
                 }
 
                 res = EmitVectorInsert(context, res, de, index, 0);
@@ -1298,11 +1300,11 @@ namespace ARMeilleure.Instructions
             {
                 if (op.Size == 0)
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.RoundF), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
                 }
                 else /* if (op.Size == 1) */
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.Round), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
                 }
             });
         }
@@ -1317,11 +1319,11 @@ namespace ARMeilleure.Instructions
             {
                 if (sizeF == 0)
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.RoundF), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.Round), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
                 }
             });
         }
@@ -1424,11 +1426,11 @@ namespace ARMeilleure.Instructions
             {
                 if (op.Size == 0)
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.RoundF), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
                 }
                 else /* if (op.Size == 1) */
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.Round), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
                 }
             });
         }
@@ -1443,11 +1445,11 @@ namespace ARMeilleure.Instructions
             {
                 if (sizeF == 0)
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.RoundF), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    return context.SoftFallbackCall(nameof(SoftFallback.Round), op1);
+                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
                 }
             });
         }
@@ -1681,7 +1683,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Mul_AddSub(context, AddSub.Add);
+                EmitSse41VectorMul_AddSub(context, AddSub.Add);
             }
             else
             {
@@ -1704,7 +1706,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Mul_AddSub(context, AddSub.Subtract);
+                EmitSse41VectorMul_AddSub(context, AddSub.Subtract);
             }
             else
             {
@@ -1727,7 +1729,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41Mul_AddSub(context, AddSub.None);
+                EmitSse41VectorMul_AddSub(context, AddSub.None);
             }
             else
             {
@@ -1796,14 +1798,14 @@ namespace ARMeilleure.Instructions
 
         public static void Sabd_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse2)
+            if (Optimizations.UseSse41)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                EmitSse41Sabd(context, op, n, m, isLong: false);
+                EmitSse41VectorSabdOp(context, op, n, m, isLong: false);
             }
             else
             {
@@ -1836,7 +1838,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                EmitSse41Sabd(context, op, n, m, isLong: true);
+                EmitSse41VectorSabdOp(context, op, n, m, isLong: true);
             }
             else
             {
@@ -2018,9 +2020,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MaxS64);
-
-                EmitVectorBinaryOpSx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorBinaryOpSx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: true));
             }
         }
 
@@ -2032,17 +2032,13 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MaxS64);
-
-                EmitVectorPairwiseOpSx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorPairwiseOpSx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: true));
             }
         }
 
         public static void Smaxv_V(ArmEmitterContext context)
         {
-            string name = nameof(SoftFallback.MaxS64);
-
-            EmitVectorAcrossVectorOpSx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+            EmitVectorAcrossVectorOpSx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: true));
         }
 
         public static void Smin_V(ArmEmitterContext context)
@@ -2067,9 +2063,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MinS64);
-
-                EmitVectorBinaryOpSx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorBinaryOpSx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: true));
             }
         }
 
@@ -2081,17 +2075,13 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MinS64);
-
-                EmitVectorPairwiseOpSx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorPairwiseOpSx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: true));
             }
         }
 
         public static void Sminv_V(ArmEmitterContext context)
         {
-            string name = nameof(SoftFallback.MinS64);
-
-            EmitVectorAcrossVectorOpSx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+            EmitVectorAcrossVectorOpSx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: true));
         }
 
         public static void Smlal_V(ArmEmitterContext context)
@@ -2449,7 +2439,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                EmitSse41Uabd(context, op, n, m, isLong: false);
+                EmitSse41VectorUabdOp(context, op, n, m, isLong: false);
             }
             else
             {
@@ -2482,7 +2472,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                EmitSse41Uabd(context, op, n, m, isLong: true);
+                EmitSse41VectorUabdOp(context, op, n, m, isLong: true);
             }
             else
             {
@@ -2657,9 +2647,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MaxU64);
-
-                EmitVectorBinaryOpZx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorBinaryOpZx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: false));
             }
         }
 
@@ -2671,17 +2659,13 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MaxU64);
-
-                EmitVectorPairwiseOpZx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorPairwiseOpZx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: false));
             }
         }
 
         public static void Umaxv_V(ArmEmitterContext context)
         {
-            string name = nameof(SoftFallback.MaxU64);
-
-            EmitVectorAcrossVectorOpZx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+            EmitVectorAcrossVectorOpZx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: false));
         }
 
         public static void Umin_V(ArmEmitterContext context)
@@ -2706,9 +2690,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MinU64);
-
-                EmitVectorBinaryOpZx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorBinaryOpZx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: false));
             }
         }
 
@@ -2720,17 +2702,13 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = nameof(SoftFallback.MinU64);
-
-                EmitVectorPairwiseOpZx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+                EmitVectorPairwiseOpZx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: false));
             }
         }
 
         public static void Uminv_V(ArmEmitterContext context)
         {
-            string name = nameof(SoftFallback.MinU64);
-
-            EmitVectorAcrossVectorOpZx(context, (op1, op2) => context.SoftFallbackCall(name, op1, op2));
+            EmitVectorAcrossVectorOpZx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: false));
         }
 
         public static void Umlal_V(ArmEmitterContext context)
@@ -3072,7 +3050,29 @@ namespace ARMeilleure.Instructions
             context.Copy(d, res);
         }
 
-        public static void EmitScalarRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
+        private static Operand EmitMax64Op(ArmEmitterContext context, Operand op1, Operand op2, bool signed)
+        {
+            Debug.Assert(op1.Type == OperandType.I64 && op2.Type == OperandType.I64);
+
+            Operand cmp = signed
+                ? context.ICompareGreaterOrEqual  (op1, op2)
+                : context.ICompareGreaterOrEqualUI(op1, op2);
+
+            return context.ConditionalSelect(cmp, op1, op2);
+        }
+
+        private static Operand EmitMin64Op(ArmEmitterContext context, Operand op1, Operand op2, bool signed)
+        {
+            Debug.Assert(op1.Type == OperandType.I64 && op2.Type == OperandType.I64);
+
+            Operand cmp = signed
+                ? context.ICompareLessOrEqual  (op1, op2)
+                : context.ICompareLessOrEqualUI(op1, op2);
+
+            return context.ConditionalSelect(cmp, op1, op2);
+        }
+
+        private static void EmitScalarRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -3094,7 +3094,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static void EmitVectorRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
+        private static void EmitVectorRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -3211,14 +3211,14 @@ namespace ARMeilleure.Instructions
             Subtract
         }
 
-        private static void EmitSse41Mul_AddSub(ArmEmitterContext context, AddSub addSub)
+        private static void EmitSse41VectorMul_AddSub(ArmEmitterContext context, AddSub addSub)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
             Operand m = GetVec(op.Rm);
 
-            Operand res = null;
+            Operand res;
 
             if (op.Size == 0)
             {
@@ -3248,23 +3248,15 @@ namespace ARMeilleure.Instructions
 
             if (addSub == AddSub.Add)
             {
-                switch (op.Size)
-                {
-                    case 0: res = context.AddIntrinsic(Intrinsic.X86Paddb, d, res); break;
-                    case 1: res = context.AddIntrinsic(Intrinsic.X86Paddw, d, res); break;
-                    case 2: res = context.AddIntrinsic(Intrinsic.X86Paddd, d, res); break;
-                    case 3: res = context.AddIntrinsic(Intrinsic.X86Paddq, d, res); break;
-                }
+                Intrinsic addInst = X86PaddInstruction[op.Size];
+
+                res = context.AddIntrinsic(addInst, d, res);
             }
             else if (addSub == AddSub.Subtract)
             {
-                switch (op.Size)
-                {
-                    case 0: res = context.AddIntrinsic(Intrinsic.X86Psubb, d, res); break;
-                    case 1: res = context.AddIntrinsic(Intrinsic.X86Psubw, d, res); break;
-                    case 2: res = context.AddIntrinsic(Intrinsic.X86Psubd, d, res); break;
-                    case 3: res = context.AddIntrinsic(Intrinsic.X86Psubq, d, res); break;
-                }
+                Intrinsic subInst = X86PsubInstruction[op.Size];
+
+                res = context.AddIntrinsic(subInst, d, res);
             }
 
             if (op.RegisterSize == RegisterSize.Simd64)
@@ -3275,7 +3267,7 @@ namespace ARMeilleure.Instructions
             context.Copy(d, res);
         }
 
-        private static void EmitSse41Sabd(
+        private static void EmitSse41VectorSabdOp(
             ArmEmitterContext context,
             OpCodeSimdReg op,
             Operand n,
@@ -3308,7 +3300,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitSse41Uabd(
+        private static void EmitSse41VectorUabdOp(
             ArmEmitterContext context,
             OpCodeSimdReg op,
             Operand n,

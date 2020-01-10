@@ -300,7 +300,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2CmpOpF(context, CmpCondition.Equal, scalar: true);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.Equal, scalar: true);
             }
             else
             {
@@ -312,7 +312,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2CmpOpF(context, CmpCondition.Equal, scalar: false);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.Equal, scalar: false);
             }
             else
             {
@@ -324,7 +324,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseAvx)
             {
-                EmitSse2CmpOpF(context, CmpCondition.GreaterThanOrEqual, scalar: true);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThanOrEqual, scalar: true);
             }
             else
             {
@@ -336,7 +336,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseAvx)
             {
-                EmitSse2CmpOpF(context, CmpCondition.GreaterThanOrEqual, scalar: false);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThanOrEqual, scalar: false);
             }
             else
             {
@@ -348,7 +348,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseAvx)
             {
-                EmitSse2CmpOpF(context, CmpCondition.GreaterThan, scalar: true);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThan, scalar: true);
             }
             else
             {
@@ -360,7 +360,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseAvx)
             {
-                EmitSse2CmpOpF(context, CmpCondition.GreaterThan, scalar: false);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThan, scalar: false);
             }
             else
             {
@@ -372,7 +372,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2CmpOpF(context, CmpCondition.LessThanOrEqual, scalar: true);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.LessThanOrEqual, scalar: true);
             }
             else
             {
@@ -384,7 +384,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2CmpOpF(context, CmpCondition.LessThanOrEqual, scalar: false);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.LessThanOrEqual, scalar: false);
             }
             else
             {
@@ -396,7 +396,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2CmpOpF(context, CmpCondition.LessThan, scalar: true);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.LessThan, scalar: true);
             }
             else
             {
@@ -408,7 +408,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2CmpOpF(context, CmpCondition.LessThan, scalar: false);
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.LessThan, scalar: false);
             }
             else
             {
@@ -544,7 +544,7 @@ namespace ARMeilleure.Instructions
                     me = context.VectorExtract(type, GetVec(op.Rm), 0);
                 }
 
-                Operand nzcv = context.SoftFloatCall(op.Size == 0 ? nameof(SoftFloat32) : nameof(SoftFloat64), nameof(SoftFloat32.FPCompare), ne, me, Const(signalNaNs));
+                Operand nzcv = EmitSoftFloatCall(context, nameof(SoftFloat32.FPCompare), ne, me, Const(signalNaNs));
 
                 EmitSetNzcv(context, nzcv);
             }
@@ -665,7 +665,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitSse2CmpOpF(ArmEmitterContext context, CmpCondition cond, bool scalar)
+        private static void EmitSse2OrAvxCmpOpF(ArmEmitterContext context, CmpCondition cond, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 

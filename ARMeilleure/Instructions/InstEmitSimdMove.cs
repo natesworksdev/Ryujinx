@@ -2,6 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
+using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -297,31 +298,13 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
-            if (Optimizations.UseSse2)
+            if (op.RegisterSize == RegisterSize.Simd128)
             {
-                if (op.RegisterSize == RegisterSize.Simd128)
-                {
-                    context.Copy(GetVec(op.Rd), X86GetAllElements(context, op.Immediate));
-                }
-                else
-                {
-                    context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
-                }
+                context.Copy(GetVec(op.Rd), X86GetAllElements(context, op.Immediate));
             }
             else
             {
-                Operand e = Const(op.Immediate);
-
-                Operand res = context.VectorZero();
-
-                int elems = op.RegisterSize == RegisterSize.Simd128 ? 2 : 1;
-
-                for (int index = 0; index < elems; index++)
-                {
-                    res = EmitVectorInsert(context, res, e, index, 3);
-                }
-
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
             }
         }
 
@@ -349,7 +332,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2MoviMvni(context, not: false);
+                EmitSse2VectorMoviMvniOp(context, not: false);
             }
             else
             {
@@ -361,7 +344,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2MoviMvni(context, not: true);
+                EmitSse2VectorMoviMvniOp(context, not: true);
             }
             else
             {
@@ -475,7 +458,7 @@ namespace ARMeilleure.Instructions
             EmitVectorZip(context, part: 1);
         }
 
-        private static void EmitSse2MoviMvni(ArmEmitterContext context, bool not)
+        private static void EmitSse2VectorMoviMvniOp(ArmEmitterContext context, bool not)
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
@@ -592,17 +575,30 @@ namespace ARMeilleure.Instructions
                     args.Add(GetVec((op.Rn + index) & 0x1F));
                 }
 
-                string name = null;
+                MethodInfo info = null;
 
-                switch (op.Size)
+                if (isTbl)
                 {
-                    case 1: name = isTbl ? nameof(SoftFallback.Tbl1) : nameof(SoftFallback.Tbx1); break;
-                    case 2: name = isTbl ? nameof(SoftFallback.Tbl2) : nameof(SoftFallback.Tbx2); break;
-                    case 3: name = isTbl ? nameof(SoftFallback.Tbl3) : nameof(SoftFallback.Tbx3); break;
-                    case 4: name = isTbl ? nameof(SoftFallback.Tbl4) : nameof(SoftFallback.Tbx4); break;
+                    switch (op.Size)
+                    {
+                        case 1: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl1)); break;
+                        case 2: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl2)); break;
+                        case 3: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl3)); break;
+                        case 4: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl4)); break;
+                    }
+                }
+                else
+                {
+                    switch (op.Size)
+                    {
+                        case 1: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx1)); break;
+                        case 2: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx2)); break;
+                        case 3: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx3)); break;
+                        case 4: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx4)); break;
+                    }
                 }
 
-                context.Copy(d, context.SoftFallbackCall(name, args.ToArray()));
+                context.Copy(d, context.Call(info, args.ToArray()));
             }
         }
 

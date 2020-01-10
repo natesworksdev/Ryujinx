@@ -55,7 +55,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetIntOrZR(context, op.Rn);
             Operand m = GetIntOrZR(context, op.Rm);
 
-            Operand d = context.SoftFallbackCall(name, n, m);
+            Operand d = context.Call(typeof(SoftFallback).GetMethod(name), n, m);
 
             SetIntOrZR(context, op.Rd, d);
         }

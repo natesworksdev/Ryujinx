@@ -15,7 +15,7 @@ namespace ARMeilleure.Instructions
             Operand d = GetVec(op.Rd);
             Operand n = GetVec(op.Rn);
 
-            context.Copy(d, context.SoftFallbackCall(nameof(SoftFallback.Decrypt), d, n));
+            context.Copy(d, context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Decrypt)), d, n));
         }
 
         public static void Aese_V(ArmEmitterContext context)
@@ -25,7 +25,7 @@ namespace ARMeilleure.Instructions
             Operand d = GetVec(op.Rd);
             Operand n = GetVec(op.Rn);
 
-            context.Copy(d, context.SoftFallbackCall(nameof(SoftFallback.Encrypt), d, n));
+            context.Copy(d, context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Encrypt)), d, n));
         }
 
         public static void Aesimc_V(ArmEmitterContext context)
@@ -34,7 +34,7 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            context.Copy(GetVec(op.Rd), context.SoftFallbackCall(nameof(SoftFallback.InverseMixColumns), n));
+            context.Copy(GetVec(op.Rd), context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.InverseMixColumns)), n));
         }
 
         public static void Aesmc_V(ArmEmitterContext context)
@@ -43,7 +43,7 @@ namespace ARMeilleure.Instructions
 
             Operand n = GetVec(op.Rn);
 
-            context.Copy(GetVec(op.Rd), context.SoftFallbackCall(nameof(SoftFallback.MixColumns), n));
+            context.Copy(GetVec(op.Rd), context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.MixColumns)), n));
         }
     }
 }
