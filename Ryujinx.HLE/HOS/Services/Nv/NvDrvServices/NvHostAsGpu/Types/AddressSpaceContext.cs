@@ -1,16 +1,12 @@
-﻿using ARMeilleure.Memory;
-using Ryujinx.Graphics.Memory;
+﻿using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
 {
     class AddressSpaceContext
     {
-        public NvGpuVmm Vmm { get; private set; }
-
         private class Range
         {
             public ulong Start { get; private set; }
@@ -42,9 +38,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
         private SortedList<long, Range> _maps;
         private SortedList<long, Range> _reservations;
 
-        public AddressSpaceContext(KProcess process)
+        public MemoryManager Gmm { get; }
+
+        public AddressSpaceContext(ServiceCtx context)
         {
-            Vmm = new NvGpuVmm(process.CpuMemory);
+            Gmm = context.Device.Gpu.MemoryManager;
 
             _maps         = new SortedList<long, Range>();
             _reservations = new SortedList<long, Range>();
@@ -61,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
             }
 
             // Check if address is page aligned.
-            if ((position & NvGpuVmm.PageMask) != 0)
+            if ((position & (long)MemoryManager.PageMask) != 0)
             {
                 return false;
             }

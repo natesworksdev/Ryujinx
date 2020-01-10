@@ -1,5 +1,4 @@
-﻿using Ryujinx.Graphics.Gal;
-using Ryujinx.Graphics.Shader;
+﻿using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.IO;
@@ -10,33 +9,24 @@ namespace Ryujinx.ShaderTools
     {
         static void Main(string[] args)
         {
-            if (args.Length == 2)
+            if (args.Length == 1 || args.Length == 2)
             {
-                GalShaderType type = GalShaderType.Vertex;
+                TranslationFlags flags = TranslationFlags.DebugMode;
 
-                switch (args[0].ToLower())
+                if (args.Length == 2 && args[0] == "--compute")
                 {
-                    case "v":  type = GalShaderType.Vertex;         break;
-                    case "tc": type = GalShaderType.TessControl;    break;
-                    case "te": type = GalShaderType.TessEvaluation; break;
-                    case "g":  type = GalShaderType.Geometry;       break;
-                    case "f":  type = GalShaderType.Fragment;       break;
+                    flags |= TranslationFlags.Compute;
                 }
 
-                using (FileStream fs = new FileStream(args[1], FileMode.Open, FileAccess.Read))
-                {
-                    Memory mem = new Memory(fs);
+                byte[] data = File.ReadAllBytes(args[^1]);
 
-                    ShaderConfig config = new ShaderConfig(type, 65536);
+                string code = Translator.Translate(data, new TranslatorCallbacks(null, null), flags).Code;
 
-                    string code = Translator.Translate(mem, 0, config).Code;
-
-                    Console.WriteLine(code);
-                }
+                Console.WriteLine(code);
             }
             else
             {
-                Console.WriteLine("Usage: Ryujinx.ShaderTools [v|tc|te|g|f] shader.bin");
+                Console.WriteLine("Usage: Ryujinx.ShaderTools [--compute] shader.bin");
             }
         }
     }
