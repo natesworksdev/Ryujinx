@@ -284,13 +284,26 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdFmov op = (OpCodeSimdFmov)context.CurrOp;
 
-            if (op.Size == 0)
+            if (Optimizations.UseSse2)
             {
-                context.Copy(GetVec(op.Rd), X86GetScalar(context, (int)op.Immediate));
+                if (op.Size == 0)
+                {
+                    context.Copy(GetVec(op.Rd), X86GetScalar(context, (int)op.Immediate));
+                }
+                else
+                {
+                    context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
+                }
             }
             else
             {
-                context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
+                Operand e = Const(op.Immediate);
+
+                Operand res = context.VectorZero();
+
+                res = EmitVectorInsert(context, res, e, 0, op.Size + 2);
+
+                context.Copy(GetVec(op.Rd), res);
             }
         }
 
@@ -298,13 +311,31 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
-            if (op.RegisterSize == RegisterSize.Simd128)
+            if (Optimizations.UseSse2)
             {
-                context.Copy(GetVec(op.Rd), X86GetAllElements(context, op.Immediate));
+                if (op.RegisterSize == RegisterSize.Simd128)
+                {
+                    context.Copy(GetVec(op.Rd), X86GetAllElements(context, op.Immediate));
+                }
+                else
+                {
+                    context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
+                }
             }
             else
             {
-                context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
+                Operand e = Const(op.Immediate);
+
+                Operand res = context.VectorZero();
+
+                int elems = op.RegisterSize == RegisterSize.Simd128 ? 2 : 1;
+
+                for (int index = 0; index < elems; index++)
+                {
+                    res = EmitVectorInsert(context, res, e, index, 3);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
             }
         }
 

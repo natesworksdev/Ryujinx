@@ -27,7 +27,7 @@ namespace ARMeilleure.Translation
         {
             if (info == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(info));
             }
 
             Type[] parameters = info.GetParameters().Select(pI => pI.ParameterType).ToArray();

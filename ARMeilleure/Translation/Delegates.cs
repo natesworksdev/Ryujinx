@@ -11,7 +11,7 @@ namespace ARMeilleure.Translation
         {
             if (key == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(key));
             }
 
             if (_delegates.TryGetValue(key, out DelegateInfo dlgInfo))
@@ -32,12 +32,12 @@ namespace ARMeilleure.Translation
         {
             if (key == null)
             {
-                throw new ArgumentNullException();
+                throw new ArgumentNullException(nameof(key));
             }
 
             if (!_delegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
-                throw new Exception();
+                throw new ArgumentException($"({nameof(key)} = {key})");
             }
 
             return dlgInfo;
@@ -51,7 +51,7 @@ namespace ARMeilleure.Translation
 
             if (!_delegates.TryAdd(key, new DelegateInfo(dlg)))
             {
-                throw new Exception();
+                throw new ArgumentException($"({nameof(key)} = {key})");
             }
         }
 

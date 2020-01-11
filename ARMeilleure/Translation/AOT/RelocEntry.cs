@@ -13,7 +13,7 @@ namespace ARMeilleure.Translation.AOT
 
         public override string ToString()
         {
-            return $"(Position = {Position}, Name = {Name})";
+            return $"({nameof(Position)} = {Position}, {nameof(Name)} = {Name})";
         }
     }
 }
