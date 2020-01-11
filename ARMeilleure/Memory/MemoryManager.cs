@@ -552,6 +552,39 @@ namespace ARMeilleure.Memory
             return data;
         }
 
+        public Span<byte> GetSpan(ulong address, ulong size)
+        {
+            if (IsContiguous(address, size))
+            {
+                return new Span<byte>((void*)Translate((long)address), (int)size);
+            }
+            else
+            {
+                return ReadBytes((long)address, (long)size);
+            }
+        }
+
+        private bool IsContiguous(ulong address, ulong size)
+        {
+            ulong endVa = (address + size + PageMask) & ~(ulong)PageMask;
+
+            address &= ~(ulong)PageMask;
+
+            int pages = (int)((endVa - address) / PageSize);
+
+            for (int page = 0; page < pages - 1; page++)
+            {
+                if (GetPtEntry((long)address) + PageSize != GetPtEntry((long)address + PageSize))
+                {
+                    return false;
+                }
+
+                address += PageSize;
+            }
+
+            return true;
+        }
+
         public void WriteSByte(long position, sbyte value)
         {
             WriteByte(position, (byte)value);

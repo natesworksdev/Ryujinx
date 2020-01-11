@@ -632,7 +632,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 dstOffset,
                 (int)size);
 
-            dstBuffer.Flush(dstAddress, size);
+            // dstBuffer.Flush(dstAddress, size);
         }
 
         /// <summary>

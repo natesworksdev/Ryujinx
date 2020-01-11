@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>The data at the specified memory location</returns>
         public Span<byte> Read(ulong address, ulong size)
         {
-            return _cpuMemory.ReadBytes((long)address, (long)size);
+            return _cpuMemory.GetSpan(address, size);
         }
 
         /// <summary>
