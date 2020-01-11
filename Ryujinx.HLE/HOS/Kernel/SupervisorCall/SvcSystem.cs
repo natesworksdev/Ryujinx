@@ -149,6 +149,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return ResetSignal(handle);
         }
 
+        public KernelResult ResetSignal32([R(0)] int handle)
+        {
+            return ResetSignal(handle);
+        }
+
         private KernelResult ResetSignal(int handle)
         {
             KProcess currentProcess = _system.Scheduler.GetCurrentProcess();

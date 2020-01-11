@@ -322,9 +322,70 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        private static void EmitExtend16(ArmEmitterContext context, bool signed)
+        {
+            IOpCode32AluUx op = (IOpCode32AluUx)context.CurrOp;
+
+            Operand m = GetAluM(context);
+            Operand res;
+
+            if (op.RotateBits == 0)
+            {
+                res = m;
+            }
+            else
+            {
+                Operand rotate = Const(op.RotateBits);
+                res = context.RotateRight(m, rotate);
+            }
+
+            Operand low16, high16;
+            if (signed)
+            {
+                low16 = context.SignExtend8(OperandType.I32, res);
+                high16 = context.SignExtend8(OperandType.I32, context.ShiftRightUI(res, Const(16)));
+            }
+            else
+            {
+                low16 = context.ZeroExtend8(OperandType.I32, res);
+                high16 = context.ZeroExtend8(OperandType.I32, context.ShiftRightUI(res, Const(16)));
+            }
+
+            if (op.Add)
+            {
+                Operand n = GetAluN(context);
+                Operand lowAdd, highAdd;
+                if (signed)
+                {
+                    lowAdd = context.SignExtend16(OperandType.I32, n);
+                    highAdd = context.SignExtend16(OperandType.I32, context.ShiftRightUI(n, Const(16)));
+                }
+                else
+                {
+                    lowAdd = context.ZeroExtend16(OperandType.I32, n);
+                    highAdd = context.ZeroExtend16(OperandType.I32, context.ShiftRightUI(n, Const(16)));
+                }
+                
+                low16 = context.Add(low16, lowAdd);
+                high16 = context.Add(high16, highAdd);
+            }
+
+            res = context.BitwiseOr(
+                context.ZeroExtend16(OperandType.I32, low16),
+                context.ShiftLeft(context.ZeroExtend16(OperandType.I32, high16), Const(16))
+                );
+
+            EmitAluStore(context, res);
+        }
+
         public static void Uxtb(ArmEmitterContext context)
         {
             EmitSignExtend(context, false, 8);
+        }
+
+        public static void Uxtb16(ArmEmitterContext context)
+        {
+            EmitExtend16(context, false);
         }
 
         public static void Uxth(ArmEmitterContext context)
@@ -335,6 +396,11 @@ namespace ARMeilleure.Instructions
         public static void Sxtb(ArmEmitterContext context)
         {
             EmitSignExtend(context, true, 8);
+        }
+
+        public static void Sxtb16(ArmEmitterContext context)
+        {
+            EmitExtend16(context, true);
         }
 
         public static void Sxth(ArmEmitterContext context)

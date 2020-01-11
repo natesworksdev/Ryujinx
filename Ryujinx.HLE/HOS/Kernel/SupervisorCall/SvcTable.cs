@@ -103,6 +103,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x14, nameof(SvcHandler.UnmapSharedMemory32)             },
                 { 0x15, nameof(SvcHandler.CreateTransferMemory32)          },
                 { 0x16, nameof(SvcHandler.CloseHandle32)                   },
+                { 0x17, nameof(SvcHandler.ResetSignal32)                   },
                 { 0x18, nameof(SvcHandler.WaitSynchronization32)           },
                 { 0x1a, nameof(SvcHandler.ArbitrateLock32)                 },
                 { 0x1b, nameof(SvcHandler.ArbitrateUnlock32)               },

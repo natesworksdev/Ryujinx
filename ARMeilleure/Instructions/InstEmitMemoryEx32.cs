@@ -71,7 +71,7 @@ namespace ARMeilleure.Instructions
 
         public static void Ldah(ArmEmitterContext context)
         {
-            EmitExLoadOrStore(context, ByteSizeLog2, AccessType.LoadZx | AccessType.Ordered);
+            EmitExLoadOrStore(context, HWordSizeLog2, AccessType.LoadZx | AccessType.Ordered);
         }
 
         // stores

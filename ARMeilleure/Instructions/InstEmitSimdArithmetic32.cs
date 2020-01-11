@@ -163,21 +163,65 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vmax_V(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpF32(context, (op1, op2) =>
+            {
+                return EmitSoftFloatCall(context, SoftFloat32.FPMax, SoftFloat64.FPMax, op1, op2);
+            });
+        }
+
+        public static void Vmax_I(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            if (op.U)
+            {
+                EmitVectorBinaryOpZx32(context, (op1, op2) => context.ConditionalSelect(context.ICompareGreaterUI(op1, op2), op1, op2));
+            } 
+            else
+            {
+                EmitVectorBinaryOpSx32(context, (op1, op2) => context.ConditionalSelect(context.ICompareGreater(op1, op2), op1, op2));
+            }
+        }
+
+        public static void Vmin_V(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpF32(context, (op1, op2) =>
+            {
+                return EmitSoftFloatCall(context, SoftFloat32.FPMin, SoftFloat64.FPMin, op1, op2);
+            });
+        }
+
+        public static void Vmin_I(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            if (op.U)
+            {
+                EmitVectorBinaryOpZx32(context, (op1, op2) => context.ConditionalSelect(context.ICompareLessUI(op1, op2), op1, op2));
+            }
+            else
+            {
+                EmitVectorBinaryOpSx32(context, (op1, op2) => context.ConditionalSelect(context.ICompareLess(op1, op2), op1, op2));
+            }
+        }
+
         //TODO: probably important to have a fast path for these instead of calling fucking standard math min/max
         public static void VmaxminNm_S(ArmEmitterContext context)
         {
             bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
-            Delegate dlg = max ? new _F32_F32_F32(Math.Max) : new _F32_F32_F32(Math.Min);
+            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
+            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
 
-            EmitScalarBinaryOpF32(context, (op1, op2) => context.Call(dlg, op1, op2));
+            EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
         }
 
         public static void VmaxminNm_V(ArmEmitterContext context)
         {
             bool max = (context.CurrOp.RawOpCode & (1 << 21)) == 0;
-            Delegate dlg = max ? new _F32_F32_F32(Math.Max) : new _F32_F32_F32(Math.Min);
+            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
+            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
 
-            EmitVectorBinaryOpSx32(context, (op1, op2) => context.Call(dlg, op1, op2));
+            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
         }
 
         public static void Vmul_S(ArmEmitterContext context)

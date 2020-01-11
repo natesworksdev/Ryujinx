@@ -13,6 +13,7 @@ namespace ARMeilleure.Decoders
 
         public bool NHigh { get; private set; }
         public bool MHigh { get; private set; }
+        public bool R { get; private set; }
         public bool SetFlags { get; private set; }
 
         public OpCode32AluMla(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
@@ -21,6 +22,7 @@ namespace ARMeilleure.Decoders
             Rm = (opCode >> 8) & 0xf;
             Ra = (opCode >> 12) & 0xf;
             Rd = (opCode >> 16) & 0xf;
+            R = (opCode & (1 << 5)) != 0;
 
             NHigh = ((opCode >> 5) * 0x1) == 1;
             MHigh = ((opCode >> 6) * 0x1) == 1;

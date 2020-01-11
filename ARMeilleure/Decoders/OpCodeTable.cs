@@ -652,7 +652,9 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<000xx1x1xxxxxxxxxxxx1011xxxx", InstName.Ldrh,  InstEmit32.Ldrh,  typeof(OpCode32MemImm8));
             SetA32("<<<<000xx0x1xxxxxxxx00001011xxxx", InstName.Ldrh,  InstEmit32.Ldrh,  typeof(OpCode32MemReg));
             SetA32("<<<<000xx1x1xxxxxxxxxxxx1101xxxx", InstName.Ldrsb, InstEmit32.Ldrsb, typeof(OpCode32MemImm8));
+            SetA32("<<<<000xx0x1xxxxxxxx00001101xxxx", InstName.Ldrsb, InstEmit32.Ldrsb, typeof(OpCode32MemReg));
             SetA32("<<<<000xx1x1xxxxxxxxxxxx1111xxxx", InstName.Ldrsh, InstEmit32.Ldrsh, typeof(OpCode32MemImm8));
+            SetA32("<<<<000xx0x1xxxxxxxx00001111xxxx", InstName.Ldrsh, InstEmit32.Ldrsh, typeof(OpCode32MemReg));
             SetA32("<<<<1110xxx0xxxxxxxx111xxxx1xxxx", InstName.Mcr,   InstEmit32.Mcr,   typeof(OpCode32System));
             SetA32("<<<<0000001xxxxxxxxxxxxx1001xxxx", InstName.Mla,   InstEmit32.Mla,   typeof(OpCode32AluMla));
             SetA32("<<<<00000110xxxxxxxxxxxx1001xxxx", InstName.Mls,   InstEmit32.Mls,   typeof(OpCode32AluMla));
@@ -688,7 +690,8 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<00010000xxxxxxxxxxxx1xx0xxxx", InstName.Smlab, InstEmit32.Smlab, typeof(OpCode32AluMla));
             SetA32("<<<<0000111xxxxxxxxxxxxx1001xxxx", InstName.Smlal, InstEmit32.Smlal, typeof(OpCode32AluUmull));
             SetA32("<<<<00010100xxxxxxxxxxxx1xx0xxxx", InstName.Smlalh,InstEmit32.Smlalh,typeof(OpCode32AluUmull));
-            SetA32("<<<<01110101xxxx1111xxxx00x1xxxx", InstName.Smmul, InstEmit32.Smmul, typeof(OpCode32AluMla));
+            SetA32("<<<<01110101xxxxxxxxxxxx00x1xxxx", InstName.Smmla, InstEmit32.Smmla, typeof(OpCode32AluMla));
+            SetA32("<<<<01110101xxxxxxxxxxxx11x1xxxx", InstName.Smmls, InstEmit32.Smmls, typeof(OpCode32AluMla));
             SetA32("<<<<0010110xxxxxxxxxxxxxxxxxxxxx", InstName.Sbc,   InstEmit32.Sbc,   typeof(OpCode32AluImm));
             SetA32("<<<<0000110xxxxxxxxxxxxxxxx0xxxx", InstName.Sbc,   InstEmit32.Sbc,   typeof(OpCode32AluRsImm));
             SetA32("<<<<0000110xxxxxxxxxxxxx0xx1xxxx", InstName.Sbc,   InstEmit32.Sbc,   typeof(OpCode32AluRsReg));
@@ -719,6 +722,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0000010xxxxxxxxxxxxx0xx1xxxx", InstName.Sub,   InstEmit32.Sub,   typeof(OpCode32AluRsReg));
             SetA32("<<<<1111xxxxxxxxxxxxxxxxxxxxxxxx", InstName.Svc,   InstEmit32.Svc,   typeof(OpCode32Exception));
             SetA32("<<<<01101010xxxxxxxxxx000111xxxx", InstName.Sxtb,  InstEmit32.Sxtb,  typeof(OpCode32AluUx));
+            SetA32("<<<<01101000xxxxxxxxxx000111xxxx", InstName.Sxtb16,InstEmit32.Sxtb16,typeof(OpCode32AluUx));
             SetA32("<<<<01101011xxxxxxxxxx000111xxxx", InstName.Sxth,  InstEmit32.Sxth,  typeof(OpCode32AluUx));
             SetA32("<<<<00110011xxxx0000xxxxxxxxxxxx", InstName.Teq,   InstEmit32.Teq,   typeof(OpCode32AluImm));
             SetA32("<<<<00010011xxxx0000xxxxxxx0xxxx", InstName.Teq,   InstEmit32.Teq,   typeof(OpCode32AluRsImm));
@@ -731,6 +735,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<01110011xxxx1111xxxx0001xxxx", InstName.Udiv,  InstEmit32.Udiv,  typeof(OpCode32AluMla));
             SetA32("<<<<0000100xxxxxxxxxxxxx1001xxxx", InstName.Umull, InstEmit32.Umull, typeof(OpCode32AluUmull));
             SetA32("<<<<01101110xxxxxxxxxx000111xxxx", InstName.Uxtb,  InstEmit32.Uxtb,  typeof(OpCode32AluUx));
+            SetA32("<<<<01101100xxxxxxxxxx000111xxxx", InstName.Uxtb16,InstEmit32.Uxtb16,typeof(OpCode32AluUx));
             SetA32("<<<<01101111xxxxxxxxxx000111xxxx", InstName.Uxth,  InstEmit32.Uxth,  typeof(OpCode32AluUx));
 
             // FP & SIMD (AArch32)
@@ -804,6 +809,12 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<11010x11xxxxxxxx1010xxxxxxxx", InstName.Vldm, InstEmit32.Vldm, typeof(OpCode32SimdMemMult));
 
             SetA32("<<<<1101xx01xxxxxxxx10xxxxxxxxxx", InstName.Vldr,  InstEmit32.Vldr,  typeof(OpCode32SimdMemImm));
+
+            SetA32("111100100x0xxxxxxxxx1111xxx0xxxx", InstName.Vmax, InstEmit32.Vmax_V, typeof(OpCode32SimdReg));
+            SetA32("1111001x0xxxxxxxxxxx0110xxx0xxxx", InstName.Vmax, InstEmit32.Vmax_I, typeof(OpCode32SimdReg));
+
+            SetA32("111100100x1xxxxxxxxx1111xxx0xxxx", InstName.Vmin, InstEmit32.Vmin_V, typeof(OpCode32SimdReg));
+            SetA32("1111001x0xxxxxxxxxxx0110xxx1xxxx", InstName.Vmin, InstEmit32.Vmin_I, typeof(OpCode32SimdReg));
 
             SetA32("111111101x00xxxxxxxx10xxxxx0xxxx", InstName.VMMmn, InstEmit32.VmaxminNm_S, typeof(OpCode32SimdRegS));
             SetA32("111100110xxxxxxxxxxx1111xxx1xxxx", InstName.VMMmn, InstEmit32.VmaxminNm_V, typeof(OpCode32SimdReg));

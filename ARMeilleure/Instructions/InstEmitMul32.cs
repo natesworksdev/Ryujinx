@@ -15,9 +15,9 @@ namespace ARMeilleure.Instructions
         [Flags]
         private enum MullFlags
         {
-            Subtract = 0,
-            Add = 1 << 0,
-            Signed = 1 << 1,
+            Subtract = 1,
+            Add = 1 << 1,
+            Signed = 1 << 2,
 
             SignedAdd = Signed | Add,
             SignedSubtract = Signed | Subtract
@@ -44,7 +44,22 @@ namespace ARMeilleure.Instructions
             EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
         }
 
+        public static void Smmla(ArmEmitterContext context)
+        {
+            EmitSmmul(context, MullFlags.SignedAdd);
+        }
+
+        public static void Smmls(ArmEmitterContext context)
+        {
+            EmitSmmul(context, MullFlags.SignedSubtract);
+        }
+
         public static void Smmul(ArmEmitterContext context)
+        {
+            EmitSmmul(context, MullFlags.Signed);
+        }
+
+        private static void EmitSmmul(ArmEmitterContext context, MullFlags flags)
         {
             OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
 
@@ -53,7 +68,16 @@ namespace ARMeilleure.Instructions
 
             Operand res = context.Multiply(n, m);
 
-            if ((op.RawOpCode & (1 << 5)) != 0)
+            if (flags.HasFlag(MullFlags.Add) && op.Ra != 0xf)
+            {
+                res = context.Add(context.ShiftLeft(context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Ra)), Const(32)), res);
+            } 
+            else if (flags.HasFlag(MullFlags.Subtract))
+            {
+                res = context.Subtract(context.ShiftLeft(context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Ra)), Const(32)), res);
+            }
+
+            if (op.R)
             {
                 res = context.Add(res, Const(0x80000000L));
             }
