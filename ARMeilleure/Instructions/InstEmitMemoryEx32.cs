@@ -203,7 +203,7 @@ namespace ARMeilleure.Instructions
                     context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 
                     Operand leResult = context.BitwiseOr(lo, context.ShiftLeft(hi, Const(32)));
-                    Operand leS = EmitExStore(context, address, leResult, true, size);
+                    Operand leS = EmitExStore(context, address, leResult, exclusive, size);
                     if (exclusive) SetIntA32(context, op.Rd, leS);
 
                     context.Branch(lblEnd);
@@ -211,7 +211,7 @@ namespace ARMeilleure.Instructions
                     context.MarkLabel(lblBigEndian);
 
                     Operand beResult = context.BitwiseOr(hi, context.ShiftLeft(lo, Const(32)));
-                    Operand beS = EmitExStore(context, address, beResult, true, size);
+                    Operand beS = EmitExStore(context, address, beResult, exclusive, size);
                     if (exclusive) SetIntA32(context, op.Rd, beS);
 
                     context.MarkLabel(lblEnd);
@@ -219,7 +219,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     
-                    s = EmitExStore(context, address, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt)), true, size);
+                    s = EmitExStore(context, address, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt)), exclusive, size);
                     // This is only needed for exclusive stores. The function returns 0
                     // when the store is successful, and 1 otherwise.
                     if (exclusive) SetIntA32(context, op.Rd, s);
