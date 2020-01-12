@@ -143,12 +143,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.Unmap(dst, src, size);
         }
 
-        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(1)] ulong x1, [R(2)] ulong position)
+        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(2)] ulong position, [R(1)] out ulong pageInfo)
         {
-            return QueryMemory(infoPtr, position);
+            return QueryMemory(infoPtr, position, out pageInfo);
         }
 
-        private KernelResult QueryMemory(ulong infoPtr, ulong position)
+        private KernelResult QueryMemory(ulong infoPtr, ulong position, out ulong pageInfo)
         {
             KMemoryInfo blkInfo = _process.MemoryManager.QueryMemory(position);
 
@@ -160,6 +160,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _process.CpuMemory.WriteInt32 ((long)infoPtr + 0x1c, blkInfo.IpcRefCount);
             _process.CpuMemory.WriteInt32 ((long)infoPtr + 0x20, blkInfo.DeviceRefCount);
             _process.CpuMemory.WriteInt32 ((long)infoPtr + 0x24, 0);
+
+            pageInfo = 0;
 
             return KernelResult.Success;
         }
