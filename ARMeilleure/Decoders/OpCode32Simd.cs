@@ -11,7 +11,7 @@ namespace ARMeilleure.Decoders
         public int Opc { get; private set; }
         public int Size { get; protected set; }
         public bool Q { get; private set; }
-        public bool F { get; private set; }
+        public bool F { get; protected set; }
         public bool U { get; private set; }
         public int Elems => GetBytesCount() >> ((Size == 1) ? 1 : 2);
 

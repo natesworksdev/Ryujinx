@@ -350,5 +350,79 @@ namespace ARMeilleure.Instructions
 
             context.Copy(GetVecA32(vd), res);
         }
+
+        // PAIRWISE
+
+        public static void EmitVectorPairwiseOpF32(ArmEmitterContext context, Func2I emit)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            if (op.Q)
+            {
+                throw new Exception("Q mode not supported for pairwise");
+            }
+            int sizeF = op.Size & 1;
+
+            OperandType type = sizeF != 0 ? OperandType.FP64 : OperandType.FP32;
+
+            int elems = op.GetBytesCount() >> (sizeF + 2);
+            int pairs = elems >> 1;
+
+            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
+            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
+            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+
+            Operand res = GetVecA32(vd);
+
+            for (int index = 0; index < pairs; index++)
+            {
+                int pairIndex = index << 1;
+                Operand n1 = context.VectorExtract(type, GetVecA32(vn), pairIndex + en * elems);
+                Operand n2 = context.VectorExtract(type, GetVecA32(vn), pairIndex + 1 + en * elems);
+
+                Operand m1 = context.VectorExtract(type, GetVecA32(vm), pairIndex + em * elems);
+                Operand m2 = context.VectorExtract(type, GetVecA32(vm), pairIndex + 1 + em * elems);
+
+                res = context.VectorInsert(res, emit(n1, n2), index + ed * elems);
+                res = context.VectorInsert(res, emit(m1, m2), index + pairs + ed * elems);
+            }
+
+            context.Copy(GetVecA32(vd), res);
+        }
+
+        public static void EmitVectorPairwiseOpI32(ArmEmitterContext context, Func2I emit, bool signed)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            if (op.Q)
+            {
+                throw new Exception("Q mode not supported for pairwise");
+            }
+
+            int elems = op.GetBytesCount() >> op.Size;
+            int pairs = elems >> 1;
+
+            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
+            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
+            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+
+            Operand res = GetVecA32(vd);
+
+            for (int index = 0; index < pairs; index++)
+            {
+                int pairIndex = index << 1;
+                EmitVectorExtract(context, vd, index + ed * elems, op.Size, signed);
+                Operand n1 = EmitVectorExtract(context, vn, pairIndex + en * elems, op.Size, signed);
+                Operand n2 = EmitVectorExtract(context, vn, pairIndex + 1 + en * elems, op.Size, signed);
+
+                Operand m1 = EmitVectorExtract(context, vm, pairIndex + em * elems, op.Size, signed);
+                Operand m2 = EmitVectorExtract(context, vm, pairIndex + 1 + em * elems, op.Size, signed);
+
+                res = EmitVectorInsert(context, res, emit(n1, n2), index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(m1, m2), index + pairs + ed * elems, op.Size);
+            }
+
+            context.Copy(GetVecA32(vd), res);
+        }
     }
 }

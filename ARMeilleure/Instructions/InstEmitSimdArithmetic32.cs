@@ -70,6 +70,71 @@ namespace ARMeilleure.Instructions
             EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseOr(op1, op2));
         }
 
+        public static void Vbsl(ArmEmitterContext context)
+        {
+            EmitVectorTernaryOpZx32(context, (op1, op2, op3) =>
+            {
+                return context.BitwiseExclusiveOr(
+                    context.BitwiseAnd(op1,
+                    context.BitwiseExclusiveOr(op2, op3)), op3);
+            });
+        }
+
+        public static void Vbif(ArmEmitterContext context)
+        {
+            EmitBifBit(context, true);
+        }
+
+        public static void Vbit(ArmEmitterContext context)
+        {
+            EmitBifBit(context, false);
+        }
+
+        private static void EmitBifBit(ArmEmitterContext context, bool notRm)
+        {
+            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+
+            /*
+            if (Optimizations.UseSse2)
+            {
+                Operand d = GetVec(op.Rd);
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pxor, n, d);
+
+                if (notRm)
+                {
+                    res = context.AddIntrinsic(Intrinsic.X86Pandn, m, res);
+                }
+                else
+                {
+                    res = context.AddIntrinsic(Intrinsic.X86Pand, m, res);
+                }
+
+                res = context.AddIntrinsic(Intrinsic.X86Pxor, d, res);
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+
+                context.Copy(d, res);
+            }
+            */
+
+            EmitVectorTernaryOpZx32(context, (d, n, m) =>
+            {
+                if (notRm)
+                {
+                    m = context.BitwiseNot(m);
+                }
+                return context.BitwiseExclusiveOr(
+                    context.BitwiseAnd(m,
+                    context.BitwiseExclusiveOr(d, n)), d);
+            });
+        }
+
         public static void Vmov_S(ArmEmitterContext context)
         {
             EmitScalarUnaryOpF32(context, (op1) => op1);
@@ -335,6 +400,33 @@ namespace ARMeilleure.Instructions
             EmitVectorTernaryOpZx32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)));
         }
 
+        public static void Vpadd_V(ArmEmitterContext context)
+        {
+            EmitVectorPairwiseOpF32(context, (op1, op2) => context.Add(op1, op2));
+        }
+
+        public static void Vpadd_I(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            EmitVectorPairwiseOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
+        }
+
+        public static void Vrsqrte(ArmEmitterContext context)
+        {
+            EmitVectorUnaryOpF32(context, (op1) =>
+            {
+                return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtEstimate, SoftFloat64.FPRSqrtEstimate, op1);
+            });
+        }
+
+        public static void Vrsqrts(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpF32(context, (op1, op2) =>
+            {
+                return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtStepFused, SoftFloat64.FPRSqrtStepFused, op1, op2);
+            });
+        }
+
         public static void Vsel(ArmEmitterContext context)
         {
             var op = (OpCode32SimdSel)context.CurrOp;
@@ -370,7 +462,7 @@ namespace ARMeilleure.Instructions
 
             EmitScalarUnaryOpF32(context, (op1) =>
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtEstimate, SoftFloat64.FPRSqrtEstimate, op1);
+                return EmitSoftFloatCall(context, SoftFloat32.FPSqrt, SoftFloat64.FPSqrt, op1);
             });
         }
 

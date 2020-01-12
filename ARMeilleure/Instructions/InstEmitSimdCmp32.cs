@@ -29,7 +29,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vceq_Z(ArmEmitterContext context)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
             if (op.F)
             {
                 EmitCmpOpF32(context, SoftFloat32.FPCompareEQ, SoftFloat64.FPCompareEQ, true);
@@ -53,7 +53,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vcge_Z(ArmEmitterContext context)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
             if (op.F)
             {
                 EmitCmpOpF32(context, SoftFloat32.FPCompareGE, SoftFloat64.FPCompareGE, true);
@@ -77,7 +77,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vcgt_Z(ArmEmitterContext context)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
             if (op.F)
             {
                 EmitCmpOpF32(context, SoftFloat32.FPCompareGT, SoftFloat64.FPCompareGT, true);
@@ -101,7 +101,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vcle_Z(ArmEmitterContext context)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
             if (op.F)
             {
                 EmitCmpOpF32(context, SoftFloat32.FPCompareLE, SoftFloat64.FPCompareLE, true);
@@ -125,7 +125,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vclt_Z(ArmEmitterContext context)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
             if (op.F)
             {
                 EmitCmpOpF32(context, SoftFloat32.FPCompareLT, SoftFloat64.FPCompareLT, true);
