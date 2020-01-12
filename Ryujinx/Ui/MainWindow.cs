@@ -44,6 +44,8 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem _fullScreen;
         [GUI] MenuItem      _stopEmulation;
         [GUI] CheckMenuItem _favToggle;
+        [GUI] MenuItem      _firmwareInstallFile;
+        [GUI] MenuItem      _firmwareInstallDirectory;
         [GUI] CheckMenuItem _iconToggle;
         [GUI] CheckMenuItem _appToggle;
         [GUI] CheckMenuItem _developerToggle;
@@ -56,6 +58,7 @@ namespace Ryujinx.Ui
         [GUI] TreeView      _gameTable;
         [GUI] TreeSelection _gameTableSelection;
         [GUI] Label         _progressLabel;
+        [GUI] Label         _firmwareVersionLabel;
         [GUI] LevelBar      _progressBar;
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
@@ -134,6 +137,8 @@ namespace Ryujinx.Ui
 #pragma warning disable CS4014
             UpdateGameTable();
 #pragma warning restore CS4014
+
+            Task.Run(RefreshFirmwareLabel);
         }
 
         internal static void ApplyTheme()
@@ -297,39 +302,15 @@ namespace Ryujinx.Ui
                 _gameLoaded              = true;
                 _stopEmulation.Sensitive = true;
 
-                DiscordIntegrationModule.SwitchToPlayingState(_device.System.TitleId, _device.System.TitleName);
+                _firmwareInstallFile.Sensitive      = false;
+                _firmwareInstallDirectory.Sensitive = false;
 
-                string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
-                string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
+                DiscordIntegrationModule.SwitchToPlayingState(_device.System.TitleIdText, _device.System.TitleName);
 
-                IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-
-                ApplicationMetadata appMetadata;
-
-                if (!File.Exists(metadataFile))
+                ApplicationLibrary.LoadAndSaveMetaData(_device.System.TitleIdText, appMetadata =>
                 {
-                    Directory.CreateDirectory(metadataFolder);
-
-                    appMetadata = new ApplicationMetadata
-                    {
-                        Favorite   = false,
-                        TimePlayed = 0,
-                        LastPlayed = "Never"
-                    };
-
-                    byte[] data = JsonSerializer.Serialize(appMetadata, resolver);
-                    File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
-                }
-
-                using (Stream stream = File.OpenRead(metadataFile))
-                {
-                    appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
-                }
-
-                appMetadata.LastPlayed = DateTime.UtcNow.ToString();
-
-                byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
-                File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
+                    appMetadata.LastPlayed = DateTime.UtcNow.ToString();
+                });
             }
         }
 
@@ -356,40 +337,13 @@ namespace Ryujinx.Ui
 
             if (_gameLoaded)
             {
-                string metadataFolder = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", _device.System.TitleId, "gui");
-                string metadataFile   = System.IO.Path.Combine(metadataFolder, "metadata.json");
-
-                IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
-
-                ApplicationMetadata appMetadata;
-
-                if (!File.Exists(metadataFile))
+                ApplicationLibrary.LoadAndSaveMetaData(_device.System.TitleIdText, appMetadata =>
                 {
-                    Directory.CreateDirectory(metadataFolder);
+                    DateTime lastPlayedDateTime = DateTime.Parse(appMetadata.LastPlayed);
+                    double sessionTimePlayed = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
 
-                    appMetadata = new ApplicationMetadata
-                    {
-                        Favorite   = false,
-                        TimePlayed = 0,
-                        LastPlayed = "Never"
-                    };
-
-                    byte[] data = JsonSerializer.Serialize(appMetadata, resolver);
-                    File.WriteAllText(metadataFile, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
-                }
-
-                using (Stream stream = File.OpenRead(metadataFile))
-                {
-                    appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
-                }
-
-                DateTime lastPlayedDateTime = DateTime.Parse(appMetadata.LastPlayed);
-                double   sessionTimePlayed  = DateTime.UtcNow.Subtract(lastPlayedDateTime).TotalSeconds;
-
-                appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
-
-                byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
-                File.WriteAllText(metadataFile, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
+                    appMetadata.TimePlayed += Math.Round(sessionTimePlayed, MidpointRounding.AwayFromZero);
+                });
             }
 
             Profile.FinishProfiling();
@@ -445,33 +399,16 @@ namespace Ryujinx.Ui
         {
             _tableStore.GetIter(out TreeIter treeIter, new TreePath(args.Path));
 
-            string titleId      = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
-            string metadataPath = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "games", titleId, "gui", "metadata.json");
+            string titleId = _tableStore.GetValue(treeIter, 2).ToString().Split("\n")[1].ToLower();
 
-            IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
+            bool newToggleValue = !(bool)_tableStore.GetValue(treeIter, 0);
 
-            ApplicationMetadata appMetadata;
+            _tableStore.SetValue(treeIter, 0, newToggleValue);
 
-            using (Stream stream = File.OpenRead(metadataPath))
+            ApplicationLibrary.LoadAndSaveMetaData(titleId, appMetadata =>
             {
-                appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
-            }
-
-            if ((bool)_tableStore.GetValue(treeIter, 0))
-            {
-                _tableStore.SetValue(treeIter, 0, false);
-
-                appMetadata.Favorite = false;
-            }
-            else
-            {
-                _tableStore.SetValue(treeIter, 0, true);
-
-                appMetadata.Favorite = true;
-            }
-
-            byte[] saveData = JsonSerializer.Serialize(appMetadata, resolver);
-            File.WriteAllText(metadataPath, Encoding.UTF8.GetString(saveData, 0, saveData.Length).PrettyPrintJson());
+                appMetadata.Favorite = newToggleValue;
+            });
         }
 
         private void Row_Activated(object sender, RowActivatedArgs args)
@@ -556,7 +493,199 @@ namespace Ryujinx.Ui
             _gameLoaded = false;
         }
 
-        private void FullScreen_Toggled(object sender, EventArgs args)
+        private void Installer_File_Pressed(object o, EventArgs args)
+        {
+            FileChooserDialog fileChooser = new FileChooserDialog("Choose the firmware file to open",
+                                                                  this,
+                                                                  FileChooserAction.Open,
+                                                                  "Cancel",
+                                                                  ResponseType.Cancel,
+                                                                  "Open",
+                                                                  ResponseType.Accept);
+
+            fileChooser.Filter = new FileFilter();
+            fileChooser.Filter.AddPattern("*.zip");
+            fileChooser.Filter.AddPattern("*.xci");
+
+            HandleInstallerDialog(fileChooser);
+        }
+
+        private void Installer_Directory_Pressed(object o, EventArgs args)
+        {
+            FileChooserDialog directoryChooser = new FileChooserDialog("Choose the firmware directory to open",
+                                                                       this,
+                                                                       FileChooserAction.SelectFolder,
+                                                                       "Cancel",
+                                                                       ResponseType.Cancel,
+                                                                       "Open",
+                                                                       ResponseType.Accept);
+
+            HandleInstallerDialog(directoryChooser);
+        }
+
+        private void RefreshFirmwareLabel()
+        {
+            var currentFirmware = _device.System.GetCurrentFirmwareVersion();
+
+            GLib.Idle.Add(new GLib.IdleHandler(() =>
+            {
+                _firmwareVersionLabel.Text = currentFirmware != null ? currentFirmware.VersionString : "0.0.0";
+
+                return false;
+            }));
+        }
+
+        private void HandleInstallerDialog(FileChooserDialog fileChooser)
+        {
+            if (fileChooser.Run() == (int)ResponseType.Accept)
+            {
+                MessageDialog dialog = null;
+
+                try
+                {
+                    string filename = fileChooser.Filename;
+
+                    fileChooser.Dispose();
+
+                    var firmwareVersion = _device.System.VerifyFirmwarePackage(filename);
+
+                    if (firmwareVersion == null)
+                    {
+                        dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
+
+                        dialog.Text = "Firmware not found.";
+
+                        dialog.SecondaryText = $"A valid system firmware was not found in {filename}.";
+
+                        Logger.PrintError(LogClass.Application, $"A valid system firmware was not found in {filename}.");
+
+                        dialog.Run();
+                        dialog.Hide();
+                        dialog.Dispose();
+
+                        return;
+                    }
+
+                    var currentVersion = _device.System.GetCurrentFirmwareVersion();
+
+                    string dialogMessage = $"System version {firmwareVersion.VersionString} will be installed.";
+
+                    if (currentVersion != null)
+                    {
+                        dialogMessage += $"This will replace the current system version {currentVersion.VersionString}. ";
+                    }
+
+                    dialogMessage += "Do you want to continue?";
+
+                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, false, "");
+
+                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString}";
+                    dialog.SecondaryText = dialogMessage;
+
+                    int response = dialog.Run();
+
+                    dialog.Dispose();
+
+                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.None, false, "");
+
+                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString}";
+
+                    dialog.SecondaryText = "Installing firmware...";
+
+                    if (response == (int)ResponseType.Yes)
+                    {
+                        Logger.PrintInfo(LogClass.Application, $"Installing firmware {firmwareVersion.VersionString}");
+                        
+                        Thread thread = new Thread(() =>
+                        {
+                            GLib.Idle.Add(new GLib.IdleHandler(() =>
+                            {
+                                dialog.Run();
+                                return false;
+                            }));
+
+                            try
+                            {
+                                _device.System.InstallFirmware(filename);
+
+                                GLib.Idle.Add(new GLib.IdleHandler(() =>
+                                {
+                                    dialog.Dispose();
+
+                                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
+
+                                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString}";
+
+                                    dialog.SecondaryText = $"System version {firmwareVersion.VersionString} successfully installed.";
+
+                                    Logger.PrintInfo(LogClass.Application, $"System version {firmwareVersion.VersionString} successfully installed.");
+
+                                    dialog.Run();
+                                    dialog.Dispose();
+
+                                    return false;
+                                }));
+                            }
+                            catch (Exception ex)
+                            {
+                                GLib.Idle.Add(new GLib.IdleHandler(() =>
+                                {
+                                    dialog.Dispose();
+
+                                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
+
+                                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString} Failed.";
+
+                                    dialog.SecondaryText = $"An error occured while installing system version {firmwareVersion.VersionString}." +
+                                     " Please check logs for more info.";
+
+                                    Logger.PrintError(LogClass.Application, ex.Message);
+
+                                    dialog.Run();
+                                    dialog.Dispose();
+
+                                    return false;
+                                }));
+                            }
+                            finally
+                            {
+                                RefreshFirmwareLabel();
+                            }
+                        });
+
+                        thread.Start();
+                    }
+                    else
+                    {
+                        dialog.Dispose();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    if (dialog != null)
+                    {
+                        dialog.Dispose();
+                    }
+
+                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
+
+                    dialog.Text = "Parsing Firmware Failed.";
+
+                    dialog.SecondaryText = "An error occured while parsing firmware. Please check the logs for more info.";
+
+                    Logger.PrintError(LogClass.Application, ex.Message);
+
+                    dialog.Run();
+                    dialog.Dispose();
+                }
+            }
+            else
+            {
+                fileChooser.Dispose();
+            }
+        }
+
+        private void FullScreen_Toggled(object o, EventArgs args)
         {
             if (_fullScreen.Active)
             {
