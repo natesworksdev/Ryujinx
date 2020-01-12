@@ -3,6 +3,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 
@@ -10,7 +11,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     static class SvcTable
     {
-        private const int SvcFuncMaxArguments = 8;
+        private const int SvcFuncMaxArguments64 = 8;
+        private const int SvcFuncMaxArguments32 = 4;
 
         private static Dictionary<int, string> _svcFuncs64;
 
@@ -90,13 +92,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (_svcFuncs64.TryGetValue(svcId, out string svcName))
             {
-                return _svcTable64[svcId] = GenerateMethod(svcName);
+                return _svcTable64[svcId] = GenerateMethod(svcName, SvcFuncMaxArguments64);
             }
 
             return null;
         }
 
-        private static Action<SvcHandler, ExecutionContext> GenerateMethod(string svcName)
+        private static Action<SvcHandler, ExecutionContext> GenerateMethod(string svcName, int registerCleanCount)
         {
             Type[] argTypes = new Type[] { typeof(SvcHandler), typeof(ExecutionContext) };
 
@@ -105,11 +107,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             MethodInfo methodInfo = typeof(SvcHandler).GetMethod(svcName);
 
             ParameterInfo[] methodArgs = methodInfo.GetParameters();
-
-            if (methodArgs.Length > SvcFuncMaxArguments)
-            {
-                throw new InvalidOperationException($"Method \"{svcName}\" has too many arguments, max is 8.");
-            }
+            int numArgs = methodArgs.Count(x => !x.IsOut);
 
             ILGenerator generator = method.GetILGenerator();
 
@@ -152,6 +150,18 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 }
             }
 
+            RAttribute GetRegisterAttribute(ParameterInfo parameterInfo)
+            {
+                RAttribute argumentAttribute = (RAttribute)parameterInfo.GetCustomAttribute(typeof(RAttribute));
+
+                if (argumentAttribute == null)
+                {
+                    throw new InvalidOperationException($"Method \"{svcName}\" is missing a {typeof(RAttribute).Name} attribute on parameter \"{parameterInfo.Name}\"");
+                }
+
+                return argumentAttribute;
+            }
+
             // For functions returning output values, the first registers
             // are used to hold pointers where the value will be stored,
             // so they can't be used to pass argument and we must
@@ -179,15 +189,25 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 string argsFormat = svcName;
 
-                for (int index = 0; index < inputArgsCount; index++)
+                for (int index = 0; index < methodArgs.Length; index++)
                 {
+                    Type argType = methodArgs[index].ParameterType;
+
+                    // Ignore out argument for printing
+                    if (argType.IsByRef)
+                    {
+                        continue;
+                    }
+
+                    RAttribute registerAttribute = GetRegisterAttribute(methodArgs[index]);
+
                     argsFormat += $" {methodArgs[index].Name}: 0x{{{index}:X8}},";
 
                     generator.Emit(OpCodes.Dup);
                     generator.Emit(OpCodes.Ldc_I4, index);
 
                     generator.Emit(OpCodes.Ldarg_1);
-                    generator.Emit(OpCodes.Ldc_I4, byRefArgsCount + index);
+                    generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
 
                     MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
@@ -200,7 +220,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 argsFormat = argsFormat.Substring(0, argsFormat.Length - 1);
 
-                generator.Emit(OpCodes.Ldstr, argsFormat);
+               generator.Emit(OpCodes.Ldstr, argsFormat);
             }
             else
             {
@@ -216,11 +236,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             // Call the SVC function handler.
             generator.Emit(OpCodes.Ldarg_0);
 
-            List<LocalBuilder> locals = new List<LocalBuilder>();
+            List<(LocalBuilder, RAttribute)> locals = new List<(LocalBuilder, RAttribute)>();
 
             for (int index = 0; index < methodArgs.Length; index++)
             {
                 Type argType = methodArgs[index].ParameterType;
+                RAttribute registerAttribute = GetRegisterAttribute(methodArgs[index]);
 
                 if (argType.IsByRef)
                 {
@@ -228,12 +249,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                     LocalBuilder local = generator.DeclareLocal(argType);
 
-                    locals.Add(local);
+                    locals.Add((local, registerAttribute));
 
                     if (!methodArgs[index].IsOut)
                     {
                         generator.Emit(OpCodes.Ldarg_1);
-                        generator.Emit(OpCodes.Ldc_I4, index);
+                        generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
 
                         MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
@@ -249,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 else
                 {
                     generator.Emit(OpCodes.Ldarg_1);
-                    generator.Emit(OpCodes.Ldc_I4, byRefArgsCount + index);
+                    generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
 
                     MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
 
@@ -296,22 +317,41 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             for (int index = 0; index < locals.Count; index++)
             {
+                (LocalBuilder local, RAttribute attribute) = locals[index];
                 generator.Emit(OpCodes.Ldarg_1);
-                generator.Emit(OpCodes.Ldc_I4, outRegIndex++);
-                generator.Emit(OpCodes.Ldloc, locals[index]);
+                generator.Emit(OpCodes.Ldc_I4, attribute.Index);
+                generator.Emit(OpCodes.Ldloc, local);
 
-                ConvertToFieldType(locals[index].LocalType);
+                ConvertToFieldType(local.LocalType);
 
                 MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
 
                 generator.Emit(OpCodes.Call, info);
             }
 
-            // Zero out the remaining unused registers.
-            while (outRegIndex < SvcFuncMaxArguments)
+            bool IsRegisterInUse(int registerIndex)
             {
+                for (int index = 0; index < locals.Count; index++)
+                {
+                    if (registerIndex == locals[index].Item2.Index)
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            // Zero out the remaining unused registers.
+            for (int i = outRegIndex; i < registerCleanCount; i++)
+            {
+                if (IsRegisterInUse(i))
+                {
+                    continue;
+                }
+
                 generator.Emit(OpCodes.Ldarg_1);
-                generator.Emit(OpCodes.Ldc_I4, outRegIndex++);
+                generator.Emit(OpCodes.Ldc_I4, i);
                 generator.Emit(OpCodes.Ldc_I8, 0L);
 
                 MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
