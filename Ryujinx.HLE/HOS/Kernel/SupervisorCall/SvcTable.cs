@@ -13,14 +13,17 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
     {
         private const int SvcFuncMaxArguments64 = 8;
         private const int SvcFuncMaxArguments32 = 4;
+        private const int SvcMax                = 0x80;
 
-        private static Dictionary<int, string> _svcFuncs64;
-
-        private static Action<SvcHandler, ExecutionContext>[] _svcTable64;
+        public static Action<SvcHandler, ExecutionContext>[] SvcTable32 { get; }
+        public static Action<SvcHandler, ExecutionContext>[] SvcTable64 { get; }
 
         static SvcTable()
         {
-            _svcFuncs64 = new Dictionary<int, string>
+            SvcTable32 = new Action<SvcHandler, ExecutionContext>[SvcMax];
+            SvcTable64 = new Action<SvcHandler, ExecutionContext>[SvcMax];
+
+            Dictionary<int, string> svcFuncs64 = new Dictionary<int, string>
             {
                 { 0x01, nameof(SvcHandler.SetHeapSize64)                   },
                 { 0x03, nameof(SvcHandler.SetMemoryAttribute64)            },
@@ -80,22 +83,20 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x7B, nameof(SvcHandler.TerminateProcess64)              }
             };
 
-            _svcTable64 = new Action<SvcHandler, ExecutionContext>[0x80];
-        }
-
-        public static Action<SvcHandler, ExecutionContext> GetSvcFunc(int svcId)
-        {
-            if (_svcTable64[svcId] != null)
+            foreach (KeyValuePair<int, string> value in svcFuncs64)
             {
-                return _svcTable64[svcId];
+                SvcTable64[value.Key] = GenerateMethod(value.Value, SvcFuncMaxArguments64);
             }
 
-            if (_svcFuncs64.TryGetValue(svcId, out string svcName))
+            Dictionary<int, string> svcFuncs32 = new Dictionary<int, string>
             {
-                return _svcTable64[svcId] = GenerateMethod(svcName, SvcFuncMaxArguments64);
-            }
+                // TODO
+            };
 
-            return null;
+            foreach (KeyValuePair<int, string> value in svcFuncs32)
+            {
+                SvcTable32[value.Key] = GenerateMethod(value.Value, SvcFuncMaxArguments32);
+            }
         }
 
         private static Action<SvcHandler, ExecutionContext> GenerateMethod(string svcName, int registerCleanCount)
