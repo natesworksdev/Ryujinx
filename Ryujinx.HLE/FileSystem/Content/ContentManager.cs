@@ -882,7 +882,6 @@ namespace Ryujinx.HLE.FileSystem.Content
                 }
             }
 
-
             return null;
         }
     }
