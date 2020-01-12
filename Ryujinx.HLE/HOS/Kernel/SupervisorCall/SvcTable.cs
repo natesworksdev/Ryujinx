@@ -331,7 +331,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 generator.Emit(OpCodes.Call, info);
 
-                registerInUse |= 1u << locals[index].Item2.Index;
+                registerInUse |= 1u << attribute.Index;
             }
 
             // Zero out the remaining unused registers.
