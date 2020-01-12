@@ -283,8 +283,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             generator.Emit(OpCodes.Call, methodInfo);
 
-            int outRegIndex = 0;
-
             Type retType = methodInfo.ReturnType;
 
             // Print result code.
@@ -297,6 +295,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 generator.Emit(OpCodes.Call, printResultMethod);
             }
 
+            uint registerInUse = 0;
+
             // Save return value into register X0 (when the method has a return value).
             if (retType != typeof(void))
             {
@@ -306,7 +306,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 generator.Emit(OpCodes.Stloc, tempLocal);
                 generator.Emit(OpCodes.Ldarg_1);
-                generator.Emit(OpCodes.Ldc_I4, outRegIndex++);
+                generator.Emit(OpCodes.Ldc_I4, 0);
                 generator.Emit(OpCodes.Ldloc, tempLocal);
 
                 ConvertToFieldType(retType);
@@ -314,6 +314,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
 
                 generator.Emit(OpCodes.Call, info);
+
+                registerInUse |= 1u << 0;
             }
 
             for (int index = 0; index < locals.Count; index++)
@@ -328,25 +330,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
 
                 generator.Emit(OpCodes.Call, info);
-            }
 
-            bool IsRegisterInUse(int registerIndex)
-            {
-                for (int index = 0; index < locals.Count; index++)
-                {
-                    if (registerIndex == locals[index].Item2.Index)
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                registerInUse |= 1u << locals[index].Item2.Index;
             }
 
             // Zero out the remaining unused registers.
-            for (int i = outRegIndex; i < registerCleanCount; i++)
+            for (int i = 0; i < registerCleanCount; i++)
             {
-                if (IsRegisterInUse(i))
+                if ((registerInUse & (1u << i)) != 0)
                 {
                     continue;
                 }
