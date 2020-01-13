@@ -13,7 +13,10 @@ namespace ARMeilleure.Translation.AOT
 {
     public static class Aot
     {
-        private const string WorkDir = "RyuAot";
+        private const string BaseDir = "Ryujinx";
+
+        private const string TitleIdTextDefault    = "0000000000000000";
+        private const string DisplayVersionDefault = "0";
 
         private const int SaveInterval = 30; // Seconds.
 
@@ -29,28 +32,28 @@ namespace ARMeilleure.Translation.AOT
 
         private static readonly Timer _timer;
 
+        private static readonly string _basePath;
+
         private static readonly object _locker;
 
         private static bool _disposed;
 
-        public static string WorkPath { get; }
-        public static string TitleId  { get; private set; }
+        public static string WorkPath       { get; private set; }
+        public static string TitleIdText    { get; private set; }
+        public static string DisplayVersion { get; private set; }
 
         public static bool Enabled      { get; private set; }
         public static bool ReadOnlyMode { get; private set; }
 
         static Aot()
         {
-            string basePath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+            string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
-            WorkPath = Path.Combine(basePath, WorkDir);
+            _basePath = Path.Combine(appDataPath, BaseDir);
 
-            if (!Directory.Exists(WorkPath))
-            {
-                Directory.CreateDirectory(WorkPath);
-            }
-
-            TitleId = String.Empty;
+            WorkPath       = String.Empty;
+            TitleIdText    = TitleIdTextDefault;
+            DisplayVersion = DisplayVersionDefault;
 
             Enabled      = false;
             ReadOnlyMode = true;
@@ -69,11 +72,25 @@ namespace ARMeilleure.Translation.AOT
             _disposed = false;
         }
 
-        public static void Init(string titleId, bool enabled = true, bool readOnlyMode = false)
+        public static void Init(string titleIdText, string displayVersion, bool enabled = true, bool readOnlyMode = false)
         {
-            if (!String.IsNullOrEmpty(titleId))
+            if (String.IsNullOrEmpty(titleIdText) || titleIdText == TitleIdTextDefault)
             {
-                TitleId = titleId.ToUpper();
+                return;
+            }
+
+            TitleIdText = titleIdText;
+
+            if (!String.IsNullOrEmpty(displayVersion))
+            {
+                DisplayVersion = displayVersion;
+            }
+
+            WorkPath = Path.Combine(_basePath, "games", TitleIdText, "cpu", "cache");
+
+            if (!Directory.Exists(WorkPath))
+            {
+                Directory.CreateDirectory(WorkPath);
             }
 
             Enabled      = enabled;
@@ -92,7 +109,7 @@ namespace ARMeilleure.Translation.AOT
 
         private static void LoadAndSplit()
         {
-            string cachePath = Path.Combine(WorkPath, TitleId);
+            string cachePath = Path.Combine(WorkPath, DisplayVersion);
 
             FileInfo cacheInfo = new FileInfo(cachePath);
 
@@ -254,7 +271,7 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    string cachePath = Path.Combine(WorkPath, TitleId);
+                    string cachePath = Path.Combine(WorkPath, DisplayVersion);
 
                     using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
                     {

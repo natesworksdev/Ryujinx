@@ -113,6 +113,7 @@ namespace Ryujinx.HLE.HOS
         public BlitStruct<ApplicationControlProperty> ControlData { get; set; }
 
         public string TitleName { get; private set; }
+        public string DisplayVersion { get; private set; }
 
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
@@ -298,7 +299,7 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        private (Nca Main, Nca patch, Nca Control) GetXciGameData(Xci xci)
+        private (Nca main, Nca patch, Nca control) GetXciGameData(Xci xci)
         {
             if (!xci.HasPartition(XciPartitionType.Secure))
             {
@@ -389,6 +390,8 @@ namespace Ryujinx.HLE.HOS
                         TitleName = ControlData.Value.Titles.ToArray()
                             .FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                     }
+
+                    DisplayVersion = ControlData.Value.DisplayVersion.ToString();
                 }
             }
             else
@@ -517,10 +520,6 @@ namespace Ryujinx.HLE.HOS
                 Device.FileSystem.SetRomFs(dataStorage.AsStream(FileAccess.Read));
             }
 
-            LoadExeFs(codeFs, out Npdm metaData);
-            
-            TitleId = metaData.Aci0.TitleId;
-
             if (controlNca != null)
             {
                 ReadControlData(controlNca);
@@ -529,6 +528,8 @@ namespace Ryujinx.HLE.HOS
             {
                 ControlData.ByteSpan.Clear();
             }
+
+            LoadExeFs(codeFs, out _);
 
             if (TitleId != 0)
             {
@@ -583,7 +584,7 @@ namespace Ryujinx.HLE.HOS
 
             Logger.PrintInfo(LogClass.Loader, "AOT Init...");
 
-            Aot.Init(TitleId);
+            Aot.Init(TitleIdText, DisplayVersion);
 
             ProgramLoader.LoadStaticObjects(this, metaData, staticObjects.ToArray());
         }
