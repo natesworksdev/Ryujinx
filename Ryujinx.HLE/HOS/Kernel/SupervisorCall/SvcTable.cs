@@ -108,7 +108,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             MethodInfo methodInfo = typeof(SvcHandler).GetMethod(svcName);
 
             ParameterInfo[] methodArgs = methodInfo.GetParameters();
-            int numArgs = methodArgs.Count(x => !x.IsOut);
 
             ILGenerator generator = method.GetILGenerator();
 
