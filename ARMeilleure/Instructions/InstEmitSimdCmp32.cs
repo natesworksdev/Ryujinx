@@ -242,7 +242,7 @@ namespace ARMeilleure.Instructions
                     me = ExtractScalar(context, type, op.Vm);
                 }
 
-                Delegate dlg = op.Size != 0
+                Delegate dlg = fSize != 0
                     ? (Delegate)new _S32_F64_F64_Bool(SoftFloat64.FPCompare)
                     : (Delegate)new _S32_F32_F32_Bool(SoftFloat32.FPCompare);
 

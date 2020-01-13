@@ -114,6 +114,8 @@ namespace ARMeilleure.Instructions
 
             OperandType type = (op.Size & 1) != 0 ? OperandType.I64 : OperandType.I32;
 
+            if (op.Size < 2) throw new Exception("Not supported right now");
+
             Operand n = ExtractScalar(context, type, op.Vn);
             Operand m = ExtractScalar(context, type, op.Vm);
 

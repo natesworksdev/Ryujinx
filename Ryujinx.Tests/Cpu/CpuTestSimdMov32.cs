@@ -103,6 +103,96 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+
+        [Test, Combinatorial, Description("VTRN.<size> <Vd>, <Vm>")]
+        public void Vtrn([Values(0u, 1u, 2u, 3u)] uint vm,
+                   [Values(0u, 1u, 2u, 3u)] uint vd,
+                   [Values(0u, 1u, 2u)] uint size,
+                   [Values] bool q)
+        {
+            uint opcode = 0xf3b20080;
+            if (vm == vd) return; //undefined
+
+            if (q)
+            {
+                opcode |= 1 << 6;
+                vd <<= 1; vm <<= 1;
+            }
+            opcode |= (vm & 0x10) << 1;
+            opcode |= (vm & 0xf);
+            opcode |= (vd & 0x10) << 18;
+            opcode |= (vd & 0xf) << 12;
+            opcode |= (size & 0x3) << 18;
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3); //correct
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Combinatorial, Description("VZIP.<size> <Vd>, <Vm>")]
+        public void Vzip([Values(0u, 1u, 2u, 3u)] uint vm,
+           [Values(0u, 1u, 2u, 3u)] uint vd,
+           [Values(0u, 1u, 2u)] uint size,
+           [Values] bool q)
+        {
+            uint opcode = 0xf3b20180;
+            if (vm == vd || (size == 2 && !q)) return; //undefined
+
+            if (q)
+            {
+                opcode |= 1 << 6;
+                vd <<= 1; vm <<= 1;
+            }
+            opcode |= (vm & 0x10) << 1;
+            opcode |= (vm & 0xf);
+            opcode |= (vd & 0x10) << 18;
+            opcode |= (vd & 0xf) << 12;
+            opcode |= (size & 0x3) << 18;
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3); //correct
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Combinatorial, Description("VUZP.<size> <Vd>, <Vm>")]
+        public void Vuzp([Values(0u, 1u, 2u, 3u)] uint vm,
+           [Values(0u, 1u, 2u, 3u)] uint vd,
+           [Values(0u, 1u, 2u)] uint size,
+           [Values] bool q)
+        {
+            uint opcode = 0xf3b20100;
+            if (vm == vd || (size == 2 && !q)) return; //undefined
+
+            if (q)
+            {
+                opcode |= 1 << 6;
+                vd <<= 1; vm <<= 1;
+            }
+            opcode |= (vm & 0x10) << 1;
+            opcode |= (vm & 0xf);
+            opcode |= (vd & 0x10) << 18;
+            opcode |= (vd & 0xf) << 12;
+            opcode |= (size & 0x3) << 18;
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3); //correct
+
+            CompareAgainstUnicorn();
+        }
 #endif
     }
 }

@@ -115,6 +115,8 @@ namespace ARMeilleure.Instructions
             (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
             (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
 
+            bool overlap = vm == vd;
+
             Operand resD = GetVecA32(vd);
             Operand resM = GetVecA32(vm);
 
@@ -125,11 +127,13 @@ namespace ARMeilleure.Instructions
                 Operand m1 = EmitVectorExtract32(context, vm, pairIndex + em * elems, op.Size, false);
 
                 resD = EmitVectorInsert(context, resD, m1, pairIndex + 1 + ed * elems, op.Size);
+                if (overlap) resM = resD;
                 resM = EmitVectorInsert(context, resM, d2, pairIndex + em * elems, op.Size);
+                if (overlap) resD = resM;
             }
 
             context.Copy(GetVecA32(vd), resD);
-            context.Copy(GetVecA32(vm), resM);
+            if (!overlap) context.Copy(GetVecA32(vm), resM);
         }
 
         public static void Vzip(ArmEmitterContext context)
@@ -141,6 +145,8 @@ namespace ARMeilleure.Instructions
 
             (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
             (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+
+            bool overlap = vm == vd;
 
             Operand resD = GetVecA32(vd);
             Operand resM = GetVecA32(vm);
@@ -157,12 +163,16 @@ namespace ARMeilleure.Instructions
                 resD = EmitVectorInsert(context, resD, dRowD, pairIndex + ed * elems, op.Size);
                 resD = EmitVectorInsert(context, resD, mRowD, pairIndex + 1 + ed * elems, op.Size);
 
+                if (overlap) resM = resD;
+
                 resM = EmitVectorInsert(context, resM, dRowM, pairIndex + em * elems, op.Size);
                 resM = EmitVectorInsert(context, resM, mRowM, pairIndex + 1 + em * elems, op.Size);
+
+                if (overlap) resD = resM;
             }
 
             context.Copy(GetVecA32(vd), resD);
-            context.Copy(GetVecA32(vm), resM);
+            if (!overlap) context.Copy(GetVecA32(vm), resM);
         }
 
         public static void Vuzp(ArmEmitterContext context)
@@ -174,6 +184,8 @@ namespace ARMeilleure.Instructions
 
             (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
             (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+
+            bool overlap = vm == vd;
 
             Operand resD = GetVecA32(vd);
             Operand resM = GetVecA32(vm);
@@ -194,11 +206,13 @@ namespace ARMeilleure.Instructions
                 }
 
                 resD = EmitVectorInsert(context, resD, dIns, index + ed * elems, op.Size);
+                if (overlap) resM = resD;
                 resM = EmitVectorInsert(context, resM, mIns, index + em * elems, op.Size);
+                if (overlap) resD = resM;
             }
 
             context.Copy(GetVecA32(vd), resD);
-            context.Copy(GetVecA32(vm), resM);
+            if (!overlap) context.Copy(GetVecA32(vm), resM);
         }
     }
 }
