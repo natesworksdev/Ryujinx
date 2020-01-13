@@ -656,6 +656,7 @@ namespace Ryujinx.Ui
                             }
                         });
 
+                        thread.Name = "GUI.FirmwareInstallerThread";
                         thread.Start();
                     }
                     else
