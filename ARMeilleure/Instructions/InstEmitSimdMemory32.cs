@@ -52,6 +52,7 @@ namespace ARMeilleure.Instructions
             {
                 OpCode32SimdMemSingle op = (OpCode32SimdMemSingle)context.CurrOp;
 
+                if (op.Replicate && !load) throw new Exception("Replicate+Store is undefined for LDn");
                 int eBytes = 1 << op.Size;
 
                 Operand n = GetIntA32(context, op.Rn);
@@ -81,6 +82,14 @@ namespace ARMeilleure.Instructions
                         if (load)
                         {
                             EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
+                            if (op.Replicate)
+                            {
+                                int limit = index + (1 << (3 - op.Size));
+                                while (++index < limit)
+                                {
+                                    EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
+                                }
+                            }
                         }
                         else
                         {

@@ -82,6 +82,7 @@ namespace ARMeilleure.Instructions
         Smaddl,
         Smsubl,
         Smulh,
+        Smull,
         Stlr,
         Stlxp,
         Stlxr,
@@ -512,12 +513,14 @@ namespace ARMeilleure.Instructions
         Trap,
         Tst,
         Ubfx,
+        Umlal,
         Umull,
         Uxtb,
         Uxtb16,
         Uxth,
 
         // FP & SIMD (AArch32)
+        Vabs,
         Vadd,
         Vand,
         Vbif,
@@ -533,6 +536,7 @@ namespace ARMeilleure.Instructions
         Vcvt,
         Vdiv,
         Vdup,
+        Vext,
         Vld1,
         Vld2,
         Vld3,
@@ -553,7 +557,9 @@ namespace ARMeilleure.Instructions
         Vnmls,
         Vorr,
         Vpadd,
+        Vrint,
         Vsel,
+        Vshl,
         Vst1,
         Vst2,
         Vst3,
@@ -564,6 +570,9 @@ namespace ARMeilleure.Instructions
         Vrsqrte,
         Vrsqrts,
         Vsub,
+        Vtrn,
+        Vuzp,
+        Vzip,
 
         Vmov
     }

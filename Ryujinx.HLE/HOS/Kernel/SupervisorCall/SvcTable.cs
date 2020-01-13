@@ -634,6 +634,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             // Zero out the remaining unused registers.
+            /*
             for (int i = 0; i < SvcFuncMaxArguments32; i++)
             {
                 if (IsRegisterInUse(i))
@@ -649,6 +650,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 generator.Emit(OpCodes.Call, info);
             }
+            */
 
             generator.Emit(OpCodes.Ret);
 

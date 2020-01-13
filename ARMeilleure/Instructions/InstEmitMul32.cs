@@ -44,6 +44,27 @@ namespace ARMeilleure.Instructions
             EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
         }
 
+        public static void Smull(ArmEmitterContext context)
+        {
+            OpCode32AluUmull op = (OpCode32AluUmull)context.CurrOp;
+
+            Operand n = context.SignExtend32(OperandType.I64, GetIntA32(context, op.Rn));
+            Operand m = context.SignExtend32(OperandType.I64, GetIntA32(context, op.Rm));
+
+            Operand res = context.Multiply(n, m);
+
+            Operand hi = context.ConvertI64ToI32(context.ShiftRightUI(res, Const(32)));
+            Operand lo = context.ConvertI64ToI32(res);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitGenericStore(context, op.RdHi, op.SetFlags, hi);
+            EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
+        }
+
         public static void Smmla(ArmEmitterContext context)
         {
             EmitSmmul(context, MullFlags.SignedAdd);
@@ -125,13 +146,31 @@ namespace ARMeilleure.Instructions
 
         public static void Smlal(ArmEmitterContext context)
         {
+            EmitMlal(context, true);
+        }
+
+        public static void Umlal(ArmEmitterContext context)
+        {
+            EmitMlal(context, false);
+        }
+
+        public static void EmitMlal(ArmEmitterContext context, bool signed)
+        {
             OpCode32AluUmull op = (OpCode32AluUmull)context.CurrOp;
 
             Operand n = GetIntA32(context, op.Rn);
             Operand m = GetIntA32(context, op.Rm);
 
-            n = context.SignExtend32(OperandType.I64, n);
-            m = context.SignExtend32(OperandType.I64, m);
+            if (signed)
+            {
+                n = context.SignExtend32(OperandType.I64, n);
+                m = context.SignExtend32(OperandType.I64, m);
+            } 
+            else
+            {
+                n = context.ZeroExtend32(OperandType.I64, n);
+                m = context.ZeroExtend32(OperandType.I64, m);
+            }
 
             Operand res = context.Multiply(n, m);
 
@@ -187,6 +226,36 @@ namespace ARMeilleure.Instructions
 
             EmitGenericStore(context, op.RdHi, false, hi);
             EmitGenericStore(context, op.RdLo, false, lo);
+        }
+
+        public static void Smulh(ArmEmitterContext context)
+        {
+            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
+
+            Operand n = GetIntA32(context, op.Rn);
+            Operand m = GetIntA32(context, op.Rm);
+
+            if (op.NHigh)
+            {
+                n = context.ShiftRightSI(n, Const(16));
+            }
+            else
+            {
+                n = context.SignExtend16(OperandType.I32, n);
+            }
+
+            if (op.MHigh)
+            {
+                m = context.ShiftRightSI(m, Const(16));
+            }
+            else
+            {
+                m = context.SignExtend16(OperandType.I32, m);
+            }
+
+            Operand res = context.Multiply(n, m);
+
+            EmitGenericStore(context, op.Rd, false, res);
         }
 
         private static void EmitGenericStore(ArmEmitterContext context, int Rd, bool setFlags, Operand value)

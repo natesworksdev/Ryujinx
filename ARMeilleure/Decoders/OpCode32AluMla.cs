@@ -24,8 +24,8 @@ namespace ARMeilleure.Decoders
             Rd = (opCode >> 16) & 0xf;
             R = (opCode & (1 << 5)) != 0;
 
-            NHigh = ((opCode >> 5) * 0x1) == 1;
-            MHigh = ((opCode >> 6) * 0x1) == 1;
+            NHigh = ((opCode >> 5) & 0x1) == 1;
+            MHigh = ((opCode >> 6) & 0x1) == 1;
             SetFlags = ((opCode >> 20) & 1) != 0;
         }
     }

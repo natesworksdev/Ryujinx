@@ -28,6 +28,57 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vcvt_V(ArmEmitterContext context)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+            bool unsigned = (op.Opc & 1) != 0;
+            bool toInteger = (op.Opc & 2) != 0;
+            OperandType floatSize = (op.Size == 2) ? OperandType.FP32 : OperandType.FP64;
+
+            if (op.Size != 2) throw new Exception("CVT vector mode only currently defined for 32-bit");
+            if (toInteger)
+            {
+                EmitVectorUnaryOpF32(context, (op1) =>
+                {
+                    if (op1.Type == OperandType.FP64)
+                    {
+                        if (unsigned)
+                        {
+                            return context.Call(new _U32_F64(CastDoubleToUInt32), op1);
+                        }
+                        else
+                        {
+                            return context.Call(new _S32_F64(CastDoubleToInt32), op1);
+                        }
+
+                    }
+                    else
+                    {
+                        if (unsigned)
+                        {
+                            return context.Call(new _U32_F32(CastFloatToUInt32), op1);
+                        }
+                        else
+                        {
+                            return context.Call(new _S32_F32(CastFloatToInt32), op1);
+                        }
+                    }
+                });
+            }
+            else
+            {
+                if (unsigned)
+                {
+                    EmitVectorUnaryOpZx32(context, (op1) => EmitFPConvert(context, op1, floatSize, false));
+                } 
+                else
+                {
+                    EmitVectorUnaryOpSx32(context, (op1) => EmitFPConvert(context, op1, floatSize, true));
+                }
+            }
+            
+        }
+
         public static void Vcvt_FD(ArmEmitterContext context)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
@@ -71,7 +122,7 @@ namespace ARMeilleure.Instructions
             if (toInteger)
             {
                 bool unsigned = (op.Opc2 & 1) == 0;
-                bool roundWithFpscr = op.Opc == 1;
+                bool roundWithFpscr = op.Opc != 1;
 
                 Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
@@ -146,6 +197,124 @@ namespace ARMeilleure.Instructions
 
                 InsertScalar(context, op.Vd, asFloat);
             }
+        }
+
+        private static Operand EmitF2iFBitsMul(ArmEmitterContext context, Operand value, int fBits)
+        {
+            Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.FP64);
+
+            if (fBits == 0)
+            {
+                return value;
+            }
+
+            return context.Multiply(value, ConstF(MathF.Pow(2f, fBits)));
+        }
+
+        public static Operand EmitRoundMathCall(ArmEmitterContext context, MidpointRounding roundMode, Operand n)
+        {
+            IOpCode32Simd op = (IOpCode32Simd)context.CurrOp;
+
+            Delegate dlg;
+
+            if ((op.Size & 1) == 0)
+            {
+                dlg = new _F32_F32_MidpointRounding(MathF.Round);
+            }
+            else /* if ((op.Size & 1) == 1) */
+            {
+                dlg = new _F64_F64_MidpointRounding(Math.Round);
+            }
+
+            return context.Call(dlg, n, Const((int)roundMode));
+        }
+
+        public static void Vcvt_R(ArmEmitterContext context)
+        {
+            OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;
+
+            OperandType floatSize = op.RegisterSize == RegisterSize.Simd64 ? OperandType.FP64 : OperandType.FP32;
+
+            bool unsigned = (op.Opc & 1) == 0;
+
+            Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
+
+            switch (op.Opc2)
+            {
+                case 0b00: //away
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
+                    break;
+                case 0b01: //nearest
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToEven, toConvert);
+                    break;
+                case 0b10: //+infinity
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToPositiveInfinity, toConvert);
+                    break;
+                case 0b11: //negative
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToNegativeInfinity, toConvert);
+                    break;
+            }
+
+            Operand asInteger;
+
+            if (floatSize == OperandType.FP64)
+            {
+                if (unsigned)
+                {
+                    asInteger = context.Call(new _U32_F64(CastDoubleToUInt32), toConvert);
+                }
+                else
+                {
+                    asInteger = context.Call(new _S32_F64(CastDoubleToInt32), toConvert);
+                }
+
+            }
+            else
+            {
+                if (unsigned)
+                {
+                    asInteger = context.Call(new _U32_F32(CastFloatToUInt32), toConvert);
+                }
+                else
+                {
+                    asInteger = context.Call(new _S32_F32(CastFloatToInt32), toConvert);
+                }
+            }
+
+            InsertScalar(context, op.Vd, asInteger);
+        }
+
+
+        public static void Vrint_R(ArmEmitterContext context)
+        {
+            OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;
+
+            OperandType floatSize = op.RegisterSize == RegisterSize.Simd64 ? OperandType.FP64 : OperandType.FP32;
+
+            Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
+
+            switch (op.Opc2)
+            {
+                case 0b00: //away
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
+                    break;
+                case 0b01: //nearest
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToEven, toConvert);
+                    break;
+                case 0b10: //+infinity
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToPositiveInfinity, toConvert);
+                    break;
+                case 0b11: //negative
+                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToNegativeInfinity, toConvert);
+                    break;
+            }
+
+            InsertScalar(context, op.Vd, toConvert);
+        }
+
+        public static void Vrint_Z(ArmEmitterContext context)
+        {
+            EmitScalarUnaryOpF32(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToZero, op1));
         }
 
         private static int CastDoubleToInt32(double value)

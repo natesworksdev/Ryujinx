@@ -16,6 +16,31 @@ namespace ARMeilleure.Instructions
     //TODO: SSE2 path
     static partial class InstEmit32
     {
+        public static void Vabs_S(ArmEmitterContext context)
+        {
+            EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Abs, Math.Abs, op1));
+        }
+
+        public static void Vabs_V(ArmEmitterContext context)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+            if (op.F)
+            {
+                EmitVectorUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Abs, Math.Abs, op1));
+            } 
+            else
+            {
+                EmitVectorUnaryOpSx32(context, (op1) => EmitAbs(context, op1));
+            }
+        }
+
+        private static Operand EmitAbs(ArmEmitterContext context, Operand value)
+        {
+            Operand isPositive = context.ICompareGreaterOrEqual(value, Const(value.Type, 0));
+
+            return context.ConditionalSelect(isPositive, value, context.Negate(value));
+        }
+
         public static void Vadd_S(ArmEmitterContext context)
         {
             EmitScalarBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
@@ -63,6 +88,68 @@ namespace ARMeilleure.Instructions
             {
                 InsertScalar(context, op.Vd | 1, insert);
             }
+        }
+
+        public static void Vdup_1(ArmEmitterContext context)
+        {
+            OpCode32SimdDupElem op = (OpCode32SimdDupElem)context.CurrOp;
+
+            Operand insert = EmitVectorExtractZx32(context, op.Vm >> 1, ((op.Vm & 1) << (3 - op.Size)) + op.Index, op.Size);
+
+            // zero extend into an I64, then replicate. Saves the most time over elementwise inserts
+            switch (op.Size)
+            {
+                case 2:
+                    insert = context.Multiply(context.ZeroExtend32(OperandType.I64, insert), Const(0x0000000100000001u));
+                    break;
+                case 1:
+                    insert = context.Multiply(context.ZeroExtend16(OperandType.I64, insert), Const(0x0001000100010001u));
+                    break;
+                case 0:
+                    insert = context.Multiply(context.ZeroExtend8(OperandType.I64, insert), Const(0x0101010101010101u));
+                    break;
+                default:
+                    throw new Exception("Unknown Vdup Size!");
+            }
+
+            InsertScalar(context, op.Vd, insert);
+            if (op.Q)
+            {
+                InsertScalar(context, op.Vd | 1, insert);
+            }
+        }
+
+        public static void Vext(ArmEmitterContext context)
+        {
+            OpCode32SimdVext op = (OpCode32SimdVext)context.CurrOp;
+
+            int elems = op.GetBytesCount();
+            int byteOff = op.Immediate;
+
+            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
+            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
+            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+
+            Operand res = GetVecA32(vd);
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand extract;
+
+                if (byteOff >= elems)
+                {
+                    extract = EmitVectorExtractZx32(context, vm, (byteOff - elems) + em * elems, op.Size);
+                }
+                else
+                {
+                    extract = EmitVectorExtractZx32(context, vn, byteOff + en * elems, op.Size);
+                }
+                byteOff++;
+
+                res = EmitVectorInsert(context, res, extract, index + ed * elems, op.Size);
+            }
+
+            context.Copy(GetVecA32(vd), res);
         }
 
         public static void Vorr_I(ArmEmitterContext context)
@@ -324,6 +411,26 @@ namespace ARMeilleure.Instructions
             EmitVectorBinaryOpSx32(context, (op1, op2) => context.Multiply(op1, op2));
         }
 
+        public static void Vmul_1(ArmEmitterContext context)
+        {
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+            if (op.F)
+            {
+                if (Optimizations.FastFP)
+                {
+                    EmitVectorByScalarOpF32(context, (op1, op2) => context.Multiply(op1, op2));
+                }
+                else
+                {
+                    EmitVectorByScalarOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2));
+                }
+            } 
+            else
+            {
+                EmitVectorByScalarOpI32(context, (op1, op2) => context.Multiply(op1, op2), false);
+            }
+        }
+
         public static void Vmla_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP)
@@ -362,6 +469,26 @@ namespace ARMeilleure.Instructions
             EmitVectorTernaryOpZx32(context, (op1, op2, op3) => context.Add(op1, context.Multiply(op2, op3)));
         }
 
+        public static void Vmla_1(ArmEmitterContext context)
+        {
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+            if (op.F)
+            {
+                if (Optimizations.FastFP)
+                {
+                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => context.Add(op1, context.Multiply(op2, op3)));
+                }
+                else
+                {
+                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => EmitSoftFloatCall(context, SoftFloat32.FPMulAdd, SoftFloat64.FPMulAdd, op1, op2, op3));
+                }
+            }
+            else
+            {
+                EmitVectorsByScalarOpI32(context, (op1, op2, op3) => context.Add(op1, context.Multiply(op2, op3)), false);
+            }
+        }
+
         public static void Vmls_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP)
@@ -398,6 +525,26 @@ namespace ARMeilleure.Instructions
         public static void Vmls_I(ArmEmitterContext context)
         {
             EmitVectorTernaryOpZx32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)));
+        }
+
+        public static void Vmls_1(ArmEmitterContext context)
+        {
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+            if (op.F)
+            {
+                if (Optimizations.FastFP)
+                {
+                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)));
+                }
+                else
+                {
+                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => EmitSoftFloatCall(context, SoftFloat32.FPMulSub, SoftFloat64.FPMulSub, op1, op2, op3));
+                }
+            }
+            else
+            {
+                EmitVectorsByScalarOpI32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)), false);
+            }
         }
 
         public static void Vpadd_V(ArmEmitterContext context)
@@ -450,6 +597,26 @@ namespace ARMeilleure.Instructions
                 }
                 return context.ConditionalSelect(condition, op1, op2);
             });
+        }
+
+        public static void Vshl_I(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            //IMPORTANT TODO: does shift left negative do a truncating shift right on x86?
+            if (op.U)
+            {
+                EmitVectorBinaryOpZx32(context, (op1, op2) => context.ShiftLeft(op1, context.SignExtend8(op2.Type, op2)));
+            } 
+            else
+            {
+                EmitVectorBinaryOpSx32(context, (op1, op2) => context.ShiftLeft(op1, context.SignExtend8(op2.Type, op2)));
+            }
+        }
+
+        public static void Vshl(ArmEmitterContext context)
+        {
+            OpCode32SimdShift op = (OpCode32SimdShift)context.CurrOp;
+            EmitVectorUnaryOpZx32(context, (op1) => context.ShiftLeft(op1, Const(op1.Type, op.Shift)));
         }
 
         public static void Vsqrt_S(ArmEmitterContext context)

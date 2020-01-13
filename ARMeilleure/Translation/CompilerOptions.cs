@@ -11,6 +11,6 @@ namespace ARMeilleure.Translation
         Lsra     = 1 << 2,
 
         MediumCq = SsaForm | Optimize,
-        HighCq   = SsaForm | Optimize | Lsra
+        HighCq   = SsaForm | Optimize
     }
 }
