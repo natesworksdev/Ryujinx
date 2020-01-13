@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             ExecutionContext context = (ExecutionContext)sender;
 
-            Action<SvcHandler, ExecutionContext> svcFunc = SvcTable.GetSvcFunc(e.Id, context.IsAarch32);
+            Action<SvcHandler, ExecutionContext> svcFunc = context.IsAarch32 ? SvcTable.SvcTable32[e.Id] : SvcTable.SvcTable64[e.Id];
 
             if (svcFunc == null)
             {

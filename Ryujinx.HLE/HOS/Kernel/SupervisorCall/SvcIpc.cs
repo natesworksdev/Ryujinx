@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
         }
 
-        public KernelResult ConnectToNamedPort64(ulong namePtr, out int handle)
+        public KernelResult ConnectToNamedPort64([R(1)] ulong namePtr, [R(1)] out int handle)
         {
             return ConnectToNamedPort(namePtr, out handle);
         }
@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult SendSyncRequest64(int handle)
+        public KernelResult SendSyncRequest64([R(0)] int handle)
         {
             return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
         }
@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
         }
 
-        public KernelResult SendSyncRequestWithUserBuffer64(ulong messagePtr, ulong size, int handle)
+        public KernelResult SendSyncRequestWithUserBuffer64([R(0)] ulong messagePtr, [R(1)] ulong size, [R(2)] int handle)
         {
             return SendSyncRequest(messagePtr, size, handle);
         }
@@ -178,10 +178,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult CreateSession64(
-            bool    isLight,
-            ulong   namePtr,
-            out int serverSessionHandle,
-            out int clientSessionHandle)
+            [R(2)] bool    isLight,
+            [R(3)] ulong   namePtr,
+            [R(1)] out int serverSessionHandle,
+            [R(2)] out int clientSessionHandle)
         {
             return CreateSession(isLight, namePtr, out serverSessionHandle, out clientSessionHandle);
         }
@@ -252,7 +252,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult AcceptSession64(int portHandle, out int sessionHandle)
+        public KernelResult AcceptSession64([R(1)] int portHandle, [R(1)] out int sessionHandle)
         {
             return AcceptSession(portHandle, out sessionHandle);
         }
@@ -309,11 +309,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult ReplyAndReceive64(
-            ulong   handlesPtr,
-            int     handlesCount,
-            int     replyTargetHandle,
-            long    timeout,
-            out int handleIndex)
+            [R(1)] ulong   handlesPtr,
+            [R(2)] int     handlesCount,
+            [R(3)] int     replyTargetHandle,
+            [R(4)] long    timeout,
+            [R(1)] out int handleIndex)
         {
             handleIndex = 0;
 
@@ -395,11 +395,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult CreatePort64(
-            int     maxSessions,
-            bool    isLight,
-            ulong   namePtr,
-            out int serverPortHandle,
-            out int clientPortHandle)
+            [R(2)] int     maxSessions,
+            [R(3)] bool    isLight,
+            [R(4)] ulong   namePtr,
+            [R(1)] out int serverPortHandle,
+            [R(2)] out int clientPortHandle)
         {
             return CreatePort(maxSessions, isLight, namePtr, out serverPortHandle, out clientPortHandle);
         }
@@ -439,7 +439,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult ManageNamedPort64(ulong namePtr, int maxSessions, out int handle)
+        public KernelResult ManageNamedPort64([R(1)] ulong namePtr, [R(2)] int maxSessions, [R(1)] out int handle)
         {
             return ManageNamedPort(namePtr, maxSessions, out handle);
         }
@@ -484,7 +484,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult ConnectToPort64(int clientPortHandle, out int clientSessionHandle)
+        public KernelResult ConnectToPort64([R(1)] int clientPortHandle, [R(1)] out int clientSessionHandle)
         {
             return ConnectToPort(clientPortHandle, out clientSessionHandle);
         }

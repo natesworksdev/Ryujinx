@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        public KernelResult SetHeapSize64(ulong size, out ulong position)
+        public KernelResult SetHeapSize64([R(1)] ulong size, [R(1)] out ulong position)
         {
             return SetHeapSize(size, out position);
         }
@@ -35,10 +35,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult SetMemoryAttribute64(
-            ulong           position,
-            ulong           size,
-            MemoryAttribute attributeMask,
-            MemoryAttribute attributeValue)
+            [R(0)] ulong           position,
+            [R(1)] ulong           size,
+            [R(2)] MemoryAttribute attributeMask,
+            [R(3)] MemoryAttribute attributeValue)
         {
             return SetMemoryAttribute(position, size, attributeMask, attributeValue);
         }
@@ -85,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult MapMemory64(ulong dst, ulong src, ulong size)
+        public KernelResult MapMemory64([R(0)] ulong dst, [R(1)] ulong src, [R(2)] ulong size)
         {
             return MapMemory(dst, src, size);
         }
@@ -129,7 +129,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.Map(dst, src, size);
         }
 
-        public KernelResult UnmapMemory64(ulong dst, ulong src, ulong size)
+        public KernelResult UnmapMemory64([R(0)] ulong dst, [R(1)] ulong src, [R(2)] ulong size)
         {
             return UnmapMemory(dst, src, size);
         }
@@ -173,18 +173,20 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.Unmap(dst, src, size);
         }
 
-        public KernelResult QueryMemory64(ulong infoPtr, ulong x1, ulong position)
+        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(2)] ulong position, [R(1)] out ulong pageInfo)
         {
-            return QueryMemory(infoPtr, position);
+            return QueryMemory(infoPtr, position, out pageInfo);
         }
 
-        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint position)
+        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint position, [R(1)] out uint pageInfo)
         {
             // FIXME: Nintendo here bzero the pointer info structure and then copy every element one by one if QueryMemory succeed.
-            return QueryMemory(infoPtr, position);
+            KernelResult result = QueryMemory(infoPtr, position, out ulong pageInfo64);
+            pageInfo = (uint)pageInfo64;
+            return result;
         }
 
-        private KernelResult QueryMemory(ulong infoPtr, ulong position)
+        private KernelResult QueryMemory(ulong infoPtr, ulong position, out ulong pageInfo)
         {
             KMemoryInfo blkInfo = _process.MemoryManager.QueryMemory(position);
 
@@ -197,10 +199,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _process.CpuMemory.WriteInt32 ((long)infoPtr + 0x20, blkInfo.DeviceRefCount);
             _process.CpuMemory.WriteInt32 ((long)infoPtr + 0x24, 0);
 
+            pageInfo = 0;
+
             return KernelResult.Success;
         }
 
-        public KernelResult MapSharedMemory64(int handle, ulong address, ulong size, MemoryPermission permission)
+        public KernelResult MapSharedMemory64([R(0)] int handle, [R(1)] ulong address, [R(2)] ulong size, [R(3)] MemoryPermission permission)
         {
             return MapSharedMemory(handle, address, size, permission);
         }
@@ -256,7 +260,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 permission);
         }
 
-        public KernelResult UnmapSharedMemory64(int handle, ulong address, ulong size)
+        public KernelResult UnmapSharedMemory64([R(0)] int handle, [R(1)] ulong address, [R(2)] ulong size)
         {
             return UnmapSharedMemory(handle, address, size);
         }
@@ -307,10 +311,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult CreateTransferMemory64(
-            ulong            address,
-            ulong            size,
-            MemoryPermission permission,
-            out int          handle)
+            [R(1)] ulong            address,
+            [R(2)] ulong            size,
+            [R(3)] MemoryPermission permission,
+            [R(1)] out int          handle)
         {
             return CreateTransferMemory(address, size, permission, out handle);
         }
@@ -360,7 +364,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.HandleTable.GenerateHandle(transferMemory, out handle);
         }
 
-        public KernelResult MapPhysicalMemory64(ulong address, ulong size)
+        public KernelResult MapPhysicalMemory64([R(0)] ulong address, [R(1)] ulong size)
         {
             return MapPhysicalMemory(address, size);
         }
@@ -398,7 +402,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.MapPhysicalMemory(address, size);
         }
 
-        public KernelResult UnmapPhysicalMemory64(ulong address, ulong size)
+        public KernelResult UnmapPhysicalMemory64([R(0)] ulong address, [R(1)] ulong size)
         {
             return UnmapPhysicalMemory(address, size);
         }
@@ -436,7 +440,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
-        public KernelResult MapProcessCodeMemory64(int handle, ulong dst, ulong src, ulong size)
+        public KernelResult MapProcessCodeMemory64([R(0)] int handle, [R(1)] ulong dst, [R(2)] ulong src, [R(3)] ulong size)
         {
             return MapProcessCodeMemory(handle, dst, src, size);
         }
@@ -478,7 +482,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return targetProcess.MemoryManager.MapProcessCodeMemory(dst, src, size);
         }
 
-        public KernelResult UnmapProcessCodeMemory64(int handle, ulong dst, ulong src, ulong size)
+        public KernelResult UnmapProcessCodeMemory64([R(0)] int handle, [R(1)] ulong dst, [R(2)] ulong src, [R(3)] ulong size)
         {
             return UnmapProcessCodeMemory(handle, dst, src, size);
         }
@@ -520,7 +524,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return targetProcess.MemoryManager.UnmapProcessCodeMemory(dst, src, size);
         }
 
-        public KernelResult SetProcessMemoryPermission64(int handle, ulong src, ulong size, MemoryPermission permission)
+        public KernelResult SetProcessMemoryPermission64([R(0)] int handle, [R(1)] ulong src, [R(2)] ulong size, [R(3)] MemoryPermission permission)
         {
             return SetProcessMemoryPermission(handle, src, size, permission);
         }

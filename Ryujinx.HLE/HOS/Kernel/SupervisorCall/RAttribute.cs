@@ -6,6 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
     public class RAttribute : Attribute
     {
         public readonly int Index;
+
         public RAttribute(int index)
         {
             Index = index;

@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        public KernelResult WaitSynchronization64(ulong handlesPtr, int handlesCount, long timeout, out int handleIndex)
+        public KernelResult WaitSynchronization64([R(1)] ulong handlesPtr, [R(2)] int handlesCount, [R(3)] long timeout, [R(1)] out int handleIndex)
         {
             return WaitSynchronization(handlesPtr, handlesCount, timeout, out handleIndex);
         }
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _system.Synchronization.WaitFor(syncObjs.ToArray(), timeout, out handleIndex);
         }
 
-        public KernelResult CancelSynchronization64(int handle)
+        public KernelResult CancelSynchronization64([R(0)] int handle)
         {
             return CancelSynchronization(handle);
         }
@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return KernelResult.Success;
         }
 
-        public KernelResult ArbitrateLock64(int ownerHandle, ulong mutexAddress, int requesterHandle)
+        public KernelResult ArbitrateLock64([R(0)] int ownerHandle, [R(1)] ulong mutexAddress, [R(2)] int requesterHandle)
         {
             return ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
 
-        public KernelResult ArbitrateUnlock64(ulong mutexAddress)
+        public KernelResult ArbitrateUnlock64([R(0)] ulong mutexAddress)
         {
             return ArbitrateUnlock(mutexAddress);
         }
@@ -126,10 +126,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult WaitProcessWideKeyAtomic64(
-            ulong mutexAddress,
-            ulong condVarAddress,
-            int   handle,
-            long  timeout)
+            [R(0)] ulong mutexAddress,
+            [R(1)] ulong condVarAddress,
+            [R(2)] int   handle,
+            [R(3)] long  timeout)
         {
             return WaitProcessWideKeyAtomic(mutexAddress, condVarAddress, handle, timeout);
         }
@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 timeout);
         }
 
-        public KernelResult SignalProcessWideKey64(ulong address, int count)
+        public KernelResult SignalProcessWideKey64([R(0)] ulong address, [R(1)] int count)
         {
             return SignalProcessWideKey(address, count);
         }
@@ -189,7 +189,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return KernelResult.Success;
         }
 
-        public KernelResult WaitForAddress64(ulong address, ArbitrationType type, int value, long timeout)
+        public KernelResult WaitForAddress64([R(0)] ulong address, [R(1)] ArbitrationType type, [R(2)] int value, [R(3)] long timeout)
         {
             return WaitForAddress(address, type, value, timeout);
         }
@@ -238,7 +238,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult SignalToAddress64(ulong address, SignalType type, int value, int count)
+        public KernelResult SignalToAddress64([R(0)] ulong address, [R(1)] SignalType type, [R(2)] int value, [R(3)] int count)
         {
             return SignalToAddress(address, type, value, count);
         }
