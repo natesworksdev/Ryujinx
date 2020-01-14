@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         public ResultCode CreateSaveDataFileSystem(ServiceCtx context)
         {
             SaveDataAttribute  attribute      = context.RequestData.ReadStruct<SaveDataAttribute>();
-            SaveDataCreateInfo createInfo     = context.RequestData.ReadStruct<SaveDataCreateInfo>();
+            SaveDataCreationInfo creationInfo     = context.RequestData.ReadStruct<SaveDataCreationInfo>();
             SaveMetaCreateInfo metaCreateInfo = context.RequestData.ReadStruct<SaveMetaCreateInfo>();
 
             // TODO: There's currently no program registry for FS to reference.
@@ -140,14 +140,14 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 attribute.TitleId = new TitleId(context.Process.TitleId);
             }
 
-            if (createInfo.OwnerId == TitleId.Zero)
+            if (creationInfo.OwnerId == TitleId.Zero)
             {
-                createInfo.OwnerId = new TitleId(context.Process.TitleId);
+                creationInfo.OwnerId = new TitleId(context.Process.TitleId);
             }
 
             Logger.PrintInfo(LogClass.ServiceFs, $"Creating save with title ID {attribute.TitleId.Value:x16}");
 
-            Result result = _baseFileSystemProxy.CreateSaveDataFileSystem(ref attribute, ref createInfo, ref metaCreateInfo);
+            Result result = _baseFileSystemProxy.CreateSaveDataFileSystem(ref attribute, ref creationInfo, ref metaCreateInfo);
 
             return (ResultCode)result.Value;
         }
@@ -156,9 +156,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         public ResultCode CreateSaveDataFileSystemBySystemSaveDataId(ServiceCtx context)
         {
             SaveDataAttribute  attribute  = context.RequestData.ReadStruct<SaveDataAttribute>();
-            SaveDataCreateInfo createInfo = context.RequestData.ReadStruct<SaveDataCreateInfo>();
+            SaveDataCreationInfo creationInfo = context.RequestData.ReadStruct<SaveDataCreationInfo>();
 
-            Result result = _baseFileSystemProxy.CreateSaveDataFileSystemBySystemSaveDataId(ref attribute, ref createInfo);
+            Result result = _baseFileSystemProxy.CreateSaveDataFileSystemBySystemSaveDataId(ref attribute, ref creationInfo);
 
             return (ResultCode)result.Value;
         }
@@ -205,10 +205,10 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         [Command(35)]
         public ResultCode CreateSaveDataFileSystemWithHashSalt(ServiceCtx context)
         {
-            SaveDataAttribute  attribute      = context.RequestData.ReadStruct<SaveDataAttribute>();
-            SaveDataCreateInfo createInfo     = context.RequestData.ReadStruct<SaveDataCreateInfo>();
-            SaveMetaCreateInfo metaCreateInfo = context.RequestData.ReadStruct<SaveMetaCreateInfo>();
-            HashSalt           hashSalt       = context.RequestData.ReadStruct<HashSalt>();
+            SaveDataAttribute    attribute      = context.RequestData.ReadStruct<SaveDataAttribute>();
+            SaveDataCreationInfo creationInfo   = context.RequestData.ReadStruct<SaveDataCreationInfo>();
+            SaveMetaCreateInfo   metaCreateInfo = context.RequestData.ReadStruct<SaveMetaCreateInfo>();
+            HashSalt             hashSalt       = context.RequestData.ReadStruct<HashSalt>();
 
             // TODO: There's currently no program registry for FS to reference.
             // Workaround that by setting the application ID and owner ID if they're not already set
@@ -217,12 +217,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 attribute.TitleId = new TitleId(context.Process.TitleId);
             }
 
-            if (createInfo.OwnerId == TitleId.Zero)
+            if (creationInfo.OwnerId == TitleId.Zero)
             {
-                createInfo.OwnerId = new TitleId(context.Process.TitleId);
+                creationInfo.OwnerId = new TitleId(context.Process.TitleId);
             }
 
-            Result result = _baseFileSystemProxy.CreateSaveDataFileSystemWithHashSalt(ref attribute, ref createInfo, ref metaCreateInfo, ref hashSalt);
+            Result result = _baseFileSystemProxy.CreateSaveDataFileSystemWithHashSalt(ref attribute, ref creationInfo, ref metaCreateInfo, ref hashSalt);
 
             return (ResultCode)result.Value;
         }
