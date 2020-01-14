@@ -1,85 +1,72 @@
-using Ryujinx.HLE.OsHle.Utilities;
+using Ryujinx.HLE.Exceptions;
 using System.IO;
 using System.Text;
 
 namespace Ryujinx.HLE.Loaders.Npdm
 {
-    //https://github.com/SciresM/hactool/blob/master/npdm.c
-    //https://github.com/SciresM/hactool/blob/master/npdm.h
-    //http://switchbrew.org/index.php?title=NPDM
-    class Npdm
+    // https://github.com/SciresM/hactool/blob/master/npdm.c
+    // https://github.com/SciresM/hactool/blob/master/npdm.h
+    // http://switchbrew.org/index.php?title=NPDM
+    public class Npdm
     {
-        public bool   Is64Bits;
-        public int    AddressSpaceWidth;
-        public byte   MainThreadPriority;
-        public byte   DefaultCpuId;
-        public int    SystemResourceSize;
-        public int    ProcessCategory;
-        public int    MainEntrypointStackSize;
-        public string TitleName;
-        public byte[] ProductCode;
-        public ulong  FSPerms;
+        private const int MetaMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
 
-        private int ACI0Offset;
-        private int ACI0Size;
-        private int ACIDOffset;
-        private int ACIDSize;
+        public byte   MmuFlags            { get; private set; }
+        public bool   Is64Bits            { get; private set; }
+        public byte   MainThreadPriority  { get; private set; }
+        public byte   DefaultCpuId        { get; private set; }
+        public int    PersonalMmHeapSize  { get; private set; }
+        public int    ProcessCategory     { get; private set; }
+        public int    MainThreadStackSize { get; private set; }
+        public string TitleName           { get;         set; }
+        public byte[] ProductCode         { get; private set; }
 
-        public ACI0 ACI0;
-        public ACID ACID;
+        public Aci0 Aci0 { get; private set; }
+        public Acid Acid { get; private set; }
 
-        public const long NpdmMagic = 'M' << 0 | 'E' << 8 | 'T' << 16 | 'A' << 24;
-
-        public Npdm(Stream NPDMStream)
+        public Npdm(Stream stream)
         {
-            BinaryReader Reader = new BinaryReader(NPDMStream);
+            BinaryReader reader = new BinaryReader(stream);
 
-            if (Reader.ReadInt32() != NpdmMagic)
+            if (reader.ReadInt32() != MetaMagic)
             {
                 throw new InvalidNpdmException("NPDM Stream doesn't contain NPDM file!");
             }
 
-            Reader.ReadInt64(); // Padding / Unused
+            reader.ReadInt64();
 
-            // MmuFlags, bit0: 64-bit instructions, bits1-3: address space width (1=64-bit, 2=32-bit). Needs to be <= 0xF
-            byte MmuFlags     = Reader.ReadByte();
-            Is64Bits          = (MmuFlags & 1) != 0;
-            AddressSpaceWidth = (MmuFlags >> 1) & 7;
+            MmuFlags = reader.ReadByte();
 
-            Reader.ReadByte(); // Padding / Unused
+            Is64Bits = (MmuFlags & 1) != 0;
 
-            MainThreadPriority = Reader.ReadByte(); // (0-63)
-            DefaultCpuId       = Reader.ReadByte();
+            reader.ReadByte();
 
-            Reader.ReadInt32(); // Padding / Unused
+            MainThreadPriority = reader.ReadByte();
+            DefaultCpuId       = reader.ReadByte();
 
-            // System resource size (max size as of 5.x: 534773760). Unknown usage.
-            SystemResourceSize = EndianSwap.Swap32(Reader.ReadInt32());
+            reader.ReadInt32();
 
-            // ProcessCategory (0: regular title, 1: kernel built-in). Should be 0 here.
-            ProcessCategory = EndianSwap.Swap32(Reader.ReadInt32());
+            PersonalMmHeapSize = reader.ReadInt32();
 
-            // Main entrypoint stack size
-            // (Should(?) be page-aligned. In non-nspwn scenarios, values of 0 can also rarely break in Horizon.
-            // This might be something auto-adapting or a security feature of some sort ?)
-            MainEntrypointStackSize = Reader.ReadInt32();
+            ProcessCategory = reader.ReadInt32();
 
-            byte[] TempTitleName = Reader.ReadBytes(0x10);
-            TitleName            = Encoding.UTF8.GetString(TempTitleName, 0, TempTitleName.Length).Trim('\0');
+            MainThreadStackSize = reader.ReadInt32();
 
-            ProductCode = Reader.ReadBytes(0x10); // Unknown value
+            byte[] tempTitleName = reader.ReadBytes(0x10);
 
-            NPDMStream.Seek(0x30, SeekOrigin.Current); // Skip reserved bytes
+            TitleName = Encoding.UTF8.GetString(tempTitleName, 0, tempTitleName.Length).Trim('\0');
 
-            ACI0Offset = Reader.ReadInt32();
-            ACI0Size   = Reader.ReadInt32();
-            ACIDOffset = Reader.ReadInt32();
-            ACIDSize   = Reader.ReadInt32();
+            ProductCode = reader.ReadBytes(0x10);
 
-            ACI0       = new ACI0(NPDMStream, ACI0Offset);
-            ACID       = new ACID(NPDMStream, ACIDOffset);
+            stream.Seek(0x30, SeekOrigin.Current);
 
-            FSPerms    = ACI0.FSAccessHeader.PermissionsBitmask & ACID.FSAccessControl.PermissionsBitmask;
+            int aci0Offset = reader.ReadInt32();
+            int aci0Size   = reader.ReadInt32();
+            int acidOffset = reader.ReadInt32();
+            int acidSize   = reader.ReadInt32();
+
+            Aci0 = new Aci0(stream, aci0Offset);
+            Acid = new Acid(stream, acidOffset);
         }
     }
 }

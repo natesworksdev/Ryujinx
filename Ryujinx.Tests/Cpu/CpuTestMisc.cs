@@ -1,19 +1,126 @@
-using ChocolArm64.State;
+#define Misc
+
+using ARMeilleure.State;
 
 using NUnit.Framework;
 
-using System.Runtime.Intrinsics.X86;
-
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Misc"), Explicit]
+    [Category("Misc")]
     public sealed class CpuTestMisc : CpuTest
     {
+#if Misc
+        private const int RndCnt    = 2;
+        private const int RndCntImm = 2;
+
+#region "AluImm & Csel"
+        [Test, Pairwise]
+        public void Adds_Csinc_64bit([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn,
+                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                     [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
+        {
+            uint opCmn  = 0xB100001F; // ADDS  X31, X0,  #0,  LSL #0 -> CMN  X0, #0, LSL #0
+            uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
+
+            opCmn  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCset |= ((cond & 15) << 12);
+
+            SetContext(x0: xn);
+            Opcode(opCmn);
+            Opcode(opCset);
+            Opcode(0xD65F03C0); // RET
+            ExecuteOpcodes();
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Adds_Csinc_32bit([Values(0x00000000u, 0x7FFFFFFFu,
+                                             0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
+                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                     [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
+        {
+            uint opCmn  = 0x3100001F; // ADDS  W31, W0,  #0,  LSL #0 -> CMN  W0, #0, LSL #0
+            uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
+
+            opCmn  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCset |= ((cond & 15) << 12);
+
+            SetContext(x0: wn);
+            Opcode(opCmn);
+            Opcode(opCset);
+            Opcode(0xD65F03C0); // RET
+            ExecuteOpcodes();
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Subs_Csinc_64bit([Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
+                                             0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn,
+                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                     [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
+        {
+            uint opCmp  = 0xF100001F; // SUBS  X31, X0,  #0,  LSL #0 -> CMP  X0, #0, LSL #0
+            uint opCset = 0x9A9F07E0; // CSINC X0,  X31, X31, EQ     -> CSET X0, NE
+
+            opCmp  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCset |= ((cond & 15) << 12);
+
+            SetContext(x0: xn);
+            Opcode(opCmp);
+            Opcode(opCset);
+            Opcode(0xD65F03C0); // RET
+            ExecuteOpcodes();
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        public void Subs_Csinc_32bit([Values(0x00000000u, 0x7FFFFFFFu,
+                                             0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
+                                     [Values(0u, 4095u)] [Random(0u, 4095u, RndCntImm)] uint imm,
+                                     [Values(0b00u, 0b01u)] uint shift,          // <LSL #0, LSL #12>
+                                     [Values(0b0000u, 0b0001u, 0b0010u, 0b0011u, // <EQ, NE, CS/HS, CC/LO,
+                                             0b0100u, 0b0101u, 0b0110u, 0b0111u, //  MI, PL, VS, VC,
+                                             0b1000u, 0b1001u, 0b1010u, 0b1011u, //  HI, LS, GE, LT,
+                                             0b1100u, 0b1101u)] uint cond)       //  GT, LE>
+        {
+            uint opCmp  = 0x7100001F; // SUBS  W31, W0,  #0,  LSL #0 -> CMP  W0, #0, LSL #0
+            uint opCset = 0x1A9F07E0; // CSINC W0,  W31, W31, EQ     -> CSET W0, NE
+
+            opCmp  |= ((shift & 3) << 22) | ((imm & 4095) << 10);
+            opCset |= ((cond & 15) << 12);
+
+            SetContext(x0: wn);
+            Opcode(opCmp);
+            Opcode(opCset);
+            Opcode(0xD65F03C0); // RET
+            ExecuteOpcodes();
+
+            CompareAgainstUnicorn();
+        }
+#endregion
+
+        [Explicit]
         [TestCase(0xFFFFFFFDu)] // Roots.
         [TestCase(0x00000005u)]
-        public void Misc1(uint A)
+        public void Misc1(uint a)
         {
-            // ((A + 3) * (A - 5)) / ((A + 5) * (A - 3)) = 0
+            // ((a + 3) * (a - 5)) / ((a + 5) * (a - 3)) = 0
 
             /*
             ADD W2, W0, 3
@@ -23,11 +130,10 @@ namespace Ryujinx.Tests.Cpu
             SUB W0, W0, #3
             MUL W0, W1, W0
             SDIV W0, W2, W0
-            BRK #0
             RET
             */
 
-            SetThreadState(X0: A);
+            SetContext(x0: a);
             Opcode(0x11000C02);
             Opcode(0x51001401);
             Opcode(0x1B017C42);
@@ -35,13 +141,13 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0x51000C00);
             Opcode(0x1B007C20);
             Opcode(0x1AC00C40);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.Zero);
+            Assert.That(GetContext().GetX(0), Is.Zero);
         }
 
+        [Explicit]
         [TestCase(-20f,  -5f)] // 18 integer solutions.
         [TestCase(-12f,  -6f)]
         [TestCase(-12f,   3f)]
@@ -60,9 +166,9 @@ namespace Ryujinx.Tests.Cpu
         [TestCase( 12f,  -3f)]
         [TestCase( 12f,   6f)]
         [TestCase( 20f,   5f)]
-        public void Misc2(float A, float B)
+        public void Misc2(float a, float b)
         {
-            // 1 / ((1 / A + 1 / B) ^ 2) = 16
+            // 1 / ((1 / a + 1 / b) ^ 2) = 16
 
             /*
             FMOV S2, 1.0e+0
@@ -71,26 +177,23 @@ namespace Ryujinx.Tests.Cpu
             FADD S0, S0, S1
             FDIV S0, S2, S0
             FMUL S0, S0, S0
-            BRK #0
             RET
             */
 
-            SetThreadState(
-                V0: Sse.SetScalarVector128(A),
-                V1: Sse.SetScalarVector128(B));
+            SetContext(v0: MakeVectorScalar(a), v1: MakeVectorScalar(b));
             Opcode(0x1E2E1002);
             Opcode(0x1E201840);
             Opcode(0x1E211841);
             Opcode(0x1E212800);
             Opcode(0x1E201840);
             Opcode(0x1E200800);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(Sse41.Extract(GetThreadState().V0, 0), Is.EqualTo(16f));
+            Assert.That(GetContext().GetV(0).AsFloat(), Is.EqualTo(16f));
         }
 
+        [Explicit]
         [TestCase(-20d,  -5d)] // 18 integer solutions.
         [TestCase(-12d,  -6d)]
         [TestCase(-12d,   3d)]
@@ -109,9 +212,9 @@ namespace Ryujinx.Tests.Cpu
         [TestCase( 12d,  -3d)]
         [TestCase( 12d,   6d)]
         [TestCase( 20d,   5d)]
-        public void Misc3(double A, double B)
+        public void Misc3(double a, double b)
         {
-            // 1 / ((1 / A + 1 / B) ^ 2) = 16
+            // 1 / ((1 / a + 1 / b) ^ 2) = 16
 
             /*
             FMOV D2, 1.0e+0
@@ -120,77 +223,70 @@ namespace Ryujinx.Tests.Cpu
             FADD D0, D0, D1
             FDIV D0, D2, D0
             FMUL D0, D0, D0
-            BRK #0
             RET
             */
 
-            SetThreadState(
-                V0: Sse.StaticCast<double, float>(Sse2.SetScalarVector128(A)),
-                V1: Sse.StaticCast<double, float>(Sse2.SetScalarVector128(B)));
+            SetContext(v0: MakeVectorScalar(a), v1: MakeVectorScalar(b));
             Opcode(0x1E6E1002);
             Opcode(0x1E601840);
             Opcode(0x1E611841);
             Opcode(0x1E612800);
             Opcode(0x1E601840);
             Opcode(0x1E600800);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(VectorExtractDouble(GetThreadState().V0, 0), Is.EqualTo(16d));
+            Assert.That(GetContext().GetV(0).AsDouble(), Is.EqualTo(16d));
         }
 
-        [Test]
-        public void MiscF([Range(0u, 92u, 1u)] uint A)
+        [Test, Ignore("The Tester supports only one return point.")]
+        public void MiscF([Range(0u, 92u, 1u)] uint a)
         {
-            ulong F_n(uint n)
+            ulong Fn(uint n)
             {
-                ulong a = 0, b = 1, c;
+                ulong x = 0, y = 1, z;
 
                 if (n == 0)
                 {
-                    return a;
+                    return x;
                 }
 
                 for (uint i = 2; i <= n; i++)
                 {
-                    c = a + b;
-                    a = b;
-                    b = c;
+                    z = x + y;
+                    x = y;
+                    y = z;
                 }
 
-                return b;
+                return y;
             }
 
             /*
-            0x0000000000000000: MOV W4, W0
-            0x0000000000000004: CBZ W0, #0x3C
-            0x0000000000000008: CMP W0, #1
-            0x000000000000000C: B.LS #0x48
-            0x0000000000000010: MOVZ W2, #0x2
-            0x0000000000000014: MOVZ X1, #0x1
-            0x0000000000000018: MOVZ X3, #0
-            0x000000000000001C: ADD X0, X3, X1
-            0x0000000000000020: ADD W2, W2, #1
-            0x0000000000000024: MOV X3, X1
-            0x0000000000000028: MOV X1, X0
-            0x000000000000002C: CMP W4, W2
-            0x0000000000000030: B.HS #0x1C
-            0x0000000000000034: BRK #0
-            0x0000000000000038: RET
-            0x000000000000003C: MOVZ X0, #0
-            0x0000000000000040: BRK #0
-            0x0000000000000044: RET
-            0x0000000000000048: MOVZ X0, #0x1
-            0x000000000000004C: BRK #0
-            0x0000000000000050: RET
+            0x0000000000001000: MOV W4, W0
+            0x0000000000001004: CBZ W0, #0x34
+            0x0000000000001008: CMP W0, #1
+            0x000000000000100C: B.LS #0x34
+            0x0000000000001010: MOVZ W2, #0x2
+            0x0000000000001014: MOVZ X1, #0x1
+            0x0000000000001018: MOVZ X3, #0
+            0x000000000000101C: ADD X0, X3, X1
+            0x0000000000001020: ADD W2, W2, #1
+            0x0000000000001024: MOV X3, X1
+            0x0000000000001028: MOV X1, X0
+            0x000000000000102C: CMP W4, W2
+            0x0000000000001030: B.HS #-0x14
+            0x0000000000001034: RET
+            0x0000000000001038: MOVZ X0, #0
+            0x000000000000103C: RET
+            0x0000000000001040: MOVZ X0, #0x1
+            0x0000000000001044: RET
             */
 
-            SetThreadState(X0: A);
+            SetContext(x0: a);
             Opcode(0x2A0003E4);
-            Opcode(0x340001C0);
+            Opcode(0x340001A0);
             Opcode(0x7100041F);
-            Opcode(0x540001E9);
+            Opcode(0x540001A9);
             Opcode(0x52800042);
             Opcode(0xD2800021);
             Opcode(0xD2800003);
@@ -200,71 +296,67 @@ namespace Ryujinx.Tests.Cpu
             Opcode(0xAA0003E1);
             Opcode(0x6B02009F);
             Opcode(0x54FFFF62);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             Opcode(0xD2800000);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             Opcode(0xD2800020);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.EqualTo(F_n(A)));
+            Assert.That(GetContext().GetX(0), Is.EqualTo(Fn(a)));
         }
 
+        [Explicit]
         [Test]
         public void MiscR()
         {
-            const ulong Result = 5;
+            const ulong result = 5;
 
             /*
-            0x0000000000000000: MOV X0, #2
-            0x0000000000000004: MOV X1, #3
-            0x0000000000000008: ADD X0, X0, X1
-            0x000000000000000C: BRK #0
-            0x0000000000000010: RET
+            0x0000000000001000: MOV X0, #2
+            0x0000000000001004: MOV X1, #3
+            0x0000000000001008: ADD X0, X0, X1
+            0x000000000000100C: RET
             */
 
             Opcode(0xD2800040);
             Opcode(0xD2800061);
             Opcode(0x8B010000);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.EqualTo(Result));
+            Assert.That(GetContext().GetX(0), Is.EqualTo(result));
 
             Reset();
 
             /*
-            0x0000000000000000: MOV X0, #3
-            0x0000000000000004: MOV X1, #2
-            0x0000000000000008: ADD X0, X0, X1
-            0x000000000000000C: BRK #0
-            0x0000000000000010: RET
+            0x0000000000001000: MOV X0, #3
+            0x0000000000001004: MOV X1, #2
+            0x0000000000001008: ADD X0, X0, X1
+            0x000000000000100C: RET
             */
 
             Opcode(0xD2800060);
             Opcode(0xD2800041);
             Opcode(0x8B010000);
-            Opcode(0xD4200000);
             Opcode(0xD65F03C0);
             ExecuteOpcodes();
 
-            Assert.That(GetThreadState().X0, Is.EqualTo(Result));
+            Assert.That(GetContext().GetX(0), Is.EqualTo(result));
         }
 
+        [Explicit]
         [TestCase( 0ul)]
         [TestCase( 1ul)]
         [TestCase( 2ul)]
         [TestCase(42ul)]
-        public void SanityCheck(ulong A)
+        public void SanityCheck(ulong a)
         {
-            uint Opcode = 0xD503201F; // NOP
-            AThreadState ThreadState = SingleOpcode(Opcode, X0: A);
+            uint opcode = 0xD503201F; // NOP
+            ExecutionContext context = SingleOpcode(opcode, x0: a);
 
-            Assert.That(ThreadState.X0, Is.EqualTo(A));
+            Assert.That(context.GetX(0), Is.EqualTo(a));
         }
+#endif
     }
 }

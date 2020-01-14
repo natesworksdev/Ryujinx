@@ -1,17 +1,15 @@
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    public interface IExecutable
+    interface IExecutable
     {
-        string Name { get; }
-
         byte[] Text { get; }
-        byte[] RO   { get; }
+        byte[] Ro   { get; }
         byte[] Data { get; }
 
-        int Mod0Offset { get; }
         int TextOffset { get; }
-        int ROOffset   { get; }
+        int RoOffset   { get; }
         int DataOffset { get; }
+        int BssOffset  { get; }
         int BssSize    { get; }
     }
 }

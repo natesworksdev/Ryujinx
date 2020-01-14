@@ -1,330 +1,268 @@
-//#define Alu
-
-using ChocolArm64.State;
+#define Alu
 
 using NUnit.Framework;
 
+using System.Collections.Generic;
+
 namespace Ryujinx.Tests.Cpu
 {
-    using Tester;
-    using Tester.Types;
-
-    [Category("Alu"), Ignore("Tested: first half of 2018.")]
+    [Category("Alu")]
     public sealed class CpuTestAlu : CpuTest
     {
 #if Alu
-        [SetUp]
-        public void SetupTester()
+
+#region "Helper methods"
+        private static uint GenLeadingSignsMinus32(int cnt) // 0 <= cnt <= 31
         {
-            AArch64.TakeReset(false);
+            return ~GenLeadingZeros32(cnt + 1);
         }
 
-        [Test, Description("CLS <Xd>, <Xn>")]
-        public void Cls_64bit([Values(0u, 31u)] uint Rd,
-                              [Values(1u, 31u)] uint Rn,
-                              [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(256)] ulong Xn)
+        private static ulong GenLeadingSignsMinus64(int cnt) // 0 <= cnt <= 63
         {
-            uint Opcode = 0xDAC01400; // CLS X0, X0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Xn, X31: _X31);
-
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
-
-                AArch64.X((int)Rn, new Bits(Xn));
-                Base.Cls(Op[31], Op[9, 5], Op[4, 0]);
-                ulong Xd = AArch64.X(64, (int)Rd).ToUInt64();
-
-                Assert.That((ulong)ThreadState.X0, Is.EqualTo(Xd));
-            }
-            else
-            {
-                Assert.That((ulong)ThreadState.X31, Is.EqualTo(_X31));
-            }
+            return ~GenLeadingZeros64(cnt + 1);
         }
 
-        [Test, Description("CLS <Wd>, <Wn>")]
-        public void Cls_32bit([Values(0u, 31u)] uint Rd,
-                              [Values(1u, 31u)] uint Rn,
-                              [Values(0x00000000u, 0x7FFFFFFFu,
-                                      0x80000000u, 0xFFFFFFFFu)] [Random(256)] uint Wn)
+        private static uint GenLeadingSignsPlus32(int cnt) // 0 <= cnt <= 31
         {
-            uint Opcode = 0x5AC01400; // CLS W0, W0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            return GenLeadingZeros32(cnt + 1);
+        }
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Wn, X31: _W31);
+        private static ulong GenLeadingSignsPlus64(int cnt) // 0 <= cnt <= 63
+        {
+            return GenLeadingZeros64(cnt + 1);
+        }
 
-            if (Rd != 31)
+        private static uint GenLeadingZeros32(int cnt) // 0 <= cnt <= 32
+        {
+            if (cnt == 32) return 0u;
+            if (cnt == 31) return 1u;
+
+            uint rnd  = TestContext.CurrentContext.Random.NextUInt();
+            int  mask = int.MinValue;
+
+            return (rnd >> (cnt + 1)) | ((uint)mask >> cnt);
+        }
+
+        private static ulong GenLeadingZeros64(int cnt) // 0 <= cnt <= 64
+        {
+            if (cnt == 64) return 0ul;
+            if (cnt == 63) return 1ul;
+
+            ulong rnd  = TestContext.CurrentContext.Random.NextULong();
+            long  mask = long.MinValue;
+
+            return (rnd >> (cnt + 1)) | ((ulong)mask >> cnt);
+        }
+#endregion
+
+#region "ValueSource (Types)"
+        private static IEnumerable<ulong> _GenLeadingSignsX_()
+        {
+            for (int cnt = 0; cnt <= 63; cnt++)
             {
-                Bits Op = new Bits(Opcode);
-
-                AArch64.X((int)Rn, new Bits(Wn));
-                Base.Cls(Op[31], Op[9, 5], Op[4, 0]);
-                uint Wd = AArch64.X(32, (int)Rd).ToUInt32();
-
-                Assert.That((uint)ThreadState.X0, Is.EqualTo(Wd));
-            }
-            else
-            {
-                Assert.That((uint)ThreadState.X31, Is.EqualTo(_W31));
+                yield return GenLeadingSignsMinus64(cnt);
+                yield return GenLeadingSignsPlus64(cnt);
             }
         }
 
-        [Test, Description("CLZ <Xd>, <Xn>")]
-        public void Clz_64bit([Values(0u, 31u)] uint Rd,
-                              [Values(1u, 31u)] uint Rn,
-                              [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                      0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(256)] ulong Xn)
+        private static IEnumerable<uint> _GenLeadingSignsW_()
         {
-            uint Opcode = 0xDAC01000; // CLZ X0, X0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Xn, X31: _X31);
-
-            if (Rd != 31)
+            for (int cnt = 0; cnt <= 31; cnt++)
             {
-                Bits Op = new Bits(Opcode);
-
-                AArch64.X((int)Rn, new Bits(Xn));
-                Base.Clz(Op[31], Op[9, 5], Op[4, 0]);
-                ulong Xd = AArch64.X(64, (int)Rd).ToUInt64();
-
-                Assert.That((ulong)ThreadState.X0, Is.EqualTo(Xd));
-            }
-            else
-            {
-                Assert.That((ulong)ThreadState.X31, Is.EqualTo(_X31));
+                yield return GenLeadingSignsMinus32(cnt);
+                yield return GenLeadingSignsPlus32(cnt);
             }
         }
 
-        [Test, Description("CLZ <Wd>, <Wn>")]
-        public void Clz_32bit([Values(0u, 31u)] uint Rd,
-                              [Values(1u, 31u)] uint Rn,
-                              [Values(0x00000000u, 0x7FFFFFFFu,
-                                      0x80000000u, 0xFFFFFFFFu)] [Random(256)] uint Wn)
+        private static IEnumerable<ulong> _GenLeadingZerosX_()
         {
-            uint Opcode = 0x5AC01000; // CLZ W0, W0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
-
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Wn, X31: _W31);
-
-            if (Rd != 31)
+            for (int cnt = 0; cnt <= 64; cnt++)
             {
-                Bits Op = new Bits(Opcode);
-
-                AArch64.X((int)Rn, new Bits(Wn));
-                Base.Clz(Op[31], Op[9, 5], Op[4, 0]);
-                uint Wd = AArch64.X(32, (int)Rd).ToUInt32();
-
-                Assert.That((uint)ThreadState.X0, Is.EqualTo(Wd));
-            }
-            else
-            {
-                Assert.That((uint)ThreadState.X31, Is.EqualTo(_W31));
+                yield return GenLeadingZeros64(cnt);
             }
         }
 
-        [Test, Description("RBIT <Xd>, <Xn>")]
-        public void Rbit_64bit([Values(0u, 31u)] uint Rd,
-                               [Values(1u, 31u)] uint Rn,
+        private static IEnumerable<uint> _GenLeadingZerosW_()
+        {
+            for (int cnt = 0; cnt <= 32; cnt++)
+            {
+                yield return GenLeadingZeros32(cnt);
+            }
+        }
+#endregion
+
+        private const int RndCnt = 2;
+
+        [Test, Pairwise, Description("CLS <Xd>, <Xn>")]
+        public void Cls_64bit([Values(0u, 31u)] uint rd,
+                              [Values(1u, 31u)] uint rn,
+                              [ValueSource("_GenLeadingSignsX_")] [Random(RndCnt)] ulong xn)
+        {
+            uint opcode = 0xDAC01400; // CLS X0, X0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
+
+            SingleOpcode(opcode, x1: xn, x31: x31);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("CLS <Wd>, <Wn>")]
+        public void Cls_32bit([Values(0u, 31u)] uint rd,
+                              [Values(1u, 31u)] uint rn,
+                              [ValueSource("_GenLeadingSignsW_")] [Random(RndCnt)] uint wn)
+        {
+            uint opcode = 0x5AC01400; // CLS W0, W0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+
+            SingleOpcode(opcode, x1: wn, x31: w31);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("CLZ <Xd>, <Xn>")]
+        public void Clz_64bit([Values(0u, 31u)] uint rd,
+                              [Values(1u, 31u)] uint rn,
+                              [ValueSource("_GenLeadingZerosX_")] [Random(RndCnt)] ulong xn)
+        {
+            uint opcode = 0xDAC01000; // CLZ X0, X0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
+
+            SingleOpcode(opcode, x1: xn, x31: x31);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("CLZ <Wd>, <Wn>")]
+        public void Clz_32bit([Values(0u, 31u)] uint rd,
+                              [Values(1u, 31u)] uint rn,
+                              [ValueSource("_GenLeadingZerosW_")] [Random(RndCnt)] uint wn)
+        {
+            uint opcode = 0x5AC01000; // CLZ W0, W0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
+
+            SingleOpcode(opcode, x1: wn, x31: w31);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("RBIT <Xd>, <Xn>")]
+        public void Rbit_64bit([Values(0u, 31u)] uint rd,
+                               [Values(1u, 31u)] uint rn,
                                [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(256)] ulong Xn)
+                                       0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn)
         {
-            uint Opcode = 0xDAC00000; // RBIT X0, X0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0xDAC00000; // RBIT X0, X0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Xn, X31: _X31);
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: xn, x31: x31);
 
-                AArch64.X((int)Rn, new Bits(Xn));
-                Base.Rbit(Op[31], Op[9, 5], Op[4, 0]);
-                ulong Xd = AArch64.X(64, (int)Rd).ToUInt64();
-
-                Assert.That((ulong)ThreadState.X0, Is.EqualTo(Xd));
-            }
-            else
-            {
-                Assert.That((ulong)ThreadState.X31, Is.EqualTo(_X31));
-            }
+            CompareAgainstUnicorn();
         }
 
-        [Test, Description("RBIT <Wd>, <Wn>")]
-        public void Rbit_32bit([Values(0u, 31u)] uint Rd,
-                               [Values(1u, 31u)] uint Rn,
+        [Test, Pairwise, Description("RBIT <Wd>, <Wn>")]
+        public void Rbit_32bit([Values(0u, 31u)] uint rd,
+                               [Values(1u, 31u)] uint rn,
                                [Values(0x00000000u, 0x7FFFFFFFu,
-                                       0x80000000u, 0xFFFFFFFFu)] [Random(256)] uint Wn)
+                                       0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn)
         {
-            uint Opcode = 0x5AC00000; // RBIT W0, W0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0x5AC00000; // RBIT W0, W0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Wn, X31: _W31);
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: wn, x31: w31);
 
-                AArch64.X((int)Rn, new Bits(Wn));
-                Base.Rbit(Op[31], Op[9, 5], Op[4, 0]);
-                uint Wd = AArch64.X(32, (int)Rd).ToUInt32();
-
-                Assert.That((uint)ThreadState.X0, Is.EqualTo(Wd));
-            }
-            else
-            {
-                Assert.That((uint)ThreadState.X31, Is.EqualTo(_W31));
-            }
+            CompareAgainstUnicorn();
         }
 
-        [Test, Description("REV16 <Xd>, <Xn>")]
-        public void Rev16_64bit([Values(0u, 31u)] uint Rd,
-                                [Values(1u, 31u)] uint Rn,
+        [Test, Pairwise, Description("REV16 <Xd>, <Xn>")]
+        public void Rev16_64bit([Values(0u, 31u)] uint rd,
+                                [Values(1u, 31u)] uint rn,
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(256)] ulong Xn)
+                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn)
         {
-            uint Opcode = 0xDAC00400; // REV16 X0, X0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0xDAC00400; // REV16 X0, X0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Xn, X31: _X31);
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: xn, x31: x31);
 
-                AArch64.X((int)Rn, new Bits(Xn));
-                Base.Rev16(Op[31], Op[9, 5], Op[4, 0]);
-                ulong Xd = AArch64.X(64, (int)Rd).ToUInt64();
-
-                Assert.That((ulong)ThreadState.X0, Is.EqualTo(Xd));
-            }
-            else
-            {
-                Assert.That((ulong)ThreadState.X31, Is.EqualTo(_X31));
-            }
+            CompareAgainstUnicorn();
         }
 
-        [Test, Description("REV16 <Wd>, <Wn>")]
-        public void Rev16_32bit([Values(0u, 31u)] uint Rd,
-                                [Values(1u, 31u)] uint Rn,
+        [Test, Pairwise, Description("REV16 <Wd>, <Wn>")]
+        public void Rev16_32bit([Values(0u, 31u)] uint rd,
+                                [Values(1u, 31u)] uint rn,
                                 [Values(0x00000000u, 0x7FFFFFFFu,
-                                        0x80000000u, 0xFFFFFFFFu)] [Random(256)] uint Wn)
+                                        0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn)
         {
-            uint Opcode = 0x5AC00400; // REV16 W0, W0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0x5AC00400; // REV16 W0, W0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Wn, X31: _W31);
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: wn, x31: w31);
 
-                AArch64.X((int)Rn, new Bits(Wn));
-                Base.Rev16(Op[31], Op[9, 5], Op[4, 0]);
-                uint Wd = AArch64.X(32, (int)Rd).ToUInt32();
-
-                Assert.That((uint)ThreadState.X0, Is.EqualTo(Wd));
-            }
-            else
-            {
-                Assert.That((uint)ThreadState.X31, Is.EqualTo(_W31));
-            }
+            CompareAgainstUnicorn();
         }
 
-        [Test, Description("REV32 <Xd>, <Xn>")]
-        public void Rev32_64bit([Values(0u, 31u)] uint Rd,
-                                [Values(1u, 31u)] uint Rn,
+        [Test, Pairwise, Description("REV32 <Xd>, <Xn>")]
+        public void Rev32_64bit([Values(0u, 31u)] uint rd,
+                                [Values(1u, 31u)] uint rn,
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(256)] ulong Xn)
+                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn)
         {
-            uint Opcode = 0xDAC00800; // REV32 X0, X0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0xDAC00800; // REV32 X0, X0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Xn, X31: _X31);
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: xn, x31: x31);
 
-                AArch64.X((int)Rn, new Bits(Xn));
-                Base.Rev32(Op[31], Op[9, 5], Op[4, 0]);
-                ulong Xd = AArch64.X(64, (int)Rd).ToUInt64();
-
-                Assert.That((ulong)ThreadState.X0, Is.EqualTo(Xd));
-            }
-            else
-            {
-                Assert.That((ulong)ThreadState.X31, Is.EqualTo(_X31));
-            }
+            CompareAgainstUnicorn();
         }
 
-        [Test, Description("REV <Wd>, <Wn>")]
-        public void Rev32_32bit([Values(0u, 31u)] uint Rd,
-                                [Values(1u, 31u)] uint Rn,
+        [Test, Pairwise, Description("REV <Wd>, <Wn>")]
+        public void Rev32_32bit([Values(0u, 31u)] uint rd,
+                                [Values(1u, 31u)] uint rn,
                                 [Values(0x00000000u, 0x7FFFFFFFu,
-                                        0x80000000u, 0xFFFFFFFFu)] [Random(256)] uint Wn)
+                                        0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn)
         {
-            uint Opcode = 0x5AC00800; // REV W0, W0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0x5AC00800; // REV W0, W0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            uint _W31 = TestContext.CurrentContext.Random.NextUInt();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Wn, X31: _W31);
+            uint w31 = TestContext.CurrentContext.Random.NextUInt();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: wn, x31: w31);
 
-                AArch64.X((int)Rn, new Bits(Wn));
-                Base.Rev32(Op[31], Op[9, 5], Op[4, 0]);
-                uint Wd = AArch64.X(32, (int)Rd).ToUInt32();
-
-                Assert.That((uint)ThreadState.X0, Is.EqualTo(Wd));
-            }
-            else
-            {
-                Assert.That((uint)ThreadState.X31, Is.EqualTo(_W31));
-            }
+            CompareAgainstUnicorn();
         }
 
-        [Test, Description("REV64 <Xd>, <Xn>")]
-        public void Rev64_64bit([Values(0u, 31u)] uint Rd,
-                                [Values(1u, 31u)] uint Rn,
+        [Test, Pairwise, Description("REV64 <Xd>, <Xn>")]
+        public void Rev64_64bit([Values(0u, 31u)] uint rd,
+                                [Values(1u, 31u)] uint rn,
                                 [Values(0x0000000000000000ul, 0x7FFFFFFFFFFFFFFFul,
-                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(256)] ulong Xn)
+                                        0x8000000000000000ul, 0xFFFFFFFFFFFFFFFFul)] [Random(RndCnt)] ulong xn)
         {
-            uint Opcode = 0xDAC00C00; // REV64 X0, X0
-            Opcode |= ((Rn & 31) << 5) | ((Rd & 31) << 0);
+            uint opcode = 0xDAC00C00; // REV64 X0, X0
+            opcode |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
-            ulong _X31 = TestContext.CurrentContext.Random.NextULong();
-            AThreadState ThreadState = SingleOpcode(Opcode, X1: Xn, X31: _X31);
+            ulong x31 = TestContext.CurrentContext.Random.NextULong();
 
-            if (Rd != 31)
-            {
-                Bits Op = new Bits(Opcode);
+            SingleOpcode(opcode, x1: xn, x31: x31);
 
-                AArch64.X((int)Rn, new Bits(Xn));
-                Base.Rev64(Op[9, 5], Op[4, 0]);
-                ulong Xd = AArch64.X(64, (int)Rd).ToUInt64();
-
-                Assert.That((ulong)ThreadState.X0, Is.EqualTo(Xd));
-            }
-            else
-            {
-                Assert.That((ulong)ThreadState.X31, Is.EqualTo(_X31));
-            }
+            CompareAgainstUnicorn();
         }
 #endif
     }

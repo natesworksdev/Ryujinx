@@ -1,333 +1,390 @@
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Input;
-using Ryujinx.Graphics.Gal;
+using Ryujinx.Configuration;
+using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.Input;
+using Ryujinx.Profiler.UI;
+using Ryujinx.Ui;
 using System;
+using System.Threading;
 
-namespace Ryujinx
+using Stopwatch = System.Diagnostics.Stopwatch;
+
+namespace Ryujinx.Ui
 {
-    public class GLScreen : GameWindow
+    public class GlScreen : GameWindow
     {
         private const int TouchScreenWidth  = 1280;
         private const int TouchScreenHeight = 720;
 
-        private const float TouchScreenRatioX = (float)TouchScreenWidth  / TouchScreenHeight;
-        private const float TouchScreenRatioY = (float)TouchScreenHeight / TouchScreenWidth;
+        private const int TargetFps = 60;
 
-        private Switch Ns;
+        private Switch _device;
 
-        private IGalRenderer Renderer;
+        private Renderer _renderer;
 
-        private KeyboardState? Keyboard = null;
+        private HotkeyButtons _prevHotkeyButtons = 0;
 
-        private MouseState? Mouse = null;
+        private KeyboardState? _keyboard = null;
 
-        public GLScreen(Switch Ns, IGalRenderer Renderer)
+        private MouseState? _mouse = null;
+
+        private Input.NpadController _primaryController;
+
+        private Thread _renderThread;
+
+        private bool _resizeEvent;
+
+        private bool _titleEvent;
+
+        private string _newTitle;
+
+#if USE_PROFILING
+        private ProfileWindowManager _profileWindow;
+#endif
+
+        public GlScreen(Switch device, Renderer renderer)
             : base(1280, 720,
             new GraphicsMode(), "Ryujinx", 0,
             DisplayDevice.Default, 3, 3,
             GraphicsContextFlags.ForwardCompatible)
         {
-            this.Ns       = Ns;
-            this.Renderer = Renderer;
+            _device   = device;
+            _renderer = renderer;
+
+            _primaryController = new Input.NpadController(ConfigurationState.Instance.Hid.JoystickControls);
 
             Location = new Point(
                 (DisplayDevice.Default.Width  / 2) - (Width  / 2),
                 (DisplayDevice.Default.Height / 2) - (Height / 2));
+
+#if USE_PROFILING
+            // Start profile window, it will handle itself from there
+            _profileWindow = new ProfileWindowManager();
+#endif
         }
 
-        protected override void OnLoad(EventArgs e)
+        private void RenderLoop()
         {
-            VSync = VSyncMode.On;
+            MakeCurrent();
 
-            Renderer.FrameBuffer.SetWindowSize(Width, Height);
-        }
-        
-        private bool IsGamePadButtonPressedFromString(GamePadState GamePad, string Button)
-        {
-            if (Button.ToUpper() == "LTRIGGER" || Button.ToUpper() == "RTRIGGER")
+            _renderer.Initialize();
+
+            Stopwatch chrono = new Stopwatch();
+
+            chrono.Start();
+
+            long ticksPerFrame = Stopwatch.Frequency / TargetFps;
+
+            long ticks = 0;
+
+            while (Exists && !IsExiting)
             {
-                return GetGamePadTriggerFromString(GamePad, Button) >= Config.GamePadTriggerThreshold;
-            }
-            else
-            {
-                return (GetGamePadButtonFromString(GamePad, Button) == ButtonState.Pressed);
-            }
-        }
-
-        private ButtonState GetGamePadButtonFromString(GamePadState GamePad, string Button)
-        {
-            switch (Button.ToUpper())
-            {
-                case "A":         return GamePad.Buttons.A;
-                case "B":         return GamePad.Buttons.B;
-                case "X":         return GamePad.Buttons.X;
-                case "Y":         return GamePad.Buttons.Y;
-                case "LSTICK":    return GamePad.Buttons.LeftStick;
-                case "RSTICK":    return GamePad.Buttons.RightStick;
-                case "LSHOULDER": return GamePad.Buttons.LeftShoulder;
-                case "RSHOULDER": return GamePad.Buttons.RightShoulder;
-                case "DPADUP":    return GamePad.DPad.Up;
-                case "DPADDOWN":  return GamePad.DPad.Down;
-                case "DPADLEFT":  return GamePad.DPad.Left;
-                case "DPADRIGHT": return GamePad.DPad.Right;
-                case "START":     return GamePad.Buttons.Start;
-                case "BACK":      return GamePad.Buttons.Back;
-                default:          throw  new ArgumentException();
-            }
-        }
-
-        private float GetGamePadTriggerFromString(GamePadState GamePad, string Trigger)
-        {
-            switch (Trigger.ToUpper())
-            {
-                case "LTRIGGER": return GamePad.Triggers.Left;
-                case "RTRIGGER": return GamePad.Triggers.Right;
-                default:         throw  new ArgumentException();
-            }
-        }
-
-        private Vector2 GetJoystickAxisFromString(GamePadState GamePad, string Joystick)
-        {
-            switch (Joystick.ToUpper())
-            {
-                case "LJOYSTICK": return GamePad.ThumbSticks.Left;
-                case "RJOYSTICK": return new Vector2(-GamePad.ThumbSticks.Right.Y, -GamePad.ThumbSticks.Right.X);
-                default:          throw  new ArgumentException();
-            }
-        }
-
-        protected override void OnUpdateFrame(FrameEventArgs e)
-        {
-            HidControllerButtons CurrentButton = 0;
-            HidJoystickPosition  LeftJoystick;
-            HidJoystickPosition  RightJoystick;
-
-            int LeftJoystickDX        = 0;
-            int LeftJoystickDY        = 0;
-            int RightJoystickDX       = 0;
-            int RightJoystickDY       = 0;
-            float AnalogStickDeadzone = Config.GamePadDeadzone;
-
-            //Keyboard Input
-            if (Keyboard.HasValue)
-            {
-                KeyboardState Keyboard = this.Keyboard.Value;
-
-                if (Keyboard[Key.Escape]) this.Exit();
-
-                //LeftJoystick
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.StickUp])    LeftJoystickDY = short.MaxValue;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.StickDown])  LeftJoystickDY = -short.MaxValue;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.StickLeft])  LeftJoystickDX = -short.MaxValue;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.StickRight]) LeftJoystickDX = short.MaxValue;
-
-                //LeftButtons
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.StickButton]) CurrentButton |= HidControllerButtons.KEY_LSTICK;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.DPadUp])      CurrentButton |= HidControllerButtons.KEY_DUP;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.DPadDown])    CurrentButton |= HidControllerButtons.KEY_DDOWN;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.DPadLeft])    CurrentButton |= HidControllerButtons.KEY_DLEFT;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.DPadRight])   CurrentButton |= HidControllerButtons.KEY_DRIGHT;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.ButtonMinus]) CurrentButton |= HidControllerButtons.KEY_MINUS;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.ButtonL])     CurrentButton |= HidControllerButtons.KEY_L;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Left.ButtonZL])    CurrentButton |= HidControllerButtons.KEY_ZL;
-
-                //RightJoystick
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.StickUp])    RightJoystickDY = short.MaxValue;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.StickDown])  RightJoystickDY = -short.MaxValue;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.StickLeft])  RightJoystickDX = -short.MaxValue;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.StickRight]) RightJoystickDX = short.MaxValue;
-
-                //RightButtons
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.StickButton]) CurrentButton |= HidControllerButtons.KEY_RSTICK;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonA])     CurrentButton |= HidControllerButtons.KEY_A;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonB])     CurrentButton |= HidControllerButtons.KEY_B;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonX])     CurrentButton |= HidControllerButtons.KEY_X;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonY])     CurrentButton |= HidControllerButtons.KEY_Y;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonPlus])  CurrentButton |= HidControllerButtons.KEY_PLUS;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonR])     CurrentButton |= HidControllerButtons.KEY_R;
-                if (Keyboard[(Key)Config.JoyConKeyboard.Right.ButtonZR])    CurrentButton |= HidControllerButtons.KEY_ZR;
-            }
-
-            //Controller Input
-            if (Config.GamePadEnable)
-            {
-                GamePadState GamePad = OpenTK.Input.GamePad.GetState(Config.GamePadIndex);
-                //LeftButtons
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadUp))       CurrentButton |= HidControllerButtons.KEY_DUP;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadDown))     CurrentButton |= HidControllerButtons.KEY_DDOWN;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadLeft))     CurrentButton |= HidControllerButtons.KEY_DLEFT;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.DPadRight))    CurrentButton |= HidControllerButtons.KEY_DRIGHT;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.StickButton))  CurrentButton |= HidControllerButtons.KEY_LSTICK;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.ButtonMinus))  CurrentButton |= HidControllerButtons.KEY_MINUS;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.ButtonL))      CurrentButton |= HidControllerButtons.KEY_L;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Left.ButtonZL))     CurrentButton |= HidControllerButtons.KEY_ZL;
-
-                //RightButtons
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonA))     CurrentButton |= HidControllerButtons.KEY_A;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonB))     CurrentButton |= HidControllerButtons.KEY_B;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonX))     CurrentButton |= HidControllerButtons.KEY_X;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonY))     CurrentButton |= HidControllerButtons.KEY_Y;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.StickButton)) CurrentButton |= HidControllerButtons.KEY_RSTICK;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonPlus))  CurrentButton |= HidControllerButtons.KEY_PLUS;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonR))     CurrentButton |= HidControllerButtons.KEY_R;
-                if (IsGamePadButtonPressedFromString(GamePad, Config.JoyConController.Right.ButtonZR))    CurrentButton |= HidControllerButtons.KEY_ZR;
-
-                //LeftJoystick
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).X >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).X <= -AnalogStickDeadzone)
-                    LeftJoystickDX = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).X * short.MaxValue);
-
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).Y >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).Y <= -AnalogStickDeadzone)
-                    LeftJoystickDY = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Left.Stick).Y * short.MaxValue);
-
-                //RightJoystick
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).X >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).X <= -AnalogStickDeadzone)
-                    RightJoystickDX = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).X * short.MaxValue);
-
-                if (GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).Y >= AnalogStickDeadzone
-                 || GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).Y <= -AnalogStickDeadzone)
-                    RightJoystickDY = (int)(GetJoystickAxisFromString(GamePad, Config.JoyConController.Right.Stick).Y * short.MaxValue);
-            }
-
-            LeftJoystick = new HidJoystickPosition
-            {
-                DX = LeftJoystickDX,
-                DY = LeftJoystickDY
-            };
-
-            RightJoystick = new HidJoystickPosition
-            {
-                DX = RightJoystickDX,
-                DY = RightJoystickDY
-            };
-
-            bool HasTouch = false;
-
-            //Get screen touch position from left mouse click
-            //OpenTK always captures mouse events, even if out of focus, so check if window is focused.
-            if (Focused && Mouse?.LeftButton == ButtonState.Pressed)
-            {
-                MouseState Mouse = this.Mouse.Value;
-
-                int ScrnWidth  = Width;
-                int ScrnHeight = Height;
-
-                if (Width > Height * TouchScreenRatioX)
+                if (_device.WaitFifo())
                 {
-                    ScrnWidth = (int)(Height * TouchScreenRatioX);
+                    _device.ProcessFrame();
+                }
+
+                if (_resizeEvent)
+                {
+                    _resizeEvent = false;
+
+                    _renderer.Window.SetSize(Width, Height);
+                }
+
+                ticks += chrono.ElapsedTicks;
+
+                chrono.Restart();
+
+                if (ticks >= ticksPerFrame)
+                {
+                    RenderFrame();
+
+                    // Queue max. 1 vsync
+                    ticks = Math.Min(ticks - ticksPerFrame, ticksPerFrame);
+                }
+            }
+
+            _device.DisposeGpu();
+            _renderer.Dispose();
+        }
+
+        public void MainLoop()
+        {
+            VSync = VSyncMode.Off;
+
+            Visible = true;
+
+            Context.MakeCurrent(null);
+
+            // OpenTK doesn't like sleeps in its thread, to avoid this a renderer thread is created
+            _renderThread = new Thread(RenderLoop)
+            {
+                Name = "GUI.RenderThread"
+            };
+
+            _renderThread.Start();
+
+            while (Exists && !IsExiting)
+            {
+                ProcessEvents();
+
+                if (!IsExiting)
+                {
+                    UpdateFrame();
+
+                    if (_titleEvent)
+                    {
+                        _titleEvent = false;
+
+                        Title = _newTitle;
+                    }
+                }
+
+                // Polling becomes expensive if it's not slept
+                Thread.Sleep(1);
+            }
+        }
+
+        private new void UpdateFrame()
+        {
+            HotkeyButtons       currentHotkeyButtons = 0;
+            ControllerButtons   currentButton = 0;
+            JoystickPosition    leftJoystick;
+            JoystickPosition    rightJoystick;
+            HLE.Input.Keyboard? hidKeyboard = null;
+
+            int leftJoystickDx  = 0;
+            int leftJoystickDy  = 0;
+            int rightJoystickDx = 0;
+            int rightJoystickDy = 0;
+
+            // Keyboard Input
+            if (_keyboard.HasValue)
+            {
+                KeyboardState keyboard = _keyboard.Value;
+
+#if USE_PROFILING
+                // Profiler input, lets the profiler get access to the main windows keyboard state
+                _profileWindow.UpdateKeyInput(keyboard);
+#endif
+
+                // Normal Input
+                currentHotkeyButtons = KeyboardControls.GetHotkeyButtons(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+                currentButton        = KeyboardControls.GetButtons(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+
+                if (ConfigurationState.Instance.Hid.EnableKeyboard)
+                {
+                    hidKeyboard = KeyboardControls.GetKeysDown(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+                }
+
+                (leftJoystickDx, leftJoystickDy)   = KeyboardControls.GetLeftStick(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+                (rightJoystickDx, rightJoystickDy) = KeyboardControls.GetRightStick(ConfigurationState.Instance.Hid.KeyboardControls, keyboard);
+            }
+
+            if (!hidKeyboard.HasValue)
+            {
+                hidKeyboard = new HLE.Input.Keyboard
+                {
+                    Modifier = 0,
+                    Keys     = new int[0x8]
+                };
+            }
+
+            currentButton |= _primaryController.GetButtons();
+
+            // Keyboard has priority stick-wise
+            if (leftJoystickDx == 0 && leftJoystickDy == 0)
+            {
+                (leftJoystickDx, leftJoystickDy) = _primaryController.GetLeftStick();
+            }
+
+            if (rightJoystickDx == 0 && rightJoystickDy == 0)
+            {
+                (rightJoystickDx, rightJoystickDy) = _primaryController.GetRightStick();
+            }
+
+            leftJoystick = new JoystickPosition
+            {
+                Dx = leftJoystickDx,
+                Dy = leftJoystickDy
+            };
+
+            rightJoystick = new JoystickPosition
+            {
+                Dx = rightJoystickDx,
+                Dy = rightJoystickDy
+            };
+
+            currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);
+
+            bool hasTouch = false;
+
+            // Get screen touch position from left mouse click
+            // OpenTK always captures mouse events, even if out of focus, so check if window is focused.
+            if (Focused && _mouse?.LeftButton == ButtonState.Pressed)
+            {
+                MouseState mouse = _mouse.Value;
+
+                int scrnWidth  = Width;
+                int scrnHeight = Height;
+
+                if (Width > (Height * TouchScreenWidth) / TouchScreenHeight)
+                {
+                    scrnWidth = (Height * TouchScreenWidth) / TouchScreenHeight;
                 }
                 else
                 {
-                    ScrnHeight = (int)(Width * TouchScreenRatioY);
+                    scrnHeight = (Width * TouchScreenHeight) / TouchScreenWidth;
                 }
 
-                int StartX = (Width  - ScrnWidth)  >> 1;
-                int StartY = (Height - ScrnHeight) >> 1;
+                int startX = (Width  - scrnWidth)  >> 1;
+                int startY = (Height - scrnHeight) >> 1;
 
-                int EndX = StartX + ScrnWidth;
-                int EndY = StartY + ScrnHeight;
+                int endX = startX + scrnWidth;
+                int endY = startY + scrnHeight;
 
-                if (Mouse.X >= StartX &&
-                    Mouse.Y >= StartY &&
-                    Mouse.X <  EndX   &&
-                    Mouse.Y <  EndY)
+                if (mouse.X >= startX &&
+                    mouse.Y >= startY &&
+                    mouse.X <  endX   &&
+                    mouse.Y <  endY)
                 {
-                    int ScrnMouseX = Mouse.X - StartX;
-                    int ScrnMouseY = Mouse.Y - StartY;
+                    int scrnMouseX = mouse.X - startX;
+                    int scrnMouseY = mouse.Y - startY;
 
-                    int MX = (int)(((float)ScrnMouseX / ScrnWidth)  * TouchScreenWidth);
-                    int MY = (int)(((float)ScrnMouseY / ScrnHeight) * TouchScreenHeight);
+                    int mX = (scrnMouseX * TouchScreenWidth)  / scrnWidth;
+                    int mY = (scrnMouseY * TouchScreenHeight) / scrnHeight;
 
-                    HidTouchPoint CurrentPoint = new HidTouchPoint
+                    TouchPoint currentPoint = new TouchPoint
                     {
-                        X = MX,
-                        Y = MY,
+                        X = mX,
+                        Y = mY,
 
-                        //Placeholder values till more data is acquired
+                        // Placeholder values till more data is acquired
                         DiameterX = 10,
                         DiameterY = 10,
                         Angle     = 90
                     };
 
-                    HasTouch = true;
+                    hasTouch = true;
 
-                    Ns.Hid.SetTouchPoints(CurrentPoint);
+                    _device.Hid.SetTouchPoints(currentPoint);
                 }
             }
 
-            if (!HasTouch)
+            if (!hasTouch)
             {
-                Ns.Hid.SetTouchPoints();
+                _device.Hid.SetTouchPoints();
             }
 
-            Ns.Hid.SetJoyconButton(
-                HidControllerId.CONTROLLER_HANDHELD,
-                HidControllerLayouts.Handheld_Joined,
-                CurrentButton,
-                LeftJoystick,
-                RightJoystick);
+            if (ConfigurationState.Instance.Hid.EnableKeyboard && hidKeyboard.HasValue)
+            {
+                _device.Hid.WriteKeyboard(hidKeyboard.Value);
+            }
 
-            Ns.Hid.SetJoyconButton(
-                HidControllerId.CONTROLLER_HANDHELD,
-                HidControllerLayouts.Main,
-                CurrentButton,
-                LeftJoystick,
-                RightJoystick);
+            BaseController controller = _device.Hid.PrimaryController;
 
-            Ns.ProcessFrame();
+            controller.SendInput(currentButton, leftJoystick, rightJoystick);
 
-            Renderer.RunActions();
+            // Toggle vsync
+            if (currentHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync) &&
+                !_prevHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync))
+            {
+                _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+            }
+
+            _prevHotkeyButtons = currentHotkeyButtons;
         }
 
-        protected override void OnRenderFrame(FrameEventArgs e)
+        private new void RenderFrame()
         {
-            Renderer.FrameBuffer.Render();
+            _device.PresentFrame(SwapBuffers);
 
-            Ns.Statistics.RecordSystemFrameTime();
+            _device.Statistics.RecordSystemFrameTime();
 
-            double HostFps = Ns.Statistics.GetSystemFrameRate();
-            double GameFps = Ns.Statistics.GetGameFrameRate();
+            double hostFps = _device.Statistics.GetSystemFrameRate();
+            double gameFps = _device.Statistics.GetGameFrameRate();
 
-            Title = $"Ryujinx | Host FPS: {HostFps:0.0} | Game FPS: {GameFps:0.0}";
+            string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
+                : " | " + _device.System.TitleName;
 
-            SwapBuffers();
+            string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? string.Empty
+                : " | " + _device.System.TitleIdText.ToUpper();
 
-            Ns.Os.SignalVsync();
+            _newTitle = $"Ryujinx{titleNameSection}{titleIdSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
+                $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";
+
+            _titleEvent = true;
+
+            _device.System.SignalVsync();
+
+            _device.VsyncEvent.Set();
+        }
+
+        protected override void OnUnload(EventArgs e)
+        {
+#if USE_PROFILING
+            _profileWindow.Close();
+#endif
+
+            _renderThread.Join();
+
+            base.OnUnload(e);
         }
 
         protected override void OnResize(EventArgs e)
         {
-            Renderer.FrameBuffer.SetWindowSize(Width, Height);
+            _resizeEvent = true;
         }
 
         protected override void OnKeyDown(KeyboardKeyEventArgs e)
         {
-            Keyboard = e.Keyboard;
+            bool toggleFullscreen = e.Key == Key.F11 ||
+                (e.Modifiers.HasFlag(KeyModifiers.Alt) && e.Key == Key.Enter);
+
+            if (WindowState == WindowState.Fullscreen)
+            {
+                if (e.Key == Key.Escape || toggleFullscreen)
+                {
+                    WindowState = WindowState.Normal;
+                }
+            }
+            else
+            {
+                if (e.Key == Key.Escape)
+                {
+                    Exit();
+                }
+
+                if (toggleFullscreen)
+                {
+                    WindowState = WindowState.Fullscreen;
+                }
+            }
+
+            _keyboard = e.Keyboard;
         }
 
         protected override void OnKeyUp(KeyboardKeyEventArgs e)
         {
-            Keyboard = e.Keyboard;
+            _keyboard = e.Keyboard;
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
-            Mouse = e.Mouse;
+            _mouse = e.Mouse;
         }
 
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
-            Mouse = e.Mouse;
+            _mouse = e.Mouse;
         }
 
         protected override void OnMouseMove(MouseMoveEventArgs e)
         {
-            Mouse = e.Mouse;
+            _mouse = e.Mouse;
         }
     }
 }
