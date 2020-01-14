@@ -193,6 +193,52 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+
+        [Test, Combinatorial, Description("VTBL.8 <Dd>, {list}, <Dm>")]
+        public void Vtbl([Range(0u, 6u)] uint vm, //indices, include potentially invalid
+            [Range(4u, 12u)] uint vn, //selection
+           [Values(0u, 1u)] uint vd, //destinations
+           [Range(0u, 3u)] uint length,
+           [Values] bool x)
+        {
+            uint opcode = 0xf3b00800;
+            if (vn + length > 31) return; //undefined
+
+            if (x)
+            {
+                opcode |= 1 << 6;
+            }
+            opcode |= (vm & 0x10) << 1;
+            opcode |= (vm & 0xf);
+            opcode |= (vd & 0x10) << 18;
+            opcode |= (vd & 0xf) << 12;
+
+            opcode |= (vn & 0x10) << 3;
+            opcode |= (vn & 0xf) << 16;
+            opcode |= (length & 0x3) << 8;
+
+            var rnd = TestContext.CurrentContext.Random;
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v4 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v5 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+
+            byte maxIndex = (byte)(length * 8 - 1);
+            byte[] b0 = new byte[16];
+            byte[] b1 = new byte[16];
+            for (int i=0; i<16; i++)
+            {
+                b0[i] = rnd.NextByte(maxIndex);
+                b1[i] = rnd.NextByte(maxIndex);
+            }
+
+            V128 v0 = new V128(b0);
+            V128 v1 = new V128(b1);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3, v4: v4, v5: v5); //correct
+
+            CompareAgainstUnicorn();
+        }
 #endif
     }
 }

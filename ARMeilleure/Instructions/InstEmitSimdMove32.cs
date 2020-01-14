@@ -105,6 +105,92 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vtbl(ArmEmitterContext context)
+        {
+            OpCode32SimdTbl op = (OpCode32SimdTbl)context.CurrOp;
+
+            bool extension = op.Opc == 1;
+
+            int elems = op.GetBytesCount() >> op.Size;
+
+            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
+            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+
+            int length = op.Length + 1;
+
+            Tuple<int, int>[] tableTuples = new Tuple<int, int>[length];
+            for (int i=0; i< length; i++)
+            {
+                (int vn, int en) = GetQuadwordAndSubindex(op.Vn + i, op.RegisterSize);
+                tableTuples[i] = new Tuple<int, int>(vn, en);
+            }
+
+            int byteLength = length * 8;
+
+            Operand res = GetVecA32(vd);
+            Operand m = GetVecA32(vm);
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand selectedIndex = context.ZeroExtend8(OperandType.I32, context.VectorExtract8(m, index + em * elems));
+
+                Operand end = Label();
+                Operand inRange = context.ICompareLess(selectedIndex, Const(byteLength));
+                Operand elemRes = null; // note: this is I64 for ease of calculation
+
+                // for some reason this branch ruins everything so we do an extract + conditional select instead
+                // granted that is slower
+                // --- context.BranchIfFalse(end, inRange); ---
+
+                // get indexed byte
+                // to simplify (ha) the il, we get bytes from every vector and use a nested conditional select to choose the right result
+                // does have to extract `length` times for every element but certainly not as bad as it could be
+
+                // which vector number is the index on
+                Operand vecIndex = context.ShiftRightUI(selectedIndex, Const(3));
+                // what should we shift by to extract it
+                Operand subVecIndexShift = context.ShiftLeft(context.BitwiseAnd(selectedIndex, Const(7)), Const(3));
+
+                for (int i=0; i < length; i++)
+                {
+                    Tuple<int, int> vectorLocation = tableTuples[i];
+                    // get the whole vector, we'll get a byte out of it
+                    Operand lookupResult;
+                    if (vectorLocation.Item1 == vd)
+                    {
+                        // result contains the current state of the vector
+                        lookupResult = context.VectorExtract(OperandType.I64, res, vectorLocation.Item2);
+                    } 
+                    else
+                    {
+                        lookupResult = EmitVectorExtract32(context, vectorLocation.Item1, vectorLocation.Item2, 3, false); //I64
+                    }
+                    
+                    lookupResult = context.ShiftRightUI(lookupResult, subVecIndexShift); // get the relevant byte from this vector
+
+                    if (i == 0)
+                    {
+                        elemRes = lookupResult; //first result is always default
+                    } 
+                    else
+                    {
+                        Operand isThisElem = context.ICompareEqual(vecIndex, Const(i));
+                        elemRes = context.ConditionalSelect(isThisElem, lookupResult, elemRes);
+                    }
+                }
+
+                if (!extension) context.MarkLabel(end);
+
+                Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, vd, index + ed * elems, 0, false)) : Const(0L); 
+
+                res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes, fallback), index + ed * elems, 0);
+
+                if (extension) context.MarkLabel(end);
+            }
+
+            context.Copy(GetVecA32(vd), res);
+        }
+
         public static void Vtrn(ArmEmitterContext context)
         {
             OpCode32SimdCmpZ op = (OpCode32SimdCmpZ)context.CurrOp;

@@ -558,6 +558,22 @@ namespace ARMeilleure.Instructions
             EmitVectorPairwiseOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
         }
 
+        public static void Vrecpe(ArmEmitterContext context)
+        {
+            EmitVectorUnaryOpF32(context, (op1) =>
+            {
+                return EmitSoftFloatCall(context, SoftFloat32.FPRecipEstimate, SoftFloat64.FPRecipEstimate, op1);
+            });
+        }
+
+        public static void Vrecps(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpF32(context, (op1, op2) =>
+            {
+                return EmitSoftFloatCall(context, SoftFloat32.FPRecipStepFused, SoftFloat64.FPRecipStepFused, op1, op2);
+            });
+        }
+
         public static void Vrsqrte(ArmEmitterContext context)
         {
             EmitVectorUnaryOpF32(context, (op1) =>

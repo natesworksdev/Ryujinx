@@ -8,7 +8,7 @@ namespace ARMeilleure.Decoders
     {
         public int Vd { get; private set; }
         public int Vm { get; protected set; }
-        public int Opc { get; private set; }
+        public int Opc { get; protected set; }
         public int Size { get; protected set; }
         public bool Q { get; protected set; }
         public bool F { get; protected set; }

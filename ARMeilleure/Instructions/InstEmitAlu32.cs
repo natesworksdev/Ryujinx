@@ -637,7 +637,6 @@ namespace ARMeilleure.Instructions
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
             var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
-            var mask = (int)(0xFFFFFFFF >> (31 - msb)) << op.Lsb;
 
             Operand n = GetIntOrZR(context, op.Rn);
             Operand res = context.ShiftRightUI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));
@@ -650,7 +649,6 @@ namespace ARMeilleure.Instructions
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
             var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
-            var mask = (int)(0xFFFFFFFF >> (31 - msb)) << op.Lsb;
 
             Operand n = GetIntOrZR(context, op.Rn);
             Operand res = context.ShiftRightSI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));

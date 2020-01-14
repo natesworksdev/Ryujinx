@@ -12,6 +12,8 @@ namespace ARMeilleure.Decoders
             F = ((opCode >> 8) & 0x1) != 0;
             Size = ((opCode >> 20) & 0x3);
 
+            RegisterSize = Q ? RegisterSize.Simd128 : RegisterSize.Simd64;
+
             if (Size == 0b11) throw new Exception("Unknown Encoding!");
 
             Vm = ((opCode >> 5) & 0x1) | ((opCode << 1) & 0x1e);

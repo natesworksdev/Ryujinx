@@ -87,6 +87,7 @@ namespace ARMeilleure.Translation
 
         public ulong ExecuteSingle(State.ExecutionContext context, ulong address)
         {
+            if (address == 0xa28b75) { }
             TranslatedFunction func = GetOrTranslate(address, context.ExecutionMode);
 
             Statistics.StartTimer();
