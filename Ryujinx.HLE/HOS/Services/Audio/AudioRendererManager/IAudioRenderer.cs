@@ -34,6 +34,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
         private VoiceContext[] _voices;
 
+        private EffectContext[] _effects;
+
         private int _track;
 
         private PlayState _playState;
@@ -42,22 +44,24 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             Horizon                system,
             MemoryManager          memory,
             IAalOutput             audioOut,
-            AudioRendererParameter Params)
+            AudioRendererParameter rendererParams)
         {
             _updateEvent = new KEvent(system);
 
             _memory   = memory;
             _audioOut = audioOut;
-            _params   = Params;
+            _params   = rendererParams;
 
             _track = audioOut.OpenTrack(
                 AudioRendererConsts.HostSampleRate,
                 AudioRendererConsts.HostChannelsCount,
                 AudioCallback);
 
-            _memoryPools = CreateArray<MemoryPoolContext>(Params.EffectCount + Params.VoiceCount * 4);
+            _memoryPools = CreateArray<MemoryPoolContext>(rendererParams.EffectCount + rendererParams.VoiceCount * 4);
 
-            _voices = CreateArray<VoiceContext>(Params.VoiceCount);
+            _voices = CreateArray<VoiceContext>(rendererParams.VoiceCount);
+
+            _effects = CreateArray<EffectContext>(rendererParams.EffectCount);
 
             InitializeAudioOut();
 
@@ -138,6 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
+
             long inputPosition = context.Request.SendBuff[0].Position;
 
             StructReader reader = new StructReader(context.Memory, inputPosition);
@@ -205,6 +210,16 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
                 voiceCtx.PlayState      = voice.PlayState;
             }
 
+            EffectIn[] effectsIn = reader.Read<EffectIn>(inputHeader.EffectSize);
+
+            for (int index = 0; index < effectsIn.Length; index++)
+            {
+                if (effectsIn[index].IsNew != 0)
+                {
+                    _effects[index].OutStatus.State = EffectState.New;
+                }
+            }
+
             UpdateAudio();
 
             UpdateDataHeader outputHeader = new UpdateDataHeader();
@@ -243,6 +258,11 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             foreach (VoiceContext voice in _voices)
             {
                 writer.Write(voice.OutStatus);
+            }
+
+            foreach (EffectContext effect in _effects)
+            {
+                writer.Write(effect.OutStatus);
             }
 
             return ResultCode.Success;
