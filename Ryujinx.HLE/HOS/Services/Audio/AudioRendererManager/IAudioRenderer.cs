@@ -142,7 +142,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
 
-
             long inputPosition = context.Request.SendBuff[0].Position;
 
             StructReader reader = new StructReader(context.Memory, inputPosition);
