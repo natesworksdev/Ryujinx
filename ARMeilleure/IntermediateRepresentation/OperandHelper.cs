@@ -22,9 +22,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return new Operand(value);
         }
 
-        public static Operand Const(long value, bool disableCF = false, string name = null)
+        public static Operand Const(long value, bool disableCF = false, int? index = null)
         {
-            return new Operand(value, disableCF, name);
+            return new Operand(value, disableCF, index);
         }
 
         public static Operand Const(ulong value)

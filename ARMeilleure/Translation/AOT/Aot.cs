@@ -1,5 +1,4 @@
 using ARMeilleure.CodeGen;
-using ARMeilleure.Memory;
 using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
@@ -13,6 +12,8 @@ namespace ARMeilleure.Translation.AOT
 {
     public static class Aot
     {
+        private const int InternalVersion = 0;
+
         private const string BaseDir = "Ryujinx";
 
         private const string TitleIdTextDefault    = "0000000000000000";
@@ -21,6 +22,8 @@ namespace ARMeilleure.Translation.AOT
         private const int SaveInterval = 30; // Seconds.
 
         internal const int MinCodeLengthToSave = 0x180; // Bytes.
+
+        internal const int PageTableIndex = -1;
 
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
 
@@ -72,7 +75,7 @@ namespace ARMeilleure.Translation.AOT
             _disposed = false;
         }
 
-        public static void Init(string titleIdText, string displayVersion, bool enabled = true, bool readOnlyMode = false)
+        public static void Init(string titleIdText, string displayVersion, bool enabled, bool readOnlyMode)
         {
             if (String.IsNullOrEmpty(titleIdText) || titleIdText == TitleIdTextDefault)
             {
@@ -140,31 +143,38 @@ namespace ARMeilleure.Translation.AOT
                         {
                             cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
 
-                            ReadHeader(cacheStream, out int infosLen, out int codesLen, out int relocsLen);
+                            ReadHeader(cacheStream, out int cacheFileVersion, out int infosLen, out int codesLen, out int relocsLen);
 
-                            if (infosLen % InfoEntry.Size == 0)
+                            if (cacheFileVersion == (int)InternalVersion)
                             {
-                                byte[] infosBuf  = new byte[infosLen];
-                                byte[] codesBuf  = new byte[codesLen];
-                                byte[] relocsBuf = new byte[relocsLen];
-
-                                cacheStream.Read(infosBuf,  0, infosLen);
-                                cacheStream.Read(codesBuf,  0, codesLen);
-                                cacheStream.Read(relocsBuf, 0, relocsLen);
-
-                                if (cacheStream.Position == cacheStream.Length)
+                                if (infosLen % InfoEntry.Size == 0)
                                 {
-                                    try
+                                    byte[] infosBuf  = new byte[infosLen];
+                                    byte[] codesBuf  = new byte[codesLen];
+                                    byte[] relocsBuf = new byte[relocsLen];
+
+                                    cacheStream.Read(infosBuf,  0, infosLen);
+                                    cacheStream.Read(codesBuf,  0, codesLen);
+                                    cacheStream.Read(relocsBuf, 0, relocsLen);
+
+                                    if (cacheStream.Position == cacheStream.Length)
                                     {
-                                        _infosStream. Write(infosBuf,  0, infosLen);
-                                        _codesStream. Write(codesBuf,  0, codesLen);
-                                        _relocsStream.Write(relocsBuf, 0, relocsLen);
+                                        try
+                                        {
+                                            _infosStream. Write(infosBuf,  0, infosLen);
+                                            _codesStream. Write(codesBuf,  0, codesLen);
+                                            _relocsStream.Write(relocsBuf, 0, relocsLen);
+                                        }
+                                        catch
+                                        {
+                                            _infosStream. SetLength(0L);
+                                            _codesStream. SetLength(0L);
+                                            _relocsStream.SetLength(0L);
+                                        }
                                     }
-                                    catch
+                                    else
                                     {
-                                        _infosStream. SetLength(0L);
-                                        _codesStream. SetLength(0L);
-                                        _relocsStream.SetLength(0L);
+                                        InvalidateCompressedCacheStream(compressedCacheStream);
                                     }
                                 }
                                 else
@@ -216,11 +226,14 @@ namespace ARMeilleure.Translation.AOT
 
         private static void ReadHeader(
             MemoryStream cacheStream,
+            out int      cacheFileVersion,
             out int      infosLen,
             out int      codesLen,
             out int      relocsLen)
         {
             BinaryReader headerReader = new BinaryReader(cacheStream, EncodingCache.UTF8NoBOM, true);
+
+            cacheFileVersion = headerReader.ReadInt32();
 
             infosLen  = headerReader.ReadInt32();
             codesLen  = headerReader.ReadInt32();
@@ -303,6 +316,8 @@ namespace ARMeilleure.Translation.AOT
         {
             BinaryWriter headerWriter = new BinaryWriter(cacheStream, EncodingCache.UTF8NoBOM, true);
 
+            headerWriter.Write((int)InternalVersion);
+
             headerWriter.Write((int)_infosStream. Length); // infosLen
             headerWriter.Write((int)_codesStream. Length); // codesLen
             headerWriter.Write((int)_relocsStream.Length); // relocsLen
@@ -375,10 +390,10 @@ namespace ARMeilleure.Translation.AOT
 
             for (int i = 0; i < relocEntriesCount; i++)
             {
-                int    position = relocReader.ReadInt32();
-                string name     = relocReader.ReadString();
+                int position = relocReader.ReadInt32();
+                int index    = relocReader.ReadInt32();
 
-                relocEntries[i] = new RelocEntry(position, name);
+                relocEntries[i] = new RelocEntry(position, index);
             }
 
             return relocEntries;
@@ -390,11 +405,11 @@ namespace ARMeilleure.Translation.AOT
             {
                 byte[] immBytes = new byte[8];
 
-                if (relocEntry.Name == nameof(MemoryManager.PageTable))
+                if (relocEntry.Index == PageTableIndex)
                 {
                     immBytes = BitConverter.GetBytes((ulong)pageTable.ToInt64());
                 }
-                else if (Delegates.TryGetDelegateFuncPtr(relocEntry.Name, out IntPtr funcPtr))
+                else if (Delegates.TryGetDelegateFuncPtr(relocEntry.Index, out IntPtr funcPtr)) // By delegate index.
                 {
                     immBytes = BitConverter.GetBytes((ulong)funcPtr.ToInt64());
                 }

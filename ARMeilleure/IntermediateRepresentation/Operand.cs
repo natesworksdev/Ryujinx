@@ -13,7 +13,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public bool DisableCF { get; private set; }
 
-        public string Name { get; private set; }
+        public int? Index { get; private set; }
 
         public LinkedList<Node> Assignments { get; }
         public LinkedList<Node> Uses        { get; }
@@ -40,13 +40,13 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = (uint)value;
         }
 
-        public Operand(long value, bool disableCF = false, string name = null) : this(OperandKind.Constant, OperandType.I64)
+        public Operand(long value, bool disableCF = false, int? index = null) : this(OperandKind.Constant, OperandType.I64)
         {
             Value = (ulong)value;
 
             DisableCF = disableCF;
 
-            Name = name;
+            Index = index;
         }
 
         public Operand(ulong value) : this(OperandKind.Constant, OperandType.I64)

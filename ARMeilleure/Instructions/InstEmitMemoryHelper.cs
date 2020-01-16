@@ -290,9 +290,9 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblFallbackPath)
         {
-            string name = nameof(MemoryManager.PageTable);
-
-            Operand pte = Const(context.Memory.PageTable.ToInt64(), Aot.Enabled, name);
+            Operand pte = Aot.Enabled
+                ? Const(context.Memory.PageTable.ToInt64(), true, Aot.PageTableIndex)
+                : Const(context.Memory.PageTable.ToInt64());
 
             int bit = MemoryManager.PageBits;
 

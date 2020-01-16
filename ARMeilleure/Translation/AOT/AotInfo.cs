@@ -29,7 +29,7 @@ namespace ARMeilleure.Translation.AOT
         public void WriteRelocEntry(RelocEntry relocEntry)
         {
             _relocWriter.Write(relocEntry.Position);
-            _relocWriter.Write(relocEntry.Name);
+            _relocWriter.Write(relocEntry.Index);
 
             RelocEntriesCount++;
         }

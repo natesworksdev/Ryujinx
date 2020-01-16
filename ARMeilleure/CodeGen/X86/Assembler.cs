@@ -882,7 +882,7 @@ namespace ARMeilleure.CodeGen.X86
                     }
                     else if (dest != null && dest.Kind == OperandKind.Register && info.OpRImm64 != BadOp)
                     {
-                        string name = source.Name;
+                        int? index = source.Index;
 
                         int rexPrefix = GetRexPrefix(dest, source, type, rrm: false);
 
@@ -893,9 +893,9 @@ namespace ARMeilleure.CodeGen.X86
 
                         WriteByte((byte)(info.OpRImm64 + (dest.GetRegister().Index & 0b111)));
 
-                        if (_aotInfo != null && name != null)
+                        if (_aotInfo != null && index != null)
                         {
-                            _aotInfo.WriteRelocEntry(new RelocEntry((int)_stream.Position, name));
+                            _aotInfo.WriteRelocEntry(new RelocEntry((int)_stream.Position, (int)index));
                         }
 
                         WriteUInt64(imm);

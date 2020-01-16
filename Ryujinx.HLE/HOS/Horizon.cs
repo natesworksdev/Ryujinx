@@ -584,7 +584,7 @@ namespace Ryujinx.HLE.HOS
 
             Logger.PrintInfo(LogClass.Loader, "AOT Init...");
 
-            Aot.Init(TitleIdText, DisplayVersion);
+            Aot.Init(TitleIdText, DisplayVersion, enabled: true, readOnlyMode: false);
 
             ProgramLoader.LoadStaticObjects(this, metaData, staticObjects.ToArray());
         }

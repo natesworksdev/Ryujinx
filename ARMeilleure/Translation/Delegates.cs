@@ -7,16 +7,11 @@ namespace ARMeilleure.Translation
 {
     static class Delegates
     {
-        public static bool TryGetDelegateFuncPtr(string key, out IntPtr funcPtr)
+        public static bool TryGetDelegateFuncPtr(int index, out IntPtr funcPtr) // By delegate index.
         {
-            if (key == null)
+            if (index >= 0 && index < _delegates.Count)
             {
-                throw new ArgumentNullException(nameof(key));
-            }
-
-            if (_delegates.TryGetValue(key, out DelegateInfo dlgInfo))
-            {
-                funcPtr = dlgInfo.FuncPtr;
+                funcPtr = _delegates.Values[index].FuncPtr;
 
                 return true;
             }
@@ -28,38 +23,61 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public static DelegateInfo GetDelegateInfo(string key)
+        public static IntPtr GetDelegateFuncPtr(MethodInfo info)
         {
-            if (key == null)
+            if (info == null)
             {
-                throw new ArgumentNullException(nameof(key));
+                throw new ArgumentNullException(nameof(info));
             }
+
+            string key = GetKey(info);
 
             if (!_delegates.TryGetValue(key, out DelegateInfo dlgInfo))
             {
                 throw new ArgumentException($"({nameof(key)} = {key})");
             }
 
-            return dlgInfo;
+            return dlgInfo.FuncPtr;
+        }
+
+        public static int GetDelegateIndex(MethodInfo info)
+        {
+            if (info == null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            string key = GetKey(info);
+
+            int index = _delegates.IndexOfKey(key);
+
+            if (index == -1)
+            {
+                throw new ArgumentException($"({nameof(key)} = {key})");
+            }
+
+            return index;
         }
 
         private static void SetDelegateInfo(MethodInfo info)
         {
-            string key = $"{info.DeclaringType.Name}.{info.Name}";
+            string key = GetKey(info);
 
             Delegate dlg = DelegateHelpers.GetDelegate(info);
 
-            if (!_delegates.TryAdd(key, new DelegateInfo(dlg)))
-            {
-                throw new ArgumentException($"({nameof(key)} = {key})");
-            }
+            _delegates.Add(key, new DelegateInfo(dlg)); // ArgumentException (key)
         }
 
-        private static readonly Dictionary<string, DelegateInfo> _delegates;
+        private static string GetKey(MethodInfo info)
+        {
+            return $"{info.DeclaringType.Name}.{info.Name}";
+        }
+
+        private static readonly SortedList<string, DelegateInfo> _delegates;
 
         static Delegates()
         {
-            _delegates = new Dictionary<string, DelegateInfo>();
+            _delegates = new SortedList<string, DelegateInfo>();
 
             SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Abs),      new Type[] { typeof(double) }));
             SetDelegateInfo(typeof(Math).GetMethod(nameof(Math.Ceiling),  new Type[] { typeof(double) }));

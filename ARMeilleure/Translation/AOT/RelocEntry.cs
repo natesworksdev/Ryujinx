@@ -2,18 +2,18 @@ namespace ARMeilleure.Translation.AOT
 {
     struct RelocEntry
     {
-        public int    Position;
-        public string Name;
+        public int Position;
+        public int Index;
 
-        public RelocEntry(int position, string name)
+        public RelocEntry(int position, int index)
         {
             Position = position;
-            Name     = name;
+            Index    = index;
         }
 
         public override string ToString()
         {
-            return $"({nameof(Position)} = {Position}, {nameof(Name)} = {Name})";
+            return $"({nameof(Position)} = {Position}, {nameof(Index)} = {Index})";
         }
     }
 }

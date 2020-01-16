@@ -1,4 +1,5 @@
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
 using System.Reflection;
@@ -81,11 +82,55 @@ namespace ARMeilleure.Translation
 
         public Operand Call(MethodInfo info, params Operand[] callArgs)
         {
-            string name = $"{info.DeclaringType.Name}.{info.Name}";
+            IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
 
-            DelegateInfo dlgInfo = Delegates.GetDelegateInfo(name);
+            OperandType retType = GetOperandType(info.ReturnType);
 
-            return Call(Const(dlgInfo.FuncPtr.ToInt64(), Aot.Enabled, name), dlgInfo.RetType, callArgs);
+            if (Aot.Enabled)
+            {
+                int index = Delegates.GetDelegateIndex(info);
+
+                return Call(Const(funcPtr.ToInt64(), true, index), retType, callArgs);
+            }
+            else
+            {
+                return Call(Const(funcPtr.ToInt64()), retType, callArgs);
+            }
+        }
+
+        private static OperandType GetOperandType(Type type)
+        {
+            if (type == typeof(bool)   || type == typeof(byte)  ||
+                type == typeof(char)   || type == typeof(short) ||
+                type == typeof(int)    || type == typeof(sbyte) ||
+                type == typeof(ushort) || type == typeof(uint))
+            {
+                return OperandType.I32;
+            }
+            else if (type == typeof(long) || type == typeof(ulong))
+            {
+                return OperandType.I64;
+            }
+            else if (type == typeof(double))
+            {
+                return OperandType.FP64;
+            }
+            else if (type == typeof(float))
+            {
+                return OperandType.FP32;
+            }
+            else if (type == typeof(V128))
+            {
+                return OperandType.V128;
+            }
+            else if (type == typeof(void))
+            {
+                return OperandType.None;
+            }
+            else
+            {
+                throw new ArgumentException($"Invalid type \"{type.Name}\".");
+            }
         }
 
         public Operand Call(Operand address, OperandType returnType, params Operand[] callArgs)
