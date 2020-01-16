@@ -10,6 +10,7 @@ using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using System.Diagnostics;
 
 namespace ARMeilleure.Instructions
 {
@@ -86,7 +87,7 @@ namespace ARMeilleure.Instructions
             InsertScalar(context, op.Vd, insert);
             if (op.Q)
             {
-                InsertScalar(context, op.Vd | 1, insert);
+                InsertScalar(context, op.Vd + 1, insert);
             }
         }
 
@@ -179,7 +180,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitBifBit(ArmEmitterContext context, bool notRm)
         {
-            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
             /*
             if (Optimizations.UseSse2)
@@ -357,7 +358,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        //TODO: probably important to have a fast path for these instead of calling fucking standard math min/max
         public static void VmaxminNm_S(ArmEmitterContext context)
         {
             bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
@@ -408,6 +408,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vmul_I(ArmEmitterContext context)
         {
+            if (((context.CurrOp.RawOpCode >> 24) & 1) != 0) throw new Exception("Polynomial mode not supported");
             EmitVectorBinaryOpSx32(context, (op1, op2) => context.Multiply(op1, op2));
         }
 
@@ -558,6 +559,52 @@ namespace ARMeilleure.Instructions
             EmitVectorPairwiseOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
         }
 
+        public static void Vrev(ArmEmitterContext context)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+            EmitVectorUnaryOpZx32(context, (op1) =>
+            {
+                switch (op.Opc)
+                {
+                    case 0:
+                        switch (op.Size) //swap bytes
+                        {
+                            default:
+                                return op1;
+                            case 1:
+                                return InstEmit.EmitReverseBytes16_32Op(context, op1);
+                            case 2:
+                            case 3:
+                                return context.ByteSwap(op1);
+                        }
+                    case 1:
+                        switch (op.Size)
+                        {
+                            default:
+                                return op1;
+                            case 2:
+                                return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff0000)), Const(16)),
+                                                         context.ShiftLeft(context.BitwiseAnd(op1, Const(0x0000ffff)), Const(16)));
+                            case 3:
+                                return context.BitwiseOr(
+                                context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff000000000000ul)), Const(48)),
+                                                     context.ShiftLeft(context.BitwiseAnd(op1, Const(0x000000000000fffful)), Const(48))),
+                                context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0x0000ffff00000000ul)), Const(16)),
+                                                     context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000ffff0000ul)), Const(16)))
+                                );
+                        }
+                    case 2:
+                        //swap upper and lower
+                        return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffffffff00000000ul)), Const(32)),
+                                                 context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
+
+                }
+                return op1;
+            });
+        }
+
+
+
         public static void Vrecpe(ArmEmitterContext context)
         {
             EmitVectorUnaryOpF32(context, (op1) =>
@@ -593,24 +640,24 @@ namespace ARMeilleure.Instructions
         public static void Vsel(ArmEmitterContext context)
         {
             var op = (OpCode32SimdSel)context.CurrOp;
+            Operand condition = null;
+            switch (op.Cc)
+            {
+                case OpCode32SimdSelMode.Eq:
+                    condition = GetCondTrue(context, Condition.Eq);
+                    break;
+                case OpCode32SimdSelMode.Ge:
+                    condition = GetCondTrue(context, Condition.Ge);
+                    break;
+                case OpCode32SimdSelMode.Gt:
+                    condition = GetCondTrue(context, Condition.Gt);
+                    break;
+                case OpCode32SimdSelMode.Vs:
+                    condition = GetCondTrue(context, Condition.Vs);
+                    break;
+            }
             EmitScalarBinaryOpI32(context, (op1, op2) =>
             {
-                Operand condition = null;
-                switch (op.Cc)
-                {
-                    case OpCode32SimdSelMode.Eq:
-                        condition = GetCondTrue(context, Condition.Eq);
-                        break;
-                    case OpCode32SimdSelMode.Ge:
-                        condition = GetCondTrue(context, Condition.Ge);
-                        break;
-                    case OpCode32SimdSelMode.Gt:
-                        condition = GetCondTrue(context, Condition.Gt);
-                        break;
-                    case OpCode32SimdSelMode.Vs:
-                        condition = GetCondTrue(context, Condition.Vs);
-                        break;
-                }
                 return context.ConditionalSelect(condition, op1, op2);
             });
         }
@@ -621,11 +668,48 @@ namespace ARMeilleure.Instructions
             //IMPORTANT TODO: does shift left negative do a truncating shift right on x86?
             if (op.U)
             {
-                EmitVectorBinaryOpZx32(context, (op1, op2) => context.ShiftLeft(op1, context.SignExtend8(op2.Type, op2)));
+                EmitVectorBinaryOpZx32(context, (op1, op2) => EmitShlRegOp(context, op2, op1, op.Size, true));
             } 
             else
             {
-                EmitVectorBinaryOpSx32(context, (op1, op2) => context.ShiftLeft(op1, context.SignExtend8(op2.Type, op2)));
+                EmitVectorBinaryOpSx32(context, (op1, op2) => EmitShlRegOp(context, op2, op1, op.Size, false));
+            }
+        }
+
+        private static Operand EmitShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size, bool unsigned)
+        {
+            if (shiftLsB.Type == OperandType.I64) shiftLsB = context.ConvertI64ToI32(shiftLsB);
+            shiftLsB = context.SignExtend8(OperandType.I32, shiftLsB);
+            Debug.Assert((uint)size < 4u);
+
+            Operand negShiftLsB = context.Negate(shiftLsB);
+
+            Operand isPositive = context.ICompareGreaterOrEqual(shiftLsB, Const(0));
+
+            Operand shl = context.ShiftLeft(op, shiftLsB);
+            Operand shr = (unsigned) ? context.ShiftRightUI(op, negShiftLsB) : context.ShiftRightSI(op, negShiftLsB);
+
+            Operand res = context.ConditionalSelect(isPositive, shl, shr);
+
+            if (unsigned)
+            {
+                Operand isOutOfRange = context.BitwiseOr(
+                    context.ICompareGreaterOrEqual(shiftLsB, Const(8 << size)),
+                    context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size)));
+
+                return context.ConditionalSelect(isOutOfRange, Const(op.Type, 0), res);
+            } 
+            else
+            {
+                Operand isOutOfRange0 = context.ICompareGreaterOrEqual(shiftLsB, Const(8 << size));
+                Operand isOutOfRangeN = context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size));
+
+                //also zero if shift is too negative, but value was positive
+                isOutOfRange0 = context.BitwiseOr(isOutOfRange0, context.BitwiseAnd(isOutOfRangeN, context.ICompareGreaterOrEqual(op, Const(0))));
+
+                Operand min = (op.Type == OperandType.I64) ? Const(-1L) : Const(-1);
+
+                return context.ConditionalSelect(isOutOfRange0, Const(op.Type, 0), context.ConditionalSelect(isOutOfRangeN, min, res));
             }
         }
 

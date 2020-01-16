@@ -21,7 +21,7 @@ namespace ARMeilleure.Decoders
             Rt = (opCode >> 12) & 0xf;
             Rt2 = (opCode >> 16) & 0xf;
 
-            bool single = (opCode & (1 << 8)) != 0;
+            bool single = (opCode & (1 << 8)) == 0;
             if (single)
             {
                 Vm = ((opCode >> 5) & 0x1) | ((opCode << 1) & 0x1e);

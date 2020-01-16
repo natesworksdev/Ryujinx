@@ -581,7 +581,7 @@ namespace ARMeilleure.Instructions
 
             Operand m = GetAluM(context);
 
-            Operand res = context.Call(new _U32_U32(System.Buffers.Binary.BinaryPrimitives.ReverseEndianness), m);
+            Operand res = context.ByteSwap(m);
 
             EmitAluStore(context, res);
         }

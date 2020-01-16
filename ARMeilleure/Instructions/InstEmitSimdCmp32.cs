@@ -166,7 +166,8 @@ namespace ARMeilleure.Instructions
 
         private static Operand ZerosOrOnes(ArmEmitterContext context, Operand fromBool, OperandType baseType)
         {
-            return context.ConditionalSelect(fromBool, Const(baseType, -1L), Const(baseType, 0L));
+            var ones = (baseType == OperandType.I64) ? Const(-1L) : Const(-1);
+            return context.ConditionalSelect(fromBool, ones, Const(baseType, 0L));
         }
 
         private static void EmitCmpOpI32(

@@ -87,7 +87,7 @@ namespace ARMeilleure.Instructions
             int vd;
             if (op.Size == 3)
             {
-                vd = FlipVdBits(op.Vd, true);
+                vd = FlipVdBits(op.Vd, false);
                 // double to single
                 Operand fp = ExtractScalar(context, OperandType.FP64, vm);
 
@@ -99,7 +99,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                vd = FlipVdBits(op.Vd, false);
+                vd = FlipVdBits(op.Vd, true);
                 // single to double
                 Operand fp = ExtractScalar(context, OperandType.FP32, vm);
 
@@ -248,10 +248,10 @@ namespace ARMeilleure.Instructions
                     toConvert = EmitRoundMathCall(context, MidpointRounding.ToEven, toConvert);
                     break;
                 case 0b10: //+infinity
-                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToPositiveInfinity, toConvert);
+                    toConvert = EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, toConvert);
                     break;
                 case 0b11: //negative
-                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToNegativeInfinity, toConvert);
+                    toConvert = EmitUnaryMathCall(context, MathF.Floor, Math.Floor, toConvert);
                     break;
             }
 
@@ -285,7 +285,7 @@ namespace ARMeilleure.Instructions
         }
 
 
-        public static void Vrint_R(ArmEmitterContext context)
+        public static void Vrint_RM(ArmEmitterContext context)
         {
             OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;
 
@@ -302,10 +302,10 @@ namespace ARMeilleure.Instructions
                     toConvert = EmitRoundMathCall(context, MidpointRounding.ToEven, toConvert);
                     break;
                 case 0b10: //+infinity
-                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToPositiveInfinity, toConvert);
+                    toConvert = EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, toConvert);
                     break;
                 case 0b11: //negative
-                    toConvert = EmitRoundMathCall(context, MidpointRounding.ToNegativeInfinity, toConvert);
+                    toConvert = EmitUnaryMathCall(context, MathF.Floor, Math.Floor, toConvert);
                     break;
             }
 
@@ -314,7 +314,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vrint_Z(ArmEmitterContext context)
         {
-            EmitScalarUnaryOpF32(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToZero, op1));
+            EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Truncate, Math.Truncate, op1));
         }
 
         private static int CastDoubleToInt32(double value)

@@ -1,4 +1,4 @@
-﻿//#define SimdMem32
+﻿#define SimdMem32
 
 using ARMeilleure.State;
 using NUnit.Framework;
@@ -37,7 +37,7 @@ namespace Ryujinx.Tests.Cpu
                 0b0001
             };
 
-        [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
+        [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
         public void Vldn_Single([Values(0u, 1u, 2u)] uint size,
                         [Values(0u, 13u)] uint rn,
                         [Values(1u, 13u, 15u)] uint rm,
@@ -67,6 +67,33 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (all lanes)")]
+        public void Vldn_All([Values(0u, 13u)] uint rn,
+                [Values(1u, 13u, 15u)] uint rm,
+                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                [Range(0u, 3u)] uint n,
+                [Range(0u, 2u)] uint size,
+                [Values] bool t,
+                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
+        {
+            var data = GenerateVectorSequence(0x1000);
+            SetWorkingMemory(data);
+
+            uint opcode = 0xf4a00c00; // vld1.8 {d0[0]}, [r0], r0
+
+            opcode |= ((size & 3) << 6) | ((rn & 15) << 16) | (rm & 15);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            opcode |= (n & 3) << 8; //LD1 is 0, LD2 is 1 etc
+            if (t) opcode |= 1 << 5; //LD1 is 0, LD2 is 1 etc
+
+            SingleOpcode(opcode, r0: 0x2500, r1: offset, sp: 0x2500);
+
+            CompareAgainstUnicorn();
+        }
+
         [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
         public void Vldn_Pair([Values(0u, 1u, 2u, 3u)] uint size,
                 [Values(0u, 13u)] uint rn,
@@ -90,7 +117,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
+        [Test, Pairwise, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
         public void Vstn_Single([Values(0u, 1u, 2u)] uint size,
                 [Values(0u, 13u)] uint rn,
                 [Values(1u, 13u, 15u)] uint rm,

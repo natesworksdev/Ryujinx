@@ -22,19 +22,19 @@ namespace ARMeilleure.Decoders
             Op = ((opCode >> 20) & 0x1);
             U = ((opCode >> 23) & 1) != 0;
 
-            var opc = (((opCode >> 21) & 0x3) << 2) | ((opCode >> 5) & 0x3);
+            var opc = (((opCode >> 23) & 1) << 4) | (((opCode >> 21) & 0x3) << 2) | ((opCode >> 5) & 0x3);
 
-            if ((opc & 0x8) != 0)
+            if ((opc & 0b01000) == 0b01000)
             {
                 Size = 0;
                 Index = opc & 0x7;
             } 
-            else if ((opc & 0x1) != 0)
+            else if ((opc & 0b01001) == 0b00001)
             {
                 Size = 1;
                 Index = (opc >> 1) & 0x3;
             }
-            else if ((opc & 0x2) == 0)
+            else if ((opc & 0b11011) == 0)
             {
                 Size = 2;
                 Index = (opc >> 2) & 0x1;

@@ -230,9 +230,9 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = EmitVectorExtractSx32(context, vm, index + em * elems, op.Size);
+                Operand me = EmitVectorExtractSx32(context, vm, index + em * elems, op.Size);
 
-                res = EmitVectorInsert(context, res, emit(ne), index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(me), index + ed * elems, op.Size);
             }
 
             context.Copy(GetVecA32(vd), res);
@@ -298,9 +298,9 @@ namespace ARMeilleure.Instructions
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = EmitVectorExtractZx32(context, vm, index + em * elems, op.Size);
+                Operand me = EmitVectorExtractZx32(context, vm, index + em * elems, op.Size);
 
-                res = EmitVectorInsert(context, res, emit(ne), index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(me), index + ed * elems, op.Size);
             }
 
             context.Copy(GetVecA32(vd), res);
@@ -347,7 +347,7 @@ namespace ARMeilleure.Instructions
                 Operand ne = EmitVectorExtractZx32(context, vn, index + en * elems, op.Size);
                 Operand me = EmitVectorExtractZx32(context, vm, index + em * elems, op.Size);
 
-                res = EmitVectorInsert(context, res, emit(de, ne, me), index, op.Size);
+                res = EmitVectorInsert(context, res, emit(de, ne, me), index + ed * elems, op.Size);
             }
 
             context.Copy(GetVecA32(vd), res);
@@ -479,17 +479,21 @@ namespace ARMeilleure.Instructions
             (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
 
             Operand res = GetVecA32(vd);
+            Operand mvec = GetVecA32(vm);
+            Operand nvec = GetVecA32(vn);
 
             for (int index = 0; index < pairs; index++)
             {
                 int pairIndex = index << 1;
-                Operand n1 = context.VectorExtract(type, GetVecA32(vn), pairIndex + en * elems);
-                Operand n2 = context.VectorExtract(type, GetVecA32(vn), pairIndex + 1 + en * elems);
 
-                Operand m1 = context.VectorExtract(type, GetVecA32(vm), pairIndex + em * elems);
-                Operand m2 = context.VectorExtract(type, GetVecA32(vm), pairIndex + 1 + em * elems);
+                Operand n1 = context.VectorExtract(type, nvec, pairIndex + en * elems);
+                Operand n2 = context.VectorExtract(type, nvec, pairIndex + 1 + en * elems);
 
                 res = context.VectorInsert(res, emit(n1, n2), index + ed * elems);
+
+                Operand m1 = context.VectorExtract(type, mvec, pairIndex + em * elems);
+                Operand m2 = context.VectorExtract(type, mvec, pairIndex + 1 + em * elems);
+
                 res = context.VectorInsert(res, emit(m1, m2), index + pairs + ed * elems);
             }
 

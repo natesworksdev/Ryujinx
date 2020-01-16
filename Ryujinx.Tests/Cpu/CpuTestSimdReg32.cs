@@ -243,7 +243,8 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise, Description("VCMP.f<size> Vd, Vm")]
         public void Vcmp([Values(2u, 3u)] uint size,
                              [ValueSource("_1S_F_")] ulong a,
-                             [ValueSource("_1S_F_")] ulong b)
+                             [ValueSource("_1S_F_")] ulong b,
+                             [Values] bool e)
         {
             uint opcode = 0xeeb40840;
             uint rm = 1;
@@ -259,6 +260,7 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= ((rd & 0x1e) << 11) | ((rd & 0x1) << 22);
             }
             opcode |= ((size & 3) << 8);
+            if (e) opcode |= 1 << 7;
 
             V128 v1 = MakeVectorE0(a);
             V128 v2 = MakeVectorE0(b);
@@ -273,6 +275,72 @@ namespace Ryujinx.Tests.Cpu
             SingleOpcode(opcode, v1: v1, v2: v2, overflow: v, carry: c, zero: z, negative: n, fpscr: fpscr, copyFpFlags: true);
 
             CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, <Vn>")]
+        public void Vshl([Values(0u)] uint rd,
+                    [Values(1u, 0u)] uint rn,
+                    [Values(2u, 0u)] uint rm,
+                    [Values(0u, 1u, 2u, 3u)] uint size,
+                    [Random(RndCnt)] ulong z,
+                    [Random(RndCnt)] ulong a,
+                    [Random(RndCnt)] ulong b,
+                    [Values] bool q,
+                    [Values] bool u)
+        {
+            uint opcode = 0xf2000400;
+            if (q)
+            {
+                opcode |= 1 << 6;
+                rm <<= 1;
+                rn <<= 1;
+                rd <<= 1;
+            }
+
+            if (u) opcode |= 1 << 24;
+
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0E1(a, z);
+            V128 v2 = MakeVectorE0E1(b, z);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsS);
+        }
+
+        [Test, Combinatorial, Description("VPADD.f32 V0, V0, V0")]
+        public void Vpadd_f32([Values(0u)] uint rd,
+                    [Range(0u, 7u)] uint rn,
+                    [Range(0u, 7u)] uint rm)
+        {
+            uint opcode = 0xf3000d00; // VADD.f32 D0, D0, D0
+            /*
+            if (q)
+            {
+                rm <<= 0x1e;
+                rn <<= 0x1e;
+                rd <<= 0x1e;
+            }
+            */
+
+            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+
+            //if (q) opcode |= 1 << 6;
+
+            var rnd = TestContext.CurrentContext.Random;
+            V128 v0 = new V128(rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue));
+            V128 v1 = new V128(rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue));
+            V128 v2 = new V128(rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue));
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsS);
         }
 #endif
     }

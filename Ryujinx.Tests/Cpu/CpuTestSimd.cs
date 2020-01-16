@@ -1,4 +1,4 @@
-#define Simd
+//#define Simd
 
 using ARMeilleure.State;
 

@@ -25,7 +25,7 @@ namespace ARMeilleure.Decoders
                 Size = 0;
                 Index = (opc >> 1) & 0x7;
             }
-            else if ((opc & 0b11) != 0b10)
+            else if ((opc & 0b11) == 0b10)
             {
                 Size = 1;
                 Index = (opc >> 2) & 0x3;
@@ -43,6 +43,7 @@ namespace ARMeilleure.Decoders
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
             Q = (opCode & (1 << 6)) != 0;
+            if (Q) RegisterSize = RegisterSize.Simd128;
         }
     }
 }

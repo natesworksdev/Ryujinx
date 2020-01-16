@@ -18,6 +18,11 @@ namespace ARMeilleure.Instructions
             EmitVectorImmUnaryOp32(context, (op1) => op1);
         }
 
+        public static void Vmvn_I(ArmEmitterContext context)
+        {
+            EmitVectorImmUnaryOp32(context, (op1) => context.BitwiseExclusiveOr(op1, op1));
+        }
+
         public static void Vmov_GS(ArmEmitterContext context)
         {
             OpCode32SimdMovGp op = (OpCode32SimdMovGp)context.CurrOp;
@@ -58,24 +63,37 @@ namespace ARMeilleure.Instructions
         public static void Vmov_G2(ArmEmitterContext context)
         {
             OpCode32SimdMovGpDouble op = (OpCode32SimdMovGpDouble)context.CurrOp;
-            Operand vec = GetVecA32(op.Vm >> 1);
+            Operand vec = GetVecA32(op.Vm >> 2);
+            int vm1 = (op.Vm + 1);
+            bool sameOwnerVec = (op.Vm >> 2) == (vm1 >> 2);
+            Operand vec2 = sameOwnerVec ? vec : GetVecA32(vm1 >> 2);
             if (op.Op == 1)
             {
                 // to general purpose
-                Operand lowValue = context.VectorExtract(OperandType.I32, vec, (op.Vm & 1) << 1);
+                Operand lowValue = context.VectorExtract(OperandType.I32, vec, op.Vm & 3);
                 SetIntA32(context, op.Rt, lowValue);
 
-                Operand highValue = context.VectorExtract(OperandType.I32, vec, ((op.Vm & 1) << 1) | 1);
+                Operand highValue = context.VectorExtract(OperandType.I32, vec2, vm1 & 3);
                 SetIntA32(context, op.Rt2, highValue);
             }
             else
             {
                 // from general purpose
                 Operand lowValue = GetIntA32(context, op.Rt);
-                Operand resultVec = context.VectorInsert(vec, lowValue, (op.Vm & 1) << 1);
+                Operand resultVec = context.VectorInsert(vec, lowValue, op.Vm & 3);
 
                 Operand highValue = GetIntA32(context, op.Rt2);
-                context.Copy(vec, context.VectorInsert(resultVec, highValue, ((op.Vm & 1) << 1) | 1));
+
+                if (sameOwnerVec)
+                {
+                    context.Copy(vec, context.VectorInsert(resultVec, highValue, vm1 & 3));
+                } 
+                else
+                {
+                    context.Copy(vec, resultVec);
+                    context.Copy(vec2, context.VectorInsert(vec2, highValue, vm1 & 3));
+                }
+                
             }
         }
 

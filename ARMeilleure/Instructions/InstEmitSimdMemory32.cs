@@ -52,7 +52,7 @@ namespace ARMeilleure.Instructions
             {
                 OpCode32SimdMemSingle op = (OpCode32SimdMemSingle)context.CurrOp;
 
-                if (op.Replicate && !load) throw new Exception("Replicate+Store is undefined for LDn");
+                if (op.Replicate && !load) throw new Exception("Replicate+Store is undefined for STn");
                 int eBytes = 1 << op.Size;
 
                 Operand n = GetIntA32(context, op.Rn);
@@ -81,14 +81,24 @@ namespace ARMeilleure.Instructions
                         int index = ((d & 1) << (3 - op.Size)) + op.Index;
                         if (load)
                         {
-                            EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
                             if (op.Replicate)
                             {
-                                int limit = index + (1 << (3 - op.Size));
-                                while (++index < limit)
+                                var regs = (count > 1) ? 1 : op.Increment;
+                                for (int reg = 0; reg < regs; reg++)
                                 {
-                                    EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
+                                    int dreg = reg + d;
+                                    int rIndex = ((dreg & 1) << (3 - op.Size));
+                                    int limit = rIndex + (1 << (3 - op.Size));
+
+                                    while (rIndex < limit)
+                                    {
+                                        EmitLoadSimd(context, address, GetVecA32(dreg >> 1), dreg >> 1, rIndex++, op.Size);
+                                    }
                                 }
+                            } 
+                            else
+                            {
+                                EmitLoadSimd(context, address, GetVecA32(d >> 1), d >> 1, index, op.Size);
                             }
                         }
                         else
