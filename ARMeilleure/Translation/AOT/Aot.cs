@@ -316,7 +316,7 @@ namespace ARMeilleure.Translation.AOT
         {
             BinaryWriter headerWriter = new BinaryWriter(cacheStream, EncodingCache.UTF8NoBOM, true);
 
-            headerWriter.Write((int)InternalVersion);
+            headerWriter.Write((int)InternalVersion); // cacheFileVersion
 
             headerWriter.Write((int)_infosStream. Length); // infosLen
             headerWriter.Write((int)_codesStream. Length); // codesLen
