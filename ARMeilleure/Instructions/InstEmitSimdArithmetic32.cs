@@ -240,7 +240,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vnmla_S(ArmEmitterContext context)
         {
-            if (false) //Optimizations.FastFP)
+            if (Optimizations.FastFP)
             {
                 EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
                 {
@@ -258,11 +258,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vnmls_S(ArmEmitterContext context)
         {
-            if (false)//Optimizations.FastFP)
+            if (Optimizations.FastFP)
             {
                 EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
                 {
-                    return context.Subtract(op1, context.Multiply(op2, op3));
+                    return context.Add(context.Negate(op1), context.Multiply(op2, op3));
                 });
             }
             else
@@ -452,7 +452,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vmla_V(ArmEmitterContext context)
         {
-            if (false)//Optimizations.FastFP)
+            if (Optimizations.FastFP)
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) => context.Add(op1, context.Multiply(op2, op3)));
             }
@@ -510,7 +510,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vmls_V(ArmEmitterContext context)
         {
-            if (false)//Optimizations.FastFP)
+            if (Optimizations.FastFP)
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)));
             }

@@ -222,29 +222,7 @@ namespace ARMeilleure.Instructions
             Operand zeroResult = m;
             Operand shiftResult = m;
 
-            Operand shiftSkip = Label();
-            //Operand shiftZeroSkip = Label();
-
             setCarry &= op.SetFlags;
-
-            context.BranchIfTrue(shiftSkip, shiftIsZero);
-
-            /*
-            // if zero, fudge the shift number a little
-
-            switch (op.ShiftType)
-            {
-                case ShiftType.Lsr: zeroResult = GetLsrC(context, m, setCarry, 32); break;
-                case ShiftType.Asr: zeroResult = GetAsrC(context, m, setCarry, 32); break;
-                case ShiftType.Ror:
-                    // ror 0 is rrx
-                    zeroResult = GetRrxC(context, m, setCarry);
-                    break;
-            }
-
-            context.Branch(shiftSkip);
-            context.MarkLabel(shiftZeroSkip);
-            */
 
             switch (op.ShiftType)
             {
@@ -254,8 +232,6 @@ namespace ARMeilleure.Instructions
                 case ShiftType.Ror: shiftResult = EmitRorC(context, m, setCarry, s); break;
             }
 
-            context.MarkLabel(shiftSkip);
-            
             return context.ConditionalSelect(shiftIsZero, zeroResult, shiftResult);
         }
 
@@ -361,15 +337,10 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitAsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
         {
-            Operand normalShift = Label();
-            Operand end = Label();
-
             Operand l32Result;
             Operand ge32Result;
 
             Operand less32 = context.ICompareLess(shift, Const(32));
-
-            context.BranchIfTrue(normalShift, less32);
 
             ge32Result = context.ShiftRightSI(m, Const(31));
 
@@ -377,9 +348,6 @@ namespace ARMeilleure.Instructions
             {
                 SetCarryMLsb(context, ge32Result);
             }
-
-            context.Branch(end);
-            context.MarkLabel(normalShift);
 
             l32Result = context.ShiftRightSI(m, shift);
             if (setCarry)
@@ -390,8 +358,6 @@ namespace ARMeilleure.Instructions
 
                 SetFlag(context, PState.CFlag, cOut);
             }
-
-            context.MarkLabel(end);
 
             return context.ConditionalSelect(less32, l32Result, ge32Result);
         }
