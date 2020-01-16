@@ -89,7 +89,6 @@ namespace Ryujinx.Tests.Unicorn
 
             SetRegister(Arm32Register.C1_C0_2, GetRegister(Arm32Register.C1_C0_2) | 0xf00000);
             SetRegister(Arm32Register.FPEXC, 0x40000000);
-            //SetRegister(Arm32Register.FPSCR, 0x00300000);
         }
 
         ~UnicornAArch32()

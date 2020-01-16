@@ -2,19 +2,15 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
-using System.Diagnostics;
 
 namespace ARMeilleure.Instructions
 {
-    //TODO: SSE2 path
     static partial class InstEmit32
     {
         public static void Vabs_S(ArmEmitterContext context)
@@ -55,11 +51,6 @@ namespace ARMeilleure.Instructions
         public static void Vadd_I(ArmEmitterContext context)
         {
             EmitVectorBinaryOpZx32(context, (op1, op2) => context.Add(op1, op2));
-        }
-
-        public static void Vand_I(ArmEmitterContext context)
-        {
-            EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseAnd(op1, op2));
         }
 
         public static void Vdup(ArmEmitterContext context)
@@ -119,7 +110,6 @@ namespace ARMeilleure.Instructions
                 InsertScalar(context, op.Vd | 1, insert);
             }
         }
-
         public static void Vext(ArmEmitterContext context)
         {
             OpCode32SimdVext op = (OpCode32SimdVext)context.CurrOp;
@@ -151,76 +141,6 @@ namespace ARMeilleure.Instructions
             }
 
             context.Copy(GetVecA32(vd), res);
-        }
-
-        public static void Vorr_I(ArmEmitterContext context)
-        {
-            EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseOr(op1, op2));
-        }
-
-        public static void Vbsl(ArmEmitterContext context)
-        {
-            EmitVectorTernaryOpZx32(context, (op1, op2, op3) =>
-            {
-                return context.BitwiseExclusiveOr(
-                    context.BitwiseAnd(op1,
-                    context.BitwiseExclusiveOr(op2, op3)), op3);
-            });
-        }
-
-        public static void Vbif(ArmEmitterContext context)
-        {
-            EmitBifBit(context, true);
-        }
-
-        public static void Vbit(ArmEmitterContext context)
-        {
-            EmitBifBit(context, false);
-        }
-
-        private static void EmitBifBit(ArmEmitterContext context, bool notRm)
-        {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            /*
-            if (Optimizations.UseSse2)
-            {
-                Operand d = GetVec(op.Rd);
-                Operand n = GetVec(op.Rn);
-                Operand m = GetVec(op.Rm);
-
-                Operand res = context.AddIntrinsic(Intrinsic.X86Pxor, n, d);
-
-                if (notRm)
-                {
-                    res = context.AddIntrinsic(Intrinsic.X86Pandn, m, res);
-                }
-                else
-                {
-                    res = context.AddIntrinsic(Intrinsic.X86Pand, m, res);
-                }
-
-                res = context.AddIntrinsic(Intrinsic.X86Pxor, d, res);
-
-                if (op.RegisterSize == RegisterSize.Simd64)
-                {
-                    res = context.VectorZeroUpper64(res);
-                }
-
-                context.Copy(d, res);
-            }
-            */
-
-            EmitVectorTernaryOpZx32(context, (d, n, m) =>
-            {
-                if (notRm)
-                {
-                    m = context.BitwiseNot(m);
-                }
-                return context.BitwiseExclusiveOr(
-                    context.BitwiseAnd(m,
-                    context.BitwiseExclusiveOr(d, n)), d);
-            });
         }
 
         public static void Vmov_S(ArmEmitterContext context)
@@ -316,6 +236,24 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void VmaxminNm_S(ArmEmitterContext context)
+        {
+            bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
+            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
+            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
+
+            EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
+        }
+
+        public static void VmaxminNm_V(ArmEmitterContext context)
+        {
+            bool max = (context.CurrOp.RawOpCode & (1 << 21)) == 0;
+            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
+            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
+
+            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
+        }
+
         public static void Vmax_V(ArmEmitterContext context)
         {
             EmitVectorBinaryOpF32(context, (op1, op2) =>
@@ -356,24 +294,6 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpSx32(context, (op1, op2) => context.ConditionalSelect(context.ICompareLess(op1, op2), op1, op2));
             }
-        }
-
-        public static void VmaxminNm_S(ArmEmitterContext context)
-        {
-            bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
-            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
-            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
-
-            EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
-        }
-
-        public static void VmaxminNm_V(ArmEmitterContext context)
-        {
-            bool max = (context.CurrOp.RawOpCode & (1 << 21)) == 0;
-            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
-            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
-
-            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
         }
 
         public static void Vmul_S(ArmEmitterContext context)
@@ -584,7 +504,7 @@ namespace ARMeilleure.Instructions
                                 return op1;
                             case 2:
                                 return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff0000)), Const(16)),
-                                                         context.ShiftLeft(context.BitwiseAnd(op1, Const(0x0000ffff)), Const(16)));
+                                                            context.ShiftLeft(context.BitwiseAnd(op1, Const(0x0000ffff)), Const(16)));
                             case 3:
                                 return context.BitwiseOr(
                                 context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff000000000000ul)), Const(48)),
@@ -602,8 +522,6 @@ namespace ARMeilleure.Instructions
                 return op1;
             });
         }
-
-
 
         public static void Vrecpe(ArmEmitterContext context)
         {
@@ -662,71 +580,8 @@ namespace ARMeilleure.Instructions
             });
         }
 
-        public static void Vshl_I(ArmEmitterContext context)
-        {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            //IMPORTANT TODO: does shift left negative do a truncating shift right on x86?
-            if (op.U)
-            {
-                EmitVectorBinaryOpZx32(context, (op1, op2) => EmitShlRegOp(context, op2, op1, op.Size, true));
-            } 
-            else
-            {
-                EmitVectorBinaryOpSx32(context, (op1, op2) => EmitShlRegOp(context, op2, op1, op.Size, false));
-            }
-        }
-
-        private static Operand EmitShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size, bool unsigned)
-        {
-            if (shiftLsB.Type == OperandType.I64) shiftLsB = context.ConvertI64ToI32(shiftLsB);
-            shiftLsB = context.SignExtend8(OperandType.I32, shiftLsB);
-            Debug.Assert((uint)size < 4u);
-
-            Operand negShiftLsB = context.Negate(shiftLsB);
-
-            Operand isPositive = context.ICompareGreaterOrEqual(shiftLsB, Const(0));
-
-            Operand shl = context.ShiftLeft(op, shiftLsB);
-            Operand shr = (unsigned) ? context.ShiftRightUI(op, negShiftLsB) : context.ShiftRightSI(op, negShiftLsB);
-
-            Operand res = context.ConditionalSelect(isPositive, shl, shr);
-
-            if (unsigned)
-            {
-                Operand isOutOfRange = context.BitwiseOr(
-                    context.ICompareGreaterOrEqual(shiftLsB, Const(8 << size)),
-                    context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size)));
-
-                return context.ConditionalSelect(isOutOfRange, Const(op.Type, 0), res);
-            } 
-            else
-            {
-                Operand isOutOfRange0 = context.ICompareGreaterOrEqual(shiftLsB, Const(8 << size));
-                Operand isOutOfRangeN = context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size));
-
-                //also zero if shift is too negative, but value was positive
-                isOutOfRange0 = context.BitwiseOr(isOutOfRange0, context.BitwiseAnd(isOutOfRangeN, context.ICompareGreaterOrEqual(op, Const(0))));
-
-                Operand min = (op.Type == OperandType.I64) ? Const(-1L) : Const(-1);
-
-                return context.ConditionalSelect(isOutOfRange0, Const(op.Type, 0), context.ConditionalSelect(isOutOfRangeN, min, res));
-            }
-        }
-
-        public static void Vshl(ArmEmitterContext context)
-        {
-            OpCode32SimdShift op = (OpCode32SimdShift)context.CurrOp;
-            EmitVectorUnaryOpZx32(context, (op1) => context.ShiftLeft(op1, Const(op1.Type, op.Shift)));
-        }
-
         public static void Vsqrt_S(ArmEmitterContext context)
         {
-            /*
-            if (Optimizations.FastFP && Optimizations.UseSse && sizeF == 0)
-            {
-                EmitScalarUnaryOpF(context, Intrinsic.X86Rsqrtss, 0);
-            } */
-
             EmitScalarUnaryOpF32(context, (op1) =>
             {
                 return EmitSoftFloatCall(context, SoftFloat32.FPSqrt, SoftFloat64.FPSqrt, op1);

@@ -55,10 +55,42 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
+        public static void And(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+
+            Operand res = context.BitwiseAnd(n, m);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Bic(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+
+            Operand res = context.BitwiseAnd(n, context.BitwiseNot(m));
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
         public static void Clz(ArmEmitterContext context)
         {
-            IOpCode32AluReg op = (IOpCode32AluReg)context.CurrOp;
-
             Operand m = GetAluM(context, setCarry: false);
 
             Operand res = context.CountLeadingZeros(m);
@@ -82,8 +114,6 @@ namespace ARMeilleure.Instructions
 
         public static void Cmn(ArmEmitterContext context)
         {
-            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-
             Operand n = GetAluN(context);
             Operand m = GetAluM(context, setCarry: false);
 
@@ -93,6 +123,22 @@ namespace ARMeilleure.Instructions
 
             EmitAddsCCheck(context, n, res);
             EmitAddsVCheck(context, n, m, res);
+        }
+        public static void Eor(ArmEmitterContext context)
+        {
+            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+
+            Operand res = context.BitwiseExclusiveOr(n, m);
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitAluStore(context, res);
         }
 
         public static void Mov(ArmEmitterContext context)
@@ -109,44 +155,18 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, m);
         }
 
-        public static void Sub(ArmEmitterContext context)
+        public static void Orr(ArmEmitterContext context)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
 
             Operand n = GetAluN(context);
-            Operand m = GetAluM(context, setCarry: false);
+            Operand m = GetAluM(context);
 
-            Operand res = context.Subtract(n, m);
-
-            if (op.SetFlags)
-            {
-                EmitNZFlagsCheck(context, res);
-
-                EmitSubsCCheck(context, n, res);
-                EmitSubsVCheck(context, n, m, res);
-            }
-
-            EmitAluStore(context, res);
-        }
-
-        public static void Sbc(ArmEmitterContext context)
-        {
-            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-            Operand n = GetAluN(context);
-            Operand m = GetAluM(context, setCarry: false);
-
-            Operand res = context.Subtract(n, m);
-
-            Operand borrow = context.BitwiseExclusiveOr(GetFlag(PState.CFlag), Const(1));
-
-            res = context.Subtract(res, borrow);
+            Operand res = context.BitwiseOr(n, m);
 
             if (op.SetFlags)
             {
                 EmitNZFlagsCheck(context, res);
-
-                EmitSbcsCCheck(context, n, m);
-                EmitSubsVCheck(context, n, m, res);
             }
 
             EmitAluStore(context, res);
@@ -155,6 +175,7 @@ namespace ARMeilleure.Instructions
         public static void Rsc(ArmEmitterContext context)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
+
             Operand n = GetAluN(context);
             Operand m = GetAluM(context, setCarry: false);
 
@@ -195,35 +216,45 @@ namespace ARMeilleure.Instructions
             EmitAluStore(context, res);
         }
 
-        public static void And(ArmEmitterContext context)
+        public static void Sub(ArmEmitterContext context)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
 
             Operand n = GetAluN(context);
-            Operand m = GetAluM(context);
+            Operand m = GetAluM(context, setCarry: false);
 
-            Operand res = context.BitwiseAnd(n, m);
+            Operand res = context.Subtract(n, m);
 
             if (op.SetFlags)
             {
                 EmitNZFlagsCheck(context, res);
+
+                EmitSubsCCheck(context, n, res);
+                EmitSubsVCheck(context, n, m, res);
             }
 
             EmitAluStore(context, res);
         }
 
-        public static void Bic(ArmEmitterContext context)
+        public static void Sbc(ArmEmitterContext context)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
 
             Operand n = GetAluN(context);
-            Operand m = GetAluM(context);
+            Operand m = GetAluM(context, setCarry: false);
 
-            Operand res = context.BitwiseAnd(n, context.BitwiseNot(m));
+            Operand res = context.Subtract(n, m);
+
+            Operand borrow = context.BitwiseExclusiveOr(GetFlag(PState.CFlag), Const(1));
+
+            res = context.Subtract(res, borrow);
 
             if (op.SetFlags)
             {
                 EmitNZFlagsCheck(context, res);
+
+                EmitSbcsCCheck(context, n, m);
+                EmitSubsVCheck(context, n, m, res);
             }
 
             EmitAluStore(context, res);
@@ -231,8 +262,6 @@ namespace ARMeilleure.Instructions
 
         public static void Tst(ArmEmitterContext context)
         {
-            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
@@ -240,44 +269,8 @@ namespace ARMeilleure.Instructions
             EmitNZFlagsCheck(context, res);
         }
 
-        public static void Orr(ArmEmitterContext context)
-        {
-            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-
-            Operand n = GetAluN(context);
-            Operand m = GetAluM(context);
-
-            Operand res = context.BitwiseOr(n, m);
-
-            if (op.SetFlags)
-            {
-                EmitNZFlagsCheck(context, res);
-            }
-
-            EmitAluStore(context, res);
-        }
-
-        public static void Eor(ArmEmitterContext context)
-        {
-            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-
-            Operand n = GetAluN(context);
-            Operand m = GetAluM(context);
-
-            Operand res = context.BitwiseExclusiveOr(n, m);
-
-            if (op.SetFlags)
-            {
-                EmitNZFlagsCheck(context, res);
-            }
-
-            EmitAluStore(context, res);
-        }
-
         public static void Teq(ArmEmitterContext context)
         {
-            IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
@@ -408,37 +401,6 @@ namespace ARMeilleure.Instructions
             EmitSignExtend(context, true, 16);
         }
 
-        public static void Mla(ArmEmitterContext context)
-        {
-            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
-
-            Operand n = GetAluN(context);
-            Operand m = GetAluM(context);
-            Operand a = GetIntA32(context, op.Ra);
-
-            Operand res = context.Add(context.Multiply(n, m), a);
-
-            if (op.SetFlags)
-            {
-                EmitNZFlagsCheck(context, res);
-            }
-
-            EmitAluStore(context, res);
-        }
-
-        public static void Mls(ArmEmitterContext context)
-        {
-            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
-
-            Operand n = GetAluN(context);
-            Operand m = GetAluM(context);
-            Operand a = GetIntA32(context, op.Ra);
-
-            Operand res = context.Subtract(a, context.Multiply(n, m));
-
-            EmitAluStore(context, res);
-        }
-
         public static void Udiv(ArmEmitterContext context)
         {
             EmitDiv(context, true);
@@ -451,8 +413,6 @@ namespace ARMeilleure.Instructions
 
         public static void EmitDiv(ArmEmitterContext context, bool unsigned)
         {
-            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
-
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
             Operand zero = Const(m.Type, 0);
@@ -570,6 +530,7 @@ namespace ARMeilleure.Instructions
         public static void Rbit(ArmEmitterContext context)
         {
             Operand m = GetAluM(context);
+
             Operand res = InstEmit.EmitReverseBits32Op(context, m);
 
             EmitAluStore(context, res);
@@ -577,8 +538,6 @@ namespace ARMeilleure.Instructions
 
         public static void Rev(ArmEmitterContext context)
         {
-            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
-
             Operand m = GetAluM(context);
 
             Operand res = context.ByteSwap(m);
@@ -588,8 +547,6 @@ namespace ARMeilleure.Instructions
 
         public static void Rev16(ArmEmitterContext context)
         {
-            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
-
             Operand m = GetAluM(context);
 
             Operand res = InstEmit.EmitReverseBytes16_32Op(context, m);
@@ -599,8 +556,6 @@ namespace ARMeilleure.Instructions
 
         public static void Revsh(ArmEmitterContext context)
         {
-            OpCode32Alu op = (OpCode32Alu)context.CurrOp;
-
             Operand m = GetAluM(context);
 
             Operand res = InstEmit.EmitReverseBytes16_32Op(context, m);

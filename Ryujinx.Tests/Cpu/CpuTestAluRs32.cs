@@ -1,4 +1,4 @@
-﻿//#define AluRs32
+﻿#define AluRs32
 
 using NUnit.Framework;
 

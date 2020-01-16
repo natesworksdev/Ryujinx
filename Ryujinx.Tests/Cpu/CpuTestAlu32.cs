@@ -1,10 +1,12 @@
-﻿using NUnit.Framework;
+﻿#define Alu32
+using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
+#if Alu32
     [Category("Alu32")]
     class CpuTestAlu32 : CpuTest32
     {
@@ -90,4 +92,5 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
     }
+#endif 
 }

@@ -23,6 +23,37 @@ namespace ARMeilleure.Instructions
             SignedSubtract = Signed | Subtract
         }
 
+        public static void Mla(ArmEmitterContext context)
+        {
+            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+            Operand a = GetIntA32(context, op.Ra);
+
+            Operand res = context.Add(a, context.Multiply(n, m));
+
+            if (op.SetFlags)
+            {
+                EmitNZFlagsCheck(context, res);
+            }
+
+            EmitAluStore(context, res);
+        }
+
+        public static void Mls(ArmEmitterContext context)
+        {
+            OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
+
+            Operand n = GetAluN(context);
+            Operand m = GetAluM(context);
+            Operand a = GetIntA32(context, op.Ra);
+
+            Operand res = context.Subtract(a, context.Multiply(n, m));
+
+            EmitAluStore(context, res);
+        }
+
         public static void Umull(ArmEmitterContext context)
         {
             OpCode32AluUmull op = (OpCode32AluUmull)context.CurrOp;

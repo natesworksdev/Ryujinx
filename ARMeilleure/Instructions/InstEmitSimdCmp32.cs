@@ -2,8 +2,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;

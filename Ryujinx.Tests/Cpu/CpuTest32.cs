@@ -53,7 +53,6 @@ namespace Ryujinx.Tests.Cpu
             _ramPointer = Marshal.AllocHGlobal(new IntPtr(_size * 2));
             _memory = new MemoryManager(_ramPointer, addressSpaceBits: 16, useFlatPageTable: true);
             _memory.Map((long)_currAddress, 0, _size*2);
-            //_memory.Map((long)(_currAddress + _size), _size, _size);
 
             _context = new ExecutionContext();
             _context.IsAarch32 = true;
