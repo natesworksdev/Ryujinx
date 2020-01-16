@@ -156,11 +156,9 @@ namespace Ryujinx.HLE.FileSystem.Content
                     }
                 }
 
-
                 if (device != null)
                 {
                     TimeManager.Instance.InitializeTimeZone(device);
-
                     device.System.Font.Initialize(this);
                 }
 
