@@ -60,12 +60,12 @@ namespace Ryujinx.Ui
 
                 foreach (string app in Directory.GetFiles(appDir, "*.*", SearchOption.AllDirectories))
                 {
-                    if ((Path.GetExtension(app) == ".nsp") ||
-                        (Path.GetExtension(app) == ".pfs0")||
-                        (Path.GetExtension(app) == ".xci") ||
-                        (Path.GetExtension(app) == ".nca") ||
-                        (Path.GetExtension(app) == ".nro") ||
-                        (Path.GetExtension(app) == ".nso"))
+                    if ((Path.GetExtension(app).ToLower() == ".nsp") ||
+                        (Path.GetExtension(app).ToLower() == ".pfs0")||
+                        (Path.GetExtension(app).ToLower() == ".xci") ||
+                        (Path.GetExtension(app).ToLower() == ".nca") ||
+                        (Path.GetExtension(app).ToLower() == ".nro") ||
+                        (Path.GetExtension(app).ToLower() == ".nso"))
                     {
                         applications.Add(app);
                         numApplicationsFound++;
@@ -86,16 +86,16 @@ namespace Ryujinx.Ui
 
                 using (FileStream file = new FileStream(applicationPath, FileMode.Open, FileAccess.Read))
                 {
-                    if ((Path.GetExtension(applicationPath) == ".nsp")  ||
-                        (Path.GetExtension(applicationPath) == ".pfs0") ||
-                        (Path.GetExtension(applicationPath) == ".xci"))
+                    if ((Path.GetExtension(applicationPath).ToLower() == ".nsp")  ||
+                        (Path.GetExtension(applicationPath).ToLower() == ".pfs0") ||
+                        (Path.GetExtension(applicationPath).ToLower() == ".xci"))
                     {
                         try
                         {
                             PartitionFileSystem pfs;
                             bool isExeFs = false;
 
-                            if (Path.GetExtension(applicationPath) == ".xci")
+                            if (Path.GetExtension(applicationPath).ToLower() == ".xci")
                             {
                                 Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -110,7 +110,7 @@ namespace Ryujinx.Ui
 
                                 foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*"))
                                 {
-                                    if (Path.GetExtension(fileEntry.FullPath) == ".nca")
+                                    if (Path.GetExtension(fileEntry.FullPath).ToLower() == ".nca")
                                     {
                                         pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
 
@@ -225,20 +225,20 @@ namespace Ryujinx.Ui
 
                                     if (applicationIcon == null)
                                     {
-                                        applicationIcon = Path.GetExtension(applicationPath) == ".xci" ? _xciIcon : _nspIcon;
+                                        applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
                                     }
                                 }
                             }
                         }
                         catch (MissingKeyException exception)
                         {
-                            applicationIcon = Path.GetExtension(applicationPath) == ".xci" ? _xciIcon : _nspIcon;
+                            applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
 
                             Logger.PrintWarning(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                         }
                         catch (InvalidDataException)
                         {
-                            applicationIcon = Path.GetExtension(applicationPath) == ".xci" ? _xciIcon : _nspIcon;
+                            applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
 
                             Logger.PrintWarning(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {applicationPath}");
                         }
@@ -250,7 +250,7 @@ namespace Ryujinx.Ui
                             continue;
                         }
                     }
-                    else if (Path.GetExtension(applicationPath) == ".nro")
+                    else if (Path.GetExtension(applicationPath).ToLower() == ".nro")
                     {
                         BinaryReader reader = new BinaryReader(file);
 
@@ -328,7 +328,7 @@ namespace Ryujinx.Ui
                             continue;
                         }
                     }
-                    else if (Path.GetExtension(applicationPath) == ".nca") 
+                    else if (Path.GetExtension(applicationPath).ToLower() == ".nca") 
                     {
                         try
                         {
@@ -357,7 +357,7 @@ namespace Ryujinx.Ui
                         titleName       = Path.GetFileNameWithoutExtension(applicationPath);
                     }
                     // If its an NSO we just set defaults
-                    else if (Path.GetExtension(applicationPath) == ".nso")
+                    else if (Path.GetExtension(applicationPath).ToLower() == ".nso")
                     {
                         applicationIcon = _nsoIcon;
                         titleName       = Path.GetFileNameWithoutExtension(applicationPath);
