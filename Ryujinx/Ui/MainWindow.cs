@@ -239,7 +239,7 @@ namespace Ryujinx.Ui
                 HLE.Switch device = InitializeSwitchInstance();
 
                 // TODO: Move this somewhere else + reloadable?
-                Ryujinx.Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+                Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
                 {
@@ -359,7 +359,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private static void End(HLE.Switch device)
+        private void End(HLE.Switch device)
         {
             if (_ending)
             {
@@ -372,6 +372,8 @@ namespace Ryujinx.Ui
             {
                 UpdateGameMetadata(device.System.TitleIdText);
             }
+
+            Dispose();
 
             Profile.FinishProfiling();
             device?.Dispose();
