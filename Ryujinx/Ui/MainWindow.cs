@@ -335,6 +335,8 @@ namespace Ryujinx.Ui
             _screen           = null;
             _gameLoaded       = false;
 
+            DiscordIntegrationModule.SwitchToMainMenu();
+
             Application.Invoke(delegate
             {
                 _stopEmulation.Sensitive            = false;
@@ -373,8 +375,9 @@ namespace Ryujinx.Ui
 
             Profile.FinishProfiling();
             device?.Dispose();
+            DiscordIntegrationModule.Exit();
             Logger.Shutdown();
-            Environment.Exit(0);
+            Application.Quit();
         }
 
         private static IRenderer InitializeRenderer()

@@ -161,7 +161,6 @@ namespace Ryujinx.HLE.FileSystem.Content
                     TimeManager.Instance.InitializeTimeZone(device);
                     device.System.Font.Initialize(this);
                 }
-
             }
         }
 
