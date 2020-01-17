@@ -120,6 +120,7 @@ namespace Ryujinx.Ui
                                         if (nca.Header.ContentType == NcaContentType.Program && !nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                                         {
                                             hasMainNca = true;
+
                                             break;
                                         }
                                     }
@@ -132,6 +133,7 @@ namespace Ryujinx.Ui
                                 if (!hasMainNca && !isExeFs)
                                 {
                                     numApplicationsFound--;
+                                    
                                     continue;
                                 }
                             }
@@ -245,8 +247,10 @@ namespace Ryujinx.Ui
                         catch
                         {
                             Logger.PrintError(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+                            
                             numApplicationsFound--;
                             _loadingError = true;
+
                             continue;
                         }
                     }
@@ -264,6 +268,7 @@ namespace Ryujinx.Ui
                         try
                         {
                             file.Seek(24, SeekOrigin.Begin);
+
                             int assetOffset = reader.ReadInt32();
 
                             if (Encoding.ASCII.GetString(Read(assetOffset, 4)) == "ASET")
@@ -324,7 +329,9 @@ namespace Ryujinx.Ui
                         catch
                         {
                             Logger.PrintWarning(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+
                             numApplicationsFound--;
+
                             continue;
                         }
                     }
@@ -338,6 +345,7 @@ namespace Ryujinx.Ui
                             if (nca.Header.ContentType != NcaContentType.Program || nca.Header.GetFsHeader(dataIndex).IsPatchSection())
                             {
                                 numApplicationsFound--;
+
                                 continue;
                             }
                         }
@@ -348,8 +356,10 @@ namespace Ryujinx.Ui
                         catch
                         {
                             Logger.PrintError(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+
                             numApplicationsFound--;
                             _loadingError = true;
+                                
                             continue;
                         }
 
@@ -398,7 +408,11 @@ namespace Ryujinx.Ui
 
                 numApplicationsLoaded++;
 
-                OnApplicationAdded(new ApplicationAddedEventArgs() { AppData = data });
+                OnApplicationAdded(new ApplicationAddedEventArgs()
+                {
+                    AppData = data
+                });
+
                 OnApplicationCountUpdated(new ApplicationCountUpdatedEventArgs()
                 {
                     NumAppsFound  = numApplicationsFound,
