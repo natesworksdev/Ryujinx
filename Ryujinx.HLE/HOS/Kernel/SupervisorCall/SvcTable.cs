@@ -137,6 +137,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x41, nameof(SvcHandler.AcceptSession32)                 },
                 { 0x43, nameof(SvcHandler.ReplyAndReceive32)               },
                 { 0x45, nameof(SvcHandler.CreateEvent32)                   },
+                { 0x5F, nameof(SvcHandler.FlushProcessDataCache32)         },
                 { 0x65, nameof(SvcHandler.GetProcessList32)                },
                 { 0x6f, nameof(SvcHandler.GetSystemInfo32)                 },
                 { 0x70, nameof(SvcHandler.CreatePort32)                    },
@@ -375,6 +376,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             for (int index = 0; index < locals.Count; index++)
             {
                 (LocalBuilder local, RAttribute attribute) = locals[index];
+
+                if ((registerInUse & (1u << attribute.Index)) != 0)
+                {
+                    throw new InvalidSvcException($"Method \"{svcName}\" has conflicting output values at register index \"{attribute.Index}\".");
+                }
+
                 generator.Emit(OpCodes.Ldarg_1);
                 generator.Emit(OpCodes.Ldc_I4, attribute.Index);
                 generator.Emit(OpCodes.Ldloc, local);

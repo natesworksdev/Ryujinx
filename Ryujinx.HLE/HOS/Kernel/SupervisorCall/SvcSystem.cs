@@ -203,14 +203,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _system.Scheduler.GetCurrentThread().Context.CntpctEl0;
         }
 
-        public uint GetSystemTick32([R(1)] out uint resultHigh)
+        public void GetSystemTick32([R(0)] out uint resultLow, [R(1)] out uint resultHigh)
         {
             ulong result = _system.Scheduler.GetCurrentThread().Context.CntpctEl0;
 
-            uint resultLow = (uint)(result & uint.MaxValue);
-            resultHigh     = (uint)(result >> 32);
-
-            return resultLow;
+            resultLow  = (uint)(result & uint.MaxValue);
+            resultHigh = (uint)(result >> 32);
         }
 
         public KernelResult GetProcessId64([R(1)] int handle, [R(1)] out long pid)
