@@ -4,17 +4,11 @@ using System.Text;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdDupElem : OpCode32, IOpCode32Simd
+    class OpCode32SimdDupElem : BaseOpCode32Simd
     {
-        public int Size { get; private set; }
-        public int Elems => 1;
-
-        public int Vd { get; private set; }
-        public int Vm { get; private set; }
         public bool Q { get; private set; }
 
         public int Index { get; private set; }
-
 
         public OpCode32SimdDupElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

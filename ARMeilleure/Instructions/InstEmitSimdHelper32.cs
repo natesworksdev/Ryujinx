@@ -143,19 +143,16 @@ namespace ARMeilleure.Instructions
 
             int elems = op.GetBytesCount() >> sizeF + 2;
 
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(type, GetVecA32(vm), index + em * elems);
+                Operand me = context.VectorExtract(type, GetVecA32(op.Qm), op.Fm + index);
 
-                res = context.VectorInsert(res, emit(ne), index + ed * elems);
+                res = context.VectorInsert(res, emit(me), op.Fd + index);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void EmitVectorBinaryOpF32(ArmEmitterContext context, Func2I emit)
@@ -168,21 +165,17 @@ namespace ARMeilleure.Instructions
 
             int elems = op.GetBytesCount() >> (sizeF + 2);
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(type, GetVecA32(vn), index + en * elems);
-                Operand me = context.VectorExtract(type, GetVecA32(vm), index + em * elems);
+                Operand ne = context.VectorExtract(type, GetVecA32(op.Qn), op.Fn + index);
+                Operand me = context.VectorExtract(type, GetVecA32(op.Qm), op.Fm + index);
 
-                res = context.VectorInsert(res, emit(ne, me), index + ed * elems);
+                res = context.VectorInsert(res, emit(ne, me), op.Fd + index);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void EmitVectorTernaryOpF32(ArmEmitterContext context, Func3I emit)
@@ -195,160 +188,107 @@ namespace ARMeilleure.Instructions
 
             int elems = op.GetBytesCount() >> sizeF + 2;
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = context.VectorExtract(type, GetVecA32(vd), index + ed * elems);
-                Operand ne = context.VectorExtract(type, GetVecA32(vn), index + en * elems);
-                Operand me = context.VectorExtract(type, GetVecA32(vm), index + em * elems);
+                Operand de = context.VectorExtract(type, GetVecA32(op.Qd), op.Fd + index);
+                Operand ne = context.VectorExtract(type, GetVecA32(op.Qn), op.Fn + index);
+                Operand me = context.VectorExtract(type, GetVecA32(op.Qm), op.Fm + index);
 
-                res = context.VectorInsert(res, emit(de, ne, me), index);
+                res = context.VectorInsert(res, emit(de, ne, me), op.Fd + index);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         // INTEGER
 
-        public static void EmitVectorUnaryOpSx32(ArmEmitterContext context, Func1I emit)
+        public static void EmitVectorUnaryOpI32(ArmEmitterContext context, Func1I emit, bool signed)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
 
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             int elems = op.GetBytesCount() >> op.Size;
 
             for (int index = 0; index < elems; index++)
             {
-                Operand me = EmitVectorExtractSx32(context, vm, index + em * elems, op.Size);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, signed);
 
-                res = EmitVectorInsert(context, res, emit(me), index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(me), op.Id + index, op.Size);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
+        public static void EmitVectorBinaryOpI32(ArmEmitterContext context, Func2I emit, bool signed)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            Operand res = GetVecA32(op.Qd);
+
+            int elems = op.GetBytesCount() >> op.Size;
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand ne = EmitVectorExtract32(context, op.Qn, op.In + index, op.Size, signed);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, signed);
+
+                res = EmitVectorInsert(context, res, emit(ne, me), op.Id + index, op.Size);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
+        public static void EmitVectorTernaryOpI32(ArmEmitterContext context, Func3I emit, bool signed)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            Operand res = GetVecA32(op.Qd);
+
+            int elems = op.GetBytesCount() >> op.Size;
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand de = EmitVectorExtract32(context, op.Qd, op.Id + index, op.Size, signed);
+                Operand ne = EmitVectorExtract32(context, op.Qn, op.In + index, op.Size, signed);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, signed);
+
+                res = EmitVectorInsert(context, res, emit(de, ne, me), index + op.Id, op.Size);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
+        public static void EmitVectorUnaryOpSx32(ArmEmitterContext context, Func1I emit)
+        {
+            EmitVectorUnaryOpI32(context, emit, true);
         }
 
         public static void EmitVectorBinaryOpSx32(ArmEmitterContext context, Func2I emit)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
-
-            int elems = op.GetBytesCount() >> op.Size;
-
-            for (int index = 0; index < elems; index++)
-            {
-                Operand ne = EmitVectorExtractSx32(context, vn, index + en * elems, op.Size);
-                Operand me = EmitVectorExtractSx32(context, vm, index + em * elems, op.Size);
-
-                res = EmitVectorInsert(context, res, emit(ne, me), index + ed * elems, op.Size);
-            }
-
-            context.Copy(GetVecA32(vd), res);
+            EmitVectorBinaryOpI32(context, emit, true);
         }
 
         public static void EmitVectorTernaryOpSx32(ArmEmitterContext context, Func3I emit)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
-
-            int elems = op.GetBytesCount() >> op.Size;
-
-            for (int index = 0; index < elems; index++)
-            {
-                Operand de = EmitVectorExtractSx32(context, vd, index + ed * elems, op.Size);
-                Operand ne = EmitVectorExtractSx32(context, vn, index + en * elems, op.Size);
-                Operand me = EmitVectorExtractSx32(context, vm, index + em * elems, op.Size);
-
-                res = EmitVectorInsert(context, res, emit(de, ne, me), index + ed * elems, op.Size);
-            }
-
-            context.Copy(GetVecA32(vd), res);
+            EmitVectorTernaryOpI32(context, emit, true);
         }
 
         public static void EmitVectorUnaryOpZx32(ArmEmitterContext context, Func1I emit)
         {
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
-
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
-
-            int elems = op.GetBytesCount() >> op.Size;
-
-            for (int index = 0; index < elems; index++)
-            {
-                Operand me = EmitVectorExtractZx32(context, vm, index + em * elems, op.Size);
-
-                res = EmitVectorInsert(context, res, emit(me), index + ed * elems, op.Size);
-            }
-
-            context.Copy(GetVecA32(vd), res);
+            EmitVectorUnaryOpI32(context, emit, false);
         }
 
         public static void EmitVectorBinaryOpZx32(ArmEmitterContext context, Func2I emit)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
-
-            int elems = op.GetBytesCount() >> op.Size;
-
-            for (int index = 0; index < elems; index++)
-            {
-                Operand ne = EmitVectorExtractZx32(context, vn, index + en * elems, op.Size);
-                Operand me = EmitVectorExtractZx32(context, vm, index + em * elems, op.Size);
-
-                res = EmitVectorInsert(context, res, emit(ne, me), index + ed * elems, op.Size);
-            }
-
-            context.Copy(GetVecA32(vd), res);
+            EmitVectorBinaryOpI32(context, emit, false);
         }
 
         public static void EmitVectorTernaryOpZx32(ArmEmitterContext context, Func3I emit)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
-
-            int elems = op.GetBytesCount() >> op.Size;
-
-            for (int index = 0; index < elems; index++)
-            {
-                Operand de = EmitVectorExtractZx32(context, vd, index + ed * elems, op.Size);
-                Operand ne = EmitVectorExtractZx32(context, vn, index + en * elems, op.Size);
-                Operand me = EmitVectorExtractZx32(context, vm, index + em * elems, op.Size);
-
-                res = EmitVectorInsert(context, res, emit(de, ne, me), index + ed * elems, op.Size);
-            }
-
-            context.Copy(GetVecA32(vd), res);
+            EmitVectorTernaryOpI32(context, emit, false);
         }
 
         // VEC BY SCALAR
@@ -364,20 +304,18 @@ namespace ARMeilleure.Instructions
 
             int elems = op.GetBytesCount() >> sizeF + 2;
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
             Operand m = ExtractScalar(context, type, op.Vm);
 
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = context.VectorExtract(type, GetVecA32(vn), index + en * elems);
+                Operand ne = context.VectorExtract(type, GetVecA32(op.Qn), index + op.Fn);
 
-                res = context.VectorInsert(res, emit(ne, m), index + ed * elems);
+                res = context.VectorInsert(res, emit(ne, m), index + op.Fd);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void EmitVectorByScalarOpI32(ArmEmitterContext context, Func2I emit, bool signed)
@@ -385,22 +323,20 @@ namespace ARMeilleure.Instructions
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
 
             if (op.Size < 1) throw new Exception("Undefined");
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
             Operand m = EmitVectorExtract32(context, op.Vm >> (4 - op.Size), op.Vm & ((1 << (4 - op.Size)) - 1), op.Size, signed);
 
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             int elems = op.GetBytesCount() >> op.Size;
 
             for (int index = 0; index < elems; index++)
             {
-                Operand ne = EmitVectorExtract32(context, vn, index + en * elems, op.Size, signed);
+                Operand ne = EmitVectorExtract32(context, op.Qn, index + op.In, op.Size, signed);
 
-                res = EmitVectorInsert(context, res, emit(ne, m), index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(ne, m), index + op.Id, op.Size);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void EmitVectorsByScalarOpF32(ArmEmitterContext context, Func3I emit)
@@ -414,21 +350,19 @@ namespace ARMeilleure.Instructions
 
             int elems = op.GetBytesCount() >> sizeF + 2;
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
             Operand m = ExtractScalar(context, type, op.Vm);
 
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = context.VectorExtract(type, GetVecA32(vd), index + ed * elems);
-                Operand ne = context.VectorExtract(type, GetVecA32(vn), index + en * elems);
+                Operand de = context.VectorExtract(type, GetVecA32(op.Qd), index + op.Fd);
+                Operand ne = context.VectorExtract(type, GetVecA32(op.Qn), index + op.Fn);
 
-                res = context.VectorInsert(res, emit(de, ne, m), index + ed * elems);
+                res = context.VectorInsert(res, emit(de, ne, m), index + op.Fd);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void EmitVectorsByScalarOpI32(ArmEmitterContext context, Func3I emit, bool signed)
@@ -436,23 +370,21 @@ namespace ARMeilleure.Instructions
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
 
             if (op.Size < 1) throw new Exception("Undefined");
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
             Operand m = EmitVectorExtract32(context, op.Vm >> (4 - op.Size), op.Vm & ((1 << (4 - op.Size)) - 1), op.Size, signed);
 
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             int elems = op.GetBytesCount() >> op.Size;
 
             for (int index = 0; index < elems; index++)
             {
-                Operand de = EmitVectorExtract32(context, vd, index + ed * elems, op.Size, signed);
-                Operand ne = EmitVectorExtract32(context, vn, index + en * elems, op.Size, signed);
+                Operand de = EmitVectorExtract32(context, op.Qd, index + op.Id, op.Size, signed);
+                Operand ne = EmitVectorExtract32(context, op.Qn, index + op.In, op.Size, signed);
 
-                res = EmitVectorInsert(context, res, emit(de, ne, m), index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(de, ne, m), index + op.Id, op.Size);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         // PAIRWISE
@@ -472,30 +404,26 @@ namespace ARMeilleure.Instructions
             int elems = op.GetBytesCount() >> (sizeF + 2);
             int pairs = elems >> 1;
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
-            Operand mvec = GetVecA32(vm);
-            Operand nvec = GetVecA32(vn);
+            Operand res = GetVecA32(op.Qd);
+            Operand mvec = GetVecA32(op.Qm);
+            Operand nvec = GetVecA32(op.Qn);
 
             for (int index = 0; index < pairs; index++)
             {
                 int pairIndex = index << 1;
 
-                Operand n1 = context.VectorExtract(type, nvec, pairIndex + en * elems);
-                Operand n2 = context.VectorExtract(type, nvec, pairIndex + 1 + en * elems);
+                Operand n1 = context.VectorExtract(type, nvec, pairIndex + op.Fn);
+                Operand n2 = context.VectorExtract(type, nvec, pairIndex + 1 + op.Fn);
 
-                res = context.VectorInsert(res, emit(n1, n2), index + ed * elems);
+                res = context.VectorInsert(res, emit(n1, n2), index + op.Fd);
 
-                Operand m1 = context.VectorExtract(type, mvec, pairIndex + em * elems);
-                Operand m2 = context.VectorExtract(type, mvec, pairIndex + 1 + em * elems);
+                Operand m1 = context.VectorExtract(type, mvec, pairIndex + op.Fm);
+                Operand m2 = context.VectorExtract(type, mvec, pairIndex + 1 + op.Fm);
 
-                res = context.VectorInsert(res, emit(m1, m2), index + pairs + ed * elems);
+                res = context.VectorInsert(res, emit(m1, m2), index + pairs + op.Fd);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void EmitVectorPairwiseOpI32(ArmEmitterContext context, Func2I emit, bool signed)
@@ -510,26 +438,22 @@ namespace ARMeilleure.Instructions
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < pairs; index++)
             {
                 int pairIndex = index << 1;
-                Operand n1 = EmitVectorExtract32(context, vn, pairIndex + en * elems, op.Size, signed);
-                Operand n2 = EmitVectorExtract32(context, vn, pairIndex + 1 + en * elems, op.Size, signed);
+                Operand n1 = EmitVectorExtract32(context, op.Qn, pairIndex + op.In, op.Size, signed);
+                Operand n2 = EmitVectorExtract32(context, op.Qn, pairIndex + 1 + op.In, op.Size, signed);
 
-                Operand m1 = EmitVectorExtract32(context, vm, pairIndex + em * elems, op.Size, signed);
-                Operand m2 = EmitVectorExtract32(context, vm, pairIndex + 1 + em * elems, op.Size, signed);
+                Operand m1 = EmitVectorExtract32(context, op.Qm, pairIndex + op.Im, op.Size, signed);
+                Operand m2 = EmitVectorExtract32(context, op.Qm, pairIndex + 1 + op.Im, op.Size, signed);
 
-                res = EmitVectorInsert(context, res, emit(n1, n2), index + ed * elems, op.Size);
-                res = EmitVectorInsert(context, res, emit(m1, m2), index + pairs + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, emit(n1, n2), index + op.Id, op.Size);
+                res = EmitVectorInsert(context, res, emit(m1, m2), index + pairs + op.Id, op.Size);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         // helper func

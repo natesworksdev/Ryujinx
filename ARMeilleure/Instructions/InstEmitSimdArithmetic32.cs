@@ -117,11 +117,7 @@ namespace ARMeilleure.Instructions
             int elems = op.GetBytesCount();
             int byteOff = op.Immediate;
 
-            (int vn, int en) = GetQuadwordAndSubindex(op.Vn, op.RegisterSize);
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
-            Operand res = GetVecA32(vd);
+            Operand res = GetVecA32(op.Qd);
 
             for (int index = 0; index < elems; index++)
             {
@@ -129,18 +125,18 @@ namespace ARMeilleure.Instructions
 
                 if (byteOff >= elems)
                 {
-                    extract = EmitVectorExtractZx32(context, vm, (byteOff - elems) + em * elems, op.Size);
+                    extract = EmitVectorExtractZx32(context, op.Qm, op.Im + (byteOff - elems), op.Size);
                 }
                 else
                 {
-                    extract = EmitVectorExtractZx32(context, vn, byteOff + en * elems, op.Size);
+                    extract = EmitVectorExtractZx32(context, op.Qn, op.In + byteOff, op.Size);
                 }
                 byteOff++;
 
-                res = EmitVectorInsert(context, res, extract, index + ed * elems, op.Size);
+                res = EmitVectorInsert(context, res, extract, op.Id + index, op.Size);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void Vmov_S(ArmEmitterContext context)

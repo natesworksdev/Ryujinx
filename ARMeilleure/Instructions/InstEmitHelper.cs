@@ -52,32 +52,6 @@ namespace ARMeilleure.Instructions
             return Register(regIndex, RegisterType.Vector, OperandType.V128);
         }
 
-        public static Operand GetVecA32(ArmEmitterContext context, int regIndex, int registerSizeLog)
-        {
-            // vector registers in A32 all overlap each other - eg. Q0 = D0:D1 = S0:S1:S2:S3
-            // so we need to select the relevant part of a quad vector based on register size.
-            int elemSizeLog = (4 - registerSizeLog);
-            int quadIndex = regIndex >> elemSizeLog;
-            int subIndex = regIndex & ((1 << elemSizeLog) - 1);
-            Operand result = Register(quadIndex, RegisterType.Vector, OperandType.V128);
-            if (subIndex != 0)
-            {
-                result = context.RotateRight(result, Const(subIndex << elemSizeLog));
-            }
-
-            switch (registerSizeLog)
-            {
-                case 4: // quad word
-                    return result;
-                case 3: // double word
-                    return context.VectorZeroUpper64(result);
-                case 2: // single word
-                    return context.VectorZeroUpper96(result);
-            }
-
-            return result;
-        }
-
         public static void SetIntA32(ArmEmitterContext context, int regIndex, Operand value)
         {
             if (regIndex == RegisterAlias.Aarch32Pc)

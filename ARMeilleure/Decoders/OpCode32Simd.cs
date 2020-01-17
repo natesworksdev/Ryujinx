@@ -4,16 +4,12 @@ using System.Text;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32Simd : OpCode32, IOpCode32Simd
+    class OpCode32Simd : BaseOpCode32Simd
     {
-        public int Vd { get; private set; }
-        public int Vm { get; protected set; }
         public int Opc { get; protected set; }
-        public int Size { get; protected set; }
         public bool Q { get; protected set; }
         public bool F { get; protected set; }
         public bool U { get; private set; }
-        public int Elems => GetBytesCount() >> ((Size == 1) ? 1 : 2);
 
         public OpCode32Simd(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

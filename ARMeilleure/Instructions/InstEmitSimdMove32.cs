@@ -131,9 +131,6 @@ namespace ARMeilleure.Instructions
 
             int elems = op.GetBytesCount() >> op.Size;
 
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
-
             int length = op.Length + 1;
 
             Tuple<int, int>[] tableTuples = new Tuple<int, int>[length];
@@ -145,12 +142,12 @@ namespace ARMeilleure.Instructions
 
             int byteLength = length * 8;
 
-            Operand res = GetVecA32(vd);
-            Operand m = GetVecA32(vm);
+            Operand res = GetVecA32(op.Qd);
+            Operand m = GetVecA32(op.Qm);
 
             for (int index = 0; index < elems; index++)
             {
-                Operand selectedIndex = context.ZeroExtend8(OperandType.I32, context.VectorExtract8(m, index + em * elems));
+                Operand selectedIndex = context.ZeroExtend8(OperandType.I32, context.VectorExtract8(m, index + op.Im));
 
                 Operand end = Label();
                 Operand inRange = context.ICompareLess(selectedIndex, Const(byteLength));
@@ -174,7 +171,7 @@ namespace ARMeilleure.Instructions
                     Tuple<int, int> vectorLocation = tableTuples[i];
                     // get the whole vector, we'll get a byte out of it
                     Operand lookupResult;
-                    if (vectorLocation.Item1 == vd)
+                    if (vectorLocation.Item1 == op.Qd)
                     {
                         // result contains the current state of the vector
                         lookupResult = context.VectorExtract(OperandType.I64, res, vectorLocation.Item2);
@@ -199,14 +196,14 @@ namespace ARMeilleure.Instructions
 
                 if (!extension) context.MarkLabel(end);
 
-                Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, vd, index + ed * elems, 0, false)) : Const(0L); 
+                Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, op.Qd, index + op.Id, 0, false)) : Const(0L); 
 
-                res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes, fallback), index + ed * elems, 0);
+                res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes, fallback), index + op.Id, 0);
 
                 if (extension) context.MarkLabel(end);
             }
 
-            context.Copy(GetVecA32(vd), res);
+            context.Copy(GetVecA32(op.Qd), res);
         }
 
         public static void Vtrn(ArmEmitterContext context)
@@ -216,28 +213,25 @@ namespace ARMeilleure.Instructions
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
 
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+            bool overlap = op.Qm == op.Qd;
 
-            bool overlap = vm == vd;
-
-            Operand resD = GetVecA32(vd);
-            Operand resM = GetVecA32(vm);
+            Operand resD = GetVecA32(op.Qd);
+            Operand resM = GetVecA32(op.Qm);
 
             for (int index = 0; index < pairs; index++)
             {
                 int pairIndex = index << 1;
-                Operand d2 = EmitVectorExtract32(context, vd, pairIndex + 1 + ed * elems, op.Size, false);
-                Operand m1 = EmitVectorExtract32(context, vm, pairIndex + em * elems, op.Size, false);
+                Operand d2 = EmitVectorExtract32(context, op.Qd, pairIndex + 1 + op.Id, op.Size, false);
+                Operand m1 = EmitVectorExtract32(context, op.Qm, pairIndex + op.Im, op.Size, false);
 
-                resD = EmitVectorInsert(context, resD, m1, pairIndex + 1 + ed * elems, op.Size);
+                resD = EmitVectorInsert(context, resD, m1, pairIndex + 1 + op.Id, op.Size);
                 if (overlap) resM = resD;
-                resM = EmitVectorInsert(context, resM, d2, pairIndex + em * elems, op.Size);
+                resM = EmitVectorInsert(context, resM, d2, pairIndex + op.Im, op.Size);
                 if (overlap) resD = resM;
             }
 
-            context.Copy(GetVecA32(vd), resD);
-            if (!overlap) context.Copy(GetVecA32(vm), resM);
+            context.Copy(GetVecA32(op.Qd), resD);
+            if (!overlap) context.Copy(GetVecA32(op.Qm), resM);
         }
 
         public static void Vzip(ArmEmitterContext context)
@@ -247,36 +241,33 @@ namespace ARMeilleure.Instructions
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
 
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+            bool overlap = op.Qm == op.Qd;
 
-            bool overlap = vm == vd;
-
-            Operand resD = GetVecA32(vd);
-            Operand resM = GetVecA32(vm);
+            Operand resD = GetVecA32(op.Qd);
+            Operand resM = GetVecA32(op.Qm);
 
             for (int index = 0; index < pairs; index++)
             {
                 int pairIndex = index << 1;
-                Operand dRowD = EmitVectorExtract32(context, vd, index + ed * elems, op.Size, false);
-                Operand mRowD = EmitVectorExtract32(context, vm, index + em * elems, op.Size, false);
+                Operand dRowD = EmitVectorExtract32(context, op.Qd, index + op.Id, op.Size, false);
+                Operand mRowD = EmitVectorExtract32(context, op.Qm, index + op.Im, op.Size, false);
 
-                Operand dRowM = EmitVectorExtract32(context, vd, index + ed * elems + pairs, op.Size, false);
-                Operand mRowM = EmitVectorExtract32(context, vm, index + em * elems + pairs, op.Size, false);
+                Operand dRowM = EmitVectorExtract32(context, op.Qd, index + op.Id + pairs, op.Size, false);
+                Operand mRowM = EmitVectorExtract32(context, op.Qm, index + op.Im + pairs, op.Size, false);
 
-                resD = EmitVectorInsert(context, resD, dRowD, pairIndex + ed * elems, op.Size);
-                resD = EmitVectorInsert(context, resD, mRowD, pairIndex + 1 + ed * elems, op.Size);
+                resD = EmitVectorInsert(context, resD, dRowD, pairIndex + op.Id, op.Size);
+                resD = EmitVectorInsert(context, resD, mRowD, pairIndex + 1 + op.Id, op.Size);
 
                 if (overlap) resM = resD;
 
-                resM = EmitVectorInsert(context, resM, dRowM, pairIndex + em * elems, op.Size);
-                resM = EmitVectorInsert(context, resM, mRowM, pairIndex + 1 + em * elems, op.Size);
+                resM = EmitVectorInsert(context, resM, dRowM, pairIndex + op.Im, op.Size);
+                resM = EmitVectorInsert(context, resM, mRowM, pairIndex + 1 + op.Im, op.Size);
 
                 if (overlap) resD = resM;
             }
 
-            context.Copy(GetVecA32(vd), resD);
-            if (!overlap) context.Copy(GetVecA32(vm), resM);
+            context.Copy(GetVecA32(op.Qd), resD);
+            if (!overlap) context.Copy(GetVecA32(op.Qm), resM);
         }
 
         public static void Vuzp(ArmEmitterContext context)
@@ -286,13 +277,10 @@ namespace ARMeilleure.Instructions
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
 
-            (int vm, int em) = GetQuadwordAndSubindex(op.Vm, op.RegisterSize);
-            (int vd, int ed) = GetQuadwordAndSubindex(op.Vd, op.RegisterSize);
+            bool overlap = op.Qm == op.Qd;
 
-            bool overlap = vm == vd;
-
-            Operand resD = GetVecA32(vd);
-            Operand resM = GetVecA32(vm);
+            Operand resD = GetVecA32(op.Qd);
+            Operand resM = GetVecA32(op.Qm);
 
             for (int index = 0; index < elems; index++)
             {
@@ -300,23 +288,23 @@ namespace ARMeilleure.Instructions
                 if (index >= pairs)
                 {
                     int pind = index - pairs;
-                    dIns = EmitVectorExtract32(context, vm, (pind << 1) + em * elems, op.Size, false);
-                    mIns = EmitVectorExtract32(context, vm, ((pind << 1) | 1) + em * elems, op.Size, false);
+                    dIns = EmitVectorExtract32(context, op.Qm, (pind << 1) + op.Im, op.Size, false);
+                    mIns = EmitVectorExtract32(context, op.Qm, ((pind << 1) | 1) + op.Im, op.Size, false);
                 } 
                 else
                 {
-                    dIns = EmitVectorExtract32(context, vd, (index << 1) + ed * elems, op.Size, false);
-                    mIns = EmitVectorExtract32(context, vd, ((index << 1) | 1) + ed * elems, op.Size, false);
+                    dIns = EmitVectorExtract32(context, op.Qd, (index << 1) + op.Id, op.Size, false);
+                    mIns = EmitVectorExtract32(context, op.Qd, ((index << 1) | 1) + op.Id, op.Size, false);
                 }
 
-                resD = EmitVectorInsert(context, resD, dIns, index + ed * elems, op.Size);
+                resD = EmitVectorInsert(context, resD, dIns, index + op.Id, op.Size);
                 if (overlap) resM = resD;
-                resM = EmitVectorInsert(context, resM, mIns, index + em * elems, op.Size);
+                resM = EmitVectorInsert(context, resM, mIns, index + op.Im, op.Size);
                 if (overlap) resD = resM;
             }
 
-            context.Copy(GetVecA32(vd), resD);
-            if (!overlap) context.Copy(GetVecA32(vm), resM);
+            context.Copy(GetVecA32(op.Qd), resD);
+            if (!overlap) context.Copy(GetVecA32(op.Qm), resM);
         }
     }
 }

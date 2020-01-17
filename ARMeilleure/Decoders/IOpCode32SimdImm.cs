@@ -8,5 +8,6 @@ namespace ARMeilleure.Decoders
     {
         public int Vd { get; }
         public long Immediate { get; }
+        int Elems { get; }
     }
 }
