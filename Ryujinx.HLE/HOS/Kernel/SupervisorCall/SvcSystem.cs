@@ -719,5 +719,16 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             return KernelResult.Success;
         }
+
+        public KernelResult FlushProcessDataCache32(
+            [R(0)] uint processHandle,
+            [R(2)] uint addressLow,
+            [R(3)] uint addressHigh,
+            [R(1)] uint sizeLow,
+            [R(4)] uint sizeHigh)
+        {
+            // FIXME: This needs to be implemented as ARMv7 doesn't have any way to do cache maintenance operations on EL0. As we don't support (and don't actually need) to flush the cache, this is stubbed.
+            return KernelResult.Success;
+        }
     }
 }
