@@ -210,12 +210,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
         public void Vadd_f32([Values(0u)]    uint rd,
-                            [Values(1u, 0u)] uint rn,
-                            [Values(2u, 0u)] uint rm,
-                            [ValueSource("_2S_F_")] [Random(RndCnt)] ulong z,
-                            [ValueSource("_2S_F_")] [Random(RndCnt)] ulong a,
-                            [ValueSource("_2S_F_")] [Random(RndCnt)] ulong b,
-                            [Values] bool q)
+                             [Values(1u, 0u)] uint rn,
+                             [Values(2u, 0u)] uint rm,
+                             [ValueSource("_2S_F_")] [Random(RndCnt)] ulong z,
+                             [ValueSource("_2S_F_")] [Random(RndCnt)] ulong a,
+                             [ValueSource("_2S_F_")] [Random(RndCnt)] ulong b,
+                             [Values] bool q)
         {
             uint opcode = 0xf2000d00; // VADD.f32 D0, D0, D0
             if (q)
@@ -242,9 +242,9 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VCMP.f<size> Vd, Vm")]
         public void Vcmp([Values(2u, 3u)] uint size,
-                             [ValueSource("_1S_F_")] ulong a,
-                             [ValueSource("_1S_F_")] ulong b,
-                             [Values] bool e)
+                         [ValueSource("_1S_F_")] ulong a,
+                         [ValueSource("_1S_F_")] ulong b,
+                         [Values] bool e)
         {
             uint opcode = 0xeeb40840;
             uint rm = 1;
@@ -259,6 +259,7 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
                 opcode |= ((rd & 0x1e) << 11) | ((rd & 0x1) << 22);
             }
+
             opcode |= ((size & 3) << 8);
             if (e) opcode |= 1 << 7;
 
@@ -279,14 +280,14 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, <Vn>")]
         public void Vshl([Values(0u)] uint rd,
-                    [Values(1u, 0u)] uint rn,
-                    [Values(2u, 0u)] uint rm,
-                    [Values(0u, 1u, 2u, 3u)] uint size,
-                    [Random(RndCnt)] ulong z,
-                    [Random(RndCnt)] ulong a,
-                    [Random(RndCnt)] ulong b,
-                    [Values] bool q,
-                    [Values] bool u)
+                         [Values(1u, 0u)] uint rn,
+                         [Values(2u, 0u)] uint rm,
+                         [Values(0u, 1u, 2u, 3u)] uint size,
+                         [Random(RndCnt)] ulong z,
+                         [Random(RndCnt)] ulong a,
+                         [Random(RndCnt)] ulong b,
+                         [Values] bool q,
+                         [Values] bool u)
         {
             uint opcode = 0xf2000400;
             if (q)
@@ -317,21 +318,11 @@ namespace Ryujinx.Tests.Cpu
                     [Range(0u, 7u)] uint rn,
                     [Range(0u, 7u)] uint rm)
         {
-            uint opcode = 0xf3000d00; // VADD.f32 D0, D0, D0
-            /*
-            if (q)
-            {
-                rm <<= 0x1e;
-                rn <<= 0x1e;
-                rd <<= 0x1e;
-            }
-            */
+            uint opcode = 0xf3000d00;
 
             opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
-
-            //if (q) opcode |= 1 << 6;
 
             var rnd = TestContext.CurrentContext.Random;
             V128 v0 = new V128(rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue), rnd.NextFloat(int.MinValue, int.MaxValue));

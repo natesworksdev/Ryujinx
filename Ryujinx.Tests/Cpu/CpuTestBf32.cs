@@ -55,12 +55,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("UBFX <Rd>, <Rn>, #<lsb>, #<width>")]
         public void Ubfx([Values(0u, 0xdu)] uint rd,
-        [Values(1u, 0xdu)] uint rn,
-        [Random(RndCnt)] uint wd,
-        [Values(0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
-        [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
-        [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint widthm1)
+                         [Values(1u, 0xdu)] uint rn,
+                         [Random(RndCnt)] uint wd,
+                         [Values(0x00000000u, 0x7FFFFFFFu,
+                                 0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
+                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
+                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint widthm1)
         {
             if (lsb + widthm1 > 31)
             {
@@ -80,12 +80,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("SBFX <Rd>, <Rn>, #<lsb>, #<width>")]
         public void Sbfx([Values(0u, 0xdu)] uint rd,
-                [Values(1u, 0xdu)] uint rn,
-                [Random(RndCnt)] uint wd,
-                [Values(0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
-                [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
-                [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint widthm1)
+                         [Values(1u, 0xdu)] uint rn,
+                         [Random(RndCnt)] uint wd,
+                         [Values(0x00000000u, 0x7FFFFFFFu,
+                                         0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
+                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
+                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint widthm1)
         {
             if (lsb + widthm1 > 31)
             {

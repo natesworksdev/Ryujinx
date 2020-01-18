@@ -39,12 +39,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
         public void Vldn_Single([Values(0u, 1u, 2u)] uint size,
-                        [Values(0u, 13u)] uint rn,
-                        [Values(1u, 13u, 15u)] uint rm,
-                        [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
-                        [Range(0u, 7u)] uint index,
-                        [Range(0u, 3u)] uint n,
-                        [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
+                                [Values(0u, 13u)] uint rn,
+                                [Values(1u, 13u, 15u)] uint rm,
+                                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                                [Range(0u, 7u)] uint index,
+                                [Range(0u, 3u)] uint n,
+                                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -69,12 +69,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (all lanes)")]
         public void Vldn_All([Values(0u, 13u)] uint rn,
-                [Values(1u, 13u, 15u)] uint rm,
-                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
-                [Range(0u, 3u)] uint n,
-                [Range(0u, 2u)] uint size,
-                [Values] bool t,
-                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
+                             [Values(1u, 13u, 15u)] uint rm,
+                             [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                             [Range(0u, 3u)] uint n,
+                             [Range(0u, 2u)] uint size,
+                             [Values] bool t,
+                             [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -96,11 +96,11 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
         public void Vldn_Pair([Values(0u, 1u, 2u, 3u)] uint size,
-                [Values(0u, 13u)] uint rn,
-                [Values(1u, 13u, 15u)] uint rm,
-                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
-                [Range(0u, 3u)] uint mode,
-                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
+                              [Values(0u, 13u)] uint rn,
+                              [Values(1u, 13u, 15u)] uint rm,
+                              [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                              [Range(0u, 3u)] uint mode,
+                              [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -119,12 +119,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
         public void Vstn_Single([Values(0u, 1u, 2u)] uint size,
-                [Values(0u, 13u)] uint rn,
-                [Values(1u, 13u, 15u)] uint rm,
-                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
-                [Range(0u, 7u)] uint index,
-                [Range(0u, 3u)] uint n,
-                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
+                                [Values(0u, 13u)] uint rn,
+                                [Values(1u, 13u, 15u)] uint rm,
+                                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                                [Range(0u, 7u)] uint index,
+                                [Range(0u, 3u)] uint n,
+                                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -151,11 +151,11 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Combinatorial, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
         public void Vstn_Pair([Values(0u, 1u, 2u, 3u)] uint size,
-                [Values(0u, 13u)] uint rn,
-                [Values(1u, 13u, 15u)] uint rm,
-                [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
-                [Range(0u, 3u)] uint mode,
-                [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
+                              [Values(0u, 13u)] uint rn,
+                              [Values(1u, 13u, 15u)] uint rm,
+                              [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                              [Range(0u, 3u)] uint mode,
+                              [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint offset)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -176,10 +176,10 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Combinatorial, Description("VLDM.<size> <Rn>{!}, <d/sreglist>")]
         public void Vldm([Values(0u, 13u)] uint rn,
-        [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
-        [Range(0u, 2u)] uint mode,
-        [Values(0x1u, 0x32u)] [Random(2u, 31u, RndCntImm)] uint regs,
-        [Values] bool single)
+                         [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
+                         [Range(0u, 2u)] uint mode,
+                         [Values(0x1u, 0x32u)] [Random(2u, 31u, RndCntImm)] uint regs,
+                         [Values] bool single)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -223,10 +223,10 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VLDR.<size> <Sd>, [<Rn> {, #{+/-}<imm>}]")]
         public void Vldr([Values(2u, 3u)] uint size, //fp16 is not supported for now
-                        [Values(0u)] uint rn,
-                        [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint sd,
-                        [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint imm,
-                        [Values] bool sub)
+                         [Values(0u)] uint rn,
+                         [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint sd,
+                         [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint imm,
+                         [Values] bool sub)
         {
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
@@ -251,7 +251,7 @@ namespace Ryujinx.Tests.Cpu
             }
             opcode |= (uint)imm & 0xff;
 
-            SingleOpcode(opcode, r0: 0x2500); //correct
+            SingleOpcode(opcode, r0: 0x2500);
 
             CompareAgainstUnicorn();
         }
@@ -288,7 +288,7 @@ namespace Ryujinx.Tests.Cpu
 
             (V128 vec1, V128 vec2, _, _) = GenerateTestVectors();
 
-            SingleOpcode(opcode, r0: 0x2500, v0: vec1, v1: vec2); //correct
+            SingleOpcode(opcode, r0: 0x2500, v0: vec1, v1: vec2);
 
             CompareAgainstUnicorn();
         }

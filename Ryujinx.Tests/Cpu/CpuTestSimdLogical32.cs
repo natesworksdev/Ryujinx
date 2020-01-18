@@ -34,12 +34,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VBIF {<Vd>}, <Vm>, <Vn>")]
         public void Vbif([Range(0u, 4u)] uint rd,
-            [Range(0u, 4u)] uint rn,
-            [Range(0u, 4u)] uint rm,
-            [Random(RndCnt)] ulong z,
-            [Random(RndCnt)] ulong a,
-            [Random(RndCnt)] ulong b,
-            [Values] bool q)
+                         [Range(0u, 4u)] uint rn,
+                         [Range(0u, 4u)] uint rm,
+                         [Random(RndCnt)] ulong z,
+                         [Random(RndCnt)] ulong a,
+                         [Random(RndCnt)] ulong b,
+                         [Values] bool q)
         {
             uint opcode = GenerateVectorOpcode(0xf3300110, rd, rn, rm, q);
 
@@ -54,12 +54,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VBIT {<Vd>}, <Vm>, <Vn>")]
         public void Vbit([Range(0u, 4u)] uint rd,
-            [Range(0u, 4u)] uint rn,
-            [Range(0u, 4u)] uint rm,
-            [Random(RndCnt)] ulong z,
-            [Random(RndCnt)] ulong a,
-            [Random(RndCnt)] ulong b,
-            [Values] bool q)
+                         [Range(0u, 4u)] uint rn,
+                         [Range(0u, 4u)] uint rm,
+                         [Random(RndCnt)] ulong z,
+                         [Random(RndCnt)] ulong a,
+                         [Random(RndCnt)] ulong b,
+                         [Values] bool q)
         {
             uint opcode = GenerateVectorOpcode(0xf3200110, rd, rn, rm, q);
 
@@ -74,12 +74,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VBSL {<Vd>}, <Vm>, <Vn>")]
         public void Vbsl([Range(0u, 4u)] uint rd,
-            [Range(0u, 4u)] uint rn,
-            [Range(0u, 4u)] uint rm,
-            [Random(RndCnt)] ulong z,
-            [Random(RndCnt)] ulong a,
-            [Random(RndCnt)] ulong b,
-            [Values] bool q)
+                         [Range(0u, 4u)] uint rn,
+                         [Range(0u, 4u)] uint rm,
+                         [Random(RndCnt)] ulong z,
+                         [Random(RndCnt)] ulong a,
+                         [Random(RndCnt)] ulong b,
+                         [Values] bool q)
         {
             uint opcode = GenerateVectorOpcode(0xf3100110, rd, rn, rm, q);
 
@@ -94,12 +94,12 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VAND {<Vd>}, <Vm>, <Vn>")]
         public void Vand([Range(0u, 4u)] uint rd,
-            [Range(0u, 4u)] uint rn,
-            [Range(0u, 4u)] uint rm,
-            [Random(RndCnt)] ulong z,
-            [Random(RndCnt)] ulong a,
-            [Random(RndCnt)] ulong b,
-            [Values] bool q)
+                         [Range(0u, 4u)] uint rn,
+                         [Range(0u, 4u)] uint rm,
+                         [Random(RndCnt)] ulong z,
+                         [Random(RndCnt)] ulong a,
+                         [Random(RndCnt)] ulong b,
+                         [Values] bool q)
         {
             uint opcode = GenerateVectorOpcode(0xf2000110, rd, rn, rm, q);
 
