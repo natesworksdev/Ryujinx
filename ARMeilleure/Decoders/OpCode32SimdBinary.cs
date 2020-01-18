@@ -12,6 +12,10 @@ namespace ARMeilleure.Decoders
         public OpCode32SimdBinary(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Size = 3;
+            if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm, Vn))
+            {
+                Instruction = InstDescriptor.Undefined;
+            }
         }
     }
 }

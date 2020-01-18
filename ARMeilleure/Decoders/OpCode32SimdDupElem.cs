@@ -4,10 +4,8 @@ using System.Text;
 
 namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdDupElem : BaseOpCode32Simd
+    class OpCode32SimdDupElem : OpCode32Simd
     {
-        public bool Q { get; private set; }
-
         public int Index { get; private set; }
 
         public OpCode32SimdDupElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
@@ -31,13 +29,18 @@ namespace ARMeilleure.Decoders
             }
             else
             {
-                throw new Exception("Undefined");
+                Instruction = InstDescriptor.Undefined;
             }
 
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
             Q = (opCode & (1 << 6)) != 0;
             if (Q) RegisterSize = RegisterSize.Simd128;
+
+            if (DecoderHelper.VectorArgumentsInvalid(Q, Vd))
+            {
+                Instruction = InstDescriptor.Undefined;
+            }
         }
     }
 }

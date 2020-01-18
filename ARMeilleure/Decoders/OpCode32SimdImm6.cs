@@ -35,7 +35,12 @@ namespace ARMeilleure.Decoders
             } 
             else
             {
-                throw new Exception("Unknown Encoding");
+                Instruction = InstDescriptor.Undefined;
+            }
+
+            if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
+            {
+                Instruction = InstDescriptor.Undefined;
             }
         }
     }

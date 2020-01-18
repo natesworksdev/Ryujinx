@@ -7,7 +7,6 @@ namespace ARMeilleure.Decoders
     class OpCode32SimdMovGpElem : OpCode32, IOpCode32Simd
     {
         public int Size { get; private set; }
-        public int Elems => 1;
 
         public int Vd { get; private set; }
         public int Rt { get; private set; }
@@ -41,7 +40,7 @@ namespace ARMeilleure.Decoders
             } 
             else
             {
-                throw new Exception("Undefined");
+                Instruction = InstDescriptor.Undefined;
             }
 
             Vd = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);

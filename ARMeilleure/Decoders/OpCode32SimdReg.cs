@@ -15,6 +15,12 @@ namespace ARMeilleure.Decoders
         public OpCode32SimdReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Vn = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);
+
+            // subclasses have their own handling of Vx to account for before checking!
+            if (this.GetType() == typeof(OpCode32SimdReg) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm, Vn))
+            {
+                Instruction = InstDescriptor.Undefined;
+            }
         }
     }
 }

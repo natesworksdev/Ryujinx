@@ -11,7 +11,6 @@ namespace ARMeilleure.Decoders
         public int Size { get; private set; }
         public bool Add { get; private set; }
         public int Immediate { get; private set; }
-        public int Elems => 1;
 
         public OpCode32SimdMemImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
@@ -26,8 +25,6 @@ namespace ARMeilleure.Decoders
             Add = u;
 
             var single = Size != 0b11;
-
-            //RegisterSize = single ? RegisterSize.Simd32 : RegisterSize.Simd64;
 
             if (single)
             {

@@ -15,7 +15,6 @@ namespace ARMeilleure.Decoders
         public bool RegisterIndex { get; private set; }
         public int Size { get; private set; }
         public bool Replicate { get; private set; }
-        public int Elems => GetBytesCount() >> Size;
         public int Increment { get; private set; }
         public OpCode32SimdMemSingle(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

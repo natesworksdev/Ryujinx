@@ -7,7 +7,6 @@ namespace ARMeilleure.Decoders
     class OpCode32SimdMovGp : OpCode32, IOpCode32Simd
     {
         public int Size => 2;
-        public int Elems => 1;
 
         public int Vn { get; private set; }
         public int Rt { get; private set; }

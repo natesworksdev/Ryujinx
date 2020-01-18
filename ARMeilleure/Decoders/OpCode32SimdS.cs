@@ -10,8 +10,6 @@ namespace ARMeilleure.Decoders
         public int Vm { get; private set; }
         public int Opc { get; protected set; }
         public int Size { get; protected set; }
-        public bool Q { get; private set; }
-        public int Elems => 1;
 
         public OpCode32SimdS(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

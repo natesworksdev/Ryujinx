@@ -56,11 +56,11 @@ namespace ARMeilleure.Instructions
                 case 0b0001: //FPSCR
                     dlg = new _Void_U32(NativeInterface.SetFpscr); break;
                 case 0b0101: //MVFR2
-                    throw new Exception("MVFR2");
+                    throw new NotImplementedException("MVFR2");
                 case 0b0110: //MVFR1
-                    throw new Exception("MVFR1");
+                    throw new NotImplementedException("MVFR1");
                 case 0b0111: //MVFR0
-                    throw new Exception("MVFR0");
+                    throw new NotImplementedException("MVFR0");
                 case 0b1000: //FPEXC
                     throw new NotImplementedException("Supervisor Only");
                 default: throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
@@ -154,7 +154,6 @@ namespace ARMeilleure.Instructions
                             switch (op.Opc2)
                             {
                                 case 5: // Data Memory Barrier Register
-                                    return; // SUPER TODO: DO NOT KNOW HOW TO IMPLEMENT THIS
                                 default:
                                     throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
                             }
@@ -197,7 +196,7 @@ namespace ARMeilleure.Instructions
                 throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
             }
 
-            var opc = (op.RawOpCode >> 4) & 0xf;
+            var opc = op.MrrcOp;
 
             Delegate dlg;
             switch (op.CRm)

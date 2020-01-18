@@ -33,6 +33,11 @@ namespace ARMeilleure.Decoders
             Size = parsedImm.Item2;
 
             RegisterSize = Q ? RegisterSize.Simd128 : RegisterSize.Simd64;
+
+            if (DecoderHelper.VectorArgumentsInvalid(Q, Vd))
+            {
+                Instruction = InstDescriptor.Undefined;
+            }
         }
     }
 }

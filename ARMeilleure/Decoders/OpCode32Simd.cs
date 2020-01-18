@@ -23,6 +23,11 @@ namespace ARMeilleure.Decoders
 
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
+
+            if (this.GetType() == typeof(OpCode32Simd)) // subclasses have their own handling of Vx to account for before checking!
+            {
+                DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm);
+            }
         }
     }
 }

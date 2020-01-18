@@ -202,7 +202,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
-            bool cmpWithZero = (op.RawOpCode & (1 << 16)) != 0;
+            bool cmpWithZero = (op.Opc & 2) != 0;
             {
                 int fSize = op.Size & 1;
                 OperandType type = fSize != 0 ? OperandType.FP64 : OperandType.FP32;

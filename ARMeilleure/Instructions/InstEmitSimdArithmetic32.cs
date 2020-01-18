@@ -55,7 +55,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vdup(ArmEmitterContext context)
         {
-            OpCode32SimdVdupGP op = (OpCode32SimdVdupGP)context.CurrOp;
+            OpCode32SimdDupGP op = (OpCode32SimdDupGP)context.CurrOp;
 
             Operand insert = GetIntA32(context, op.Rt);
 
@@ -112,7 +112,7 @@ namespace ARMeilleure.Instructions
         }
         public static void Vext(ArmEmitterContext context)
         {
-            OpCode32SimdVext op = (OpCode32SimdVext)context.CurrOp;
+            OpCode32SimdExt op = (OpCode32SimdExt)context.CurrOp;
 
             int elems = op.GetBytesCount();
             int byteOff = op.Immediate;
@@ -217,18 +217,20 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void VmaxminNm_S(ArmEmitterContext context)
+        public static void VmaxNm_S(ArmEmitterContext context)
         {
-            bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
-            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
-            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
+            EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPMaxNum, SoftFloat64.FPMaxNum, op1, op2));
+        }
 
-            EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
+        public static void VminNm_S(ArmEmitterContext context)
+        {
+            EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPMinNum, SoftFloat64.FPMinNum, op1, op2));
         }
 
         public static void VmaxminNm_V(ArmEmitterContext context)
         {
-            bool max = (context.CurrOp.RawOpCode & (1 << 21)) == 0;
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            bool max = (op.Size & 2) == 0; // op is high bit of size (not used for fp)
             _F32_F32_F32_Bool f32 = max ? new _F32_F32_F32_Bool(SoftFloat32.FPMaxNumFpscr) : new _F32_F32_F32_Bool(SoftFloat32.FPMinNumFpscr);
             _F64_F64_F64_Bool f64 = max ? new _F64_F64_F64_Bool(SoftFloat64.FPMaxNumFpscr) : new _F64_F64_F64_Bool(SoftFloat64.FPMinNumFpscr);
 
@@ -309,7 +311,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vmul_I(ArmEmitterContext context)
         {
-            if (((context.CurrOp.RawOpCode >> 24) & 1) != 0) throw new Exception("Polynomial mode not supported");
+            if ((context.CurrOp as OpCode32SimdReg).U) throw new NotImplementedException("Polynomial mode not implemented");
             EmitVectorBinaryOpSx32(context, (op1, op2) => context.Multiply(op1, op2));
         }
 
