@@ -708,10 +708,16 @@ namespace ARMeilleure.Instructions
 
         public static float FPCompareEQ(float value1, float value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPCompareEQFpscr(value1, value2, false);
+        }
 
-            value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static float FPCompareEQFpscr(float value1, float value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             float result;
 
@@ -721,7 +727,7 @@ namespace ARMeilleure.Instructions
 
                 if (type1 == FPType.SNaN || type2 == FPType.SNaN)
                 {
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
             }
             else
@@ -734,10 +740,16 @@ namespace ARMeilleure.Instructions
 
         public static float FPCompareGE(float value1, float value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPCompareGEFpscr(value1, value2, false);
+        }
 
-            value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static float FPCompareGEFpscr(float value1, float value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             float result;
 
@@ -745,7 +757,7 @@ namespace ARMeilleure.Instructions
             {
                 result = ZerosOrOnes(false);
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
             else
             {
@@ -757,10 +769,16 @@ namespace ARMeilleure.Instructions
 
         public static float FPCompareGT(float value1, float value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPCompareGTFpscr(value1, value2, false);
+        }
 
-            value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static float FPCompareGTFpscr(float value1, float value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             float result;
 
@@ -768,7 +786,7 @@ namespace ARMeilleure.Instructions
             {
                 result = ZerosOrOnes(false);
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
             else
             {
@@ -786,6 +804,16 @@ namespace ARMeilleure.Instructions
         public static float FPCompareLT(float value1, float value2)
         {
             return FPCompareGT(value2, value1);
+        }
+
+        public static float FPCompareLEFpscr(float value1, float value2, bool standardFpscr)
+        {
+            return FPCompareGEFpscr(value2, value1, standardFpscr);
+        }
+
+        public static float FPCompareLTFpscr(float value1, float value2, bool standardFpscr)
+        {
+            return FPCompareGTFpscr(value2, value1, standardFpscr);
         }
 
         public static float FPDiv(float value1, float value2)
@@ -1971,10 +1999,16 @@ namespace ARMeilleure.Instructions
 
         public static double FPCompareEQ(double value1, double value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPCompareEQFpscr(value1, value2, false);
+        }
 
-            value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static double FPCompareEQFpscr(double value1, double value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             double result;
 
@@ -1984,7 +2018,7 @@ namespace ARMeilleure.Instructions
 
                 if (type1 == FPType.SNaN || type2 == FPType.SNaN)
                 {
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
             }
             else
@@ -1997,10 +2031,16 @@ namespace ARMeilleure.Instructions
 
         public static double FPCompareGE(double value1, double value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPCompareGEFpscr(value1, value2, false);
+        }
 
-            value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static double FPCompareGEFpscr(double value1, double value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             double result;
 
@@ -2008,7 +2048,7 @@ namespace ARMeilleure.Instructions
             {
                 result = ZerosOrOnes(false);
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
             else
             {
@@ -2020,10 +2060,16 @@ namespace ARMeilleure.Instructions
 
         public static double FPCompareGT(double value1, double value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPCompareGTFpscr(value1, value2, false);
+        }
 
-            value1 = value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2 = value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static double FPCompareGTFpscr(double value1, double value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1 = value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             double result;
 
@@ -2031,7 +2077,7 @@ namespace ARMeilleure.Instructions
             {
                 result = ZerosOrOnes(false);
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
             else
             {
@@ -2049,6 +2095,16 @@ namespace ARMeilleure.Instructions
         public static double FPCompareLT(double value1, double value2)
         {
             return FPCompareGT(value2, value1);
+        }
+
+        public static double FPCompareLEFpscr(double value1, double value2, bool standardFpscr)
+        {
+            return FPCompareGEFpscr(value2, value1, standardFpscr);
+        }
+
+        public static double FPCompareLTFpscr(double value1, double value2, bool standardFpscr)
+        {
+            return FPCompareGTFpscr(value2, value1, standardFpscr);
         }
 
         public static double FPDiv(double value1, double value2)
