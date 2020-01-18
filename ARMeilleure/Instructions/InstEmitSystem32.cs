@@ -154,6 +154,7 @@ namespace ARMeilleure.Instructions
                             switch (op.Opc2)
                             {
                                 case 5: // Data Memory Barrier Register
+                                    return; // no-op
                                 default:
                                     throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
                             }
