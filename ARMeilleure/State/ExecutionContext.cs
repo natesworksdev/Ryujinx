@@ -36,6 +36,7 @@ namespace ARMeilleure.State
 
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
+        public FPCR StandardFpcrValue => (Fpcr & (FPCR.Ahp)) | FPCR.Dn | FPCR.Fz;
 
         public bool IsAarch32 { get; set; }
 

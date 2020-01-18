@@ -5,12 +5,16 @@ namespace ARMeilleure.Instructions
 {
     delegate double _F64_F64(double a1);
     delegate double _F64_F64_F64(double a1, double a2);
+    delegate double _F64_F64_F64_Bool(double a1, double a2, bool a3);
     delegate double _F64_F64_F64_F64(double a1, double a2, double a3);
+    delegate double _F64_F64_F64_F64_Bool(double a1, double a2, double a3, bool a4);
     delegate double _F64_F64_MidpointRounding(double a1, MidpointRounding a2);
 
     delegate float _F32_F32(float a1);
     delegate float _F32_F32_F32(float a1, float a2);
+    delegate float _F32_F32_F32_Bool(float a1, float a2, bool a3);
     delegate float _F32_F32_F32_F32(float a1, float a2, float a3);
+    delegate float _F32_F32_F32_F32_Bool(float a1, float a2, float a3, bool a4);
     delegate float _F32_F32_MidpointRounding(float a1, MidpointRounding a2);
     delegate float _F32_U16(ushort a1);
 

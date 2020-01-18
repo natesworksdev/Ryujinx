@@ -983,7 +983,13 @@ namespace ARMeilleure.Instructions
 
         public static float FPMul(float value1, float value2)
         {
+            return FPMulFpscr(value1, value2, false);
+        }
+
+        public static float FPMulFpscr(float value1, float value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
@@ -999,7 +1005,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
                 else if (inf1 || inf2)
                 {
@@ -1013,7 +1019,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = value1 * value2;
 
-                    if ((context.Fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
+                    if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
 
@@ -1027,7 +1033,13 @@ namespace ARMeilleure.Instructions
 
         public static float FPMulAdd(float valueA, float value1, float value2)
         {
+            return FPMulAddFpscr(valueA, value1, value2, false);
+        }
+
+        public static float FPMulAddFpscr(float valueA, float value1, float value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
             valueA = valueA.FPUnpack(out FPType typeA, out bool signA, out uint addend, context);
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1,    context);
@@ -1042,7 +1054,7 @@ namespace ARMeilleure.Instructions
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
 
             if (!done)
@@ -1057,7 +1069,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
                 else if ((infA && !signA) || (infP && !signP))
                 {
@@ -1075,7 +1087,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = MathF.FusedMultiplyAdd(value1, value2, valueA);
 
-                    if ((context.Fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
+                    if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
 
@@ -1092,6 +1104,13 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPNeg();
 
             return FPMulAdd(valueA, value1, value2);
+        }
+
+        public static float FPMulSubFpscr(float valueA, float value1, float value2, bool standardFpscr)
+        {
+            value1 = value1.FPNeg();
+
+            return FPMulAddFpscr(valueA, value1, value2, standardFpscr);
         }
 
         public static float FPMulX(float value1, float value2)
@@ -1679,9 +1698,14 @@ namespace ARMeilleure.Instructions
 
         private static void FPProcessException(FPException exc, ExecutionContext context)
         {
+            FPProcessException(exc, context, context.Fpcr);
+        }
+
+        private static void FPProcessException(FPException exc, ExecutionContext context, FPCR fpcr)
+        {
             int enable = (int)exc + 8;
 
-            if ((context.Fpcr & (FPCR)(1 << enable)) != 0)
+            if ((fpcr & (FPCR)(1 << enable)) != 0)
             {
                 throw new NotImplementedException("Floating-point trap handling.");
             }
@@ -2056,7 +2080,13 @@ namespace ARMeilleure.Instructions
 
         public static double FPMul(double value1, double value2)
         {
+            return FPMulFpscr(value1, value2, false);
+        }
+
+        public static double FPMulFpscr(double value1, double value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
@@ -2072,7 +2102,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
                 else if (inf1 || inf2)
                 {
@@ -2086,7 +2116,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = value1 * value2;
 
-                    if ((context.Fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
+                    if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
 
@@ -2100,7 +2130,13 @@ namespace ARMeilleure.Instructions
 
         public static double FPMulAdd(double valueA, double value1, double value2)
         {
+            return FPMulAddFpscr(valueA, value1, value2, false);
+        }
+
+        public static double FPMulAddFpscr(double valueA, double value1, double value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
             valueA = valueA.FPUnpack(out FPType typeA, out bool signA, out ulong addend, context);
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1,    context);
@@ -2130,7 +2166,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
                 else if ((infA && !signA) || (infP && !signP))
                 {
@@ -2148,7 +2184,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = Math.FusedMultiplyAdd(value1, value2, valueA);
 
-                    if ((context.Fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
+                    if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
 
@@ -2165,6 +2201,13 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPNeg();
 
             return FPMulAdd(valueA, value1, value2);
+        }
+
+        public static double FPMulSubFpscr(double valueA, double value1, double value2, bool standardFpscr)
+        {
+            value1 = value1.FPNeg();
+
+            return FPMulAddFpscr(valueA, value1, value2, standardFpscr);
         }
 
         public static double FPMulX(double value1, double value2)
@@ -2752,9 +2795,14 @@ namespace ARMeilleure.Instructions
 
         private static void FPProcessException(FPException exc, ExecutionContext context)
         {
+            FPProcessException(exc, context, context.Fpcr);
+        }
+
+        private static void FPProcessException(FPException exc, ExecutionContext context, FPCR fpcr)
+        {
             int enable = (int)exc + 8;
 
-            if ((context.Fpcr & (FPCR)(1 << enable)) != 0)
+            if ((fpcr & (FPCR)(1 << enable)) != 0)
             {
                 throw new NotImplementedException("Floating-point trap handling.");
             }

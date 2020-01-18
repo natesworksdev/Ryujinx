@@ -217,21 +217,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Vdiv_V(ArmEmitterContext context)
-        {
-            if (Optimizations.FastFP)
-            {
-                EmitVectorBinaryOpF32(context, (op1, op2) => context.Divide(op1, op2));
-            }
-            else
-            {
-                EmitVectorBinaryOpF32(context, (op1, op2) =>
-                {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPDiv, SoftFloat64.FPDiv, op1, op2);
-                });
-            }
-        }
-
         public static void VmaxminNm_S(ArmEmitterContext context)
         {
             bool max = (context.CurrOp.RawOpCode & (1 << 6)) == 0;
@@ -317,7 +302,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2);
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2);
                 });
             }
         }
@@ -339,7 +324,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    EmitVectorByScalarOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2));
+                    EmitVectorByScalarOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2));
                 }
             } 
             else
@@ -376,7 +361,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPMulAdd, SoftFloat64.FPMulAdd, op1, op2, op3);
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulAddFpscr, SoftFloat64.FPMulAddFpscr, op1, op2, op3);
                 });
             }
         }
@@ -397,7 +382,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => EmitSoftFloatCall(context, SoftFloat32.FPMulAdd, SoftFloat64.FPMulAdd, op1, op2, op3));
+                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulAddFpscr, SoftFloat64.FPMulAddFpscr, op1, op2, op3));
                 }
             }
             else
@@ -434,7 +419,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPMulSub, SoftFloat64.FPMulSub, op1, op2, op3);
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulSubFpscr, SoftFloat64.FPMulSubFpscr, op1, op2, op3);
                 });
             }
         }
@@ -455,7 +440,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => EmitSoftFloatCall(context, SoftFloat32.FPMulSub, SoftFloat64.FPMulSub, op1, op2, op3));
+                    EmitVectorsByScalarOpF32(context, (op1, op2, op3) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulSubFpscr, SoftFloat64.FPMulSubFpscr, op1, op2, op3));
                 }
             }
             else
