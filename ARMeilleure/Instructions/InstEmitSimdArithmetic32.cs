@@ -229,17 +229,17 @@ namespace ARMeilleure.Instructions
         public static void VmaxminNm_V(ArmEmitterContext context)
         {
             bool max = (context.CurrOp.RawOpCode & (1 << 21)) == 0;
-            _F32_F32_F32 f32 = max ? new _F32_F32_F32(SoftFloat32.FPMaxNum) : new _F32_F32_F32(SoftFloat32.FPMinNum);
-            _F64_F64_F64 f64 = max ? new _F64_F64_F64(SoftFloat64.FPMaxNum) : new _F64_F64_F64(SoftFloat64.FPMinNum);
+            _F32_F32_F32_Bool f32 = max ? new _F32_F32_F32_Bool(SoftFloat32.FPMaxNumFpscr) : new _F32_F32_F32_Bool(SoftFloat32.FPMinNumFpscr);
+            _F64_F64_F64_Bool f64 = max ? new _F64_F64_F64_Bool(SoftFloat64.FPMaxNumFpscr) : new _F64_F64_F64_Bool(SoftFloat64.FPMinNumFpscr);
 
-            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCall(context, f32, f64, op1, op2));
+            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, f32, f64, op1, op2));
         }
 
         public static void Vmax_V(ArmEmitterContext context)
         {
             EmitVectorBinaryOpF32(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPMax, SoftFloat64.FPMax, op1, op2);
+                return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMaxFpscr, SoftFloat64.FPMaxFpscr, op1, op2);
             });
         }
 
@@ -260,7 +260,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorBinaryOpF32(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPMin, SoftFloat64.FPMin, op1, op2);
+                return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMinFpscr, SoftFloat64.FPMinFpscr, op1, op2);
             });
         }
 
@@ -506,33 +506,48 @@ namespace ARMeilleure.Instructions
 
         public static void Vrecpe(ArmEmitterContext context)
         {
-            EmitVectorUnaryOpF32(context, (op1) =>
+            OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
+            if (op.F)
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPRecipEstimate, SoftFloat64.FPRecipEstimate, op1);
-            });
+                EmitVectorUnaryOpF32(context, (op1) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRecipEstimateFpscr, SoftFloat64.FPRecipEstimateFpscr, op1);
+                });
+            } 
+            else
+            {
+                throw new NotImplementedException("Integer Vrecpe not currently implemented.");
+            }
         }
 
         public static void Vrecps(ArmEmitterContext context)
         {
             EmitVectorBinaryOpF32(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPRecipStepFused, SoftFloat64.FPRecipStepFused, op1, op2);
+                return EmitSoftFloatCall(context, SoftFloat32.FPRecipStep, SoftFloat64.FPRecipStep, op1, op2);
             });
         }
 
         public static void Vrsqrte(ArmEmitterContext context)
         {
-            EmitVectorUnaryOpF32(context, (op1) =>
+            OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
+            if (op.F)
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtEstimate, SoftFloat64.FPRSqrtEstimate, op1);
-            });
+                EmitVectorUnaryOpF32(context, (op1) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRSqrtEstimateFpscr, SoftFloat64.FPRSqrtEstimateFpscr, op1);
+                });
+            } else
+            {
+                throw new NotImplementedException("Integer Vrsqrte not currently implemented.");
+            }
         }
 
         public static void Vrsqrts(ArmEmitterContext context)
         {
             EmitVectorBinaryOpF32(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtStepFused, SoftFloat64.FPRSqrtStepFused, op1, op2);
+                return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtStep, SoftFloat64.FPRSqrtStep, op1, op2);
             });
         }
 

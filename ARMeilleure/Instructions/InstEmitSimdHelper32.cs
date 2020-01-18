@@ -460,6 +460,22 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitSoftFloatCallDefaultFpscr(
             ArmEmitterContext context,
+            _F32_F32_Bool f32,
+            _F64_F64_Bool f64,
+            params Operand[] callArgs)
+        {
+            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+
+            Delegate dlg = (op.Size & 1) == 0 ? (Delegate)f32 : (Delegate)f64;
+
+            Array.Resize(ref callArgs, callArgs.Length + 1);
+            callArgs[callArgs.Length - 1] = Const(1);
+
+            return context.Call(dlg, callArgs);
+        }
+
+        public static Operand EmitSoftFloatCallDefaultFpscr(
+            ArmEmitterContext context,
             _F32_F32_F32_Bool f32,
             _F64_F64_F64_Bool f64,
             params Operand[] callArgs)

@@ -628,7 +628,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -795,7 +795,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -839,12 +839,18 @@ namespace ARMeilleure.Instructions
 
         public static float FPMax(float value1, float value2)
         {
+            return FPMaxFpscr(value1, value2, false);
+        }
+
+        public static float FPMaxFpscr(float value1, float value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -877,7 +883,7 @@ namespace ARMeilleure.Instructions
                     {
                         result = value2;
 
-                        if ((context.Fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
+                        if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                         {
                             context.Fpsr |= FPSR.Ufc;
 
@@ -892,10 +898,16 @@ namespace ARMeilleure.Instructions
 
         public static float FPMaxNum(float value1, float value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPMaxNumFpscr(value1, value2, false);
+        }
 
-            value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static float FPMaxNumFpscr(float value1, float value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
@@ -906,17 +918,23 @@ namespace ARMeilleure.Instructions
                 value2 = FPInfinity(true);
             }
 
-            return FPMax(value1, value2);
+            return FPMaxFpscr(value1, value2, standardFpscr);
         }
 
         public static float FPMin(float value1, float value2)
         {
+            return FPMinFpscr(value1, value2, false);
+        }
+
+        public static float FPMinFpscr(float value1, float value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -949,7 +967,7 @@ namespace ARMeilleure.Instructions
                     {
                         result = value2;
 
-                        if ((context.Fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
+                        if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                         {
                             context.Fpsr |= FPSR.Ufc;
 
@@ -964,10 +982,16 @@ namespace ARMeilleure.Instructions
 
         public static float FPMinNum(float value1, float value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPMinNumFpscr(value1, value2, false);
+        }
 
-            value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static float FPMinNumFpscr(float value1, float value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
@@ -978,7 +1002,7 @@ namespace ARMeilleure.Instructions
                 value2 = FPInfinity(false);
             }
 
-            return FPMin(value1, value2);
+            return FPMinFpscr(value1, value2, standardFpscr);
         }
 
         public static float FPMul(float value1, float value2)
@@ -991,10 +1015,10 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -1041,14 +1065,14 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            valueA = valueA.FPUnpack(out FPType typeA, out bool signA, out uint addend, context);
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1,    context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2,    context);
+            valueA = valueA.FPUnpack(out FPType typeA, out bool signA, out uint addend, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1,    context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2,    context, fpcr);
 
             bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
             bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
-            float result = FPProcessNaNs3(typeA, type1, type2, addend, op1, op2, out bool done, context);
+            float result = FPProcessNaNs3(typeA, type1, type2, addend, op1, op2, out bool done, context, fpcr);
 
             if (typeA == FPType.QNaN && ((inf1 && zero2) || (zero1 && inf2)))
             {
@@ -1120,7 +1144,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -1172,15 +1196,21 @@ namespace ARMeilleure.Instructions
 
         public static float FPRecipEstimate(float value)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPRecipEstimateFpscr(value, false);
+        }
 
-            value.FPUnpack(out FPType type, out bool sign, out uint op, context);
+        public static float FPRecipEstimateFpscr(float value, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value.FPUnpack(out FPType type, out bool sign, out uint op, context, fpcr);
 
             float result;
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, fpcr);
             }
             else if (type == FPType.Infinity)
             {
@@ -1190,13 +1220,13 @@ namespace ARMeilleure.Instructions
             {
                 result = FPInfinity(sign);
 
-                FPProcessException(FPException.DivideByZero, context);
+                FPProcessException(FPException.DivideByZero, context, fpcr);
             }
             else if (MathF.Abs(value) < MathF.Pow(2f, -128))
             {
                 bool overflowToInf;
 
-                switch (context.Fpcr.GetRoundingMode())
+                switch (fpcr.GetRoundingMode())
                 {
                     default:
                     case FPRoundingMode.ToNearest:            overflowToInf = true;  break;
@@ -1207,10 +1237,10 @@ namespace ARMeilleure.Instructions
 
                 result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
 
-                FPProcessException(FPException.Overflow, context);
-                FPProcessException(FPException.Inexact,  context);
+                FPProcessException(FPException.Overflow, context, fpcr);
+                FPProcessException(FPException.Inexact,  context, fpcr);
             }
-            else if ((context.Fpcr & FPCR.Fz) != 0 && (MathF.Abs(value) >= MathF.Pow(2f, 126)))
+            else if ((fpcr & FPCR.Fz) != 0 && (MathF.Abs(value) >= MathF.Pow(2f, 126)))
             {
                 result = FPZero(sign);
 
@@ -1259,6 +1289,37 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        public static float FPRecipStep(float value1, float value2)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.StandardFpcrValue;
+
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
+
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
+                bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+
+                float product;
+                if ((inf1 && zero2) || (zero1 && inf2))
+                {
+                    product = FPZero(false);
+                }
+                else
+                {
+                    product = FPMulFpscr(value1, value2, true);
+                }
+
+                result = FPSubFpscr(FPTwo(false), product, true);
+            }
+
+            return result;
+        }
+
         public static float FPRecipStepFused(float value1, float value2)
         {
             ExecutionContext context = NativeInterface.GetContext();
@@ -1268,7 +1329,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -1309,7 +1370,7 @@ namespace ARMeilleure.Instructions
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, context.Fpcr);
             }
             else
             {
@@ -1325,27 +1386,33 @@ namespace ARMeilleure.Instructions
 
         public static float FPRSqrtEstimate(float value)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPRSqrtEstimateFpscr(value, false);
+        }
 
-            value.FPUnpack(out FPType type, out bool sign, out uint op, context);
+        public static float FPRSqrtEstimateFpscr(float value, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value.FPUnpack(out FPType type, out bool sign, out uint op, context, fpcr);
 
             float result;
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, fpcr);
             }
             else if (type == FPType.Zero)
             {
                 result = FPInfinity(sign);
 
-                FPProcessException(FPException.DivideByZero, context);
+                FPProcessException(FPException.DivideByZero, context, fpcr);
             }
             else if (sign)
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
             else if (type == FPType.Infinity)
             {
@@ -1388,6 +1455,81 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        public static float FPHalvedSub(float value1, float value2, ExecutionContext context, FPCR fpcr)
+        {
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
+
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
+                bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+                if (inf1 && inf2 && sign1 == sign2)
+                {
+                    result = FPDefaultNaN();
+
+                    FPProcessException(FPException.InvalidOp, context);
+                }
+                else if ((inf1 && !sign1) || (inf2 && sign2))
+                {
+                    result = FPInfinity(false);
+                }
+                else if ((inf1 && sign1) || (inf2 && !sign2))
+                {
+                    result = FPInfinity(true);
+                }
+                else if (zero1 && zero2 && sign1 == !sign2)
+                {
+                    result = FPZero(sign1);
+                }
+                else
+                {
+                    result = (value1 - value2) / 2.0f;
+                    if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
+                    {
+                        context.Fpsr |= FPSR.Ufc;
+
+                        result = FPZero(result < 0f);
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static float FPRSqrtStep(float value1, float value2)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.StandardFpcrValue;
+
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
+
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
+                bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+
+                float product;
+                if ((inf1 && zero2) || (zero1 && inf2))
+                {
+                    product = FPZero(false);
+                }
+                else
+                {
+                    product = FPMulFpscr(value1, value2, true);
+                }
+
+                float three = FPThree(false);
+                result = FPHalvedSub(three, product, context, fpcr);
+            }
+
+            return result;
+        }
+
         public static float FPRSqrtStepFused(float value1, float value2)
         {
             ExecutionContext context = NativeInterface.GetContext();
@@ -1397,7 +1539,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -1438,7 +1580,7 @@ namespace ARMeilleure.Instructions
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, context.Fpcr);
             }
             else if (type == FPType.Zero)
             {
@@ -1471,12 +1613,18 @@ namespace ARMeilleure.Instructions
 
         public static float FPSub(float value1, float value2)
         {
+            return FPSubFpscr(value1, value2, false);
+        }
+
+        public static float FPSubFpscr(float value1, float value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
 
-            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            float result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -1487,7 +1635,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
                 else if ((inf1 && !sign1) || (inf2 && sign2))
                 {
@@ -1505,7 +1653,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = value1 - value2;
 
-                    if ((context.Fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
+                    if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
 
@@ -1542,6 +1690,11 @@ namespace ARMeilleure.Instructions
             return sign ? -2f : +2f;
         }
 
+        private static float FPThree(bool sign)
+        {
+            return sign ? -3f : +3f;
+        }
+
         private static float FPOnePointFive(bool sign)
         {
             return sign ? -1.5f : +1.5f;
@@ -1564,13 +1717,24 @@ namespace ARMeilleure.Instructions
             out uint valueBits,
             ExecutionContext context)
         {
+            return FPUnpack(value, out type, out sign, out valueBits, context, context.Fpcr);
+        }
+
+        private static float FPUnpack(
+            this float value,
+            out FPType type,
+            out bool sign,
+            out uint valueBits,
+            ExecutionContext context,
+            FPCR fpcr)
+        {
             valueBits = (uint)BitConverter.SingleToInt32Bits(value);
 
             sign = (~valueBits & 0x80000000u) == 0u;
 
             if ((valueBits & 0x7F800000u) == 0u)
             {
-                if ((valueBits & 0x007FFFFFu) == 0u || (context.Fpcr & FPCR.Fz) != 0)
+                if ((valueBits & 0x007FFFFFu) == 0u || (fpcr & FPCR.Fz) != 0)
                 {
                     type  = FPType.Zero;
                     value = FPZero(sign);
@@ -1611,25 +1775,26 @@ namespace ARMeilleure.Instructions
             uint op1,
             uint op2,
             out bool done,
-            ExecutionContext context)
+            ExecutionContext context,
+            FPCR fpcr)
         {
             done = true;
 
             if (type1 == FPType.SNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.SNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
             else if (type1 == FPType.QNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.QNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
 
             done = false;
@@ -1645,33 +1810,34 @@ namespace ARMeilleure.Instructions
             uint op2,
             uint op3,
             out bool done,
-            ExecutionContext context)
+            ExecutionContext context,
+            FPCR fpcr)
         {
             done = true;
 
             if (type1 == FPType.SNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.SNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
             else if (type3 == FPType.SNaN)
             {
-                return FPProcessNaN(type3, op3, context);
+                return FPProcessNaN(type3, op3, context, fpcr);
             }
             else if (type1 == FPType.QNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.QNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
             else if (type3 == FPType.QNaN)
             {
-                return FPProcessNaN(type3, op3, context);
+                return FPProcessNaN(type3, op3, context, fpcr);
             }
 
             done = false;
@@ -1679,16 +1845,16 @@ namespace ARMeilleure.Instructions
             return FPZero(false);
         }
 
-        private static float FPProcessNaN(FPType type, uint op, ExecutionContext context)
+        private static float FPProcessNaN(FPType type, uint op, ExecutionContext context, FPCR fpcr)
         {
             if (type == FPType.SNaN)
             {
                 op |= 1u << 22;
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
 
-            if ((context.Fpcr & FPCR.Dn) != 0)
+            if ((fpcr & FPCR.Dn) != 0)
             {
                 return FPDefaultNaN();
             }
@@ -1725,7 +1891,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -1892,7 +2058,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -1936,12 +2102,18 @@ namespace ARMeilleure.Instructions
 
         public static double FPMax(double value1, double value2)
         {
+            return FPMaxFpscr(value1, value2, false);
+        }
+
+        public static double FPMaxFpscr(double value1, double value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -1974,7 +2146,7 @@ namespace ARMeilleure.Instructions
                     {
                         result = value2;
 
-                        if ((context.Fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
+                        if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                         {
                             context.Fpsr |= FPSR.Ufc;
 
@@ -1989,10 +2161,16 @@ namespace ARMeilleure.Instructions
 
         public static double FPMaxNum(double value1, double value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPMaxNumFpscr(value1, value2, false);
+        }
 
-            value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static double FPMaxNumFpscr(double value1, double value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
@@ -2003,17 +2181,23 @@ namespace ARMeilleure.Instructions
                 value2 = FPInfinity(true);
             }
 
-            return FPMax(value1, value2);
+            return FPMaxFpscr(value1, value2, standardFpscr);
         }
 
         public static double FPMin(double value1, double value2)
         {
+            return FPMinFpscr(value1, value2, false);
+        }
+
+        public static double FPMinFpscr(double value1, double value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -2046,7 +2230,7 @@ namespace ARMeilleure.Instructions
                     {
                         result = value2;
 
-                        if ((context.Fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
+                        if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                         {
                             context.Fpsr |= FPSR.Ufc;
 
@@ -2061,10 +2245,16 @@ namespace ARMeilleure.Instructions
 
         public static double FPMinNum(double value1, double value2)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPMinNumFpscr(value1, value2, false);
+        }
 
-            value1.FPUnpack(out FPType type1, out _, out _, context);
-            value2.FPUnpack(out FPType type2, out _, out _, context);
+        public static double FPMinNumFpscr(double value1, double value2, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value1.FPUnpack(out FPType type1, out _, out _, context, fpcr);
+            value2.FPUnpack(out FPType type2, out _, out _, context, fpcr);
 
             if (type1 == FPType.QNaN && type2 != FPType.QNaN)
             {
@@ -2075,7 +2265,7 @@ namespace ARMeilleure.Instructions
                 value2 = FPInfinity(false);
             }
 
-            return FPMin(value1, value2);
+            return FPMinFpscr(value1, value2, standardFpscr);
         }
 
         public static double FPMul(double value1, double value2)
@@ -2088,10 +2278,10 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -2138,14 +2328,14 @@ namespace ARMeilleure.Instructions
             ExecutionContext context = NativeInterface.GetContext();
             FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            valueA = valueA.FPUnpack(out FPType typeA, out bool signA, out ulong addend, context);
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1,    context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2,    context);
+            valueA = valueA.FPUnpack(out FPType typeA, out bool signA, out ulong addend, context, fpcr);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1,    context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2,    context, fpcr);
 
             bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
             bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
-            double result = FPProcessNaNs3(typeA, type1, type2, addend, op1, op2, out bool done, context);
+            double result = FPProcessNaNs3(typeA, type1, type2, addend, op1, op2, out bool done, context, fpcr);
 
             if (typeA == FPType.QNaN && ((inf1 && zero2) || (zero1 && inf2)))
             {
@@ -2217,7 +2407,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -2269,15 +2459,21 @@ namespace ARMeilleure.Instructions
 
         public static double FPRecipEstimate(double value)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPRecipEstimateFpscr(value, false);
+        }
 
-            value.FPUnpack(out FPType type, out bool sign, out ulong op, context);
+        public static double FPRecipEstimateFpscr(double value, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value.FPUnpack(out FPType type, out bool sign, out ulong op, context, fpcr);
 
             double result;
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, fpcr);
             }
             else if (type == FPType.Infinity)
             {
@@ -2287,13 +2483,13 @@ namespace ARMeilleure.Instructions
             {
                 result = FPInfinity(sign);
 
-                FPProcessException(FPException.DivideByZero, context);
+                FPProcessException(FPException.DivideByZero, context, fpcr);
             }
             else if (Math.Abs(value) < Math.Pow(2d, -1024))
             {
                 bool overflowToInf;
 
-                switch (context.Fpcr.GetRoundingMode())
+                switch (fpcr.GetRoundingMode())
                 {
                     default:
                     case FPRoundingMode.ToNearest:            overflowToInf = true;  break;
@@ -2304,10 +2500,10 @@ namespace ARMeilleure.Instructions
 
                 result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
 
-                FPProcessException(FPException.Overflow, context);
-                FPProcessException(FPException.Inexact,  context);
+                FPProcessException(FPException.Overflow, context, fpcr);
+                FPProcessException(FPException.Inexact,  context, fpcr);
             }
-            else if ((context.Fpcr & FPCR.Fz) != 0 && (Math.Abs(value) >= Math.Pow(2d, 1022)))
+            else if ((fpcr & FPCR.Fz) != 0 && (Math.Abs(value) >= Math.Pow(2d, 1022)))
             {
                 result = FPZero(sign);
 
@@ -2356,6 +2552,37 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        public static double FPRecipStep(double value1, double value2)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.StandardFpcrValue;
+
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
+
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
+                bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+
+                double product;
+                if ((inf1 && zero2) || (zero1 && inf2))
+                {
+                    product = FPZero(false);
+                }
+                else
+                {
+                    product = FPMulFpscr(value1, value2, true);
+                }
+
+                result = FPSubFpscr(FPTwo(false), product, true);
+            }
+
+            return result;
+        }
+
         public static double FPRecipStepFused(double value1, double value2)
         {
             ExecutionContext context = NativeInterface.GetContext();
@@ -2365,7 +2592,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -2406,7 +2633,7 @@ namespace ARMeilleure.Instructions
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, context.Fpcr);
             }
             else
             {
@@ -2422,27 +2649,33 @@ namespace ARMeilleure.Instructions
 
         public static double FPRSqrtEstimate(double value)
         {
-            ExecutionContext context = NativeInterface.GetContext();
+            return FPRSqrtEstimateFpscr(value, false);
+        }
 
-            value.FPUnpack(out FPType type, out bool sign, out ulong op, context);
+        public static double FPRSqrtEstimateFpscr(double value, bool standardFpscr)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
+
+            value.FPUnpack(out FPType type, out bool sign, out ulong op, context, fpcr);
 
             double result;
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, fpcr);
             }
             else if (type == FPType.Zero)
             {
                 result = FPInfinity(sign);
 
-                FPProcessException(FPException.DivideByZero, context);
+                FPProcessException(FPException.DivideByZero, context, fpcr);
             }
             else if (sign)
             {
                 result = FPDefaultNaN();
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
             else if (type == FPType.Infinity)
             {
@@ -2485,6 +2718,81 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        public static double FPHalvedSub(double value1, double value2, ExecutionContext context, FPCR fpcr)
+        {
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
+
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
+                bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+                if (inf1 && inf2 && sign1 == sign2)
+                {
+                    result = FPDefaultNaN();
+
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
+                }
+                else if ((inf1 && !sign1) || (inf2 && sign2))
+                {
+                    result = FPInfinity(false);
+                }
+                else if ((inf1 && sign1) || (inf2 && !sign2))
+                {
+                    result = FPInfinity(true);
+                }
+                else if (zero1 && zero2 && sign1 == !sign2)
+                {
+                    result = FPZero(sign1);
+                }
+                else
+                {
+                    result = (value1 - value2) / 2.0;
+                    if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
+                    {
+                        context.Fpsr |= FPSR.Ufc;
+
+                        result = FPZero(result < 0d);
+                    }
+                }
+            }
+            return result;
+        }
+
+        public static double FPRSqrtStep(double value1, double value2)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.StandardFpcrValue;
+
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
+
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
+
+            if (!done)
+            {
+                bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
+                bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+
+                double product;
+                if ((inf1 && zero2) || (zero1 && inf2))
+                {
+                    product = FPZero(false);
+                }
+                else
+                {
+                    product = FPMulFpscr(value1, value2, true);
+                }
+
+                double three = FPThree(false);
+                result = FPHalvedSub(three, product, context, fpcr);
+            }
+
+            return result;
+        }
+
         public static double FPRSqrtStepFused(double value1, double value2)
         {
             ExecutionContext context = NativeInterface.GetContext();
@@ -2494,7 +2802,7 @@ namespace ARMeilleure.Instructions
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, context.Fpcr);
 
             if (!done)
             {
@@ -2535,7 +2843,7 @@ namespace ARMeilleure.Instructions
 
             if (type == FPType.SNaN || type == FPType.QNaN)
             {
-                result = FPProcessNaN(type, op, context);
+                result = FPProcessNaN(type, op, context, context.Fpcr);
             }
             else if (type == FPType.Zero)
             {
@@ -2568,12 +2876,18 @@ namespace ARMeilleure.Instructions
 
         public static double FPSub(double value1, double value2)
         {
+            return FPSubFpscr(value1, value2, false);
+        }
+
+        public static double FPSubFpscr(double value1, double value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
-            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context);
-            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context);
+            value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
+            value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);
 
-            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context);
+            double result = FPProcessNaNs(type1, type2, op1, op2, out bool done, context, fpcr);
 
             if (!done)
             {
@@ -2584,7 +2898,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = FPDefaultNaN();
 
-                    FPProcessException(FPException.InvalidOp, context);
+                    FPProcessException(FPException.InvalidOp, context, fpcr);
                 }
                 else if ((inf1 && !sign1) || (inf2 && sign2))
                 {
@@ -2602,7 +2916,7 @@ namespace ARMeilleure.Instructions
                 {
                     result = value1 - value2;
 
-                    if ((context.Fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
+                    if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
 
@@ -2639,6 +2953,11 @@ namespace ARMeilleure.Instructions
             return sign ? -2d : +2d;
         }
 
+        private static double FPThree(bool sign)
+        {
+            return sign ? -2d : +2d;
+        }
+
         private static double FPOnePointFive(bool sign)
         {
             return sign ? -1.5d : +1.5d;
@@ -2661,13 +2980,24 @@ namespace ARMeilleure.Instructions
             out ulong valueBits,
             ExecutionContext context)
         {
+            return FPUnpack(value, out type, out sign, out valueBits, context, context.Fpcr);
+        }
+
+        private static double FPUnpack(
+            this double value,
+            out FPType type,
+            out bool sign,
+            out ulong valueBits,
+            ExecutionContext context,
+            FPCR fpcr)
+        {
             valueBits = (ulong)BitConverter.DoubleToInt64Bits(value);
 
             sign = (~valueBits & 0x8000000000000000ul) == 0ul;
 
             if ((valueBits & 0x7FF0000000000000ul) == 0ul)
             {
-                if ((valueBits & 0x000FFFFFFFFFFFFFul) == 0ul || (context.Fpcr & FPCR.Fz) != 0)
+                if ((valueBits & 0x000FFFFFFFFFFFFFul) == 0ul || (fpcr & FPCR.Fz) != 0)
                 {
                     type  = FPType.Zero;
                     value = FPZero(sign);
@@ -2708,25 +3038,26 @@ namespace ARMeilleure.Instructions
             ulong op1,
             ulong op2,
             out bool done,
-            ExecutionContext context)
+            ExecutionContext context,
+            FPCR fpcr)
         {
             done = true;
 
             if (type1 == FPType.SNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.SNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
             else if (type1 == FPType.QNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.QNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
 
             done = false;
@@ -2742,33 +3073,34 @@ namespace ARMeilleure.Instructions
             ulong op2,
             ulong op3,
             out bool done,
-            ExecutionContext context)
+            ExecutionContext context,
+            FPCR fpcr)
         {
             done = true;
 
             if (type1 == FPType.SNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.SNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
             else if (type3 == FPType.SNaN)
             {
-                return FPProcessNaN(type3, op3, context);
+                return FPProcessNaN(type3, op3, context, fpcr);
             }
             else if (type1 == FPType.QNaN)
             {
-                return FPProcessNaN(type1, op1, context);
+                return FPProcessNaN(type1, op1, context, fpcr);
             }
             else if (type2 == FPType.QNaN)
             {
-                return FPProcessNaN(type2, op2, context);
+                return FPProcessNaN(type2, op2, context, fpcr);
             }
             else if (type3 == FPType.QNaN)
             {
-                return FPProcessNaN(type3, op3, context);
+                return FPProcessNaN(type3, op3, context, fpcr);
             }
 
             done = false;
@@ -2776,16 +3108,16 @@ namespace ARMeilleure.Instructions
             return FPZero(false);
         }
 
-        private static double FPProcessNaN(FPType type, ulong op, ExecutionContext context)
+        private static double FPProcessNaN(FPType type, ulong op, ExecutionContext context, FPCR fpcr)
         {
             if (type == FPType.SNaN)
             {
                 op |= 1ul << 51;
 
-                FPProcessException(FPException.InvalidOp, context);
+                FPProcessException(FPException.InvalidOp, context, fpcr);
             }
 
-            if ((context.Fpcr & FPCR.Dn) != 0)
+            if ((fpcr & FPCR.Dn) != 0)
             {
                 return FPDefaultNaN();
             }
