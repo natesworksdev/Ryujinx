@@ -54,7 +54,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP)
             {
-                EmitScalarBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
+                EmitVectorBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
             } 
             else
             {
