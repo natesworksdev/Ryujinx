@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
     {
         private const int SvcFuncMaxArguments64 = 8;
         private const int SvcFuncMaxArguments32 = 4;
-        private const int SvcMax = 0x80;
+        private const int SvcMax                = 0x80;
 
         public static Action<SvcHandler, ExecutionContext>[] SvcTable32 { get; }
         public static Action<SvcHandler, ExecutionContext>[] SvcTable64 { get; }
@@ -102,28 +102,51 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 { 0x0b, nameof(SvcHandler.SleepThread32)                   },
                 { 0x0c, nameof(SvcHandler.GetThreadPriority32)             },
                 { 0x0d, nameof(SvcHandler.SetThreadPriority32)             },
+                { 0x0e, nameof(SvcHandler.GetThreadCoreMask32)             },
                 { 0x0f, nameof(SvcHandler.SetThreadCoreMask32)             },
                 { 0x10, nameof(SvcHandler.GetCurrentProcessorNumber32)     },
+                { 0x11, nameof(SvcHandler.SignalEvent32)                   },
+                { 0x12, nameof(SvcHandler.ClearEvent32)                    },
                 { 0x13, nameof(SvcHandler.MapSharedMemory32)               },
                 { 0x14, nameof(SvcHandler.UnmapSharedMemory32)             },
                 { 0x15, nameof(SvcHandler.CreateTransferMemory32)          },
                 { 0x16, nameof(SvcHandler.CloseHandle32)                   },
                 { 0x17, nameof(SvcHandler.ResetSignal32)                   },
                 { 0x18, nameof(SvcHandler.WaitSynchronization32)           },
+                { 0x19, nameof(SvcHandler.CancelSynchronization32)         },
                 { 0x1a, nameof(SvcHandler.ArbitrateLock32)                 },
                 { 0x1b, nameof(SvcHandler.ArbitrateUnlock32)               },
                 { 0x1c, nameof(SvcHandler.WaitProcessWideKeyAtomic32)      },
                 { 0x1d, nameof(SvcHandler.SignalProcessWideKey32)          },
+                { 0x1e, nameof(SvcHandler.GetSystemTick32)                 },
                 { 0x1f, nameof(SvcHandler.ConnectToNamedPort32)            },
                 { 0x21, nameof(SvcHandler.SendSyncRequest32)               },
+                { 0x22, nameof(SvcHandler.SendSyncRequestWithUserBuffer32) },
+                { 0x24, nameof(SvcHandler.GetProcessId32)                  },
                 { 0x25, nameof(SvcHandler.GetThreadId32)                   },
                 { 0x26, nameof(SvcHandler.Break32)                         },
                 { 0x27, nameof(SvcHandler.OutputDebugString32)             },
                 { 0x29, nameof(SvcHandler.GetInfo32)                       },
+                { 0x2c, nameof(SvcHandler.MapPhysicalMemory32)             },
+                { 0x2d, nameof(SvcHandler.UnmapPhysicalMemory32)           },
+                { 0x32, nameof(SvcHandler.SetThreadActivity32)             },
+                { 0x33, nameof(SvcHandler.GetThreadContext332)             },
                 { 0x34, nameof(SvcHandler.WaitForAddress32)                },
                 { 0x35, nameof(SvcHandler.SignalToAddress32)               },
-
-                { 0x5F, nameof(SvcHandler.FlushProcessDataCache32)         }
+                { 0x40, nameof(SvcHandler.CreateSession32)                 },
+                { 0x41, nameof(SvcHandler.AcceptSession32)                 },
+                { 0x43, nameof(SvcHandler.ReplyAndReceive32)               },
+                { 0x45, nameof(SvcHandler.CreateEvent32)                   },
+                { 0x5F, nameof(SvcHandler.FlushProcessDataCache32)         },
+                { 0x65, nameof(SvcHandler.GetProcessList32)                },
+                { 0x6f, nameof(SvcHandler.GetSystemInfo32)                 },
+                { 0x70, nameof(SvcHandler.CreatePort32)                    },
+                { 0x71, nameof(SvcHandler.ManageNamedPort32)               },
+                { 0x72, nameof(SvcHandler.ConnectToPort32)                 },
+                { 0x73, nameof(SvcHandler.SetProcessMemoryPermission32)    },
+                { 0x77, nameof(SvcHandler.MapProcessCodeMemory32)          },
+                { 0x78, nameof(SvcHandler.UnmapProcessCodeMemory32)        },
+                { 0x7B, nameof(SvcHandler.TerminateProcess32)              }
             };
 
             foreach (KeyValuePair<int, string> value in svcFuncs32)
@@ -151,11 +174,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 switch (Type.GetTypeCode(sourceType))
                 {
                     case TypeCode.UInt32: generator.Emit(OpCodes.Conv_U4); break;
-                    case TypeCode.Int32: generator.Emit(OpCodes.Conv_I4); break;
+                    case TypeCode.Int32:  generator.Emit(OpCodes.Conv_I4); break;
                     case TypeCode.UInt16: generator.Emit(OpCodes.Conv_U2); break;
-                    case TypeCode.Int16: generator.Emit(OpCodes.Conv_I2); break;
-                    case TypeCode.Byte: generator.Emit(OpCodes.Conv_U1); break;
-                    case TypeCode.SByte: generator.Emit(OpCodes.Conv_I1); break;
+                    case TypeCode.Int16:  generator.Emit(OpCodes.Conv_I2); break;
+                    case TypeCode.Byte:   generator.Emit(OpCodes.Conv_U1); break;
+                    case TypeCode.SByte:  generator.Emit(OpCodes.Conv_I1); break;
 
                     case TypeCode.Boolean:
                         generator.Emit(OpCodes.Conv_I4);
@@ -253,7 +276,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 argsFormat = argsFormat.Substring(0, argsFormat.Length - 1);
 
-                generator.Emit(OpCodes.Ldstr, argsFormat);
+               generator.Emit(OpCodes.Ldstr, argsFormat);
             }
             else
             {
@@ -353,6 +376,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             for (int index = 0; index < locals.Count; index++)
             {
                 (LocalBuilder local, RAttribute attribute) = locals[index];
+
+                if ((registerInUse & (1u << attribute.Index)) != 0)
+                {
+                    throw new InvalidSvcException($"Method \"{svcName}\" has conflicting output values at register index \"{attribute.Index}\".");
+                }
+
                 generator.Emit(OpCodes.Ldarg_1);
                 generator.Emit(OpCodes.Ldc_I4, attribute.Index);
                 generator.Emit(OpCodes.Ldloc, local);
@@ -421,8 +450,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private static void PrintResult(KernelResult result, string svcName)
         {
-            if (result != KernelResult.Success &&
-                result != KernelResult.TimedOut &&
+            if (result != KernelResult.Success   &&
+                result != KernelResult.TimedOut  &&
                 result != KernelResult.Cancelled &&
                 result != KernelResult.InvalidState)
             {

@@ -13,10 +13,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult WaitSynchronization32(
-            [R(0)] uint timeoutLow,
-            [R(1)] uint handlesPtr,
-            [R(2)] int handlesCount,
-            [R(3)] uint timeoutHigh,
+            [R(0)] uint    timeoutLow,
+            [R(1)] uint    handlesPtr,
+            [R(2)] int     handlesCount,
+            [R(3)] uint    timeoutHigh,
             [R(1)] out int handleIndex)
         {
             long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
@@ -57,6 +57,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return CancelSynchronization(handle);
         }
 
+        public KernelResult CancelSynchronization32([R(0)] int handle)
+        {
+            return CancelSynchronization(handle);
+        }
+
         private KernelResult CancelSynchronization(int handle)
         {
             KThread thread = _process.HandleTable.GetKThread(handle);
@@ -76,7 +81,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
 
-        public KernelResult ArbitrateLock32([R(0)] int ownerHandle, [R(1)] ulong mutexAddress, [R(2)] int requesterHandle)
+        public KernelResult ArbitrateLock32([R(0)] int ownerHandle, [R(1)] uint mutexAddress, [R(2)] int requesterHandle)
         {
             return ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
@@ -137,11 +142,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult WaitProcessWideKeyAtomic32(
             [R(0)] uint mutexAddress,
             [R(1)] uint condVarAddress,
-            [R(2)] int handle,
+            [R(2)] int  handle,
             [R(3)] uint timeoutLow,
             [R(4)] uint timeoutHigh)
         {
             long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
+
             return WaitProcessWideKeyAtomic(mutexAddress, condVarAddress, handle, timeout);
         }
 
@@ -197,6 +203,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         public KernelResult WaitForAddress32([R(0)] uint address, [R(1)] ArbitrationType type, [R(2)] int value, [R(3)] uint timeoutLow, [R(4)] uint timeoutHigh)
         {
             long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
+
             return WaitForAddress(address, type, value, timeout);
         }
 

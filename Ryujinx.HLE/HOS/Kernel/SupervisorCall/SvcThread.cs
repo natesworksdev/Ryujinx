@@ -25,7 +25,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             [R(3)] uint    stackTop,
             [R(0)] int     priority,
             [R(4)] int     cpuCore,
-
             [R(1)] out int handle)
         {
             return CreateThread(entrypoint, argsPtr, stackTop, priority, cpuCore, out handle);
@@ -234,6 +233,16 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return GetThreadCoreMask(handle, out preferredCore, out affinityMask);
         }
 
+        public KernelResult GetThreadCoreMask32([R(2)] int handle, [R(1)] out int preferredCore, [R(2)] out int affinityMaskLow, [R(3)] out int affinityMaskHigh)
+        {
+            KernelResult result = GetThreadCoreMask(handle, out preferredCore, out long affinityMask);
+
+            affinityMaskLow  = (int)(affinityMask >> 32);
+            affinityMaskHigh = (int)(affinityMask & uint.MaxValue);
+
+            return result;
+        }
+
         private KernelResult GetThreadCoreMask(int handle, out int preferredCore, out long affinityMask)
         {
             KThread thread = _process.HandleTable.GetKThread(handle);
@@ -334,7 +343,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             KernelResult result = GetThreadId(handle, out threadUid);
 
             threadUidLow  = (uint)(threadUid >> 32);
-            threadUidHigh = (uint)(threadUid & 0xFFFFFFFF);
+            threadUidHigh = (uint)(threadUid & uint.MaxValue);
 
             return result;
         }
@@ -362,6 +371,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return SetThreadActivity(handle, pause);
         }
 
+        public KernelResult SetThreadActivity32([R(0)] int handle, [R(1)] bool pause)
+        {
+            return SetThreadActivity(handle, pause);
+        }
+
         private KernelResult SetThreadActivity(int handle, bool pause)
         {
             KThread thread = _process.HandleTable.GetObject<KThread>(handle);
@@ -385,6 +399,11 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         }
 
         public KernelResult GetThreadContext364([R(0)] ulong address, [R(1)] int handle)
+        {
+            return GetThreadContext3(address, handle);
+        }
+
+        public KernelResult GetThreadContext332([R(0)] uint address, [R(1)] int handle)
         {
             return GetThreadContext3(address, handle);
         }
