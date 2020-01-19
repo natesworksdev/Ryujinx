@@ -119,9 +119,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        private static float _DefaultNaN = BitConverter.Int32BitsToSingle(0x7fc00000);
         private static float FPDefaultNaN()
         {
-            return -float.NaN;
+            return _DefaultNaN;
         }
 
         private static float FPInfinity(bool sign)
@@ -1701,9 +1702,11 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        private static float _DefaultNaN = BitConverter.Int32BitsToSingle(0x7fc00000);
+
         private static float FPDefaultNaN()
         {
-            return -float.NaN;
+            return _DefaultNaN;
         }
 
         private static float FPInfinity(bool sign)
@@ -2985,9 +2988,10 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        private static double _DefaultNaN = BitConverter.Int64BitsToDouble(0x7ff8000000000000);
         private static double FPDefaultNaN()
         {
-            return -double.NaN;
+            return _DefaultNaN;
         }
 
         private static double FPInfinity(bool sign)
