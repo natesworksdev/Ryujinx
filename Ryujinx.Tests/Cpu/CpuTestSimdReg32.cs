@@ -265,7 +265,10 @@ namespace Ryujinx.Tests.Cpu
             }
 
             opcode |= ((size & 3) << 8);
-            if (e) opcode |= 1 << 7;
+            if (e)
+            {
+                opcode |= 1 << 7;
+            }
 
             V128 v1 = MakeVectorE0(a);
             V128 v2 = MakeVectorE0(b);
@@ -293,7 +296,7 @@ namespace Ryujinx.Tests.Cpu
                          [Values] bool q,
                          [Values] bool u)
         {
-            uint opcode = 0xf2000400;
+            uint opcode = 0xf2000400u; // VSHL.S8 D0, D0, D0
             if (q)
             {
                 opcode |= 1 << 6;
@@ -302,7 +305,10 @@ namespace Ryujinx.Tests.Cpu
                 rd <<= 1;
             }
 
-            if (u) opcode |= 1 << 24;
+            if (u)
+            {
+                opcode |= 1 << 24;
+            }
 
             opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
@@ -325,7 +331,7 @@ namespace Ryujinx.Tests.Cpu
                               [Range(0u, 7u)] uint rm)
         {
             // not currently a slow path test - just a sanity check for pairwise
-            uint opcode = 0xf3000d00u;
+            uint opcode = 0xf3000d00u; // VPADD.F32 D0, D0, D0
 
             opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);

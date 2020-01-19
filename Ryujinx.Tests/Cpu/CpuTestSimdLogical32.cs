@@ -41,7 +41,7 @@ namespace Ryujinx.Tests.Cpu
                          [Random(RndCnt)] ulong b,
                          [Values] bool q)
         {
-            uint opcode = GenerateVectorOpcode(0xf3300110, rd, rn, rm, q);
+            uint opcode = GenerateVectorOpcode(0xf3300110u, rd, rn, rm, q); // VBIF D0, D0, D0
 
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, z);
@@ -61,7 +61,7 @@ namespace Ryujinx.Tests.Cpu
                          [Random(RndCnt)] ulong b,
                          [Values] bool q)
         {
-            uint opcode = GenerateVectorOpcode(0xf3200110, rd, rn, rm, q);
+            uint opcode = GenerateVectorOpcode(0xf3200110u, rd, rn, rm, q); // VBIT D0, D0, D0
 
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, z);
@@ -81,7 +81,7 @@ namespace Ryujinx.Tests.Cpu
                          [Random(RndCnt)] ulong b,
                          [Values] bool q)
         {
-            uint opcode = GenerateVectorOpcode(0xf3100110, rd, rn, rm, q);
+            uint opcode = GenerateVectorOpcode(0xf3100110u, rd, rn, rm, q); // VBSL D0, D0, D0
 
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, z);
@@ -101,7 +101,7 @@ namespace Ryujinx.Tests.Cpu
                          [Random(RndCnt)] ulong b,
                          [Values] bool q)
         {
-            uint opcode = GenerateVectorOpcode(0xf2000110, rd, rn, rm, q);
+            uint opcode = GenerateVectorOpcode(0xf2000110u, rd, rn, rm, q); // VAND D0, D0, D0
 
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, z);

@@ -18,7 +18,7 @@ namespace Ryujinx.Tests.Cpu
                                [Values(0x00000000u, 0x7FFFFFFFu,
                                        0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn)
         {
-            uint opcode = 0xe6ff0f30; // RBIT R0, R0
+            uint opcode = 0xe6ff0f30u; // RBIT R0, R0
             opcode |= ((rm & 15) << 0) | ((rd & 15) << 12);
 
             uint w31 = TestContext.CurrentContext.Random.NextUInt();
@@ -33,7 +33,7 @@ namespace Ryujinx.Tests.Cpu
                                 0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
                        [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
         {
-            uint opcode = 0xe1b00030; // LSRS R0, R0, R0
+            uint opcode = 0xe1b00030u; // LSRS R0, R0, R0
             uint rd = 0;
             uint rm = 1;
             uint rs = 2;
@@ -49,7 +49,7 @@ namespace Ryujinx.Tests.Cpu
                                 0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
                         [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
         {
-            uint opcode = 0xe1b00010; // LSLS R0, R0, R0
+            uint opcode = 0xe1b00010u; // LSLS R0, R0, R0
             uint rd = 0;
             uint rm = 1;
             uint rs = 2;
@@ -65,7 +65,7 @@ namespace Ryujinx.Tests.Cpu
                                 0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
                         [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
         {
-            uint opcode = 0xe1b00050; // ASRS R0, R0, R0
+            uint opcode = 0xe1b00050u; // ASRS R0, R0, R0
             uint rd = 0;
             uint rm = 1;
             uint rs = 2;
@@ -81,7 +81,7 @@ namespace Ryujinx.Tests.Cpu
                                 0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
                         [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
         {
-            uint opcode = 0xe1b00070; // RORS R0, R0, R0
+            uint opcode = 0xe1b00070u; // RORS R0, R0, R0
             uint rd = 0;
             uint rm = 1;
             uint rs = 2;

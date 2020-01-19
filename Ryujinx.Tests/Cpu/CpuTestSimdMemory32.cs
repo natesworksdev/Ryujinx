@@ -49,7 +49,7 @@ namespace Ryujinx.Tests.Cpu
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
 
-            uint opcode = 0xf4a00000; // vld1.8 {d0[0]}, [r0], r0
+            uint opcode = 0xf4a00000u; // VLD1.8 {D0[0]}, [R0], R0
 
             opcode |= ((size & 3) << 10) | ((rn & 15) << 16) | (rm & 15);
 
@@ -67,7 +67,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (all lanes)")]
+        [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (all lanes)")]
         public void Vldn_All([Values(0u, 13u)] uint rn,
                              [Values(1u, 13u, 15u)] uint rm,
                              [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
@@ -79,7 +79,7 @@ namespace Ryujinx.Tests.Cpu
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
 
-            uint opcode = 0xf4a00c00; // vld1.8 {d0[0]}, [r0], r0
+            uint opcode = 0xf4a00c00u; // VLD1.8 {D0[0]}, [R0], R0
 
             opcode |= ((size & 3) << 6) | ((rn & 15) << 16) | (rm & 15);
 
@@ -94,7 +94,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
+        [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
         public void Vldn_Pair([Values(0u, 1u, 2u, 3u)] uint size,
                               [Values(0u, 13u)] uint rn,
                               [Values(1u, 13u, 15u)] uint rm,
@@ -105,7 +105,7 @@ namespace Ryujinx.Tests.Cpu
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
 
-            uint opcode = 0xf4200000; // vld4.8 {d0, d1, d2, d3}, [r0], r0
+            uint opcode = 0xf4200000u; // VLD4.8 {D0, D1, D2, D3}, [R0], R0
 
             opcode |= ((size & 3) << 6) | ((rn & 15) << 16) | (rm & 15) | (LDSTModes[mode] << 8);
 
@@ -131,7 +131,7 @@ namespace Ryujinx.Tests.Cpu
 
             (V128 vec1, V128 vec2, V128 vec3, V128 vec4) = GenerateTestVectors();
 
-            uint opcode = 0xf4800000; // vst1.8 {d0[0]}, [r0], r0
+            uint opcode = 0xf4800000u; // VST1.8 {D0[0]}, [R0], R0
 
             opcode |= ((size & 3) << 10) | ((rn & 15) << 16) | (rm & 15);
 
@@ -149,7 +149,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
+        [Test, Pairwise, Description("VSTn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (multiple n element structures)")]
         public void Vstn_Pair([Values(0u, 1u, 2u, 3u)] uint size,
                               [Values(0u, 13u)] uint rn,
                               [Values(1u, 13u, 15u)] uint rm,
@@ -161,8 +161,8 @@ namespace Ryujinx.Tests.Cpu
             SetWorkingMemory(data);
 
             (V128 vec1, V128 vec2, V128 vec3, V128 vec4) = GenerateTestVectors();
-
-            uint opcode = 0xf4000000; // vst4.8 {d0, d1, d2, d3}, [r0], r0
+            
+            uint opcode = 0xf4000000u; // VST4.8 {D0, D1, D2, D3}, [R0], R0
 
             opcode |= ((size & 3) << 6) | ((rn & 15) << 16) | (rm & 15) | (LDSTModes[mode] << 8);
 
@@ -174,7 +174,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VLDM.<size> <Rn>{!}, <d/sreglist>")]
+        [Test, Pairwise, Description("VLDM.<size> <Rn>{!}, <d/sreglist>")]
         public void Vldm([Values(0u, 13u)] uint rn,
                          [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint vd,
                          [Range(0u, 2u)] uint mode,
@@ -184,7 +184,7 @@ namespace Ryujinx.Tests.Cpu
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
 
-            uint opcode = 0xec100a00; // vst4.8 {d0, d1, d2, d3}, [r0], r0
+            uint opcode = 0xec100a00u; // VST4.8 {D0, D1, D2, D3}, [R0], R0
 
             uint[] vldmModes = {
                 //note: 3rd 0 leaves a space for "D"
@@ -231,7 +231,7 @@ namespace Ryujinx.Tests.Cpu
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
 
-            uint opcode = 0xed900a00; // VLDR.32 S0, [R0, #0]
+            uint opcode = 0xed900a00u; // VLDR.32 S0, [R0, #0]
             opcode |= ((size & 3) << 8) | ((rn & 15) << 16);
 
             if (sub)
@@ -266,7 +266,7 @@ namespace Ryujinx.Tests.Cpu
             var data = GenerateVectorSequence(0x1000);
             SetWorkingMemory(data);
 
-            uint opcode = 0xed800a00; // VSTR.32 S0, [R0, #0]
+            uint opcode = 0xed800a00u; // VSTR.32 S0, [R0, #0]
             opcode |= ((size & 3) << 8) | ((rn & 15) << 16);
 
             if (sub)

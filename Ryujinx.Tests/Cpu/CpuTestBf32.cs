@@ -20,7 +20,7 @@ namespace Ryujinx.Tests.Cpu
                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint msb)
         {
             msb = Math.Max(lsb, msb); // don't test unpredictable for now
-            uint opcode = 0xe7c0001f; // BFC R0, #0, #1
+            uint opcode = 0xe7c0001fu; // BFC R0, #0, #1
             opcode |= ((rd & 0xf) << 12);
             opcode |= ((msb & 31) << 16) | ((lsb & 31) << 7);
 
@@ -41,7 +41,7 @@ namespace Ryujinx.Tests.Cpu
                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint msb)
         {
             msb = Math.Max(lsb, msb); // don't test unpredictable for now
-            uint opcode = 0xe7c00010; // BFI r0, r0, #0, #1
+            uint opcode = 0xe7c00010u; // BFI R0, R0, #0, #1
             opcode |= ((rd & 0xf) << 12);
             opcode |= ((rn & 0xf) << 0);
             opcode |= ((msb & 31) << 16) | ((lsb & 31) << 7);
@@ -66,7 +66,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 widthm1 -= (lsb + widthm1) - 31;
             }
-            uint opcode = 0xe7e00050; // UBFX r0, r0, #0, #1
+            uint opcode = 0xe7e00050u; // UBFX R0, R0, #0, #1
             opcode |= ((rd & 0xf) << 12);
             opcode |= ((rn & 0xf) << 0);
             opcode |= ((widthm1 & 31) << 16) | ((lsb & 31) << 7);
@@ -91,7 +91,7 @@ namespace Ryujinx.Tests.Cpu
             {
                 widthm1 -= (lsb + widthm1) - 31;
             }
-            uint opcode = 0xe7a00050; // SBFX r0, r0, #0, #1
+            uint opcode = 0xe7a00050u; // SBFX R0, R0, #0, #1
             opcode |= ((rd & 0xf) << 12);
             opcode |= ((rn & 0xf) << 0);
             opcode |= ((widthm1 & 31) << 16) | ((lsb & 31) << 7);
