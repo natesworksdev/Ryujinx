@@ -18,6 +18,7 @@
     "docked_mode",
     "enable_vsync",
     "enable_multicore_scheduling",
+    "enable_aot",
     "enable_fs_integrity_checks",
     "fs_global_access_log_mode",
     "controller_type",
@@ -446,6 +447,17 @@
         false
       ]
     },
+    "enable_aot": {
+      "$id": "#/properties/enable_aot",
+      "type": "boolean",
+      "title": "Enable AOT",
+      "description": "Enables or disables persistent translation cache (saved on disk)",
+      "default": true,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "enable_fs_integrity_checks": {
       "$id": "#/properties/enable_fs_integrity_checks",
       "type": "boolean",
@@ -549,7 +561,7 @@
       "$id": "#/properties/enable_keyboard",
       "type": "boolean",
       "title": "(HID) Keyboard Enable",
-      "description": "Enable or disable direct keyboard access (HID) support (Provides games access to your keyboard as a text entry device).",
+      "description": "Enable or disable direct keyboard access (HID) support (Provides games access to your keyboard as a text entry device)",
       "default": true,
       "examples": [
         true,

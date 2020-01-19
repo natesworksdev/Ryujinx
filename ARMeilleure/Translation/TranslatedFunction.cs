@@ -4,12 +4,12 @@ namespace ARMeilleure.Translation
     {
         private GuestFunction _func;
 
-        private bool _rejit;
+        public bool Rejit { get; private set; }
 
         public TranslatedFunction(GuestFunction func, bool rejit)
         {
-            _func  = func;
-            _rejit = rejit;
+            _func = func;
+            Rejit = rejit;
         }
 
         public ulong Execute(State.ExecutionContext context)
@@ -17,14 +17,9 @@ namespace ARMeilleure.Translation
             return _func(context.NativeContextPtr);
         }
 
-        public bool GetRejit()
-        {
-            return _rejit;
-        }
-
         public void ResetRejit()
         {
-            _rejit = false;
+            Rejit = false;
         }
     }
 }

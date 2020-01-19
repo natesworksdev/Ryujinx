@@ -11,9 +11,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public ulong Value { get; private set; }
 
-        public bool DisableCF { get; private set; }
+        public bool DisableCF { get; }
 
-        public int? Index { get; private set; }
+        public int? Index { get; }
 
         public LinkedList<Node> Assignments { get; }
         public LinkedList<Node> Uses        { get; }

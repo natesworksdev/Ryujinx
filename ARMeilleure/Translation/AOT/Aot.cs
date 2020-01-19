@@ -1,5 +1,6 @@
 using ARMeilleure.CodeGen;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
@@ -35,13 +36,16 @@ namespace ARMeilleure.Translation.AOT
 
         private static readonly Timer _timer;
 
+        private static readonly System.Threading.ManualResetEvent _waitEvent;
+
         private static readonly string _basePath;
 
         private static readonly object _locker;
 
         private static bool _disposed;
 
-        public static string WorkPath       { get; private set; }
+        public static string CachePath { get; private set; }
+
         public static string TitleIdText    { get; private set; }
         public static string DisplayVersion { get; private set; }
 
@@ -54,7 +58,8 @@ namespace ARMeilleure.Translation.AOT
 
             _basePath = Path.Combine(appDataPath, BaseDir);
 
-            WorkPath       = String.Empty;
+            CachePath = string.Empty;
+
             TitleIdText    = TitleIdTextDefault;
             DisplayVersion = DisplayVersionDefault;
 
@@ -69,6 +74,8 @@ namespace ARMeilleure.Translation.AOT
 
             _timer = new Timer((double)SaveInterval * 1000d);
             _timer.Elapsed += MergeAndSave;
+
+            _waitEvent = new System.Threading.ManualResetEvent(true);
 
             _locker = new object();
 
@@ -89,12 +96,14 @@ namespace ARMeilleure.Translation.AOT
                 DisplayVersion = displayVersion;
             }
 
-            WorkPath = Path.Combine(_basePath, "games", TitleIdText, "cpu", "cache");
+            string workPath = Path.Combine(_basePath, "games", TitleIdText, "cpu", "cache");
 
-            if (!Directory.Exists(WorkPath))
+            if (!Directory.Exists(workPath))
             {
-                Directory.CreateDirectory(WorkPath);
+                Directory.CreateDirectory(workPath);
             }
+
+            CachePath = Path.Combine(workPath, DisplayVersion);
 
             Enabled      = enabled;
             ReadOnlyMode = readOnlyMode;
@@ -112,13 +121,11 @@ namespace ARMeilleure.Translation.AOT
 
         private static void LoadAndSplit()
         {
-            string cachePath = Path.Combine(WorkPath, DisplayVersion);
-
-            FileInfo cacheInfo = new FileInfo(cachePath);
+            FileInfo cacheInfo = new FileInfo(CachePath);
 
             if (cacheInfo.Exists && cacheInfo.Length != 0L)
             {
-                using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.Open))
+                using (FileStream compressedCacheStream = new FileStream(CachePath, FileMode.Open))
                 {
                     DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true);
 
@@ -206,22 +213,9 @@ namespace ARMeilleure.Translation.AOT
             }
         }
 
-        private static bool CompareHash(byte[] currentHash, byte[] expectedHash)
+        private static bool CompareHash(ReadOnlySpan<byte> currentHash, ReadOnlySpan<byte> expectedHash)
         {
-            if (currentHash.Length != expectedHash.Length)
-            {
-                return false;
-            }
-
-            for (int i = 0; i < currentHash.Length; i++)
-            {
-                if (currentHash[i] != expectedHash[i])
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return currentHash.SequenceEqual(expectedHash);
         }
 
         private static void ReadHeader(
@@ -252,6 +246,8 @@ namespace ARMeilleure.Translation.AOT
 
         private static void MergeAndSave(Object source, ElapsedEventArgs e)
         {
+            _waitEvent.Reset();
+
             using (MemoryStream cacheStream = new MemoryStream())
             {
                 MD5 md5 = MD5.Create();
@@ -284,9 +280,7 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Seek(0L, SeekOrigin.Begin);
                     cacheStream.Write(hash, 0, hashSize);
 
-                    string cachePath = Path.Combine(WorkPath, DisplayVersion);
-
-                    using (FileStream compressedCacheStream = new FileStream(cachePath, FileMode.OpenOrCreate))
+                    using (FileStream compressedCacheStream = new FileStream(CachePath, FileMode.OpenOrCreate))
                     {
                         DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true);
 
@@ -310,6 +304,8 @@ namespace ARMeilleure.Translation.AOT
 
                 md5.Dispose();
             }
+
+            _waitEvent.Set();
         }
 
         private static void WriteHeader(MemoryStream cacheStream)
@@ -399,26 +395,26 @@ namespace ARMeilleure.Translation.AOT
             return relocEntries;
         }
 
-        private static void PatchCode(byte[] code, RelocEntry[] relocEntries, IntPtr pageTable)
+        private static void PatchCode(Span<byte> code, RelocEntry[] relocEntries, IntPtr pageTable)
         {
             foreach (RelocEntry relocEntry in relocEntries)
             {
-                byte[] immBytes = new byte[8];
+                ulong imm;
 
                 if (relocEntry.Index == PageTableIndex)
                 {
-                    immBytes = BitConverter.GetBytes((ulong)pageTable.ToInt64());
+                    imm = (ulong)pageTable.ToInt64();
                 }
                 else if (Delegates.TryGetDelegateFuncPtr(relocEntry.Index, out IntPtr funcPtr)) // By delegate index.
                 {
-                    immBytes = BitConverter.GetBytes((ulong)funcPtr.ToInt64());
+                    imm = (ulong)funcPtr.ToInt64();
                 }
                 else
                 {
                     throw new Exception($"Unexpected reloc entry {relocEntry}.");
                 }
 
-                Buffer.BlockCopy(immBytes, 0, code, relocEntry.Position, 8);
+                BinaryPrimitives.WriteUInt64LittleEndian(code.Slice(relocEntry.Position, 8), imm);
             }
         }
 
@@ -505,6 +501,9 @@ namespace ARMeilleure.Translation.AOT
 
                     _disposed = true;
                 }
+
+                _waitEvent.WaitOne();
+                _waitEvent.Dispose();
             }
         }
     }

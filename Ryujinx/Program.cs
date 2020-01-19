@@ -75,8 +75,9 @@ namespace Ryujinx
 
             if (e.IsTerminating)
             {
-                Aot.Dispose();
                 Logger.Shutdown();
+
+                Aot.Dispose();
             }
         }
     }

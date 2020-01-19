@@ -268,8 +268,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public Assembler(Stream stream, AotInfo aotInfo = null)
         {
-            _stream = stream;
-
+            _stream  = stream;
             _aotInfo = aotInfo;
         }
 
@@ -1291,9 +1290,21 @@ namespace ARMeilleure.CodeGen.X86
 
         public static int GetJccLength(long offset)
         {
-            if (ConstFitsOnS32(offset))
+            if (ConstFitsOnS32(offset < 0 ? offset - 6 : offset))
             {
                 return 6;
+            }
+            else
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+        }
+
+        public static int GetJmpLength(long offset)
+        {
+            if (ConstFitsOnS32(offset < 0 ? offset - 5 : offset))
+            {
+                return 5;
             }
             else
             {

@@ -1,6 +1,5 @@
 using ARMeilleure.Translation.AOT;
 using Gtk;
-using JsonPrettyPrinterPlus;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -11,11 +10,8 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Utf8Json;
-using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -350,8 +346,9 @@ namespace Ryujinx.Ui
             Profile.FinishProfiling();
             _device?.Dispose();
             _audioOut?.Dispose();
-            Aot.Dispose();
             Logger.Shutdown();
+
+            Aot.Dispose();
 
             Environment.Exit(0);
         }

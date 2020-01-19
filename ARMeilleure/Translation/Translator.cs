@@ -141,7 +141,7 @@ namespace ARMeilleure.Translation
                         Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
                     }
 
-                    if (isCallTarget && func.GetRejit() && _backgroundQueue.Count < _maxBackgroundQueueCount)
+                    if (isCallTarget && func.Rejit && _backgroundQueue.Count < _maxBackgroundQueueCount)
                     {
                         func.ResetRejit();
 

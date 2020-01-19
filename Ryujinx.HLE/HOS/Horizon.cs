@@ -118,6 +118,8 @@ namespace Ryujinx.HLE.HOS
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
 
+        public bool EnableAot { get; set; }
+
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
         public int GlobalAccessLogMode { get; set; }
@@ -582,9 +584,9 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries();
 
-            Logger.PrintInfo(LogClass.Loader, "AOT Init...");
+            Logger.PrintInfo(LogClass.Loader, $"AOT Init (enabled: {EnableAot}).");
 
-            Aot.Init(TitleIdText, DisplayVersion, enabled: true, readOnlyMode: false);
+            Aot.Init(TitleIdText, DisplayVersion, EnableAot, readOnlyMode: false);
 
             ProgramLoader.LoadStaticObjects(this, metaData, staticObjects.ToArray());
         }

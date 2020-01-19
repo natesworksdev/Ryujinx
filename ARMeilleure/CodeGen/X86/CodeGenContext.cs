@@ -139,16 +139,20 @@ namespace ARMeilleure.CodeGen.X86
 
         public void JumpTo(BasicBlock target)
         {
-            _jumps.Add(new Jump(target, _stream.Position));
+            Jump jump = new Jump(target, _stream.Position);
 
-            WritePadding(5);
+            _jumps.Add(jump);
+
+            WritePadding(jump.InstSize);
         }
 
         public void JumpTo(X86Condition condition, BasicBlock target)
         {
-            _jumps.Add(new Jump(condition, target, _stream.Position));
+            Jump jump = new Jump(condition, target, _stream.Position);
 
-            WritePadding(6);
+            _jumps.Add(jump);
+
+            WritePadding(jump.InstSize);
         }
 
         public void JumpToNear(X86Condition condition)
@@ -168,7 +172,7 @@ namespace ARMeilleure.CodeGen.X86
 
             long offset = currentPosition - (_jNearPosition + _jNearLength);
 
-            Debug.Assert(_jNearLength == Assembler.GetJccLength(offset < 0 ? offset - 6 : offset), "Relative offset doesn't fit on near jump.");
+            Debug.Assert(_jNearLength == Assembler.GetJccLength(offset), "Relative offset doesn't fit on near jump.");
 
             Assembler.Jcc(_jNearCondition, offset);
 

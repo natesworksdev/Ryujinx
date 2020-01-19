@@ -46,6 +46,10 @@
 
   Enable or Disable Multi-core scheduling of threads
 
+- `enable_aot` *(bool)*
+
+  Enable or Disable persistent translation cache (saved on disk)
+
 - `enable_fs_integrity_checks` *(bool)*
 
   Enable integrity checks on Switch content files
