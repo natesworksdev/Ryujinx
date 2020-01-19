@@ -64,7 +64,7 @@ namespace ARMeilleure.Instructions
                 Operand isOutOfRangeN = context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size));
 
                 //also zero if shift is too negative, but value was positive
-                isOutOfRange0 = context.BitwiseOr(isOutOfRange0, context.BitwiseAnd(isOutOfRangeN, context.ICompareGreaterOrEqual(op, Const(0))));
+                isOutOfRange0 = context.BitwiseOr(isOutOfRange0, context.BitwiseAnd(isOutOfRangeN, context.ICompareGreaterOrEqual(op, Const(op.Type, 0))));
 
                 Operand min = (op.Type == OperandType.I64) ? Const(-1L) : Const(-1);
 

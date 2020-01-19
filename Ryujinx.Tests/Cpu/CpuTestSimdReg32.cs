@@ -202,7 +202,7 @@ namespace Ryujinx.Tests.Cpu
         }
         #endregion
 
-        private const int RndCnt = 20;
+        private const int RndCnt = 5;
 
         private static readonly bool NoZeros = false;
         private static readonly bool NoInfs  = false;
@@ -210,34 +210,37 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
         public void Vadd_f32([Values(0u)]    uint rd,
-                             [Values(1u, 0u)] uint rn,
-                             [Values(2u, 0u)] uint rm,
-                             [ValueSource("_2S_F_")] [Random(RndCnt)] ulong z,
-                             [ValueSource("_2S_F_")] [Random(RndCnt)] ulong a,
-                             [ValueSource("_2S_F_")] [Random(RndCnt)] ulong b,
+                             [Values(0u, 1u)] uint rn,
+                             [Values(0u, 2u)] uint rm,
+                             [ValueSource("_2S_F_")] ulong z0,
+                             [ValueSource("_2S_F_")] ulong z1,
+                             [ValueSource("_2S_F_")] ulong a0,
+                             [ValueSource("_2S_F_")] ulong a1,
+                             [ValueSource("_2S_F_")] ulong b0,
+                             [ValueSource("_2S_F_")] ulong b1,
                              [Values] bool q)
         {
-            uint opcode = 0xf2000d00; // VADD.f32 D0, D0, D0
+            uint opcode = 0xf2000d00u; // VADD.F32 D0, D0, D0
             if (q)
             {
-                rm &= 0x1e;
-                rn &= 0x1e;
-                rd &= 0x1e;
+                rm <<= 2;
+                rn <<= 2;
+                rd <<= 2;
+
+                opcode |= 1 << 6;
             }
 
-            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
-            if (q) opcode |= 1 << 6;
-
-            V128 v0 = MakeVectorE0E1(z, z);
-            V128 v1 = MakeVectorE0E1(a, z);
-            V128 v2 = MakeVectorE0E1(b, z);
+            V128 v0 = MakeVectorE0E1(z0, z1);
+            V128 v1 = MakeVectorE0E1(a0, a1);
+            V128 v2 = MakeVectorE0E1(b0, b1);
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsS);
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise, Description("VCMP.f<size> Vd, Vm")]
@@ -246,17 +249,18 @@ namespace Ryujinx.Tests.Cpu
                          [ValueSource("_1S_F_")] ulong b,
                          [Values] bool e)
         {
-            uint opcode = 0xeeb40840;
+            uint opcode = 0xeeb40840u;
             uint rm = 1;
             uint rd = 2;
 
             if (size == 3)
             {
-                opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+                opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
                 opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
-            } else
+            } 
+            else
             {
-                opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
+                opcode |= ((rm & 0x1e) >> 1)  | ((rm & 0x1) << 5);
                 opcode |= ((rd & 0x1e) << 11) | ((rd & 0x1) << 22);
             }
 
@@ -304,6 +308,8 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
+            opcode |= size << 20;
+
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, z);
             V128 v2 = MakeVectorE0E1(b, z);
@@ -315,12 +321,13 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Combinatorial, Description("VPADD.f32 V0, V0, V0")]
         public void Vpadd_f32([Values(0u)] uint rd,
-                    [Range(0u, 7u)] uint rn,
-                    [Range(0u, 7u)] uint rm)
+                              [Range(0u, 7u)] uint rn,
+                              [Range(0u, 7u)] uint rm)
         {
-            uint opcode = 0xf3000d00;
+            // not currently a slow path test - just a sanity check for pairwise
+            uint opcode = 0xf3000d00u;
 
-            opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
 
@@ -331,7 +338,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsS);
+            CompareAgainstUnicorn();
         }
 #endif
     }

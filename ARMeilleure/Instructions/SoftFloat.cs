@@ -624,8 +624,13 @@ namespace ARMeilleure.Instructions
     {
         public static float FPAdd(float value1, float value2)
         {
+            return FPAddFpscr(value1, value2, false);
+        }
+
+        public static float FPAddFpscr(float value1, float value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
-            FPCR fpcr = context.Fpcr;
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out uint op1, context, fpcr);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out uint op2, context, fpcr);
@@ -1910,8 +1915,13 @@ namespace ARMeilleure.Instructions
     {
         public static double FPAdd(double value1, double value2)
         {
+            return FPAddFpscr(value1, value2, false);
+        }
+
+        public static double FPAddFpscr(double value1, double value2, bool standardFpscr)
+        {
             ExecutionContext context = NativeInterface.GetContext();
-            FPCR fpcr = context.Fpcr;
+            FPCR fpcr = standardFpscr ? context.StandardFpcrValue : context.Fpcr;
 
             value1 = value1.FPUnpack(out FPType type1, out bool sign1, out ulong op1, context, fpcr);
             value2 = value2.FPUnpack(out FPType type2, out bool sign2, out ulong op2, context, fpcr);

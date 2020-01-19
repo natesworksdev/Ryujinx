@@ -40,12 +40,26 @@ namespace ARMeilleure.Instructions
 
         public static void Vadd_S(ArmEmitterContext context)
         {
-            EmitScalarBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
+            if (Optimizations.FastFP)
+            {
+                EmitScalarBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
+            }
+            else
+            {
+                EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPAdd, SoftFloat64.FPAdd, op1, op2));
+            }
         }
 
         public static void Vadd_V(ArmEmitterContext context)
         {
-            EmitVectorBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
+            if (Optimizations.FastFP)
+            {
+                EmitScalarBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
+            } 
+            else
+            {
+                EmitVectorBinaryOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPAddFpscr, SoftFloat64.FPAddFpscr, op1, op2));
+            }
         }
 
         public static void Vadd_I(ArmEmitterContext context)

@@ -226,28 +226,49 @@ namespace ARMeilleure.Instructions
 
             switch (op.ShiftType)
             {
-                case ShiftType.Lsl: shiftResult = EmitLslC(context, m, setCarry, s); break;
-                case ShiftType.Lsr: shiftResult = EmitLsrC(context, m, setCarry, s); break;
-                case ShiftType.Asr: shiftResult = EmitAsrC(context, m, setCarry, s); break;
-                case ShiftType.Ror: shiftResult = EmitRorC(context, m, setCarry, s); break;
+                case ShiftType.Lsl: shiftResult = EmitLslC(context, m, setCarry, s, shiftIsZero); break;
+                case ShiftType.Lsr: shiftResult = EmitLsrC(context, m, setCarry, s, shiftIsZero); break;
+                case ShiftType.Asr: shiftResult = EmitAsrC(context, m, setCarry, s, shiftIsZero); break;
+                case ShiftType.Ror: shiftResult = EmitRorC(context, m, setCarry, s, shiftIsZero); break;
             }
 
             return context.ConditionalSelect(shiftIsZero, zeroResult, shiftResult);
         }
 
-        public static Operand EmitLslC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        public static void EmitIfHelper(ArmEmitterContext context, Operand boolValue, Action action, bool expected = true)
+        {
+            Operand endLabel = Label();
+
+            if (expected)
+            {
+                context.BranchIfFalse(endLabel, boolValue);
+            } 
+            else
+            {
+                context.BranchIfTrue(endLabel, boolValue);
+            }
+
+            action();
+
+            context.MarkLabel(endLabel);
+        }
+
+        public static Operand EmitLslC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift, Operand shiftIsZero)
         {
             Operand shiftLarge = context.ICompareGreaterOrEqual(shift, Const(32));
 
             Operand result = context.ShiftLeft(m, shift);
             if (setCarry)
             {
-                Operand cOut = context.ShiftRightUI(m, context.Subtract(Const(32), shift));
+                EmitIfHelper(context, shiftIsZero, () =>
+                {
+                    Operand cOut = context.ShiftRightUI(m, context.Subtract(Const(32), shift));
 
-                cOut = context.BitwiseAnd(cOut, Const(1));
-                cOut = context.ConditionalSelect(context.ICompareGreater(shift, Const(32)), Const(0), cOut);
+                    cOut = context.BitwiseAnd(cOut, Const(1));
+                    cOut = context.ConditionalSelect(context.ICompareGreater(shift, Const(32)), Const(0), cOut);
 
-                SetFlag(context, PState.CFlag, cOut);
+                    SetFlag(context, PState.CFlag, cOut);
+                }, false);
             }
 
             return context.ConditionalSelect(shiftLarge, Const(0), result);
@@ -283,18 +304,21 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand EmitLsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        public static Operand EmitLsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift, Operand shiftIsZero)
         {
             Operand shiftLarge = context.ICompareGreaterOrEqual(shift, Const(32));
             Operand result = context.ShiftRightUI(m, shift);
             if (setCarry)
             {
-                Operand cOut = context.ShiftRightUI(m, context.Subtract(shift, Const(1)));
+                EmitIfHelper(context, shiftIsZero, () =>
+                {
+                    Operand cOut = context.ShiftRightUI(m, context.Subtract(shift, Const(1)));
 
-                cOut = context.BitwiseAnd(cOut, Const(1));
-                cOut = context.ConditionalSelect(context.ICompareGreater(shift, Const(32)), Const(0), cOut);
+                    cOut = context.BitwiseAnd(cOut, Const(1));
+                    cOut = context.ConditionalSelect(context.ICompareGreater(shift, Const(32)), Const(0), cOut);
 
-                SetFlag(context, PState.CFlag, cOut);
+                    SetFlag(context, PState.CFlag, cOut);
+                }, false);
             }
             return context.ConditionalSelect(shiftLarge, Const(0), result);
         }
@@ -335,7 +359,7 @@ namespace ARMeilleure.Instructions
             return Const(0);
         }
 
-        public static Operand EmitAsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        public static Operand EmitAsrC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift, Operand shiftIsZero)
         {
             Operand l32Result;
             Operand ge32Result;
@@ -346,17 +370,23 @@ namespace ARMeilleure.Instructions
 
             if (setCarry)
             {
-                SetCarryMLsb(context, ge32Result);
+                EmitIfHelper(context, context.BitwiseOr(less32, shiftIsZero), () =>
+                {
+                    SetCarryMLsb(context, ge32Result);
+                }, false);
             }
 
             l32Result = context.ShiftRightSI(m, shift);
             if (setCarry)
             {
-                Operand cOut = context.ShiftRightUI(m, context.Subtract(shift, Const(1)));
+                EmitIfHelper(context, context.BitwiseAnd(less32, context.BitwiseNot(shiftIsZero)), () =>
+                {
+                    Operand cOut = context.ShiftRightUI(m, context.Subtract(shift, Const(1)));
 
-                cOut = context.BitwiseAnd(cOut, Const(1));
+                    cOut = context.BitwiseAnd(cOut, Const(1));
 
-                SetFlag(context, PState.CFlag, cOut);
+                    SetFlag(context, PState.CFlag, cOut);
+                });
             }
 
             return context.ConditionalSelect(less32, l32Result, ge32Result);
@@ -386,14 +416,17 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand EmitRorC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift)
+        public static Operand EmitRorC(ArmEmitterContext context, Operand m, bool setCarry, Operand shift, Operand shiftIsZero)
         {
             shift = context.BitwiseAnd(shift, Const(0x1f));
             m = context.RotateRight(m, shift);
 
             if (setCarry)
             {
-                SetCarryMMsb(context, m);
+                EmitIfHelper(context, shiftIsZero, () =>
+                {
+                    SetCarryMMsb(context, m);
+                }, false);
             }
             return m;
         }
