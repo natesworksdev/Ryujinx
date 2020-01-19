@@ -547,6 +547,7 @@ namespace Ryujinx.Ui
             if (treeIter.UserData == IntPtr.Zero) return;
 
             GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, treeIter, _virtualFileSystem);
+
             contextMenu.ShowAll();
             contextMenu.PopupAtPointer(null);
         }
