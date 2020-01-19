@@ -18,7 +18,7 @@ namespace ARMeilleure.Decoders
 
             var single = Size != 0b11;
 
-            RegisterSize = single ? RegisterSize.Simd32 : RegisterSize.Simd64;
+            RegisterSize = single ? RegisterSize.Int32 : RegisterSize.Int64;
 
             if (single)
             {

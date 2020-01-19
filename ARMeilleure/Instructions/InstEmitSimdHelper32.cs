@@ -22,8 +22,9 @@ namespace ARMeilleure.Instructions
                 case RegisterSize.Simd128:
                     return (index >> 1, 0);
                 case RegisterSize.Simd64:
+                case RegisterSize.Int64:
                     return (index >> 1, index & 1);
-                case RegisterSize.Simd32:
+                case RegisterSize.Int32:
                     return (index >> 2, index & 3);
             }
 

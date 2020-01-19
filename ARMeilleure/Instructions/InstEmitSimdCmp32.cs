@@ -207,7 +207,6 @@ namespace ARMeilleure.Instructions
                 int fSize = op.Size & 1;
                 OperandType type = fSize != 0 ? OperandType.FP64 : OperandType.FP32;
 
-                
                 Operand ne = ExtractScalar(context, type, op.Vd);
                 Operand me;
 

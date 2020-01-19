@@ -33,7 +33,6 @@ namespace ARMeilleure.Decoders
             {
                 case RegisterSize.Int32:   return 32;
                 case RegisterSize.Int64:   return 64;
-                case RegisterSize.Simd32:  return 32;
                 case RegisterSize.Simd64:  return 64;
                 case RegisterSize.Simd128: return 128;
             }

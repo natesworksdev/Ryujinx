@@ -30,10 +30,9 @@ namespace ARMeilleure.Decoders
             imm = ((uint)opCode >> 0) & 0xf;
             imm |= ((uint)opCode >> 12) & 0xf0;
 
-            //OpCodeSimdHelper.VFPExpandImm(imm, 8 << (Size + 1));
             Immediate = (Size == 3) ? (long)DecoderHelper.Imm8ToFP64Table[(int)imm] : DecoderHelper.Imm8ToFP32Table[(int)imm];
 
-            RegisterSize = (!single) ? RegisterSize.Simd64 : RegisterSize.Simd32;
+            RegisterSize = (!single) ? RegisterSize.Int64 : RegisterSize.Int32;
             Elems = 1;
         }
     }

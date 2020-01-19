@@ -32,8 +32,6 @@ namespace ARMeilleure.Decoders
                     return index >> 1;
                 case RegisterSize.Simd64:
                     return index >> 1;
-                case RegisterSize.Simd32:
-                    return index >> 2;
             }
 
             throw new InvalidOperationException();
@@ -47,8 +45,6 @@ namespace ARMeilleure.Decoders
                     return 0;
                 case RegisterSize.Simd64:
                     return index & 1;
-                case RegisterSize.Simd32:
-                    return index & 3;
             }
 
             throw new InvalidOperationException();

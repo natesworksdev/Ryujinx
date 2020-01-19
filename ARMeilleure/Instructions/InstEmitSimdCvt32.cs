@@ -93,8 +93,6 @@ namespace ARMeilleure.Instructions
                 Operand res = context.ConvertToFP(OperandType.FP32, fp);
 
                 InsertScalar(context, vd, res);
-
-                //Operand res = context.AddIntrinsic(Intrinsic.X86Cvtsd2ss, context.VectorZero(), n);
             }
             else
             {
@@ -105,8 +103,6 @@ namespace ARMeilleure.Instructions
                 Operand res = context.ConvertToFP(OperandType.FP64, fp);
 
                 InsertScalar(context, vd, res);
-
-                //Operand res = context.AddIntrinsic(Intrinsic.X86Cvtss2sd, context.VectorZero(), n);
             }
         }
 
@@ -116,7 +112,7 @@ namespace ARMeilleure.Instructions
 
             bool toInteger = (op.Opc2 & 0b100) != 0;
 
-            OperandType floatSize = op.RegisterSize == RegisterSize.Simd64 ? OperandType.FP64 : OperandType.FP32;
+            OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
             if (toInteger)
             {
@@ -232,7 +228,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;
 
-            OperandType floatSize = op.RegisterSize == RegisterSize.Simd64 ? OperandType.FP64 : OperandType.FP32;
+            OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
             bool unsigned = (op.Opc & 1) == 0;
 
@@ -288,7 +284,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;
 
-            OperandType floatSize = op.RegisterSize == RegisterSize.Simd64 ? OperandType.FP64 : OperandType.FP32;
+            OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
             Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
