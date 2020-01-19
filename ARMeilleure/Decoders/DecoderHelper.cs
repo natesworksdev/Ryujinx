@@ -88,7 +88,7 @@ namespace ARMeilleure.Decoders
             int immS = (opCode >> 10) & 0x3f;
             int immR = (opCode >> 16) & 0x3f;
 
-            int n = (opCode >> 22) & 1;
+            int n  = (opCode >> 22) & 1;
             int sf = (opCode >> 31) & 1;
 
             int length = BitUtils.HighestBitSet((~immS & 0x3f) | (n << 6));
