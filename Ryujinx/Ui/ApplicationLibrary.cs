@@ -34,8 +34,8 @@ namespace Ryujinx.Ui
         private static readonly byte[] _nroIcon = GetResourceBytes("Ryujinx.Ui.assets.NROIcon.png");
         private static readonly byte[] _nsoIcon = GetResourceBytes("Ryujinx.Ui.assets.NSOIcon.png");
 
-        private static Keyset        _keySet;
-        private static Language      _desiredTitleLanguage;
+        private static Keyset   _keySet;
+        private static Language _desiredTitleLanguage;
 
         public static void LoadApplications(List<string> appDirs, VirtualFileSystem virtualFileSystem, Language desiredTitleLanguage)
         {

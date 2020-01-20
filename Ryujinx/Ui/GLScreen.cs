@@ -114,7 +114,6 @@ namespace Ryujinx.Ui
             }
 
             _device.DisposeGpu();
-            _renderer.Dispose();
         }
 
         public void MainLoop()

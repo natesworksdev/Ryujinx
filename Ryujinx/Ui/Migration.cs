@@ -63,10 +63,6 @@ namespace Ryujinx.Ui
 
                 dialogSuccess.Run();
 
-                // Reload key set after migration to be sure to catch the keys in the system directory.
-                // TODO: migrate this
-                // device.System.LoadKeySet();
-
                 return true;
             }
             catch (HorizonResultException ex)

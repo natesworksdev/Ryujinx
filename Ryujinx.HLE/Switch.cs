@@ -157,7 +157,6 @@ namespace Ryujinx.HLE
                 System.Dispose();
                 VsyncEvent.Dispose();
                 AudioOut.Dispose();
-                Gpu.Renderer.Dispose();
             }
         }
     }
