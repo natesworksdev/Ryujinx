@@ -41,7 +41,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vadd_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarBinaryOpF32(context, Intrinsic.X86Addss, Intrinsic.X86Addsd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitScalarBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
             }
@@ -53,7 +57,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vadd_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitVectorBinaryOpF32(context, Intrinsic.X86Addps, Intrinsic.X86Addpd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
             } 
@@ -157,7 +165,14 @@ namespace ARMeilleure.Instructions
 
         public static void Vmov_S(ArmEmitterContext context)
         {
-            EmitScalarUnaryOpF32(context, (op1) => op1);
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarUnaryOpF32(context, 0, 0);
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) => op1);
+            }
         }
 
         public static void Vmovn(ArmEmitterContext context)
@@ -167,6 +182,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vneg_S(ArmEmitterContext context)
         {
+            //TODO: intrinsic that XORs the sign bit
             EmitScalarUnaryOpF32(context, (op1) => context.Negate(op1));
         }
 
@@ -225,7 +241,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vdiv_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarBinaryOpF32(context, Intrinsic.X86Divss, Intrinsic.X86Divsd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitScalarBinaryOpF32(context, (op1, op2) => context.Divide(op1, op2));
             }
@@ -260,10 +280,18 @@ namespace ARMeilleure.Instructions
 
         public static void Vmax_V(ArmEmitterContext context)
         {
-            EmitVectorBinaryOpF32(context, (op1, op2) =>
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMaxFpscr, SoftFloat64.FPMaxFpscr, op1, op2);
-            });
+                EmitVectorBinaryOpF32(context, Intrinsic.X86Maxps, Intrinsic.X86Maxpd);
+            } 
+            else
+            {
+                EmitVectorBinaryOpF32(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMaxFpscr, SoftFloat64.FPMaxFpscr, op1, op2);
+                });
+            }
+
         }
 
         public static void Vmax_I(ArmEmitterContext context)
@@ -281,10 +309,17 @@ namespace ARMeilleure.Instructions
 
         public static void Vmin_V(ArmEmitterContext context)
         {
-            EmitVectorBinaryOpF32(context, (op1, op2) =>
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMinFpscr, SoftFloat64.FPMinFpscr, op1, op2);
-            });
+                EmitVectorBinaryOpF32(context, Intrinsic.X86Minps, Intrinsic.X86Minpd);
+            } 
+            else
+            {
+                EmitVectorBinaryOpF32(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMinFpscr, SoftFloat64.FPMinFpscr, op1, op2);
+                });
+            }
         }
 
         public static void Vmin_I(ArmEmitterContext context)
@@ -302,7 +337,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vmul_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarBinaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitScalarBinaryOpF32(context, (op1, op2) => context.Multiply(op1, op2));
             }
@@ -317,7 +356,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vmul_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitVectorBinaryOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) => context.Multiply(op1, op2));
             }
@@ -359,7 +402,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vmla_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarTernaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd, Intrinsic.X86Addss, Intrinsic.X86Addsd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
                 {
@@ -377,7 +424,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vmla_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitVectorTernaryOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd, Intrinsic.X86Addps, Intrinsic.X86Addpd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) => context.Add(op1, context.Multiply(op2, op3)));
             }
@@ -418,7 +469,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vmls_S(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarTernaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd, Intrinsic.X86Subss, Intrinsic.X86Subsd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
                 {
@@ -436,7 +491,11 @@ namespace ARMeilleure.Instructions
 
         public static void Vmls_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitVectorTernaryOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd, Intrinsic.X86Subps, Intrinsic.X86Subpd);
+            }
+            else if (Optimizations.FastFP)
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)));
             }
@@ -537,10 +596,19 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                EmitVectorUnaryOpF32(context, (op1) =>
+                int sizeF = op.Size & 1;
+
+                if (Optimizations.FastFP && Optimizations.UseSse && sizeF == 0)
                 {
-                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRecipEstimateFpscr, SoftFloat64.FPRecipEstimateFpscr, op1);
-                });
+                    EmitVectorUnaryOpF32(context, Intrinsic.X86Rcpps, 0);
+                } 
+                else 
+                {
+                    EmitVectorUnaryOpF32(context, (op1) =>
+                    {
+                        return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRecipEstimateFpscr, SoftFloat64.FPRecipEstimateFpscr, op1);
+                    });
+                }
             } 
             else
             {
@@ -562,10 +630,19 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                EmitVectorUnaryOpF32(context, (op1) =>
+                int sizeF = op.Size & 1;
+
+                if (Optimizations.FastFP && Optimizations.UseSse && sizeF == 0)
                 {
-                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRSqrtEstimateFpscr, SoftFloat64.FPRSqrtEstimateFpscr, op1);
-                });
+                    EmitVectorUnaryOpF32(context, Intrinsic.X86Rsqrtps, 0);
+                }
+                else
+                {
+                    EmitVectorUnaryOpF32(context, (op1) =>
+                    {
+                        return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRSqrtEstimateFpscr, SoftFloat64.FPRSqrtEstimateFpscr, op1);
+                    });
+                }
             } 
             else
             {
@@ -610,20 +687,41 @@ namespace ARMeilleure.Instructions
 
         public static void Vsqrt_S(ArmEmitterContext context)
         {
-            EmitScalarUnaryOpF32(context, (op1) =>
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                return EmitSoftFloatCall(context, SoftFloat32.FPSqrt, SoftFloat64.FPSqrt, op1);
-            });
+                EmitScalarUnaryOpF32(context, Intrinsic.X86Sqrtss, Intrinsic.X86Sqrtsd);
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    return EmitSoftFloatCall(context, SoftFloat32.FPSqrt, SoftFloat64.FPSqrt, op1);
+                });
+            }
         }
 
         public static void Vsub_S(ArmEmitterContext context)
         {
-            EmitScalarBinaryOpF32(context, (op1, op2) => context.Subtract(op1, op2));
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarBinaryOpF32(context, Intrinsic.X86Subss, Intrinsic.X86Subsd);
+            }
+            else
+            {
+                EmitScalarBinaryOpF32(context, (op1, op2) => context.Subtract(op1, op2));
+            }
         }
 
         public static void Vsub_V(ArmEmitterContext context)
         {
-            EmitVectorBinaryOpF32(context, (op1, op2) => context.Subtract(op1, op2));
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitVectorBinaryOpF32(context, Intrinsic.X86Subps, Intrinsic.X86Subpd);
+            } 
+            else
+            {
+                EmitVectorBinaryOpF32(context, (op1, op2) => context.Subtract(op1, op2));
+            }
         }
 
         public static void Vsub_I(ArmEmitterContext context)
