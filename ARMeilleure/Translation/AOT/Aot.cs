@@ -96,7 +96,7 @@ namespace ARMeilleure.Translation.AOT
                 DisplayVersion = displayVersion;
             }
 
-            string workPath = Path.Combine(_basePath, "games", TitleIdText, "cpu", "cache");
+            string workPath = Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
 
             if (!Directory.Exists(workPath))
             {
