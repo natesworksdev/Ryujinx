@@ -3,7 +3,6 @@ using LibHac;
 using LibHac.Account;
 using LibHac.Common;
 using LibHac.Fs;
-using LibHac.FsService;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
@@ -106,7 +105,7 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent VsyncEvent { get; private set; }
 
-        public Keyset KeySet { get; private set; }
+        public Keyset KeySet => Device.FileSystem.KeySet;
 
         private bool _hasStarted;
 
@@ -126,12 +125,7 @@ namespace Ryujinx.HLE.HOS
 
         internal long HidBaseAddress { get; private set; }
 
-        internal FileSystemServer FsServer { get; private set; }
-        public FileSystemClient FsClient { get; private set; }
-
-        internal EmulatedGameCard GameCard { get; private set; }
-
-        public Horizon(Switch device)
+        public Horizon(Switch device, ContentManager contentManager)
         {
             ControlData = new BlitStruct<ApplicationControlProperty>(1);
 
@@ -215,9 +209,7 @@ namespace Ryujinx.HLE.HOS
 
             VsyncEvent = new KEvent(this);
 
-            LoadKeySet();
-
-            ContentManager = new ContentManager(device);
+            ContentManager = contentManager;
 
             // TODO: use set:sys (and get external clock source id from settings)
             // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
@@ -243,22 +235,6 @@ namespace Ryujinx.HLE.HOS
             // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
 
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
-
-            LocalFileSystem serverBaseFs = new LocalFileSystem(device.FileSystem.GetBasePath());
-
-            DefaultFsServerObjects fsServerObjects = DefaultFsServerObjects.GetDefaultEmulatedCreators(serverBaseFs, KeySet);
-
-            GameCard = fsServerObjects.GameCard;
-
-            FileSystemServerConfig fsServerConfig = new FileSystemServerConfig
-            {
-                FsCreators     = fsServerObjects.FsCreators,
-                DeviceOperator = fsServerObjects.DeviceOperator,
-                ExternalKeySet = KeySet.ExternalKeySet
-            };
-
-            FsServer = new FileSystemServer(fsServerConfig);
-            FsClient = FsServer.CreateFileSystemClient();
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -288,7 +264,7 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            ContentManager.LoadEntries();
+            ContentManager.LoadEntries(Device);
 
             LoadNca(mainNca, patchNca, controlNca);
         }
@@ -582,7 +558,7 @@ namespace Ryujinx.HLE.HOS
             LoadNso("subsdk");
             LoadNso("sdk");
 
-            ContentManager.LoadEntries();
+            ContentManager.LoadEntries(Device);
 
             Logger.PrintInfo(LogClass.Loader, $"Initializing Persistent Translation Cache (enabled: {EnablePtc}).");
 
@@ -679,7 +655,7 @@ namespace Ryujinx.HLE.HOS
                 staticObject = new NxStaticObject(input);
             }
 
-            ContentManager.LoadEntries();
+            ContentManager.LoadEntries(Device);
 
             TitleName = metaData.TitleName;
             TitleId   = metaData.Aci0.TitleId;
@@ -720,7 +696,7 @@ namespace Ryujinx.HLE.HOS
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            Result rc = EnsureApplicationSaveData(FsClient, out _, titleId, ref ControlData.Value, ref user);
+            Result rc = EnsureApplicationSaveData(Device.FileSystem.FsClient, out _, titleId, ref ControlData.Value, ref user);
 
             if (rc.IsFailure())
             {
@@ -728,57 +704,6 @@ namespace Ryujinx.HLE.HOS
             }
 
             return rc;
-        }
-
-        public void LoadKeySet()
-        {
-            string keyFile        = null;
-            string titleKeyFile   = null;
-            string consoleKeyFile = null;
-
-            string home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-
-            LoadSetAtPath(Path.Combine(home, ".switch"));
-            LoadSetAtPath(Device.FileSystem.GetSystemPath());
-
-            KeySet = ExternalKeyReader.ReadKeyFile(keyFile, titleKeyFile, consoleKeyFile);
-
-            void LoadSetAtPath(string basePath)
-            {
-                string localKeyFile        = Path.Combine(basePath,    "prod.keys");
-                string localTitleKeyFile   = Path.Combine(basePath,   "title.keys");
-                string localConsoleKeyFile = Path.Combine(basePath, "console.keys");
-
-                if (File.Exists(localKeyFile))
-                {
-                    keyFile = localKeyFile;
-                }
-
-                if (File.Exists(localTitleKeyFile))
-                {
-                    titleKeyFile = localTitleKeyFile;
-                }
-
-                if (File.Exists(localConsoleKeyFile))
-                {
-                    consoleKeyFile = localConsoleKeyFile;
-                }
-            }
-        }
-
-        public SystemVersion VerifyFirmwarePackage(string firmwarePackage)
-        {
-            return ContentManager.VerifyFirmwarePackage(firmwarePackage);
-        }
-
-        public SystemVersion GetCurrentFirmwareVersion()
-        {
-            return ContentManager.GetCurrentFirmwareVersion();
-        }
-
-        public void InstallFirmware(string firmwarePackage)
-        {
-            ContentManager.InstallFirmware(firmwarePackage);
         }
 
         public void SignalVsync()
