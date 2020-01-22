@@ -37,6 +37,7 @@
     <None Remove="Ui\assets\NROIcon.png" />
     <None Remove="Ui\assets\NSOIcon.png" />
     <None Remove="Ui\assets\NSPIcon.png" />
+    <None Remove="Ui\assets\Update.png" />
     <None Remove="Ui\assets\XCIIcon.png" />
     <None Remove="Ui\assets\DiscordLogo.png" />
     <None Remove="Ui\assets\GitHubLogo.png" />
@@ -58,6 +59,7 @@
     <EmbeddedResource Include="Ui\assets\NROIcon.png" />
     <EmbeddedResource Include="Ui\assets\NSOIcon.png" />
     <EmbeddedResource Include="Ui\assets\NSPIcon.png" />
+    <EmbeddedResource Include="Ui\assets\Update.png" />
     <EmbeddedResource Include="Ui\assets\XCIIcon.png" />
     <EmbeddedResource Include="Ui\assets\DiscordLogo.png" />
     <EmbeddedResource Include="Ui\assets\GitHubLogo.png" />
