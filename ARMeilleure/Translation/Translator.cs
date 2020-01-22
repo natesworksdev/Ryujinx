@@ -14,7 +14,7 @@ using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
 {
-    using AOT;
+    using PTC;
 
     public class Translator
     {
@@ -43,9 +43,9 @@ namespace ARMeilleure.Translation
             _funcs       = new Dictionary<ulong, TranslatedFunction>();
             _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
-            if (Aot.Enabled)
+            if (Ptc.Enabled)
             {
-                Aot.FullTranslate(_funcsHighCq, memory.PageTable);
+                Ptc.FullTranslate(_funcsHighCq, memory.PageTable);
 
                 _maxBackgroundQueueCount *= 10;
             }
@@ -192,18 +192,17 @@ namespace ARMeilleure.Translation
 
             if (highCq)
             {
-                if (Aot.Enabled)
+                if (Ptc.Enabled)
                 {
-                    AotInfo aotInfo = new AotInfo();
-
-                    func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq, aotInfo);
-
-                    if ((int)aotInfo.CodeStream.Length >= Aot.MinCodeLengthToSave)
+                    using (PtcInfo ptcInfo = new PtcInfo())
                     {
-                        Aot.WriteInfoCodeReloc((long)address, aotInfo);
-                    }
+                        func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq, ptcInfo);
 
-                    aotInfo.Dispose();
+                        if ((int)ptcInfo.CodeStream.Length >= Ptc.MinCodeLengthToSave)
+                        {
+                            Ptc.WriteInfoCodeReloc((long)address, ptcInfo);
+                        }
+                    }
                 }
                 else
                 {

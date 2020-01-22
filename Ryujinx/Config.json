@@ -15,7 +15,7 @@
     "enable_discord_integration": true,
     "enable_vsync": true,
     "enable_multicore_scheduling": true,
-    "enable_aot": true,
+    "enable_ptc": true,
     "enable_fs_integrity_checks": true,
     "fs_global_access_log_mode": 0,
     "ignore_missing_services": false,

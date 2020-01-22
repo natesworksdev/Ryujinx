@@ -18,7 +18,7 @@
     "docked_mode",
     "enable_vsync",
     "enable_multicore_scheduling",
-    "enable_aot",
+    "enable_ptc",
     "enable_fs_integrity_checks",
     "fs_global_access_log_mode",
     "controller_type",
@@ -447,11 +447,11 @@
         false
       ]
     },
-    "enable_aot": {
-      "$id": "#/properties/enable_aot",
+    "enable_ptc": {
+      "$id": "#/properties/enable_ptc",
       "type": "boolean",
-      "title": "Enable AOT",
-      "description": "Enables or disables persistent translation cache (saved on disk)",
+      "title": "Enable Persistent Translation Cache",
+      "description": "Enables or disables translation cache persistency",
       "default": true,
       "examples": [
         true,

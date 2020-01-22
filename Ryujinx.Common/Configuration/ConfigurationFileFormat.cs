@@ -94,9 +94,9 @@ namespace Ryujinx.Configuration
         public bool EnableMulticoreScheduling { get; set; }
 
         /// <summary>
-        /// Enables or disables persistent translation cache (saved on disk)
+        /// Enables or disables translation cache persistency
         /// </summary>
-        public bool EnableAot { get; set; }
+        public bool EnablePtc { get; set; }
 
         /// <summary>
         /// Enables integrity checks on Game content files

@@ -1,4 +1,4 @@
-using ARMeilleure.Translation.AOT;
+using ARMeilleure.Translation.PTC;
 using LibHac;
 using LibHac.Account;
 using LibHac.Common;
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
 
-        public bool EnableAot { get; set; }
+        public bool EnablePtc { get; set; }
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
@@ -584,9 +584,9 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries();
 
-            Logger.PrintInfo(LogClass.Loader, $"AOT Init (enabled: {EnableAot}).");
+            Logger.PrintInfo(LogClass.Loader, $"Initializing Persistent Translation Cache (enabled: {EnablePtc}).");
 
-            Aot.Init(TitleIdText, DisplayVersion, EnableAot, readOnlyMode: false);
+            Ptc.Init(TitleIdText, DisplayVersion, EnablePtc, readOnlyMode: false);
 
             ProgramLoader.LoadStaticObjects(this, metaData, staticObjects.ToArray());
         }

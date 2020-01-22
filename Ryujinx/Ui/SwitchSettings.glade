@@ -1320,12 +1320,12 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="_aotToggle">
-                                    <property name="label" translatable="yes">Enable AOT</property>
+                                  <object class="GtkCheckButton" id="_ptcToggle">
+                                    <property name="label" translatable="yes">Enable Persistent Translation Cache</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enables or disables persistent translation cache (saved on disk)</property>
+                                    <property name="tooltip_text" translatable="yes">Enables or disables translation cache persistency</property>
                                     <property name="halign">start</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>

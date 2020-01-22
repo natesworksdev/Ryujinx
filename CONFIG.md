@@ -44,11 +44,11 @@
 
 - `enable_multicore_scheduling` *(bool)*
 
-  Enable or Disable Multi-core scheduling of threads
+  Enable or disable multi-core scheduling of threads
 
-- `enable_aot` *(bool)*
+- `enable_ptc` *(bool)*
 
-  Enable or Disable persistent translation cache (saved on disk)
+  Enable or disable translation cache persistency
 
 - `enable_fs_integrity_checks` *(bool)*
 

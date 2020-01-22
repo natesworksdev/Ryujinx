@@ -1,7 +1,7 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Translation.AOT;
+using ARMeilleure.Translation.PTC;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -12,7 +12,7 @@ namespace ARMeilleure.CodeGen.X86
     {
         private Stream _stream;
 
-        private AotInfo _aotInfo;
+        private PtcInfo _ptcInfo;
 
         //public int StreamOffset => (int)_stream.Length;
 
@@ -73,13 +73,13 @@ namespace ARMeilleure.CodeGen.X86
         private long _jNearPosition;
         private int  _jNearLength;
 
-        public CodeGenContext(Stream stream, AllocationResult allocResult, int maxCallArgs, int blocksCount, AotInfo aotInfo = null)
+        public CodeGenContext(Stream stream, AllocationResult allocResult, int maxCallArgs, int blocksCount, PtcInfo ptcInfo = null)
         {
             _stream = stream;
 
             AllocResult = allocResult;
 
-            Assembler = new Assembler(stream, aotInfo);
+            Assembler = new Assembler(stream, ptcInfo);
 
             CallArgsRegionSize = GetCallArgsRegionSize(allocResult, maxCallArgs, out int xmmSaveRegionSize);
             XmmSaveRegionSize  = xmmSaveRegionSize;
@@ -88,7 +88,7 @@ namespace ARMeilleure.CodeGen.X86
 
             _jumps = new List<Jump>();
 
-            _aotInfo = aotInfo;
+            _ptcInfo = ptcInfo;
         }
 
         private int GetCallArgsRegionSize(AllocationResult allocResult, int maxCallArgs, out int xmmSaveRegionSize)
@@ -254,11 +254,11 @@ namespace ARMeilleure.CodeGen.X86
 
                 codeStream.Write(buffer);
 
-                if (_aotInfo != null)
+                if (_ptcInfo != null)
                 {
-                    if ((int)codeStream.Length >= Aot.MinCodeLengthToSave)
+                    if ((int)codeStream.Length >= Ptc.MinCodeLengthToSave)
                     {
-                        _aotInfo.WriteCode(codeStream);
+                        _ptcInfo.WriteCode(codeStream);
                     }
                 }
 

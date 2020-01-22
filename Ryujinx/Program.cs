@@ -1,4 +1,4 @@
-using ARMeilleure.Translation.AOT;
+using ARMeilleure.Translation.PTC;
 using Gtk;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -77,7 +77,7 @@ namespace Ryujinx
             {
                 Logger.Shutdown();
 
-                Aot.Dispose();
+                Ptc.Dispose();
             }
         }
     }

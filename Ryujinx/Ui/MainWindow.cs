@@ -1,4 +1,4 @@
-using ARMeilleure.Translation.AOT;
+using ARMeilleure.Translation.PTC;
 using Gtk;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
@@ -348,7 +348,7 @@ namespace Ryujinx.Ui
             _audioOut?.Dispose();
             Logger.Shutdown();
 
-            Aot.Dispose();
+            Ptc.Dispose();
 
             Environment.Exit(0);
         }

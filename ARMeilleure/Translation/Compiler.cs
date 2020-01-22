@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
 {
-    using AOT;
+    using PTC;
 
     static class Compiler
     {
@@ -16,7 +16,7 @@ namespace ARMeilleure.Translation
             OperandType[]    funcArgTypes,
             OperandType      funcReturnType,
             CompilerOptions  options,
-            AotInfo          aotInfo = null)
+            PtcInfo          ptcInfo = null)
         {
             Logger.StartPass(PassName.Dominance);
 
@@ -40,7 +40,7 @@ namespace ARMeilleure.Translation
 
             CompilerContext cctx = new CompilerContext(cfg, funcArgTypes, funcReturnType, options);
 
-            CompiledFunction func = CodeGenerator.Generate(cctx, aotInfo);
+            CompiledFunction func = CodeGenerator.Generate(cctx, ptcInfo);
 
             IntPtr codePtr = JitCache.Map(func);
 

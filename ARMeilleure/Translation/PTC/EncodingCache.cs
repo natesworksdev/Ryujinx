@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace ARMeilleure.Translation.AOT
+namespace ARMeilleure.Translation.PTC
 {
     internal static class EncodingCache
     {

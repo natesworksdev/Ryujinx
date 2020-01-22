@@ -78,7 +78,7 @@ namespace Ryujinx.HLE
                 System.EnableMultiCoreScheduling();
             }
 
-            System.EnableAot = ConfigurationState.Instance.System.EnableAot;
+            System.EnablePtc = ConfigurationState.Instance.System.EnablePtc;
 
             System.FsIntegrityCheckLevel = ConfigurationState.Instance.System.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid

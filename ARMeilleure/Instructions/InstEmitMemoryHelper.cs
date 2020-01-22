@@ -2,7 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.Translation;
-using ARMeilleure.Translation.AOT;
+using ARMeilleure.Translation.PTC;
 using System;
 using System.Reflection;
 
@@ -290,8 +290,8 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblFallbackPath)
         {
-            Operand pte = Aot.Enabled
-                ? Const(context.Memory.PageTable.ToInt64(), true, Aot.PageTableIndex)
+            Operand pte = Ptc.Enabled
+                ? Const(context.Memory.PageTable.ToInt64(), true, Ptc.PageTableIndex)
                 : Const(context.Memory.PageTable.ToInt64());
 
             int bit = MemoryManager.PageBits;

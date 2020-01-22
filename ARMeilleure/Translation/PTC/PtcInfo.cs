@@ -1,8 +1,9 @@
+using System;
 using System.IO;
 
-namespace ARMeilleure.Translation.AOT
+namespace ARMeilleure.Translation.PTC
 {
-    sealed class AotInfo
+    sealed class PtcInfo : IDisposable
     {
         private readonly BinaryWriter _relocWriter;
 
@@ -11,7 +12,7 @@ namespace ARMeilleure.Translation.AOT
 
         public int RelocEntriesCount { get; private set; }
 
-        public AotInfo()
+        public PtcInfo()
         {
             CodeStream  = new MemoryStream();
             RelocStream = new MemoryStream();
@@ -28,8 +29,8 @@ namespace ARMeilleure.Translation.AOT
 
         public void WriteRelocEntry(RelocEntry relocEntry)
         {
-            _relocWriter.Write(relocEntry.Position);
-            _relocWriter.Write(relocEntry.Index);
+            _relocWriter.Write((int)relocEntry.Position);
+            _relocWriter.Write((int)relocEntry.Index);
 
             RelocEntriesCount++;
         }

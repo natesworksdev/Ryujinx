@@ -8,7 +8,7 @@ using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
 {
-    using AOT;
+    using PTC;
 
     class EmitterContext
     {
@@ -86,7 +86,7 @@ namespace ARMeilleure.Translation
 
             OperandType retType = GetOperandType(info.ReturnType);
 
-            if (Aot.Enabled)
+            if (Ptc.Enabled)
             {
                 int index = Delegates.GetDelegateIndex(info);
 

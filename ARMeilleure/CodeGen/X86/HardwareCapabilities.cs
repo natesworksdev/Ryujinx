@@ -9,6 +9,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private static ulong _featureInfo;
 
+        internal static ulong FeatureInfo => _featureInfo;
+
         public static bool SupportsSse3      => (_featureInfo & (1UL << 0))  != 0;
         public static bool SupportsPclmulqdq => (_featureInfo & (1UL << 1))  != 0;
         public static bool SupportsSsse3     => (_featureInfo & (1UL << 9))  != 0;

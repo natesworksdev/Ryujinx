@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen;
+using ARMeilleure.CodeGen.X86;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -9,15 +10,17 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Timers;
 
-namespace ARMeilleure.Translation.AOT
+namespace ARMeilleure.Translation.PTC
 {
-    public static class Aot
+    public static class Ptc
     {
-        private const int InternalVersion = 0;
+        private const string HeaderMagic = "PTChd";
+
+        private const int InternalVersion = 0; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string BaseDir = "Ryujinx";
 
-        private const string TitleIdTextDefault    = "0000000000000000";
+        private const string TitleIdTextDefault = "0000000000000000";
         private const string DisplayVersionDefault = "0";
 
         private const int SaveInterval = 30; // Seconds.
@@ -46,13 +49,13 @@ namespace ARMeilleure.Translation.AOT
 
         public static string CachePath { get; private set; }
 
-        public static string TitleIdText    { get; private set; }
+        public static string TitleIdText { get; private set; }
         public static string DisplayVersion { get; private set; }
 
-        public static bool Enabled      { get; private set; }
+        public static bool Enabled { get; private set; }
         public static bool ReadOnlyMode { get; private set; }
 
-        static Aot()
+        static Ptc()
         {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 
@@ -60,14 +63,14 @@ namespace ARMeilleure.Translation.AOT
 
             CachePath = string.Empty;
 
-            TitleIdText    = TitleIdTextDefault;
+            TitleIdText = TitleIdTextDefault;
             DisplayVersion = DisplayVersionDefault;
 
-            Enabled      = false;
+            Enabled = false;
             ReadOnlyMode = true;
 
-            _infosStream  = new MemoryStream();
-            _codesStream  = new MemoryStream();
+            _infosStream = new MemoryStream();
+            _codesStream = new MemoryStream();
             _relocsStream = new MemoryStream();
 
             _infosWriter = new BinaryWriter(_infosStream, EncodingCache.UTF8NoBOM, true);
@@ -98,14 +101,14 @@ namespace ARMeilleure.Translation.AOT
 
             string workPath = Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
 
-            if (!Directory.Exists(workPath))
+            if (enabled && !Directory.Exists(workPath))
             {
                 Directory.CreateDirectory(workPath);
             }
 
             CachePath = Path.Combine(workPath, DisplayVersion);
 
-            Enabled      = enabled;
+            Enabled = enabled;
             ReadOnlyMode = readOnlyMode;
 
             if (enabled)
@@ -126,17 +129,14 @@ namespace ARMeilleure.Translation.AOT
             if (cacheInfo.Exists && cacheInfo.Length != 0L)
             {
                 using (FileStream compressedCacheStream = new FileStream(CachePath, FileMode.Open))
+                using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true))
+                using (MemoryStream cacheStream = new MemoryStream())
+                using (MD5 md5 = MD5.Create())
                 {
-                    DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true);
-
-                    MemoryStream cacheStream = new MemoryStream();
-
-                    MD5 md5 = MD5.Create();
-
-                    int hashSize = md5.HashSize / 8;
-
                     try
                     {
+                        int hashSize = md5.HashSize / 8;
+
                         deflateStream.CopyTo(cacheStream);
 
                         cacheStream.Seek(0L, SeekOrigin.Begin);
@@ -146,69 +146,77 @@ namespace ARMeilleure.Translation.AOT
 
                         byte[] expectedHash = md5.ComputeHash(cacheStream);
 
-                        if (CompareHash(currentHash, expectedHash))
-                        {
-                            cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
-
-                            ReadHeader(cacheStream, out int cacheFileVersion, out int infosLen, out int codesLen, out int relocsLen);
-
-                            if (cacheFileVersion == (int)InternalVersion)
-                            {
-                                if (infosLen % InfoEntry.Size == 0)
-                                {
-                                    byte[] infosBuf  = new byte[infosLen];
-                                    byte[] codesBuf  = new byte[codesLen];
-                                    byte[] relocsBuf = new byte[relocsLen];
-
-                                    cacheStream.Read(infosBuf,  0, infosLen);
-                                    cacheStream.Read(codesBuf,  0, codesLen);
-                                    cacheStream.Read(relocsBuf, 0, relocsLen);
-
-                                    if (cacheStream.Position == cacheStream.Length)
-                                    {
-                                        try
-                                        {
-                                            _infosStream. Write(infosBuf,  0, infosLen);
-                                            _codesStream. Write(codesBuf,  0, codesLen);
-                                            _relocsStream.Write(relocsBuf, 0, relocsLen);
-                                        }
-                                        catch
-                                        {
-                                            _infosStream. SetLength(0L);
-                                            _codesStream. SetLength(0L);
-                                            _relocsStream.SetLength(0L);
-                                        }
-                                    }
-                                    else
-                                    {
-                                        InvalidateCompressedCacheStream(compressedCacheStream);
-                                    }
-                                }
-                                else
-                                {
-                                    InvalidateCompressedCacheStream(compressedCacheStream);
-                                }
-                            }
-                            else
-                            {
-                                InvalidateCompressedCacheStream(compressedCacheStream);
-                            }
-                        }
-                        else
+                        if (!CompareHash(currentHash, expectedHash))
                         {
                             InvalidateCompressedCacheStream(compressedCacheStream);
+
+                            return;
+                        }
+
+                        cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
+
+                        Header header = ReadHeader(cacheStream);
+
+                        if (header.Magic != HeaderMagic)
+                        {
+                            InvalidateCompressedCacheStream(compressedCacheStream);
+
+                            return;
+                        }
+
+                        if (header.CacheFileVersion != InternalVersion)
+                        {
+                            InvalidateCompressedCacheStream(compressedCacheStream);
+
+                            return;
+                        }
+
+                        if (header.FeatureInfo != HardwareCapabilities.FeatureInfo)
+                        {
+                            InvalidateCompressedCacheStream(compressedCacheStream);
+
+                            return;
+                        }
+
+                        if (header.InfosLen % InfoEntry.Size != 0)
+                        {
+                            InvalidateCompressedCacheStream(compressedCacheStream);
+
+                            return;
+                        }
+
+                        byte[] infosBuf = new byte[header.InfosLen];
+                        byte[] codesBuf = new byte[header.CodesLen];
+                        byte[] relocsBuf = new byte[header.RelocsLen];
+
+                        cacheStream.Read(infosBuf, 0, header.InfosLen);
+                        cacheStream.Read(codesBuf, 0, header.CodesLen);
+                        cacheStream.Read(relocsBuf, 0, header.RelocsLen);
+
+                        if (cacheStream.Position != cacheStream.Length)
+                        {
+                            InvalidateCompressedCacheStream(compressedCacheStream);
+
+                            return;
+                        }
+
+                        try
+                        {
+                            _infosStream.Write(infosBuf, 0, header.InfosLen);
+                            _codesStream.Write(codesBuf, 0, header.CodesLen);
+                            _relocsStream.Write(relocsBuf, 0, header.RelocsLen);
+                        }
+                        catch
+                        {
+                            _infosStream.SetLength(0L);
+                            _codesStream.SetLength(0L);
+                            _relocsStream.SetLength(0L);
                         }
                     }
                     catch
                     {
                         InvalidateCompressedCacheStream(compressedCacheStream);
                     }
-
-                    deflateStream.Dispose();
-
-                    cacheStream.Dispose();
-
-                    md5.Dispose();
                 }
             }
         }
@@ -218,22 +226,23 @@ namespace ARMeilleure.Translation.AOT
             return currentHash.SequenceEqual(expectedHash);
         }
 
-        private static void ReadHeader(
-            MemoryStream cacheStream,
-            out int      cacheFileVersion,
-            out int      infosLen,
-            out int      codesLen,
-            out int      relocsLen)
+        private static Header ReadHeader(MemoryStream cacheStream)
         {
-            BinaryReader headerReader = new BinaryReader(cacheStream, EncodingCache.UTF8NoBOM, true);
+            using (BinaryReader headerReader = new BinaryReader(cacheStream, EncodingCache.UTF8NoBOM, true))
+            {
+                Header header = new Header();
 
-            cacheFileVersion = headerReader.ReadInt32();
+                header.Magic = headerReader.ReadString();
 
-            infosLen  = headerReader.ReadInt32();
-            codesLen  = headerReader.ReadInt32();
-            relocsLen = headerReader.ReadInt32();
+                header.CacheFileVersion = headerReader.ReadInt32();
+                header.FeatureInfo = headerReader.ReadUInt64();
 
-            headerReader.Dispose();
+                header.InfosLen = headerReader.ReadInt32();
+                header.CodesLen = headerReader.ReadInt32();
+                header.RelocsLen = headerReader.ReadInt32();
+
+                return header;
+            }
         }
 
         private static void InvalidateCompressedCacheStream(FileStream compressedCacheStream)
@@ -249,23 +258,22 @@ namespace ARMeilleure.Translation.AOT
             _waitEvent.Reset();
 
             using (MemoryStream cacheStream = new MemoryStream())
+            using (MD5 md5 = MD5.Create())
             {
-                MD5 md5 = MD5.Create();
-
                 int hashSize = md5.HashSize / 8;
 
                 cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
 
                 bool disposed = true;
 
-                lock (_locker) // Read.
+                lock(_locker) // Read.
                 {
                     if (!_disposed)
                     {
                         WriteHeader(cacheStream);
 
-                        _infosStream. WriteTo(cacheStream);
-                        _codesStream. WriteTo(cacheStream);
+                        _infosStream.WriteTo(cacheStream);
+                        _codesStream.WriteTo(cacheStream);
                         _relocsStream.WriteTo(cacheStream);
 
                         disposed = false;
@@ -281,9 +289,8 @@ namespace ARMeilleure.Translation.AOT
                     cacheStream.Write(hash, 0, hashSize);
 
                     using (FileStream compressedCacheStream = new FileStream(CachePath, FileMode.OpenOrCreate))
+                    using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true))
                     {
-                        DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true);
-
                         try
                         {
                             cacheStream.WriteTo(deflateStream);
@@ -297,12 +304,8 @@ namespace ARMeilleure.Translation.AOT
                         {
                             compressedCacheStream.SetLength(compressedCacheStream.Position);
                         }
-
-                        deflateStream.Dispose();
                     }
                 }
-
-                md5.Dispose();
             }
 
             _waitEvent.Set();
@@ -310,72 +313,75 @@ namespace ARMeilleure.Translation.AOT
 
         private static void WriteHeader(MemoryStream cacheStream)
         {
-            BinaryWriter headerWriter = new BinaryWriter(cacheStream, EncodingCache.UTF8NoBOM, true);
+            using (BinaryWriter headerWriter = new BinaryWriter(cacheStream, EncodingCache.UTF8NoBOM, true))
+            {
+                headerWriter.Write((string)HeaderMagic); // Header.Magic
 
-            headerWriter.Write((int)InternalVersion); // cacheFileVersion
+                headerWriter.Write((int)InternalVersion); // Header.CacheFileVersion
+                headerWriter.Write((ulong)HardwareCapabilities.FeatureInfo); // Header.FeatureInfo
 
-            headerWriter.Write((int)_infosStream. Length); // infosLen
-            headerWriter.Write((int)_codesStream. Length); // codesLen
-            headerWriter.Write((int)_relocsStream.Length); // relocsLen
-
-            headerWriter.Dispose();
+                headerWriter.Write((int)_infosStream.Length); // Header.InfosLen
+                headerWriter.Write((int)_codesStream.Length); // Header.CodesLen
+                headerWriter.Write((int)_relocsStream.Length); // Header.RelocsLen
+            }
         }
 
         internal static void FullTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, IntPtr pageTable)
         {
-            if ((int)_infosStream. Length != 0 &&
-                (int)_codesStream. Length != 0 &&
+            if ((int)_infosStream.Length != 0 &&
+                (int)_codesStream.Length != 0 &&
                 (int)_relocsStream.Length != 0)
             {
-                _infosStream. Seek(0L, SeekOrigin.Begin);
-                _codesStream. Seek(0L, SeekOrigin.Begin);
+                _infosStream.Seek(0L, SeekOrigin.Begin);
+                _codesStream.Seek(0L, SeekOrigin.Begin);
                 _relocsStream.Seek(0L, SeekOrigin.Begin);
 
-                BinaryReader infoReader  = new BinaryReader(_infosStream,  EncodingCache.UTF8NoBOM, true);
-                BinaryReader relocReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true);
-
-                for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Size; i++) // infosEntriesCount
+                using (BinaryReader infoReader = new BinaryReader(_infosStream, EncodingCache.UTF8NoBOM, true))
+                using (BinaryReader codeReader = new BinaryReader(_codesStream, EncodingCache.UTF8NoBOM, true))
+                using (BinaryReader relocReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
                 {
-                    InfoEntry infoEntry = ReadInfo(infoReader);
-
-                    byte[] code = ReadCode(infoEntry.CodeLen);
-
-                    if (infoEntry.RelocEntriesCount != 0)
+                    for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Size; i++) // infosEntriesCount
                     {
-                        PatchCode(code, GetRelocEntries(relocReader, infoEntry.RelocEntriesCount), pageTable);
+                        InfoEntry infoEntry = ReadInfo(infoReader);
+
+                        byte[] code = ReadCode(codeReader, infoEntry.CodeLen);
+
+                        if (infoEntry.RelocEntriesCount != 0)
+                        {
+                            PatchCode(code, GetRelocEntries(relocReader, infoEntry.RelocEntriesCount), pageTable);
+                        }
+
+                        bool isAddressUnique = funcsHighCq.TryAdd((ulong)infoEntry.Address, FastTranslate(code));
+
+                        Debug.Assert(isAddressUnique, $"The address 0x{(ulong)infoEntry.Address:X16} is not unique.");
                     }
-
-                    bool isAddressUnique = funcsHighCq.TryAdd((ulong)infoEntry.Address, FastTranslate(code));
-
-                    Debug.Assert(isAddressUnique, $"The address 0x{(ulong)infoEntry.Address:X16} is not unique.");
                 }
 
-                infoReader. Dispose();
-                relocReader.Dispose();
-
-                if (_infosStream. Position != _infosStream. Length ||
-                    _codesStream. Position != _codesStream. Length ||
-                    _relocsStream.Position != _relocsStream.Length)
+                if (_infosStream.Position < _infosStream.Length ||
+                    _codesStream.Position < _codesStream.Length ||
+                    _relocsStream.Position < _relocsStream.Length)
                 {
-                    throw new Exception("Unexpected unbalance of memory streams.");
+                    throw new Exception("Could not reach the end of one or more memory streams.");
                 }
             }
         }
 
         private static InfoEntry ReadInfo(BinaryReader infoReader)
         {
-            long address           = infoReader.ReadInt64();
-            int  codeLen           = infoReader.ReadInt32();
-            int  relocEntriesCount = infoReader.ReadInt32();
+            InfoEntry infoEntry = new InfoEntry();
 
-            return new InfoEntry(address, codeLen, relocEntriesCount);
+            infoEntry.Address = infoReader.ReadInt64();
+            infoEntry.CodeLen = infoReader.ReadInt32();
+            infoEntry.RelocEntriesCount = infoReader.ReadInt32();
+
+            return infoEntry;
         }
 
-        private static byte[] ReadCode(int codeLen)
+        private static byte[] ReadCode(BinaryReader codeReader, int codeLen)
         {
             byte[] codeBuf = new byte[codeLen];
 
-            _codesStream.Read(codeBuf, 0, codeLen);
+            codeReader.Read(codeBuf, 0, codeLen);
 
             return codeBuf;
         }
@@ -387,7 +393,7 @@ namespace ARMeilleure.Translation.AOT
             for (int i = 0; i < relocEntriesCount; i++)
             {
                 int position = relocReader.ReadInt32();
-                int index    = relocReader.ReadInt32();
+                int index = relocReader.ReadInt32();
 
                 relocEntries[i] = new RelocEntry(position, index);
             }
@@ -426,39 +432,51 @@ namespace ARMeilleure.Translation.AOT
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc, rejit: false);
+            TranslatedFunction tFunc = new TranslatedFunction(gFunc, rejit : false);
 
             return tFunc;
         }
 
-        internal static void WriteInfoCodeReloc(long address, AotInfo aotInfo)
+        internal static void WriteInfoCodeReloc(long address, PtcInfo ptcInfo)
         {
-            lock (_locker) // Write.
+            lock(_locker) // Write.
             {
                 if (!_disposed)
                 {
-                    WriteInfo (new InfoEntry(address, aotInfo));
-                    WriteCode (aotInfo);
-                    WriteReloc(aotInfo);
+                    WriteInfo(new InfoEntry(address, ptcInfo));
+                    WriteCode(ptcInfo);
+                    WriteReloc(ptcInfo);
                 }
             }
         }
 
         private static void WriteInfo(InfoEntry infoEntry)
         {
-            _infosWriter.Write(infoEntry.Address);
-            _infosWriter.Write(infoEntry.CodeLen);
-            _infosWriter.Write(infoEntry.RelocEntriesCount);
+            _infosWriter.Write((long)infoEntry.Address);
+            _infosWriter.Write((int)infoEntry.CodeLen);
+            _infosWriter.Write((int)infoEntry.RelocEntriesCount);
         }
 
-        private static void WriteCode(AotInfo aotInfo)
+        private static void WriteCode(PtcInfo ptcInfo)
         {
-            aotInfo.CodeStream.WriteTo(_codesStream);
+            ptcInfo.CodeStream.WriteTo(_codesStream);
         }
 
-        private static void WriteReloc(AotInfo aotInfo)
+        private static void WriteReloc(PtcInfo ptcInfo)
         {
-            aotInfo.RelocStream.WriteTo(_relocsStream);
+            ptcInfo.RelocStream.WriteTo(_relocsStream);
+        }
+
+        private struct Header
+        {
+            public string Magic;
+
+            public int CacheFileVersion;
+            public ulong FeatureInfo;
+
+            public int InfosLen;
+            public int CodesLen;
+            public int RelocsLen;
         }
 
         private struct InfoEntry
@@ -466,21 +484,14 @@ namespace ARMeilleure.Translation.AOT
             public const int Size = 16; // Bytes.
 
             public long Address;
-            public int  CodeLen;
-            public int  RelocEntriesCount;
+            public int CodeLen;
+            public int RelocEntriesCount;
 
-            public InfoEntry(long address, int codeLen, int relocEntriesCount)
+            public InfoEntry(long address, PtcInfo ptcInfo)
             {
-                Address           = address;
-                CodeLen           = codeLen;
-                RelocEntriesCount = relocEntriesCount;
-            }
-
-            public InfoEntry(long address, AotInfo aotInfo)
-            {
-                Address           = address;
-                CodeLen           = (int)aotInfo.CodeStream.Length;
-                RelocEntriesCount = aotInfo.RelocEntriesCount;
+                Address = address;
+                CodeLen = (int)ptcInfo.CodeStream.Length;
+                RelocEntriesCount = ptcInfo.RelocEntriesCount;
             }
         }
 
@@ -491,12 +502,12 @@ namespace ARMeilleure.Translation.AOT
                 _timer.Elapsed -= MergeAndSave;
                 _timer.Dispose();
 
-                lock (_locker) // Dispose.
+                lock(_locker) // Dispose.
                 {
                     _infosWriter.Dispose();
 
-                    _infosStream. Dispose();
-                    _codesStream. Dispose();
+                    _infosStream.Dispose();
+                    _codesStream.Dispose();
                     _relocsStream.Dispose();
 
                     _disposed = true;

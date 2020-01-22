@@ -1,5 +1,5 @@
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Translation.AOT;
+using ARMeilleure.Translation.PTC;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -63,7 +63,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private Stream _stream;
 
-        private AotInfo _aotInfo;
+        private PtcInfo _ptcInfo;
 
         static Assembler()
         {
@@ -266,10 +266,10 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = info;
         }
 
-        public Assembler(Stream stream, AotInfo aotInfo = null)
+        public Assembler(Stream stream, PtcInfo ptcInfo = null)
         {
             _stream  = stream;
-            _aotInfo = aotInfo;
+            _ptcInfo = ptcInfo;
         }
 
         public void Add(Operand dest, Operand source, OperandType type)
@@ -892,9 +892,9 @@ namespace ARMeilleure.CodeGen.X86
 
                         WriteByte((byte)(info.OpRImm64 + (dest.GetRegister().Index & 0b111)));
 
-                        if (_aotInfo != null && index != null)
+                        if (_ptcInfo != null && index != null)
                         {
-                            _aotInfo.WriteRelocEntry(new RelocEntry((int)_stream.Position, (int)index));
+                            _ptcInfo.WriteRelocEntry(new RelocEntry((int)_stream.Position, (int)index));
                         }
 
                         WriteUInt64(imm);
