@@ -1,10 +1,13 @@
 ﻿using Gtk;
+using Ionic.Zip;
 using Newtonsoft.Json.Linq;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.FileSystem;
 using Ryujinx.Ui;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
@@ -25,7 +28,6 @@ namespace Ryujinx.Updater.Parser
         private static string       _PlatformExt;
         public static string        _RyuDir                 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
         public static WebClient     _Package                = new WebClient();
-        private static string       _URLStr;
         public static int           _PackageProgress;
         public static double        _Percentage;
         public static void BeginParse()
@@ -85,20 +87,22 @@ namespace Ryujinx.Updater.Parser
 
         private static async void GrabPackage()
         {
-            if (!Directory.Exists(Path.Combine(_RyuDir, "Data", "Update")) || !Directory.Exists(Path.Combine(_RyuDir, "Data")))
+            if (!Directory.Exists(Path.Combine(_RyuDir, "Data", "Update")) || !Directory.Exists(Path.Combine(_RyuDir, "Data")) || !Directory.Exists(Path.Combine(Environment.CurrentDirectory, "temp")))
             {
                 Directory.CreateDirectory(Path.Combine(_RyuDir, "Data", "Update"));
                 Directory.CreateDirectory(Path.Combine(_RyuDir, "Data"));
+                Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "temp"));
             }
 
             try
             {
                 _Package.DownloadProgressChanged += new DownloadProgressChangedEventHandler(PackageDownloadProgress);
                 _Package.DownloadFileCompleted += new AsyncCompletedEventHandler(PackageDownloadedAsync);
-                using (MessageDialog dialog = await GtkDialog.CreateProgressDialogAsync(false, "Update", "Ryujinx - Update", "Downloading update " + _BuildVer + ", 0% complete...", "Please wait while we download the latest package"))
+                using (MessageDialog dialog = await GtkDialog.CreateProgressDialogAsync(false, "Update", "Ryujinx - Update", "Downloading update " + _BuildVer, "Please wait while we download the latest package"))
                 {
                     dialog.Run();
                 }
+                
             }
             catch (Exception ex)
             {
@@ -119,9 +123,9 @@ namespace Ryujinx.Updater.Parser
                 Logger.PrintWarning(LogClass.Application, "Package is now installing");
                 using (MessageDialog dialog = await GtkDialog.CreateProgressDialogAsync(true, "Update", "Ryujinx - Update", "Installing update " + _BuildVer + "...", "Please wait while we install the latest package"))
                 {
+                    dialog.Dispose();
                     dialog.Run();
                 }
-                return;
             }
         }
 
@@ -134,11 +138,21 @@ namespace Ryujinx.Updater.Parser
         {
             try
             {
-                //using (ZipFile Package = ZipFile.Read(Path.Combine(_RyuDir, "Data", "Update", "RyujinxPackage.zip")))
-                //{
-                //    await Task.Run(() => Package.ExtractAll(_InstallDir, ExtractExistingFileAction.OverwriteSilently));
-                //}
-                throw new Exception("This is a test exception.\nThis is the package extract thread.");
+                using (Ionic.Zip.ZipFile Package = Ionic.Zip.ZipFile.Read(Path.Combine(_RyuDir, "Data", "Update", "RyujinxPackage.zip")))
+                {
+                    await Task.Run(() => Package.ExtractAll(Path.Combine(Environment.CurrentDirectory,"temp"), ExtractExistingFileAction.OverwriteSilently));
+                }
+
+                try
+                {
+                    Process.Start(new ProcessStartInfo(Path.Combine(Environment.CurrentDirectory, "temp", "Ryujinx.exe"), "/U") { UseShellExecute = true });
+                }
+                catch (System.ComponentModel.Win32Exception)
+                {
+                    GtkDialog.CreateErrorDialog("Update canceled by user or the installation was not found");
+                    return;
+                }
+                Application.Quit();
             }
             catch (Exception ex)
             {

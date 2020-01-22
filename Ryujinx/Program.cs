@@ -64,9 +64,22 @@ namespace Ryujinx
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            if (args.Length == 1)
+            if (args.Length > 0)
             {
-                mainWindow.LoadApplication(args[0]);
+                foreach (string arg in args)
+                {
+                    switch (arg.Substring(0, 2).ToUpper())
+                    {
+                        case "/U":
+                            //Do that update stuffs
+                            Updater.Update.PerformUpdate();
+                            return;
+                        default:
+                            mainWindow.LoadApplication(args[0]);
+                            break;
+                    }
+                }
+              
             }
 
             Application.Run();
