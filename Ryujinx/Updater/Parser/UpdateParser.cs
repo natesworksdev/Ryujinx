@@ -42,6 +42,7 @@ namespace Ryujinx.Updater.Parser
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     _PlatformExt = "linux_x64.tar.gz";
 
+                //Begin the Appveyor parsing
                 WebClient JSONClient = new WebClient();
                 string FetchedJSON          = JSONClient.DownloadString(_BuildURL);
                 var __JSONRoot              = JObject.Parse(FetchedJSON);
@@ -74,19 +75,20 @@ namespace Ryujinx.Updater.Parser
                 GtkDialog.CreateErrorDialog("Update canceled by user or failed to grab or parse the information.\nPlease try at a later time, or report the error to our GitHub.");
                 return;
             }
-            UpdateData data = new UpdateData()
-            {
-                JobID           = _JobID,
-                BuildVer        = _BuildVer,
-                BuildURL        = _BuildURL,
-                BuildArt        = _BuildArt,
-                BuildCommit     = _BuildCommit,
-                Branch          = _Branch
-            };
+            //UpdateData data = new UpdateData()
+            //{
+            //    JobID           = _JobID,
+            //    BuildVer        = _BuildVer,
+            //    BuildURL        = _BuildURL,
+            //    BuildArt        = _BuildArt,
+            //    BuildCommit     = _BuildCommit,
+            //    Branch          = _Branch
+            //};
         }
 
         private static async void GrabPackage()
         {
+            //Check if paths exist
             if (!Directory.Exists(Path.Combine(_RyuDir, "Data", "Update")) || !Directory.Exists(Path.Combine(_RyuDir, "Data")) || !Directory.Exists(Path.Combine(Environment.CurrentDirectory, "temp")))
             {
                 Directory.CreateDirectory(Path.Combine(_RyuDir, "Data", "Update"));
@@ -96,6 +98,7 @@ namespace Ryujinx.Updater.Parser
 
             try
             {
+                //Attempt to grab the latest package
                 _Package.DownloadProgressChanged += new DownloadProgressChangedEventHandler(PackageDownloadProgress);
                 _Package.DownloadFileCompleted += new AsyncCompletedEventHandler(PackageDownloadedAsync);
                 using (MessageDialog dialog = GtkDialog.CreateProgressDialog("Update", "Ryujinx - Update", "Downloading update " + _BuildVer, "Please wait while we download the latest package and extract it."))
@@ -134,6 +137,7 @@ namespace Ryujinx.Updater.Parser
         {
             try
             {
+                //Begin the extaction process
                 using (Ionic.Zip.ZipFile Package = Ionic.Zip.ZipFile.Read(Path.Combine(_RyuDir, "Data", "Update", "RyujinxPackage.zip")))
                 {
                     await Task.Run(() => Package.ExtractAll(Path.Combine(Environment.CurrentDirectory,"temp"), ExtractExistingFileAction.OverwriteSilently));
