@@ -73,7 +73,11 @@ namespace Ryujinx
                         case "/U":
                             //Do that update stuffs
                             Updater.Update.PerformUpdate();
-                            return;
+                            break;
+                        case "/C":
+                            //Do that update stuffs
+                            Updater.Update.Cleanup();
+                            break;
                         default:
                             mainWindow.LoadApplication(args[0]);
                             break;
