@@ -18,6 +18,7 @@ namespace Ryujinx.Updater
         {
             try
             {
+                //Get list of files from the current directory, and copy them to the parent directory.
                 foreach (string _PathDir in Directory.GetDirectories(RyuDir, "*",
                     SearchOption.AllDirectories))
                     Directory.CreateDirectory(_PathDir.Replace(RyuDir, ParentDir));
@@ -40,7 +41,6 @@ namespace Ryujinx.Updater
             }
             catch (System.ComponentModel.Win32Exception)
             {
-                //Logger.PrintError(LogClass.Application, "Package installation has failed\n" + ex.InnerException.ToString());
                 GtkDialog.CreateErrorDialog("Package installation has failed\nCheck the log for more information.");
                 return;
             }
