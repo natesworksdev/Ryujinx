@@ -11,9 +11,9 @@ namespace Ryujinx.Updater
 {
     public class Update
     {
-        private static string[] _updatefiles    = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory),"*", SearchOption.AllDirectories);
-        private static string   _parentdir      = Path.Combine(@"..\..");
-        public  static string   RyuDir          = Environment.CurrentDirectory;
+        private static string[] _updatefiles = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory),"*", SearchOption.AllDirectories);
+        private static string   _parentdir   = Path.Combine(@"..\..");
+        public  static string   RyuDir       = Environment.CurrentDirectory;
         public static void PerformUpdate()
         {
             try
@@ -37,12 +37,10 @@ namespace Ryujinx.Updater
                     return;
                 }
                 Application.Quit();
-                return;
             }
             catch (System.ComponentModel.Win32Exception)
             {
                 GtkDialog.CreateErrorDialog("Package installation has failed\nCheck the log for more information.");
-                return;
             }
            
         }
@@ -50,7 +48,6 @@ namespace Ryujinx.Updater
         public static void Cleanup()
         {
             Directory.Delete(Path.Combine(RyuDir, "temp"), true);
-            return;
         }
     }
 }

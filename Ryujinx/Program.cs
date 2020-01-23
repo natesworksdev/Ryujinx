@@ -64,7 +64,7 @@ namespace Ryujinx
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            if (args.Length > 0)
+            if (args.Length == 1)
             {
                 foreach (string arg in args)
                 {
