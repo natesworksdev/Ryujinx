@@ -11,9 +11,9 @@ namespace Ryujinx.Updater
 {
     public class Update
     {
-        public  static string   RyuDir           = Environment.CurrentDirectory;
-        private static string[] UpdateFiles      = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory),"*", SearchOption.AllDirectories);
-        private static string   ParentDir        = Path.Combine(@"..\..");
+        private static string[] _updatefiles    = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory),"*", SearchOption.AllDirectories);
+        private static string   _parentdir      = Path.Combine(@"..\..");
+        public  static string   RyuDir          = Environment.CurrentDirectory;
         public static void PerformUpdate()
         {
             try
@@ -21,15 +21,15 @@ namespace Ryujinx.Updater
                 //Get list of files from the current directory, and copy them to the parent directory.
                 foreach (string _PathDir in Directory.GetDirectories(RyuDir, "*",
                     SearchOption.AllDirectories))
-                    Directory.CreateDirectory(_PathDir.Replace(RyuDir, ParentDir));
+                    Directory.CreateDirectory(_PathDir.Replace(RyuDir, _parentdir));
                 foreach (string _PathNew in Directory.GetFiles(RyuDir, "*.*",
                     SearchOption.AllDirectories))
-                    File.Copy(_PathNew, _PathNew.Replace(RyuDir, ParentDir), true);
+                    File.Copy(_PathNew, _PathNew.Replace(RyuDir, _parentdir), true);
                 Logger.PrintInfo(LogClass.Application, "Package installation was completed.\n");
                 GtkDialog.CreateInfoDialog("Update", "Ryujinx - Update", "Almost finished","The package was installed.\nPlease click ok, and the update will complete.");
                 try
                 {
-                    Process.Start(new ProcessStartInfo(Path.Combine(ParentDir, "Ryujinx.exe"), "/C") { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo(Path.Combine(_parentdir, "Ryujinx.exe"), "/C") { UseShellExecute = true });
                 }
                 catch (System.ComponentModel.Win32Exception)
                 {

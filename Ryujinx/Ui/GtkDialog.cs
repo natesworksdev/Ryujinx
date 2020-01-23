@@ -71,8 +71,8 @@ namespace Ryujinx.Ui
                 SecondaryText = secText,
                 WindowPosition = WindowPosition.Center
             };
-            Uri URL = new Uri(UpdateParser._BuildArt);
-            UpdateParser._Package.DownloadFileAsync(URL, Path.Combine(UpdateParser._RyuDir, "Data", "Update", "RyujinxPackage.zip"));
+            Uri URL = new Uri(UpdateParser.BuildArt);
+            UpdateParser.Package.DownloadFileAsync(URL, Path.Combine(UpdateParser.RyuDir, "Data", "Update", "RyujinxPackage.zip"));
             messageDialog.SetSizeRequest(100, 20);
             return messageDialog;
         }
