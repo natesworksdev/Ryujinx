@@ -14,6 +14,7 @@ using System.Net;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using ZipFile = System.IO.Compression.ZipFile;
 
 namespace Ryujinx.Updater.Parser
 {
@@ -21,14 +22,14 @@ namespace Ryujinx.Updater.Parser
     {
         private static string _jobid;
         private static string _buildver;
-        private static string _buildurl             = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
+        private static string _buildurl         = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
         private static string _buildcommit;
         private static string _branch;
         private static string _platformext;
 
         public static string    BuildArt;
-        public static string    RyuDir              = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
-        public static WebClient Package             = new WebClient();
+        public static string    RyuDir          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
+        public static WebClient Package         = new WebClient();
         public static int       PackageProgress;
         public static double    Percentage;
         public static void BeginParse()
@@ -139,11 +140,7 @@ namespace Ryujinx.Updater.Parser
             try
             {
                 //Begin the extaction process
-                using (Ionic.Zip.ZipFile Package = Ionic.Zip.ZipFile.Read(Path.Combine(RyuDir, "Data", "Update", "RyujinxPackage.zip")))
-                {
-                    await Task.Run(() => Package.ExtractAll(Path.Combine(Environment.CurrentDirectory,"temp"), ExtractExistingFileAction.OverwriteSilently));
-                }
-
+                await Task.Run(() => ZipFile.ExtractToDirectory(Path.Combine(RyuDir, "Data", "Update", "RyujinxPackage.zip"), Path.Combine(Environment.CurrentDirectory, "temp")));
                 try
                 {
                     Process.Start(new ProcessStartInfo(Path.Combine(Environment.CurrentDirectory, "temp", "publish", "Ryujinx.exe"), "/U") { UseShellExecute = true });

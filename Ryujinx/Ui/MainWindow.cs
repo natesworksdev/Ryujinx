@@ -739,17 +739,6 @@ namespace Ryujinx.Ui
         private void Update_Pressed(object sender, EventArgs args)
         {
             Ryujinx.Updater.Parser.UpdateParser.BeginParse();
-            return;
-            //string ryuUpdater = System.IO.Path.Combine(new VirtualFileSystem().GetBasePath(), "RyuUpdater.exe");
-
-            //try
-            //{
-            //    Process.Start(new ProcessStartInfo(ryuUpdater, "/U") { UseShellExecute = true });
-            //}
-            //catch(System.ComponentModel.Win32Exception)
-            //{
-            //    GtkDialog.CreateErrorDialog("Update canceled by user or updater was not found");
-            //}
         }
 
         private void About_Pressed(object sender, EventArgs args)
