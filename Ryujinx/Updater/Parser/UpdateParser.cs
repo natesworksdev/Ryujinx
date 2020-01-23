@@ -19,47 +19,48 @@ namespace Ryujinx.Updater.Parser
 {
     public class UpdateParser
     {
-        private static string       _JobID;
-        private static string       _BuildVer;
-        private static string       _BuildURL               = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
-        public static string        _BuildArt;
-        private static string       _BuildCommit;
-        private static string       _Branch;
-        private static string       _PlatformExt;
-        public static string        _RyuDir                 = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
-        public static WebClient     _Package                = new WebClient();
-        public static int           _PackageProgress;
-        public static double        _Percentage;
+        private static string _jobid;
+        private static string _buildver;
+        private static string _buildurl             = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
+        private static string _buildcommit;
+        private static string _branch;
+        private static string _platformext;
+
+        public static string    BuildArt;
+        public static string    RyuDir              = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
+        public static WebClient Package             = new WebClient();
+        public static int       PackageProgress;
+        public static double    Percentage;
         public static void BeginParse()
         {
             try
             {
                 //Detect current platform
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-                    _PlatformExt = "osx_x64.zip";
+                    _platformext = "osx_x64.zip";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    _PlatformExt = "win_x64.zip";
+                    _platformext = "win_x64.zip";
                 else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                    _PlatformExt = "linux_x64.tar.gz";
+                    _platformext = "linux_x64.tar.gz";
 
                 //Begin the Appveyor parsing
                 WebClient JSONClient = new WebClient();
-                string FetchedJSON          = JSONClient.DownloadString(_BuildURL);
+                string FetchedJSON          = JSONClient.DownloadString(_buildurl);
                 var __JSONRoot              = JObject.Parse(FetchedJSON);
                 var __Build                 = __JSONRoot["build"];
                 string __Version            = (string)__Build["version"];
                 string __JobsID             = (string)__Build["jobs"][0]["jobId"];
-                string __Branch             = (string)__Build["branch"];
-                string __BuildCommit        = (string)__Build["commitId"];
-                _JobID                      = __JobsID;
-                _BuildVer                   = __Version;
-                _BuildArt                   = "https://ci.appveyor.com/api/buildjobs/" + _JobID + "/artifacts/ryujinx-" + _BuildVer + "-" + _PlatformExt;
-                _BuildCommit                = __BuildCommit.Substring(0, 7);
-                _Branch                     = __Branch;
-                Logger.PrintInfo(LogClass.Application, "Fetched JSON and Parsed:" + Environment.NewLine + "MetaData: JobID(" + __JobsID + ") BuildVer(" + __Version + ")" + Environment.NewLine + "BuildURL(" + _BuildArt + ")");
-                Logger.PrintInfo(LogClass.Application, "Commit-id: (" + _BuildCommit + ")" + " Branch: (" + _Branch + ")");
+                string __branch             = (string)__Build["branch"];
+                string __buildcommit        = (string)__Build["commitId"];
+                _jobid                      = __JobsID;
+                _buildver                   = __Version;
+                BuildArt                   = "https://ci.appveyor.com/api/buildjobs/" + _jobid + "/artifacts/ryujinx-" + _buildver + "-" + _platformext;
+                _buildcommit                = __buildcommit.Substring(0, 7);
+                _branch                     = __branch;
+                Logger.PrintInfo(LogClass.Application, "Fetched JSON and Parsed:" + Environment.NewLine + "MetaData: JobID(" + __JobsID + ") BuildVer(" + __Version + ")" + Environment.NewLine + "BuildURL(" + BuildArt + ")");
+                Logger.PrintInfo(LogClass.Application, "Commit-id: (" + _buildcommit + ")" + " Branch: (" + _branch + ")");
 
-                using (MessageDialog dialog = GtkDialog.CreateAcceptDialog("Update", _BuildVer))
+                using (MessageDialog dialog = GtkDialog.CreateAcceptDialog("Update", _buildver))
                 {
                     if (dialog.Run() == (int)ResponseType.Yes)
                     {
@@ -77,31 +78,31 @@ namespace Ryujinx.Updater.Parser
             }
             //UpdateData data = new UpdateData()
             //{
-            //    JobID           = _JobID,
-            //    BuildVer        = _BuildVer,
-            //    BuildURL        = _BuildURL,
-            //    BuildArt        = _BuildArt,
-            //    BuildCommit     = _BuildCommit,
-            //    Branch          = _Branch
+            //    JobID           = _jobid,
+            //    BuildVer        = _buildver,
+            //    BuildURL        = _buildurl,
+            //    BuildArt        = BuildArt,
+            //    BuildCommit     = _buildcommit,
+            //    Branch          = _branch
             //};
         }
 
         private static async void GrabPackage()
         {
             //Check if paths exist
-            if (!Directory.Exists(Path.Combine(_RyuDir, "Data", "Update")) || !Directory.Exists(Path.Combine(_RyuDir, "Data")) || !Directory.Exists(Path.Combine(Environment.CurrentDirectory, "temp")))
+            if (!Directory.Exists(Path.Combine(RyuDir, "Data", "Update")) || !Directory.Exists(Path.Combine(RyuDir, "Data")) || !Directory.Exists(Path.Combine(Environment.CurrentDirectory, "temp")))
             {
-                Directory.CreateDirectory(Path.Combine(_RyuDir, "Data", "Update"));
-                Directory.CreateDirectory(Path.Combine(_RyuDir, "Data"));
+                Directory.CreateDirectory(Path.Combine(RyuDir, "Data", "Update"));
+                Directory.CreateDirectory(Path.Combine(RyuDir, "Data"));
                 Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "temp"));
             }
 
             try
             {
                 //Attempt to grab the latest package
-                _Package.DownloadProgressChanged += new DownloadProgressChangedEventHandler(PackageDownloadProgress);
-                _Package.DownloadFileCompleted += new AsyncCompletedEventHandler(PackageDownloadedAsync);
-                using (MessageDialog dialog = GtkDialog.CreateProgressDialog("Update", "Ryujinx - Update", "Downloading update " + _BuildVer, "Please wait while we download the latest package and extract it."))
+                Package.DownloadProgressChanged += new DownloadProgressChangedEventHandler(PackageDownloadProgress);
+                Package.DownloadFileCompleted += new AsyncCompletedEventHandler(PackageDownloadedAsync);
+                using (MessageDialog dialog = GtkDialog.CreateProgressDialog("Update", "Ryujinx - Update", "Downloading update " + _buildver, "Please wait while we download the latest package and extract it."))
                 {
                     dialog.Run();
                 }
@@ -130,15 +131,15 @@ namespace Ryujinx.Updater.Parser
 
         private static void PackageDownloadProgress(object sender, DownloadProgressChangedEventArgs e)
         {
-            _Percentage         = e.ProgressPercentage;
-            _PackageProgress    = e.ProgressPercentage;
+            Percentage         = e.ProgressPercentage;
+            PackageProgress    = e.ProgressPercentage;
         }
         public static async Task ExtractPackageAsync()
         {
             try
             {
                 //Begin the extaction process
-                using (Ionic.Zip.ZipFile Package = Ionic.Zip.ZipFile.Read(Path.Combine(_RyuDir, "Data", "Update", "RyujinxPackage.zip")))
+                using (Ionic.Zip.ZipFile Package = Ionic.Zip.ZipFile.Read(Path.Combine(RyuDir, "Data", "Update", "RyujinxPackage.zip")))
                 {
                     await Task.Run(() => Package.ExtractAll(Path.Combine(Environment.CurrentDirectory,"temp"), ExtractExistingFileAction.OverwriteSilently));
                 }
