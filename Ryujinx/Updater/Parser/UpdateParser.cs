@@ -98,11 +98,10 @@ namespace Ryujinx.Updater.Parser
             {
                 _Package.DownloadProgressChanged += new DownloadProgressChangedEventHandler(PackageDownloadProgress);
                 _Package.DownloadFileCompleted += new AsyncCompletedEventHandler(PackageDownloadedAsync);
-                using (MessageDialog dialog = await GtkDialog.CreateProgressDialogAsync(false, "Update", "Ryujinx - Update", "Downloading update " + _BuildVer, "Please wait while we download the latest package"))
+                using (MessageDialog dialog = GtkDialog.CreateProgressDialog("Update", "Ryujinx - Update", "Downloading update " + _BuildVer, "Please wait while we download the latest package and extract it."))
                 {
                     dialog.Run();
                 }
-                
             }
             catch (Exception ex)
             {
@@ -121,11 +120,8 @@ namespace Ryujinx.Updater.Parser
             else
             {
                 Logger.PrintWarning(LogClass.Application, "Package is now installing");
-                using (MessageDialog dialog = await GtkDialog.CreateProgressDialogAsync(true, "Update", "Ryujinx - Update", "Installing update " + _BuildVer + "...", "Please wait while we install the latest package"))
-                {
-                    dialog.Dispose();
-                    dialog.Run();
-                }
+                await ExtractPackageAsync();
+                return;
             }
         }
 
@@ -145,11 +141,12 @@ namespace Ryujinx.Updater.Parser
 
                 try
                 {
-                    Process.Start(new ProcessStartInfo(Path.Combine(Environment.CurrentDirectory, "temp", "Ryujinx.exe"), "/U") { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo(Path.Combine(Environment.CurrentDirectory, "temp", "publish", "Ryujinx.exe"), "/U") { UseShellExecute = true });
                 }
-                catch (System.ComponentModel.Win32Exception)
+                catch (Exception ex)
                 {
-                    GtkDialog.CreateErrorDialog("Update canceled by user or the installation was not found");
+                    GtkDialog.CreateErrorDialog("Package installation has failed\nCheck the log for more information.");
+                    Logger.PrintError(LogClass.Application, "Package installation has failed\n" + ex.InnerException.ToString());
                     return;
                 }
                 Application.Quit();

@@ -51,7 +51,7 @@ namespace Ryujinx.Ui
             return messageDialog;
         }
 
-        internal static async System.Threading.Tasks.Task<MessageDialog> CreateProgressDialogAsync(bool isInstall, string iconType, string titleMessage, string textMessage, string secText)
+        internal static MessageDialog CreateProgressDialog(string iconType, string titleMessage, string textMessage, string secText)
         {
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Info, ButtonsType.None, null)
             {
@@ -61,16 +61,9 @@ namespace Ryujinx.Ui
                 SecondaryText = secText,
                 WindowPosition = WindowPosition.Center
             };
+            Uri URL = new Uri(UpdateParser._BuildArt);
+            UpdateParser._Package.DownloadFileAsync(URL, Path.Combine(UpdateParser._RyuDir, "Data", "Update", "RyujinxPackage.zip"));
             messageDialog.SetSizeRequest(100, 20);
-            if (isInstall == true)
-            {
-                await UpdateParser.ExtractPackageAsync();
-            }
-            else
-            {
-                Uri URL = new Uri(UpdateParser._BuildArt);
-                UpdateParser._Package.DownloadFileAsync(URL, Path.Combine(UpdateParser._RyuDir, "Data", "Update", "RyujinxPackage.zip"));
-            }
             return messageDialog;
         }
     }
