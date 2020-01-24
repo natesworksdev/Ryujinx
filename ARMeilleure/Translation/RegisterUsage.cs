@@ -68,7 +68,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public static void RunPass(ControlFlowGraph cfg, bool isCompleteFunction)
+        public static void RunPass(ControlFlowGraph cfg, ExecutionMode mode, bool isCompleteFunction)
         {
             // Compute local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
@@ -205,8 +205,8 @@ namespace ARMeilleure.Translation
                 // It always needs a context load as it is the first block to run.
                 if (block.Predecessors.Count == 0 || hasContextLoad)
                 {
-                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector);
-                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer);
+                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector,  mode);
+                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer, mode);
                 }
 
                 bool hasContextStore = HasContextStore(block);
@@ -218,8 +218,8 @@ namespace ARMeilleure.Translation
 
                 if (EndsWithReturn(block) || hasContextStore)
                 {
-                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, isCompleteFunction);
-                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  isCompleteFunction);
+                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, mode, isCompleteFunction);
+                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  mode, isCompleteFunction);
                 }
             }
         }
@@ -278,7 +278,7 @@ namespace ARMeilleure.Translation
             return oldValue != value;
         }
 
-        private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType)
+        private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType, ExecutionMode mode)
         {
             Operand arg0 = Local(OperandType.I64);
 
@@ -291,7 +291,7 @@ namespace ARMeilleure.Translation
                     continue;
                 }
 
-                Operand dest = GetRegFromBit(bit, baseType);
+                Operand dest = GetRegFromBit(bit, baseType, mode);
 
                 long offset = NativeContext.GetRegisterOffset(dest.GetRegister());
 
@@ -311,7 +311,7 @@ namespace ARMeilleure.Translation
             block.Operations.AddFirst(loadArg0);
         }
 
-        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, bool isCompleteFunction)
+        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, ExecutionMode mode, bool isCompleteFunction)
         {
             if (Optimizations.AssumeStrictAbiCompliance && isCompleteFunction)
             {
@@ -340,7 +340,7 @@ namespace ARMeilleure.Translation
                     continue;
                 }
 
-                Operand source = GetRegFromBit(bit, baseType);
+                Operand source = GetRegFromBit(bit, baseType, mode);
 
                 long offset = NativeContext.GetRegisterOffset(source.GetRegister());
 
@@ -356,11 +356,11 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static Operand GetRegFromBit(int bit, RegisterType baseType)
+        private static Operand GetRegFromBit(int bit, RegisterType baseType, ExecutionMode mode)
         {
             if (bit < RegsCount)
             {
-                return new Operand(bit, baseType, GetOperandType(baseType));
+                return new Operand(bit, baseType, GetOperandType(baseType, mode));
             }
             else if (baseType == RegisterType.Integer)
             {
@@ -372,12 +372,12 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static OperandType GetOperandType(RegisterType type)
+        private static OperandType GetOperandType(RegisterType type, ExecutionMode mode)
         {
             switch (type)
             {
                 case RegisterType.Flag:    return OperandType.I32;
-                case RegisterType.Integer: return OperandType.I64;
+                case RegisterType.Integer: return (mode == ExecutionMode.Aarch64) ? OperandType.I64 : OperandType.I32;
                 case RegisterType.Vector:  return OperandType.V128;
             }
 
