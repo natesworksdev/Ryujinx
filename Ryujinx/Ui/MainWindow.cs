@@ -31,6 +31,8 @@ namespace Ryujinx.Ui
 
         private static GlScreen _screen;
 
+        private static AutoResetEvent _screenExitStatus = new AutoResetEvent(false);
+
         private static ListStore _tableStore;
 
         private static bool _updatingGameTable;
@@ -299,6 +301,8 @@ namespace Ryujinx.Ui
 
                 _emulationContext = device;
 
+                _screenExitStatus.Reset();
+
 #if MACOS_BUILD
                 CreateGameWindow(device);
 #else
@@ -337,6 +341,8 @@ namespace Ryujinx.Ui
 
             DiscordIntegrationModule.SwitchToMainMenu();
 
+            _screenExitStatus.Set();
+
             Application.Invoke(delegate
             {
                 _stopEmulation.Sensitive            = false;
@@ -371,12 +377,17 @@ namespace Ryujinx.Ui
             if (device != null)
             {
                 UpdateGameMetadata(device.System.TitleIdText);
+
+                if (_screen != null)
+                {
+                    _screen.Exit();
+                    _screenExitStatus.WaitOne();
+                }
             }
 
             Dispose();
 
             Profile.FinishProfiling();
-            device?.Dispose();
             DiscordIntegrationModule.Exit();
             Logger.Shutdown();
             Application.Quit();
@@ -510,13 +521,11 @@ namespace Ryujinx.Ui
 
         private void Exit_Pressed(object sender, EventArgs args)
         {
-            _screen?.Exit();
             End(_emulationContext);
         }
 
         private void Window_Close(object sender, DeleteEventArgs args)
         {
-            _screen?.Exit();
             End(_emulationContext);
         }
 
