@@ -213,11 +213,21 @@ namespace ARMeilleure.Instructions
             return Register((int)stateFlag, RegisterType.Flag, OperandType.I32);
         }
 
+        public static Operand GetFpFlag(FPState stateFlag)
+        {
+            return Register((int)stateFlag, RegisterType.FpFlag, OperandType.I32);
+        }
+
         public static void SetFlag(ArmEmitterContext context, PState stateFlag, Operand value)
         {
             context.Copy(GetFlag(stateFlag), value);
 
             context.MarkFlagSet(stateFlag);
+        }
+
+        public static void SetFpFlag(ArmEmitterContext context, FPState stateFlag, Operand value)
+        {
+            context.Copy(GetFpFlag(stateFlag), value);
         }
     }
 }

@@ -19,7 +19,10 @@ namespace ARMeilleure.Instructions
             if (op.Rt == 15 && op.Sreg == 0b0001)
             {
                 //special behavior: copy NZCV flags into APSR
-                EmitSetNzcv(context, context.Call(new _U32(NativeInterface.GetFpscr)));
+                SetFlag(context, PState.VFlag, GetFpFlag(FPState.VFlag));
+                SetFlag(context, PState.CFlag, GetFpFlag(FPState.CFlag));
+                SetFlag(context, PState.ZFlag, GetFpFlag(FPState.ZFlag));
+                SetFlag(context, PState.NFlag, GetFpFlag(FPState.NFlag));
                 return;
             }
 

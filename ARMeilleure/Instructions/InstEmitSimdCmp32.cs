@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 
@@ -229,15 +230,24 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSetFPSCRFlags(ArmEmitterContext context, Operand flags)
+        private static void EmitSetFPSCRFlags(ArmEmitterContext context, Operand nzcv)
         {
-            Delegate getDlg = new _U32(NativeInterface.GetFpscr);
-            Operand fpscr = context.Call(getDlg);
+            Operand Extract(Operand value, int bit)
+            {
+                if (bit != 0)
+                {
+                    value = context.ShiftRightUI(value, Const(bit));
+                }
 
-            fpscr = context.BitwiseOr(context.ShiftLeft(flags, Const(28)), context.BitwiseAnd(fpscr, Const(0x0fffffff)));
+                value = context.BitwiseAnd(value, Const(1));
 
-            Delegate setDlg = new _Void_U32(NativeInterface.SetFpscr);
-            context.Call(setDlg, fpscr);
+                return value;
+            }
+
+            SetFpFlag(context, FPState.VFlag, Extract(nzcv, 0));
+            SetFpFlag(context, FPState.CFlag, Extract(nzcv, 1));
+            SetFpFlag(context, FPState.ZFlag, Extract(nzcv, 2));
+            SetFpFlag(context, FPState.NFlag, Extract(nzcv, 3));
         }
     }
 }

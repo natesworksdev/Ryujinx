@@ -10,6 +10,7 @@ namespace ARMeilleure.Translation
     {
         private const long CallerSavedIntRegistersMask = 0x7fL  << 9;
         private const long PStateNzcvFlagsMask         = 0xfL   << 60;
+        private const long FpStateNzcvFlagsMask        = 0xfL   << 60;
 
         private const long CallerSavedVecRegistersMask = 0xffffL << 16;
 
@@ -263,6 +264,7 @@ namespace ARMeilleure.Translation
             {
                 case RegisterType.Flag:    intMask = (1L << RegsCount) << register.Index; break;
                 case RegisterType.Integer: intMask =  1L               << register.Index; break;
+                case RegisterType.FpFlag:  vecMask = (1L << RegsCount) << register.Index; break;
                 case RegisterType.Vector:  vecMask =  1L               << register.Index; break;
             }
 
@@ -319,7 +321,7 @@ namespace ARMeilleure.Translation
                 {
                     outputs = ClearCallerSavedIntRegs(outputs);
                 }
-                else /* if (baseType == RegisterType.Vector) */
+                else /* if (baseType == RegisterType.Vector || baseType == RegisterType.FpFlag) */
                 {
                     outputs = ClearCallerSavedVecRegs(outputs);
                 }
@@ -366,6 +368,10 @@ namespace ARMeilleure.Translation
             {
                 return new Operand(bit & RegsMask, RegisterType.Flag, OperandType.I32);
             }
+            else if (baseType == RegisterType.Vector)
+            {
+                return new Operand(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
+            }
             else
             {
                 throw new ArgumentOutOfRangeException(nameof(bit));
@@ -377,6 +383,7 @@ namespace ARMeilleure.Translation
             switch (type)
             {
                 case RegisterType.Flag:    return OperandType.I32;
+                case RegisterType.FpFlag:  return OperandType.I32;
                 case RegisterType.Integer: return (mode == ExecutionMode.Aarch64) ? OperandType.I64 : OperandType.I32;
                 case RegisterType.Vector:  return OperandType.V128;
             }
@@ -405,7 +412,7 @@ namespace ARMeilleure.Translation
         private static long ClearCallerSavedVecRegs(long mask)
         {
             // TODO: ARM32 support.
-            mask &= ~CallerSavedVecRegistersMask;
+            mask &= ~(CallerSavedVecRegistersMask | FpStateNzcvFlagsMask);
 
             return mask;
         }

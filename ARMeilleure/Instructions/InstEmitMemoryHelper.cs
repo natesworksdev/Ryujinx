@@ -53,7 +53,7 @@ namespace ARMeilleure.Instructions
 
             if (!isSimd)
             {
-                Operand value = GetIntOrZR(context, rt);
+                Operand value = GetInt(context, rt);
 
                 if (ext == Extension.Sx32 || ext == Extension.Sx64)
                 {

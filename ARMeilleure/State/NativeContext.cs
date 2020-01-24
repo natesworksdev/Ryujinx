@@ -14,7 +14,8 @@ namespace ARMeilleure.State
 
         private const int TotalSize = RegisterConsts.IntRegsCount * IntSize  +
                                       RegisterConsts.VecRegsCount * VecSize  +
-                                      RegisterConsts.FlagsCount   * FlagSize + ExtraSize;
+                                      RegisterConsts.FlagsCount   * FlagSize +
+                                      RegisterConsts.FpFlagsCount * FlagSize + ExtraSize;
 
         public IntPtr BasePtr { get; }
 
@@ -144,9 +145,10 @@ namespace ARMeilleure.State
 
         public static int GetCounterOffset()
         {
-            return RegisterConsts.IntRegsCount * IntSize +
-                   RegisterConsts.VecRegsCount * VecSize +
-                   RegisterConsts.FlagsCount   * FlagSize;
+            return RegisterConsts.IntRegsCount * IntSize  +
+                   RegisterConsts.VecRegsCount * VecSize  +
+                   RegisterConsts.FlagsCount   * FlagSize +
+                   RegisterConsts.FpFlagsCount * FlagSize;
         }
 
         public void Dispose()
