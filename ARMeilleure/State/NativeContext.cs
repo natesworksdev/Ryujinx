@@ -101,6 +101,38 @@ namespace ARMeilleure.State
             Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
         }
 
+        public bool GetFPstateFlag(FPState flag)
+        {
+            if ((uint)flag >= RegisterConsts.FlagsCount)
+            {
+                throw new ArgumentException($"Invalid flag \"{flag}\" specified.");
+            }
+
+            int offset =
+                RegisterConsts.IntRegsCount * IntSize  +
+                RegisterConsts.VecRegsCount * VecSize  + 
+                RegisterConsts.FlagsCount   * FlagSize + (int)flag * FlagSize;
+
+            int value = Marshal.ReadInt32(BasePtr, offset);
+
+            return value != 0;
+        }
+
+        public void SetFPstateFlag(FPState flag, bool value)
+        {
+            if ((uint)flag >= RegisterConsts.FlagsCount)
+            {
+                throw new ArgumentException($"Invalid flag \"{flag}\" specified.");
+            }
+
+            int offset =
+                RegisterConsts.IntRegsCount * IntSize  +
+                RegisterConsts.VecRegsCount * VecSize  +
+                RegisterConsts.FlagsCount   * FlagSize + (int)flag * FlagSize;
+
+            Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
+        }
+
         public int GetCounter()
         {
             return Marshal.ReadInt32(BasePtr, GetCounterOffset());

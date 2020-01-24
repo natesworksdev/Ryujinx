@@ -268,9 +268,13 @@ namespace ARMeilleure.Translation
             {
                 return RegisterConsts.IntRegsCount + reg.Index;
             }
-            else /* if (reg.Type == RegisterType.Flag) */
+            else if (reg.Type == RegisterType.Flag)
             {
                 return RegisterConsts.IntAndVecRegsCount + reg.Index;
+            }
+            else /* if (reg.Type == RegisterType.FpFlag) */
+            {
+                return RegisterConsts.FpFlagsOffset + reg.Index;
             }
         }
 
