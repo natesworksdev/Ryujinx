@@ -48,6 +48,14 @@ namespace Ryujinx.Ui
             _gameTableStore    = gameTableStore;
             _rowIter           = rowIter;
             _virtualFileSystem = virtualFileSystem;
+
+            string ext = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
+            if (ext != ".nca" && ext != ".nsp" && ext != ".pfs0" && ext != ".xci")
+            {
+                _extractRomFs.Sensitive = false;
+                _extractExeFs.Sensitive = false;
+                _extractLogo.Sensitive  = false;
+            }
         }
 
         private bool TryFindSaveData(string titleName, string titleIdText, out ulong saveDataId)
@@ -197,8 +205,10 @@ namespace Ryujinx.Ui
                     if (mainNca == null)
                     {
                         Logger.PrintError(LogClass.Application, "Extraction failed. The main NCA was not present in the selected file.");
+                        GtkDialog.CreateErrorDialog("Extraction failed. The main NCA was not present in the selected file.");
 
                         fileChooser.Dispose();
+
                         return;
                     }
 
@@ -217,7 +227,12 @@ namespace Ryujinx.Ui
                     _virtualFileSystem.FsClient.Register(ncaSectionType.ToString().ToU8Span(), ncaFileSystem);
                     _virtualFileSystem.FsClient.Register("output".ToU8Span(), new LocalFileSystem(fileChooser.Filename));
 
-                    CopyDirectory(_virtualFileSystem.FsClient, $"{ncaSectionType}:/", "output:/");
+                    Result rc = CopyDirectory(_virtualFileSystem.FsClient, $"{ncaSectionType}:/", "output:/");
+                    if (rc.IsFailure())
+                    {
+                        Logger.PrintError(LogClass.Application, $"LibHac returned error code: {rc.ErrorCode}");
+                        GtkDialog.CreateErrorDialog($"Extraction failed. Read the log file for further information.");
+                    }
 
                     _virtualFileSystem.FsClient.Unmount(ncaSectionType.ToString());
                     _virtualFileSystem.FsClient.Unmount("output");
@@ -227,9 +242,10 @@ namespace Ryujinx.Ui
             fileChooser.Dispose();
         }
 
-        private static void CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
+        private static Result CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
         {
-            fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath, OpenDirectoryMode.All).ThrowIfFailure();
+            Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath, OpenDirectoryMode.All);
+            if (rc.IsFailure()) return rc;
 
             using (sourceHandle)
             {
@@ -242,17 +258,21 @@ namespace Ryujinx.Ui
                     {
                         fs.EnsureDirectoryExists(subDstPath);
 
-                        CopyDirectory(fs, subSrcPath, subDstPath);
+                        rc = CopyDirectory(fs, subSrcPath, subDstPath);
+                        if (rc.IsFailure()) return rc;
                     }
 
                     if (entry.Type == DirectoryEntryType.File)
                     {
                         fs.CreateOrOverwriteFile(subDstPath, entry.Size);
 
-                        CopyFile(fs, subSrcPath, subDstPath);
+                        rc = CopyFile(fs, subSrcPath, subDstPath);
+                        if (rc.IsFailure()) return rc;
                     }
                 }
             }
+
+            return Result.Success;
         }
 
         public static Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
