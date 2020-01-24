@@ -56,7 +56,7 @@ namespace ARMeilleure.Instructions
                 ? op.GetPc() | 1
                 : op.GetPc() - 4;
 
-            SetIntOrSP(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
+            SetIntA32(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
 
             // If x is true, then this is a branch with link and exchange.
             // In this case we need to swap the mode between Arm <-> Thumb.
@@ -76,6 +76,7 @@ namespace ARMeilleure.Instructions
 
             Operand addr = GetIntA32(context, op.Rm);
             Operand bitOne = context.BitwiseAnd(addr, Const(1));
+            addr = context.BitwiseOr(addr, Const(1)); // set call flag
 
             bool isThumb = IsThumb(context.CurrOp);
 
@@ -83,11 +84,10 @@ namespace ARMeilleure.Instructions
                 ? pc | 1
                 : pc - 4;
 
-            SetIntOrSP(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
+            SetIntA32(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
 
             SetFlag(context, PState.TFlag, bitOne);
 
-            addr = context.BitwiseOr(addr, Const(1)); // set call flag
             context.Return(addr); // call
         }
 

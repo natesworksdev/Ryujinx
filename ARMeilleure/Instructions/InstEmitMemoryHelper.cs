@@ -67,7 +67,7 @@ namespace ARMeilleure.Instructions
                     }
                 }
 
-                SetIntOrZR(context, rt, value);
+                SetInt(context, rt, value);
             }
         }
 

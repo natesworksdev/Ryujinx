@@ -98,7 +98,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32MemMult op = (OpCode32MemMult)context.CurrOp;
 
-            Operand n = GetIntA32(context, op.Rn);
+            Operand n = context.Copy(GetIntA32(context, op.Rn));
 
             Operand baseAddress = context.Add(n, Const(op.Offset));
 

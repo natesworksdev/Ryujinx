@@ -43,7 +43,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                return GetIntOrSP(context, GetRegisterAlias(context.Mode, regIndex));
+                return Register(GetRegisterAlias(context.Mode, regIndex), RegisterType.Integer, OperandType.I32);
             }
         }
 
@@ -62,7 +62,13 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                SetIntOrSP(context, GetRegisterAlias(context.Mode, regIndex), value);
+                if (value.Type == OperandType.I64)
+                {
+                    value = context.ConvertI64ToI32(value);
+                }
+                Operand reg = Register(GetRegisterAlias(context.Mode, regIndex), RegisterType.Integer, OperandType.I32);
+
+                context.Copy(reg, value);
             }
         }
 

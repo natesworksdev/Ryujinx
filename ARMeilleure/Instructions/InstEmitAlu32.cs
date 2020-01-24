@@ -465,7 +465,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32AluImm16 op = (OpCode32AluImm16)context.CurrOp;
 
-            Operand d = GetIntOrZR(context, op.Rd);
+            Operand d = GetIntA32(context, op.Rd);
             Operand imm = Const(op.Immediate << 16); //immeditate value as top halfword
             Operand res = context.BitwiseAnd(d, Const(0x0000ffff));
             res = context.BitwiseOr(res, imm);
@@ -567,7 +567,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
-            Operand d = GetIntOrZR(context, op.Rd);
+            Operand d = GetIntA32(context, op.Rd);
             Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
 
             SetIntA32(context, op.Rd, res);
@@ -577,8 +577,8 @@ namespace ARMeilleure.Instructions
         {
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
-            Operand n = GetIntOrZR(context, op.Rn);
-            Operand d = GetIntOrZR(context, op.Rd);
+            Operand n = GetIntA32(context, op.Rn);
+            Operand d = GetIntA32(context, op.Rd);
             Operand part = context.BitwiseAnd(n, Const(op.SourceMask));
             if (op.Lsb != 0) part = context.ShiftLeft(part, Const(op.Lsb));
             Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
@@ -593,7 +593,7 @@ namespace ARMeilleure.Instructions
 
             var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
 
-            Operand n = GetIntOrZR(context, op.Rn);
+            Operand n = GetIntA32(context, op.Rn);
             Operand res = context.ShiftRightUI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));
 
             SetIntA32(context, op.Rd, res);
@@ -605,7 +605,7 @@ namespace ARMeilleure.Instructions
 
             var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
 
-            Operand n = GetIntOrZR(context, op.Rn);
+            Operand n = GetIntA32(context, op.Rn);
             Operand res = context.ShiftRightSI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));
 
             SetIntA32(context, op.Rd, res);

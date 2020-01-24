@@ -55,7 +55,7 @@ namespace ARMeilleure.Instructions
                 if (op.Replicate && !load) throw new Exception("Replicate+Store is undefined for STn");
                 int eBytes = 1 << op.Size;
 
-                Operand n = GetIntA32(context, op.Rn);
+                Operand n = context.Copy(GetIntA32(context, op.Rn));
 
                 //check alignment (?)
                 int offset = 0;
@@ -129,7 +129,7 @@ namespace ARMeilleure.Instructions
 
                 int eBytes = 1 << op.Size;
 
-                Operand n = GetIntA32(context, op.Rn);
+                Operand n = context.Copy(GetIntA32(context, op.Rn));
                 int offset = 0;
                 int d = op.Vd;
 
