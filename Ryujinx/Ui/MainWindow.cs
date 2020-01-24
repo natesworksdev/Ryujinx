@@ -232,7 +232,7 @@ namespace Ryujinx.Ui
         {
             if (_gameLoaded)
             {
-                GtkDialog.CreateErrorDialog("A game has already been loaded. Please close the emulator and try again");
+                GtkDialog.CreateDialog("Ryujinx", "A game has already been loaded", "Please close it first and try again.");
             }
             else
             {
