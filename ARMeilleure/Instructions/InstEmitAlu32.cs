@@ -426,8 +426,8 @@ namespace ARMeilleure.Instructions
 
             if (!unsigned)
             {
-                // If Rn == INT_MIN && Rm == -1, Rd = INT_MIN (overflow).
-                // Assume this is the same as ARM64 for now - tests to follow.
+                // ARM64 behaviour: If Rn == INT_MIN && Rm == -1, Rd = INT_MIN (overflow).
+                // TODO: tests to ensure A32 works the same
 
                 Operand intMin = Const(int.MinValue);
                 Operand minus1 = Const(-1);

@@ -423,22 +423,22 @@ namespace ARMeilleure.Instructions
 
         public static int FloatToInt32(float value)
         {
-            return (int)RoundF(value);
+            return SatF32ToS32(RoundF(value));
         }
 
         public static int DoubleToInt32(double value)
         {
-            return (int)Round(value);
+            return SatF64ToS32(Round(value));
         }
 
         public static uint FloatToUInt32(float value)
         {
-            return (uint)RoundF(value);
+            return SatF32ToU32(RoundF(value));
         }
 
         public static uint DoubleToUInt32(double value)
         {
-            return (uint)Round(value);
+            return SatF64ToU32(Round(value));
         }
 #endregion
 

@@ -27,6 +27,33 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        private static Operand EmitSaturateFloatToInt(ArmEmitterContext context, Operand op1, bool unsigned)
+        {
+            if (op1.Type == OperandType.FP64)
+            {
+                if (unsigned)
+                {
+                    return context.Call(new _U32_F64(SoftFallback.SatF64ToU32), op1);
+                }
+                else
+                {
+                    return context.Call(new _S32_F64(SoftFallback.SatF64ToS32), op1);
+                }
+
+            }
+            else
+            {
+                if (unsigned)
+                {
+                    return context.Call(new _U32_F32(SoftFallback.SatF32ToU32), op1);
+                }
+                else
+                {
+                    return context.Call(new _S32_F32(SoftFallback.SatF32ToS32), op1);
+                }
+            }
+        }
+
         public static void Vcvt_V(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
@@ -40,29 +67,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
                 {
-                    if (op1.Type == OperandType.FP64)
-                    {
-                        if (unsigned)
-                        {
-                            return context.Call(new _U32_F64(CastDoubleToUInt32), op1);
-                        }
-                        else
-                        {
-                            return context.Call(new _S32_F64(CastDoubleToInt32), op1);
-                        }
-
-                    }
-                    else
-                    {
-                        if (unsigned)
-                        {
-                            return context.Call(new _U32_F32(CastFloatToUInt32), op1);
-                        }
-                        else
-                        {
-                            return context.Call(new _S32_F32(CastFloatToInt32), op1);
-                        }
-                    }
+                    return EmitSaturateFloatToInt(context, op1, unsigned);
                 });
             }
             else
@@ -156,29 +161,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     // Round towards zero.
-                    if (floatSize == OperandType.FP64)
-                    {
-                        if (unsigned)
-                        {
-                            asInteger = context.Call(new _U32_F64(CastDoubleToUInt32), toConvert);
-                        }
-                        else
-                        {
-                            asInteger = context.Call(new _S32_F64(CastDoubleToInt32), toConvert);
-                        }
-
-                    }
-                    else
-                    {
-                        if (unsigned)
-                        {
-                            asInteger = context.Call(new _U32_F32(CastFloatToUInt32), toConvert);
-                        }
-                        else
-                        {
-                            asInteger = context.Call(new _S32_F32(CastFloatToInt32), toConvert);
-                        }
-                    }
+                    asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
                 }
 
                 InsertScalar(context, op.Vd, asInteger);
@@ -253,28 +236,7 @@ namespace ARMeilleure.Instructions
 
             Operand asInteger;
 
-            if (floatSize == OperandType.FP64)
-            {
-                if (unsigned)
-                {
-                    asInteger = context.Call(new _U32_F64(CastDoubleToUInt32), toConvert);
-                }
-                else
-                {
-                    asInteger = context.Call(new _S32_F64(CastDoubleToInt32), toConvert);
-                }
-            }
-            else
-            {
-                if (unsigned)
-                {
-                    asInteger = context.Call(new _U32_F32(CastFloatToUInt32), toConvert);
-                }
-                else
-                {
-                    asInteger = context.Call(new _S32_F32(CastFloatToInt32), toConvert);
-                }
-            }
+            asInteger = EmitSaturateFloatToInt(context, toConvert, unsigned);
 
             InsertScalar(context, op.Vd, asInteger);
         }
@@ -309,26 +271,6 @@ namespace ARMeilleure.Instructions
         public static void Vrint_Z(ArmEmitterContext context)
         {
             EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Truncate, Math.Truncate, op1));
-        }
-
-        private static int CastDoubleToInt32(double value)
-        {
-            return (int)value;
-        }
-
-        private static uint CastDoubleToUInt32(double value)
-        {
-            return (uint)value;
-        }
-
-        private static int CastFloatToInt32(float value)
-        {
-            return (int)value;
-        }
-
-        private static uint CastFloatToUInt32(float value)
-        {
-            return (uint)value;
         }
 
         private static Operand EmitFPConvert(ArmEmitterContext context, Operand value, OperandType type, bool signed)
