@@ -150,7 +150,6 @@ namespace ARMeilleure.Instructions
             {
                 Operand selectedIndex = context.ZeroExtend8(OperandType.I32, context.VectorExtract8(m, index + op.Im));
 
-                Operand end = Label();
                 Operand inRange = context.ICompareLess(selectedIndex, Const(byteLength));
                 Operand elemRes = null; // Note: This is I64 for ease of calculation.
 
@@ -193,13 +192,9 @@ namespace ARMeilleure.Instructions
                     }
                 }
 
-                if (!extension) context.MarkLabel(end);
-
                 Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, op.Qd, index + op.Id, 0, false)) : Const(0L); 
 
                 res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes, fallback), index + op.Id, 0);
-
-                if (extension) context.MarkLabel(end);
             }
 
             context.Copy(GetVecA32(op.Qd), res);
