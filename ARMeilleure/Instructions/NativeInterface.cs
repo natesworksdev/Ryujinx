@@ -41,8 +41,6 @@ namespace ARMeilleure.Instructions
 
         public static void UnregisterThread()
         {
-            _context.Dispose();
-
             _context = null;
         }
 
