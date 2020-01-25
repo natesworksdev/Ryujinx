@@ -3,9 +3,6 @@
 using ARMeilleure.State;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -16,26 +13,26 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCntImm = 2;
 
         private uint[] LDSTModes =
-            {
-                //LD1
-                0b0111,
-                0b1010,
-                0b0110,
-                0b0010,
+        {
+            // LD1
+            0b0111,
+            0b1010,
+            0b0110,
+            0b0010,
 
-                //LD2
-                0b1000,
-                0b1001,
-                0b0011,
+            // LD2
+            0b1000,
+            0b1001,
+            0b0011,
 
-                //LD3
-                0b0100,
-                0b0101,
+            // LD3
+            0b0100,
+            0b0101,
 
-                //LD4
-                0b0000,
-                0b0001
-            };
+            // LD4
+            0b0000,
+            0b0001
+        };
 
         [Test, Pairwise, Description("VLDn.<size> <list>, [<Rn> {:<align>}]{ /!/, <Rm>} (single n element structure)")]
         public void Vldn_Single([Values(0u, 1u, 2u)] uint size,
@@ -60,7 +57,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((vd & 0x10) << 18);
             opcode |= ((vd & 0xf) << 12);
 
-            opcode |= (n & 3) << 8; //LD1 is 0, LD2 is 1 etc
+            opcode |= (n & 3) << 8; // LD1 is 0, LD2 is 1 etc.
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, sp: 0x2500);
 
@@ -86,8 +83,8 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((vd & 0x10) << 18);
             opcode |= ((vd & 0xf) << 12);
 
-            opcode |= (n & 3) << 8; //LD1 is 0, LD2 is 1 etc
-            if (t) opcode |= 1 << 5; //LD1 is 0, LD2 is 1 etc
+            opcode |= (n & 3) << 8; // LD1 is 0, LD2 is 1 etc.
+            if (t) opcode |= 1 << 5;
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, sp: 0x2500);
 
@@ -142,7 +139,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((vd & 0x10) << 18);
             opcode |= ((vd & 0xf) << 12);
 
-            opcode |= (n & 3) << 8; //ST1 is 0, ST2 is 1 etc
+            opcode |= (n & 3) << 8; // ST1 is 0, ST2 is 1 etc.
 
             SingleOpcode(opcode, r0: 0x2500, r1: offset, v1: vec1, v2: vec2, v3: vec3, v4: vec4, sp: 0x2500);
 
@@ -187,10 +184,10 @@ namespace Ryujinx.Tests.Cpu
             uint opcode = 0xec100a00u; // VST4.8 {D0, D1, D2, D3}, [R0], R0
 
             uint[] vldmModes = {
-                //note: 3rd 0 leaves a space for "D"
-                0b0100, // increment after
-                0b0101, // increment after !
-                0b1001  // decrement before !
+                // Note: 3rd 0 leaves a space for "D".
+                0b0100, // Increment after.
+                0b0101, // Increment after. (!)
+                0b1001  // Decrement before. (!)
             };
 
             opcode |= ((vldmModes[mode] & 15) << 21);
@@ -201,15 +198,15 @@ namespace Ryujinx.Tests.Cpu
 
             opcode |= ((uint)(single ? 0 : 1) << 8);
 
-            if (!single) regs = (regs << 1); //low bit must be 0 - must be even number of registers.
+            if (!single) regs = (regs << 1); // Low bit must be 0 - must be even number of registers.
             uint regSize = single ? 1u : 2u;
 
-            if (vd + (regs / regSize) > 32) //can't address further than s31 or d31
+            if (vd + (regs / regSize) > 32) // Can't address further than S31 or D31.
             {
                 regs -= (vd + (regs / regSize)) - 32;
             }
 
-            if (regs / regSize > 16) //can't do more than 16 registers at a time
+            if (regs / regSize > 16) // Can't do more than 16 registers at a time.
             {
                 regs = 16 * regSize;
             }
@@ -222,7 +219,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VLDR.<size> <Sd>, [<Rn> {, #{+/-}<imm>}]")]
-        public void Vldr([Values(2u, 3u)] uint size, //fp16 is not supported for now
+        public void Vldr([Values(2u, 3u)] uint size, // FP16 is not supported for now
                          [Values(0u)] uint rn,
                          [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint sd,
                          [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint imm,
@@ -249,7 +246,7 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= ((sd & 0x10) << 18);
                 opcode |= ((sd & 0xf) << 12);
             }
-            opcode |= (uint)imm & 0xff;
+            opcode |= imm & 0xff;
 
             SingleOpcode(opcode, r0: 0x2500);
 
@@ -257,7 +254,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VSTR.<size> <Sd>, [<Rn> {, #{+/-}<imm>}]")]
-        public void Vstr([Values(2u, 3u)] uint size, //fp16 is not supported for now
+        public void Vstr([Values(2u, 3u)] uint size, // FP16 is not supported for now
                 [Values(0u)] uint rn,
                 [Values(0u, 1u, 2u, 3u, 4u, 5u, 6u, 7u)] uint sd,
                 [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint imm,
@@ -284,7 +281,7 @@ namespace Ryujinx.Tests.Cpu
                 opcode |= ((sd & 0x10) << 18);
                 opcode |= ((sd & 0xf) << 12);
             }
-            opcode |= (uint)imm & 0xff;
+            opcode |= imm & 0xff;
 
             (V128 vec1, V128 vec2, _, _) = GenerateTestVectors();
 
@@ -308,7 +305,7 @@ namespace Ryujinx.Tests.Cpu
             int floatLength = length >> 2;
             float[] data = new float[floatLength];
 
-            for (int i=0; i<floatLength; i++)
+            for (int i = 0; i < floatLength; i++)
             {
                 data[i] = i + (i / 9f);
             }

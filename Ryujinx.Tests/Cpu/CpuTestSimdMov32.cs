@@ -22,17 +22,17 @@ namespace Ryujinx.Tests.Cpu
         {
             uint[] variants =
             {
-                //I32
+                // I32
                 0b0000_0,
                 0b0010_0,
                 0b0100_0,
                 0b0110_0,
 
-                //I16
+                // I16
                 0b1000_0,
                 0b1010_0,
 
-                //dt
+                // DT
                 0b1100_0,
                 0b1101_0,
                 0b1110_0,
@@ -148,7 +148,6 @@ namespace Ryujinx.Tests.Cpu
                     opcode |= 1 << 23;
                 }
             }
-            
 
             SingleOpcode(opcode, r0: valueRn, r1: valueRn, r2: valueRn, r3: valueRn, v0: new V128(valueVn1, valueVn2), v1: new V128(valueVn2, valueVn1));
 
@@ -191,7 +190,7 @@ namespace Ryujinx.Tests.Cpu
                              [Random(RndCntImm)] ulong valueVn2,
                              [Values] bool op)
         {
-            uint opcode = 0xec400a10u; //VMOV S0, S1, R0, R0
+            uint opcode = 0xec400a10u; // VMOV S0, S1, R0, R0
             opcode |= (vm & 1) << 5;
             opcode |= (vm & 0x1e) >> 1;
             opcode |= (rt & 0xf) << 12;
@@ -216,7 +215,7 @@ namespace Ryujinx.Tests.Cpu
             uint opcode = 0xf3b20080u; // VTRN.8 D0, D0
             if (vm == vd)
             {
-                return; //undefined
+                return; // Undefined.
             }
 
             if (q)
@@ -246,10 +245,10 @@ namespace Ryujinx.Tests.Cpu
                          [Values(0u, 1u, 2u)] uint size,
                          [Values] bool q)
         {
-            uint opcode = 0xf3b20180u; // VZIP.8 d0, d0
+            uint opcode = 0xf3b20180u; // VZIP.8 D0, D0
             if (vm == vd || (size == 2 && !q))
             {
-                return; //undefined
+                return; // Undefined.
             }
 
             if (q)
@@ -282,7 +281,7 @@ namespace Ryujinx.Tests.Cpu
             uint opcode = 0xf3b20100u; // VUZP.8 d0, d0
             if (vm == vd || (size == 2 && !q))
             {
-                return; //undefined
+                return; // Undefined.
             }
 
             if (q)
@@ -307,16 +306,16 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Combinatorial, Description("VTBL.8 <Dd>, {list}, <Dm>")]
-        public void Vtbl([Range(0u, 6u)] uint vm, //indices, include potentially invalid
-                         [Range(4u, 12u)] uint vn, //selection
-                         [Values(0u, 1u)] uint vd, //destinations
+        public void Vtbl([Range(0u, 6u)] uint vm, // Indices, include potentially invalid.
+                         [Range(4u, 12u)] uint vn, // Selection.
+                         [Values(0u, 1u)] uint vd, // Destinations.
                          [Range(0u, 3u)] uint length,
                          [Values] bool x)
         {
             uint opcode = 0xf3b00800u; // VTBL.8 D0, {D0}, D0
             if (vn + length > 31)
             {
-                return; //undefined
+                return; // Undefined.
             }
 
             if (x)
@@ -371,7 +370,7 @@ namespace Ryujinx.Tests.Cpu
             }
             else if (imm4 > 7)
             {
-                return; //undefined
+                return; // Undefined.
             }
             opcode |= (vm & 0x10) << 1;
             opcode |= (vm & 0xf);
@@ -412,8 +411,8 @@ namespace Ryujinx.Tests.Cpu
             opcode |= (vd & 0xf) << 16;
             opcode |= (rt & 0xf) << 12;
 
-            opcode |= (size & 1) << 5; // e
-            opcode |= (size & 2) << 21; // b
+            opcode |= (size & 1) << 5; // E
+            opcode |= (size & 2) << 21; // B
 
             V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
 

@@ -127,7 +127,7 @@ namespace Ryujinx.Tests.Unicorn.Native
         CONTROL,
         ENDING,
 
-        // alias registers
+        // Alias registers.
         R13 = SP,
         R14 = LR,
         R15 = PC,

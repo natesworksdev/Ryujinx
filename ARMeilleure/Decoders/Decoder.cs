@@ -292,7 +292,6 @@ namespace ARMeilleure.Decoders
 
         private static bool IsCall(OpCode opCode)
         {
-            // TODO (CQ): ARM32 support.
             return opCode.Instruction.Name == InstName.Bl ||
                    opCode.Instruction.Name == InstName.Blr ||
                    opCode.Instruction.Name == InstName.Blx;

@@ -545,9 +545,10 @@ namespace ARMeilleure.Instructions
         Vldr,
         Vmax,
         Vmin,
-        VMMmn,
         Vmla,
         Vmls,
+        VMMmn,
+        Vmov,
         Vmrs,
         Vmsr,
         Vmul,
@@ -578,7 +579,5 @@ namespace ARMeilleure.Instructions
         Vtrn,
         Vuzp,
         Vzip,
-
-        Vmov
     }
 }

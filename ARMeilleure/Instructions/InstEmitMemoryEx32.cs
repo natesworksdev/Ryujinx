@@ -36,6 +36,7 @@ namespace ARMeilleure.Instructions
         {
             EmitExLoadOrStore(context, HWordSizeLog2, AccessType.LoadZx | AccessType.Exclusive);
         }
+
         public static void Lda(ArmEmitterContext context)
         {
             EmitExLoadOrStore(context, WordSizeLog2, AccessType.LoadZx | AccessType.Ordered);
@@ -71,7 +72,7 @@ namespace ARMeilleure.Instructions
             EmitExLoadOrStore(context, HWordSizeLog2, AccessType.LoadZx | AccessType.Ordered);
         }
 
-        // stores
+        // Stores.
 
         public static void Strex(ArmEmitterContext context)
         {
@@ -149,7 +150,7 @@ namespace ARMeilleure.Instructions
             {
                 if (size == DWordSizeLog2)
                 {
-                    // keep loads atomic - make the call to get the whole region and then decompose it into parts
+                    // Keep loads atomic - make the call to get the whole region and then decompose it into parts
                     // for the registers.
 
                     Operand value = EmitExLoad(context, address, exclusive, size);
@@ -184,15 +185,12 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                Operand s = null;
-
                 if (size == DWordSizeLog2)
                 {
-                    //split the result into 2 words (based on endianness)
+                    // Split the result into 2 words (based on endianness)
 
                     Operand lo = context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt));
                     Operand hi = context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt | 1));
-                    Operand toStore = Local(OperandType.I64);
 
                     Operand lblBigEndian = Label();
                     Operand lblEnd = Label();
@@ -215,8 +213,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    
-                    s = EmitExStore(context, address, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt)), exclusive, size);
+                    Operand s = EmitExStore(context, address, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt)), exclusive, size);
                     // This is only needed for exclusive stores. The function returns 0
                     // when the store is successful, and 1 otherwise.
                     if (exclusive) SetIntA32(context, op.Rd, s);

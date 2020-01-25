@@ -3,7 +3,7 @@ using System;
 namespace ARMeilleure.State
 {
     [Flags]
-    public enum FPCR : ulong
+    public enum FPCR : uint
     {
         Ufe = 1 << 11,
         Fz  = 1 << 24,

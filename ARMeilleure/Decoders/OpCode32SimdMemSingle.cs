@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using ARMeilleure.State;
 
 namespace ARMeilleure.Decoders
 {
@@ -16,6 +14,7 @@ namespace ARMeilleure.Decoders
         public int Size { get; private set; }
         public bool Replicate { get; private set; }
         public int Increment { get; private set; }
+
         public OpCode32SimdMemSingle(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Vd = (opCode >> 12) & 0xf;
@@ -40,8 +39,8 @@ namespace ARMeilleure.Decoders
             Rm = (opCode >> 0) & 0xf;
             Rn = (opCode >> 16) & 0xf;
 
-            WBack = Rm != 15;
-            RegisterIndex = (Rm != 15 && Rm != 13);
+            WBack = Rm != RegisterAlias.Aarch32Pc;
+            RegisterIndex = (Rm != RegisterAlias.Aarch32Pc && Rm != RegisterAlias.Aarch32Sp);
         }
     }
 }

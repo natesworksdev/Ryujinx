@@ -1,7 +1,5 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -19,7 +17,7 @@ namespace Ryujinx.Tests.Cpu
                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint msb)
         {
-            msb = Math.Max(lsb, msb); // don't test unpredictable for now
+            msb = Math.Max(lsb, msb); // Don't test unpredictable for now.
             uint opcode = 0xe7c0001fu; // BFC R0, #0, #1
             opcode |= ((rd & 0xf) << 12);
             opcode |= ((msb & 31) << 16) | ((lsb & 31) << 7);
@@ -40,7 +38,7 @@ namespace Ryujinx.Tests.Cpu
                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
                         [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint msb)
         {
-            msb = Math.Max(lsb, msb); // don't test unpredictable for now
+            msb = Math.Max(lsb, msb); // Don't test unpredictable for now.
             uint opcode = 0xe7c00010u; // BFI R0, R0, #0, #1
             opcode |= ((rd & 0xf) << 12);
             opcode |= ((rn & 0xf) << 0);

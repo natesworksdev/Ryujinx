@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32AluBf : OpCode32, IOpCode32AluBf
     {

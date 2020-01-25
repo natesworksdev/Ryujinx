@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdImm44 : OpCode32, IOpCode32SimdImm
     {
@@ -10,6 +6,7 @@ namespace ARMeilleure.Decoders
         public long Immediate { get; private set; }
         public int Size { get; private set; }
         public int Elems { get; private set; }
+
         public OpCode32SimdImm44(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Size = (opCode >> 8) & 0x3;

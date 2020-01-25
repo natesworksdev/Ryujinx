@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdShift : OpCode32Simd
     {
         public int Immediate { get; private set; }
         public int Shift { get; private set; }
+
         public OpCode32SimdShift(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Immediate = (opCode >> 16) & 0x3f;

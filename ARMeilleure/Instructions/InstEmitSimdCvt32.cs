@@ -17,12 +17,12 @@ namespace ARMeilleure.Instructions
         {
             if (lowBit)
             {
-                //move the low bit to the top
+                // Move the low bit to the top.
                 return ((vd & 0x1) << 4) | (vd >> 1);
             } 
             else
             {
-                //move the high bit to the bottom
+                // Move the high bit to the bottom.
                 return ((vd & 0xf) << 1) | (vd >> 4);
             }
         }
@@ -30,11 +30,12 @@ namespace ARMeilleure.Instructions
         public static void Vcvt_V(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
             bool unsigned = (op.Opc & 1) != 0;
             bool toInteger = (op.Opc & 2) != 0;
             OperandType floatSize = (op.Size == 2) ? OperandType.FP32 : OperandType.FP64;
-
-            if (op.Size != 2) throw new Exception("CVT vector mode only currently defined for 32-bit");
+            
+            if (op.Size != 2) throw new InvalidOperationException("CVT vector mode only defined for 32-bit.");
             if (toInteger)
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
@@ -87,7 +88,7 @@ namespace ARMeilleure.Instructions
             if (op.Size == 3)
             {
                 vd = FlipVdBits(op.Vd, false);
-                // double to single
+                // Double to single.
                 Operand fp = ExtractScalar(context, OperandType.FP64, vm);
 
                 Operand res = context.ConvertToFP(OperandType.FP32, fp);
@@ -97,7 +98,7 @@ namespace ARMeilleure.Instructions
             else
             {
                 vd = FlipVdBits(op.Vd, true);
-                // single to double
+                // Single to double.
                 Operand fp = ExtractScalar(context, OperandType.FP32, vm);
 
                 Operand res = context.ConvertToFP(OperandType.FP64, fp);
@@ -123,10 +124,10 @@ namespace ARMeilleure.Instructions
 
                 Operand asInteger;
 
-                // TODO: Fast Path
+                // TODO: Fast Path.
                 if (roundWithFpscr)
                 {
-                    // these need to get the FPSCR value, so it's worth noting we'd need to do a c# call at some point.
+                    // These need to get the FPSCR value, so it's worth noting we'd need to do a c# call at some point.
                     if (floatSize == OperandType.FP64)
                     {
                         if (unsigned)
@@ -154,7 +155,7 @@ namespace ARMeilleure.Instructions
                 } 
                 else
                 {
-                    // round towards zero
+                    // Round towards zero.
                     if (floatSize == OperandType.FP64)
                     {
                         if (unsigned)
@@ -236,16 +237,16 @@ namespace ARMeilleure.Instructions
 
             switch (op.Opc2)
             {
-                case 0b00: //away
+                case 0b00: // Away
                     toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
                     break;
-                case 0b01: //nearest
+                case 0b01: // Nearest
                     toConvert = EmitRoundMathCall(context, MidpointRounding.ToEven, toConvert);
                     break;
-                case 0b10: //+infinity
+                case 0b10: // Towards positive infinity
                     toConvert = EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, toConvert);
                     break;
-                case 0b11: //negative
+                case 0b11: // Towards negative infinity
                     toConvert = EmitUnaryMathCall(context, MathF.Floor, Math.Floor, toConvert);
                     break;
             }
@@ -262,7 +263,6 @@ namespace ARMeilleure.Instructions
                 {
                     asInteger = context.Call(new _S32_F64(CastDoubleToInt32), toConvert);
                 }
-
             }
             else
             {
@@ -279,7 +279,6 @@ namespace ARMeilleure.Instructions
             InsertScalar(context, op.Vd, asInteger);
         }
 
-
         public static void Vrint_RM(ArmEmitterContext context)
         {
             OpCode32SimdCvtFI op = (OpCode32SimdCvtFI)context.CurrOp;
@@ -290,16 +289,16 @@ namespace ARMeilleure.Instructions
 
             switch (op.Opc2)
             {
-                case 0b00: //away
+                case 0b00: // Away
                     toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
                     break;
-                case 0b01: //nearest
+                case 0b01: // Nearest
                     toConvert = EmitRoundMathCall(context, MidpointRounding.ToEven, toConvert);
                     break;
-                case 0b10: //+infinity
+                case 0b10: // Towards positive infinity
                     toConvert = EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, toConvert);
                     break;
-                case 0b11: //negative
+                case 0b11: // Towards negative infinity
                     toConvert = EmitUnaryMathCall(context, MathF.Floor, Math.Floor, toConvert);
                     break;
             }
@@ -321,10 +320,12 @@ namespace ARMeilleure.Instructions
         {
             return (uint)value;
         }
+
         private static int CastFloatToInt32(float value)
         {
             return (int)value;
         }
+
         private static uint CastFloatToUInt32(float value)
         {
             return (uint)value;

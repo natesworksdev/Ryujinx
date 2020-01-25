@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdImm : OpCode32, IOpCode32SimdImm
     {
@@ -11,6 +7,7 @@ namespace ARMeilleure.Decoders
         public long Immediate { get; private set; }
         public int Size { get; private set; }
         public int Elems => GetBytesCount() >> Size;
+
         public OpCode32SimdImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Vd = (opCode >> 12) & 0xf;
@@ -27,10 +24,7 @@ namespace ARMeilleure.Decoders
             imm |= ((uint)opCode >> 12) & 0x70;
             imm |= ((uint)opCode >> 17) & 0x80;
 
-            Tuple<long, int> parsedImm = OpCodeSimdHelper.GetSimdImmediateAndSize(cMode, op, imm, fpBaseSize: 2);
-
-            Immediate = parsedImm.Item1;
-            Size = parsedImm.Item2;
+            (Immediate, Size) = OpCodeSimdHelper.GetSimdImmediateAndSize(cMode, op, imm, fpBaseSize: 2);
 
             RegisterSize = Q ? RegisterSize.Simd128 : RegisterSize.Simd64;
 

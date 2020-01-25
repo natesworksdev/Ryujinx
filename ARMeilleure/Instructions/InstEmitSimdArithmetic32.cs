@@ -21,6 +21,7 @@ namespace ARMeilleure.Instructions
         public static void Vabs_V(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
             if (op.F)
             {
                 EmitVectorUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Abs, Math.Abs, op1));
@@ -73,7 +74,7 @@ namespace ARMeilleure.Instructions
 
             Operand insert = GetIntA32(context, op.Rt);
 
-            // zero extend into an I64, then replicate. Saves the most time over elementwise inserts
+            // Zero extend into an I64, then replicate. Saves the most time over elementwise inserts.
             switch (op.Size)
             {
                 case 2:
@@ -86,7 +87,7 @@ namespace ARMeilleure.Instructions
                     insert = context.Multiply(context.ZeroExtend8(OperandType.I64, insert), Const(0x0101010101010101u));
                     break;
                 default:
-                    throw new Exception("Unknown Vdup Size!");
+                    throw new ArgumentOutOfRangeException("Unknown Vdup Size!");
             }
 
             InsertScalar(context, op.Vd, insert);
@@ -102,7 +103,7 @@ namespace ARMeilleure.Instructions
 
             Operand insert = EmitVectorExtractZx32(context, op.Vm >> 1, ((op.Vm & 1) << (3 - op.Size)) + op.Index, op.Size);
 
-            // zero extend into an I64, then replicate. Saves the most time over elementwise inserts
+            // Zero extend into an I64, then replicate. Saves the most time over elementwise inserts.
             switch (op.Size)
             {
                 case 2:
@@ -115,7 +116,7 @@ namespace ARMeilleure.Instructions
                     insert = context.Multiply(context.ZeroExtend8(OperandType.I64, insert), Const(0x0101010101010101u));
                     break;
                 default:
-                    throw new Exception("Unknown Vdup Size!");
+                    throw new ArgumentOutOfRangeException("Unknown Vdup Size!");
             }
 
             InsertScalar(context, op.Vd, insert);
@@ -124,6 +125,7 @@ namespace ARMeilleure.Instructions
                 InsertScalar(context, op.Vd | 1, insert);
             }
         }
+
         public static void Vext(ArmEmitterContext context)
         {
             OpCode32SimdExt op = (OpCode32SimdExt)context.CurrOp;
@@ -244,7 +246,7 @@ namespace ARMeilleure.Instructions
         public static void VmaxminNm_V(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            bool max = (op.Size & 2) == 0; // op is high bit of size (not used for fp)
+            bool max = (op.Size & 2) == 0; // Op is high bit of size (not used for fp).
             _F32_F32_F32_Bool f32 = max ? new _F32_F32_F32_Bool(SoftFloat32.FPMaxNumFpscr) : new _F32_F32_F32_Bool(SoftFloat32.FPMinNumFpscr);
             _F64_F64_F64_Bool f64 = max ? new _F64_F64_F64_Bool(SoftFloat64.FPMaxNumFpscr) : new _F64_F64_F64_Bool(SoftFloat64.FPMinNumFpscr);
 
@@ -332,6 +334,7 @@ namespace ARMeilleure.Instructions
         public static void Vmul_1(ArmEmitterContext context)
         {
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+
             if (op.F)
             {
                 if (Optimizations.FastFP)
@@ -390,6 +393,7 @@ namespace ARMeilleure.Instructions
         public static void Vmla_1(ArmEmitterContext context)
         {
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+
             if (op.F)
             {
                 if (Optimizations.FastFP)
@@ -448,6 +452,7 @@ namespace ARMeilleure.Instructions
         public static void Vmls_1(ArmEmitterContext context)
         {
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+
             if (op.F)
             {
                 if (Optimizations.FastFP)
@@ -479,17 +484,18 @@ namespace ARMeilleure.Instructions
         public static void Vrev(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
             EmitVectorUnaryOpZx32(context, (op1) =>
             {
                 switch (op.Opc)
                 {
                     case 0:
-                        switch (op.Size) //swap bytes
+                        switch (op.Size) // Swap bytes.
                         {
                             default:
                                 return op1;
                             case 1:
-                                return InstEmit.EmitReverseBytes16_32Op(context, op1);
+                                return InstEmitAluHelper.EmitReverseBytes16_32Op(context, op1);
                             case 2:
                             case 3:
                                 return context.ByteSwap(op1);
@@ -511,7 +517,7 @@ namespace ARMeilleure.Instructions
                                 );
                         }
                     case 2:
-                        //swap upper and lower
+                        // Swap upper and lower halves.
                         return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffffffff00000000ul)), Const(32)),
                                                  context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
 
@@ -523,6 +529,7 @@ namespace ARMeilleure.Instructions
         public static void Vrecpe(ArmEmitterContext context)
         {
             OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
+
             if (op.F)
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
@@ -547,6 +554,7 @@ namespace ARMeilleure.Instructions
         public static void Vrsqrte(ArmEmitterContext context)
         {
             OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
+
             if (op.F)
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
@@ -569,7 +577,8 @@ namespace ARMeilleure.Instructions
 
         public static void Vsel(ArmEmitterContext context)
         {
-            var op = (OpCode32SimdSel)context.CurrOp;
+            OpCode32SimdSel op = (OpCode32SimdSel)context.CurrOp;
+
             Operand condition = null;
             switch (op.Cc)
             {

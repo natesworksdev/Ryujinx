@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdMemMult : OpCode32
     {
@@ -45,7 +41,7 @@ namespace ARMeilleure.Decoders
 
             RegisterRange = opCode & 0xff;
 
-            int regsSize = RegisterRange * 4; // double mode is still measured in single register size
+            int regsSize = RegisterRange * 4; // Double mode is still measured in single register size.
 
             if (!u)
             {

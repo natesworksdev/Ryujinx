@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32Simd : BaseOpCode32Simd
+    class OpCode32Simd : OpCode32SimdBase
     {
         public int Opc { get; protected set; }
         public bool Q { get; protected set; }
@@ -13,7 +9,7 @@ namespace ARMeilleure.Decoders
 
         public OpCode32Simd(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            Size = (opCode >> 20) & 0x3; //fvector size: 1 for 16 bit
+            Size = (opCode >> 20) & 0x3;
             Q = ((opCode >> 6) & 0x1) != 0;
             F = ((opCode >> 10) & 0x1) != 0;
             U = ((opCode >> 24) & 0x1) != 0;
@@ -24,7 +20,7 @@ namespace ARMeilleure.Decoders
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
 
-            if (this.GetType() == typeof(OpCode32Simd)) // subclasses have their own handling of Vx to account for before checking!
+            if (this.GetType() == typeof(OpCode32Simd)) // Subclasses have their own handling of Vx to account for before checking.
             {
                 DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm);
             }

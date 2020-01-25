@@ -21,10 +21,10 @@ namespace ARMeilleure.Instructions
         [Flags]
         enum AccessType
         {
-            Store  = 0,
-            Signed = 1,
-            Load   = 2,
-            Ordered = 4,
+            Store     = 0,
+            Signed    = 1,
+            Load      = 2,
+            Ordered   = 4,
             Exclusive = 8,
 
             LoadZx = Load,

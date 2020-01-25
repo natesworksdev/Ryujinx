@@ -15,12 +15,14 @@ namespace ARMeilleure.Instructions
         public static void Vshl(ArmEmitterContext context)
         {
             OpCode32SimdShift op = (OpCode32SimdShift)context.CurrOp;
+
             EmitVectorUnaryOpZx32(context, (op1) => context.ShiftLeft(op1, Const(op1.Type, op.Shift)));
         }
 
         public static void Vshl_I(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
             if (op.U)
             {
                 EmitVectorBinaryOpZx32(context, (op1, op2) => EmitShlRegOp(context, op2, op1, op.Size, true));
@@ -59,7 +61,7 @@ namespace ARMeilleure.Instructions
                 Operand isOutOfRange0 = context.ICompareGreaterOrEqual(shiftLsB, Const(8 << size));
                 Operand isOutOfRangeN = context.ICompareGreaterOrEqual(negShiftLsB, Const(8 << size));
 
-                //also zero if shift is too negative, but value was positive
+                // Also zero if shift is too negative, but value was positive.
                 isOutOfRange0 = context.BitwiseOr(isOutOfRange0, context.BitwiseAnd(isOutOfRangeN, context.ICompareGreaterOrEqual(op, Const(op.Type, 0))));
 
                 Operand min = (op.Type == OperandType.I64) ? Const(-1L) : Const(-1);
@@ -67,6 +69,5 @@ namespace ARMeilleure.Instructions
                 return context.ConditionalSelect(isOutOfRange0, Const(op.Type, 0), context.ConditionalSelect(isOutOfRangeN, min, res));
             }
         }
-
     }
 }

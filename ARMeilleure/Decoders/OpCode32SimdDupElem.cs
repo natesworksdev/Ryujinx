@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdDupElem : OpCode32Simd
     {
@@ -34,8 +30,6 @@ namespace ARMeilleure.Decoders
 
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
-            Q = (opCode & (1 << 6)) != 0;
-            if (Q) RegisterSize = RegisterSize.Simd128;
 
             if (DecoderHelper.VectorArgumentsInvalid(Q, Vd))
             {

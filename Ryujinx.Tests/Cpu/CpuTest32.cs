@@ -4,10 +4,7 @@ using ARMeilleure.Translation;
 using NUnit.Framework;
 using Ryujinx.Tests.Unicorn;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -361,7 +358,8 @@ namespace Ryujinx.Tests.Cpu
                 byte[] meilleureMem = _memory.ReadBytes((long)(0x2000), _size);
                 byte[] unicornMem = _unicornEmu.MemoryRead((ulong)(0x2000), (ulong)_size);
 
-                for (int i = 0; i < _size; i++) {
+                for (int i = 0; i < _size; i++) 
+                {
                     Assert.AreEqual(meilleureMem[i], unicornMem[i]);
                 }
             }

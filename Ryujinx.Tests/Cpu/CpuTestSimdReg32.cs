@@ -208,6 +208,7 @@ namespace Ryujinx.Tests.Cpu
         private static readonly bool NoInfs  = false;
         private static readonly bool NoNaNs  = false;
 
+        [Explicit]
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
         public void Vadd_f32([Values(0u)]    uint rd,
                              [Values(0u, 1u)] uint rn,

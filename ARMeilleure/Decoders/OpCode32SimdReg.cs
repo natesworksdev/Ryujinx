@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdReg : OpCode32Simd
     {
@@ -16,7 +12,7 @@ namespace ARMeilleure.Decoders
         {
             Vn = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);
 
-            // subclasses have their own handling of Vx to account for before checking!
+            // Subclasses have their own handling of Vx to account for before checking.
             if (this.GetType() == typeof(OpCode32SimdReg) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm, Vn))
             {
                 Instruction = InstDescriptor.Undefined;

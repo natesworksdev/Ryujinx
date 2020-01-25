@@ -1,10 +1,7 @@
 ﻿#define SimdLogical32
 using ARMeilleure.State;
 using NUnit.Framework;
-
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {

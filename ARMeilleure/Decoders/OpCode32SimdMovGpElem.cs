@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdMovGpElem : OpCode32, IOpCode32Simd
     {
@@ -14,7 +10,6 @@ namespace ARMeilleure.Decoders
         public bool U { get; private set; }
 
         public int Index { get; private set; }
-
 
         public OpCode32SimdMovGpElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

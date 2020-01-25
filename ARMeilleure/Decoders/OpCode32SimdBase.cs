@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace ARMeilleure.Decoders
 {
-    abstract class BaseOpCode32Simd : OpCode32, IOpCode32Simd
+    abstract class OpCode32SimdBase : OpCode32, IOpCode32Simd
     {
         public int Vd { get; protected set; }
         public int Vm { get; protected set; }
@@ -29,7 +27,6 @@ namespace ARMeilleure.Decoders
             switch (RegisterSize)
             {
                 case RegisterSize.Simd128:
-                    return index >> 1;
                 case RegisterSize.Simd64:
                     return index >> 1;
             }
@@ -50,7 +47,7 @@ namespace ARMeilleure.Decoders
             throw new InvalidOperationException();
         }
 
-        public BaseOpCode32Simd(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdBase(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
         }
     }

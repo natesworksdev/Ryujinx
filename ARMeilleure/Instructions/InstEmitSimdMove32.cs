@@ -2,7 +2,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
-using System.Collections.Generic;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -26,16 +25,17 @@ namespace ARMeilleure.Instructions
         public static void Vmov_GS(ArmEmitterContext context)
         {
             OpCode32SimdMovGp op = (OpCode32SimdMovGp)context.CurrOp;
+
             Operand vec = GetVecA32(op.Vn >> 2);
             if (op.Op == 1)
             {
-                // to general purpose
+                // To general purpose.
                 Operand value = context.VectorExtract(OperandType.I32, vec, op.Vn & 0x3);
                 SetIntA32(context, op.Rt, value);
             } 
             else
             {
-                // from general purpose
+                // From general purpose.
                 Operand value = GetIntA32(context, op.Rt);
                 context.Copy(vec, context.VectorInsert(vec, value, op.Vn & 0x3));
             }
@@ -44,16 +44,17 @@ namespace ARMeilleure.Instructions
         public static void Vmov_G1(ArmEmitterContext context)
         {
             OpCode32SimdMovGpElem op = (OpCode32SimdMovGpElem)context.CurrOp;
+
             int index = op.Index + ((op.Vd & 1) << (3 - op.Size));
             if (op.Op == 1)
             {
-                // to general purpose
+                // To general purpose.
                 Operand value = EmitVectorExtract32(context, op.Vd >> 1, index, op.Size, !op.U);
                 SetIntA32(context, op.Rt, value);
             }
             else
             {
-                // from general purpose
+                // From general purpose.
                 Operand vec = GetVecA32(op.Vd >> 1);
                 Operand value = GetIntA32(context, op.Rt);
                 context.Copy(vec, EmitVectorInsert(context, vec, value, index, op.Size));
@@ -63,13 +64,14 @@ namespace ARMeilleure.Instructions
         public static void Vmov_G2(ArmEmitterContext context)
         {
             OpCode32SimdMovGpDouble op = (OpCode32SimdMovGpDouble)context.CurrOp;
+
             Operand vec = GetVecA32(op.Vm >> 2);
             int vm1 = (op.Vm + 1);
             bool sameOwnerVec = (op.Vm >> 2) == (vm1 >> 2);
             Operand vec2 = sameOwnerVec ? vec : GetVecA32(vm1 >> 2);
             if (op.Op == 1)
             {
-                // to general purpose
+                // To general purpose.
                 Operand lowValue = context.VectorExtract(OperandType.I32, vec, op.Vm & 3);
                 SetIntA32(context, op.Rt, lowValue);
 
@@ -78,7 +80,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                // from general purpose
+                // From general purpose.
                 Operand lowValue = GetIntA32(context, op.Rt);
                 Operand resultVec = context.VectorInsert(vec, lowValue, op.Vm & 3);
 
@@ -93,31 +95,30 @@ namespace ARMeilleure.Instructions
                     context.Copy(vec, resultVec);
                     context.Copy(vec2, context.VectorInsert(vec2, highValue, vm1 & 3));
                 }
-                
             }
         }
 
         public static void Vmov_GD(ArmEmitterContext context)
         {
             OpCode32SimdMovGpDouble op = (OpCode32SimdMovGpDouble)context.CurrOp;
+
             Operand vec = GetVecA32(op.Vm >> 1);
             if (op.Op == 1)
             {
-                // to general purpose
+                // To general purpose.
                 Operand value = context.VectorExtract(OperandType.I64, vec, op.Vm & 1);
                 SetIntA32(context, op.Rt, context.ConvertI64ToI32(value));
                 SetIntA32(context, op.Rt2, context.ConvertI64ToI32(context.ShiftRightUI(value, Const(32))));
             }
             else
             {
-                // from general purpose
+                // From general purpose.
                 Operand lowValue = GetIntA32(context, op.Rt);
                 Operand highValue = GetIntA32(context, op.Rt2);
 
                 Operand value = context.BitwiseOr(
                     context.ZeroExtend32(OperandType.I64, lowValue),
-                    context.ShiftLeft(context.ZeroExtend32(OperandType.I64, highValue), Const(32))
-                    );
+                    context.ShiftLeft(context.ZeroExtend32(OperandType.I64, highValue), Const(32)));
 
                 context.Copy(vec, context.VectorInsert(vec, value, op.Vm & 1));
             }
@@ -133,11 +134,11 @@ namespace ARMeilleure.Instructions
 
             int length = op.Length + 1;
 
-            Tuple<int, int>[] tableTuples = new Tuple<int, int>[length];
+            (int Qx, int Ix)[] tableTuples = new (int qx, int ix)[length];
             for (int i=0; i< length; i++)
             {
                 (int vn, int en) = GetQuadwordAndSubindex(op.Vn + i, op.RegisterSize);
-                tableTuples[i] = new Tuple<int, int>(vn, en);
+                tableTuples[i] = (vn, en);
             }
 
             int byteLength = length * 8;
@@ -151,41 +152,39 @@ namespace ARMeilleure.Instructions
 
                 Operand end = Label();
                 Operand inRange = context.ICompareLess(selectedIndex, Const(byteLength));
-                Operand elemRes = null; // note: this is I64 for ease of calculation
+                Operand elemRes = null; // Note: This is I64 for ease of calculation.
 
-                // for some reason this branch ruins everything so we do an extract + conditional select instead
-                // granted that is slower
-                // --- context.BranchIfFalse(end, inRange); ---
+                // TODO: Branching rather than conditional select.
 
-                // get indexed byte
-                // to simplify (ha) the il, we get bytes from every vector and use a nested conditional select to choose the right result
-                // does have to extract `length` times for every element but certainly not as bad as it could be
+                // Get indexed byte.
+                // To simplify (ha) the il, we get bytes from every vector and use a nested conditional select to choose the right result.
+                // This does have to extract `length` times for every element but certainly not as bad as it could be.
 
-                // which vector number is the index on
+                // Which vector number is the index on.
                 Operand vecIndex = context.ShiftRightUI(selectedIndex, Const(3));
-                // what should we shift by to extract it
+                // What should we shift by to extract it.
                 Operand subVecIndexShift = context.ShiftLeft(context.BitwiseAnd(selectedIndex, Const(7)), Const(3));
 
-                for (int i=0; i < length; i++)
+                for (int i = 0; i < length; i++)
                 {
-                    Tuple<int, int> vectorLocation = tableTuples[i];
-                    // get the whole vector, we'll get a byte out of it
+                    (int qx, int ix) = tableTuples[i];
+                    // Get the whole vector, we'll get a byte out of it.
                     Operand lookupResult;
-                    if (vectorLocation.Item1 == op.Qd)
+                    if (qx == op.Qd)
                     {
-                        // result contains the current state of the vector
-                        lookupResult = context.VectorExtract(OperandType.I64, res, vectorLocation.Item2);
+                        // Result contains the current state of the vector.
+                        lookupResult = context.VectorExtract(OperandType.I64, res, ix);
                     } 
                     else
                     {
-                        lookupResult = EmitVectorExtract32(context, vectorLocation.Item1, vectorLocation.Item2, 3, false); //I64
+                        lookupResult = EmitVectorExtract32(context, qx, ix, 3, false); // I64
                     }
                     
-                    lookupResult = context.ShiftRightUI(lookupResult, subVecIndexShift); // get the relevant byte from this vector
+                    lookupResult = context.ShiftRightUI(lookupResult, subVecIndexShift); // Get the relevant byte from this vector.
 
                     if (i == 0)
                     {
-                        elemRes = lookupResult; //first result is always default
+                        elemRes = lookupResult; // First result is always default.
                     } 
                     else
                     {

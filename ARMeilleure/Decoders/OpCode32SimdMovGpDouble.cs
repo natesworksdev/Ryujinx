@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     class OpCode32SimdMovGpDouble : OpCode32, IOpCode32Simd
     {
@@ -12,9 +8,10 @@ namespace ARMeilleure.Decoders
         public int Rt { get; private set; }
         public int Rt2 { get; private set; }
         public int Op { get; private set; }
+
         public OpCode32SimdMovGpDouble(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            // which one is used is instruction dependant
+            // Which one is used is instruction dependant.
             Op = ((opCode >> 20) & 0x1);
             
             Rt = (opCode >> 12) & 0xf;

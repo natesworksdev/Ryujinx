@@ -28,19 +28,19 @@ namespace ARMeilleure.Instructions
                     return (index >> 2, index & 3);
             }
 
-            throw new NotImplementedException("Unrecognized Vector Register Size!");
+            throw new NotImplementedException("Unrecognized Vector Register Size.");
         }
 
         public static Operand ExtractScalar(ArmEmitterContext context, OperandType type, int reg)
         {
             if (type == OperandType.FP64 || type == OperandType.I64)
             {
-                // from dreg
+                // From dreg.
                 return context.VectorExtract(type, GetVecA32(reg >> 1), reg & 1);
             } 
             else
             {
-                // from sreg
+                // From sreg.
                 return context.VectorExtract(type, GetVecA32(reg >> 2), reg & 3);
             }
         }
@@ -50,14 +50,14 @@ namespace ARMeilleure.Instructions
             Operand vec, insert;
             if (value.Type == OperandType.FP64 || value.Type == OperandType.I64)
             {
-                // from dreg
+                // From dreg.
                 vec = GetVecA32(reg >> 1);
                 insert = context.VectorInsert(vec, value, reg & 1);
                 
             }
             else
             {
-                // from sreg
+                // From sreg.
                 vec = GetVecA32(reg >> 2);
                 insert = context.VectorInsert(vec, value, reg & 3);
             }
@@ -203,7 +203,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        // INTEGER
+        // Integer
 
         public static void EmitVectorUnaryOpI32(ArmEmitterContext context, Func1I emit, bool signed)
         {
@@ -292,7 +292,7 @@ namespace ARMeilleure.Instructions
             EmitVectorTernaryOpI32(context, emit, false);
         }
 
-        // VEC BY SCALAR
+        // Vector by scalar
 
         public static void EmitVectorByScalarOpF32(ArmEmitterContext context, Func2I emit)
         {
@@ -323,7 +323,6 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
 
-            if (op.Size < 1) throw new Exception("Undefined");
             Operand m = EmitVectorExtract32(context, op.Vm >> (4 - op.Size), op.Vm & ((1 << (4 - op.Size)) - 1), op.Size, signed);
 
             Operand res = GetVecA32(op.Qd);
@@ -347,7 +346,6 @@ namespace ARMeilleure.Instructions
             int sizeF = op.Size & 1;
 
             OperandType type = sizeF != 0 ? OperandType.FP64 : OperandType.FP32;
-            if (op.Size < 2) throw new Exception("FP ops <32 bit unimplemented!");
 
             int elems = op.GetBytesCount() >> sizeF + 2;
 
@@ -370,7 +368,6 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
 
-            if (op.Size < 1) throw new Exception("Undefined");
             Operand m = EmitVectorExtract32(context, op.Vm >> (4 - op.Size), op.Vm & ((1 << (4 - op.Size)) - 1), op.Size, signed);
 
             Operand res = GetVecA32(op.Qd);
@@ -388,16 +385,12 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        // PAIRWISE
+        // Pairwise
 
         public static void EmitVectorPairwiseOpF32(ArmEmitterContext context, Func2I emit)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
-            if (op.Q)
-            {
-                throw new Exception("Q mode not supported for pairwise");
-            }
             int sizeF = op.Size & 1;
 
             OperandType type = sizeF != 0 ? OperandType.FP64 : OperandType.FP32;
@@ -430,11 +423,6 @@ namespace ARMeilleure.Instructions
         public static void EmitVectorPairwiseOpI32(ArmEmitterContext context, Func2I emit, bool signed)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            if (op.Q)
-            {
-                throw new Exception("Q mode not supported for pairwise");
-            }
 
             int elems = op.GetBytesCount() >> op.Size;
             int pairs = elems >> 1;
@@ -561,6 +549,5 @@ namespace ARMeilleure.Instructions
 
             return res;
         }
-
     }
 }

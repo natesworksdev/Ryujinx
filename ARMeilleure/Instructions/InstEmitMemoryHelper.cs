@@ -511,7 +511,6 @@ namespace ARMeilleure.Instructions
         {
             switch (context.CurrOp)
             {
-                // ARM32.
                 case OpCode32MemRsImm op: return GetMShiftedByImmediate(context, op, setCarry);
 
                 case OpCode32MemReg op: return GetIntA32(context, op.Rm);

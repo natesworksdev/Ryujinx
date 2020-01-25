@@ -1535,6 +1535,7 @@ namespace ARMeilleure.Instructions
                     }
                 }
             }
+
             return result;
         }
 
@@ -2826,6 +2827,7 @@ namespace ARMeilleure.Instructions
                     }
                 }
             }
+
             return result;
         }
 
@@ -3026,7 +3028,7 @@ namespace ARMeilleure.Instructions
 
         private static double FPThree(bool sign)
         {
-            return sign ? -2d : +2d;
+            return sign ? -3d : +3d;
         }
 
         private static double FPOnePointFive(bool sign)

@@ -16,14 +16,17 @@ namespace ARMeilleure.Instructions
         {
             EmitVStoreOrLoadN(context, 1, false);
         }
+
         public static void Vst2(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 2, false);
         }
+
         public static void Vst3(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 3, false);
         }
+
         public static void Vst4(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 4, false);
@@ -33,14 +36,17 @@ namespace ARMeilleure.Instructions
         {
             EmitVStoreOrLoadN(context, 1, true);
         }
+
         public static void Vld2(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 2, true);
         }
+
         public static void Vld3(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 3, true);
         }
+
         public static void Vld4(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 4, true);
@@ -52,18 +58,17 @@ namespace ARMeilleure.Instructions
             {
                 OpCode32SimdMemSingle op = (OpCode32SimdMemSingle)context.CurrOp;
 
-                if (op.Replicate && !load) throw new Exception("Replicate+Store is undefined for STn");
                 int eBytes = 1 << op.Size;
 
                 Operand n = context.Copy(GetIntA32(context, op.Rn));
 
-                //check alignment (?)
+                // TODO: Check alignment.
                 int offset = 0;
                 int d = op.Vd;
 
-                for (int i=0; i<count; i++)
+                for (int i = 0; i < count; i++)
                 {
-                    //write an element from a double simd register
+                    // Write an element from a double simd register.
                     Operand address = context.Add(n, Const(offset));
                     if (eBytes == 8)
                     {
@@ -140,8 +145,8 @@ namespace ARMeilleure.Instructions
                         int elemD = d + reg;
                         for (int i = 0; i < count; i++)
                         {
-                            // write an element from a double simd register
-                            // add ebytes for each element
+                            // Write an element from a double simd register
+                            // add ebytes for each element.
                             Operand address = context.Add(n, Const(offset));
                             int index = ((elemD & 1) << (3 - op.Size)) + elem;
                             if (eBytes == 8)
@@ -324,7 +329,6 @@ namespace ARMeilleure.Instructions
 
             if ((accType & AccessType.Load) != 0)
             {
-
                 if (size == DWordSizeLog2)
                 {
                     EmitDVectorLoad(context, address, op.Vd);

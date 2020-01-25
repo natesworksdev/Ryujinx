@@ -124,6 +124,7 @@ namespace ARMeilleure.Instructions
             EmitAddsCCheck(context, n, res);
             EmitAddsVCheck(context, n, m, res);
         }
+
         public static void Eor(ArmEmitterContext context)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
@@ -365,8 +366,7 @@ namespace ARMeilleure.Instructions
 
             res = context.BitwiseOr(
                 context.ZeroExtend16(OperandType.I32, low16),
-                context.ShiftLeft(context.ZeroExtend16(OperandType.I32, high16), Const(16))
-                );
+                context.ShiftLeft(context.ZeroExtend16(OperandType.I32, high16), Const(16)));
 
             EmitAluStore(context, res);
         }
@@ -427,7 +427,7 @@ namespace ARMeilleure.Instructions
             if (!unsigned)
             {
                 // If Rn == INT_MIN && Rm == -1, Rd = INT_MIN (overflow).
-                // assume this is the same as ARM64 for now - tests to follow.
+                // Assume this is the same as ARM64 for now - tests to follow.
 
                 Operand intMin = Const(int.MinValue);
                 Operand minus1 = Const(-1);
@@ -466,7 +466,7 @@ namespace ARMeilleure.Instructions
             OpCode32AluImm16 op = (OpCode32AluImm16)context.CurrOp;
 
             Operand d = GetIntA32(context, op.Rd);
-            Operand imm = Const(op.Immediate << 16); //immeditate value as top halfword
+            Operand imm = Const(op.Immediate << 16); // Immeditate value as top halfword.
             Operand res = context.BitwiseAnd(d, Const(0x0000ffff));
             res = context.BitwiseOr(res, imm);
 
@@ -512,7 +512,7 @@ namespace ARMeilleure.Instructions
             Operand n = GetAluN(context);
             Operand m = GetAluM(context);
 
-            Operand res = InstEmit.EmitReverseBits32Op(context, m);
+            Operand res;
 
             bool tbform = op.ShiftType == ShiftType.Asr;
             if (tbform)
@@ -531,7 +531,7 @@ namespace ARMeilleure.Instructions
         {
             Operand m = GetAluM(context);
 
-            Operand res = InstEmit.EmitReverseBits32Op(context, m);
+            Operand res = EmitReverseBits32Op(context, m);
 
             EmitAluStore(context, res);
         }
@@ -549,7 +549,7 @@ namespace ARMeilleure.Instructions
         {
             Operand m = GetAluM(context);
 
-            Operand res = InstEmit.EmitReverseBytes16_32Op(context, m);
+            Operand res = EmitReverseBytes16_32Op(context, m);
 
             EmitAluStore(context, res);
         }
@@ -558,7 +558,7 @@ namespace ARMeilleure.Instructions
         {
             Operand m = GetAluM(context);
 
-            Operand res = InstEmit.EmitReverseBytes16_32Op(context, m);
+            Operand res = EmitReverseBytes16_32Op(context, m);
 
             EmitAluStore(context, context.SignExtend16(OperandType.I32, res));
         }
@@ -591,7 +591,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
-            var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
+            var msb = op.Lsb + op.Msb; // For this instruction, the msb is actually a width.
 
             Operand n = GetIntA32(context, op.Rn);
             Operand res = context.ShiftRightUI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));
@@ -603,7 +603,7 @@ namespace ARMeilleure.Instructions
         {
             OpCode32AluBf op = (OpCode32AluBf)context.CurrOp;
 
-            var msb = op.Lsb + op.Msb; //for this instruction, the msb is actually a width
+            var msb = op.Lsb + op.Msb; // For this instruction, the msb is actually a width.
 
             Operand n = GetIntA32(context, op.Rn);
             Operand res = context.ShiftRightSI(context.ShiftLeft(n, Const(31 - msb)), Const(31 - op.Msb));
@@ -614,47 +614,7 @@ namespace ARMeilleure.Instructions
         private static void EmitAluStore(ArmEmitterContext context, Operand value)
         {
             IOpCode32Alu op = (IOpCode32Alu)context.CurrOp;
-
-            if (op.Rd == RegisterAlias.Aarch32Pc)
-            {
-                if (op.SetFlags)
-                {
-                    // TODO: Load SPSR etc.
-                    Operand isThumb = GetFlag(PState.TFlag);
-
-                    Operand lblThumb = Label();
-
-                    context.BranchIfTrue(lblThumb, isThumb);
-
-                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~3))));
-
-                    context.MarkLabel(lblThumb);
-
-                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~1))));
-                }
-                else
-                {
-                    EmitAluWritePc(context, value);
-                }
-            }
-            else
-            {
-                SetIntA32(context, op.Rd, value);
-            }
-        }
-
-        private static void EmitAluWritePc(ArmEmitterContext context, Operand value)
-        {
-            context.StoreToContext();
-
-            if (IsThumb(context.CurrOp))
-            {
-                context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~1))));
-            }
-            else
-            {
-                EmitBxWritePc(context, value);
-            }
+            EmitGenericAluStoreA32(context, op.Rd, op.SetFlags, value);
         }
     }
 }

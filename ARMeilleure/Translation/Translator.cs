@@ -20,7 +20,7 @@ namespace ARMeilleure.Translation
 
         private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
 
-        private PriorityQueue<Tuple<ulong, ExecutionMode>> _backgroundQueue;
+        private PriorityQueue<(ulong Address, ExecutionMode Mode)> _backgroundQueue;
 
         private AutoResetEvent _backgroundTranslatorEvent;
 
@@ -32,7 +32,7 @@ namespace ARMeilleure.Translation
 
             _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
-            _backgroundQueue = new PriorityQueue<Tuple<ulong, ExecutionMode>>(2);
+            _backgroundQueue = new PriorityQueue<(ulong, ExecutionMode)>(2);
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
         }
@@ -41,11 +41,11 @@ namespace ARMeilleure.Translation
         {
             while (_threadCount != 0)
             {
-                if (_backgroundQueue.TryDequeue(out Tuple<ulong, ExecutionMode> request))
+                if (_backgroundQueue.TryDequeue(out (ulong Address, ExecutionMode Mode) request))
                 {
-                    TranslatedFunction func = Translate(request.Item1, request.Item2, highCq: true);
+                    TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
 
-                    _funcs.AddOrUpdate(request.Item1, func, (key, oldFunc) => func);
+                    _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) => func);
                 }
                 else
                 {
@@ -114,7 +114,7 @@ namespace ARMeilleure.Translation
             }
             else if (isCallTarget && func.ShouldRejit())
             {
-                _backgroundQueue.Enqueue(0, new Tuple<ulong, ExecutionMode>(address, mode));
+                _backgroundQueue.Enqueue(0, (address, mode));
 
                 _backgroundTranslatorEvent.Set();
             }

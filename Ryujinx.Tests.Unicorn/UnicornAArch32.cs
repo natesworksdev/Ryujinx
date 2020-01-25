@@ -1,7 +1,5 @@
 ﻿using Ryujinx.Tests.Unicorn.Native;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.Tests.Unicorn
 {
@@ -148,7 +146,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public uint GetX(int index)
         {
-            if ((uint)index > 30)
+            if ((uint)index > 15)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -158,7 +156,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public void SetX(int index, uint value)
         {
-            if ((uint)index > 30)
+            if ((uint)index > 15)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -173,7 +171,8 @@ namespace Ryujinx.Tests.Unicorn
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
 
-            return GetVector((Arm32Register)((int)Arm32Register.D0 + index * 2)); //QRegisters[index]);
+            // Getting quadword registers from Unicorn A32 seems to be broken, so we combine its 2 doubleword registers instead.
+            return GetVector((Arm32Register)((int)Arm32Register.D0 + index * 2));
         }
 
         public void SetQ(int index, SimdValue value)

@@ -71,8 +71,8 @@ namespace ARMeilleure.Instructions
                 EmitNZFlagsCheck(context, res);
             }
 
-            EmitGenericStore(context, op.RdHi, op.SetFlags, hi);
-            EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
+            EmitGenericAluStoreA32(context, op.RdHi, op.SetFlags, hi);
+            EmitGenericAluStoreA32(context, op.RdLo, op.SetFlags, lo);
         }
 
         public static void Smull(ArmEmitterContext context)
@@ -92,8 +92,8 @@ namespace ARMeilleure.Instructions
                 EmitNZFlagsCheck(context, res);
             }
 
-            EmitGenericStore(context, op.RdHi, op.SetFlags, hi);
-            EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
+            EmitGenericAluStoreA32(context, op.RdHi, op.SetFlags, hi);
+            EmitGenericAluStoreA32(context, op.RdLo, op.SetFlags, lo);
         }
 
         public static void Smmla(ArmEmitterContext context)
@@ -136,9 +136,8 @@ namespace ARMeilleure.Instructions
 
             Operand hi = context.ConvertI64ToI32(context.ShiftRightSI(res, Const(32)));
 
-            EmitGenericStore(context, op.Rd, false, hi);
+            EmitGenericAluStoreA32(context, op.Rd, false, hi);
         }
-
 
         public static void Smlab(ArmEmitterContext context)
         {
@@ -170,9 +169,9 @@ namespace ARMeilleure.Instructions
             Operand a = GetIntA32(context, op.Ra);
             res = context.Add(res, a);
 
-            //todo: set Q flag when last addition overflows (saturation)?
+            // TODO: set Q flag when last addition overflows (saturation)?
 
-            EmitGenericStore(context, op.Rd, false, res);
+            EmitGenericAluStoreA32(context, op.Rd, false, res);
         }
 
         public static void Smlal(ArmEmitterContext context)
@@ -217,8 +216,8 @@ namespace ARMeilleure.Instructions
                 EmitNZFlagsCheck(context, res);
             }
 
-            EmitGenericStore(context, op.RdHi, op.SetFlags, hi);
-            EmitGenericStore(context, op.RdLo, op.SetFlags, lo);
+            EmitGenericAluStoreA32(context, op.RdHi, op.SetFlags, hi);
+            EmitGenericAluStoreA32(context, op.RdLo, op.SetFlags, lo);
         }
 
         public static void Smlalh(ArmEmitterContext context)
@@ -255,8 +254,8 @@ namespace ARMeilleure.Instructions
             Operand hi = context.ConvertI64ToI32(context.ShiftRightUI(res, Const(32)));
             Operand lo = context.ConvertI64ToI32(res);
 
-            EmitGenericStore(context, op.RdHi, false, hi);
-            EmitGenericStore(context, op.RdLo, false, lo);
+            EmitGenericAluStoreA32(context, op.RdHi, false, hi);
+            EmitGenericAluStoreA32(context, op.RdLo, false, lo);
         }
 
         public static void Smulh(ArmEmitterContext context)
@@ -286,37 +285,7 @@ namespace ARMeilleure.Instructions
 
             Operand res = context.Multiply(n, m);
 
-            EmitGenericStore(context, op.Rd, false, res);
-        }
-
-        private static void EmitGenericStore(ArmEmitterContext context, int Rd, bool setFlags, Operand value)
-        {
-            if (Rd == RegisterAlias.Aarch32Pc)
-            {
-                if (setFlags)
-                {
-                    // TODO: Load SPSR etc.
-                    Operand isThumb = GetFlag(PState.TFlag);
-
-                    Operand lblThumb = Label();
-
-                    context.BranchIfTrue(lblThumb, isThumb);
-
-                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~3))));
-
-                    context.MarkLabel(lblThumb);
-
-                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~1))));
-                }
-                else
-                {
-                    EmitAluWritePc(context, value);
-                }
-            }
-            else
-            {
-                SetIntA32(context, Rd, value);
-            }
+            EmitGenericAluStoreA32(context, op.Rd, false, res);
         }
     }
 }

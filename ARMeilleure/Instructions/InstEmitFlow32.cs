@@ -76,7 +76,7 @@ namespace ARMeilleure.Instructions
 
             Operand addr = GetIntA32(context, op.Rm);
             Operand bitOne = context.BitwiseAnd(addr, Const(1));
-            addr = context.BitwiseOr(addr, Const(1)); // set call flag
+            addr = context.BitwiseOr(addr, Const(1)); // Set call flag.
 
             bool isThumb = IsThumb(context.CurrOp);
 
@@ -88,11 +88,7 @@ namespace ARMeilleure.Instructions
 
             SetFlag(context, PState.TFlag, bitOne);
 
-            context.Return(addr); // call
-        }
-
-        public static void Nop(ArmEmitterContext context)
-        {
+            context.Return(addr); // Call.
         }
     }
 }

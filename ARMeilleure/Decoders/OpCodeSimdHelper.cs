@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace ARMeilleure.Decoders
+﻿namespace ARMeilleure.Decoders
 {
     public static class OpCodeSimdHelper
     {
-        public static Tuple<long, int> GetSimdImmediateAndSize(int cMode, int op, long imm, int fpBaseSize = 0)
+        public static (long Immediate, int Size) GetSimdImmediateAndSize(int cMode, int op, long imm, int fpBaseSize = 0)
         {
             int modeLow = cMode & 1;
             int modeHigh = cMode >> 1;
@@ -74,7 +70,7 @@ namespace ARMeilleure.Decoders
                 size = 0;
             }
 
-            return new Tuple<long, int>(imm, size);
+            return (imm, size);
         }
 
         public static long VFPExpandImm(long imm, int n)
