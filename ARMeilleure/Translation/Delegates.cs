@@ -7,11 +7,11 @@ namespace ARMeilleure.Translation
 {
     static class Delegates
     {
-        public static bool TryGetDelegateFuncPtr(int index, out IntPtr funcPtr) // By delegate index.
+        public static bool TryGetDelegateFuncPtrByIndex(int index, out IntPtr funcPtr)
         {
             if (index >= 0 && index < _delegates.Count)
             {
-                funcPtr = _delegates.Values[index].FuncPtr;
+                funcPtr = _delegates.Values[index].FuncPtr; // O(1).
 
                 return true;
             }
@@ -23,6 +23,16 @@ namespace ARMeilleure.Translation
             }
         }
 
+        public static IntPtr GetDelegateFuncPtrByIndex(int index)
+        {
+            if (index < 0 || index >= _delegates.Count)
+            {
+                throw new ArgumentOutOfRangeException($"({nameof(index)} = {index})");
+            }
+
+            return _delegates.Values[index].FuncPtr; // O(1).
+        }
+
         public static IntPtr GetDelegateFuncPtr(MethodInfo info)
         {
             if (info == null)
@@ -32,9 +42,9 @@ namespace ARMeilleure.Translation
 
             string key = GetKey(info);
 
-            if (!_delegates.TryGetValue(key, out DelegateInfo dlgInfo))
+            if (!_delegates.TryGetValue(key, out DelegateInfo dlgInfo)) // O(log(n)).
             {
-                throw new ArgumentException($"({nameof(key)} = {key})");
+                throw new KeyNotFoundException($"({nameof(key)} = {key})");
             }
 
             return dlgInfo.FuncPtr;
@@ -49,11 +59,11 @@ namespace ARMeilleure.Translation
 
             string key = GetKey(info);
 
-            int index = _delegates.IndexOfKey(key);
+            int index = _delegates.IndexOfKey(key); // O(log(n)).
 
             if (index == -1)
             {
-                throw new ArgumentException($"({nameof(key)} = {key})");
+                throw new KeyNotFoundException($"({nameof(key)} = {key})");
             }
 
             return index;
@@ -65,7 +75,7 @@ namespace ARMeilleure.Translation
 
             Delegate dlg = DelegateHelpers.GetDelegate(info);
 
-            _delegates.Add(key, new DelegateInfo(dlg)); // ArgumentException (key)
+            _delegates.Add(key, new DelegateInfo(dlg)); // ArgumentException (key).
         }
 
         private static string GetKey(MethodInfo info)

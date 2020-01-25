@@ -340,6 +340,10 @@ namespace Ryujinx.Ui
                 _firmwareInstallFile.Sensitive      = true;
                 _firmwareInstallDirectory.Sensitive = true;
             });
+
+            Logger.PrintInfo(LogClass.Cpu, "Stopping Persistent Translation Cache.");
+
+            Ptc.Stop();
         }
 
         private static void UpdateGameMetadata(string titleId)

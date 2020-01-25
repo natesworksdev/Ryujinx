@@ -82,18 +82,22 @@ namespace ARMeilleure.Translation
 
         public Operand Call(MethodInfo info, params Operand[] callArgs)
         {
-            IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
-
-            OperandType retType = GetOperandType(info.ReturnType);
-
             if (Ptc.Enabled)
             {
                 int index = Delegates.GetDelegateIndex(info);
+
+                IntPtr funcPtr = Delegates.GetDelegateFuncPtrByIndex(index);
+
+                OperandType retType = GetOperandType(info.ReturnType);
 
                 return Call(Const(funcPtr.ToInt64(), true, index), retType, callArgs);
             }
             else
             {
+                IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
+
+                OperandType retType = GetOperandType(info.ReturnType);
+
                 return Call(Const(funcPtr.ToInt64()), retType, callArgs);
             }
         }

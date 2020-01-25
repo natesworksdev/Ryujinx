@@ -74,9 +74,9 @@ namespace Ryujinx
 
             if (e.IsTerminating)
             {
-                Logger.Shutdown();
+                Ptc.Stop();
 
-                Ptc.Dispose();
+                Logger.Shutdown();
             }
         }
     }
