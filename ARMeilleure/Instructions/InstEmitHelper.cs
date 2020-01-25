@@ -154,11 +154,12 @@ namespace ARMeilleure.Instructions
 
             context.BranchIfTrue(lblArmMode, mode);
 
-            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(pc, Const(~1))));
+            // Make this count as a call, the translator will ignore the low bit for the address.
+            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(pc, Const(1))));
 
             context.MarkLabel(lblArmMode);
 
-            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(pc, Const(~3))));
+            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(context.BitwiseAnd(pc, Const(~3)), Const(1))));
         }
 
         public static Operand GetIntOrZR(ArmEmitterContext context, int regIndex)

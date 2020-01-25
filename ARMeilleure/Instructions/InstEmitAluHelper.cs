@@ -117,7 +117,8 @@ namespace ARMeilleure.Instructions
 
             if (IsThumb(context.CurrOp))
             {
-                context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~1))));
+                // Make this count as a call, the translator will ignore the low bit for the address.
+                context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(value, Const(1))));
             }
             else
             {
@@ -138,11 +139,12 @@ namespace ARMeilleure.Instructions
 
                     context.BranchIfTrue(lblThumb, isThumb);
 
-                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~3))));
+                    // Make this count as a call, the translator will ignore the low bit for the address.
+                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(context.BitwiseAnd(value, Const(~3)), Const(1))));
 
                     context.MarkLabel(lblThumb);
 
-                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseAnd(value, Const(~1))));
+                    context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(value, Const(1))));
                 }
                 else
                 {
