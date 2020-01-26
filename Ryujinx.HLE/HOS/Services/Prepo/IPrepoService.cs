@@ -1,7 +1,8 @@
-using MessagePack;
+using MsgPack.Serialization;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Utilities;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
@@ -78,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ResultCode.Success;
         }
 
-        public string ReadReportBuffer(byte[] buffer, string room, UInt128 userId)
+        private string ReadReportBuffer(byte[] buffer, string room, UInt128 userId)
         {
             StringBuilder sb = new StringBuilder();
 
@@ -92,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
             sb.AppendLine($" Room: {room}");
 
-            IDictionary<string, object> payload = MessagePackSerializer.Deserialize<IDictionary<string, object>>(buffer);
+            IDictionary<string, object> payload = Deserialize<IDictionary<string, object>>(buffer);
 
             foreach (KeyValuePair<string, object> field in payload)
             {
@@ -100,6 +101,16 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             }
 
             return sb.ToString();
+        }
+
+        private static T Deserialize<T>(byte[] bytes)
+        {
+            MessagePackSerializer serializer = MessagePackSerializer.Get<T>();
+
+            using (MemoryStream byteStream = new MemoryStream(bytes))
+            {
+                return (T)serializer.Unpack(byteStream);
+            }
         }
     }
 }
