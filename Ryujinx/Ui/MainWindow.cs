@@ -1,6 +1,7 @@
 using Gtk;
 using JsonPrettyPrinterPlus;
 using Ryujinx.Audio;
+using Ryujinx.Updater.Parser;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
@@ -738,7 +739,7 @@ namespace Ryujinx.Ui
 
         private void Update_Pressed(object sender, EventArgs args)
         {
-            Ryujinx.Updater.Parser.UpdateParser.BeginParse();
+            UpdateParser.BeginParse();
         }
 
         private void About_Pressed(object sender, EventArgs args)

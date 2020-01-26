@@ -1,8 +1,8 @@
 using Gtk;
-using System.Reflection;
 using Ryujinx.Updater.Parser;
-using System.IO;
 using System;
+using System.IO;
+using System.Reflection;
 
 namespace Ryujinx.Ui
 {
@@ -23,14 +23,14 @@ namespace Ryujinx.Ui
             errorDialog.Dispose();
         }
 
-        internal static MessageDialog CreateAcceptDialog(string iconType, string acceptMessage)
+        internal static MessageDialog CreateAcceptDialog(string iconType, string titleMessage, string textMessage, string secText)
         {
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, null)
             {
-                Title = "Ryujinx - Update",
-                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Update.png"),
-                Text = "Would you like to update?",
-                SecondaryText = "Version " + acceptMessage + " is available.",
+                Title = titleMessage,
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), $"Ryujinx.Ui.assets.{iconType}.png"),
+                Text = textMessage,
+                SecondaryText = secText,
                 WindowPosition = WindowPosition.Center
             };
             messageDialog.SetSizeRequest(100, 20);
@@ -42,7 +42,7 @@ namespace Ryujinx.Ui
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, null)
             {
                 Title = titleMessage,
-                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets." + iconType +".png"),
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), $"Ryujinx.Ui.assets.{iconType}.png"),
                 Text = textMessage,
                 SecondaryText = secText,
                 WindowPosition = WindowPosition.Center
@@ -56,7 +56,7 @@ namespace Ryujinx.Ui
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Info, ButtonsType.None, null)
             {
                 Title = titleMessage,
-                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets." + iconType + ".png"),
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), $"Ryujinx.Ui.assets.{iconType}.png"),
                 Text = textMessage,
                 SecondaryText = secText,
                 WindowPosition = WindowPosition.Center
@@ -64,6 +64,7 @@ namespace Ryujinx.Ui
             Uri URL = new Uri(UpdateParser.BuildArt);
             UpdateParser.Package.DownloadFileAsync(URL, Path.Combine(UpdateParser.RyuDir, "Data", "Update", "RyujinxPackage.zip"));
             messageDialog.SetSizeRequest(100, 20);
+
             return messageDialog;
         }
     }

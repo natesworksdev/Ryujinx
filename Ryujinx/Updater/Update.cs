@@ -11,38 +11,41 @@ namespace Ryujinx.Updater
 {
     public class Update
     {
-        private static string[] _updatefiles = Directory.GetFiles(Path.Combine(Environment.CurrentDirectory),"*", SearchOption.AllDirectories);
         private static string   _parentdir   = Path.Combine(@"..\..");
         public  static string   RyuDir       = Environment.CurrentDirectory;
+
         public static void PerformUpdate()
         {
             try
             {
                 //Get list of files from the current directory, and copy them to the parent directory.
-                foreach (string _PathDir in Directory.GetDirectories(RyuDir, "*",
-                    SearchOption.AllDirectories))
+                foreach (string _PathDir in Directory.GetDirectories(RyuDir, "*", SearchOption.AllDirectories))
+                {
                     Directory.CreateDirectory(_PathDir.Replace(RyuDir, _parentdir));
-                foreach (string _PathNew in Directory.GetFiles(RyuDir, "*.*",
-                    SearchOption.AllDirectories))
+                }
+
+                foreach (string _PathNew in Directory.GetFiles(RyuDir, "*.*", SearchOption.AllDirectories))
+                {
                     File.Copy(_PathNew, _PathNew.Replace(RyuDir, _parentdir), true);
+                }
+
                 Logger.PrintInfo(LogClass.Application, "Package installation was completed.\n");
-                GtkDialog.CreateInfoDialog("Update", "Ryujinx - Update", "Almost finished","The package was installed.\nPlease click ok, and the update will complete.");
+                GtkDialog.CreateInfoDialog("Update", "Ryujinx - Update", "Almost finished", "The package was installed.\nPlease click ok, and the update will complete.");
+
                 try
                 {
                     Process.Start(new ProcessStartInfo(Path.Combine(_parentdir, "Ryujinx.exe"), "/C") { UseShellExecute = true });
+                    Application.Quit();
                 }
-                catch (System.ComponentModel.Win32Exception)
+                catch (Exception ex)
                 {
-                    GtkDialog.CreateErrorDialog("Update canceled by user or the installation was not found");
-                    return;
+                    GtkDialog.CreateErrorDialog(ex.Message);
                 }
-                Application.Quit();
             }
-            catch (System.ComponentModel.Win32Exception)
+            catch (Exception ex)
             {
-                GtkDialog.CreateErrorDialog("Package installation has failed\nCheck the log for more information.");
+                GtkDialog.CreateErrorDialog(ex.Message);
             }
-           
         }
 
         public static void Cleanup()

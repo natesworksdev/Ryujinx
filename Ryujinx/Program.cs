@@ -47,7 +47,7 @@ namespace Ryujinx
 
             Application.Init();
 
-            string appDataPath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx", "system", "prod.keys");
+            string appDataPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx", "system", "prod.keys");
             string userProfilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
             if (!File.Exists(appDataPath) && !File.Exists(userProfilePath) && !Migration.IsMigrationNeeded())
             {
@@ -57,26 +57,17 @@ namespace Ryujinx
             MainWindow mainWindow = new MainWindow();
             mainWindow.Show();
 
-            if (args.Length == 1)
+            if (args.Length > 1)
             {
                 foreach (string arg in args)
                 {
                     switch (arg.Substring(0, 2).ToUpper())
                     {
-                        case "/U":
-                            //Do that update stuffs
-                            Updater.Update.PerformUpdate();
-                            break;
-                        case "/C":
-                            //Do that update stuffs
-                            Updater.Update.Cleanup();
-                            break;
-                        default:
-                            mainWindow.LoadApplication(args[0]);
-                            break;
+                        case "/U": Updater.Update.PerformUpdate(); break;
+                        case "/C": Updater.Update.Cleanup(); break;
+                        default: mainWindow.LoadApplication(args[0]); break;
                     }
                 }
-              
             }
 
             Application.Run();
