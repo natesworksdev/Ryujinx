@@ -92,7 +92,9 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
             sb.AppendLine($" Room: {room}");
 
-            foreach (KeyValuePair<object, object> field in MessagePackSerializer.Deserialize<dynamic>(buffer))
+            IDictionary<string, object> payload = MessagePackSerializer.Deserialize<IDictionary<string, object>>(buffer);
+
+            foreach (KeyValuePair<string, object> field in payload)
             {
                 sb.AppendLine($"  Key: {field.Key}, Value: {field.Value}");
             }
