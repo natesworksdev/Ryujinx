@@ -15,14 +15,15 @@ namespace Ryujinx.Updater.Parser
 {
     public class UpdateParser
     {
-        private static string _jobid;
-        private static string _buildver;
-        private static string _buildurl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
-        private static string _buildcommit;
+        private static string _jobId;
+        private static string _buildVer;
+        private static string _buildUrl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
+        private static string _buildCommit;
         private static string _branch;
-        private static string _platformext;
+        private static string _platformExt;
 
-        public static string BuildArt;
+        public static string _buildArt;
+
         public static string RyuDir  = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
         public static WebClient Package  = new WebClient();
         public static int PackageProgress;
@@ -38,41 +39,41 @@ namespace Ryujinx.Updater.Parser
                 {
                     if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
                     {
-                        _platformext = "osx_x64.zip";
+                        _platformExt = "osx_x64.zip";
                     }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                     {
-                        _platformext = "win_x64.zip";
+                        _platformExt = "win_x64.zip";
                     }
                     else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
                     {
-                        _platformext = "linux_x64.tar.gz";
+                        _platformExt = "linux_x64.tar.gz";
                     }
                 }
 
                 // Begin the Appveyor parsing
 
                 WebClient jsonClient = new WebClient();
-                string fetchedJSON = jsonClient.DownloadString(_buildurl);
+                string fetchedJSON = jsonClient.DownloadString(_buildUrl);
                 JObject jsonRoot = JObject.Parse(fetchedJSON);
 
                 var __Build = jsonRoot["build"];
 
                 string __Version = (string)__Build["version"];
-                string __JobsID = (string)__Build["jobs"][0]["jobId"];
+                string __JobsId = (string)__Build["jobs"][0]["jobId"];
                 string __branch = (string)__Build["branch"];
-                string __buildcommit = (string)__Build["commitId"];
+                string __buildCommit = (string)__Build["commitId"];
 
-                _jobid = __JobsID;
-                _buildver = __Version;
-                BuildArt = "https://ci.appveyor.com/api/buildjobs/" + _jobid + "/artifacts/ryujinx-" + _buildver + "-" + _platformext;
-                _buildcommit = __buildcommit.Substring(0, 7);
+                _jobId = __JobsId;
+                _buildVer = __Version;
+                _buildArt = "https://ci.appveyor.com/api/buildjobs/" + _jobId + "/artifacts/ryujinx-" + _buildVer + "-" + _platformExt;
+                _buildCommit = __buildCommit.Substring(0, 7);
                 _branch = __branch;
 
-                Logger.PrintInfo(LogClass.Application, "Fetched JSON and Parsed:" + Environment.NewLine + "MetaData: JobID(" + __JobsID + ") BuildVer(" + __Version + ")" + Environment.NewLine + "BuildURL(" + BuildArt + ")");
-                Logger.PrintInfo(LogClass.Application, "Commit-id: (" + _buildcommit + ")" + " Branch: (" + _branch + ")");
+                Logger.PrintInfo(LogClass.Application, "Fetched JSON and Parsed:" + Environment.NewLine + "MetaData: JobID(" + __JobsId + ") BuildVer(" + __Version + ")" + Environment.NewLine + "BuildURL(" + _buildArt + ")");
+                Logger.PrintInfo(LogClass.Application, "Commit-id: (" + _buildCommit + ")" + " Branch: (" + _branch + ")");
 
-                using (MessageDialog dialog = GtkDialog.CreateAcceptDialog("Update", "Ryujinx - Update", "Would you like to update?", "Version " + _buildver + " is available."))
+                using (MessageDialog dialog = GtkDialog.CreateAcceptDialog("Update", "Ryujinx - Update", "Would you like to update?", "Version " + _buildVer + " is available."))
                 {
                     if (dialog.Run() == (int)ResponseType.Yes)
                     {
@@ -106,7 +107,7 @@ namespace Ryujinx.Updater.Parser
 
                 Package.DownloadProgressChanged += new DownloadProgressChangedEventHandler(PackageDownloadProgress);
                 Package.DownloadFileCompleted += new AsyncCompletedEventHandler(PackageDownloadedAsync);
-                using (MessageDialog dialog = GtkDialog.CreateProgressDialog("Update", "Ryujinx - Update", "Downloading update " + _buildver, "Please wait while we download the latest package and extract it."))
+                using (MessageDialog dialog = GtkDialog.CreateProgressDialog("Update", "Ryujinx - Update", "Downloading update " + _buildVer, "Please wait while we download the latest package and extract it."))
                 {
                     dialog.Run();
                 }
