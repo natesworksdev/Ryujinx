@@ -53,16 +53,14 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 
         private void WriteDeliveryCacheProgressImpl(ServiceCtx context, IpcRecvListBuffDesc ipcDesc, DeliveryCacheProgressImpl deliveryCacheProgress)
         {
-            MemoryStream memory = new MemoryStream((int)ipcDesc.Size);
-
-            using (BinaryWriter bufferWriter = new BinaryWriter(memory))
+            using (MemoryStream memory = new MemoryStream((int)ipcDesc.Size))
             {
+                BinaryWriter bufferWriter = new BinaryWriter(memory);
+
                 bufferWriter.WriteStruct(deliveryCacheProgress);
+
+                context.Memory.WriteBytes(ipcDesc.Position, memory.ToArray());
             }
-
-            context.Memory.WriteBytes(ipcDesc.Position, memory.ToArray());
-
-            memory.Dispose();
         }
     }
 }
