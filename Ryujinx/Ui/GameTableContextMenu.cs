@@ -1,10 +1,12 @@
 ﻿using Gtk;
 using LibHac;
+using LibHac.Common;
 using LibHac.Fs;
 using LibHac.Fs.Shim;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using System;
 using System.Buffers;
@@ -12,17 +14,18 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
-using LibHac.Common;
-using Ryujinx.Common.Logging;
+using System.Threading;
+
 using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui
 {
     public class GameTableContextMenu : Menu
     {
-        private static ListStore  _gameTableStore;
-        private static TreeIter   _rowIter;
+        private ListStore         _gameTableStore;
+        private TreeIter          _rowIter;
         private VirtualFileSystem _virtualFileSystem;
+        private MessageDialog     _dialog;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -149,97 +152,130 @@ namespace Ryujinx.Ui
         private void ExtractSection(NcaSectionType ncaSectionType)
         {
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to extract into", null, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Extract", ResponseType.Accept);
+            
+            int response       = fileChooser.Run();
+            string destination = fileChooser.Filename;
+            
+            fileChooser.Dispose();
 
-            if (fileChooser.Run() == (int)ResponseType.Accept)
+            if (response == (int)ResponseType.Accept)
             {
-                string path = _gameTableStore.GetValue(_rowIter, 9).ToString();
-
-                using (FileStream file = new FileStream(path, FileMode.Open, FileAccess.Read))
+                Thread extractorThread = new Thread(() =>
                 {
-                    Nca mainNca  = null;
-                    Nca patchNca = null;
+                    string source = _gameTableStore.GetValue(_rowIter, 9).ToString();
 
-                    if ((System.IO.Path.GetExtension(path).ToLower() == ".nsp") ||
-                        (System.IO.Path.GetExtension(path).ToLower() == ".pfs0") ||
-                        (System.IO.Path.GetExtension(path).ToLower() == ".xci"))
+                    Gtk.Application.Invoke(delegate
                     {
-                        PartitionFileSystem pfs;
-
-                        if (System.IO.Path.GetExtension(path) == ".xci")
+                        _dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.None, null)
                         {
-                            Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
+                            Title          = "Ryujinx - NCA Section Extractor",
+                            Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                            Text           = "",
+                            SecondaryText  = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(source)}...",
+                            WindowPosition = WindowPosition.Center
+                        };
+                        _dialog.Response += (sender, args) => _dialog.Dispose();
+                        _dialog.Show();
+                    });
 
-                            pfs = xci.OpenPartition(XciPartitionType.Secure);
-                        }
-                        else
+                    using (FileStream file = new FileStream(source, FileMode.Open, FileAccess.Read))
+                    {
+                        Nca mainNca  = null;
+                        Nca patchNca = null;
+
+                        if ((System.IO.Path.GetExtension(source).ToLower() == ".nsp")  ||
+                            (System.IO.Path.GetExtension(source).ToLower() == ".pfs0") ||
+                            (System.IO.Path.GetExtension(source).ToLower() == ".xci"))
                         {
-                            pfs = new PartitionFileSystem(file.AsStorage());
-                        }
+                            PartitionFileSystem pfs;
 
-                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
-                        {
-                            pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
-
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
-
-                            if (nca.Header.ContentType == NcaContentType.Program)
+                            if (System.IO.Path.GetExtension(source) == ".xci")
                             {
-                                int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+                                Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
 
-                                if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                                pfs = xci.OpenPartition(XciPartitionType.Secure);
+                            }
+                            else
+                            {
+                                pfs = new PartitionFileSystem(file.AsStorage());
+                            }
+
+                            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                            {
+                                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
+
+                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+
+                                if (nca.Header.ContentType == NcaContentType.Program)
                                 {
-                                    patchNca = nca;
-                                }
-                                else
-                                {
-                                    mainNca = nca;
+                                    int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
+
+                                    if (nca.Header.GetFsHeader(dataIndex).IsPatchSection())
+                                    {
+                                        patchNca = nca;
+                                    }
+                                    else
+                                    {
+                                        mainNca = nca;
+                                    }
                                 }
                             }
                         }
+                        else if (System.IO.Path.GetExtension(source).ToLower() == ".nca")
+                        {
+                            mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
+                        }
+
+                        if (mainNca == null)
+                        {
+                            Logger.PrintError(LogClass.Application, "Extraction failed. The main NCA was not present in the selected file.");
+
+                            Gtk.Application.Invoke(delegate
+                            {
+                                GtkDialog.CreateErrorDialog("Extraction failed. The main NCA was not present in the selected file.");
+                            });
+
+                            return;
+                        }
+
+                        int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
+
+                        IFileSystem ncaFileSystem = patchNca != null ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
+                            : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
+
+                        _virtualFileSystem.FsClient.Register(ncaSectionType.ToString().ToU8Span(), ncaFileSystem);
+                        _virtualFileSystem.FsClient.Register("output".ToU8Span(), new LocalFileSystem(destination));
+
+                        Result resultCode = CopyDirectory(_virtualFileSystem.FsClient, $"{ncaSectionType}:/", "output:/");
+                        
+                        if (resultCode.IsFailure())
+                        {
+                            Logger.PrintError(LogClass.Application, $"LibHac returned error code: {resultCode.ErrorCode}");
+
+                            Gtk.Application.Invoke(delegate
+                            {
+                                _dialog.Text          = "Ryujinx has encountered an error";
+                                _dialog.SecondaryText = "Extraction failed. Read the log file for further information.";
+                                _dialog.AddButton("OK", ResponseType.Ok);
+                            });
+                        }
+                        else if (resultCode.IsSuccess())
+                        {
+                            Gtk.Application.Invoke(delegate
+                            {
+                                _dialog.SecondaryText = "Extraction has completed successfully.";
+                                _dialog.AddButton("OK", ResponseType.Ok);
+                            });
+                        }
+
+                        _virtualFileSystem.FsClient.Unmount(ncaSectionType.ToString());
+                        _virtualFileSystem.FsClient.Unmount("output");
                     }
-                    else if (System.IO.Path.GetExtension(path).ToLower() == ".nca")
-                    {
-                        mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
-                    }
-
-                    if (mainNca == null)
-                    {
-                        Logger.PrintError(LogClass.Application, "Extraction failed. The main NCA was not present in the selected file.");
-                        GtkDialog.CreateErrorDialog("Extraction failed. The main NCA was not present in the selected file.");
-
-                        fileChooser.Dispose();
-
-                        return;
-                    }
-
-                    int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
-
-                    IFileSystem ncaFileSystem;
-                    if (patchNca != null)
-                    {
-                        ncaFileSystem = mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid);
-                    }
-                    else
-                    {
-                        ncaFileSystem = mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
-                    }
-
-                    _virtualFileSystem.FsClient.Register(ncaSectionType.ToString().ToU8Span(), ncaFileSystem);
-                    _virtualFileSystem.FsClient.Register("output".ToU8Span(), new LocalFileSystem(fileChooser.Filename));
-
-                    Result rc = CopyDirectory(_virtualFileSystem.FsClient, $"{ncaSectionType}:/", "output:/");
-                    if (rc.IsFailure())
-                    {
-                        Logger.PrintError(LogClass.Application, $"LibHac returned error code: {rc.ErrorCode}");
-                        GtkDialog.CreateErrorDialog($"Extraction failed. Read the log file for further information.");
-                    }
-
-                    _virtualFileSystem.FsClient.Unmount(ncaSectionType.ToString());
-                    _virtualFileSystem.FsClient.Unmount("output");
-                }
+                });
+                extractorThread.Name         = "GUI.NcaSectionExtractorThread";
+                extractorThread.IsBackground = true;
+                extractorThread.Start();
             }
-
-            fileChooser.Dispose();
         }
 
         private static Result CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
