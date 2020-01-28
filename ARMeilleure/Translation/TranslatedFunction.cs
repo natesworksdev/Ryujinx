@@ -1,15 +1,25 @@
 namespace ARMeilleure.Translation
 {
+    using PTC;
+
     class TranslatedFunction
     {
+        private readonly int _minCallsForRejit = 75;
+
         private GuestFunction _func;
 
-        public bool Rejit { get; private set; }
+        private bool _rejit;
+        private int  _callCount;
 
         public TranslatedFunction(GuestFunction func, bool rejit)
         {
-            _func = func;
-            Rejit = rejit;
+            _func  = func;
+            _rejit = rejit;
+
+            if (Ptc.Enabled)
+            {
+                _minCallsForRejit = 1;
+            }
         }
 
         public ulong Execute(State.ExecutionContext context)
@@ -17,9 +27,14 @@ namespace ARMeilleure.Translation
             return _func(context.NativeContextPtr);
         }
 
+        public bool ShouldRejit()
+        {
+            return _rejit && ++_callCount >= _minCallsForRejit;
+        }
+
         public void ResetRejit()
         {
-            Rejit = false;
+            _rejit = false;
         }
     }
 }

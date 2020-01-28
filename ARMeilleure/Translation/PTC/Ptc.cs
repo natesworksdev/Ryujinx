@@ -27,7 +27,7 @@ namespace ARMeilleure.Translation.PTC
 
         internal const int MinCodeLengthToSave = 0x180; // Bytes.
 
-        internal const int PageTableIndex = -1;
+        internal const int PageTableIndex = -1; // Must be a negative value.
 
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
 

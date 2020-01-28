@@ -27,7 +27,7 @@ namespace ARMeilleure.Translation
         private readonly Dictionary<ulong, TranslatedFunction> _funcs;
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
 
-        private readonly int _maxBackgroundQueueCount = 30;
+        private readonly int _maxBackgroundQueueCount = 600;
         private readonly ConcurrentQueue<ulong> _backgroundQueue;
 
         private readonly AutoResetEvent _backgroundTranslatorEvent;
@@ -47,7 +47,7 @@ namespace ARMeilleure.Translation
             {
                 Ptc.FullTranslate(_funcsHighCq, memory.PageTable);
 
-                _maxBackgroundQueueCount *= 10;
+                _maxBackgroundQueueCount = 300;
             }
 
             _backgroundQueue = new ConcurrentQueue<ulong>();
@@ -141,7 +141,7 @@ namespace ARMeilleure.Translation
                         Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
                     }
 
-                    if (isCallTarget && func.Rejit && _backgroundQueue.Count < _maxBackgroundQueueCount)
+                    if (isCallTarget && func.ShouldRejit() && _backgroundQueue.Count < _maxBackgroundQueueCount)
                     {
                         func.ResetRejit();
 

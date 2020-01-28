@@ -341,8 +341,6 @@ namespace Ryujinx.Ui
                 _firmwareInstallDirectory.Sensitive = true;
             });
 
-            Logger.PrintInfo(LogClass.Cpu, "Stopping Persistent Translation Cache.");
-
             Ptc.Stop();
         }
 
