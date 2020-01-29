@@ -1,11 +1,11 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdShift : OpCode32Simd
+    class OpCode32SimdShImm : OpCode32Simd
     {
         public int Immediate { get; private set; }
         public int Shift { get; private set; }
 
-        public OpCode32SimdShift(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdShImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Immediate = (opCode >> 16) & 0x3f;
             var limm = ((opCode >> 1) & 0x40) | Immediate;

@@ -206,6 +206,30 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        [Test, Combinatorial, Description("VMOVN.<size> <Dt>, <Qm>")]
+        public void Movn_V([Range(0u, 1u, 2u)] uint size,
+                           [Values(0u, 1u, 2u, 3u)] uint vd,
+                           [Values(0u, 2u, 4u, 8u)] uint vm)
+        {
+            uint opcode = 0xf3b20200u; // VMOVN.I16 D0, Q0
+
+            opcode |= (size & 0x3) << 18;
+            opcode |= ((vm & 0x10) << 1);
+            opcode |= ((vm & 0xf) << 0);
+
+            opcode |= ((vd & 0x10) << 18);
+            opcode |= ((vd & 0xf) << 12);
+
+            V128 v0 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v1 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v2 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+            V128 v3 = new V128(TestContext.CurrentContext.Random.NextULong(), TestContext.CurrentContext.Random.NextULong());
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2, v3: v3);
+
+            CompareAgainstUnicorn();
+        }
+
         [Test, Combinatorial, Description("VTRN.<size> <Vd>, <Vm>")]
         public void Vtrn([Values(0u, 1u, 2u, 3u)] uint vm,
                          [Values(0u, 1u, 2u, 3u)] uint vd,

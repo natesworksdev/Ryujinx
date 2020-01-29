@@ -445,6 +445,27 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
+        // Narrow
+
+        public static void EmitVectorUnaryNarrowOp32(ArmEmitterContext context, Func1I emit)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
+            int elems = 8 >> op.Size; // Size contains the target element size. (for when it becomes a doubleword)
+
+            Operand res = GetVecA32(op.Qd);
+            int id = (op.Vd & 1) << (3 - op.Size); // Target doubleword base.
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand m = EmitVectorExtract32(context, op.Qm, index, op.Size + 1, false);
+
+                res = EmitVectorInsert(context, res, emit(m), id + index, op.Size);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
         // Generic Functions
 
         public static Operand EmitSoftFloatCallDefaultFpscr(

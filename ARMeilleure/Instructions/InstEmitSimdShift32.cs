@@ -7,6 +7,7 @@ using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 using System.Diagnostics;
+using System;
 
 namespace ARMeilleure.Instructions
 {
@@ -14,9 +15,9 @@ namespace ARMeilleure.Instructions
     {
         public static void Vshl(ArmEmitterContext context)
         {
-            OpCode32SimdShift op = (OpCode32SimdShift)context.CurrOp;
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
 
-            EmitVectorUnaryOpZx32(context, (op1) => context.ShiftLeft(op1, Const(op1.Type, op.Shift)));
+            EmitVectorUnaryOpZx32(context, (op1) => context.ShiftLeft(op1, Const(op.Shift)));
         }
 
         public static void Vshl_I(ArmEmitterContext context)
@@ -31,6 +32,30 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpSx32(context, (op1, op2) => EmitShlRegOp(context, op2, op1, op.Size, false));
             }
+        }
+
+        public static void Vshr(ArmEmitterContext context)
+        {
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
+            int shift = (8 << op.Size) - op.Shift; // Shr amount is flipped.
+            int maxShift = (8 << op.Size) - 1;
+
+            if (op.U)
+            {
+                EmitVectorUnaryOpZx32(context, (op1) => (shift > maxShift) ? Const(op1.Type, 0) : context.ShiftRightUI(op1, Const(shift)));
+            }
+            else
+            {
+                EmitVectorUnaryOpSx32(context, (op1) => context.ShiftRightSI(op1, Const(Math.Min(maxShift, shift))));
+            }
+        }
+
+        public static void Vshrn(ArmEmitterContext context)
+        {
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
+            int shift = (8 << op.Size) - op.Shift; // Shr amount is flipped.
+
+            EmitVectorUnaryNarrowOp32(context, (op1) => context.ShiftRightUI(op1, Const(shift)));
         }
 
         private static Operand EmitShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size, bool unsigned)

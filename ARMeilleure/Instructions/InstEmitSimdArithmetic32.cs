@@ -160,6 +160,11 @@ namespace ARMeilleure.Instructions
             EmitScalarUnaryOpF32(context, (op1) => op1);
         }
 
+        public static void Vmovn(ArmEmitterContext context)
+        {
+            EmitVectorUnaryNarrowOp32(context, (op1) => op1);
+        }
+
         public static void Vneg_S(ArmEmitterContext context)
         {
             EmitScalarUnaryOpF32(context, (op1) => context.Negate(op1));

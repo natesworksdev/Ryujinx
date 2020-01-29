@@ -323,7 +323,7 @@ namespace Ryujinx.Tests.Cpu
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
 
-            CompareAgainstUnicorn(fpTolerances: FpTolerances.UpToOneUlpsS);
+            CompareAgainstUnicorn();
         }
 
         [Test, Combinatorial, Description("VPADD.f32 V0, V0, V0")]
