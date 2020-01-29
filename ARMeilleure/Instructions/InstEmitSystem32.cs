@@ -12,6 +12,141 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit32
     {
+        public static void Mcr(ArmEmitterContext context)
+        {
+            OpCode32System op = (OpCode32System)context.CurrOp;
+
+            if (op.Coproc != 15)
+            {
+                throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
+            }
+
+            if (op.Opc1 != 0)
+            {
+                throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
+            }
+
+            Delegate dlg;
+            switch (op.CRn)
+            {
+                case 13: // Process and Thread Info.
+                    if (op.CRm != 0)
+                    {
+                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
+                    }
+                    switch (op.Opc2)
+                    {
+                        case 2:
+                            dlg = new _Void_U32(NativeInterface.SetTpidrEl032); break;
+                        default:
+                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
+                    }
+                    break;
+
+                case 7:
+                    switch (op.CRm) // Cache and Memory barrier.
+                    {
+                        case 10:
+                            switch (op.Opc2)
+                            {
+                                case 5: // Data Memory Barrier Register.
+                                    return; // No-op.
+                                default:
+                                    throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
+                            }
+                        default:
+                            throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
+                    }
+
+                default: throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+            }
+
+            context.Call(dlg, GetIntA32(context, op.Rt));
+        }
+
+        public static void Mrc(ArmEmitterContext context)
+        {
+            OpCode32System op = (OpCode32System)context.CurrOp;
+
+            if (op.Coproc != 15)
+            {
+                throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
+            }
+
+            if (op.Opc1 != 0)
+            {
+                throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
+            }
+
+            Delegate dlg;
+            switch (op.CRn)
+            {
+                case 13: // Process and Thread Info.
+                    if (op.CRm != 0)
+                    {
+                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
+                    }
+                    switch (op.Opc2)
+                    {
+                        case 2:
+                            dlg = new _U32(NativeInterface.GetTpidrEl032); break;
+                        case 3:
+                            dlg = new _U32(NativeInterface.GetTpidr32); break;
+                        default:
+                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
+                    }
+                    break;
+                default: throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+            }
+
+            if (op.Rt == RegisterAlias.Aarch32Pc)
+            {
+                // Special behavior: copy NZCV flags into APSR.
+                EmitSetNzcv(context, context.Call(dlg));
+                return;
+            }
+            else
+            {
+                SetIntA32(context, op.Rt, context.Call(dlg));
+            }
+        }
+
+        public static void Mrrc(ArmEmitterContext context)
+        {
+            OpCode32System op = (OpCode32System)context.CurrOp;
+
+            if (op.Coproc != 15)
+            {
+                throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
+            }
+
+            var opc = op.MrrcOp;
+
+            Delegate dlg;
+            switch (op.CRm)
+            {
+                case 14: // Timer.
+                    switch (opc)
+                    {
+                        case 0:
+                            dlg = new _U64(NativeInterface.GetCntpctEl0); break;
+                        default:
+                            throw new NotImplementedException($"Unknown MRRC Opc1 0x{opc:X16} at 0x{op.Address:X16}.");
+                    }
+                    break;
+                default: throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+            }
+
+            Operand result = context.Call(dlg);
+
+            SetIntA32(context, op.Rt, context.ConvertI64ToI32(result));
+            SetIntA32(context, op.CRn, context.ConvertI64ToI32(context.ShiftRightUI(result, Const(32))));
+        }
+
+        public static void Nop(ArmEmitterContext context)
+        {
+        }
+
         public static void Vmrs(ArmEmitterContext context)
         {
             OpCode32SimdSpecial op = (OpCode32SimdSpecial)context.CurrOp;
@@ -72,105 +207,6 @@ namespace ARMeilleure.Instructions
             context.Call(dlg, GetIntA32(context, op.Rt));
         }
 
-        public static void Mrc(ArmEmitterContext context)
-        {
-            OpCode32System op = (OpCode32System)context.CurrOp;
-
-            if (op.Coproc != 15)
-            {
-                throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
-            }
-
-            if (op.Opc1 != 0)
-            {
-                throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
-            }
-
-            Delegate dlg;
-            switch (op.CRn)
-            {
-                case 13: // Process and Thread Info.
-                    if (op.CRm != 0)
-                    {
-                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
-                    }
-                    switch (op.Opc2)
-                    {
-                        case 2:
-                            dlg = new _U32(NativeInterface.GetTpidrEl032); break;
-                        case 3:
-                            dlg = new _U32(NativeInterface.GetTpidr32); break;
-                        default:
-                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
-                    }
-                    break;
-                default: throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
-            }
-
-            if (op.Rt == RegisterAlias.Aarch32Pc)
-            {
-                // Special behavior: copy NZCV flags into APSR.
-                EmitSetNzcv(context, context.Call(dlg));
-                return;
-            }
-            else
-            {
-                SetIntA32(context, op.Rt, context.Call(dlg));
-            }
-        }
-
-        public static void Mcr(ArmEmitterContext context)
-        {
-            OpCode32System op = (OpCode32System)context.CurrOp;
-
-            if (op.Coproc != 15)
-            {
-                throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
-            }
-
-            if (op.Opc1 != 0)
-            {
-                throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
-            }
-
-            Delegate dlg;
-            switch (op.CRn)
-            {
-                case 13: // Process and Thread Info.
-                    if (op.CRm != 0)
-                    {
-                        throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
-                    }
-                    switch (op.Opc2)
-                    {
-                        case 2:
-                            dlg = new _Void_U32(NativeInterface.SetTpidrEl032); break;
-                        default:
-                            throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
-                    }
-                    break;
-
-                case 7:
-                    switch (op.CRm) // Cache and Memory barrier.
-                    {
-                        case 10:
-                            switch (op.Opc2)
-                            {
-                                case 5: // Data Memory Barrier Register.
-                                    return; // No-op.
-                                default:
-                                    throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
-                            }
-                        default:
-                            throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
-                    }
-
-                default: throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
-            }
-
-            context.Call(dlg, GetIntA32(context, op.Rt));
-        }
-
         private static void EmitSetNzcv(ArmEmitterContext context, Operand t)
         {
             Operand v = context.ShiftRightUI(t, Const((int)PState.VFlag));
@@ -189,42 +225,6 @@ namespace ARMeilleure.Instructions
             SetFlag(context, PState.CFlag, c);
             SetFlag(context, PState.ZFlag, z);
             SetFlag(context, PState.NFlag, n);
-        }
-
-        public static void Mrrc(ArmEmitterContext context)
-        {
-            OpCode32System op = (OpCode32System)context.CurrOp;
-
-            if (op.Coproc != 15)
-            {
-                throw new NotImplementedException($"Unknown MRC Coprocessor ID 0x{op.Coproc:X16} at 0x{op.Address:X16}.");
-            }
-
-            var opc = op.MrrcOp;
-
-            Delegate dlg;
-            switch (op.CRm)
-            {
-                case 14: // Timer.
-                    switch (opc)
-                    {
-                        case 0:
-                            dlg = new _U64(NativeInterface.GetCntpctEl0); break;
-                        default:
-                            throw new NotImplementedException($"Unknown MRRC Opc1 0x{opc:X16} at 0x{op.Address:X16}.");
-                    }
-                    break;
-                default: throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
-            }
-
-            Operand result = context.Call(dlg);
-
-            SetIntA32(context, op.Rt, context.ConvertI64ToI32(result));
-            SetIntA32(context, op.CRn, context.ConvertI64ToI32(context.ShiftRightUI(result, Const(32))));
-        }
-
-        public static void Nop(ArmEmitterContext context)
-        {
         }
     }
 }
