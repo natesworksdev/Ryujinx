@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateVertexBufferState(state);
             }
 
-            if (state.QueryModified(MethodOffset.FaceState))
+            if (state.QueryModified(MethodOffset.FaceState, MethodOffset.YControl))
             {
                 UpdateFaceState(state);
             }
@@ -708,6 +708,18 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private void UpdateFaceState(GpuState state)
         {
             var face = state.Get<FaceState>(MethodOffset.FaceState);
+            var flip = (state.Get<int>(MethodOffset.YControl) & (1 << 4)) != 0;
+
+            if (flip)
+            {
+                switch (face.CullFace)
+                {
+                    case Face.Front:
+                        face.CullFace = Face.Back; break;
+                    case Face.Back:
+                        face.CullFace = Face.Front; break;
+                }
+            }
 
             _context.Renderer.Pipeline.SetFaceCulling(face.CullEnable, face.CullFace);
 
