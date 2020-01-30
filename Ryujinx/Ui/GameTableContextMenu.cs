@@ -162,7 +162,7 @@ namespace Ryujinx.Ui
             {
                 Thread extractorThread = new Thread(() =>
                 {
-                    string source = _gameTableStore.GetValue(_rowIter, 9).ToString();
+                    string sourceFile = _gameTableStore.GetValue(_rowIter, 9).ToString();
 
                     Gtk.Application.Invoke(delegate
                     {
@@ -171,25 +171,25 @@ namespace Ryujinx.Ui
                             Title          = "Ryujinx - NCA Section Extractor",
                             Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
                             Text           = "",
-                            SecondaryText  = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(source)}...",
+                            SecondaryText  = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(sourceFile)}...",
                             WindowPosition = WindowPosition.Center
                         };
                         _dialog.Response += (sender, args) => _dialog.Dispose();
                         _dialog.Show();
                     });
 
-                    using (FileStream file = new FileStream(source, FileMode.Open, FileAccess.Read))
+                    using (FileStream file = new FileStream(sourceFile, FileMode.Open, FileAccess.Read))
                     {
                         Nca mainNca  = null;
                         Nca patchNca = null;
 
-                        if ((System.IO.Path.GetExtension(source).ToLower() == ".nsp")  ||
-                            (System.IO.Path.GetExtension(source).ToLower() == ".pfs0") ||
-                            (System.IO.Path.GetExtension(source).ToLower() == ".xci"))
+                        if ((System.IO.Path.GetExtension(sourceFile).ToLower() == ".nsp")  ||
+                            (System.IO.Path.GetExtension(sourceFile).ToLower() == ".pfs0") ||
+                            (System.IO.Path.GetExtension(sourceFile).ToLower() == ".xci"))
                         {
                             PartitionFileSystem pfs;
 
-                            if (System.IO.Path.GetExtension(source) == ".xci")
+                            if (System.IO.Path.GetExtension(sourceFile) == ".xci")
                             {
                                 Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -221,7 +221,7 @@ namespace Ryujinx.Ui
                                 }
                             }
                         }
-                        else if (System.IO.Path.GetExtension(source).ToLower() == ".nca")
+                        else if (System.IO.Path.GetExtension(sourceFile).ToLower() == ".nca")
                         {
                             mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
                         }
@@ -243,10 +243,15 @@ namespace Ryujinx.Ui
                         IFileSystem ncaFileSystem = patchNca != null ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
                             : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
 
-                        _virtualFileSystem.FsClient.Register(ncaSectionType.ToString().ToU8Span(), ncaFileSystem);
-                        _virtualFileSystem.FsClient.Register("output".ToU8Span(), new LocalFileSystem(destination));
+                        FileSystemClient fsClient = _virtualFileSystem.FsClient;
 
-                        Result resultCode = CopyDirectory(_virtualFileSystem.FsClient, $"{ncaSectionType}:/", "output:/");
+                        string source = new Random().Next(0, 999999999).ToString();
+                        string output = new Random().Next(0, 999999999).ToString();
+
+                        fsClient.Register(source.ToU8Span(), ncaFileSystem);
+                        fsClient.Register(output.ToU8Span(), new LocalFileSystem(destination));
+
+                        Result resultCode = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
                         
                         if (resultCode.IsFailure())
                         {
@@ -268,8 +273,8 @@ namespace Ryujinx.Ui
                             });
                         }
 
-                        _virtualFileSystem.FsClient.Unmount(ncaSectionType.ToString());
-                        _virtualFileSystem.FsClient.Unmount("output");
+                        fsClient.Unmount(source);
+                        fsClient.Unmount(output);
                     }
                 });
                 extractorThread.Name         = "GUI.NcaSectionExtractorThread";
