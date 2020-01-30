@@ -712,12 +712,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             if (flip)
             {
-                switch (face.CullFace)
+                switch (face.FrontFace)
                 {
-                    case Face.Front:
-                        face.CullFace = Face.Back; break;
-                    case Face.Back:
-                        face.CullFace = Face.Front; break;
+                    case FrontFace.Clockwise:
+                        face.FrontFace = FrontFace.CounterClockwise; break;
+                    case FrontFace.CounterClockwise:
+                        face.FrontFace = FrontFace.Clockwise; break;
                 }
             }
 
