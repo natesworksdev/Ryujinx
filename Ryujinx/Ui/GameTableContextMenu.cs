@@ -26,6 +26,7 @@ namespace Ryujinx.Ui
         private TreeIter          _rowIter;
         private VirtualFileSystem _virtualFileSystem;
         private MessageDialog     _dialog;
+        private bool              _cancel;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -166,16 +167,20 @@ namespace Ryujinx.Ui
 
                     Gtk.Application.Invoke(delegate
                     {
-                        _dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.None, null)
+                        _dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Cancel, null)
                         {
                             Title          = "Ryujinx - NCA Section Extractor",
                             Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
-                            Text           = "",
                             SecondaryText  = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(sourceFile)}...",
                             WindowPosition = WindowPosition.Center
                         };
-                        _dialog.Response += (sender, args) => _dialog.Dispose();
-                        _dialog.Show();
+                        
+                        int dialogResponse = _dialog.Run();
+                        if (dialogResponse == (int)ResponseType.Cancel || dialogResponse == (int)ResponseType.DeleteEvent)
+                        {
+                            _cancel = true;
+                            _dialog.Dispose();
+                        }
                     });
 
                     using (FileStream file = new FileStream(sourceFile, FileMode.Open, FileAccess.Read))
@@ -252,24 +257,36 @@ namespace Ryujinx.Ui
                         fsClient.Register(output.ToU8Span(), new LocalFileSystem(destination));
 
                         Result resultCode = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
-                        
+
                         if (resultCode.IsFailure())
                         {
-                            Logger.PrintError(LogClass.Application, $"LibHac returned error code: {resultCode.ErrorCode}");
-
-                            Gtk.Application.Invoke(delegate
+                            if (resultCode.ErrorCode != "2468-1357")
                             {
-                                _dialog.Text          = "Ryujinx has encountered an error";
-                                _dialog.SecondaryText = "Extraction failed. Read the log file for further information.";
-                                _dialog.AddButton("OK", ResponseType.Ok);
-                            });
+                                Logger.PrintError(LogClass.Application, $"LibHac returned error code: {resultCode.ErrorCode}");
+
+                                Gtk.Application.Invoke(delegate
+                                {
+                                    _dialog?.Dispose();
+
+                                    GtkDialog.CreateErrorDialog("Extraction failed. Read the log file for further information.");
+                                });
+                            }
                         }
                         else if (resultCode.IsSuccess())
                         {
                             Gtk.Application.Invoke(delegate
                             {
-                                _dialog.SecondaryText = "Extraction has completed successfully.";
-                                _dialog.AddButton("OK", ResponseType.Ok);
+                                _dialog?.Dispose();
+
+                                MessageDialog dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
+                                {
+                                    Title          = "Ryujinx - NCA Section Extractor",
+                                    Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                                    SecondaryText  = "Extraction has completed successfully.",
+                                    WindowPosition = WindowPosition.Center
+                                };
+                                dialog.Run();
+                                dialog.Dispose();
                             });
                         }
 
@@ -283,7 +300,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private static Result CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
+        private Result CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
         {
             Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath, OpenDirectoryMode.All);
             if (rc.IsFailure()) return rc;
@@ -292,6 +309,8 @@ namespace Ryujinx.Ui
             {
                 foreach (DirectoryEntryEx entry in fs.EnumerateEntries(sourcePath, "*", SearchOptions.Default))
                 {
+                    if (_cancel) return new Result(468, 1357);
+                    
                     string subSrcPath = PathTools.Normalize(PathTools.Combine(sourcePath, entry.Name));
                     string subDstPath = PathTools.Normalize(PathTools.Combine(destPath, entry.Name));
 
@@ -316,7 +335,7 @@ namespace Ryujinx.Ui
             return Result.Success;
         }
 
-        public static Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
+        public Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
         {
             Result rc = fs.OpenFile(out FileHandle sourceHandle, sourcePath, OpenMode.Read);
             if (rc.IsFailure()) return rc;
