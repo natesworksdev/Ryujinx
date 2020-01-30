@@ -422,7 +422,13 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             _context.Renderer.Pipeline.SetDepthMode(depthMode);
 
-            bool flipY = (state.Get<YControl>(MethodOffset.YControl) & YControl.NegateY) != 0;
+            int yControl = state.Get<int>(MethodOffset.YControl);
+
+            bool   flipY  = (yControl & 0b00001) != 0;
+            Origin origin = (yControl & 0b10000) != 0 ? Origin.LowerLeft : Origin.UpperLeft;
+
+            _context.Renderer.Pipeline.SetOrigin(origin);
+
             float yFlip = flipY ? -1 : 1;
 
             Viewport[] viewports = new Viewport[Constants.TotalViewports];
