@@ -44,6 +44,7 @@ namespace Ryujinx.Ui
             int numApplicationsFound  = 0;
             int numApplicationsLoaded = 0;
 
+            _loadingError         = false;
             _virtualFileSystem    = virtualFileSystem;
             _desiredTitleLanguage = desiredTitleLanguage;
 
@@ -165,31 +166,7 @@ namespace Ryujinx.Ui
                                 // Get the title name, title ID, developer name and version number from the NACP
                                 version = controlData.DisplayVersion;
 
-                                titleName = controlData.Descriptions[(int)_desiredTitleLanguage].Title;
-
-                                if (string.IsNullOrWhiteSpace(titleName))
-                                {
-                                    titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                                }
-
-                                titleId = controlData.PresenceGroupId.ToString("x16");
-
-                                if (string.IsNullOrWhiteSpace(titleId))
-                                {
-                                    titleId = controlData.SaveDataOwnerId.ToString("x16");
-                                }
-
-                                if (string.IsNullOrWhiteSpace(titleId))
-                                {
-                                    titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
-                                }
-
-                                developer = controlData.Descriptions[(int)_desiredTitleLanguage].Developer;
-
-                                if (string.IsNullOrWhiteSpace(developer))
-                                {
-                                    developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
-                                }
+                                GetNameIdDeveloper(controlData, out titleName, out titleId, out developer);
 
                                 // Read the icon from the ControlFS and store it as a byte array
                                 try
@@ -244,9 +221,10 @@ namespace Ryujinx.Ui
 
                             Logger.PrintWarning(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {applicationPath}");
                         }
-                        catch
+                        catch (Exception exception)
                         {
                             Logger.PrintError(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+                            Logger.PrintDebug(LogClass.Application, exception.ToString());
                             
                             numApplicationsFound--;
                             _loadingError = true;
@@ -293,31 +271,7 @@ namespace Ryujinx.Ui
                                     // Get the title name, title ID, developer name and version number from the NACP
                                     version = controlData.DisplayVersion;
 
-                                    titleName = controlData.Descriptions[(int) _desiredTitleLanguage].Title;
-
-                                    if (string.IsNullOrWhiteSpace(titleName))
-                                    {
-                                        titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
-                                    }
-
-                                    titleId = controlData.PresenceGroupId.ToString("x16");
-
-                                    if (string.IsNullOrWhiteSpace(titleId))
-                                    {
-                                        titleId = controlData.SaveDataOwnerId.ToString("x16");
-                                    }
-
-                                    if (string.IsNullOrWhiteSpace(titleId))
-                                    {
-                                        titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
-                                    }
-
-                                    developer = controlData.Descriptions[(int) _desiredTitleLanguage].Developer;
-
-                                    if (string.IsNullOrWhiteSpace(developer))
-                                    {
-                                        developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
-                                    }
+                                    GetNameIdDeveloper(controlData, out titleName, out titleId, out developer);
                                 }
                             }
                             else
@@ -328,7 +282,7 @@ namespace Ryujinx.Ui
                         }
                         catch
                         {
-                            Logger.PrintWarning(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
+                            Logger.PrintError(LogClass.Application, $"The file encountered was not of a valid type. Errored File: {applicationPath}");
 
                             numApplicationsFound--;
 
@@ -430,7 +384,7 @@ namespace Ryujinx.Ui
             {
                 Gtk.Application.Invoke(delegate
                 {
-                    GtkDialog.CreateErrorDialog("A file(s) encountered was not of a valid type, check logs for more info.");
+                    GtkDialog.CreateErrorDialog("One or more files encountered were not of a valid type, check logs for more info.");
                 });
             }
         }
@@ -492,7 +446,7 @@ namespace Ryujinx.Ui
         internal static ApplicationMetadata LoadAndSaveMetaData(string titleId, Action<ApplicationMetadata> modifyFunction = null)
         {
             string metadataFolder = Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "gui");
-            string metadataFile = Path.Combine(metadataFolder, "metadata.json");
+            string metadataFile   = Path.Combine(metadataFolder, "metadata.json");
 
             IJsonFormatterResolver resolver = CompositeResolver.Create(new[] { StandardResolver.AllowPrivateSnakeCase });
 
@@ -555,6 +509,49 @@ namespace Ryujinx.Ui
             }
 
             return readableString;
+        }
+
+        private static void GetNameIdDeveloper(Nacp controlData, out string titleName, out string titleId, out string developer)
+        {
+            NacpDescription nacpDescription = controlData.Descriptions.ToList().Find(x => x.Language == (TitleLanguage)_desiredTitleLanguage);
+
+            if (nacpDescription != null)
+            {
+                titleName = nacpDescription.Title;
+                developer = nacpDescription.Developer;
+            }
+            else
+            {
+                titleName = null;
+                developer = null;
+            }
+
+            if (string.IsNullOrWhiteSpace(titleName))
+            {
+                titleName = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Title)).Title;
+            }
+
+            if (string.IsNullOrWhiteSpace(developer))
+            {
+                developer = controlData.Descriptions.ToList().Find(x => !string.IsNullOrWhiteSpace(x.Developer)).Developer;
+            }
+
+            if (controlData.PresenceGroupId != 0)
+            {
+                titleId = controlData.PresenceGroupId.ToString("x16");
+            }
+            else if (controlData.SaveDataOwnerId != 0)
+            {
+                titleId = controlData.SaveDataOwnerId.ToString("x16");
+            }
+            else if (controlData.AddOnContentBaseId != 0)
+            {
+                titleId = (controlData.AddOnContentBaseId - 0x1000).ToString("x16");
+            }
+            else
+            {
+                titleId = "0000000000000000";
+            }
         }
     }
 }

@@ -436,16 +436,14 @@ namespace Ryujinx.Ui
             Application.Invoke(delegate
             {
                 _progressLabel.Text = $"{args.NumAppsLoaded}/{args.NumAppsFound} Games Loaded";
-                float barValue      = (float)args.NumAppsLoaded / args.NumAppsFound;
+                float barValue      = 0;
 
-                if (float.IsNaN(barValue))
+                if (args.NumAppsFound != 0)
                 {
-                    _progressBar.Value = 0;
+                    barValue = (float)args.NumAppsLoaded / args.NumAppsFound;
                 }
-                else
-                {
-                    _progressBar.Value = barValue;
-                }
+
+                _progressBar.Value = barValue;
             });
         }
 
