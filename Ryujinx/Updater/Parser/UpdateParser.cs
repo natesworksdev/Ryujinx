@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
@@ -24,7 +25,7 @@ namespace Ryujinx.Updater.Parser
 
         public static string _buildArt;
 
-        public static string RyuDir  = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
+        public static string RyuDir = Environment.CurrentDirectory;
         public static WebClient Package  = new WebClient();
         public static int PackageProgress;
         public static double Percentage;
@@ -77,8 +78,19 @@ namespace Ryujinx.Updater.Parser
                 {
                     if (dialog.Run() == (int)ResponseType.Yes)
                     {
-                        dialog.Dispose();
-                        GrabPackage();
+                        try
+                        {
+                            // Start Updater.exe
+
+                            string updaterPath = Path.Combine(RyuDir, "Updater.exe");
+
+                            Process.Start(new ProcessStartInfo(updaterPath) { UseShellExecute = true });
+                            Application.Quit();
+                        }
+                        catch (Exception ex)
+                        {
+                            GtkDialog.CreateErrorDialog(ex.Message);
+                        }
                     }
                 }
 
