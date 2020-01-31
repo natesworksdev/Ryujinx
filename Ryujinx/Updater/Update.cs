@@ -34,7 +34,7 @@ namespace Ryujinx.Updater
 
                 try
                 {
-                    Process.Start(new ProcessStartInfo(Path.Combine(_parentdir, "Ryujinx.exe"), "/C") { UseShellExecute = true });
+                    Process.Start(new ProcessStartInfo(Path.Combine(RyuDir, "Ryujinx.exe")) { UseShellExecute = true });
                     Application.Quit();
                 }
                 catch (Exception ex)

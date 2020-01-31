@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <StartupObject>Ryujinx.Updater.Program</StartupObject>
+    <AssemblyName>Updater</AssemblyName>
+    <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
+  </PropertyGroup>
+
+</Project>
