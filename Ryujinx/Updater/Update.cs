@@ -11,8 +11,8 @@ namespace Ryujinx.Updater
 {
     public class Update
     {
-        private static string   _parentdir   = Path.Combine(@"..\..");
-        public  static string   RyuDir       = Environment.CurrentDirectory;
+        private static string _parentdir = Path.Combine(@"..\..");
+        public  static string RyuDir = Environment.CurrentDirectory;
 
         public static void PerformUpdate()
         {
