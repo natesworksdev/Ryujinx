@@ -513,7 +513,9 @@ namespace Ryujinx.Ui
 
         private static void GetNameIdDeveloper(Nacp controlData, out string titleName, out string titleId, out string developer)
         {
-            NacpDescription nacpDescription = controlData.Descriptions.ToList().Find(x => x.Language == (TitleLanguage)_desiredTitleLanguage);
+            Enum.TryParse(_desiredTitleLanguage.ToString(), out TitleLanguage desiredTitleLanguage);
+
+            NacpDescription nacpDescription = controlData.Descriptions.ToList().Find(x => x.Language == desiredTitleLanguage);
 
             if (nacpDescription != null)
             {
