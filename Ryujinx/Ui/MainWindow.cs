@@ -16,8 +16,6 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Utf8Json;
-using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 

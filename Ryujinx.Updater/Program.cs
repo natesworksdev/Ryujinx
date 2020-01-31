@@ -72,6 +72,8 @@ namespace Ryujinx.Updater
             versionNumber = metaFileData[0];
             downloadUrl = metaFileData[1];
 
+            MessageBox.Show(downloadUrl);
+
             using (WebClient client = new WebClient())
             {
                 client.DownloadFile(downloadUrl, updateSaveLocation);
