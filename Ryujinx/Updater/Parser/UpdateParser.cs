@@ -80,18 +80,11 @@ namespace Ryujinx.Updater.Parser
                     {
                         try
                         {
-                            // Create Meta.json
-
-                            List<String> metaFileContents = new List<string>();
-                            metaFileContents.Add(_buildVer);
-                            metaFileContents.Add(_buildArt);
-                            File.WriteAllLines(Path.Combine(RyuDir, "Meta.json"), metaFileContents);
-
                             // Start Updater.exe
 
                             string updaterPath = Path.Combine(RyuDir, "Updater.exe");
 
-                            Process.Start(updaterPath);
+                            Process.Start(updaterPath, _buildArt + " " + _buildVer);
 
                         }
                         catch (Exception ex)
