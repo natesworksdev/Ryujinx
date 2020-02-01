@@ -58,14 +58,29 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             context.AppendLine();
 
-            context.AppendLine($"uint {DefaultNames.LocalMemoryName}[0x100];");
-            context.AppendLine();
-
             if (context.Config.Stage == ShaderStage.Compute)
             {
-                string size = NumberFormatter.FormatInt(BitUtils.DivRoundUp(context.Config.QueryInfo(QueryInfoName.ComputeSharedMemorySize), 4));
+                int localMemorySize = BitUtils.DivRoundUp(context.Config.QueryInfo(QueryInfoName.ComputeLocalMemorySize), 4);
 
-                context.AppendLine($"shared uint {DefaultNames.SharedMemoryName}[{size}];");
+                string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
+
+                context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
+                context.AppendLine();
+
+                int sharedMemorySize = BitUtils.DivRoundUp(context.Config.QueryInfo(QueryInfoName.ComputeSharedMemorySize), 4);
+
+                string sharedMemorySizeStr = NumberFormatter.FormatInt(sharedMemorySize);
+
+                context.AppendLine($"shared uint {DefaultNames.SharedMemoryName}[{sharedMemorySizeStr}];");
+                context.AppendLine();
+            }
+            else if (context.Config.LocalMemorySize != 0)
+            {
+                int localMemorySize = BitUtils.DivRoundUp(context.Config.LocalMemorySize, 4);
+
+                string localMemorySizeStr = NumberFormatter.FormatInt(localMemorySize);
+
+                context.AppendLine($"uint {DefaultNames.LocalMemoryName}[{localMemorySizeStr}];");
                 context.AppendLine();
             }
 

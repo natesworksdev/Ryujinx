@@ -86,8 +86,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
         }
 
-        public int Unknown45;
-        public int Unknown46;
+        public int LocalMemoryLowSize;
+        public int LocalMemoryHighSize;
         public int Unknown47;
         public int Unknown48;
         public int Unknown49;
