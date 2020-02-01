@@ -51,10 +51,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// This automatically translates, compiles and adds the code to the cache if not present.
         /// </remarks>
         /// <param name="gpuVa">GPU virtual address of the binary shader code</param>
-        /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
         /// <param name="localSizeX">Local group size X of the computer shader</param>
         /// <param name="localSizeY">Local group size Y of the computer shader</param>
         /// <param name="localSizeZ">Local group size Z of the computer shader</param>
+        /// <param name="localMemorySize">Local memory size of the compute shader</param>
+        /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
         /// <returns>Compiled compute shader code</returns>
         public ComputeShader GetComputeShader(
             ulong gpuVa,
