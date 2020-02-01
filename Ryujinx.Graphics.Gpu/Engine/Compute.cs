@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             ulong shaderGpuVa = shaderBaseAddress.Pack() + (uint)dispatchParams.ShaderOffset;
 
             // Note: A size of 0 is also invalid, the size must be at least 1.
-            int localMemorySize = Math.Max((dispatchParams.LocalMemoryLowSize  & 0xfffff) + (dispatchParams.LocalMemoryHighSize & 0xfffff), 1);
+            int localMemorySize = Math.Max((dispatchParams.LocalMemoryLowSize  & 0x7fffff) + (dispatchParams.LocalMemoryHighSize & 0x7fffff), 1);
 
             int sharedMemorySize = Math.Clamp(dispatchParams.SharedMemorySize & 0xffff, 1, _context.Capabilities.MaximumComputeSharedMemorySize);
 
