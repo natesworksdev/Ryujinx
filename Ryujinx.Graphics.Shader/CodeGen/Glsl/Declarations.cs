@@ -47,17 +47,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            context.AppendLine("layout (std140) uniform Extra");
-
-            context.EnterScope();
-
-            context.AppendLine("vec2 flip;");
-            context.AppendLine("int instance;");
-
-            context.LeaveScope(";");
-
-            context.AppendLine();
-
             if (context.Config.Stage == ShaderStage.Compute)
             {
                 int localMemorySize = BitUtils.DivRoundUp(context.Config.QueryInfo(QueryInfoName.ComputeLocalMemorySize), 4);
