@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // EnsureSaveData(nn::account::Uid) -> u64
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
-            Uid userId      = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+            Uid     userId  = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
             TitleId titleId = new TitleId(context.Process.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.System.ControlData;
@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode GetSaveDataSize(ServiceCtx context)
         {
             SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadByte();
-            context.RequestData.BaseStream.Position += 7;
+            context.RequestData.BaseStream.Seek(7, System.IO.SeekOrigin.Current);
 
             Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
 
