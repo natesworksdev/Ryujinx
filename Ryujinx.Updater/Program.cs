@@ -1,26 +1,19 @@
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 
 namespace Ryujinx.Updater
 {
     public class Program
     {
-        public static string RyuDir = Environment.CurrentDirectory;
+        public static string RyuDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Ryujinx");
+        public static string launchDir = Environment.CurrentDirectory;
 
         public static string updateSaveLocation;
-        public static string metaFilePath;
 
-        public static string versionNumber;
-        public static string downloadUrl;
-
-        private static void CloneDirectory(string root, string dest)
+        private static void MoveAllFilesOver(string root, string dest)
         {
             foreach (var directory in Directory.GetDirectories(root))
             {
@@ -38,7 +31,7 @@ namespace Ryujinx.Updater
 
                 }
 
-                CloneDirectory(directory, Path.Combine(dest, dirName));
+                MoveAllFilesOver(directory, Path.Combine(dest, dirName));
             }
 
             foreach (var file in Directory.GetFiles(root))
@@ -55,54 +48,49 @@ namespace Ryujinx.Updater
         }
 
         [STAThread]
-        public static void Main()
+        public static void Main(string[] args)
         {
-            // Create Temp Directory
+            if (args.Length < 2)
+            {
+                return;
+            }
+
+            File.WriteAllText(Path.Combine(launchDir, "Version.json"), args[1]);
+
+            // Create temp directory
 
             if (!Directory.Exists(Path.Combine(RyuDir, "Temp")))
             {
                 Directory.CreateDirectory(Path.Combine(RyuDir, "Temp"));
             }
 
+            // Download latest update
+
+            string downloadUrl = args[0];
+
             updateSaveLocation = Path.Combine(RyuDir, "Temp", "RyujinxPackage.zip");
-            metaFilePath = Path.Combine(RyuDir, "Meta.json");
-
-            string[] metaFileData = File.ReadAllLines(metaFilePath);
-
-            versionNumber = metaFileData[0];
-            downloadUrl = metaFileData[1];
-
-            MessageBox.Show(downloadUrl);
 
             using (WebClient client = new WebClient())
             {
                 client.DownloadFile(downloadUrl, updateSaveLocation);
             }
 
-            foreach (string file in Directory.GetFiles(RyuDir, "*", SearchOption.AllDirectories))
-            {
-                if (Path.GetFileName(file) != "Config.json" && Path.GetFileName(file) != "Meta.json" && Path.GetFileName(file) != "RyujinxPackage.zip")
-                {
-                    try
-                    {
-                        File.Delete(file);
-                    }
-                    catch
-                    {
-
-                    }
-                }
-            }
+            // Extract Update .zip
 
             ZipFile.ExtractToDirectory(updateSaveLocation, RyuDir, true);
 
-            CloneDirectory(Path.Combine(RyuDir, "publish"), RyuDir);
+            // Copy new files over to Ryujinx folder
+
+            MoveAllFilesOver(Path.Combine(RyuDir, "publish"), launchDir);
+
+            // Remove temp folders
+
             Directory.Delete(Path.Combine(RyuDir, "publish"), true);
             Directory.Delete(Path.Combine(RyuDir, "Temp"), true);
 
-            Process.Start(Path.Combine(RyuDir, "Ryujinx.exe"));
+            // Start new Ryujinx version and close Updater
 
-            Application.Exit();
+            Process.Start(Path.Combine(launchDir, "Ryujinx.exe"));
         }
 
     }
