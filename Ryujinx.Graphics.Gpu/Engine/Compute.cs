@@ -25,10 +25,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             ulong shaderGpuVa = shaderBaseAddress.Pack() + (uint)qmd.ProgramOffset;
 
-            // Note: A size of 0 is also invalid, the size must be at least 1.
-            int localMemorySize = Math.Max(qmd.ShaderLocalMemoryLowSize + qmd.ShaderLocalMemoryHighSize, 1);
+            int localMemorySize = qmd.ShaderLocalMemoryLowSize + qmd.ShaderLocalMemoryHighSize;
 
-            int sharedMemorySize = Math.Clamp(qmd.SharedMemorySize, 1, _context.Capabilities.MaximumComputeSharedMemorySize);
+            int sharedMemorySize = Math.Min(qmd.SharedMemorySize, _context.Capabilities.MaximumComputeSharedMemorySize);
 
             ComputeShader cs = ShaderCache.GetComputeShader(
                 shaderGpuVa,

@@ -1,4 +1,6 @@
 using Ryujinx.Graphics.Gpu.State;
+using System;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine
 {
@@ -246,13 +248,25 @@ namespace Ryujinx.Graphics.Gpu.Engine
         public int DebugIdUpper => BitRange(2015, 1984);
         public int DebugIdLower => BitRange(2047, 2016);
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool Bit(int bit)
         {
+            if ((uint)bit >= 64 * 32)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bit));
+            }
+
             return (_words[bit >> 5] & (1 << (bit & 31))) != 0;
         }
 
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private int BitRange(int upper, int lower)
         {
+            if ((uint)lower >= 64 * 32)
+            {
+                throw new ArgumentOutOfRangeException(nameof(lower));
+            }
+
             int mask = (int)(uint.MaxValue >> (32 - (upper - lower + 1)));
 
             return (_words[lower >> 5] >> (lower & 31)) & mask;

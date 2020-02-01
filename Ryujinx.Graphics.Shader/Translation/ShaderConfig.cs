@@ -84,6 +84,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                     case QueryInfoName.ComputeLocalSizeY:
                     case QueryInfoName.ComputeLocalSizeZ:
                         return 1;
+                    case QueryInfoName.ComputeLocalMemorySize:
+                        return 0x1000;
                     case QueryInfoName.ComputeSharedMemorySize:
                         return 0xc000;
                     case QueryInfoName.IsTextureBuffer:
