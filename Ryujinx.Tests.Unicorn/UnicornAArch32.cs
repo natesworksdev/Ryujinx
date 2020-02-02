@@ -166,7 +166,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public SimdValue GetQ(int index)
         {
-            if ((uint)index > 31)
+            if ((uint)index > 15)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -177,7 +177,7 @@ namespace Ryujinx.Tests.Unicorn
 
         public void SetQ(int index, SimdValue value)
         {
-            if ((uint)index > 31)
+            if ((uint)index > 15)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }

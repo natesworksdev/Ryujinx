@@ -13,7 +13,7 @@
 
         public OpCode32SimdMovGpElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            Op = ((opCode >> 20) & 0x1);
+            Op = (opCode >> 20) & 0x1;
             U = ((opCode >> 23) & 1) != 0;
 
             var opc = (((opCode >> 23) & 1) << 4) | (((opCode >> 21) & 0x3) << 2) | ((opCode >> 5) & 0x3);
@@ -36,6 +36,7 @@
             else
             {
                 Instruction = InstDescriptor.Undefined;
+                return;
             }
 
             Vd = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);

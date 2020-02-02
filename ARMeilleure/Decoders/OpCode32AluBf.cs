@@ -17,8 +17,8 @@
             Rd = (opCode >> 12) & 0xf;
             Rn = (opCode >> 0) & 0xf;
 
-            Msb = ((opCode >> 16) & 31);
-            Lsb = ((opCode >> 7) & 31);
+            Msb = (opCode >> 16) & 0x1f;
+            Lsb = (opCode >> 7) & 0x1f;
         }
     }
 }

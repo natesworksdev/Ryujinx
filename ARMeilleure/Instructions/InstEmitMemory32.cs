@@ -16,7 +16,6 @@ namespace ARMeilleure.Instructions
         private const int HWordSizeLog2 = 1;
         private const int WordSizeLog2  = 2;
         private const int DWordSizeLog2 = 3;
-        private const int QWordSizeLog2 = 4;
 
         [Flags]
         enum AccessType

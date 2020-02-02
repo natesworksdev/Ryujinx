@@ -12,7 +12,7 @@
             Opc = (opCode >> 15) & 0x3;
             Size = (opCode >> 8) & 0x3;
 
-            var single = Size != 0b11;
+            bool single = Size != 3;
 
             RegisterSize = single ? RegisterSize.Int32 : RegisterSize.Int64;
 

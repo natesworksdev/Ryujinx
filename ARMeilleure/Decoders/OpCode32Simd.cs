@@ -13,14 +13,15 @@
             Q = ((opCode >> 6) & 0x1) != 0;
             F = ((opCode >> 10) & 0x1) != 0;
             U = ((opCode >> 24) & 0x1) != 0;
-            Opc = ((opCode >> 7) & 0x3);
+            Opc = (opCode >> 7) & 0x3;
 
             RegisterSize = Q ? RegisterSize.Simd128 : RegisterSize.Simd64;
 
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
 
-            if (this.GetType() == typeof(OpCode32Simd) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm)) // Subclasses have their own handling of Vx to account for before checking.
+            // Subclasses have their own handling of Vx to account for before checking.
+            if (GetType() == typeof(OpCode32Simd) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
             {
                 Instruction = InstDescriptor.Undefined;
             }

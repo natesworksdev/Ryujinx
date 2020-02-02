@@ -57,7 +57,8 @@ namespace ARMeilleure.Instructions
                             throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
                     }
 
-                default: throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                default: 
+                    throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
             context.Call(dlg, GetIntA32(context, op.Rt));
@@ -95,7 +96,8 @@ namespace ARMeilleure.Instructions
                             throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
                     }
                     break;
-                default: throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                default: 
+                    throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
             if (op.Rt == RegisterAlias.Aarch32Pc)
@@ -134,7 +136,8 @@ namespace ARMeilleure.Instructions
                             throw new NotImplementedException($"Unknown MRRC Opc1 0x{opc:X16} at 0x{op.Address:X16}.");
                     }
                     break;
-                default: throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                default: 
+                    throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
             Operand result = context.Call(dlg);
@@ -174,7 +177,8 @@ namespace ARMeilleure.Instructions
                     throw new NotImplementedException("MVFR0");
                 case 0b1000: // FPEXC
                     throw new NotImplementedException("Supervisor Only");
-                default: throw new NotImplementedException($"Unknown VMRS 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                default: 
+                    throw new NotImplementedException($"Unknown VMRS 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
             SetIntA32(context, op.Rt, context.Call(dlg));
@@ -199,7 +203,8 @@ namespace ARMeilleure.Instructions
                     throw new NotImplementedException("MVFR0");
                 case 0b1000: // FPEXC
                     throw new NotImplementedException("Supervisor Only");
-                default: throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
+                default: 
+                    throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
             context.Call(dlg, GetIntA32(context, op.Rt));

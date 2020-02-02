@@ -24,6 +24,7 @@
             if (p == u && w)
             {
                 Instruction = InstDescriptor.Undefined;
+                return;
             }
 
             DoubleWidth = (opCode & (1 << 8)) != 0;

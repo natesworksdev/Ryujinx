@@ -403,6 +403,7 @@ namespace ARMeilleure.Translation
 
         private static long ClearCallerSavedIntRegs(long mask)
         {
+            // TODO: ARM32 support.
             mask &= ~(CallerSavedIntRegistersMask | PStateNzcvFlagsMask);
 
             return mask;
@@ -410,6 +411,7 @@ namespace ARMeilleure.Translation
 
         private static long ClearCallerSavedVecRegs(long mask)
         {
+            // TODO: ARM32 support.
             mask &= ~(CallerSavedVecRegistersMask | FpStateNzcvFlagsMask);
 
             return mask;

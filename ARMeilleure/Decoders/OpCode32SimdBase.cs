@@ -16,7 +16,7 @@ namespace ARMeilleure.Decoders
         // Fx: The starting index of the target vector within the quadword, with size treated as floating point. (16 or 32)
         public int Qd => GetQuadwordIndex(Vd);
         public int Id => GetQuadwordSubindex(Vd) << (3 - Size);
-        public int Fd => GetQuadwordSubindex(Vd) << (1 - (Size & 1)); // When the top bit is truncated, 1 SHOULD be fp16, but switch does not support it so we always assume 64.
+        public int Fd => GetQuadwordSubindex(Vd) << (1 - (Size & 1)); // When the top bit is truncated, 1 is fp16 which is an optional extension in ARMv8.2. We always assume 64.
 
         public int Qm => GetQuadwordIndex(Vm);
         public int Im => GetQuadwordSubindex(Vm) << (3 - Size);

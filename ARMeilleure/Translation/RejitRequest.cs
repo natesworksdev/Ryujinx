@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Translation
 {
-    class RejitRequest
+    struct RejitRequest
     {
         public ulong Address;
         public ExecutionMode Mode;

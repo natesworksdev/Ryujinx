@@ -2,6 +2,6 @@
 {
     interface IOpCode32MemEx : IOpCode32Mem
     {
-        public int Rd { get; }
+        int Rd { get; }
     }
 }

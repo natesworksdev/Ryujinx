@@ -28,7 +28,7 @@ namespace ARMeilleure.Instructions
                     return (index >> 2, index & 3);
             }
 
-            throw new NotImplementedException("Unrecognized Vector Register Size.");
+            throw new ArgumentException("Unrecognized Vector Register Size.");
         }
 
         public static Operand ExtractScalar(ArmEmitterContext context, OperandType type, int reg)
@@ -61,6 +61,7 @@ namespace ARMeilleure.Instructions
                 vec = GetVecA32(reg >> 2);
                 insert = context.VectorInsert(vec, value, reg & 3);
             }
+
             context.Copy(vec, insert);
         }
 
@@ -115,7 +116,7 @@ namespace ARMeilleure.Instructions
 
             if (op.Size < 2)
             {
-                throw new NotSupportedException("Not supported right now.");
+                throw new NotSupportedException("Cannot perform a scalar SIMD operation on integers smaller than 32 bits.");
             }
 
             Operand n = ExtractScalar(context, type, op.Vn);

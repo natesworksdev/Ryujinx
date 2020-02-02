@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ARMeilleure.State;
+using System;
 
 namespace ARMeilleure.Decoders
 {
@@ -34,8 +35,8 @@ namespace ARMeilleure.Decoders
             Rm = (opCode >> 0) & 0xf;
             Rn = (opCode >> 16) & 0xf;
 
-            WBack = Rm != 15;
-            RegisterIndex = (Rm != 15 && Rm != 13);
+            WBack = Rm != RegisterAlias.Aarch32Pc;
+            RegisterIndex = Rm != RegisterAlias.Aarch32Pc && Rm != RegisterAlias.Aarch32Sp;
 
             Regs = RegsMap[(opCode >> 8) & 0xf];
 

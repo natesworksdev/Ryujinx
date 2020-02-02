@@ -87,7 +87,7 @@ namespace ARMeilleure.Instructions
                     insert = context.Multiply(context.ZeroExtend8(OperandType.I64, insert), Const(0x0101010101010101u));
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("Unknown Vdup Size!");
+                    throw new InvalidOperationException("Unknown Vdup Size.");
             }
 
             InsertScalar(context, op.Vd, insert);
@@ -116,7 +116,7 @@ namespace ARMeilleure.Instructions
                     insert = context.Multiply(context.ZeroExtend8(OperandType.I64, insert), Const(0x0101010101010101u));
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException("Unknown Vdup Size!");
+                    throw new InvalidOperationException("Unknown Vdup Size.");
             }
 
             InsertScalar(context, op.Vd, insert);
@@ -483,6 +483,7 @@ namespace ARMeilleure.Instructions
         public static void Vpadd_I(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
             EmitVectorPairwiseOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
         }
 
@@ -515,17 +516,15 @@ namespace ARMeilleure.Instructions
                                                             context.ShiftLeft(context.BitwiseAnd(op1, Const(0x0000ffff)), Const(16)));
                             case 3:
                                 return context.BitwiseOr(
-                                context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff000000000000ul)), Const(48)),
-                                                     context.ShiftLeft(context.BitwiseAnd(op1, Const(0x000000000000fffful)), Const(48))),
-                                context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0x0000ffff00000000ul)), Const(16)),
-                                                     context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000ffff0000ul)), Const(16)))
-                                );
+                                    context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff000000000000ul)), Const(48)),
+                                                         context.ShiftLeft(context.BitwiseAnd(op1, Const(0x000000000000fffful)), Const(48))),
+                                    context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0x0000ffff00000000ul)), Const(16)),
+                                                         context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000ffff0000ul)), Const(16))));
                         }
                     case 2:
                         // Swap upper and lower halves.
                         return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffffffff00000000ul)), Const(32)),
-                                                 context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
-
+                                                    context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
                 }
 
                 return op1;

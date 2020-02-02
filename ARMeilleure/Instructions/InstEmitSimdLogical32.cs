@@ -12,9 +12,14 @@ namespace ARMeilleure.Instructions
             EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseAnd(op1, op2));
         }
 
-        public static void Vorr_I(ArmEmitterContext context)
+        public static void Vbif(ArmEmitterContext context)
         {
-            EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseOr(op1, op2));
+            EmitBifBit(context, true);
+        }
+
+        public static void Vbit(ArmEmitterContext context)
+        {
+            EmitBifBit(context, false);
         }
 
         public static void Vbsl(ArmEmitterContext context)
@@ -27,14 +32,9 @@ namespace ARMeilleure.Instructions
             });
         }
 
-        public static void Vbif(ArmEmitterContext context)
+        public static void Vorr_I(ArmEmitterContext context)
         {
-            EmitBifBit(context, true);
-        }
-
-        public static void Vbit(ArmEmitterContext context)
-        {
-            EmitBifBit(context, false);
+            EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseOr(op1, op2));
         }
 
         private static void EmitBifBit(ArmEmitterContext context, bool notRm)

@@ -65,7 +65,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdMovGpDouble op = (OpCode32SimdMovGpDouble)context.CurrOp;
 
             Operand vec = GetVecA32(op.Vm >> 2);
-            int vm1 = (op.Vm + 1);
+            int vm1 = op.Vm + 1;
             bool sameOwnerVec = (op.Vm >> 2) == (vm1 >> 2);
             Operand vec2 = sameOwnerVec ? vec : GetVecA32(vm1 >> 2);
             if (op.Op == 1)
@@ -133,8 +133,8 @@ namespace ARMeilleure.Instructions
 
             int length = op.Length + 1;
 
-            (int Qx, int Ix)[] tableTuples = new (int qx, int ix)[length];
-            for (int i=0; i< length; i++)
+            (int Qx, int Ix)[] tableTuples = new (int, int)[length];
+            for (int i = 0; i < length; i++)
             {
                 (int vn, int en) = GetQuadwordAndSubindex(op.Vn + i, op.RegisterSize);
                 tableTuples[i] = (vn, en);

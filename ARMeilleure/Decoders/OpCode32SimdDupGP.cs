@@ -13,6 +13,7 @@
             if (Size == -1)
             {
                 Instruction = InstDescriptor.Undefined;
+                return;
             }
             Q = ((opCode >> 21) & 0x1) != 0;
 

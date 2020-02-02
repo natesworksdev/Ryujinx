@@ -20,7 +20,7 @@
             bool u = (opCode & (1 << 23)) != 0;
             Add = u;
 
-            var single = Size != 0b11;
+            bool single = Size != 3;
 
             if (single)
             {

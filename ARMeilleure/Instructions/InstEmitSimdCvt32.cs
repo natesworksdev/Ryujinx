@@ -61,11 +61,6 @@ namespace ARMeilleure.Instructions
             bool toInteger = (op.Opc & 2) != 0;
             OperandType floatSize = (op.Size == 2) ? OperandType.FP32 : OperandType.FP64;
 
-            if (op.Size != 2)
-            {
-                throw new InvalidOperationException("CVT vector mode only defined for 32-bit.");
-            }
-
             if (toInteger)
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
@@ -177,18 +172,6 @@ namespace ARMeilleure.Instructions
 
                 InsertScalar(context, op.Vd, asFloat);
             }
-        }
-
-        private static Operand EmitF2iFBitsMul(ArmEmitterContext context, Operand value, int fBits)
-        {
-            Debug.Assert(value.Type == OperandType.FP32 || value.Type == OperandType.FP64);
-
-            if (fBits == 0)
-            {
-                return value;
-            }
-
-            return context.Multiply(value, ConstF(MathF.Pow(2f, fBits)));
         }
 
         public static Operand EmitRoundMathCall(ArmEmitterContext context, MidpointRounding roundMode, Operand n)

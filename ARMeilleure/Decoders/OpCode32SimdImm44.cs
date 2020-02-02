@@ -11,7 +11,7 @@
         {
             Size = (opCode >> 8) & 0x3;
 
-            var single = Size != 3;
+            bool single = Size != 3;
             
             if (single)
             {

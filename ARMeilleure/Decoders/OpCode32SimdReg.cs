@@ -13,7 +13,7 @@
             Vn = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);
 
             // Subclasses have their own handling of Vx to account for before checking.
-            if (this.GetType() == typeof(OpCode32SimdReg) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm, Vn))
+            if (GetType() == typeof(OpCode32SimdReg) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm, Vn))
             {
                 Instruction = InstDescriptor.Undefined;
             }

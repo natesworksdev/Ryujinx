@@ -35,15 +35,6 @@ namespace ARMeilleure.Instructions
             Blx(context, x: true);
         }
 
-        public static void Bx(ArmEmitterContext context)
-        {
-            IOpCode32BReg op = (IOpCode32BReg)context.CurrOp;
-
-            context.StoreToContext();
-
-            EmitBxWritePc(context, GetIntA32(context, op.Rm));
-        }
-
         private static void Blx(ArmEmitterContext context, bool x)
         {
             IOpCode32BImm op = (IOpCode32BImm)context.CurrOp;
@@ -53,8 +44,8 @@ namespace ARMeilleure.Instructions
             bool isThumb = IsThumb(context.CurrOp);
 
             uint currentPc = isThumb
-                ? op.GetPc() | 1
-                : op.GetPc() - 4;
+                ? pc | 1
+                : pc - 4;
 
             SetIntA32(context, GetBankedRegisterAlias(context.Mode, RegisterAlias.Aarch32Lr), Const(currentPc));
 
@@ -89,6 +80,15 @@ namespace ARMeilleure.Instructions
             SetFlag(context, PState.TFlag, bitOne);
 
             context.Return(addr); // Call.
+        }
+
+        public static void Bx(ArmEmitterContext context)
+        {
+            IOpCode32BReg op = (IOpCode32BReg)context.CurrOp;
+
+            context.StoreToContext();
+
+            EmitBxWritePc(context, GetIntA32(context, op.Rm));
         }
     }
 }

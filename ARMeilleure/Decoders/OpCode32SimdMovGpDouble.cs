@@ -12,7 +12,7 @@
         public OpCode32SimdMovGpDouble(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             // Which one is used is instruction dependant.
-            Op = ((opCode >> 20) & 0x1);
+            Op = (opCode >> 20) & 0x1;
             
             Rt = (opCode >> 12) & 0xf;
             Rt2 = (opCode >> 16) & 0xf;

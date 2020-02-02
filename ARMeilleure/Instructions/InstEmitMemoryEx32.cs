@@ -16,6 +16,10 @@ namespace ARMeilleure.Instructions
             context.Call(new _Void(NativeInterface.ClearExclusive));
         }
 
+        public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
+
+        public static void Dsb(ArmEmitterContext context) => EmitBarrier(context);
+
         public static void Ldrex(ArmEmitterContext context)
         {
             EmitExLoadOrStore(context, WordSizeLog2, AccessType.LoadZx | AccessType.Exclusive);
@@ -127,9 +131,6 @@ namespace ARMeilleure.Instructions
         {
             EmitExLoadOrStore(context, HWordSizeLog2, AccessType.Store | AccessType.Ordered);
         }
-
-        public static void Dmb(ArmEmitterContext context) => EmitBarrier(context);
-        public static void Dsb(ArmEmitterContext context) => EmitBarrier(context);
 
         private static void EmitExLoadOrStore(ArmEmitterContext context, int size, AccessType accType)
         {

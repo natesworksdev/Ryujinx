@@ -20,10 +20,10 @@
             Rm = (opCode >> 8) & 0xf;
             Rn = (opCode >> 0) & 0xf;
 
-            NHigh = ((opCode >> 5) * 0x1) == 1;
-            MHigh = ((opCode >> 6) * 0x1) == 1;
+            NHigh = ((opCode >> 5) & 0x1) == 1;
+            MHigh = ((opCode >> 6) & 0x1) == 1;
 
-            SetFlags = ((opCode >> 20) & 1) != 0;
+            SetFlags = ((opCode >> 20) & 0x1) != 0;
             DataOp = DataOp.Arithmetic;
         }
     }

@@ -101,7 +101,7 @@ namespace ARMeilleure.State
             Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
         }
 
-        public bool GetFPstateFlag(FPState flag)
+        public bool GetFPStateFlag(FPState flag)
         {
             if ((uint)flag >= RegisterConsts.FlagsCount)
             {
@@ -118,7 +118,7 @@ namespace ARMeilleure.State
             return value != 0;
         }
 
-        public void SetFPstateFlag(FPState flag, bool value)
+        public void SetFPStateFlag(FPState flag, bool value)
         {
             if ((uint)flag >= RegisterConsts.FlagsCount)
             {

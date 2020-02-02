@@ -11,26 +11,6 @@ namespace ARMeilleure.Instructions
 {
     static partial class InstEmit32
     {
-        public static void Vst1(ArmEmitterContext context)
-        {
-            EmitVStoreOrLoadN(context, 1, false);
-        }
-
-        public static void Vst2(ArmEmitterContext context)
-        {
-            EmitVStoreOrLoadN(context, 2, false);
-        }
-
-        public static void Vst3(ArmEmitterContext context)
-        {
-            EmitVStoreOrLoadN(context, 3, false);
-        }
-
-        public static void Vst4(ArmEmitterContext context)
-        {
-            EmitVStoreOrLoadN(context, 4, false);
-        }
-
         public static void Vld1(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 1, true);
@@ -49,6 +29,26 @@ namespace ARMeilleure.Instructions
         public static void Vld4(ArmEmitterContext context)
         {
             EmitVStoreOrLoadN(context, 4, true);
+        }
+
+        public static void Vst1(ArmEmitterContext context)
+        {
+            EmitVStoreOrLoadN(context, 1, false);
+        }
+
+        public static void Vst2(ArmEmitterContext context)
+        {
+            EmitVStoreOrLoadN(context, 2, false);
+        }
+
+        public static void Vst3(ArmEmitterContext context)
+        {
+            EmitVStoreOrLoadN(context, 3, false);
+        }
+
+        public static void Vst4(ArmEmitterContext context)
+        {
+            EmitVStoreOrLoadN(context, 4, false);
         }
 
         public static void EmitVStoreOrLoadN(ArmEmitterContext context, int count, bool load)
@@ -212,7 +212,6 @@ namespace ARMeilleure.Instructions
 
             int sReg = (op.DoubleWidth) ? (op.Vd << 1) : op.Vd;
             int offset = 0;
-            int size = (op.DoubleWidth) ? DWordSizeLog2 : WordSizeLog2;
             int byteSize = 4;
             
             for (int num = 0; num < range; num++, sReg++)
@@ -220,7 +219,7 @@ namespace ARMeilleure.Instructions
                 Operand address = context.Add(baseAddress, Const(offset));
                 Operand vec = GetVecA32(sReg >> 2);
 
-                EmitLoadSimd(context, address, vec, sReg >> 2, sReg & 3, 2);
+                EmitLoadSimd(context, address, vec, sReg >> 2, sReg & 3, WordSizeLog2);
                 offset += byteSize;
             }
         }
@@ -244,14 +243,13 @@ namespace ARMeilleure.Instructions
 
             int range = op.RegisterRange;
             int sReg = (op.DoubleWidth) ? (op.Vd << 1) : op.Vd;
-            int size = (op.DoubleWidth) ? DWordSizeLog2 : WordSizeLog2;
             int byteSize = 4;
 
             for (int num = 0; num < range; num++, sReg++)
             {
                 Operand address = context.Add(baseAddress, Const(offset));
 
-                EmitStoreSimd(context, address, sReg >> 2, sReg & 3, 2);
+                EmitStoreSimd(context, address, sReg >> 2, sReg & 3, WordSizeLog2);
 
                 offset += byteSize;
             }
@@ -321,8 +319,8 @@ namespace ARMeilleure.Instructions
             Operand m = GetMemM(context, setCarry: false);
 
             Operand address = op.Add
-                    ? context.Add(n, m)
-                    : context.Subtract(n, m);
+                ? context.Add(n, m)
+                : context.Subtract(n, m);
 
             int size = op.Size;
 
@@ -335,7 +333,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     Operand vec = GetVecA32(op.Vd >> 2);
-                    EmitLoadSimd(context, address, vec, op.Vd >> 2, (op.Vd & 3) << (2-size), size);
+                    EmitLoadSimd(context, address, vec, op.Vd >> 2, (op.Vd & 3) << (2 - size), size);
                 }
             }
             else

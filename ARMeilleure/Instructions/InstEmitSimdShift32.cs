@@ -71,7 +71,7 @@ namespace ARMeilleure.Instructions
             Operand isPositive = context.ICompareGreaterOrEqual(shiftLsB, Const(0));
 
             Operand shl = context.ShiftLeft(op, shiftLsB);
-            Operand shr = (unsigned) ? context.ShiftRightUI(op, negShiftLsB) : context.ShiftRightSI(op, negShiftLsB);
+            Operand shr = unsigned ? context.ShiftRightUI(op, negShiftLsB) : context.ShiftRightSI(op, negShiftLsB);
 
             Operand res = context.ConditionalSelect(isPositive, shl, shr);
 
