@@ -600,10 +600,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The texture that was modified.</param>
         private void CacheTextureModified(Texture texture)
         {
-            lock (_modified)
-            {
-                _modified.Add(texture);
-            }
+            _modified.Add(texture);
         }
 
         /// <summary>
@@ -740,16 +737,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Flush()
         {
-            lock (_modified)
+            foreach (Texture texture in _modified)
             {
-                foreach (Texture texture in _modified)
+                if (texture.Info.IsLinear)
                 {
-                    if (texture.Info.IsLinear)
-                    {
-                        texture.Flush();
-                    }
+                    texture.Flush();
                 }
-                _modified.Clear();
             }
         }
 
@@ -760,17 +753,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="size">The range size</param>
         public void Flush(ulong address, ulong size)
         {
-            lock (_modified)
+            foreach (Texture texture in _modified)
             {
-                foreach (Texture texture in _modified)
+                if (texture.OverlapsWith(address, size))
                 {
-                    if (texture.OverlapsWith(address, size))
-                    {
-                        texture.Flush();
-                    }
+                    texture.Flush();
                 }
-                _modified.Clear();
             }
+            _modified.Clear();
         }
 
         /// <summary>
