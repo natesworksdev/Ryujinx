@@ -2,7 +2,7 @@
 {
     interface IOpCode32AluUx : IOpCode32AluReg
     {
-        public int RotateBits { get; }
-        public bool Add { get; }
+        int RotateBits { get; }
+        bool Add { get; }
     }
 }

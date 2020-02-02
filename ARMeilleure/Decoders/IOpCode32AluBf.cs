@@ -2,10 +2,10 @@
 {
     interface IOpCode32AluBf
     {
-        public int Rd { get; }
-        public int Rn { get; }
+        int Rd { get; }
+        int Rn { get; }
 
-        public int Msb { get; }
-        public int Lsb { get; }
+        int Msb { get; }
+        int Lsb { get; }
     }
 }

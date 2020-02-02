@@ -1,13 +1,11 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
+using System.Diagnostics;
 
-using static ARMeilleure.Instructions.InstEmitHelper;
-using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
-using System.Diagnostics;
-using System;
 
 namespace ARMeilleure.Instructions
 {
@@ -60,7 +58,11 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size, bool unsigned)
         {
-            if (shiftLsB.Type == OperandType.I64) shiftLsB = context.ConvertI64ToI32(shiftLsB);
+            if (shiftLsB.Type == OperandType.I64)
+            {
+                shiftLsB = context.ConvertI64ToI32(shiftLsB);
+            }
+
             shiftLsB = context.SignExtend8(OperandType.I32, shiftLsB);
             Debug.Assert((uint)size < 4u);
 

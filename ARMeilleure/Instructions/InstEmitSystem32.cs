@@ -5,7 +5,6 @@ using ARMeilleure.Translation;
 using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
-using static ARMeilleure.Instructions.InstEmitMemoryHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -103,6 +102,7 @@ namespace ARMeilleure.Instructions
             {
                 // Special behavior: copy NZCV flags into APSR.
                 EmitSetNzcv(context, context.Call(dlg));
+                
                 return;
             }
             else
@@ -143,9 +143,7 @@ namespace ARMeilleure.Instructions
             SetIntA32(context, op.CRn, context.ConvertI64ToI32(context.ShiftRightUI(result, Const(32))));
         }
 
-        public static void Nop(ArmEmitterContext context)
-        {
-        }
+        public static void Nop(ArmEmitterContext context) { }
 
         public static void Vmrs(ArmEmitterContext context)
         {

@@ -4,7 +4,6 @@ using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
 
-using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -61,8 +60,12 @@ namespace ARMeilleure.Instructions
             bool unsigned = (op.Opc & 1) != 0;
             bool toInteger = (op.Opc & 2) != 0;
             OperandType floatSize = (op.Size == 2) ? OperandType.FP32 : OperandType.FP64;
-            
-            if (op.Size != 2) throw new InvalidOperationException("CVT vector mode only defined for 32-bit.");
+
+            if (op.Size != 2)
+            {
+                throw new InvalidOperationException("CVT vector mode only defined for 32-bit.");
+            }
+
             if (toInteger)
             {
                 EmitVectorUnaryOpF32(context, (op1) =>
@@ -143,7 +146,6 @@ namespace ARMeilleure.Instructions
                         {
                             asInteger = context.Call(new _S32_F64(SoftFallback.DoubleToInt32), toConvert);
                         }
-                        
                     } 
                     else
                     {
@@ -156,7 +158,6 @@ namespace ARMeilleure.Instructions
                             asInteger = context.Call(new _S32_F32(SoftFallback.FloatToInt32), toConvert);
                         }
                     }
-                    
                 } 
                 else
                 {

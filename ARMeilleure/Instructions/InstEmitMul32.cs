@@ -1,12 +1,11 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.State;
 using ARMeilleure.Translation;
-
-using static ARMeilleure.Instructions.InstEmitHelper;
-using static ARMeilleure.Instructions.InstEmitAluHelper;
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 using System;
+
+using static ARMeilleure.Instructions.InstEmitAluHelper;
+using static ARMeilleure.Instructions.InstEmitHelper;
+using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
 {

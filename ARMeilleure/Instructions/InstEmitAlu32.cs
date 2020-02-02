@@ -3,8 +3,8 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 
-using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitAluHelper;
+using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -580,7 +580,12 @@ namespace ARMeilleure.Instructions
             Operand n = GetIntA32(context, op.Rn);
             Operand d = GetIntA32(context, op.Rd);
             Operand part = context.BitwiseAnd(n, Const(op.SourceMask));
-            if (op.Lsb != 0) part = context.ShiftLeft(part, Const(op.Lsb));
+
+            if (op.Lsb != 0)
+            {
+                part = context.ShiftLeft(part, Const(op.Lsb));
+            }
+
             Operand res = context.BitwiseAnd(d, Const(~op.DestMask));
             res = context.BitwiseOr(res, context.BitwiseAnd(part, Const(op.DestMask)));
 

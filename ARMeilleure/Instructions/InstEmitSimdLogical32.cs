@@ -1,8 +1,6 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.Translation;
 
-using static ARMeilleure.Instructions.InstEmitHelper;
-using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 
 namespace ARMeilleure.Instructions

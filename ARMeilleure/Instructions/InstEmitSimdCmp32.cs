@@ -5,7 +5,6 @@ using ARMeilleure.Translation;
 using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
-using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -163,6 +162,7 @@ namespace ARMeilleure.Instructions
         private static Operand ZerosOrOnes(ArmEmitterContext context, Operand fromBool, OperandType baseType)
         {
             var ones = (baseType == OperandType.I64) ? Const(-1L) : Const(-1);
+
             return context.ConditionalSelect(fromBool, ones, Const(baseType, 0L));
         }
 
@@ -181,6 +181,7 @@ namespace ARMeilleure.Instructions
                     {
                         OperandType type = m.Type;
                         Operand zeroV = (type == OperandType.I64) ? Const(0L) : Const(0);
+
                         return ZerosOrOnes(context, signedOp(m, zeroV), type);
                     });
                 } 
@@ -190,6 +191,7 @@ namespace ARMeilleure.Instructions
                     {
                         OperandType type = m.Type;
                         Operand zeroV = (type == OperandType.I64) ? Const(0L) : Const(0);
+
                         return ZerosOrOnes(context, unsignedOp(m, zeroV), type);
                     });
                 }

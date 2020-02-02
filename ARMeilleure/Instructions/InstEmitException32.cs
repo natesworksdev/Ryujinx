@@ -1,7 +1,6 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.Translation;
 
-using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions

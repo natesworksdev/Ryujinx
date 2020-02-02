@@ -2,8 +2,8 @@
 {
     interface IOpCode32SimdImm : IOpCode32Simd
     {
-        public int Vd { get; }
-        public long Immediate { get; }
+        int Vd { get; }
+        long Immediate { get; }
         int Elems { get; }
     }
 }

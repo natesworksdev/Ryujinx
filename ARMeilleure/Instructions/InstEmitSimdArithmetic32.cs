@@ -3,10 +3,10 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
 
+using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper32;
-using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -527,6 +527,7 @@ namespace ARMeilleure.Instructions
                                                  context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
 
                 }
+
                 return op1;
             });
         }
@@ -566,7 +567,8 @@ namespace ARMeilleure.Instructions
                 {
                     return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRSqrtEstimateFpscr, SoftFloat64.FPRSqrtEstimateFpscr, op1);
                 });
-            } else
+            } 
+            else
             {
                 throw new NotImplementedException("Integer Vrsqrte not currently implemented.");
             }
@@ -600,6 +602,7 @@ namespace ARMeilleure.Instructions
                     condition = GetCondTrue(context, Condition.Vs);
                     break;
             }
+
             EmitScalarBinaryOpI32(context, (op1, op2) =>
             {
                 return context.ConditionalSelect(condition, op1, op2);

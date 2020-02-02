@@ -398,6 +398,7 @@ namespace ARMeilleure.Instructions
                     SetFlag(context, PState.CFlag, cOut);
                 }, false);
             }
+            
             return context.ConditionalSelect(shiftLarge, Const(0), result);
         }
 
@@ -506,6 +507,7 @@ namespace ARMeilleure.Instructions
                     SetCarryMMsb(context, m);
                 }, false);
             }
+
             return m;
         }
 

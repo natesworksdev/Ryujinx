@@ -1,7 +1,6 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -219,13 +218,25 @@ namespace ARMeilleure.Instructions
                 Operand m1 = EmitVectorExtract32(context, op.Qm, pairIndex + op.Im, op.Size, false);
 
                 resD = EmitVectorInsert(context, resD, m1, pairIndex + 1 + op.Id, op.Size);
-                if (overlap) resM = resD;
+
+                if (overlap)
+                {
+                    resM = resD;
+                }
+
                 resM = EmitVectorInsert(context, resM, d2, pairIndex + op.Im, op.Size);
-                if (overlap) resD = resM;
+
+                if (overlap)
+                {
+                    resD = resM;
+                }
             }
 
             context.Copy(GetVecA32(op.Qd), resD);
-            if (!overlap) context.Copy(GetVecA32(op.Qm), resM);
+            if (!overlap)
+            {
+                context.Copy(GetVecA32(op.Qm), resM);
+            }
         }
 
         public static void Vzip(ArmEmitterContext context)
@@ -252,16 +263,25 @@ namespace ARMeilleure.Instructions
                 resD = EmitVectorInsert(context, resD, dRowD, pairIndex + op.Id, op.Size);
                 resD = EmitVectorInsert(context, resD, mRowD, pairIndex + 1 + op.Id, op.Size);
 
-                if (overlap) resM = resD;
+                if (overlap)
+                {
+                    resM = resD;
+                }
 
                 resM = EmitVectorInsert(context, resM, dRowM, pairIndex + op.Im, op.Size);
                 resM = EmitVectorInsert(context, resM, mRowM, pairIndex + 1 + op.Im, op.Size);
 
-                if (overlap) resD = resM;
+                if (overlap)
+                {
+                    resD = resM;
+                }
             }
 
             context.Copy(GetVecA32(op.Qd), resD);
-            if (!overlap) context.Copy(GetVecA32(op.Qm), resM);
+            if (!overlap)
+            {
+                context.Copy(GetVecA32(op.Qm), resM);
+            }
         }
 
         public static void Vuzp(ArmEmitterContext context)
@@ -292,13 +312,25 @@ namespace ARMeilleure.Instructions
                 }
 
                 resD = EmitVectorInsert(context, resD, dIns, index + op.Id, op.Size);
-                if (overlap) resM = resD;
+
+                if (overlap)
+                {
+                    resM = resD;
+                }
+
                 resM = EmitVectorInsert(context, resM, mIns, index + op.Im, op.Size);
-                if (overlap) resD = resM;
+
+                if (overlap)
+                {
+                    resD = resM;
+                }
             }
 
             context.Copy(GetVecA32(op.Qd), resD);
-            if (!overlap) context.Copy(GetVecA32(op.Qm), resM);
+            if (!overlap)
+            {
+                context.Copy(GetVecA32(op.Qm), resM);
+            }
         }
     }
 }

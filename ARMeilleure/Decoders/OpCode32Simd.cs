@@ -20,9 +20,9 @@
             Vd = ((opCode >> 18) & 0x10) | ((opCode >> 12) & 0xf);
             Vm = ((opCode >> 1) & 0x10) | ((opCode >> 0) & 0xf);
 
-            if (this.GetType() == typeof(OpCode32Simd)) // Subclasses have their own handling of Vx to account for before checking.
+            if (this.GetType() == typeof(OpCode32Simd) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm)) // Subclasses have their own handling of Vx to account for before checking.
             {
-                DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm);
+                Instruction = InstDescriptor.Undefined;
             }
         }
     }
