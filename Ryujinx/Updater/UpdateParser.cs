@@ -73,6 +73,8 @@ namespace Ryujinx
                     Directory.CreateDirectory(localAppPath);
                 }
 
+                // Get Version.json to compare versions
+
                 if (File.Exists(Path.Combine(localAppPath, "Version.json")))
                 {
                     try
@@ -84,7 +86,7 @@ namespace Ryujinx
 
                         if (newVersion.CompareTo(currentVersion) == 0)
                         {
-                            GtkDialog.CreateErrorDialog("You are already using the most updated version!");
+                            GtkDialog.CreateInfoDialog("Update", "Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
 
                             return;
                         }
@@ -94,6 +96,8 @@ namespace Ryujinx
 
                     }
                 }
+
+                // Show a message asking the user if they want to update
 
                 using (MessageDialog dialog = GtkDialog.CreateAcceptDialog("Update", "Ryujinx - Update", "Would you like to update?", "Version " + _buildVer + " is available."))
                 {
@@ -122,7 +126,7 @@ namespace Ryujinx
             catch (Exception ex)
             {
                 Logger.PrintError(LogClass.Application, ex.Message);
-                GtkDialog.CreateErrorDialog("Update canceled by user or failed to grab or parse the information.\nPlease try at a later time, or report the error to our GitHub.");
+                GtkDialog.CreateErrorDialog("Update failed to grab or parse the information.\nPlease try at a later time, or report the error to our GitHub.");
             }
         }
 
