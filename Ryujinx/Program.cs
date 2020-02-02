@@ -48,20 +48,25 @@ namespace Ryujinx
             // Now load the configuration as the other subsystems are now registered
             if (File.Exists(localConfigurationPath))
             {
-                ConfigurationPath                               = localConfigurationPath;
+                ConfigurationPath = localConfigurationPath;
+
                 ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(localConfigurationPath);
+
                 ConfigurationState.Instance.Load(configurationFileFormat);
             }
             else if (File.Exists(globalConfigurationPath))
             {
-                ConfigurationPath                               = globalConfigurationPath;
+                ConfigurationPath = globalConfigurationPath;
+
                 ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(globalConfigurationPath);
+
                 ConfigurationState.Instance.Load(configurationFileFormat);
             }
             else
             {
                 // No configuration, we load the default values and save it on disk
                 ConfigurationPath = globalConfigurationPath;
+
                 ConfigurationState.Instance.LoadDefault();
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(globalConfigurationPath);
             }
