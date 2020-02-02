@@ -13,6 +13,8 @@ namespace Ryujinx.Updater
 
         public static string updateSaveLocation;
 
+        public static int lastPercentage;
+
         private static void MoveAllFilesOver(string root, string dest)
         {
             foreach (var directory in Directory.GetDirectories(root))
@@ -79,14 +81,23 @@ namespace Ryujinx.Updater
 
             Console.WriteLine($"Downloading latest Ryujinx package...");
 
-            using (WebClient client = new WebClient())
+            WebClient client = new WebClient();
+
+            client.DownloadProgressChanged += (s, e) =>
             {
-                client.DownloadFile(downloadUrl, updateSaveLocation);
-            }
+                if (e.ProgressPercentage != lastPercentage)
+                {
+                    Console.WriteLine("Package downloading... " + e.ProgressPercentage + "%");
+                }
+
+                lastPercentage = e.ProgressPercentage;
+            };
+
+            client.DownloadFileTaskAsync(new Uri(downloadUrl), updateSaveLocation).Wait();
 
             // Extract Update .zip
 
-            Console.WriteLine($"Extracting Ryujinx...");
+            Console.WriteLine($"Extracting Ryujinx package...");
 
             ZipFile.ExtractToDirectory(updateSaveLocation, localAppPath, true);
 
@@ -107,6 +118,5 @@ namespace Ryujinx.Updater
             startInfo.UseShellExecute = true;
             Process.Start(startInfo);
         }
-
     }
 }
