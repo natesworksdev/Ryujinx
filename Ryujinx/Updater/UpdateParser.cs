@@ -14,15 +14,13 @@ namespace Ryujinx
     {
         private static string _jobId;
         private static string _buildVer;
-        private static string _buildUrl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
-        private static string _buildCommit;
-        private static string _branch;
         private static string _platformExt;
 
-        public static string _buildArt;
+        private static string _masterUrl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
+        private static string _buildUrl;
 
         public static string RyuDir = Environment.CurrentDirectory;
-        public static string localAppPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Ryujinx");
+        public static string localAppPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Ryujinx");
         public static WebClient Package = new WebClient();
         public static int PackageProgress;
         public static double Percentage;
@@ -52,21 +50,14 @@ namespace Ryujinx
                 // Begin the Appveyor parsing
 
                 WebClient jsonClient = new WebClient();
-                string fetchedJSON = jsonClient.DownloadString(_buildUrl);
+                string fetchedJSON = jsonClient.DownloadString(_masterUrl);
                 JObject jsonRoot = JObject.Parse(fetchedJSON);
 
-                var __Build = jsonRoot["build"];
+                JToken _buildToken = jsonRoot["build"];
 
-                string __Version = (string)__Build["version"];
-                string __JobsId = (string)__Build["jobs"][0]["jobId"];
-                string __branch = (string)__Build["branch"];
-                string __buildCommit = (string)__Build["commitId"];
-
-                _jobId = __JobsId;
-                _buildVer = __Version;
-                _buildArt = "https://ci.appveyor.com/api/buildjobs/" + _jobId + "/artifacts/ryujinx-" + _buildVer + "-" + _platformExt;
-                _buildCommit = __buildCommit.Substring(0, 7);
-                _branch = __branch;
+                _jobId = (string)_buildToken["jobs"][0]["jobId"];
+                _buildVer = (string)_buildToken["version"];
+                _buildUrl = "https://ci.appveyor.com/api/buildjobs/" + _jobId + "/artifacts/ryujinx-" + _buildVer + "-" + _platformExt;
 
                 if (!Directory.Exists(localAppPath))
                 {
@@ -110,7 +101,7 @@ namespace Ryujinx
                             string updaterPath = Path.Combine(RyuDir, "Updater.exe");
 
                             ProcessStartInfo startInfo = new ProcessStartInfo(updaterPath);
-                            startInfo.Arguments = _buildArt + " " + _buildVer;
+                            startInfo.Arguments = _buildUrl + " " + _buildVer;
                             startInfo.UseShellExecute = true;
                             Process.Start(startInfo);
 
