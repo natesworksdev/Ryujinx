@@ -50,22 +50,5 @@ namespace Ryujinx.Ui
             messageDialog.Run();
             messageDialog.Dispose();
         }
-
-        internal static MessageDialog CreateProgressDialog(string iconType, string titleMessage, string textMessage, string secText)
-        {
-            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Info, ButtonsType.None, null)
-            {
-                Title = titleMessage,
-                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), $"Ryujinx.Ui.assets.{iconType}.png"),
-                Text = textMessage,
-                SecondaryText = secText,
-                WindowPosition = WindowPosition.Center
-            };
-            Uri URL = new Uri(UpdateParser._buildArt);
-            UpdateParser.Package.DownloadFileAsync(URL, Path.Combine(UpdateParser.RyuDir, "Data", "Update", "RyujinxPackage.zip"));
-            messageDialog.SetSizeRequest(100, 20);
-
-            return messageDialog;
-        }
     }
 }
