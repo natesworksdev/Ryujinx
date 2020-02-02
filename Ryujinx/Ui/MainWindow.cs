@@ -1,7 +1,5 @@
 using Gtk;
-using JsonPrettyPrinterPlus;
 using Ryujinx.Audio;
-using Ryujinx.Updater.Parser;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Debugger.Profiler;
@@ -13,7 +11,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 

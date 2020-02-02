@@ -1,5 +1,4 @@
 using Gtk;
-using Ryujinx.Updater.Parser;
 using System;
 using System.IO;
 using System.Reflection;

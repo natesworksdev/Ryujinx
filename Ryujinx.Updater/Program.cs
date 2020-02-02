@@ -6,10 +6,10 @@ using System.Net;
 
 namespace Ryujinx.Updater
 {
-    public class Program
+    class Program
     {
-        public static string RyuDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Ryujinx");
-        public static string launchDir = Environment.CurrentDirectory;
+        public static string localAppPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Ryujinx");
+        public static string ryuDir = Environment.CurrentDirectory;
 
         public static string updateSaveLocation;
 
@@ -47,28 +47,37 @@ namespace Ryujinx.Updater
             }
         }
 
-        [STAThread]
-        public static void Main(string[] args)
+        static void Main(string[] args)
         {
             if (args.Length < 2)
             {
                 return;
             }
 
-            File.WriteAllText(Path.Combine(launchDir, "Version.json"), args[1]);
+            if (!File.Exists(Path.Combine(localAppPath, "Version.json")))
+            {
+                File.Create(Path.Combine(localAppPath, "Version.json")).Close();
+                File.WriteAllText(Path.Combine(localAppPath, "Version.json"), "Unknown Version");
+            }
+
+            Console.WriteLine($"Updating Ryujinx... | {File.ReadAllText(Path.Combine(localAppPath, "Version.json"))} -> {args[1]}");
+
+            File.WriteAllText(Path.Combine(localAppPath, "Version.json"), args[1]);
 
             // Create temp directory
 
-            if (!Directory.Exists(Path.Combine(RyuDir, "Temp")))
+            if (!Directory.Exists(Path.Combine(localAppPath, "Temp")))
             {
-                Directory.CreateDirectory(Path.Combine(RyuDir, "Temp"));
+                Directory.CreateDirectory(Path.Combine(localAppPath, "Temp"));
             }
 
             // Download latest update
 
             string downloadUrl = args[0];
 
-            updateSaveLocation = Path.Combine(RyuDir, "Temp", "RyujinxPackage.zip");
+            updateSaveLocation = Path.Combine(localAppPath, "Temp", "RyujinxPackage.zip");
+
+            Console.WriteLine($"Downloading latest Ryujinx package...");
 
             using (WebClient client = new WebClient())
             {
@@ -77,20 +86,26 @@ namespace Ryujinx.Updater
 
             // Extract Update .zip
 
-            ZipFile.ExtractToDirectory(updateSaveLocation, RyuDir, true);
+            Console.WriteLine($"Extracting Ryujinx...");
+
+            ZipFile.ExtractToDirectory(updateSaveLocation, localAppPath, true);
 
             // Copy new files over to Ryujinx folder
 
-            MoveAllFilesOver(Path.Combine(RyuDir, "publish"), launchDir);
+            Console.WriteLine($"Replacing old version...");
+
+            MoveAllFilesOver(Path.Combine(localAppPath, "publish"), ryuDir);
 
             // Remove temp folders
 
-            Directory.Delete(Path.Combine(RyuDir, "publish"), true);
-            Directory.Delete(Path.Combine(RyuDir, "Temp"), true);
+            Directory.Delete(Path.Combine(localAppPath, "publish"), true);
+            Directory.Delete(Path.Combine(localAppPath, "Temp"), true);
 
             // Start new Ryujinx version and close Updater
 
-            Process.Start(Path.Combine(launchDir, "Ryujinx.exe"));
+            ProcessStartInfo startInfo = new ProcessStartInfo(Path.Combine(ryuDir, "Ryujinx.exe"));
+            startInfo.UseShellExecute = true;
+            Process.Start(startInfo);
         }
 
     }
