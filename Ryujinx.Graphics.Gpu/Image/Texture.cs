@@ -54,9 +54,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         public LinkedListNode<Texture> CacheNode { get; set; }
 
         /// <summary>
-        /// Texture data modified by the GPU.
+        /// Event to fire when texture data modified by the GPU.
         /// </summary>
-        public bool Modified { get; set; }
+        public event Action<Texture> Modified;
 
         /// <summary>
         /// Start address of the texture in guest memory.
@@ -931,6 +931,14 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _depth  = info.GetDepth();
             _layers = info.GetLayers();
+        }
+
+        /// <summary>
+        /// Signals that the texture has been modified.
+        /// </summary>
+        public void SignalModified()
+        {
+            Modified?.Invoke(this);
         }
 
         /// <summary>
