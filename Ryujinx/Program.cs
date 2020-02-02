@@ -3,7 +3,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Profiler;
 using Ryujinx.Ui;
-using Ryujinx.Updater.Parser;
 using System;
 using System.IO;
 
