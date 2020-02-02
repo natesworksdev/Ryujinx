@@ -744,6 +744,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     texture.Flush();
                 }
             }
+            _modified.Clear();
         }
 
         /// <summary>
