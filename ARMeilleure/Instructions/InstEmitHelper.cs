@@ -144,22 +144,33 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void EmitBxWritePc(ArmEmitterContext context, Operand pc)
+        public static void EmitBxWritePc(ArmEmitterContext context, Operand pc, int sourceRegister = 0)
         {
+            bool allowRejit = sourceRegister != RegisterAlias.Aarch32Lr && context.CurrOp.Instruction.Name != InstName.Ldm;
             Operand mode = context.BitwiseAnd(pc, Const(1));
 
             SetFlag(context, PState.TFlag, mode);
 
             Operand lblArmMode = Label();
 
-            context.BranchIfTrue(lblArmMode, mode);
+            context.BranchIfFalse(lblArmMode, mode);
 
-            // Make this count as a call, the translator will ignore the low bit for the address.
-            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(pc, Const((int)InstEmitFlowHelper.CallFlag))));
+            Operand thumbAddr = allowRejit ? context.BitwiseOr(pc, Const((int)InstEmitFlowHelper.CallFlag)) : pc;
+            // Make this count for rejit, the translator will ignore the low bit for the address.
+            context.Return(context.ZeroExtend32(OperandType.I64, thumbAddr));
 
             context.MarkLabel(lblArmMode);
 
-            context.Return(context.ZeroExtend32(OperandType.I64, context.BitwiseOr(context.BitwiseAnd(pc, Const(~3)), Const((int)InstEmitFlowHelper.CallFlag))));
+            Operand a32Addr = context.BitwiseAnd(pc, Const(~3));
+
+            if (allowRejit)
+            {
+                InstEmitFlowHelper.EmitJumpTableCall(context, a32Addr, true);
+            }
+            else
+            {
+                context.Return(context.ZeroExtend32(OperandType.I64, a32Addr));
+            }
         }
 
         public static Operand GetIntOrZR(ArmEmitterContext context, int regIndex)

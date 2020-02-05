@@ -5,6 +5,7 @@ using ARMeilleure.Translation;
 
 using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
+using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -21,7 +22,6 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                context.StoreToContext();
                 context.Return(Const(op.Immediate));
             }
         }
@@ -57,7 +57,7 @@ namespace ARMeilleure.Instructions
                 SetFlag(context, PState.TFlag, Const(isThumb ? 0 : 1));
             }
 
-            InstEmitFlowHelper.EmitCall(context, (ulong)op.Immediate);
+            EmitJumpTableCall(context, Const((int)op.Immediate));
         }
 
         public static void Blxr(ArmEmitterContext context)
@@ -66,9 +66,8 @@ namespace ARMeilleure.Instructions
 
             uint pc = op.GetPc();
 
-            Operand addr = GetIntA32(context, op.Rm);
+            Operand addr = context.Copy(GetIntA32(context, op.Rm));
             Operand bitOne = context.BitwiseAnd(addr, Const(1));
-            addr = context.BitwiseOr(addr, Const((int)CallFlag)); // Set call flag.
 
             bool isThumb = IsThumb(context.CurrOp);
 
@@ -80,14 +79,12 @@ namespace ARMeilleure.Instructions
 
             SetFlag(context, PState.TFlag, bitOne);
 
-            context.Return(addr); // Call.
+            EmitJumpTableCall(context, addr);
         }
 
         public static void Bx(ArmEmitterContext context)
         {
             IOpCode32BReg op = (IOpCode32BReg)context.CurrOp;
-
-            context.StoreToContext();
 
             EmitBxWritePc(context, GetIntA32(context, op.Rm));
         }
