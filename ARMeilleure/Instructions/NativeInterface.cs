@@ -1,5 +1,6 @@
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using ARMeilleure.Translation;
 using System;
 
 namespace ARMeilleure.Instructions
@@ -10,17 +11,19 @@ namespace ARMeilleure.Instructions
 
         private class ThreadContext
         {
-            public ExecutionContext Context { get; }
-            public MemoryManager    Memory  { get; }
+            public ExecutionContext Context    { get; }
+            public MemoryManager    Memory     { get; }
+            public Translator       Translator { get; }
 
             public ulong ExclusiveAddress   { get; set; }
             public ulong ExclusiveValueLow  { get; set; }
             public ulong ExclusiveValueHigh { get; set; }
 
-            public ThreadContext(ExecutionContext context, MemoryManager memory)
+            public ThreadContext(ExecutionContext context, MemoryManager memory, Translator translator)
             {
-                Context = context;
-                Memory  = memory;
+                Context    = context;
+                Memory     = memory;
+                Translator = translator;
 
                 ExclusiveAddress = ulong.MaxValue;
             }
@@ -29,9 +32,9 @@ namespace ARMeilleure.Instructions
         [ThreadStatic]
         private static ThreadContext _context;
 
-        public static void RegisterThread(ExecutionContext context, MemoryManager memory)
+        public static void RegisterThread(ExecutionContext context, MemoryManager memory, Translator translator)
         {
-            _context = new ThreadContext(context, memory);
+            _context = new ThreadContext(context, memory, translator);
         }
 
         public static void UnregisterThread()
@@ -379,6 +382,12 @@ namespace ARMeilleure.Instructions
         private static ulong GetMaskedExclusiveAddress(ulong address)
         {
             return address & ~((4UL << ErgSizeLog2) - 1);
+        }
+
+        public static ulong GetFunctionAddress(ulong address)
+        {
+            TranslatedFunction function = _context.Translator.GetOrTranslate(address, GetContext().ExecutionMode);
+            return (ulong)function.GetPointer().ToInt64();
         }
 
         public static void ClearExclusive()

@@ -50,6 +50,7 @@ namespace ARMeilleure.CodeGen.X86
         Imul,
         Imul128,
         Insertps,
+        Jmp,
         Lea,
         Maxpd,
         Maxps,

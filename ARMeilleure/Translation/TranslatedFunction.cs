@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace ARMeilleure.Translation
@@ -25,6 +27,11 @@ namespace ARMeilleure.Translation
         public bool ShouldRejit()
         {
             return _rejit && Interlocked.Increment(ref _callCount) == MinCallsForRejit;
+        }
+
+        public IntPtr GetPointer()
+        {
+            return Marshal.GetFunctionPointerForDelegate(_func);
         }
     }
 }

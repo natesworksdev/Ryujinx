@@ -143,6 +143,19 @@ namespace ARMeilleure.Translation
             }
         }
 
+        public void Tailcall(Operand address, params Operand[] callArgs)
+        {
+            Operand[] args = new Operand[callArgs.Length + 1];
+
+            args[0] = address;
+
+            Array.Copy(callArgs, 0, args, 1, callArgs.Length);
+
+            Add(Instruction.Tailcall, null, args);
+
+            _needsNewBlock = true;
+        }
+
         public Operand CompareAndSwap128(Operand address, Operand expected, Operand desired)
         {
             return Add(Instruction.CompareAndSwap128, Local(OperandType.V128), address, expected, desired);

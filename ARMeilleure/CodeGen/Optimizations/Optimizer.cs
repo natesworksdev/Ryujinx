@@ -136,7 +136,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static bool HasSideEffects(Node node)
         {
-            return (node is Operation operation) && operation.Instruction == Instruction.Call;
+            return (node is Operation operation) && (operation.Instruction == Instruction.Call || operation.Instruction == Instruction.Tailcall);
         }
 
         private static bool IsPropagableCopy(Operation operation)

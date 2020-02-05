@@ -101,6 +101,10 @@ namespace ARMeilleure.CodeGen.X86
                             }
                             break;
 
+                        case Instruction.Tailcall:
+                            HandleTailcallWindowsAbi(stackAlloc, node, operation);
+                            break;
+
                         case Instruction.VectorInsert8:
                             if (!HardwareCapabilities.SupportsSse41)
                             {
@@ -827,6 +831,53 @@ namespace ARMeilleure.CodeGen.X86
             operation.SetSources(sources.ToArray());
 
             return node;
+        }
+
+        private static void HandleTailcallWindowsAbi(StackAllocator stackAlloc, LLNode node, Operation operation)
+        {
+            Operand dest = operation.Destination;
+
+            LinkedList<Node> nodes = node.List;
+
+            int argsCount = operation.SourcesCount - 1;
+
+            int maxArgs = CallingConvention.GetArgumentsOnRegsCount();
+
+            if (argsCount > maxArgs)
+            {
+                argsCount = maxArgs;
+            }
+
+            Operand[] sources = new Operand[1 + argsCount];
+
+            // Handle arguments passed on registers.
+            for (int index = 0; index < argsCount; index++)
+            {
+                Operand source = operation.GetSource(1 + index);
+
+                Operand argReg = source.Type.IsInteger()
+                    ? Gpr(CallingConvention.GetIntArgumentRegister(index), source.Type)
+                    : Xmm(CallingConvention.GetVecArgumentRegister(index), source.Type);
+
+                Operation copyOp = new Operation(Instruction.Copy, argReg, source);
+
+                HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
+
+                sources[1 + index] = argReg;
+            }
+
+            // The target address must be on the return registers, since we
+            // don't return anything and it is guaranteed to not be a
+            // callee saved register (which would be trashed on the epilogue).
+            Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), OperandType.I64);
+
+            Operation addrCopyOp = new Operation(Instruction.Copy, retReg, operation.GetSource(0));
+
+            nodes.AddBefore(node, addrCopyOp);
+
+            sources[0] = retReg;
+
+            operation.SetSources(sources);
         }
 
         private static void HandleLoadArgumentWindowsAbi(

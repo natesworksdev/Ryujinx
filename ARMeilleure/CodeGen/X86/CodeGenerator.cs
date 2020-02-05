@@ -76,6 +76,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
             Add(Instruction.Subtract,                GenerateSubtract);
+            Add(Instruction.Tailcall,                GenerateTailcall);
             Add(Instruction.VectorCreateScalar,      GenerateVectorCreateScalar);
             Add(Instruction.VectorExtract,           GenerateVectorExtract);
             Add(Instruction.VectorExtract16,         GenerateVectorExtract16);
@@ -1081,6 +1082,13 @@ namespace ARMeilleure.CodeGen.X86
             {
                 context.Assembler.Subsd(dest, src1, src2);
             }
+        }
+
+        private static void GenerateTailcall(CodeGenContext context, Operation operation)
+        {
+            WriteEpilogue(context);
+
+            context.Assembler.Jmp(operation.GetSource(0));
         }
 
         private static void GenerateVectorCreateScalar(CodeGenContext context, Operation operation)

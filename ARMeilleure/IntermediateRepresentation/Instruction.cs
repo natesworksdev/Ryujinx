@@ -52,6 +52,7 @@ namespace ARMeilleure.IntermediateRepresentation
         Store16,
         Store8,
         Subtract,
+        Tailcall,
         VectorCreateScalar,
         VectorExtract,
         VectorExtract16,
