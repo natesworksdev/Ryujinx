@@ -6,7 +6,9 @@ namespace Ryujinx.Graphics.Gpu.State
     struct ReportState
     {
         public GpuVa Address;
+#pragma warning disable CS0649
         public int   Payload;
         public uint  Control;
+#pragma warning restore CS0649
     }
 }

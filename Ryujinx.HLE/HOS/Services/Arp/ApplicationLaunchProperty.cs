@@ -8,7 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Arp
         public int   Version;
         public byte  BaseGameStorageId;
         public byte  UpdateGameStorageId;
-        public short Padding;
 
         public static ApplicationLaunchProperty Default
         {

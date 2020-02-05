@@ -6,8 +6,10 @@ namespace Ryujinx.Graphics.Gpu.State
     struct RtDepthStencilState
     {
         public GpuVa        Address;
-        public RtFormat     Format;
         public MemoryLayout MemoryLayout;
+#pragma warning disable CS0649
+        public RtFormat     Format;
         public int          LayerSize;
+#pragma warning restore CS0649
     }
 }

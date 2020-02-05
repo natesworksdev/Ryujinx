@@ -6,17 +6,19 @@
         public int BehaviorSize;
         public int MemoryPoolSize;
         public int VoiceSize;
-        public int VoiceResourceSize;
         public int EffectSize;
-        public int MixSize;
         public int SinkSize;
+        public int TotalSize;
         public int PerformanceManagerSize;
-        public int Unknown24;
         public int ElapsedFrameCountInfoSize;
+#pragma warning disable CS0649
+        public int VoiceResourceSize;
+        public int MixSize;
+        public int Unknown24;
         public int Unknown2C;
         public int Unknown30;
         public int Unknown34;
         public int Unknown38;
-        public int TotalSize;
+#pragma warning restore CS0649
     }
 }

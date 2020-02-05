@@ -81,9 +81,6 @@ namespace Ryujinx.Graphics.Gpu
 
         private DmaState _state;
 
-        private bool _sliEnable;
-        private bool _sliActive;
-
         private bool _ibEnable;
 
         private GpuContext _context;
@@ -217,11 +214,6 @@ namespace Ryujinx.Graphics.Gpu
                 }
                 else if (_state.MethodCount != 0)
                 {
-                    if (!_sliEnable || _sliActive)
-                    {
-                        CallMethod(word);
-                    }
-
                     if (!_state.NonIncrementing)
                     {
                         _state.Method++;

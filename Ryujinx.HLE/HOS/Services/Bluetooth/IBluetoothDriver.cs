@@ -9,13 +9,11 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
     [Service("btdrv")]
     class IBluetoothDriver : IpcService
     {
-        private string _unknownLowEnergy;
-
         public IBluetoothDriver(ServiceCtx context) { }
 
         [Command(46)]
         // InitializeBluetoothLe() -> handle<copy>
-        public ResultCode InitializeBluetoothLe(ServiceCtx context)
+        public ResultCode InitializeBluetoothLe(ServiceCtx context) // not used, used for later ?
         {
             NxSettings.Settings.TryGetValue("bluetooth_debug!skip_boot", out object debugMode);
 
@@ -53,8 +51,6 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
             }
             else
             {
-                _unknownLowEnergy = "low_energy";
-
                 if (BluetoothEventManager.InitializeBleEventHandle == 0)
                 {
                     BluetoothEventManager.InitializeBleEvent = new KEvent(context.Device.System);

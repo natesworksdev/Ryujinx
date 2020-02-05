@@ -6,13 +6,15 @@ namespace Ryujinx.Graphics.Gpu.State
     struct CopyTexture
     {
         public RtFormat     Format;
-        public Boolean32    LinearLayout;
         public MemoryLayout MemoryLayout;
+#pragma warning disable CS0649
+        public Boolean32    LinearLayout;
         public int          Depth;
         public int          Layer;
         public int          Stride;
         public int          Width;
         public int          Height;
+#pragma warning restore CS0649
         public GpuVa        Address;
     }
 }
