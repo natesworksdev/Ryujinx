@@ -263,7 +263,8 @@ namespace ARMeilleure.Instructions
 
                 // It's ours, so what function is it pointing to?
                 Operand missingFunctionLabel = Label();
-                Operand targetFunction = context.Load(OperandType.I64, context.Add(tableAddress, Const(8)));
+                Operand targetFunctionPtr = context.Add(tableAddress, Const(8));
+                Operand targetFunction = context.Load(OperandType.I64, targetFunctionPtr);
                 context.BranchIfFalse(missingFunctionLabel, targetFunction);
 
                 // Call the function.
@@ -276,7 +277,8 @@ namespace ARMeilleure.Instructions
 
                 context.BranchIfFalse(fallbackLabel, goodCallAddr); // Fallback if it doesn't exist yet.
 
-                // Call the function.
+                // Call and save the function.
+                context.Store(targetFunctionPtr, goodCallAddr);
                 EmitNativeCall(context, goodCallAddr, isJump);
                 context.Branch(endLabel);
 
