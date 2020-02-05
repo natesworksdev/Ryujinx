@@ -585,6 +585,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 _cache.Add(texture);
                 texture.Modified += CacheTextureModified;
+                texture.Disposed += CacheTextureDisposed;
             }
 
             _textures.Add(texture);
@@ -601,6 +602,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         private void CacheTextureModified(Texture texture)
         {
             _modified.Add(texture);
+        }
+
+        /// <summary>
+        /// Signaled when a cache texture is disposed, so it can be removed from the set of modified textures if present.
+        /// </summary>
+        /// <param name="texture">The texture that was diosposed.</param>
+        private void CacheTextureDisposed(Texture texture)
+        {
+            _modified.Remove(texture);
         }
 
         /// <summary>
@@ -785,6 +795,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             foreach (Texture texture in _textures)
             {
+                _modified.Remove(texture);
                 texture.Dispose();
             }
         }
