@@ -181,6 +181,9 @@ namespace ARMeilleure.Translation
 
             GuestFunction func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
 
+            OperandHelper.ResetOperandPool();
+            OperationHelper.ResetOperationPool();
+
             return new TranslatedFunction(func, rejit: !highCq);
         }
 

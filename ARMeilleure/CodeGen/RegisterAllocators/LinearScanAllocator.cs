@@ -743,7 +743,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Debug.Assert(!interval.IsSpilled, "Spilled intervals are not allowed.");
 
-            return new Operand(
+            return OperandHelper.Register(
                 interval.Register.Index,
                 interval.Register.Type,
                 interval.Local.Type);

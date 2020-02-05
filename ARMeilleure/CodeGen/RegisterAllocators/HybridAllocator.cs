@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
@@ -265,7 +266,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 node.SetSource(srcIndex, temp);
                             }
 
-                            Operation fillOp = new Operation(Instruction.Fill, temp, Const(info.SpillOffset));
+                            Operation fillOp = Operation(Instruction.Fill, temp, Const(info.SpillOffset));
 
                             block.Operations.AddBefore(node, fillOp);
                         }
@@ -363,7 +364,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             node.SetDestination(dstIndex, temp);
 
-                            Operation spillOp = new Operation(Instruction.Spill, null, Const(info.SpillOffset), temp);
+                            Operation spillOp = Operation(Instruction.Spill, null, Const(info.SpillOffset), temp);
 
                             block.Operations.AddAfter(node, spillOp);
 
