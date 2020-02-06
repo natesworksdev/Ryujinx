@@ -222,6 +222,12 @@ namespace Ryujinx.HLE.FileSystem
 
             FsServer = new FileSystemServer(fsServerConfig);
             FsClient = FsServer.CreateFileSystemClient();
+
+            if (File.Exists(Configuration.ConfigurationState.Instance.System.GameCardPath.Value))
+            {
+                IStorage cardImageStorage = new FileStream(Configuration.ConfigurationState.Instance.System.GameCardPath.Value, FileMode.Open, FileAccess.Read).AsStorage();
+                GameCard.InsertGameCard(cardImageStorage);
+            }
         }
 
 

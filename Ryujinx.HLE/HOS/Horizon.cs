@@ -2,6 +2,7 @@ using LibHac;
 using LibHac.Account;
 using LibHac.Common;
 using LibHac.Fs;
+using LibHac.FsService.Creators;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
@@ -237,6 +238,35 @@ namespace Ryujinx.HLE.HOS
             DatabaseImpl.Instance.InitializeDatabase(device);
         }
 
+        public void LoadGameCard()
+        {
+            EmulatedGameCardStorageCreator gameCardStorageCreator = new EmulatedGameCardStorageCreator(Device.FileSystem.GameCard);
+
+            Result result = gameCardStorageCreator.CreateSecure(Device.FileSystem.GameCard.GetGameCardHandle(), out IStorage securePartitionStorage);
+
+            if (result.IsFailure())
+            {
+                Logger.PrintError(LogClass.Loader, $"Creating IStorage from GameCard Secure Partition failed with error code: {result.ErrorCode}");
+
+                return;
+            }
+
+            XciPartition securePartition = new XciPartition(securePartitionStorage);
+
+            (Nca mainNca, Nca patchNca, Nca controlNca) = GetXciGameData(securePartition);
+
+            if (mainNca == null)
+            {
+                Logger.PrintError(LogClass.Loader, "Unable to load XCI");
+
+                return;
+            }
+
+            ContentManager.LoadEntries(Device);
+
+            LoadNca(mainNca, patchNca, controlNca);
+        }
+
         public void LoadCart(string exeFsDir, string romFsFile = null)
         {
             if (romFsFile != null)
@@ -255,7 +285,14 @@ namespace Ryujinx.HLE.HOS
 
             Xci xci = new Xci(KeySet, file.AsStorage());
 
-            (Nca mainNca, Nca patchNca, Nca controlNca) = GetXciGameData(xci);
+            if (!xci.HasPartition(XciPartitionType.Secure))
+            {
+                throw new InvalidDataException("Could not find XCI secure partition");
+            }
+
+            XciPartition securePartition = xci.OpenPartition(XciPartitionType.Secure);
+
+            (Nca mainNca, Nca patchNca, Nca controlNca) = GetXciGameData(securePartition);
 
             if (mainNca == null)
             {
@@ -277,18 +314,11 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        private (Nca Main, Nca patch, Nca Control) GetXciGameData(Xci xci)
+        private (Nca Main, Nca patch, Nca Control) GetXciGameData(XciPartition securePartition)
         {
-            if (!xci.HasPartition(XciPartitionType.Secure))
-            {
-                throw new InvalidDataException("Could not find XCI secure partition");
-            }
-
             Nca mainNca    = null;
             Nca patchNca   = null;
             Nca controlNca = null;
-
-            XciPartition securePartition = xci.OpenPartition(XciPartitionType.Secure);
 
             foreach (DirectoryEntryEx ticketEntry in securePartition.EnumerateEntries("/", "*.tik"))
             {

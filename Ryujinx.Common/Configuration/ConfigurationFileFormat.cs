@@ -19,7 +19,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public int Version { get; set; }
 
@@ -127,6 +127,11 @@ namespace Ryujinx.Configuration
         /// Enable or disable ignoring missing services
         /// </summary>
         public bool IgnoreMissingServices { get; set; }
+
+        /// <summary>
+        /// Path used to mount a virtual game card
+        /// </summary>
+        public string GameCardPath { get; set; }
 
         /// <summary>
         ///  The primary controller's type

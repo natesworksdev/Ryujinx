@@ -1,5 +1,5 @@
 {
-    "version": 4,
+    "version": 5,
     "max_anisotropy": -1,
     "graphics_shaders_dump_path": "",
     "logging_enable_debug": false,
@@ -21,6 +21,7 @@
     "enable_fs_integrity_checks": true,
     "fs_global_access_log_mode": 0,
     "ignore_missing_services": false,
+    "game_card_path": "",
     "controller_type": "Handheld",
     "gui_columns": {
         "fav_column": true,

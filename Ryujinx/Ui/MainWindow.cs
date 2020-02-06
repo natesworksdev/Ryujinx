@@ -1,6 +1,7 @@
 using Gtk;
-using JsonPrettyPrinterPlus;
 using LibHac.Common;
+using LibHac.Fs;
+using LibHac.FsSystem;
 using LibHac.Ns;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
@@ -12,15 +13,11 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Utf8Json;
-using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -44,13 +41,10 @@ namespace Ryujinx.Ui
         private static bool _ending;
         private static bool _debuggerOpened;
 
-        private static TreeView _treeView;
-
-        private static Ryujinx.Debugger.Debugger _debugger;
+        private static Debugger.Debugger _debugger;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
-
         [GUI] Window         _mainWin;
         [GUI] MenuBar        _menuBar;
         [GUI] Box            _footerBox;
@@ -58,6 +52,8 @@ namespace Ryujinx.Ui
         [GUI] Box            _statusBar;
         [GUI] MenuItem       _stopEmulation;
         [GUI] CheckMenuItem  _favToggle;
+        [GUI] MenuItem       _loadApplicationGameCard;
+        [GUI] MenuItem       _ejectGameCard;
         [GUI] MenuItem       _firmwareInstallFile;
         [GUI] MenuItem       _firmwareInstallDirectory;
         [GUI] Label          _hostStatus;
@@ -129,8 +125,6 @@ namespace Ryujinx.Ui
 
             // Make sure that everything is loaded.
             _virtualFileSystem.Reload();
-
-            _treeView = _gameTable;
 
             ApplyTheme();
 
@@ -354,7 +348,11 @@ namespace Ryujinx.Ui
                 Graphics.Gpu.GraphicsConfig.MaxAnisotropy   = ConfigurationState.Instance.Graphics.MaxAnisotropy;
                 Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
-                if (Directory.Exists(path))
+                if (path == null)
+                {
+                    device.LoadGameCard();
+                }
+                else if (Directory.Exists(path))
                 {
                     string[] romFsFiles = Directory.GetFiles(path, "*.istorage");
 
@@ -419,7 +417,7 @@ namespace Ryujinx.Ui
 #if MACOS_BUILD
                 CreateGameWindow(device);
 #else
-                var windowThread = new Thread(() =>
+                Thread windowThread = new Thread(() =>
                 {
                     CreateGameWindow(device);
                 })
@@ -755,6 +753,11 @@ namespace Ryujinx.Ui
             fileChooser.Dispose();
         }
 
+        private void Load_Application_GameCard(object sender, EventArgs args)
+        {
+            LoadApplication(null);
+        }
+
         private void Open_Ryu_Folder(object sender, EventArgs args)
         {
             Process.Start(new ProcessStartInfo()
@@ -989,6 +992,55 @@ namespace Ryujinx.Ui
 
                 ToggleExtraWidgets(true);
             }
+        }
+
+        private void FileMenu_Pressed(object sender, EventArgs args)
+        {
+            _loadApplicationGameCard.Sensitive = _virtualFileSystem.GameCard.IsGameCardInserted();
+        }
+        private void GameCardMenu_Pressed(object sender, EventArgs args)
+        {
+            _ejectGameCard.Sensitive = _virtualFileSystem.GameCard.IsGameCardInserted();
+        }
+
+        private void InsertGameCard_Pressed(object sender, EventArgs args)
+        {
+            FileChooserDialog fileChooser = new FileChooserDialog("Select the file to be used as the virtual game card", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            
+            fileChooser.Filter = new FileFilter();
+            fileChooser.Filter.AddPattern("*.xci");
+
+            if (fileChooser.Run() == (int) ResponseType.Accept)
+            {
+                try
+                {
+                    IStorage cardImageStorage = new FileStream(fileChooser.Filename, FileMode.Open, FileAccess.Read).AsStorage();
+
+                    _virtualFileSystem.GameCard.InsertGameCard(cardImageStorage);
+
+                    ConfigurationState.Instance.System.GameCardPath.Value = fileChooser.Filename;
+
+                    SaveConfig();
+                }
+                catch (Exception exception)
+                {
+                    Logger.PrintError(LogClass.Application, exception.ToString());
+                    GtkDialog.CreateErrorDialog("Inserting the Game Card has returned an error. Please check the logs for more info.");
+
+                    _virtualFileSystem.GameCard.RemoveGameCard();
+                }
+            }
+
+            fileChooser.Dispose();
+        }
+
+        private void EjectGameCard_Pressed(object sender, EventArgs args)
+        {
+            _virtualFileSystem.GameCard.RemoveGameCard();
+
+            ConfigurationState.Instance.System.GameCardPath.Value = "";
+
+            SaveConfig();
         }
 
         private void Settings_Pressed(object sender, EventArgs args)

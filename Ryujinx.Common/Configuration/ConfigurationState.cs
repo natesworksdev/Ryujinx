@@ -183,6 +183,11 @@ namespace Ryujinx.Configuration
             /// </summary>
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
 
+            /// <summary>
+            /// Path used to mount a virtual game card
+            /// </summary>
+            public ReactiveObject<string> GameCardPath { get; private set; }
+
             public SystemSection()
             {
                 Language                  = new ReactiveObject<Language>();
@@ -193,6 +198,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode     = new ReactiveObject<int>();
                 IgnoreMissingServices     = new ReactiveObject<bool>();
+                GameCardPath              = new ReactiveObject<string>();
             }
         }
 
@@ -329,6 +335,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
+                GameCardPath              = System.GameCardPath,
                 ControllerType            = Hid.ControllerType,
                 GuiColumns                = new GuiColumns()
                 {
@@ -377,6 +384,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.IgnoreMissingServices.Value     = false;
+            System.GameCardPath.Value              = "";
             Hid.ControllerType.Value               = ControllerType.Handheld;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
@@ -504,6 +512,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 5)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 5.");
+
+                configurationFileFormat.GameCardPath = "";
+
+                configurationFileUpdated = true;
+            }
+
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
@@ -526,6 +543,7 @@ namespace Ryujinx.Configuration
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
+            System.GameCardPath.Value              = configurationFileFormat.GameCardPath;
             Hid.ControllerType.Value               = configurationFileFormat.ControllerType;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;

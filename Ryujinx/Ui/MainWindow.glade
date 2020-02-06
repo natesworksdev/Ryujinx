@@ -24,6 +24,7 @@
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">File</property>
                 <property name="use_underline">True</property>
+                <signal name="activate" handler="FileMenu_Pressed" swapped="no"/>
                 <child type="submenu">
                   <object class="GtkMenu">
                     <property name="visible">True</property>
@@ -46,6 +47,16 @@
                         <property name="label" translatable="yes">Load Unpacked Game</property>
                         <property name="use_underline">True</property>
                         <signal name="activate" handler="Load_Application_Folder" swapped="no"/>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkMenuItem" id="_loadApplicationGameCard">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="tooltip_text" translatable="yes">Loads the application on the mounted game card</property>
+                        <property name="label" translatable="yes">Load Application from Game Card</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="Load_Application_GameCard" swapped="no"/>
                       </object>
                     </child>
                     <child>
@@ -240,6 +251,47 @@
                       </object>
                     </child>
                     <child>
+                      <object class="GtkMenuItem" id="GameCardMenu">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="label" translatable="yes">Game Card</property>
+                        <property name="use_underline">True</property>
+                        <signal name="activate" handler="GameCardMenu_Pressed" swapped="no"/>
+                        <child type="submenu">
+                          <object class="GtkMenu">
+                            <property name="visible">True</property>
+                            <property name="can_focus">False</property>
+                            <child>
+                              <object class="GtkMenuItem" id="_insertGameCard">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Loads a virtual game card into the emulator</property>
+                                <property name="label" translatable="yes">Insert Game Card</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="InsertGameCard_Pressed" swapped="no"/>
+                              </object>
+                            </child>
+                            <child>
+                              <object class="GtkMenuItem" id="_ejectGameCard">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="tooltip_text" translatable="yes">Unloads the virtual game card if there is one loaded</property>
+                                <property name="label" translatable="yes">Eject Game Card</property>
+                                <property name="use_underline">True</property>
+                                <signal name="activate" handler="EjectGameCard_Pressed" swapped="no"/>
+                              </object>
+                            </child>
+                          </object>
+                        </child>
+                      </object>
+                    </child>
+                    <child>
+                      <object class="GtkSeparatorMenuItem">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                      </object>
+                    </child>
+                    <child>
                       <object class="GtkMenuItem" id="SettingsMenu">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -254,7 +306,7 @@
               </object>
             </child>
             <child>
-              <object class="GtkMenuItem" id="_toolsMenu">
+              <object class="GtkMenuItem" id="ToolsMenu">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="label" translatable="yes">Tools</property>
