@@ -168,6 +168,47 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return ResultCode.Success;
         }
 
+        [Command(100)] // 5.0.0+
+        // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
+        public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
+        {
+            int   width              = context.RequestData.ReadInt32();
+            int   height             = context.RequestData.ReadInt32();
+            ulong transferMemorySize = context.RequestData.ReadUInt64();
+
+            Logger.PrintStub(LogClass.ServiceAm, new { width, height, transferMemorySize });
+
+            return ResultCode.Success;
+        }
+
+        [Command(101)] // 5.0.0+
+        // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
+        public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
+        {
+            long  frameBufferPos   = context.Request.SendBuff[0].Position;
+            long  frameBufferSize  = context.Request.SendBuff[0].Size;
+            int   x                = context.RequestData.ReadInt32();
+            int   y                = context.RequestData.ReadInt32();
+            int   width            = context.RequestData.ReadInt32();
+            int   height           = context.RequestData.ReadInt32();
+            uint  windowOriginMode = context.RequestData.ReadUInt32();
+
+            Logger.PrintStub(LogClass.ServiceAm, new { frameBufferPos, frameBufferSize, x, y, width, height, windowOriginMode });
+
+            return ResultCode.Success;
+        }
+
+        [Command(102)] // 5.0.0+
+        // SetApplicationCopyrightVisibility(bool visible)
+        public ResultCode SetApplicationCopyrightVisibility(ServiceCtx context)
+        {
+            bool visible = context.RequestData.ReadBoolean();
+
+            Logger.PrintStub(LogClass.ServiceAm, new { visible });
+
+            return ResultCode.Success;
+        }
+
         [Command(110)] // 5.0.0+
         // QueryApplicationPlayStatistics(buffer<bytes, 5> title_id_list) -> (buffer<bytes, 6> entries, s32 entries_count)
         public ResultCode QueryApplicationPlayStatistics(ServiceCtx context)
