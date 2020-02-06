@@ -56,9 +56,7 @@ namespace Ryujinx.Updater
                 return;
             }
 
-            Console.WriteLine($"Updating Ryujinx... | {File.ReadAllText(Path.Combine(localAppPath, "Version.json"))} -> {args[1]}");
-
-            File.WriteAllText(Path.Combine(localAppPath, "Version.json"), args[1]);
+            Console.WriteLine($"Updating Ryujinx...");
 
             // Create temp directory
 
