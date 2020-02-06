@@ -70,11 +70,14 @@ namespace Ryujinx
                 {
                     try
                     {
+                        string currentVersionJson;
+                        string currentVersionBranch;
+                        string currentVersionPr;
                         var VersionJSON = JObject.Parse(Path.Combine(Environment.CurrentDirectory, "Version.json"));
                         var _JRoot = VersionJSON[0];
-                        (string)currentVersionJson = (string)_JRoot["BuildVer"];
-                        (string)currentVersionPr = (string)_JRoot["BuildPR"];
-                        (string)currentVersionBranch = (string)_JRoot["BuildBranch"];
+                        currentVersionJson = (string)_JRoot["BuildVer"];
+                        currentVersionPr = (string)_JRoot["BuildPR"];
+                        currentVersionBranch = (string)_JRoot["BuildBranch"];
                         
                         Version newVersion = Version.Parse(_buildVer);
                         Version currentVersion = Version.Parse(currentVersionJson);
