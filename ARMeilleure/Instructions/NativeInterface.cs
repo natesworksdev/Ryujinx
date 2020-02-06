@@ -24,11 +24,6 @@ namespace ARMeilleure.Instructions
 
                 ExclusiveAddress = ulong.MaxValue;
             }
-
-            public void Dispose()
-            {
-                Context.Dispose();
-            }
         }
 
         [ThreadStatic]
