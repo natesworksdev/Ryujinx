@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _cache = new AutoDeleteCache();
 
-            _modified = new HashSet<Texture>();
+            _modified = new HashSet<Texture>(new ReferenceEqualityComparer<Texture>());
         }
 
         /// <summary>
