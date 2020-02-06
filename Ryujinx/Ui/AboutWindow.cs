@@ -4,8 +4,6 @@ using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
-using Utf8Json;
-using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -16,14 +14,16 @@ namespace Ryujinx.Ui
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
         [GUI] Window _aboutWin;
-        [GUI] Label  _versionText;
-        [GUI] Image  _ryujinxLogo;
-        [GUI] Image  _patreonLogo;
-        [GUI] Image  _gitHubLogo;
-        [GUI] Image  _discordLogo;
-        [GUI] Image  _twitterLogo;
+        [GUI] Label _versionText;
+        [GUI] Image _ryujinxLogo;
+        [GUI] Image _patreonLogo;
+        [GUI] Image _gitHubLogo;
+        [GUI] Image _discordLogo;
+        [GUI] Image _twitterLogo;
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
+
+        public string localAppPath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Ryujinx");
 
         public AboutWindow() : this(new Builder("Ryujinx.Ui.AboutWindow.glade")) { }
 
@@ -31,15 +31,28 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            _aboutWin.Icon      = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
-            _ryujinxLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"       , 100, 100);
-            _patreonLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.PatreonLogo.png", 30 , 30 );
-            _gitHubLogo.Pixbuf  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.GitHubLogo.png" , 30 , 30 );
-            _discordLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.DiscordLogo.png", 30 , 30 );
-            _twitterLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.TwitterLogo.png", 30 , 30 );
+            _aboutWin.Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
+            _ryujinxLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png", 100, 100);
+            _patreonLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.PatreonLogo.png", 30, 30);
+            _gitHubLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.GitHubLogo.png", 30, 30);
+            _discordLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.DiscordLogo.png", 30, 30);
+            _twitterLogo.Pixbuf = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.TwitterLogo.png", 30, 30);
 
-            // todo: Get version string
-            _versionText.Text = "Unknown Version";
+            if (!Directory.Exists(localAppPath))
+            {
+                Directory.CreateDirectory(localAppPath);
+            }
+
+            string versionJsonFile = System.IO.Path.Combine(localAppPath, "Version.json");
+
+            try
+            {
+                _versionText.Text = "Version " + File.ReadAllText(versionJsonFile);
+            }
+            catch
+            {
+                _versionText.Text = "Unknown Version";
+            }
         }
 
         private static void OpenUrl(string url)

@@ -63,8 +63,7 @@ namespace Ryujinx
                 {
                     switch (arg.Substring(0, 2).ToUpper())
                     {
-                        case "/U": Updater.Update.PerformUpdate(); break;
-                        case "/C": Updater.Update.Cleanup(); break;
+                        case "/U": UpdateParser.BeginParse(); break;
                         default: mainWindow.LoadApplication(args[0]); break;
                     }
                 }
