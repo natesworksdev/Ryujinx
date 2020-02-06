@@ -19,13 +19,19 @@ build_script:
     dotnet publish -c $env:config -r linux-x64
 
     dotnet publish -c $env:config -r osx-x64
+    
+    (Get-Content -path $env:APPVEYOR_BUILD_FOLDER\Version.json -Raw) -replace '_ver',$env:APPVEYOR_BUILD_VERSION
+    (Get-Content -path $env:APPVEYOR_BUILD_FOLDER\Version.json -Raw) -replace '_pr',$env:APPVEYOR_PULL_REQUEST_NUMBER
+    (Get-Content -path $env:APPVEYOR_BUILD_FOLDER\Version.json -Raw) -replace '_branch',$env:APPVEYOR_PULL_REQUEST_HEAD_REPO_BRANCH
 
+    Copy-Item $env:APPVEYOR_BUILD_FOLDER\Version.json -Destination $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp3.0\win-x64\publish\
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp3.0\win-x64\publish\
 
+    Copy-Item $env:APPVEYOR_BUILD_FOLDER\Version.json -Destination $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp3.0\linux-x64\publish\
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp3.0\linux-x64\publish\
-
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar.gz ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar
 
+    Copy-Item $env:APPVEYOR_BUILD_FOLDER\Version.json -Destination $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp3.0\osx-x64\publish\
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\netcoreapp3.0\osx-x64\publish\
 
 artifacts:
