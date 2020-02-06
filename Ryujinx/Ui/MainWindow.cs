@@ -2,11 +2,12 @@ using Gtk;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
+using Ryujinx.Debugger.Profiler;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.Profiler;
+using Ryujinx.HLE.FileSystem;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -27,13 +28,18 @@ namespace Ryujinx.Ui
 
         private static GlScreen _screen;
 
+        private static AutoResetEvent _screenExitStatus = new AutoResetEvent(false);
+
         private static ListStore _tableStore;
 
         private static bool _updatingGameTable;
         private static bool _gameLoaded;
         private static bool _ending;
+        private static bool _debuggerOpened;
 
         private static TreeView _treeView;
+
+        private static Debugger.Debugger _debugger;
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -57,6 +63,8 @@ namespace Ryujinx.Ui
         [GUI] Label         _progressLabel;
         [GUI] Label         _firmwareVersionLabel;
         [GUI] LevelBar      _progressBar;
+        [GUI] MenuItem      _openDebugger;
+        [GUI] MenuItem      _toolsMenu;
 #pragma warning restore CS0649
 #pragma warning restore IDE0044
 
@@ -68,7 +76,8 @@ namespace Ryujinx.Ui
 
             DeleteEvent += Window_Close;
 
-            ApplicationLibrary.ApplicationAdded += Application_Added;
+            ApplicationLibrary.ApplicationAdded        += Application_Added;
+            ApplicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
             _gameTable.ButtonReleaseEvent += Row_Clicked;
 
@@ -113,6 +122,13 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Ui.GuiColumns.FileSizeColumn)   _fileSizeToggle.Active   = true;
             if (ConfigurationState.Instance.Ui.GuiColumns.PathColumn)       _pathToggle.Active       = true;
 
+#if USE_DEBUGGING
+            _debugger = new Debugger.Debugger();
+            _openDebugger.Activated += _openDebugger_Opened;
+#else
+            _openDebugger.Visible = false;
+#endif
+
             _gameTable.Model = _tableStore = new ListStore(
                 typeof(bool),
                 typeof(Gdk.Pixbuf),
@@ -131,12 +147,40 @@ namespace Ryujinx.Ui
             _tableStore.SetSortColumnId(0, SortType.Descending);
 
             UpdateColumns();
-#pragma warning disable CS4014
             UpdateGameTable();
-#pragma warning restore CS4014
 
             Task.Run(RefreshFirmwareLabel);
         }
+
+#if USE_DEBUGGING
+        private void _openDebugger_Opened(object sender, EventArgs e)
+        {
+            if (_debuggerOpened)
+            {
+                return;
+            }
+
+            Window debugWindow = new Window("Debugger");
+            
+            debugWindow.SetSizeRequest(1280, 640);
+            debugWindow.Child = _debugger.Widget;
+            debugWindow.DeleteEvent += DebugWindow_DeleteEvent;
+            debugWindow.ShowAll();
+
+            _debugger.Enable();
+
+            _debuggerOpened = true;
+        }
+
+        private void DebugWindow_DeleteEvent(object o, DeleteEventArgs args)
+        {
+            _debuggerOpened = false;
+
+            _debugger.Disable();
+
+            (_debugger.Widget.Parent as Window)?.Remove(_debugger.Widget);
+        }
+#endif
 
         internal static void ApplyTheme()
         {
@@ -205,7 +249,7 @@ namespace Ryujinx.Ui
             return instance;
         }
 
-        internal static async Task UpdateGameTable()
+        internal static void UpdateGameTable()
         {
             if (_updatingGameTable)
             {
@@ -216,17 +260,23 @@ namespace Ryujinx.Ui
 
             _tableStore.Clear();
 
-            await Task.Run(() => ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs,
-                _virtualFileSystem, ConfigurationState.Instance.System.Language));
+            Thread applicationLibraryThread = new Thread(() =>
+            {
+                ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs,
+                    _virtualFileSystem, ConfigurationState.Instance.System.Language);
 
-            _updatingGameTable = false;
+                _updatingGameTable = false;
+            });
+            applicationLibraryThread.Name = "GUI.ApplicationLibraryThread";
+            applicationLibraryThread.IsBackground = true;
+            applicationLibraryThread.Start();
         }
 
         internal void LoadApplication(string path)
         {
             if (_gameLoaded)
             {
-                GtkDialog.CreateErrorDialog("A game has already been loaded. Please close the emulator and try again");
+                GtkDialog.CreateDialog("Ryujinx", "A game has already been loaded", "Please close it first and try again.");
             }
             else
             {
@@ -295,10 +345,20 @@ namespace Ryujinx.Ui
 
                 _emulationContext = device;
 
+                _screenExitStatus.Reset();
+
 #if MACOS_BUILD
                 CreateGameWindow(device);
 #else
-                new Thread(() => CreateGameWindow(device)).Start();
+                var windowThread = new Thread(() =>
+                {
+                    CreateGameWindow(device);
+                })
+                {
+                    Name = "GUI.WindowThread"
+                };
+
+                windowThread.Start();
 #endif
 
                 _gameLoaded              = true;
@@ -333,6 +393,8 @@ namespace Ryujinx.Ui
 
             DiscordIntegrationModule.SwitchToMainMenu();
 
+            _screenExitStatus.Set();
+
             Application.Invoke(delegate
             {
                 _stopEmulation.Sensitive            = false;
@@ -357,6 +419,11 @@ namespace Ryujinx.Ui
 
         private void End(HLE.Switch device)
         {
+
+#if USE_DEBUGGING
+            _debugger.Dispose();
+#endif
+
             if (_ending)
             {
                 return;
@@ -367,12 +434,17 @@ namespace Ryujinx.Ui
             if (device != null)
             {
                 UpdateGameMetadata(device.System.TitleIdText);
+
+                if (_screen != null)
+                {
+                    _screen.Exit();
+                    _screenExitStatus.WaitOne();
+                }
             }
 
             Dispose();
 
             Profile.FinishProfiling();
-            device?.Dispose();
             DiscordIntegrationModule.Exit();
             Logger.Shutdown();
             Application.Quit();
@@ -419,9 +491,22 @@ namespace Ryujinx.Ui
                     args.AppData.FileExtension,
                     args.AppData.FileSize,
                     args.AppData.Path);
+            });
+        }
 
+        private void ApplicationCount_Updated(object sender, ApplicationCountUpdatedEventArgs args)
+        {
+            Application.Invoke(delegate
+            {
                 _progressLabel.Text = $"{args.NumAppsLoaded}/{args.NumAppsFound} Games Loaded";
-                _progressBar.Value  = (float)args.NumAppsLoaded / args.NumAppsFound;
+                float barValue      = 0;
+
+                if (args.NumAppsFound != 0)
+                {
+                    barValue = (float)args.NumAppsLoaded / args.NumAppsFound;
+                }
+
+                _progressBar.Value = barValue;
             });
         }
 
@@ -506,13 +591,11 @@ namespace Ryujinx.Ui
 
         private void Exit_Pressed(object sender, EventArgs args)
         {
-            _screen?.Exit();
             End(_emulationContext);
         }
 
         private void Window_Close(object sender, DeleteEventArgs args)
         {
-            _screen?.Exit();
             End(_emulationContext);
         }
 
@@ -825,9 +908,7 @@ namespace Ryujinx.Ui
 
         private void RefreshList_Pressed(object sender, ButtonReleaseEventArgs args)
         {
-#pragma warning disable CS4014
             UpdateGameTable();
-#pragma warning restore CS4014
         }
 
         private static int TimePlayedSort(ITreeModel model, TreeIter a, TreeIter b)

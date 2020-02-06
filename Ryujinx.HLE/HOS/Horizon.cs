@@ -107,6 +107,7 @@ namespace Ryujinx.HLE.HOS
         public Keyset KeySet => Device.FileSystem.KeySet;
 
         private bool _hasStarted;
+        private bool _isDisposed;
 
         public BlitStruct<ApplicationControlProperty> ControlData { get; set; }
 
@@ -617,19 +618,19 @@ namespace Ryujinx.HLE.HOS
                                     metaData.TitleName = nacp.Titles.ToArray().FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                                 }
 
-                                metaData.Aci0.TitleId = nacp.PresenceGroupId;
-
-                                if (metaData.Aci0.TitleId == 0)
+                                if (nacp.PresenceGroupId != 0)
+                                {
+                                    metaData.Aci0.TitleId = nacp.PresenceGroupId;
+                                }
+                                else if (nacp.SaveDataOwnerId.Value != 0)
                                 {
                                     metaData.Aci0.TitleId = nacp.SaveDataOwnerId.Value;
                                 }
-
-                                if (metaData.Aci0.TitleId == 0)
+                                else if (nacp.AddOnContentBaseId != 0)
                                 {
                                     metaData.Aci0.TitleId = nacp.AddOnContentBaseId - 0x1000;
                                 }
-
-                                if (metaData.Aci0.TitleId.ToString("x16") == "fffffffffffff000")
+                                else
                                 {
                                     metaData.Aci0.TitleId = 0000000000000000;
                                 }
@@ -669,8 +670,7 @@ namespace Ryujinx.HLE.HOS
         {
             Logger.PrintInfo(LogClass.Application, "Ensuring required savedata exists.");
 
-            UInt128 lastOpenedUser = State.Account.LastOpenedUser.UserId;
-            Uid user = new Uid((ulong)lastOpenedUser.Low, (ulong)lastOpenedUser.High);
+            Uid user = State.Account.LastOpenedUser.UserId.ToLibHacUid();
 
             ref ApplicationControlProperty control = ref ControlData.Value;
 
@@ -741,8 +741,10 @@ namespace Ryujinx.HLE.HOS
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!_isDisposed && disposing)
             {
+                _isDisposed = true;
+
                 KProcess terminationProcess = new KProcess(this);
 
                 KThread terminationThread = new KThread(this);
