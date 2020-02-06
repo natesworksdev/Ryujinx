@@ -43,8 +43,6 @@ namespace Ryujinx.Ui
                 Directory.CreateDirectory(localAppPath);
             }
 
-            string versionJsonFile = System.IO.Path.Combine(localAppPath, "Version.json");
-
             try
             {
                 _versionText.Text = "Version " + File.ReadAllText(versionJsonFile);
