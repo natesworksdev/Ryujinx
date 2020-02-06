@@ -393,7 +393,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             uint enableMask = _cpStorageBuffers.EnableMask;
 
-            for (int index = 0; (enableMask >> index) != 0; index++)
+            for (int index = 0; (enableMask >> index) != 0 && index < 32; index++)
             {
                 if ((enableMask & (1u << index)) == 0)
                 {
@@ -414,7 +414,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             enableMask = _cpUniformBuffers.EnableMask;
 
-            for (int index = 0; (enableMask >> index) != 0; index++)
+            for (int index = 0; (enableMask >> index) != 0 && index < 32; index++)
             {
                 if ((enableMask & (1u << index)) == 0)
                 {
@@ -467,7 +467,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 VertexBufferDescriptor[] vertexBuffers = new VertexBufferDescriptor[Constants.TotalVertexBuffers];
 
-                for (int index = 0; (vbEnableMask >> index) != 0; index++)
+                for (int index = 0; (vbEnableMask >> index) != 0 && index < 32; index++)
                 {
                     VertexBuffer vb = _vertexBuffers[index];
 
@@ -485,7 +485,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                for (int index = 0; (vbEnableMask >> index) != 0; index++)
+                for (int index = 0; (vbEnableMask >> index) != 0 && index < 32; index++)
                 {
                     VertexBuffer vb = _vertexBuffers[index];
 

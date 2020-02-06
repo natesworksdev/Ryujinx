@@ -77,7 +77,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 ulong sbDescAddress = BufferManager.GetComputeUniformBufferAddress(0);
 
-                int sbDescOffset = 0x310 + sb.Slot * 0x10;
+                int sbDescOffset = 0x210 + sb.Slot * 0x10;
 
                 sbDescAddress += (ulong)sbDescOffset;
 
