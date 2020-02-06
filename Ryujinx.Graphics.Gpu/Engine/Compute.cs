@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             TextureManager.SetComputeTextureBufferIndex(state.Get<int>(MethodOffset.TextureBufferIndex));
 
-            ShaderProgramInfo info = cs.Shader.Program.Info;
+            ShaderProgramInfo info = cs.Shader.Info;
 
             uint sbEnableMask = 0;
             uint ubEnableMask = 0;

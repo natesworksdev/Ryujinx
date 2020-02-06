@@ -1,4 +1,3 @@
-using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.IO;
 
@@ -9,11 +8,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class ShaderDumper
     {
+        private const int ShaderHeaderSize = 0x50;
+
         private string _runtimeDir;
         private string _dumpPath;
         private int    _dumpIndex;
-
-        public int CurrentDumpIndex => _dumpIndex;
 
         public ShaderDumper()
         {
@@ -29,6 +28,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="codePath">Output path for the shader code without header</param>
         public void Dump(ReadOnlySpan<byte> code, bool compute, out string fullPath, out string codePath)
         {
+            int headerSize = compute ? 0 : ShaderHeaderSize;
+
             _dumpPath = GraphicsConfig.ShadersDumpPath;
 
             if (string.IsNullOrWhiteSpace(_dumpPath))
@@ -45,8 +46,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             codePath = Path.Combine(CodeDir(), fileName);
 
             _dumpIndex++;
-
-            code = Translator.ExtractCode(code, compute, out int headerSize);
 
             using (MemoryStream stream = new MemoryStream(code.ToArray()))
             {
