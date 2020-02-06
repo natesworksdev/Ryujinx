@@ -19,6 +19,7 @@ namespace Ryujinx.Common.Logging
         ServiceAm,
         ServiceApm,
         ServiceAudio,
+        ServiceBcat,
         ServiceBsd,
         ServiceBtm,
         ServiceCaps,
@@ -45,7 +46,6 @@ namespace Ryujinx.Common.Logging
         ServiceSsl,
         ServiceSss,
         ServiceTime,
-        ServiceVi,
-        ServiceBcat
+        ServiceVi
     }
 }
