@@ -6,7 +6,6 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -17,17 +16,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class ShaderCache : IDisposable
     {
-        private const int MaxProgramSize = 0x100000;
+        private const int ShaderHeaderSize = 0x50;
 
         private const TranslationFlags DefaultFlags = TranslationFlags.DebugMode;
 
-        private GpuContext _context;
+        private readonly GpuContext _context;
 
-        private ShaderDumper _dumper;
+        private readonly ShaderMap<ComputeShader> _cpPrograms;
+        private readonly ShaderMap<GraphicsShader> _gpPrograms;
 
-        private Dictionary<ulong, List<ComputeShader>> _cpPrograms;
-
-        private Dictionary<ShaderAddresses, List<GraphicsShader>> _gpPrograms;
+        private readonly ShaderDumper _dumper;
 
         /// <summary>
         /// Creates a new instance of the shader cache.
@@ -37,11 +35,10 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             _context = context;
 
-            _dumper = new ShaderDumper();
+            _cpPrograms = new ShaderMap<ComputeShader>();
+            _gpPrograms = new ShaderMap<GraphicsShader>();
 
-            _cpPrograms = new Dictionary<ulong, List<ComputeShader>>();
-
-            _gpPrograms = new Dictionary<ShaderAddresses, List<GraphicsShader>>();
+            _dumper = new ShaderDumper();            
         }
 
         /// <summary>
@@ -65,202 +62,22 @@ namespace Ryujinx.Graphics.Gpu.Shader
             int localMemorySize,
             int sharedMemorySize)
         {
-            bool isCached = _cpPrograms.TryGetValue(gpuVa, out List<ComputeShader> list);
-
-            if (isCached)
-            {
-                foreach (ComputeShader cachedCpShader in list)
-                {
-                    if (!IsShaderDifferent(cachedCpShader, gpuVa))
-                    {
-                        return cachedCpShader;
-                    }
-                }
-            }
-
-            CachedShader shader = TranslateComputeShader(
-                gpuVa,
-                localSizeX,
-                localSizeY,
-                localSizeZ,
-                localMemorySize,
-                sharedMemorySize);
-
-            shader.HostShader = _context.Renderer.CompileShader(shader.Program);
-
-            IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader });
-
-            ComputeShader cpShader = new ComputeShader(hostProgram, shader);
-
-            if (!isCached)
-            {
-                list = new List<ComputeShader>();
-
-                _cpPrograms.Add(gpuVa, list);
-            }
-
-            list.Add(cpShader);
-
-            return cpShader;
-        }
-
-        /// <summary>
-        /// Gets a graphics shader program from the shader cache.
-        /// This includes all the specified shader stages.
-        /// </summary>
-        /// <remarks>
-        /// This automatically translates, compiles and adds the code to the cache if not present.
-        /// </remarks>
-        /// <param name="state">Current GPU state</param>
-        /// <param name="addresses">Addresses of the shaders for each stage</param>
-        /// <returns>Compiled graphics shader code</returns>
-        public GraphicsShader GetGraphicsShader(GpuState state, ShaderAddresses addresses)
-        {
-            bool isCached = _gpPrograms.TryGetValue(addresses, out List<GraphicsShader> list);
-
-            if (isCached)
-            {
-                foreach (GraphicsShader cachedGpShaders in list)
-                {
-                    if (!IsShaderDifferent(cachedGpShaders, addresses))
-                    {
-                        return cachedGpShaders;
-                    }
-                }
-            }
-
-            GraphicsShader gpShaders = new GraphicsShader();
-
-            if (addresses.VertexA != 0)
-            {
-                gpShaders.Shaders[0] = TranslateGraphicsShader(state, ShaderStage.Vertex, addresses.Vertex, addresses.VertexA);
-            }
-            else
-            {
-                gpShaders.Shaders[0] = TranslateGraphicsShader(state, ShaderStage.Vertex, addresses.Vertex);
-            }
-
-            gpShaders.Shaders[1] = TranslateGraphicsShader(state, ShaderStage.TessellationControl,    addresses.TessControl);
-            gpShaders.Shaders[2] = TranslateGraphicsShader(state, ShaderStage.TessellationEvaluation, addresses.TessEvaluation);
-            gpShaders.Shaders[3] = TranslateGraphicsShader(state, ShaderStage.Geometry,               addresses.Geometry);
-            gpShaders.Shaders[4] = TranslateGraphicsShader(state, ShaderStage.Fragment,               addresses.Fragment);
-
-            BackpropQualifiers(gpShaders);
-
-            List<IShader> hostShaders = new List<IShader>();
-
-            for (int stage = 0; stage < gpShaders.Shaders.Length; stage++)
-            {
-                ShaderProgram program = gpShaders.Shaders[stage]?.Program;
-
-                if (program == null)
-                {
-                    continue;
-                }
-
-                IShader hostShader = _context.Renderer.CompileShader(program);
-
-                gpShaders.Shaders[stage].HostShader = hostShader;
-
-                hostShaders.Add(hostShader);
-            }
-
-            gpShaders.HostProgram = _context.Renderer.CreateProgram(hostShaders.ToArray());
-
-            if (!isCached)
-            {
-                list = new List<GraphicsShader>();
-
-                _gpPrograms.Add(addresses, list);
-            }
-
-            list.Add(gpShaders);
-
-            return gpShaders;
-        }
-
-        /// <summary>
-        /// Checks if compute shader code in memory is different from the cached shader.
-        /// </summary>
-        /// <param name="cpShader">Cached compute shader</param>
-        /// <param name="gpuVa">GPU virtual address of the shader code in memory</param>
-        /// <returns>True if the code is different, false otherwise</returns>
-        private bool IsShaderDifferent(ComputeShader cpShader, ulong gpuVa)
-        {
-            return IsShaderDifferent(cpShader.Shader, gpuVa);
-        }
-
-        /// <summary>
-        /// Checks if graphics shader code from all stages in memory is different from the cached shaders.
-        /// </summary>
-        /// <param name="gpShaders">Cached graphics shaders</param>
-        /// <param name="addresses">GPU virtual addresses of all enabled shader stages</param>
-        /// <returns>True if the code is different, false otherwise</returns>
-        private bool IsShaderDifferent(GraphicsShader gpShaders, ShaderAddresses addresses)
-        {
-            for (int stage = 0; stage < gpShaders.Shaders.Length; stage++)
-            {
-                CachedShader shader = gpShaders.Shaders[stage];
-
-                ulong gpuVa = 0;
-
-                switch (stage)
-                {
-                    case 0: gpuVa = addresses.Vertex;         break;
-                    case 1: gpuVa = addresses.TessControl;    break;
-                    case 2: gpuVa = addresses.TessEvaluation; break;
-                    case 3: gpuVa = addresses.Geometry;       break;
-                    case 4: gpuVa = addresses.Fragment;       break;
-                }
-
-                if (IsShaderDifferent(shader, gpuVa))
-                {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
-        /// <summary>
-        /// Checks if the code of the specified cached shader is different from the code in memory.
-        /// </summary>
-        /// <param name="shader">Cached shader to compare with</param>
-        /// <param name="gpuVa">GPU virtual address of the binary shader code</param>
-        /// <returns>True if the code is different, false otherwise</returns>
-        private bool IsShaderDifferent(CachedShader shader, ulong gpuVa)
-        {
-            if (shader == null)
-            {
-                return false;
-            }
-
-            ReadOnlySpan<byte> memoryCode = _context.MemoryAccessor.GetSpan(gpuVa, (ulong)shader.Code.Length * 4);
-
-            return !MemoryMarshal.Cast<byte, int>(memoryCode).SequenceEqual(shader.Code);
-        }
-
-        /// <summary>
-        /// Translates the binary Maxwell shader code to something that the host API accepts.
-        /// </summary>
-        /// <param name="gpuVa">GPU virtual address of the binary shader code</param>
-        /// <param name="localSizeX">Local group size X of the computer shader</param>
-        /// <param name="localSizeY">Local group size Y of the computer shader</param>
-        /// <param name="localSizeZ">Local group size Z of the computer shader</param>
-        /// <param name="localMemorySize">Local memory size of the compute shader</param>
-        /// <param name="sharedMemorySize">Shared memory size of the compute shader</param>
-        /// <returns>Compiled compute shader code</returns>
-        private CachedShader TranslateComputeShader(
-            ulong gpuVa,
-            int localSizeX,
-            int localSizeY,
-            int localSizeZ,
-            int localMemorySize,
-            int sharedMemorySize)
-        {
             if (gpuVa == 0)
             {
                 return null;
+            }
+
+            ShaderPack pack = new ShaderPack();
+
+            ReadOnlySpan<byte> code = GetShaderCodeHeaderless(gpuVa);
+
+            pack.Add(code);
+
+            ComputeShader cs = _cpPrograms.Get(pack, out int hash);
+
+            if (cs != null)
+            {
+                return cs;
             }
 
             int QueryInfo(QueryInfoName info, int index)
@@ -280,13 +97,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             ShaderProgram program;
 
-            ReadOnlySpan<byte> code = _context.MemoryAccessor.GetSpan(gpuVa, MaxProgramSize);
+            _dumper.Dump(code, compute: true, out string fullPath, out string codePath);
 
             program = Translator.Translate(code, callbacks, DefaultFlags | TranslationFlags.Compute);
-
-            int[] codeCached = MemoryMarshal.Cast<byte, int>(code.Slice(0, program.Size)).ToArray();
-
-            _dumper.Dump(code, compute: true, out string fullPath, out string codePath);
 
             if (fullPath != null && codePath != null)
             {
@@ -294,7 +107,98 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 program.Prepend("// " + fullPath);
             }
 
-            return new CachedShader(program, codeCached);
+            IShader shader = _context.Renderer.CompileShader(program);
+
+            cs = new ComputeShader(_context.Renderer.CreateProgram(new IShader[] { shader }), program);
+
+            _cpPrograms.Add(hash, cs, pack);
+
+            return cs;
+        }
+
+        /// <summary>
+        /// Gets a graphics shader program from the shader cache.
+        /// This includes all the specified shader stages.
+        /// </summary>
+        /// <remarks>
+        /// This automatically translates, compiles and adds the code to the cache if not present.
+        /// </remarks>
+        /// <param name="state">Current GPU state</param>
+        /// <param name="addresses">Addresses of the shaders for each stage</param>
+        /// <returns>Compiled graphics shader code</returns>
+        public GraphicsShader GetGraphicsShader(GpuState state, ShaderAddresses addresses)
+        {
+            ShaderPack pack = new ShaderPack();
+
+            if (addresses.Vertex != 0)
+            {
+                pack.Add(GetShaderCode(addresses.Vertex));
+            }
+
+            if (addresses.TessControl != 0)
+            {
+                pack.Add(GetShaderCode(addresses.TessControl));
+            }
+
+            if (addresses.TessEvaluation != 0)
+            {
+                pack.Add(GetShaderCode(addresses.TessEvaluation));
+            }
+
+            if (addresses.Geometry != 0)
+            {
+                pack.Add(GetShaderCode(addresses.Geometry));
+            }
+
+            if (addresses.Fragment != 0)
+            {
+                pack.Add(GetShaderCode(addresses.Fragment));
+            }
+
+            GraphicsShader gs = _gpPrograms.Get(pack, out int hash);
+
+            if (gs != null)
+            {
+                return gs;
+            }
+
+            gs = new GraphicsShader();
+
+            if (addresses.VertexA != 0)
+            {
+                gs.Shaders[0] = TranslateGraphicsShader(state, ShaderStage.Vertex, addresses.Vertex, addresses.VertexA);
+            }
+            else
+            {
+                gs.Shaders[0] = TranslateGraphicsShader(state, ShaderStage.Vertex, addresses.Vertex);
+            }
+
+            gs.Shaders[1] = TranslateGraphicsShader(state, ShaderStage.TessellationControl,    addresses.TessControl);
+            gs.Shaders[2] = TranslateGraphicsShader(state, ShaderStage.TessellationEvaluation, addresses.TessEvaluation);
+            gs.Shaders[3] = TranslateGraphicsShader(state, ShaderStage.Geometry,               addresses.Geometry);
+            gs.Shaders[4] = TranslateGraphicsShader(state, ShaderStage.Fragment,               addresses.Fragment);
+
+            BackpropQualifiers(gs);
+
+            List<IShader> shaders = new List<IShader>();
+
+            for (int stage = 0; stage < gs.Shaders.Length; stage++)
+            {
+                ShaderProgram program = gs.Shaders[stage];
+
+                if (program == null)
+                {
+                    continue;
+                }
+
+                shaders.Add(_context.Renderer.CompileShader(program));
+            }
+
+            gs.HostProgram = _context.Renderer.CreateProgram(shaders.ToArray());
+
+            _gpPrograms.Add(hash, gs, pack);
+
+            return gs;
         }
 
         /// <summary>
@@ -308,7 +212,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <param name="gpuVa">GPU virtual address of the shader code</param>
         /// <param name="gpuVaA">Optional GPU virtual address of the "Vertex A" shader code</param>
         /// <returns>Compiled graphics shader code</returns>
-        private CachedShader TranslateGraphicsShader(GpuState state, ShaderStage stage, ulong gpuVa, ulong gpuVaA = 0)
+        private ShaderProgram TranslateGraphicsShader(GpuState state, ShaderStage stage, ulong gpuVa, ulong gpuVaA = 0)
         {
             if (gpuVa == 0)
             {
@@ -330,36 +234,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             ShaderProgram program;
 
-            int[] codeCached = null;
-
             if (gpuVaA != 0)
             {
-                ReadOnlySpan<byte> codeA = _context.MemoryAccessor.GetSpan(gpuVaA, MaxProgramSize);
-                ReadOnlySpan<byte> codeB = _context.MemoryAccessor.GetSpan(gpuVa,  MaxProgramSize);
-
-                program = Translator.Translate(codeA, codeB, callbacks, DefaultFlags);
-
-                // TODO: We should also take "codeA" into account.
-                codeCached = MemoryMarshal.Cast<byte, int>(codeB.Slice(0, program.Size)).ToArray();
-
-                _dumper.Dump(codeA, compute: false, out string fullPathA, out string codePathA);
-                _dumper.Dump(codeB, compute: false, out string fullPathB, out string codePathB);
-
-                if (fullPathA != null && fullPathB != null && codePathA != null && codePathB != null)
-                {
-                    program.Prepend("// " + codePathB);
-                    program.Prepend("// " + fullPathB);
-                    program.Prepend("// " + codePathA);
-                    program.Prepend("// " + fullPathA);
-                }
+                // TODO.
+                program = null;
             }
             else
             {
-                ReadOnlySpan<byte> code = _context.MemoryAccessor.GetSpan(gpuVa, MaxProgramSize);
+                ReadOnlySpan<byte> code = GetShaderCode(gpuVa);
 
                 program = Translator.Translate(code, callbacks, DefaultFlags);
-
-                codeCached = MemoryMarshal.Cast<byte, int>(code.Slice(0, program.Size)).ToArray();
 
                 _dumper.Dump(code, compute: false, out string fullPath, out string codePath);
 
@@ -370,9 +254,34 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 }
             }
 
-            ulong address = _context.MemoryManager.Translate(gpuVa);
+            return program;
+        }
 
-            return new CachedShader(program, codeCached);
+        private ReadOnlySpan<byte> GetShaderCode(ulong gpuVa)
+        {
+            return GetShaderCodeImpl(gpuVa, ShaderHeaderSize);
+        }
+
+        private ReadOnlySpan<byte> GetShaderCodeHeaderless(ulong gpuVa)
+        {
+            return GetShaderCodeImpl(gpuVa, 0);
+        }
+
+        private ReadOnlySpan<byte> GetShaderCodeImpl(ulong gpuVa, ulong size)
+        {
+            while (true)
+            {
+                ulong op = _context.MemoryAccessor.Read<ulong>(gpuVa + size);
+
+                size += sizeof(ulong);
+
+                if (op == 0x50b0000000070f00 || op == 0)
+                {
+                    break;
+                }
+            }
+
+            return _context.MemoryAccessor.GetSpan(gpuVa, size);
         }
 
         /// <summary>
@@ -380,16 +289,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// to ealier shader stages output.
         /// This is required by older versions of OpenGL (pre-4.3).
         /// </summary>
-        /// <param name="program">Graphics shader cached code</param>
-        private void BackpropQualifiers(GraphicsShader program)
+        /// <param name="gs">Graphics shader cached code</param>
+        private void BackpropQualifiers(GraphicsShader gs)
         {
-            ShaderProgram fragmentShader = program.Shaders[4]?.Program;
+            ShaderProgram fragmentShader = gs.Shaders[4];
 
             bool isFirst = true;
 
             for (int stage = 3; stage >= 0; stage--)
             {
-                if (program.Shaders[stage] == null)
+                if (gs.Shaders[stage] == null)
                 {
                     continue;
                 }
@@ -402,11 +311,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     if (isFirst && !string.IsNullOrEmpty(iq))
                     {
-                        program.Shaders[stage].Program.Replace($"{DefineNames.OutQualifierPrefixName}{attr}", iq);
+                        gs.Shaders[stage].Replace($"{DefineNames.OutQualifierPrefixName}{attr}", iq);
                     }
                     else
                     {
-                        program.Shaders[stage].Program.Replace($"{DefineNames.OutQualifierPrefixName}{attr} ", string.Empty);
+                        gs.Shaders[stage].Replace($"{DefineNames.OutQualifierPrefixName}{attr} ", string.Empty);
                     }
                 }
 
@@ -473,8 +382,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             TextureTarget target = descriptor.UnpackTextureTarget();
 
-            bool is2DTexture = target == TextureTarget.Texture2D ||
-                               target == TextureTarget.Texture2DRect;
+            bool is2DTexture = target == TextureTarget.Texture2D || target == TextureTarget.Texture2DRect;
 
             return !descriptor.UnpackTextureCoordNormalized() && is2DTexture;
         }
@@ -521,26 +429,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         public void Dispose()
         {
-            foreach (List<ComputeShader> list in _cpPrograms.Values)
+            foreach (ComputeShader shader in _cpPrograms)
             {
-                foreach (ComputeShader shader in list)
-                {
-                    shader.HostProgram.Dispose();
-                    shader.Shader?.HostShader.Dispose();
-                }
+                shader.HostProgram.Dispose();
             }
-
-            foreach (List<GraphicsShader> list in _gpPrograms.Values)
+ 
+            foreach (GraphicsShader shader in _gpPrograms)
             {
-                foreach (GraphicsShader shader in list)
-                {
-                    shader.HostProgram.Dispose();
-
-                    foreach (CachedShader cachedShader in shader.Shaders)
-                    {
-                        cachedShader?.HostShader.Dispose();
-                    }
-                }
+                shader.HostProgram.Dispose();
             }
         }
     }

@@ -35,13 +35,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// This reads as much data as possible, up to the specified maximum size.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address where the data is located</param>
-        /// <param name="maxSize">Maximum size of the data</param>
+        /// <param name="size">Size of the data</param>
         /// <returns>The span of the data at the specified memory location</returns>
-        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, ulong maxSize)
+        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, ulong size)
         {
             ulong processVa = _context.MemoryManager.Translate(gpuVa);
-
-            ulong size = _context.MemoryManager.GetSubSize(gpuVa, maxSize);
 
             return _context.PhysicalMemory.GetSpan(processVa, size);
         }
@@ -86,7 +84,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Reads a 8-bits unsigned integer from GPU mapped memory.
+        /// Writes a 8-bits unsigned integer from GPU mapped memory.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address where the value is located</param>
         /// <param name="value">The value to be written</param>

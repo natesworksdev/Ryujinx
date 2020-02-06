@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Shader;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -15,14 +16,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Cached shader.
         /// </summary>
-        public CachedShader Shader { get; }
+        public ShaderProgram Shader { get; }
 
         /// <summary>
         /// Creates a new instance of the compute shader.
         /// </summary>
         /// <param name="hostProgram">Host shader program</param>
         /// <param name="shader">Cached shader</param>
-        public ComputeShader(IProgram hostProgram, CachedShader shader)
+        public ComputeShader(IProgram hostProgram, ShaderProgram shader)
         {
             HostProgram = hostProgram;
             Shader      = shader;
