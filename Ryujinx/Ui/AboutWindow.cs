@@ -49,14 +49,11 @@ namespace Ryujinx.Ui
                 string currentVersionJson;
                 string currentVersionBranch;
                 string currentVersionPr;
-<<<<<<< Updated upstream
-=======
                 var VersionJSON = JObject.Parse(File.ReadAllText(System.IO.Path.Combine(Environment.CurrentDirectory, "Version.json")));
                 var _JRoot = VersionJSON[""];
                 currentVersionJson = (string)_JRoot["BuildVer"];
                 currentVersionPr = (string)_JRoot["BuildPR"];
                 currentVersionBranch = (string)_JRoot["BuildBranch"];
->>>>>>> Stashed changes
 
                 JObject VersionJSON = JObject.Parse(File.ReadAllText(System.IO.Path.Combine(Environment.CurrentDirectory, "Version.json")));
 
