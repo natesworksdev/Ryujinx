@@ -66,23 +66,24 @@ namespace Ryujinx
 
                 // Get Version.json to compare versions
 
-                if (File.Exists(Path.Combine(localAppPath, "Version.json")))
+                if (File.Exists(Path.Combine(Environment.CurrentDirectory, "Version.json")))
                 {
                     try
                     {
                         string currentVersionJson;
                         string currentVersionBranch;
                         string currentVersionPr;
-                        var VersionJSON = JObject.Parse(Path.Combine(Environment.CurrentDirectory, "Version.json"));
-                        var _JRoot = VersionJSON[0];
-                        currentVersionJson = (string)_JRoot["BuildVer"];
-                        currentVersionPr = (string)_JRoot["BuildPR"];
-                        currentVersionBranch = (string)_JRoot["BuildBranch"];
-                        
+
+                        JObject VersionJSON = JObject.Parse(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Version.json")));
+
+                        currentVersionJson = (string)VersionJSON["BuildVer"];
+                        currentVersionPr = (string)VersionJSON["BuildPR"];
+                        currentVersionBranch = (string)VersionJSON["BuildBranch"];
+
                         Version newVersion = Version.Parse(_buildVer);
                         Version currentVersion = Version.Parse(currentVersionJson);
 
-                        if (newVersion.CompareTo(currentVersion) > 0)
+                        if (newVersion < currentVersion)
                         {
                             GtkDialog.CreateInfoDialog("Update", "Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
 
