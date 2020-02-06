@@ -34,8 +34,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Texture", 
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Shader", "Ryujinx.Graphics.Shader\Ryujinx.Graphics.Shader.csproj", "{03B955CD-AD84-4B93-AAA7-BF17923BBAA5}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Nvdec", "Ryujinx.Graphics.Nvdec\Ryujinx.Graphics.Nvdec.csproj", "{85A0FA56-DC01-4A42-8808-70DAC76BD66D}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Updater", "Ryujinx.Updater\Ryujinx.Updater.csproj", "{529E361C-FEF5-4C07-A2F4-3351C45CADDD}"
 EndProject
 Global
