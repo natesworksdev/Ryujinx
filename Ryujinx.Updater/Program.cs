@@ -56,8 +56,6 @@ namespace Ryujinx.Updater
                 return;
             }
 
-            //Write version comparison logic here
-            
             Console.WriteLine($"Updating Ryujinx... | {File.ReadAllText(Path.Combine(localAppPath, "Version.json"))} -> {args[1]}");
 
             File.WriteAllText(Path.Combine(localAppPath, "Version.json"), args[1]);

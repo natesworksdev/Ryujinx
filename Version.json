@@ -1,4 +1,5 @@
 {
     "BuildVer":"_ver",
-    "BuildCommit":"_commit"
+    "BuildPr":"_pr",
+    "BuildBranch":"_branch"
 }

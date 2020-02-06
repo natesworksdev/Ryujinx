@@ -70,9 +70,12 @@ namespace Ryujinx
                 {
                     try
                     {
+                        var VersionJSON = JObject.Parse(Path.Combine(Environment.CurrentDirectory, "Version.json"));
+                        (string)currentVersionJson = (string)_VersionJSON["BuildVer"];
+                        (string)currentVersionPr = (string)_VersionJSON["BuildPR"];
+                        (string)currentVersionBranch = (string)_VersionJSON["BuildBranch"];
+                        
                         Version newVersion = Version.Parse(_buildVer);
-
-                        string currentVersionJson = File.ReadAllLines(Path.Combine(localAppPath, "Version.json"))[0];
                         Version currentVersion = Version.Parse(currentVersionJson);
 
                         if (newVersion.CompareTo(currentVersion) == 0)
