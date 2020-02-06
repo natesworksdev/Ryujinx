@@ -55,7 +55,7 @@ namespace Ryujinx.Ui
                 currentVersionPr = (string)_JRoot["BuildPR"];
                 currentVersionBranch = (string)_JRoot["BuildBranch"];
 
-                _versionText.Text = "Version " + File.ReadAllText(currentVersionJson + " - Branch " + currentVersionBranch + " - PR ID " + currentVersionPr);
+                _versionText.Text = "Version " + currentVersionJson + " - Branch " + currentVersionBranch + " - PR ID " + currentVersionPr;
             }
             catch
             {
