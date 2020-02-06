@@ -56,12 +56,8 @@ namespace Ryujinx.Updater
                 return;
             }
 
-            if (!File.Exists(Path.Combine(localAppPath, "Version.json")))
-            {
-                File.Create(Path.Combine(localAppPath, "Version.json")).Close();
-                File.WriteAllText(Path.Combine(localAppPath, "Version.json"), "Unknown Version");
-            }
-
+            //Write version comparison logic here
+            
             Console.WriteLine($"Updating Ryujinx... | {File.ReadAllText(Path.Combine(localAppPath, "Version.json"))} -> {args[1]}");
 
             File.WriteAllText(Path.Combine(localAppPath, "Version.json"), args[1]);
