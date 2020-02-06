@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// Maximum number of compute storage buffers (this is an API limitation).
         /// </summary>
-        public const int TotalCpStorageBuffers = 16;
+        public const int TotalCpStorageBuffers = 32;
 
         /// <summary>
         /// Maximum number of graphics uniform buffers.
