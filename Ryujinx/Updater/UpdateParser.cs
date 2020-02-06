@@ -82,7 +82,7 @@ namespace Ryujinx
                         Version newVersion = Version.Parse(_buildVer);
                         Version currentVersion = Version.Parse(currentVersionJson);
 
-                        if (newVersion.CompareTo(currentVersion) == 0)
+                        if (newVersion.CompareTo(currentVersion) > 0)
                         {
                             GtkDialog.CreateInfoDialog("Update", "Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
 
