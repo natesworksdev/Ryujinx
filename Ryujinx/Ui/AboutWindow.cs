@@ -45,7 +45,16 @@ namespace Ryujinx.Ui
 
             try
             {
-                _versionText.Text = "Version " + File.ReadAllText(versionJsonFile);
+                string currentVersionJson;
+                string currentVersionBranch;
+                string currentVersionPr;
+                var VersionJSON = JObject.Parse(Path.Combine(Environment.CurrentDirectory, "Version.json"));
+                var _JRoot = VersionJSON[0];
+                currentVersionJson = (string)_JRoot["BuildVer"];
+                currentVersionPr = (string)_JRoot["BuildPR"];
+                currentVersionBranch = (string)_JRoot["BuildBranch"];
+
+                _versionText.Text = "Version " + File.ReadAllText(currentVersionJson + " - Branch " + currentVersionBranch + " - PR ID " + currentVersionPr);
             }
             catch
             {
