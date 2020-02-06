@@ -1,4 +1,5 @@
 ﻿using Gtk;
+using Newtonsoft.Json.Linq;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -48,7 +49,7 @@ namespace Ryujinx.Ui
                 string currentVersionJson;
                 string currentVersionBranch;
                 string currentVersionPr;
-                var VersionJSON = JObject.Parse(Path.Combine(Environment.CurrentDirectory, "Version.json"));
+                var VersionJSON = JObject.Parse(System.IO.Path.Combine(Environment.CurrentDirectory, "Version.json"));
                 var _JRoot = VersionJSON[0];
                 currentVersionJson = (string)_JRoot["BuildVer"];
                 currentVersionPr = (string)_JRoot["BuildPR"];
