@@ -154,7 +154,7 @@ namespace Ryujinx.Ui
         {
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to extract into", null, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Extract", ResponseType.Accept);
             
-            int response       = fileChooser.Run();
+            int    response    = fileChooser.Run();
             string destination = fileChooser.Filename;
             
             fileChooser.Dispose();
@@ -246,7 +246,7 @@ namespace Ryujinx.Ui
                         int index = Nca.GetSectionIndexFromType(ncaSectionType, mainNca.Header.ContentType);
 
                         IFileSystem ncaFileSystem = patchNca != null ? mainNca.OpenFileSystemWithPatch(patchNca, index, IntegrityCheckLevel.ErrorOnInvalid)
-                            : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
+                                                                     : mainNca.OpenFileSystem(index, IntegrityCheckLevel.ErrorOnInvalid);
 
                         FileSystemClient fsClient = _virtualFileSystem.FsClient;
 
@@ -285,6 +285,7 @@ namespace Ryujinx.Ui
                                     SecondaryText  = "Extraction has completed successfully.",
                                     WindowPosition = WindowPosition.Center
                                 };
+
                                 dialog.Run();
                                 dialog.Dispose();
                             });
@@ -294,6 +295,7 @@ namespace Ryujinx.Ui
                         fsClient.Unmount(output);
                     }
                 });
+
                 extractorThread.Name         = "GUI.NcaSectionExtractorThread";
                 extractorThread.IsBackground = true;
                 extractorThread.Start();
