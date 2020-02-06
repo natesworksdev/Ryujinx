@@ -7,9 +7,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         private const int StorageDescsBaseOffset = 0x44; // In words.
 
         public const int StorageDescSize = 4; // In words.
-        public const int StorageMaxCount = 16;
+        private const int StorageMaxCount = 16;
 
-        public const int StorageDescsSize = StorageDescSize * StorageMaxCount;
+        private const int StorageDescsSize = StorageDescSize * StorageMaxCount;
 
         public static bool UsesGlobalMemory(Instruction inst)
         {
@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         {
             switch (stage)
             {
-                case ShaderStage.Compute:                return StorageDescsBaseOffset + 2 * StorageDescsSize;
+                case ShaderStage.Compute:                return StorageDescsBaseOffset + 1 * StorageDescsSize;
                 case ShaderStage.Vertex:                 return StorageDescsBaseOffset;
                 case ShaderStage.TessellationControl:    return StorageDescsBaseOffset + 1 * StorageDescsSize;
                 case ShaderStage.TessellationEvaluation: return StorageDescsBaseOffset + 2 * StorageDescsSize;
@@ -41,6 +41,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return 0;
+        }
+
+        public static int GetStorageDescriptorsSize(ShaderStage stage)
+        {
+            return GetStorageMaxCount(stage) * StorageDescSize;
+        }
+
+        public static int GetStorageMaxCount(ShaderStage stage)
+        {
+            return stage == ShaderStage.Compute ? 32 : 16;
         }
     }
 }

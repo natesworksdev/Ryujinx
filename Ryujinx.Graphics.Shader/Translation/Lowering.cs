@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             Operand sbBaseAddrLow = Const(0);
             Operand sbSlot        = Const(0);
 
-            for (int slot = 0; slot < StorageMaxCount; slot++)
+            for (int slot = 0; slot < GetStorageMaxCount(config.Stage); slot++)
             {
                 int cbOffset = GetStorageCbOffset(config.Stage, slot);
 

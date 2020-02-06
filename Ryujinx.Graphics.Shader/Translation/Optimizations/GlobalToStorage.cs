@@ -12,7 +12,7 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
         {
             int sbStart = GetStorageBaseCbOffset(config.Stage);
 
-            int sbEnd = sbStart + StorageDescsSize;
+            int sbEnd = sbStart + GetStorageDescriptorsSize(config.Stage);
 
             for (LinkedListNode<INode> node = block.Operations.First; node != null; node = node.Next)
             {

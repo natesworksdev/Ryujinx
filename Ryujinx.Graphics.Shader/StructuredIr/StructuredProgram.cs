@@ -81,7 +81,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 }
                 else if (UsesStorage(inst))
                 {
-                    AddSBufferUse(context.Info.SBuffers, operation);
+                    AddSBufferUse(context.Info.SBuffers, operation, context.Config.Stage);
                 }
 
                 AstAssignment assignment;
@@ -160,7 +160,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             {
                 if (UsesStorage(inst))
                 {
-                    AddSBufferUse(context.Info.SBuffers, operation);
+                    AddSBufferUse(context.Info.SBuffers, operation, context.Config.Stage);
                 }
 
                 context.AddNode(new AstOperation(inst, operation.Index, sources));
@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             }
         }
 
-        private static void AddSBufferUse(HashSet<int> sBuffers, Operation operation)
+        private static void AddSBufferUse(HashSet<int> sBuffers, Operation operation, ShaderStage stage)
         {
             Operand slot = operation.GetSource(0);
 
@@ -208,7 +208,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                 // If the value is not constant, then we don't know
                 // how many storage buffers are used, so we assume
                 // all of them are used.
-                for (int index = 0; index < GlobalMemory.StorageMaxCount; index++)
+                for (int index = 0; index < GlobalMemory.GetStorageMaxCount(stage); index++)
                 {
                     sBuffers.Add(index);
                 }
