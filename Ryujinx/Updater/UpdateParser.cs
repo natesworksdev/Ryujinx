@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
@@ -46,6 +47,13 @@ namespace Ryujinx
                         _platformExt = "linux_x64.tar.gz";
                     }
                 }
+                else
+                {
+                    Logger.PrintError(LogClass.Application, $"You are using an operating system architecture ({RuntimeInformation.ProcessArchitecture.ToString()}) not compatible with Ryujinx.");
+                    GtkDialog.CreateErrorDialog($"You are using an operating system architecture ({RuntimeInformation.ProcessArchitecture.ToString()}) not compatible with Ryujinx.");
+
+                    return;
+                }
 
                 // Begin the Appveyor parsing
 
@@ -64,36 +72,16 @@ namespace Ryujinx
                     Directory.CreateDirectory(localAppPath);
                 }
 
-                // Get Version.json to compare versions
+                // Get Version from app.config to compare versions
 
-                if (File.Exists(Path.Combine(Environment.CurrentDirectory, "Version.json")))
+                Version newVersion = Version.Parse(_buildVer);
+                Version currentVersion = Version.Parse(ConfigurationManager.AppSettings["Version"]);
+
+                if (newVersion < currentVersion)
                 {
-                    try
-                    {
-                        string currentVersionJson;
-                        string currentVersionBranch;
-                        string currentVersionPr;
+                    GtkDialog.CreateInfoDialog("Update", "Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
 
-                        JObject VersionJSON = JObject.Parse(File.ReadAllText(Path.Combine(Environment.CurrentDirectory, "Version.json")));
-
-                        currentVersionJson = (string)VersionJSON["BuildVer"];
-                        currentVersionPr = (string)VersionJSON["BuildPR"];
-                        currentVersionBranch = (string)VersionJSON["BuildBranch"];
-
-                        Version newVersion = Version.Parse(_buildVer);
-                        Version currentVersion = Version.Parse(currentVersionJson);
-
-                        if (newVersion < currentVersion)
-                        {
-                            GtkDialog.CreateInfoDialog("Update", "Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
-
-                            return;
-                        }
-                    }
-                    catch
-                    {
-
-                    }
+                    return;
                 }
 
                 // Show a message asking the user if they want to update

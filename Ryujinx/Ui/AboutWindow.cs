@@ -1,6 +1,7 @@
 ﻿using Gtk;
 using Newtonsoft.Json.Linq;
 using System;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -44,21 +45,15 @@ namespace Ryujinx.Ui
                 Directory.CreateDirectory(localAppPath);
             }
 
-            try
+            if (ConfigurationManager.AppSettings["Version"] != "__ver__")
             {
-                string currentVersionJson;
-                string currentVersionBranch;
-                string currentVersionPr;
+                string currentVersion = ConfigurationManager.AppSettings["Version"];
+                string currentVersionBranch = ConfigurationManager.AppSettings["Branch"];
+                string currentVersionPr = ConfigurationManager.AppSettings["PrID"];
 
-                JObject VersionJSON = JObject.Parse(File.ReadAllText(System.IO.Path.Combine(Environment.CurrentDirectory, "Version.json")));
-
-                currentVersionJson = (string)VersionJSON["BuildVer"];
-                currentVersionPr = (string)VersionJSON["BuildPr"];
-                currentVersionBranch = (string)VersionJSON["BuildBranch"];
-
-                _versionText.Text = "Version - " + currentVersionJson + Environment.NewLine + "Branch - " + currentVersionBranch + Environment.NewLine + "PR ID - #" + currentVersionPr;
+                _versionText.Text = "Version - " + currentVersion + Environment.NewLine + "Branch - " + currentVersionBranch + Environment.NewLine + "PR ID - #" + currentVersionPr;
             }
-            catch
+            else
             {
                 _versionText.Text = "Unknown Version";
             }

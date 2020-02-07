@@ -1,8 +1,10 @@
+using ICSharpCode.SharpZipLib.Tar;
 using System;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Updater
 {
@@ -28,9 +30,11 @@ namespace Ryujinx.Updater
                         Directory.CreateDirectory(Path.Combine(dest, dirName));
                     }
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    File.Create(Path.Combine(ryuDir, "UpdaterLog.txt")).Close();
+                    File.WriteAllText(Path.Combine(ryuDir, "UpdaterLog.txt"), ex.Message);
+                    Environment.Exit(0);
                 }
 
                 MoveAllFilesOver(directory, Path.Combine(dest, dirName));
@@ -42,9 +46,11 @@ namespace Ryujinx.Updater
                 {
                     File.Move(file, Path.Combine(dest, Path.GetFileName(file)), true);
                 }
-                catch
+                catch (Exception ex)
                 {
-
+                    File.Create(Path.Combine(ryuDir, "UpdaterLog.txt")).Close();
+                    File.WriteAllText(Path.Combine(ryuDir, "UpdaterLog.txt"), ex.Message);
+                    Environment.Exit(0);
                 }
             }
         }
@@ -91,7 +97,19 @@ namespace Ryujinx.Updater
 
             Console.WriteLine($"Extracting Ryujinx package...");
 
-            ZipFile.ExtractToDirectory(updateSaveLocation, localAppPath, true);
+            using (FileStream SourceStream = File.Open(updateSaveLocation, FileMode.Open))
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    TarArchive tarArchive = TarArchive.CreateInputTarArchive(SourceStream);
+                    tarArchive.ExtractContents(localAppPath);
+                }
+                else
+                {
+                    ZipArchive zipArchive = new ZipArchive(SourceStream);
+                    zipArchive.ExtractToDirectory(localAppPath);
+                }
+            }
 
             // Copy new files over to Ryujinx folder
 
