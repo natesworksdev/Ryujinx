@@ -22,6 +22,8 @@ namespace Ryujinx.Ui
 {
     public class GameTableContextMenu : Menu
     {
+        public static Result OperationCancelled = new Result(468, 1357);
+
         private ListStore         _gameTableStore;
         private TreeIter          _rowIter;
         private VirtualFileSystem _virtualFileSystem;
@@ -250,8 +252,8 @@ namespace Ryujinx.Ui
 
                         FileSystemClient fsClient = _virtualFileSystem.FsClient;
 
-                        string source = new Random().Next(0, 999999999).ToString();
-                        string output = new Random().Next(0, 999999999).ToString();
+                        string source = DateTime.Now.ToFileTime().ToString().Substring(10);
+                        string output = DateTime.Now.ToFileTime().ToString().Substring(10);
 
                         fsClient.Register(source.ToU8Span(), ncaFileSystem);
                         fsClient.Register(output.ToU8Span(), new LocalFileSystem(destination));
@@ -260,7 +262,7 @@ namespace Ryujinx.Ui
 
                         if (resultCode.IsFailure())
                         {
-                            if (resultCode.ErrorCode != "2468-1357")
+                            if (resultCode != OperationCancelled)
                             {
                                 Logger.PrintError(LogClass.Application, $"LibHac returned error code: {resultCode.ErrorCode}");
 
@@ -311,8 +313,11 @@ namespace Ryujinx.Ui
             {
                 foreach (DirectoryEntryEx entry in fs.EnumerateEntries(sourcePath, "*", SearchOptions.Default))
                 {
-                    if (_cancel) return new Result(468, 1357);
-                    
+                    if (_cancel)
+                    {
+                        return OperationCancelled;
+                    }
+
                     string subSrcPath = PathTools.Normalize(PathTools.Combine(sourcePath, entry.Name));
                     string subDstPath = PathTools.Normalize(PathTools.Combine(destPath, entry.Name));
 
