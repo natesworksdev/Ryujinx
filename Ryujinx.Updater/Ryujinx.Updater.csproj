@@ -19,5 +19,9 @@
     <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
       <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     </PropertyGroup>
+  
+    <ItemGroup>
+      <PackageReference Include="SharpZipLib" Version="1.2.0" />
+    </ItemGroup>
 
 </Project>

@@ -4,6 +4,7 @@ using Ryujinx.Configuration;
 using Ryujinx.Debugger.Profiler;
 using Ryujinx.Ui;
 using System;
+using System.Configuration;
 using System.IO;
 
 namespace Ryujinx
@@ -55,17 +56,23 @@ namespace Ryujinx
             }
 
             MainWindow mainWindow = new MainWindow();
+
+            if (ConfigurationManager.AppSettings["Version"] != "__ver__")
+            {
+                mainWindow.Title = "Ryujinx " + ConfigurationManager.AppSettings["Version"];
+            }
+
             mainWindow.Show();
 
-            if (args.Length > 1)
+            if (args.Length >= 1)
             {
-                foreach (string arg in args)
+                if (args[0].ToUpper() == "/U")
                 {
-                    switch (arg.Substring(0, 2).ToUpper())
-                    {
-                        case "/U": UpdateParser.BeginParse(); break;
-                        default: mainWindow.LoadApplication(args[0]); break;
-                    }
+                    UpdateParser.BeginParse();
+                }
+                else
+                {
+                    mainWindow.LoadApplication(args[0]);
                 }
             }
 
