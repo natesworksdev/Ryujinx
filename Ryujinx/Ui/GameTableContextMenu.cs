@@ -22,8 +22,6 @@ namespace Ryujinx.Ui
 {
     public class GameTableContextMenu : Menu
     {
-        public static Result OperationCancelled = new Result(468, 1357);
-
         private ListStore         _gameTableStore;
         private TreeIter          _rowIter;
         private VirtualFileSystem _virtualFileSystem;
@@ -155,7 +153,8 @@ namespace Ryujinx.Ui
         private void ExtractSection(NcaSectionType ncaSectionType)
         {
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to extract into", null, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Extract", ResponseType.Accept);
-            
+            fileChooser.SetPosition(WindowPosition.Center);
+
             int    response    = fileChooser.Run();
             string destination = fileChooser.Filename;
             
@@ -258,13 +257,13 @@ namespace Ryujinx.Ui
                         fsClient.Register(source.ToU8Span(), ncaFileSystem);
                         fsClient.Register(output.ToU8Span(), new LocalFileSystem(destination));
 
-                        Result resultCode = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
+                        (Result? resultCode, bool canceled) = CopyDirectory(fsClient, $"{source}:/", $"{output}:/");
 
-                        if (resultCode.IsFailure())
+                        if (!canceled)
                         {
-                            if (resultCode != OperationCancelled)
+                            if (resultCode.Value.IsFailure())
                             {
-                                Logger.PrintError(LogClass.Application, $"LibHac returned error code: {resultCode.ErrorCode}");
+                                Logger.PrintError(LogClass.Application, $"LibHac returned error code: {resultCode.Value.ErrorCode}");
 
                                 Gtk.Application.Invoke(delegate
                                 {
@@ -273,24 +272,24 @@ namespace Ryujinx.Ui
                                     GtkDialog.CreateErrorDialog("Extraction failed. Read the log file for further information.");
                                 });
                             }
-                        }
-                        else if (resultCode.IsSuccess())
-                        {
-                            Gtk.Application.Invoke(delegate
+                            else if (resultCode.Value.IsSuccess())
                             {
-                                _dialog?.Dispose();
-
-                                MessageDialog dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
+                                Gtk.Application.Invoke(delegate
                                 {
-                                    Title          = "Ryujinx - NCA Section Extractor",
-                                    Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
-                                    SecondaryText  = "Extraction has completed successfully.",
-                                    WindowPosition = WindowPosition.Center
-                                };
+                                    _dialog?.Dispose();
 
-                                dialog.Run();
-                                dialog.Dispose();
-                            });
+                                    MessageDialog dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
+                                    {
+                                        Title          = "Ryujinx - NCA Section Extractor",
+                                        Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                                        SecondaryText  = "Extraction has completed successfully.",
+                                        WindowPosition = WindowPosition.Center
+                                    };
+
+                                    dialog.Run();
+                                    dialog.Dispose();
+                                });
+                            }
                         }
 
                         fsClient.Unmount(source);
@@ -304,10 +303,10 @@ namespace Ryujinx.Ui
             }
         }
 
-        private Result CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
+        private (Result? result, bool canceled) CopyDirectory(FileSystemClient fs, string sourcePath, string destPath)
         {
             Result rc = fs.OpenDirectory(out DirectoryHandle sourceHandle, sourcePath, OpenDirectoryMode.All);
-            if (rc.IsFailure()) return rc;
+            if (rc.IsFailure()) return (rc, false);
 
             using (sourceHandle)
             {
@@ -315,7 +314,7 @@ namespace Ryujinx.Ui
                 {
                     if (_cancel)
                     {
-                        return OperationCancelled;
+                        return (null, true);
                     }
 
                     string subSrcPath = PathTools.Normalize(PathTools.Combine(sourcePath, entry.Name));
@@ -325,8 +324,11 @@ namespace Ryujinx.Ui
                     {
                         fs.EnsureDirectoryExists(subDstPath);
 
-                        rc = CopyDirectory(fs, subSrcPath, subDstPath);
-                        if (rc.IsFailure()) return rc;
+                        (Result? result, bool canceled) = CopyDirectory(fs, subSrcPath, subDstPath);
+                        if (canceled || result.Value.IsFailure())
+                        {
+                            return (result, canceled);
+                        }
                     }
 
                     if (entry.Type == DirectoryEntryType.File)
@@ -334,12 +336,12 @@ namespace Ryujinx.Ui
                         fs.CreateOrOverwriteFile(subDstPath, entry.Size);
 
                         rc = CopyFile(fs, subSrcPath, subDstPath);
-                        if (rc.IsFailure()) return rc;
+                        if (rc.IsFailure()) return (rc, false);
                     }
                 }
             }
 
-            return Result.Success;
+            return (Result.Success, false);
         }
 
         public Result CopyFile(FileSystemClient fs, string sourcePath, string destPath)
