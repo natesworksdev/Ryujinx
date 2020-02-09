@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetIndexBuffer(BufferRange buffer, IndexType type);
 
-        void SetImage(int index, ShaderStage stage, ITexture texture);
+        void SetImage(int unit, ITexture texture);
 
         void SetPointSize(float size);
 
@@ -54,15 +54,15 @@ namespace Ryujinx.Graphics.GAL
 
         void SetRenderTargets(ITexture[] colors, ITexture depthStencil);
 
-        void SetSampler(int index, ShaderStage stage, ISampler sampler);
+        void SetSampler(int unit, ISampler sampler);
 
         void SetStencilTest(StencilTestDescriptor stencilTest);
 
-        void SetStorageBuffer(int index, ShaderStage stage, BufferRange buffer);
+        void SetStorageBuffer(int bindingPoint, BufferRange buffer);
 
-        void SetTexture(int index, ShaderStage stage, ITexture texture);
+        void SetTexture(int unit, ITexture texture);
 
-        void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer);
+        void SetUniformBuffer(int bindingPoint, BufferRange buffer);
 
         void SetVertexAttribs(VertexAttribDescriptor[] vertexAttribs);
         void SetVertexBuffers(VertexBufferDescriptor[] vertexBuffers);

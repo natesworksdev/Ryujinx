@@ -14,6 +14,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private string _dumpPath;
         private int    _dumpIndex;
 
+        /// <summary>
+        /// Creates a new instance of the shader dumper.
+        /// </summary>
         public ShaderDumper()
         {
             _dumpIndex = 1;

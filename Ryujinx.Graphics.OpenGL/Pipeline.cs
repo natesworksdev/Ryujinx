@@ -574,11 +574,9 @@ namespace Ryujinx.Graphics.OpenGL
             GL.FrontFace(frontFace.Convert());
         }
 
-        public void SetImage(int index, ShaderStage stage, ITexture texture)
+        public void SetImage(int unit, ITexture texture)
         {
-            int unit = _program.GetImageUnit(stage, index);
-
-            if (unit != -1 && texture != null)
+            if (texture != null)
             {
                 TextureView view = (TextureView)texture;
 
@@ -664,11 +662,9 @@ namespace Ryujinx.Graphics.OpenGL
             UpdateDepthTest();
         }
 
-        public void SetSampler(int index, ShaderStage stage, ISampler sampler)
+        public void SetSampler(int unit, ISampler sampler)
         {
-            int unit = _program.GetTextureUnit(stage, index);
-
-            if (unit != -1 && sampler != null)
+            if (sampler != null)
             {
                 ((Sampler)sampler).Bind(unit);
             }
@@ -716,16 +712,14 @@ namespace Ryujinx.Graphics.OpenGL
             _stencilFrontMask = stencilTest.FrontMask;
         }
 
-        public void SetStorageBuffer(int index, ShaderStage stage, BufferRange buffer)
+        public void SetStorageBuffer(int bindingPoint, BufferRange buffer)
         {
-            SetBuffer(index, stage, buffer, isStorage: true);
+            SetBuffer(bindingPoint, buffer, isStorage: true);
         }
 
-        public void SetTexture(int index, ShaderStage stage, ITexture texture)
+        public void SetTexture(int unit, ITexture texture)
         {
-            int unit = _program.GetTextureUnit(stage, index);
-
-            if (unit != -1 && texture != null)
+            if (texture != null)
             {
                 if (unit == 0)
                 {
@@ -738,9 +732,9 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer)
+        public void SetUniformBuffer(int bindingPoint, BufferRange buffer)
         {
-            SetBuffer(index, stage, buffer, isStorage: false);
+            SetBuffer(bindingPoint, buffer, isStorage: false);
         }
 
         public void SetVertexAttribs(VertexAttribDescriptor[] vertexAttribs)
@@ -811,17 +805,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
         }
 
-        private void SetBuffer(int index, ShaderStage stage, BufferRange buffer, bool isStorage)
+        private void SetBuffer(int bindingPoint, BufferRange buffer, bool isStorage)
         {
-            int bindingPoint = isStorage
-                ? _program.GetStorageBufferBindingPoint(stage, index)
-                : _program.GetUniformBufferBindingPoint(stage, index);
-
-            if (bindingPoint == -1)
-            {
-                return;
-            }
-
             BufferRangeTarget target = isStorage
                 ? BufferRangeTarget.ShaderStorageBuffer
                 : BufferRangeTarget.UniformBuffer;

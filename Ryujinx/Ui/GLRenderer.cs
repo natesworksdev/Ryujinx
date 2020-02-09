@@ -292,6 +292,13 @@ namespace Ryujinx.Ui
 
             _renderer.Initialize();
 
+            // Shader cache setup.
+            string basePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
+            string workPath = System.IO.Path.Combine(basePath, "games", _device.System.TitleIdText, "cache", "gpu");
+
+            _device.Gpu.SetShaderCachePath(workPath);
+            _device.Gpu.LoadShaderCache();
+
             // Make sure the first frame is not transparent.
             GL.ClearColor(OpenTK.Color.Black);
             GL.Clear(ClearBufferMask.ColorBufferBit);
