@@ -293,6 +293,29 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Checks if a given memory page is mapped.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address of the page</param>
+        /// <returns>True if the page is mapped, false otherwise</returns>
+        public bool IsMapped(ulong gpuVa)
+        {
+            if (gpuVa >> PtLvl0Bits + PtLvl1Bits + PtPageBits != 0)
+            {
+                return false;
+            }
+
+            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
+            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
+
+            if (_pageTable[l0] == null)
+            {
+                return false;
+            }
+
+            return (long)_pageTable[l0][l1] >= 0;
+        }
+
+        /// <summary>
         /// Gets the Page Table entry for a given GPU virtual address.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address</param>
