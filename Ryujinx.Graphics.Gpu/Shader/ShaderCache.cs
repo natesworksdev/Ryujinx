@@ -315,15 +315,31 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <returns>A span of the shader code</returns>
         private ReadOnlySpan<byte> GetShaderCodeImpl(ulong gpuVa, ulong size)
         {
-            while (true)
+            if (_context.MemoryManager.IsMapped(gpuVa))
             {
-                ulong op = _context.MemoryAccessor.Read<ulong>(gpuVa + size);
-
-                size += sizeof(ulong);
-
-                if (op == 0x50b0000000070f00 || op == 0)
+                while (true)
                 {
-                    break;
+                    ulong currentVa = gpuVa + size;
+
+                    // Every time we cross a page, check if this is mapped.
+                    // If it's not mapped, we assume that the shader ended.
+                    // This should be cheaper than checking before every read.
+                    if ((currentVa & 0xfff) == 0)
+                    {
+                        if (!_context.MemoryManager.IsMapped(currentVa))
+                        {
+                            break;
+                        }
+                    }
+
+                    ulong op = _context.MemoryAccessor.Read<ulong>(currentVa);
+
+                    size += sizeof(ulong);
+
+                    if (op == 0)
+                    {
+                        break;
+                    }
                 }
             }
 

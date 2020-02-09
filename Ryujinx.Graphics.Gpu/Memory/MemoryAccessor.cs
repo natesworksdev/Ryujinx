@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -50,11 +51,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <typeparam name="T">Type of the structure</typeparam>
         /// <param name="gpuVa">GPU virtual address where the structure is located</param>
         /// <returns>The structure at the specified memory location</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Read<T>(ulong gpuVa) where T : struct
         {
             ulong processVa = _context.MemoryManager.Translate(gpuVa);
 
-            ulong size = (uint)Marshal.SizeOf<T>();
+            ulong size = (uint)Unsafe.SizeOf<T>();
 
             return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, size))[0];
         }
