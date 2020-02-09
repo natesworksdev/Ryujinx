@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
 using System;
@@ -409,7 +410,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 BufferRange buffer = GetBufferRange(bounds.Address, bounds.Size);
 
-                _context.Renderer.Pipeline.SetStorageBuffer(index, ShaderStage.Compute, buffer);
+                int bindingPoint = CurrentShaderMeta(ShaderStage.Compute).GetStorageBufferBindingPoint(ShaderStage.Compute, index);
+
+                _context.Renderer.Pipeline.SetStorageBuffer(bindingPoint, buffer);
             }
 
             enableMask = _cpUniformBuffers.EnableMask;
@@ -430,7 +433,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 BufferRange buffer = GetBufferRange(bounds.Address, bounds.Size);
 
-                _context.Renderer.Pipeline.SetUniformBuffer(index, ShaderStage.Compute, buffer);
+                int bindingPoint = CurrentShaderMeta(ShaderStage.Compute).GetUniformBufferBindingPoint(ShaderStage.Compute, index);
+
+                _context.Renderer.Pipeline.SetUniformBuffer(bindingPoint, buffer);
             }
 
             // Force rebind after doing compute work.
@@ -598,11 +603,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (isStorage)
             {
-                _context.Renderer.Pipeline.SetStorageBuffer(index, stage, buffer);
+                int bindingPoint = CurrentShaderMeta(stage).GetStorageBufferBindingPoint(stage, index);
+
+                _context.Renderer.Pipeline.SetStorageBuffer(bindingPoint, buffer);
             }
             else
             {
-                _context.Renderer.Pipeline.SetUniformBuffer(index, stage, buffer);
+                int bindingPoint = CurrentShaderMeta(stage).GetUniformBufferBindingPoint(stage, index);
+
+                _context.Renderer.Pipeline.SetUniformBuffer(bindingPoint, buffer);
             }
         }
 
@@ -684,6 +693,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 buffer.SynchronizeMemory(address, size);
             }
+        }
+
+        /// <summary>
+        /// Gets the shader meta data for the currently bound shader on the graphics or compute pipeline.
+        /// </summary>
+        /// <param name="stage">Stage of the stage where the bindings will be modified</param>
+        /// <returns>Currently bound shader</returns>
+        private ShaderMeta CurrentShaderMeta(ShaderStage stage)
+        {
+            return stage == ShaderStage.Compute ? _context.Methods.CurrentCpMeta : _context.Methods.CurrentGpMeta;
         }
 
         /// <summary>
