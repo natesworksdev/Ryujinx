@@ -144,33 +144,34 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static bool IsA32Return(ArmEmitterContext context)
+        {
+            switch (context.CurrOp)
+            {
+                case IOpCode32MemMult op:
+                    return true;
+                case OpCode32AluRsImm op:
+                    return op.Rm == RegisterAlias.Aarch32Lr;
+                case OpCode32AluRsReg op:
+                    return op.Rm == RegisterAlias.Aarch32Lr;
+                case OpCode32AluReg op:
+                    return op.Rm == RegisterAlias.Aarch32Lr;
+                case OpCode32Mem op:
+                    return op.Rn == RegisterAlias.Aarch32Sp && op.WBack && !op.Index;
+            }
+            return false;
+        }
+
         public static void EmitBxWritePc(ArmEmitterContext context, Operand pc, int sourceRegister = 0)
         {
-            bool allowRejit = sourceRegister != RegisterAlias.Aarch32Lr && context.CurrOp.Instruction.Name != InstName.Ldm;
+            bool isReturn = sourceRegister == RegisterAlias.Aarch32Lr || IsA32Return(context);
             Operand mode = context.BitwiseAnd(pc, Const(1));
 
             SetFlag(context, PState.TFlag, mode);
 
-            Operand lblArmMode = Label();
+            Operand addr = context.ConditionalSelect(mode, context.BitwiseOr(pc, Const((int)InstEmitFlowHelper.CallFlag)), context.BitwiseAnd(pc, Const(~3)));
 
-            context.BranchIfFalse(lblArmMode, mode);
-
-            Operand thumbAddr = allowRejit ? context.BitwiseOr(pc, Const((int)InstEmitFlowHelper.CallFlag)) : pc;
-            // Make this count for rejit, the translator will ignore the low bit for the address.
-            context.Return(context.ZeroExtend32(OperandType.I64, thumbAddr));
-
-            context.MarkLabel(lblArmMode);
-
-            Operand a32Addr = context.BitwiseAnd(pc, Const(~3));
-
-            if (allowRejit)
-            {
-                InstEmitFlowHelper.EmitJumpTableCall(context, a32Addr, true);
-            }
-            else
-            {
-                context.Return(context.ZeroExtend32(OperandType.I64, a32Addr));
-            }
+            InstEmitFlowHelper.EmitVirtualJump(context, addr, isReturn);
         }
 
         public static Operand GetIntOrZR(ArmEmitterContext context, int regIndex)
