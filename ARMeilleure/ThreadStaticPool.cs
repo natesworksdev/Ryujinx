@@ -3,7 +3,7 @@ using System.Threading;
 
 namespace ARMeilleure
 {
-    public class ThreadStaticPool<T> where T : class, new()
+    internal class ThreadStaticPool<T> where T : class, new()
     {
         [ThreadStatic]
         private static ThreadStaticPool<T> _instance;
