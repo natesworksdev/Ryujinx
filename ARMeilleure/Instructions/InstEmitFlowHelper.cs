@@ -142,7 +142,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
-            EmitJumpTableCall(context, Const(immediate));
+            EmitJumpTableBranch(context, Const(immediate));
         }
 
         private static void EmitNativeCall(ArmEmitterContext context, Operand funcAddr, bool isJump = false)
@@ -158,16 +158,7 @@ namespace ARMeilleure.Instructions
                 returnAddress = context.Call(funcAddr, OperandType.I64, context.LoadArgument(OperandType.I64, 0));
                 context.LoadFromContext();
 
-                // InstEmitFlowHelper.EmitContinueOrReturnCheck(context, returnAddress);
-
-                // If the return address isn't to our next instruction, we need to return to the JIT can figure out what to do.
-                Operand continueLabel = Label();
-                Operand next = Const(GetNextOpAddress(context.CurrOp));
-                context.BranchIfTrue(continueLabel, context.ICompareEqual(context.BitwiseAnd(returnAddress, Const(~1L)), next));
-
-                context.Return(returnAddress);
-
-                context.MarkLabel(continueLabel);
+                EmitContinueOrReturnCheck(context, returnAddress);
             }
         }
 
@@ -189,31 +180,34 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitJumpTableCall(context, target, isJump);
+                EmitJumpTableBranch(context, target, isJump);
             }
         }
 
-        public static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand retVal)
+        public static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand returnAddress)
         {
             // Note: The return value of the called method will be placed
             // at the Stack, the return value is always a Int64 with the
             // return address of the function. We check if the address is
             // correct, if it isn't we keep returning until we reach the dispatcher.
-            ulong nextAddr = GetNextOpAddress(context.CurrOp);
+            Operand nextAddr = Const(GetNextOpAddress(context.CurrOp));
 
             if (context.CurrBlock.Next != null)
             {
+                // Try to continue within this block.
+                // If the return address isn't to our next instruction, we need to return to the JIT can figure out what to do.
                 Operand lblContinue = Label();
 
-                context.BranchIfTrue(lblContinue, context.ICompareEqual(retVal, Const(nextAddr)));
+                context.BranchIfTrue(lblContinue, context.ICompareEqual(context.BitwiseAnd(returnAddress, Const(~1L)), nextAddr));
 
-                context.Return(Const(nextAddr));
+                context.Return(returnAddress);
 
                 context.MarkLabel(lblContinue);
             }
             else
             {
-                context.Return(Const(nextAddr));
+                // No code following this instruction, ask the translator with return address and jump to it.
+                EmitTailContinue(context, nextAddr);
             }
         }
 
@@ -222,23 +216,37 @@ namespace ARMeilleure.Instructions
             return op.Address + (ulong)op.OpCodeSizeInBytes;
         }
 
+        public static void EmitTailContinue(ArmEmitterContext context, Operand address, bool allowRejit = false)
+        {
+            bool complexShit = true;
+            if (complexShit)
+            {
+                if (allowRejit)
+                {
+                    address = context.BitwiseOr(address, Const(1L));
+                }
+
+                Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
+
+                EmitNativeCall(context, fallbackAddr, true);
+            } 
+            else
+            {
+                context.Return(address);
+            }
+        }
+
         public static void EmitDynamicTableCall(ArmEmitterContext context, Operand tableAddress, Operand address, bool isJump)
         {
-            if (address.Type == OperandType.I32)
-            {
-                address = context.ZeroExtend32(OperandType.I64, address);
-            }
-
             // Loop over elements of the dynamic table. Unrolled loop.
-            // TODO: different reserved size for jumps? Need to do some testing to see what is reasonable.
 
             Operand endLabel = Label();
             Operand fallbackLabel = Label();
 
+            // Currently this uses a size of 1, as higher values inflate code size for no real benefit.
             for (int i = 0; i < JumpTable.DynamicTableElems; i++) 
             {
                 // TODO: USE COMPARE AND SWAP I64 TO ENSURE ATOMIC OPERATIONS
-
                 Operand nextLabel = Label();
 
                 // Load this entry from the table. 
@@ -265,6 +273,7 @@ namespace ARMeilleure.Instructions
                 Operand missingFunctionLabel = Label();
                 Operand targetFunctionPtr = context.Add(tableAddress, Const(8));
                 Operand targetFunction = context.Load(OperandType.I64, targetFunctionPtr);
+
                 context.BranchIfFalse(missingFunctionLabel, targetFunction);
 
                 // Call the function.
@@ -273,7 +282,7 @@ namespace ARMeilleure.Instructions
 
                 // We need to find the missing function. This can only be from a list of HighCq functions, which the JumpTable maintains.
                 context.MarkLabel(missingFunctionLabel);
-                Operand goodCallAddr = context.Call(new _U64_U64(context.JumpTable.TryGetFunction), address); // TODO: NativeInterface call to it? (easier to AOT)
+                Operand goodCallAddr = context.Call(new _U64_U64(NativeInterface.GetHighCqFunctionAddress), address);
 
                 context.BranchIfFalse(fallbackLabel, goodCallAddr); // Fallback if it doesn't exist yet.
 
@@ -296,31 +305,36 @@ namespace ARMeilleure.Instructions
             context.MarkLabel(endLabel);
         }
 
-        public static void EmitJumpTableCall(ArmEmitterContext context, Operand address, bool isJump = false)
+        public static void EmitJumpTableBranch(ArmEmitterContext context, Operand address, bool isJump = false)
         {
-            // Does the call have a constant value, or can it be folded to one?
+            if (address.Type == OperandType.I32)
+            {
+                address = context.ZeroExtend32(OperandType.I64, address);
+            }
+
             // TODO: Constant folding. Indirect calls are slower in the best case and emit more code so we want to avoid them when possible.
             bool isConst = address.Kind == OperandKind.Constant;
             long constAddr = (long)address.Value;
 
-            if (isJump || !isConst || !context.HighCq)
+            if (!context.HighCq)
             {
-                if (context.HighCq)
-                {
-                    // Virtual branch/call - store first used addresses on a small table for fast lookup.
-                    int entry = context.JumpTable.ReserveDynamicEntry();
+                // Don't emit indirect calls or jumps if we're compiling in lowCq mode.
+                // This avoids wasting space on the jump and indirect tables.
+                // Just ask the translator for the function address.
 
-                    int jumpOffset = entry * JumpTable.JumpTableStride * JumpTable.DynamicTableElems;
-                    Operand dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64() + jumpOffset);
+                address = context.BitwiseOr(address, Const(address.Type, 1)); // Set call flag.
+                Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
+                EmitNativeCall(context, fallbackAddr, isJump);
+            }
+            else if (!isConst)
+            {
+                // Virtual branch/call - store first used addresses on a small table for fast lookup.
+                int entry = context.JumpTable.ReserveDynamicEntry();
 
-                    EmitDynamicTableCall(context, dynTablePtr, address, isJump);
-                }
-                else
-                {
-                    // Don't emit indirect calls or jumps if we're compiling in lowCq mode.
-                    // This avoids wasting space on the jump and indirect tables.
-                    context.Return(context.BitwiseOr(address, Const(address.Type, 1))); // Set call flag.
-                }
+                int jumpOffset = entry * JumpTable.JumpTableStride * JumpTable.DynamicTableElems;
+                Operand dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64() + jumpOffset);
+
+                EmitDynamicTableCall(context, dynTablePtr, address, isJump);
             }
             else
             {
@@ -336,19 +350,19 @@ namespace ARMeilleure.Instructions
                 Operand directCallLabel = Label();
                 Operand endLabel = Label();
 
-                // Host address in the table is 0 until the function is rejit.
+                // Host address in the table is 0 until the function is rejit. Use fallback until then.
                 context.BranchIfTrue(directCallLabel, funcAddr);
 
                 // Call the function through the translator until it is rejit.
                 address = context.BitwiseOr(address, Const(address.Type, 1)); // Set call flag.
                 Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
-                EmitNativeCall(context, fallbackAddr);
+                EmitNativeCall(context, fallbackAddr, isJump);
 
                 context.Branch(endLabel);
 
                 context.MarkLabel(directCallLabel);
 
-                EmitNativeCall(context, funcAddr); // Call the function directly if it is present in the entry.
+                EmitNativeCall(context, funcAddr, isJump); // Call the function directly if it is present in the entry.
 
                 context.MarkLabel(endLabel);
             }

@@ -36,7 +36,7 @@ namespace ARMeilleure.Translation
 
         private const int DynamicTableSize = 1048576;
 
-        public const int DynamicTableElems = 10;
+        public const int DynamicTableElems = 1;
 
         private const int DynamicTableByteSize = DynamicTableSize * JumpTableStride * DynamicTableElems;
 
@@ -77,14 +77,14 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public ulong TryGetFunction(ulong address)
+        public TranslatedFunction TryGetFunction(ulong address)
         {
             TranslatedFunction result;
             if (_targets.TryGetValue(address, out result))
             {
-                return (ulong)result.GetPointer().ToInt64();
+                return result;
             }
-            return 0;
+            return null;
         }
 
         public int ReserveDynamicEntry()

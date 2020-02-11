@@ -390,6 +390,12 @@ namespace ARMeilleure.Instructions
             return (ulong)function.GetPointer().ToInt64();
         }
 
+        public static ulong GetHighCqFunctionAddress(ulong address)
+        {
+            TranslatedFunction function = _context.Translator.TryGetHighCqFunction(address);
+            return (function != null) ? (ulong)function.GetPointer().ToInt64() : 0;
+        }
+
         public static void ClearExclusive()
         {
             _context.ExclusiveAddress = ulong.MaxValue;

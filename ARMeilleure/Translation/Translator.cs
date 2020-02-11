@@ -127,13 +127,20 @@ namespace ARMeilleure.Translation
             return func;
         }
 
+        internal TranslatedFunction TryGetHighCqFunction(ulong address)
+        {
+            return _jumpTable.TryGetFunction(address);
+        }
+
         private TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
         {
             ArmEmitterContext context = new ArmEmitterContext(_memory, _jumpTable, (long)address, highCq, Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = highCq
+            bool alwaysFunctions = true;
+
+            Block[] blocks = alwaysFunctions
                 ? Decoder.DecodeFunction  (_memory, address, mode)
                 : Decoder.DecodeBasicBlock(_memory, address, mode);
 
@@ -221,7 +228,7 @@ namespace ARMeilleure.Translation
                         // with some kind of branch).
                         if (isLastOp && block.Next == null)
                         {
-                            context.Return(Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
+                            InstEmitFlowHelper.EmitTailContinue(context, Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
                         }
                     }
                 }
