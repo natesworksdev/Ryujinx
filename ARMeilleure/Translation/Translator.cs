@@ -65,13 +65,19 @@ namespace ARMeilleure.Translation
         {
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
-                Thread backgroundTranslatorThread = new Thread(TranslateQueuedSubs)
+                // Simple heurisic, should probably be user configurable. (1 for 4 core/ht or less, 2 for 6 core/ht etc).
+                // TODO: probably use physical cores rather than logical. This only really makes sense for processors with hyperthreading.
+                int threadCount = Math.Max(1, Math.Min(4, (Environment.ProcessorCount - 6) / 3));
+                for (int i = 0; i < threadCount; i++)
                 {
-                    Name     = "CPU.BackgroundTranslatorThread",
-                    Priority = ThreadPriority.Lowest
-                };
+                    Thread backgroundTranslatorThread = new Thread(TranslateQueuedSubs)
+                    {
+                        Name = "CPU.BackgroundTranslatorThread." + i,
+                        Priority = ThreadPriority.Lowest
+                    };
 
-                backgroundTranslatorThread.Start();
+                    backgroundTranslatorThread.Start();
+                }
             }
 
             Statistics.InitializeTimer();
