@@ -8,11 +8,14 @@ using OpenTK;
 using System;
 using System.Configuration;
 using System.IO;
+using System.Reflection;
 
 namespace Ryujinx
 {
     class Program
     {
+        public static string Version { get; private set; }
+
         static void Main(string[] args)
         {
             Toolkit.Init(new ToolkitOptions
@@ -22,6 +25,8 @@ namespace Ryujinx
             });
 
             Console.Title = "Ryujinx Console";
+
+            Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
 
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
