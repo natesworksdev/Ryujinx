@@ -50,5 +50,34 @@ namespace Ryujinx.Ui
             messageDialog.Run();
             messageDialog.Dispose();
         }
+      
+        internal static void CreateWarningDialog(string text, string secondaryText)
+        {
+            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, null)
+            {
+                Title = titleMessage,
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), $"Ryujinx.Ui.assets.{iconType}.png"),
+                Text = textMessage,
+                SecondaryText = secText,
+                WindowPosition = WindowPosition.Center
+            };
+            messageDialog.SetSizeRequest(100, 20);
+            return messageDialog; 
+        }
+
+        internal static void CreateInfoDialog(string iconType, string titleMessage, string textMessage, string secText)
+        {
+            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, null)
+            {
+                Title = titleMessage,
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), $"Ryujinx.Ui.assets.{iconType}.png"),
+                Text = textMessage,
+                SecondaryText = secText,
+                WindowPosition = WindowPosition.Center
+            };
+            messageDialog.SetSizeRequest(100, 20);
+            messageDialog.Run();
+            messageDialog.Dispose();
+        }
     }
 }
