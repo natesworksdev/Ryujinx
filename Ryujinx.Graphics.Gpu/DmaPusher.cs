@@ -214,6 +214,8 @@ namespace Ryujinx.Graphics.Gpu
                 }
                 else if (_state.MethodCount != 0)
                 {
+                    CallMethod(word);
+
                     if (!_state.NonIncrementing)
                     {
                         _state.Method++;
