@@ -62,6 +62,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private bool _aslrDisabled;
 
         public int AddrSpaceWidth { get; private set; }
+        
+        private bool _isKernel;
 
         private bool _aslrEnabled;
 
@@ -77,6 +79,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             _cpuMemory = cpuMemory;
 
             _blocks = new LinkedList<KMemoryBlock>();
+
+            _isKernel = false;
         }
 
         private static readonly int[] AddrSpaceSizes = new int[] { 32, 36, 32, 39 };
@@ -2640,7 +2644,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             ulong regionEndAddr = regionStart + regionPagesCount * PageSize;
 
-            ulong reservedPagesCount = 4UL;
+            ulong reservedPagesCount = _isKernel ? 1UL : 4UL;
 
             if (_aslrEnabled)
             {

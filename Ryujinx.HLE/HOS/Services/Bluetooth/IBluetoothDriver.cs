@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
 
         [Command(46)]
         // InitializeBluetoothLe() -> handle<copy>
-        public ResultCode InitializeBluetoothLe(ServiceCtx context) // not used, used for later ?
+        public ResultCode InitializeBluetoothLe(ServiceCtx context)
         {
             NxSettings.Settings.TryGetValue("bluetooth_debug!skip_boot", out object debugMode);
 
