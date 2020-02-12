@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.State
         public int          DstStride;
 #pragma warning restore CS0649
         public MemoryLayout DstMemoryLayout;
-#pragma warning restore CS0649
+#pragma warning disable CS0649
         public int          DstWidth;
         public int          DstHeight;
         public int          DstDepth;
