@@ -152,7 +152,7 @@ namespace ARMeilleure.Instructions
             if (isJump)
             {
                 context.Tailcall(funcAddr, context.LoadArgument(OperandType.I64, 0));
-            } 
+            }
             else
             {
                 returnAddress = context.Call(funcAddr, OperandType.I64, context.LoadArgument(OperandType.I64, 0));
@@ -192,21 +192,19 @@ namespace ARMeilleure.Instructions
             // correct, if it isn't we keep returning until we reach the dispatcher.
             Operand nextAddr = Const(GetNextOpAddress(context.CurrOp));
 
-            if (context.CurrBlock.Next != null)
+            // Try to continue within this block.
+            // If the return address isn't to our next instruction, we need to return to the JIT can figure out what to do.
+            Operand lblContinue = Label();
+
+            context.BranchIfTrue(lblContinue, context.ICompareEqual(context.BitwiseAnd(returnAddress, Const(~1L)), nextAddr));
+
+            context.Return(returnAddress);
+
+            context.MarkLabel(lblContinue);
+
+            if (context.CurrBlock.Next == null)
             {
-                // Try to continue within this block.
-                // If the return address isn't to our next instruction, we need to return to the JIT can figure out what to do.
-                Operand lblContinue = Label();
-
-                context.BranchIfTrue(lblContinue, context.ICompareEqual(context.BitwiseAnd(returnAddress, Const(~1L)), nextAddr));
-
-                context.Return(returnAddress);
-
-                context.MarkLabel(lblContinue);
-            }
-            else
-            {
-                // No code following this instruction, ask the translator with return address and jump to it.
+                // No code following this instruction, try and find the next block and jump to it.
                 EmitTailContinue(context, nextAddr);
             }
         }

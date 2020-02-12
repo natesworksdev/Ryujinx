@@ -141,7 +141,7 @@ namespace ARMeilleure.Translation
             bool alwaysFunctions = true;
 
             Block[] blocks = alwaysFunctions
-                ? Decoder.DecodeFunction  (_memory, address, mode)
+                ? Decoder.DecodeFunction  (_memory, address, mode, highCq)
                 : Decoder.DecodeBasicBlock(_memory, address, mode);
 
             Logger.EndPass(PassName.Decoding);
