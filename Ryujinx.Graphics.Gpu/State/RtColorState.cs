@@ -6,11 +6,13 @@ namespace Ryujinx.Graphics.Gpu.State
     struct RtColorState
     {
         public GpuVa        Address;
-        public MemoryLayout MemoryLayout;
 #pragma warning disable CS0649
         public int          WidthOrStride;
         public int          Height;
         public RtFormat     Format;
+#pragma warning restore CS0649
+        public MemoryLayout MemoryLayout;
+#pragma warning disable CS0649
         public int          Depth;
         public int          LayerSize;
         public int          BaseLayer;

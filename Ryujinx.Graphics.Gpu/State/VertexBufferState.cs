@@ -5,9 +5,11 @@ namespace Ryujinx.Graphics.Gpu.State
     /// </summary>
     struct VertexBufferState
     {
-        public GpuVa Address;
 #pragma warning disable CS0649
         public uint  Control;
+#pragma warning restore CS0649
+        public GpuVa Address;
+#pragma warning disable CS0649
         public int   Divisor;
 #pragma warning restore CS0649
 
