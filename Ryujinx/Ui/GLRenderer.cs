@@ -283,11 +283,6 @@ namespace Ryujinx.Ui
 
                     if (_ticks >= _ticksPerFrame)
                     {
-                        // Ensure that the content is Opaque.
-                        GL.ColorMask(false, false, false, true);
-                        GL.ClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                        GL.ColorMask(true, true, true, true);
-
                         _device.PresentFrame(SwapBuffers);
 
                         _device.Statistics.RecordSystemFrameTime();
