@@ -156,6 +156,11 @@ namespace ARMeilleure.Translation
             _needsNewBlock = true;
         }
 
+        public Operand CompareAndSwap(Operand address, Operand expected, Operand desired)
+        {
+            return Add(Instruction.CompareAndSwap, Local(desired.Type), address, expected, desired);
+        }
+
         public Operand CompareAndSwap128(Operand address, Operand expected, Operand desired)
         {
             return Add(Instruction.CompareAndSwap128, Local(OperandType.V128), address, expected, desired);

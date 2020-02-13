@@ -34,6 +34,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.Clobber,                 GenerateClobber);
+            Add(Instruction.CompareAndSwap,          GenerateCompareAndSwap);
             Add(Instruction.CompareAndSwap128,       GenerateCompareAndSwap128);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
@@ -542,6 +543,19 @@ namespace ARMeilleure.CodeGen.X86
         {
             // This is only used to indicate that a register is clobbered to the
             // register allocator, we don't need to produce any code.
+        }
+
+        private static void GenerateCompareAndSwap(CodeGenContext context, Operation operation)
+        {
+            Operand src1 = operation.GetSource(0);
+            Operand src2 = operation.GetSource(1);
+            Operand src3 = operation.GetSource(2);
+
+            EnsureSameType(src2, src3);
+
+            MemoryOperand memOp = MemoryOp(src3.Type, src1);
+
+            context.Assembler.Cmpxchg(memOp, src3);
         }
 
         private static void GenerateCompareAndSwap128(CodeGenContext context, Operation operation)

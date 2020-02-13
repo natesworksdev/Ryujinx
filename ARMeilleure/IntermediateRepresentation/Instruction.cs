@@ -12,6 +12,7 @@ namespace ARMeilleure.IntermediateRepresentation
         BranchIfTrue,
         ByteSwap,
         Call,
+        CompareAndSwap,
         CompareAndSwap128,
         CompareEqual,
         CompareGreater,

@@ -203,6 +203,27 @@ namespace ARMeilleure.CodeGen.X86
 
             switch (operation.Instruction)
             {
+                case Instruction.CompareAndSwap:
+                    {
+                        // Handle the many restrictions of the compare and exchange (32/64) instruction:
+                        // - The expected value should be in (E/R)AX.
+                        // - The value at the memory location is loaded to (E/R)AX.
+
+                        Operand expected = operation.GetSource(1);
+
+                        Operand rax = Gpr(X86Register.Rax, expected.Type);
+
+                        nodes.AddBefore(node, Operation(Instruction.Copy, rax, expected));
+
+                        operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
+
+                        node = nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
+
+                        operation.Destination = rax;
+
+                        break;
+                    }
+
                 case Instruction.CompareAndSwap128:
                 {
                     // Handle the many restrictions of the compare and exchange (16 bytes) instruction:
