@@ -119,10 +119,9 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        private static float _DefaultNaN = BitConverter.Int32BitsToSingle(0x7fc00000);
         private static float FPDefaultNaN()
         {
-            return _DefaultNaN;
+            return BitConverter.Int32BitsToSingle(0x7fc00000);
         }
 
         private static float FPInfinity(bool sign)
@@ -1343,6 +1342,7 @@ namespace ARMeilleure.Instructions
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 float product;
+
                 if ((inf1 && zero2) || (zero1 && inf2))
                 {
                     product = FPZero(false);
@@ -1506,6 +1506,7 @@ namespace ARMeilleure.Instructions
             {
                 bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+
                 if (inf1 && inf2 && sign1 == sign2)
                 {
                     result = FPDefaultNaN();
@@ -1527,6 +1528,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     result = (value1 - value2) / 2.0f;
+
                     if ((fpcr & FPCR.Fz) != 0 && float.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
@@ -1555,6 +1557,7 @@ namespace ARMeilleure.Instructions
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 float product;
+
                 if ((inf1 && zero2) || (zero1 && inf2))
                 {
                     product = FPZero(false);
@@ -1563,9 +1566,8 @@ namespace ARMeilleure.Instructions
                 {
                     product = FPMulFpscr(value1, value2, true);
                 }
-
-                float three = FPThree(false);
-                result = FPHalvedSub(three, product, context, fpcr);
+                
+                result = FPHalvedSub(FPThree(false), product, context, fpcr);
             }
 
             return result;
@@ -1708,11 +1710,9 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        private static float _DefaultNaN = BitConverter.Int32BitsToSingle(0x7fc00000);
-
         private static float FPDefaultNaN()
         {
-            return _DefaultNaN;
+            return BitConverter.Int32BitsToSingle(0x7fc00000);
         }
 
         private static float FPInfinity(bool sign)
@@ -2635,6 +2635,7 @@ namespace ARMeilleure.Instructions
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 double product;
+
                 if ((inf1 && zero2) || (zero1 && inf2))
                 {
                     product = FPZero(false);
@@ -2819,6 +2820,7 @@ namespace ARMeilleure.Instructions
                 else
                 {
                     result = (value1 - value2) / 2.0;
+
                     if ((fpcr & FPCR.Fz) != 0 && double.IsSubnormal(result))
                     {
                         context.Fpsr |= FPSR.Ufc;
@@ -2847,6 +2849,7 @@ namespace ARMeilleure.Instructions
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
 
                 double product;
+
                 if ((inf1 && zero2) || (zero1 && inf2))
                 {
                     product = FPZero(false);
@@ -2856,8 +2859,7 @@ namespace ARMeilleure.Instructions
                     product = FPMulFpscr(value1, value2, true);
                 }
 
-                double three = FPThree(false);
-                result = FPHalvedSub(three, product, context, fpcr);
+                result = FPHalvedSub(FPThree(false), product, context, fpcr);
             }
 
             return result;
@@ -3000,10 +3002,9 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        private static double _DefaultNaN = BitConverter.Int64BitsToDouble(0x7ff8000000000000);
         private static double FPDefaultNaN()
         {
-            return _DefaultNaN;
+            return BitConverter.Int64BitsToDouble(0x7ff8000000000000);
         }
 
         private static double FPInfinity(bool sign)

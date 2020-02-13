@@ -73,23 +73,6 @@
             return (imm, size);
         }
 
-        public static long VFPExpandImm(long imm, int n)
-        {
-            int e = (n == 16) ? 5 : ((n == 32) ? 8 : 11);
-            int f = (n) * 8 - e - 1;
-            long sign = (imm & 0x80) << (n - 8);
-
-            var bit6 = (imm >> 6) & 0x1;
-            
-            long exp = ((imm >> 4) & 0x3);
-            if (bit6 == 1) exp |= ShlOnes(0, e - 3) << 2;
-            if (bit6 == 0) exp |= (long)1 << (e - 1);
-
-            long frac = (imm & 0xf) << (f - 4);
-
-            return sign | (exp << f) | frac;
-        }
-
         private static long ShlOnes(long value, int shift)
         {
             if (shift != 0)

@@ -14,7 +14,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdMov32
         private const int RndCntImm = 10;
 
-        [Test, Combinatorial, Description("VMOV.I<size> <Dd/Qd>, #<imm>")]
+        [Test, Pairwise, Description("VMOV.I<size> <Dd/Qd>, #<imm>")]
         public void Movi_V([Range(0u, 10u)] uint variant,
                            [Values(0u, 1u, 2u, 3u)] uint vd,
                            [Values(0x0u)] [Random(1u, 0xffu, RndCntImm)] uint imm,
@@ -62,7 +62,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VMOV.F<size> <Sd>, #<imm>")]
+        [Test, Pairwise, Description("VMOV.F<size> <Sd>, #<imm>")]
         public void Movi_S([Range(2u, 3u)] uint size,
                            [Values(0u, 1u, 2u, 3u)] uint vd,
                            [Values(0x0u)] [Random(0u, 0xffu, RndCntImm)] uint imm)
@@ -107,7 +107,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VMOV.<size> <Rt>, <Dn[x]>")]
+        [Test, Pairwise, Description("VMOV.<size> <Rt>, <Dn[x]>")]
         public void Mov_GP_Elem([Range(0u, 7u)] uint vn,
                                 [Values(0u, 1u, 2u, 3u)] uint rt,
                                 [Range(0u, 2u)] uint size,
@@ -206,7 +206,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VMOVN.<size> <Dt>, <Qm>")]
+        [Test, Pairwise, Description("VMOVN.<size> <Dt>, <Qm>")]
         public void Movn_V([Range(0u, 1u, 2u)] uint size,
                            [Values(0u, 1u, 2u, 3u)] uint vd,
                            [Values(0u, 2u, 4u, 8u)] uint vm)
@@ -230,7 +230,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VTRN.<size> <Vd>, <Vm>")]
+        [Test, Pairwise, Description("VTRN.<size> <Vd>, <Vm>")]
         public void Vtrn([Values(0u, 1u, 2u, 3u)] uint vm,
                          [Values(0u, 1u, 2u, 3u)] uint vd,
                          [Values(0u, 1u, 2u)] uint size,
@@ -263,7 +263,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VZIP.<size> <Vd>, <Vm>")]
+        [Test, Pairwise, Description("VZIP.<size> <Vd>, <Vm>")]
         public void Vzip([Values(0u, 1u, 2u, 3u)] uint vm,
                          [Values(0u, 1u, 2u, 3u)] uint vd,
                          [Values(0u, 1u, 2u)] uint size,
@@ -296,7 +296,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VUZP.<size> <Vd>, <Vm>")]
+        [Test, Pairwise, Description("VUZP.<size> <Vd>, <Vm>")]
         public void Vuzp([Values(0u, 1u, 2u, 3u)] uint vm,
                          [Values(0u, 1u, 2u, 3u)] uint vd,
                          [Values(0u, 1u, 2u)] uint size,
@@ -329,7 +329,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VTBL.8 <Dd>, {list}, <Dm>")]
+        [Test, Pairwise, Description("VTBL.8 <Dd>, {list}, <Dm>")]
         public void Vtbl([Range(0u, 6u)] uint vm, // Indices, include potentially invalid.
                          [Range(4u, 12u)] uint vn, // Selection.
                          [Values(0u, 1u)] uint vd, // Destinations.
@@ -378,7 +378,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VEXT.8 {<Vd>,} <Vn>, <Vm>, #<imm>")]
+        [Test, Pairwise, Description("VEXT.8 {<Vd>,} <Vn>, <Vm>, #<imm>")]
         public void Vext([Values(0u, 1u, 2u, 3u)] uint vm,
                          [Values(0u, 1u, 2u, 3u)] uint vn,
                          [Values(0u, 1u, 2u, 3u)] uint vd,

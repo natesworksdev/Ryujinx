@@ -1,14 +1,17 @@
-﻿using NUnit.Framework;
+﻿#define Bf32
+
+using NUnit.Framework;
 using System;
 
 namespace Ryujinx.Tests.Cpu
 {
-    [Category("Bfm")]
+    [Category("Bf32")]
     public sealed class CpuTestBf32 : CpuTest32
     {
-        private const int RndCnt = 10;
-        private const int RndCntImmr = 10;
-        private const int RndCntImms = 10;
+#if Bf32
+        private const int RndCnt = 2;
+        private const int RndCntImmr = 2;
+        private const int RndCntImms = 2;
 
         [Test, Pairwise, Description("BFC <Rd>, #<lsb>, #<width>")]
         public void Bfc([Values(0u, 0xdu)] uint rd,
@@ -81,7 +84,7 @@ namespace Ryujinx.Tests.Cpu
                          [Values(1u, 0xdu)] uint rn,
                          [Random(RndCnt)] uint wd,
                          [Values(0x00000000u, 0x7FFFFFFFu,
-                                         0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
+                                 0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint wn,
                          [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImmr)] uint lsb,
                          [Values(0u, 15u, 16u, 31u)] [Random(0u, 31u, RndCntImms)] uint widthm1)
         {
@@ -100,5 +103,6 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+#endif
     }
 }

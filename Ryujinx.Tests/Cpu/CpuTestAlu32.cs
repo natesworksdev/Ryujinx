@@ -1,13 +1,27 @@
 ﻿#define Alu32
+
 using NUnit.Framework;
 using System;
 
 namespace Ryujinx.Tests.Cpu
 {
-#if Alu32
     [Category("Alu32")]
-    class CpuTestAlu32 : CpuTest32
+    public sealed class CpuTestAlu32 : CpuTest32
     {
+#if Alu32
+#region "ValueSource (Opcodes)"
+        private static uint[] _Lsr_Lsl_Asr_Ror_()
+        {
+            return new uint[]
+            {
+                0xe1b00030u, // LSRS R0, R0, R0
+                0xe1b00010u, // LSLS R0, R0, R0
+                0xe1b00050u, // ASRS R0, R0, R0
+                0xe1b00070u  // RORS R0, R0, R0
+            };
+        }
+#endregion
+
         private const int RndCnt = 2;
 
         [Test, Pairwise, Description("RBIT <Rd>, <Rn>")]
@@ -26,12 +40,12 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("LSRS {<Rd>,} <Rm>, <Rs>")]
-        public void Lsr([Values(0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
-                       [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
+        [Test, Pairwise]
+        public void Lsr_Lsl_Asr_Ror([ValueSource("_Lsr_Lsl_Asr_Ror_")] uint opcode,
+                                    [Values(0x00000000u, 0x7FFFFFFFu,
+                                            0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
+                                    [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
         {
-            uint opcode = 0xe1b00030u; // LSRS R0, R0, R0
             uint rd = 0;
             uint rm = 1;
             uint rs = 2;
@@ -41,54 +55,6 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
-
-        [Test, Pairwise, Description("LSLS {<Rd>,} <Rm>, <Rs>")]
-        public void Lsl([Values(0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
-                        [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
-        {
-            uint opcode = 0xe1b00010u; // LSLS R0, R0, R0
-            uint rd = 0;
-            uint rm = 1;
-            uint rs = 2;
-            opcode |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rs & 15) << 8);
-
-            SingleOpcode(opcode, r1: shiftValue, r2: (uint)shiftAmount);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("ASRS {<Rd>,} <Rm>, <Rs>")]
-        public void Asr([Values(0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
-                        [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
-        {
-            uint opcode = 0xe1b00050u; // ASRS R0, R0, R0
-            uint rd = 0;
-            uint rm = 1;
-            uint rs = 2;
-            opcode |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rs & 15) << 8);
-
-            SingleOpcode(opcode, r1: shiftValue, r2: (uint)shiftAmount);
-
-            CompareAgainstUnicorn();
-        }
-
-        [Test, Pairwise, Description("RORS {<Rd>,} <Rm>, <Rs>")]
-        public void Ror([Values(0x00000000u, 0x7FFFFFFFu,
-                                0x80000000u, 0xFFFFFFFFu)] [Random(RndCnt)] uint shiftValue,
-                        [Range(0, 31)] [Values(32, 256, 768, -1, -23)] int shiftAmount)
-        {
-            uint opcode = 0xe1b00070u; // RORS R0, R0, R0
-            uint rd = 0;
-            uint rm = 1;
-            uint rs = 2;
-            opcode |= ((rm & 15) << 0) | ((rd & 15) << 12) | ((rs & 15) << 8);
-
-            SingleOpcode(opcode, r1: shiftValue, r2: (uint)shiftAmount);
-
-            CompareAgainstUnicorn();
-        }
+#endif
     }
-#endif 
 }

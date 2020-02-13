@@ -4,13 +4,12 @@ using ARMeilleure.State;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
     [Category("SimdReg32")]
-    public sealed class CpuTestSimdReg32 : CpuTest32 {
+    public sealed class CpuTestSimdReg32 : CpuTest32 
+    {
 #if SimdReg32
 
         #region "ValueSource (Types)"
@@ -224,11 +223,10 @@ namespace Ryujinx.Tests.Cpu
             uint opcode = 0xf2000d00u; // VADD.F32 D0, D0, D0
             if (q)
             {
-                rm <<= 2;
-                rn <<= 2;
-                rd <<= 2;
-
                 opcode |= 1 << 6;
+                rm <<= 1;
+                rn <<= 1;
+                rd <<= 1;
             }
 
             opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
@@ -326,7 +324,8 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Combinatorial, Description("VPADD.f32 V0, V0, V0")]
+        [Explicit]
+        [Test, Pairwise, Description("VPADD.f32 V0, V0, V0")]
         public void Vpadd_f32([Values(0u)] uint rd,
                               [Range(0u, 7u)] uint rn,
                               [Range(0u, 7u)] uint rm)

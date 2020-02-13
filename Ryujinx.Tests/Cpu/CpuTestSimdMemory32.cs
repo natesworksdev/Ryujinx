@@ -1,4 +1,4 @@
-﻿#define SimdMem32
+﻿#define SimdMemory32
 
 using ARMeilleure.State;
 using NUnit.Framework;
@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Cpu
     [Category("SimdMemory32")]
     public sealed class CpuTestSimdMemory32 : CpuTest32
     {
-#if SimdMem32
+#if SimdMemory32
         private const int RndCntImm = 2;
 
         private uint[] LDSTModes =
