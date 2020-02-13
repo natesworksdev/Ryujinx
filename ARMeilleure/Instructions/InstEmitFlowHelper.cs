@@ -244,28 +244,13 @@ namespace ARMeilleure.Instructions
             // Currently this uses a size of 1, as higher values inflate code size for no real benefit.
             for (int i = 0; i < JumpTable.DynamicTableElems; i++) 
             {
-                // TODO: USE COMPARE AND SWAP I64 TO ENSURE ATOMIC OPERATIONS
                 Operand nextLabel = Label();
 
-                // Load this entry from the table. 
-                Operand entry = context.Load(OperandType.I64, tableAddress);
+                // Try to take this entry in the table if its guest address equals 0.
+                Operand gotResult = context.CompareAndSwap(tableAddress, Const(0L), address);
 
-                // If it's 0, we can take this entry in the table.
-                // (TODO: compare and exchange with our address _first_ when implemented, then just check if the entry is ours)
-                Operand hasAddressLabel = Label();
-                Operand gotTableLabel = Label();
-                context.BranchIfTrue(hasAddressLabel, entry);
-
-                // Take the entry.
-                context.Store(tableAddress, address);
-                context.Branch(gotTableLabel);
-
-                context.MarkLabel(hasAddressLabel);
-
-                // If there is an entry here, is it ours?
-                context.BranchIfFalse(nextLabel, context.ICompareEqual(entry, address));
-
-                context.MarkLabel(gotTableLabel);
+                // Is the address ours? (either taken via CompareAndSwap (0), or what was already here)
+                context.BranchIfFalse(nextLabel, context.BitwiseOr(context.ICompareEqual(gotResult, address), context.ICompareEqual(gotResult, Const(0L))));
 
                 // It's ours, so what function is it pointing to?
                 Operand missingFunctionLabel = Label();
