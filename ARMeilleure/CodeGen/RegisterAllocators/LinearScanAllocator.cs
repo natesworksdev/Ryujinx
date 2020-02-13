@@ -616,7 +616,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     continue;
                 }
 
-                bool hasSingleOrNoSuccessor = block.ListNext == null || block.Branch == null;
+                bool hasSingleOrNoSuccessor = block.Next == null || block.Branch == null;
 
                 foreach (BasicBlock successor in Successors(block))
                 {

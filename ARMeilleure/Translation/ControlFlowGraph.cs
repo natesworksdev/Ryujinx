@@ -89,7 +89,7 @@ namespace ARMeilleure.Translation
 
                 for (BasicBlock block = blocks.First; block != null;)
                 {
-                    BasicBlock nextBlock = block.Next;
+                    BasicBlock nextBlock = block.ListNext;
 
                     if (!visited.Contains(block))
                     {
