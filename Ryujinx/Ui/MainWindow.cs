@@ -458,7 +458,6 @@ namespace Ryujinx.Ui
             _footerBox.Remove(_listStatusBox);
         }
 
-
         public void ToggleExtraWidgets(bool show)
         {
             if (_gLWidget != null)
