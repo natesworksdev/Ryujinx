@@ -400,7 +400,7 @@ namespace Ryujinx.Ui
                 _viewBox.Child = _gLWidget;
 
                 _gLWidget.ShowAll();
-                _listStatusBox.Hide();
+                ClearFooterForGameRender();
             });
 
             _gLWidget.WaitEvent.WaitOne();
@@ -435,7 +435,7 @@ namespace Ryujinx.Ui
 
                 DiscordIntegrationModule.SwitchToMainMenu();
 
-                _listStatusBox.ShowAll();
+                RecreateFooterForMenu();
 
                 UpdateColumns();
                 UpdateGameTable();
@@ -447,6 +447,17 @@ namespace Ryujinx.Ui
                 _firmwareInstallDirectory.Sensitive = true;
             });
         }
+
+        private void RecreateFooterForMenu()
+        {
+            _footerBox.Add(_listStatusBox);
+        }
+
+        private void ClearFooterForGameRender()
+        {
+            _footerBox.Remove(_listStatusBox);
+        }
+
 
         public void ToggleExtraWidgets(bool show)
         {
@@ -874,13 +885,13 @@ namespace Ryujinx.Ui
             {
                 Fullscreen();
 
-                ToggleExtraWidgets(true);
+                ToggleExtraWidgets(false);
             }
             else
             {
                 Unfullscreen();
 
-                ToggleExtraWidgets(false);
+                ToggleExtraWidgets(true);
             }
         }
 
