@@ -53,7 +53,7 @@ namespace Ryujinx.Ui
         private Input.NpadController _primaryController;
 
         public GLRenderer(Switch device) 
-            : base (new GraphicsMode(new ColorFormat(24)), 
+            : base (new GraphicsMode(new ColorFormat()),
             3, 3, 
             GraphicsContextFlags.ForwardCompatible)
         {
