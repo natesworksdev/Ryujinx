@@ -102,7 +102,13 @@ namespace ARMeilleure.CodeGen.X86
                             break;
 
                         case Instruction.Tailcall:
-                            HandleTailcallWindowsAbi(stackAlloc, node, operation);
+                            if (callConv == CallConvName.Windows)
+                            {
+                                HandleTailcallWindowsAbi(stackAlloc, node, operation);
+                            } else
+                            {
+                                HandleTailcallSystemVAbi(stackAlloc, node, operation);
+                            }
                             break;
 
                         case Instruction.VectorInsert8:
@@ -854,10 +860,84 @@ namespace ARMeilleure.CodeGen.X86
             return node;
         }
 
+        private static void HandleTailcallSystemVAbi(StackAllocator stackAlloc, LLNode node, Operation operation)
+        {
+            LinkedList<Node> nodes = node.List;
+
+            List<Operand> sources = new List<Operand>();
+
+            sources.Add(operation.GetSource(0));
+
+            int argsCount = operation.SourcesCount - 1;
+
+            int intMax = CallingConvention.GetIntArgumentsOnRegsCount();
+            int vecMax = CallingConvention.GetVecArgumentsOnRegsCount();
+
+            int intCount = 0;
+            int vecCount = 0;
+
+            // Handle arguments passed on registers.
+            for (int index = 0; index < argsCount; index++)
+            {
+                Operand source = operation.GetSource(1 + index);
+
+                bool passOnReg;
+
+                if (source.Type.IsInteger())
+                {
+                    passOnReg = intCount + 1 < intMax;
+                }
+                else
+                {
+                    passOnReg = vecCount < vecMax;
+                }
+
+                if (source.Type == OperandType.V128 && passOnReg)
+                {
+                    // V128 is a struct, we pass each half on a GPR if possible.
+                    Operand argReg = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
+                    Operand argReg2 = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
+
+                    nodes.AddBefore(node, Operation(Instruction.VectorExtract, argReg, source, Const(0)));
+                    nodes.AddBefore(node, Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
+
+                    continue;
+                }
+
+                if (passOnReg)
+                {
+                    Operand argReg = source.Type.IsInteger()
+                    ? Gpr(CallingConvention.GetIntArgumentRegister(intCount++), source.Type)
+                    : Xmm(CallingConvention.GetVecArgumentRegister(vecCount++), source.Type);
+
+                    Operation copyOp = Operation(Instruction.Copy, argReg, source);
+
+                    HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
+
+                    sources.Add(argReg);
+                } 
+                else
+                {
+                    throw new NotImplementedException("Spilling is not currently supported for tail calls. (too many arguments)");
+                }
+            }
+
+            // The target address must be on the return registers, since we
+            // don't return anything and it is guaranteed to not be a
+            // callee saved register (which would be trashed on the epilogue).
+            Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), OperandType.I64);
+
+            Operation addrCopyOp = Operation(Instruction.Copy, retReg, operation.GetSource(0));
+
+            nodes.AddBefore(node, addrCopyOp);
+
+            sources[0] = retReg;
+
+            operation.SetSources(sources.ToArray());
+        }
+
         private static void HandleTailcallWindowsAbi(StackAllocator stackAlloc, LLNode node, Operation operation)
         {
-            Operand dest = operation.Destination;
-
             LinkedList<Node> nodes = node.List;
 
             int argsCount = operation.SourcesCount - 1;
@@ -866,7 +946,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (argsCount > maxArgs)
             {
-                argsCount = maxArgs;
+                throw new NotImplementedException("Spilling is not currently supported for tail calls. (too many arguments)");
             }
 
             Operand[] sources = new Operand[1 + argsCount];
