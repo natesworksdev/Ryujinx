@@ -155,6 +155,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
                             {
                                 targetProperties  = properties;
                                 targetAddressInfo = info;
+
                                 break;
                             }
                         }
