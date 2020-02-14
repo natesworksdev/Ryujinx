@@ -519,7 +519,7 @@ namespace Ryujinx.HLE.HOS
         {
             Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
 
-            if (result == ResultFs.PathNotFound)
+            if (ResultFs.PathNotFound.Includes(result))
             {
                 Logger.PrintWarning(LogClass.Loader, "NPDM file not found, using default values!");
 
