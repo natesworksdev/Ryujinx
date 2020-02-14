@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         private bool _aslrDisabled;
 
         public int AddrSpaceWidth { get; private set; }
-        
+
         private bool _isKernel;
 
         private bool _aslrEnabled;
