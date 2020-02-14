@@ -80,7 +80,7 @@ namespace Ryujinx
             Application.Init();
 
             string globalProdKeysPath = Path.Combine(globalBasePath, "system", "prod.keys");
-            string userProfilePath   = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
+            string userProfilePath    = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
             if (!File.Exists(globalProdKeysPath) && !File.Exists(userProfilePath) && !Migration.IsMigrationNeeded())
             {
                 GtkDialog.CreateWarningDialog("Key file was not found", "Please refer to `KEYS.md` for more info");
