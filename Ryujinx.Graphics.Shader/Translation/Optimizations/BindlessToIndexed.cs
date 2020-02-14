@@ -68,9 +68,9 @@ namespace Ryujinx.Graphics.Shader.Translation.Optimizations
 
                 Operand source = addOp.GetSource(0);
 
-                Operation shrBy1 = new Operation(Instruction.ShiftRightU32, index, source, Const(1));
+                Operation shrBy3 = new Operation(Instruction.ShiftRightU32, index, source, Const(3));
 
-                block.Operations.AddBefore(node, shrBy1);
+                block.Operations.AddBefore(node, shrBy3);
 
                 texOp.SetSource(0, index);
             }
