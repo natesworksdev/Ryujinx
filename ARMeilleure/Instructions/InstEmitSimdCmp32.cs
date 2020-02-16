@@ -133,11 +133,11 @@ namespace ARMeilleure.Instructions
 
                     if (type == OperandType.FP64)
                     {
-                        return context.Call(f64, m, new Operand(0.0), one);
+                        return context.Call(f64, m, ConstF(0.0), one);
                     }
                     else
                     {
-                        return context.Call(f32, m, new Operand(0.0f), one);
+                        return context.Call(f32, m, ConstF(0.0f), one);
                     }
                 });
             }
