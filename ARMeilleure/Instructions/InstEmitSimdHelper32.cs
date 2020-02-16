@@ -2,7 +2,7 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
-
+using System.Diagnostics;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -33,6 +33,8 @@ namespace ARMeilleure.Instructions
 
         public static Operand ExtractScalar(ArmEmitterContext context, OperandType type, int reg)
         {
+            Debug.Assert(type != OperandType.V128);
+
             if (type == OperandType.FP64 || type == OperandType.I64)
             {
                 // From dreg.
@@ -47,6 +49,8 @@ namespace ARMeilleure.Instructions
 
         public static void InsertScalar(ArmEmitterContext context, int reg, Operand value)
         {
+            Debug.Assert(value.Type != OperandType.V128);
+
             Operand vec, insert;
             if (value.Type == OperandType.FP64 || value.Type == OperandType.I64)
             {
