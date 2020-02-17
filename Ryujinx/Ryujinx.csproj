@@ -6,7 +6,7 @@
     <OutputType>Exe</OutputType>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configurations>Debug;Release;Profile Debug;Profile Release</Configurations>
-    <Version>1.0.0-dirty</Version>
+    <Version>1.1.0-dirty</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Release|AnyCPU'">
@@ -16,7 +16,6 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Debug|AnyCPU'">
     <DefineConstants>TRACE;USE_DEBUGGING</DefineConstants>
-    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <!-- Due to .net core 3.0 embedded resource loading -->

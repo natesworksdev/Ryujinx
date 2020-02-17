@@ -1,0 +1,76 @@
+name: "Release job"
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: '3.1.100'
+      - name: Determine Build version
+        id: buildVersion
+        run: dotnet run --project "Ryujinx.Actions"
+        env:
+          INPUT_OPERATION: 'get-build-version'
+          INPUT_RELEASE_REPOSITORY: 'Ryujinx/binaries'
+      - name: "Print Build version"
+        run: "echo ${{ steps.buildVersion.outputs.release-version }}"
+      - name: Publish Windows for x64
+        run: ./.github/actions/scripts/dotnet_publish
+        env:
+          BUILD_TYPE: Release
+          TARGET_OS: win
+          TARGET_ARCH: x64
+          BUILD_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+      - name: Publish Windows for x64 (Profiled)
+        run: ./.github/actions/scripts/dotnet_publish
+        env:
+          BUILD_TYPE: Profile Release
+          TARGET_OS: win
+          TARGET_ARCH: x64
+          RELEASE_POSTFIX: profiled-
+          BUILD_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+      - name: Publish Linux for x64
+        run: ./.github/actions/scripts/dotnet_publish
+        env:
+          BUILD_TYPE: Release
+          TARGET_OS: linux
+          TARGET_ARCH: x64
+          BUILD_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+      - name: Publish Linux for x64 (Profiled)
+        run: ./.github/actions/scripts/dotnet_publish
+        env:
+          BUILD_TYPE: Profile Release
+          TARGET_OS: linux
+          TARGET_ARCH: x64
+          RELEASE_POSTFIX: profiled-
+          BUILD_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+      - name: Publish OSX for x64
+        run: ./.github/actions/scripts/dotnet_publish
+        env:
+          BUILD_TYPE: Release
+          TARGET_OS: osx
+          TARGET_ARCH: x64
+          BUILD_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+      - name: Publish OSX for x64 (Profiled)
+        run: ./.github/actions/scripts/dotnet_publish
+        env:
+          BUILD_TYPE: Profile Release
+          TARGET_OS: osx
+          TARGET_ARCH: x64
+          RELEASE_POSTFIX: profiled-
+          BUILD_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+      - name: Publish to GitHub Release
+        run: dotnet run --project "Ryujinx.Actions"
+        env:
+          INPUT_OPERATION: 'publish-release'
+          INPUT_RELEASE_REPOSITORY: 'Ryujinx/binaries'
+          INPUT_RELEASE_VERSION: ${{ steps.buildVersion.outputs.release-version }}
+          INPUT_RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}

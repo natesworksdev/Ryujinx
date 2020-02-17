@@ -18,7 +18,6 @@
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Debug|AnyCPU'">
     <DefineConstants>TRACE;USE_DEBUGGING</DefineConstants>
-    <Optimize>false</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

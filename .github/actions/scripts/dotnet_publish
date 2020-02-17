@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# ensure the artifacts directory is created
+mkdir -p $GITHUB_WORKSPACE/artifacts
+
+dotnet publish "Ryujinx/Ryujinx.csproj" -c "${BUILD_TYPE}" -r "${TARGET_OS}-${TARGET_ARCH}" /p:Version=$BUILD_VERSION
+
+pushd "$GITHUB_WORKSPACE/Ryujinx/bin/$BUILD_TYPE/netcoreapp3.0/$TARGET_OS-$TARGET_ARCH/publish/"
+zip -9 -r $GITHUB_WORKSPACE/artifacts/ryujinx-$RELEASE_POSTFIX$BUILD_VERSION-$TARGET_OS\_$TARGET_ARCH.zip .
+popd
