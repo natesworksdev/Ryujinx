@@ -17,7 +17,7 @@ build_script:
 
     # change version to contain the PR
 
-    $version = "$version-pr$env:APPVEYOR_PULL_REQUEST_NUMBER"
+    $version = "1.0.0-pr$env:APPVEYOR_PULL_REQUEST_NUMBER"
 
     # update AppVeyor build
 
