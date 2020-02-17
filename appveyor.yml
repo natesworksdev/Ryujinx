@@ -10,6 +10,7 @@ environment:
 build_script:
 - ps: >-
     # Ensure that we are in a PR
+
     if (-not (Test-Path env:APPVEYOR_PULL_REQUEST_NUMBER)) {
       throw "This should only be trigger on pull request build!"
     }
