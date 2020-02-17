@@ -156,7 +156,9 @@ namespace Ryujinx.Ui
         {
             var result = base.OnConfigureEvent(evnt);
 
-            _renderer.Window.SetSize(AllocatedWidth, AllocatedHeight);
+            Gdk.Monitor monitor = Display.GetMonitorAtWindow(Window);
+
+            _renderer.Window.SetSize(evnt.Width * monitor.ScaleFactor, evnt.Height * monitor.ScaleFactor);
 
             return result;
         }
