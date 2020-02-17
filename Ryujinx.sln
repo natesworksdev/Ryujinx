@@ -35,7 +35,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Nvdec", "R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Debugger", "Ryujinx.Debugger\Ryujinx.Debugger.csproj", "{79E4EE34-9C5F-4BE6-8529-A49D32B5B0CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Actions", "Ryujinx.Actions\Ryujinx.Actions.csproj", "{B4BB6784-3F94-4EEB-AFA1-3D497D2DC0AB}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Actions", "Ryujinx.Actions\Ryujinx.Actions.csproj", "{B4BB6784-3F94-4EEB-AFA1-3D497D2DC0AB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Updater", "Ryujinx.Updater\Ryujinx.Updater.csproj", "{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -181,6 +183,14 @@ Global
 		{B4BB6784-3F94-4EEB-AFA1-3D497D2DC0AB}.Profile Release|Any CPU.Build.0 = Release|Any CPU
 		{B4BB6784-3F94-4EEB-AFA1-3D497D2DC0AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B4BB6784-3F94-4EEB-AFA1-3D497D2DC0AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Profile Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Profile Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Profile Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Profile Release|Any CPU.Build.0 = Release|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9F8C43E-E3C9-41F9-B32B-1629711EEC89}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

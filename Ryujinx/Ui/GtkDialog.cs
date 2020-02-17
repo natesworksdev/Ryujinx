@@ -20,6 +20,20 @@ namespace Ryujinx.Ui
             errorDialog.Dispose();
         }
 
+        internal static MessageDialog CreateAcceptDialog(string title, string text, string secondaryText)
+        {
+            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, null)
+            {
+                Title = title,
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                Text = text,
+                SecondaryText = secondaryText,
+                WindowPosition = WindowPosition.Center
+            };
+            messageDialog.SetSizeRequest(100, 20);
+            return messageDialog;
+        }
+
         internal static void CreateWarningDialog(string text, string secondaryText)
         {
             CreateDialog("Ryujinx - Warning", text, secondaryText);
