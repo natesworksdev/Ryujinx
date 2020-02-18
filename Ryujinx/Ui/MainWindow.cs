@@ -51,6 +51,7 @@ namespace Ryujinx.Ui
         [GUI] MenuBar        _menuBar;
         [GUI] Box            _footerBox;
         [GUI] MenuItem       _fullScreen;
+        [GUI] Box            _statusBar;
         [GUI] MenuItem       _stopEmulation;
         [GUI] CheckMenuItem  _favToggle;
         [GUI] MenuItem       _firmwareInstallFile;
@@ -64,6 +65,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem  _lastPlayedToggle;
         [GUI] CheckMenuItem  _fileExtToggle;
         [GUI] CheckMenuItem  _fileSizeToggle;
+        [GUI] Label          _fpsStatus;
         [GUI] CheckMenuItem  _pathToggle;
         [GUI] TreeView       _gameTable;
         [GUI] ScrolledWindow _gameTableWindow;
@@ -72,6 +74,7 @@ namespace Ryujinx.Ui
         [GUI] Label          _firmwareVersionLabel;
         [GUI] LevelBar       _progressBar;
         [GUI] Box            _viewBox;
+        [GUI] Label          _vSyncStatus;
         [GUI] Box            _listStatusBox;
 
 #pragma warning restore CS0649
@@ -87,6 +90,7 @@ namespace Ryujinx.Ui
 
             ApplicationLibrary.ApplicationAdded        += Application_Added;
             ApplicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
+            GLRenderer.StatusUpdatedEvent              += Update_StatusBar;
 
             _gameTable.ButtonReleaseEvent += Row_Clicked;
 
@@ -451,12 +455,15 @@ namespace Ryujinx.Ui
 
         private void RecreateFooterForMenu()
         {
-            _footerBox.Add(_listStatusBox);
+            _listStatusBox.Show();
+
+            _fpsStatus.Text   = "";
+            _vSyncStatus.Text = "";
         }
 
         private void ClearFooterForGameRender()
         {
-            _footerBox.Remove(_listStatusBox);
+            _listStatusBox.Hide();
         }
 
         public void ToggleExtraWidgets(bool show)
@@ -466,7 +473,8 @@ namespace Ryujinx.Ui
                 if (show)
                 {
                     _menuBar.ShowAll();
-                    _footerBox.ShowAll();
+                    _footerBox.Show();
+                    _statusBar.Show();
                 }
                 else
                 {
@@ -587,6 +595,26 @@ namespace Ryujinx.Ui
                 }
 
                 _progressBar.Value = barValue;
+            });
+        }
+
+        private void Update_StatusBar(object sender, (bool vSync, string fps) status)
+        {
+            Application.Invoke(delegate
+            {
+                _vSyncStatus.Text = status.vSync ? "VSync On" : "VSync Off";
+                _fpsStatus.Text   = status.fps;
+
+                if (status.vSync)
+                {
+                    _vSyncStatus.Attributes = new Pango.AttrList();
+                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(0, ushort.MaxValue, 0));
+                }
+                else
+                {
+                    _vSyncStatus.Attributes = new Pango.AttrList();
+                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(ushort.MaxValue, 0, 0));
+                }
             });
         }
 

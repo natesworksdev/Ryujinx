@@ -24,6 +24,8 @@ namespace Ryujinx.Ui
 
         public ManualResetEvent WaitEvent { get; set; }
 
+        public static event EventHandler<(bool, string)> StatusUpdatedEvent;
+
         public bool IsActive   { get; set; }
         public bool IsStopped  { get; set; }
         public bool IsFocused  { get; set; }
@@ -32,11 +34,7 @@ namespace Ryujinx.Ui
         private double _mouseY;
         private bool _mousePressed;
 
-        private bool _titleEvent;
-
         private bool _toggleFullscreen;
-
-        private string _newTitle;
 
         private readonly long _ticksPerFrame;
 
@@ -179,6 +177,14 @@ namespace Ryujinx.Ui
             Gtk.Application.Invoke(delegate
             {
                 parent.Present();
+
+                string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
+                    : " | " + _device.System.TitleName;
+
+                string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? string.Empty
+                    : " | " + _device.System.TitleIdText.ToUpper();
+
+                parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleIdSection}";
             });
 
             Thread renderLoopThread = new Thread(Render)
@@ -321,17 +327,9 @@ namespace Ryujinx.Ui
 
                     double hostFps = _device.Statistics.GetSystemFrameRate();
                     double gameFps = _device.Statistics.GetGameFrameRate();
+                    string status  = $"| Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0}";
 
-                    string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
-                        : " | " + _device.System.TitleName;
-
-                    string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? string.Empty
-                        : " | " + _device.System.TitleIdText.ToUpper();
-
-                    _newTitle = $"Ryujinx {Program.Version}{titleNameSection}{titleIdSection} | Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0} | " +
-                        $"Game Vsync: {(_device.EnableDeviceVsync ? "On" : "Off")}";
-
-                    _titleEvent = true;
+                    StatusUpdatedEvent?.Invoke(this, (_device.EnableDeviceVsync, status));
 
                     _device.System.SignalVsync();
 
@@ -351,16 +349,6 @@ namespace Ryujinx.Ui
         {
             while (IsActive)
             {
-                if (_titleEvent)
-                {
-                    _titleEvent = false;
-
-                    Gtk.Application.Invoke(delegate
-                    {
-                        this.ParentWindow.Title = _newTitle;
-                    });
-                }
-
                 UpdateFrame();
 
                 // Polling becomes expensive if it's not slept
