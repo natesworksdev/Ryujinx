@@ -56,6 +56,8 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem  _favToggle;
         [GUI] MenuItem       _firmwareInstallFile;
         [GUI] MenuItem       _firmwareInstallDirectory;
+        [GUI] Label          _hostFpsStatus;
+        [GUI] Label          _hostFrameTimeStatus;
         [GUI] MenuItem       _openDebugger;
         [GUI] CheckMenuItem  _iconToggle;
         [GUI] CheckMenuItem  _appToggle;
@@ -65,8 +67,9 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem  _lastPlayedToggle;
         [GUI] CheckMenuItem  _fileExtToggle;
         [GUI] CheckMenuItem  _fileSizeToggle;
-        [GUI] Label          _fpsStatus;
         [GUI] CheckMenuItem  _pathToggle;
+        [GUI] Label          _gameFpsStatus;
+        [GUI] Label          _gameFrameTimeStatus;
         [GUI] TreeView       _gameTable;
         [GUI] ScrolledWindow _gameTableWindow;
         [GUI] TreeSelection  _gameTableSelection;
@@ -86,7 +89,8 @@ namespace Ryujinx.Ui
         {
             builder.Autoconnect(this);
 
-            DeleteEvent += Window_Close;
+            this.DeleteEvent      += Window_Close;
+            _fullScreen.Activated += FullScreen_Toggled;
 
             ApplicationLibrary.ApplicationAdded        += Application_Added;
             ApplicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
@@ -165,7 +169,7 @@ namespace Ryujinx.Ui
 
             Task.Run(RefreshFirmwareLabel);
 
-            _fullScreen.Activated += FullScreen_Toggled;
+            _statusBar.Hide();
         }
 
 #if USE_DEBUGGING
@@ -405,7 +409,7 @@ namespace Ryujinx.Ui
                 _viewBox.Child = _gLWidget;
 
                 _gLWidget.ShowAll();
-                ClearFooterForGameRender();
+                EditFooterForGameRender();
             });
 
             _gLWidget.WaitEvent.WaitOne();
@@ -456,14 +460,13 @@ namespace Ryujinx.Ui
         private void RecreateFooterForMenu()
         {
             _listStatusBox.Show();
-
-            _fpsStatus.Text   = "";
-            _vSyncStatus.Text = "";
+            _statusBar.Hide();
         }
 
-        private void ClearFooterForGameRender()
+        private void EditFooterForGameRender()
         {
             _listStatusBox.Hide();
+            _statusBar.Show();
         }
 
         public void ToggleExtraWidgets(bool show)
@@ -598,14 +601,17 @@ namespace Ryujinx.Ui
             });
         }
 
-        private void Update_StatusBar(object sender, (bool vSync, string fps) status)
+        private void Update_StatusBar(object sender, StatusUpdatedEventArgs args)
         {
             Application.Invoke(delegate
             {
-                _vSyncStatus.Text = status.vSync ? "VSync On" : "VSync Off";
-                _fpsStatus.Text   = status.fps;
+                _vSyncStatus.Text         = args.VSyncEnabled ? "VSync On" : "VSync Off";
+                _hostFpsStatus.Text       = args.HostFpsStatus;
+                _gameFpsStatus.Text       = args.GameFpsStatus;
+                _hostFrameTimeStatus.Text = args.HostFrameTimeStatus;
+                _gameFrameTimeStatus.Text = args.GameFrameTimeStatus;
 
-                if (status.vSync)
+                if (args.VSyncEnabled)
                 {
                     _vSyncStatus.Attributes = new Pango.AttrList();
                     _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(0, ushort.MaxValue, 0));

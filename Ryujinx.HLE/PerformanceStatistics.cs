@@ -14,6 +14,7 @@ namespace Ryujinx.HLE
         private double[] _averageFrameRate;
         private double[] _accumulatedFrameTime;
         private double[] _previousFrameTime;
+        private double[] _deltaFrameTime;
 
         private long[] _framesRendered;
 
@@ -30,6 +31,7 @@ namespace Ryujinx.HLE
             _averageFrameRate     = new double[2];
             _accumulatedFrameTime = new double[2];
             _previousFrameTime    = new double[2];
+            _deltaFrameTime       = new double[2];
 
             _framesRendered = new long[2];
 
@@ -96,13 +98,13 @@ namespace Ryujinx.HLE
         {
             double currentFrameTime = _executionTime.ElapsedTicks * _ticksToSeconds;
 
-            double elapsedFrameTime = currentFrameTime - _previousFrameTime[frameType];
+            _deltaFrameTime[frameType] = currentFrameTime - _previousFrameTime[frameType];
 
             _previousFrameTime[frameType] = currentFrameTime;
 
             lock (_frameLock[frameType])
             {
-                _accumulatedFrameTime[frameType] += elapsedFrameTime;
+                _accumulatedFrameTime[frameType] += _deltaFrameTime[frameType];
 
                 _framesRendered[frameType]++;
             }
@@ -116,6 +118,16 @@ namespace Ryujinx.HLE
         public double GetGameFrameRate()
         {
             return _averageFrameRate[FrameTypeGame];
+        }
+
+        public double GetSystemFrameTime()
+        {
+            return _deltaFrameTime[FrameTypeSystem] * 1000;
+        }
+
+        public double GetGameFrameTime()
+        {
+            return _deltaFrameTime[FrameTypeGame] * 1000;
         }
     }
 }

@@ -24,7 +24,7 @@ namespace Ryujinx.Ui
 
         public ManualResetEvent WaitEvent { get; set; }
 
-        public static event EventHandler<(bool, string)> StatusUpdatedEvent;
+        public static event EventHandler<StatusUpdatedEventArgs> StatusUpdatedEvent;
 
         public bool IsActive   { get; set; }
         public bool IsStopped  { get; set; }
@@ -325,11 +325,14 @@ namespace Ryujinx.Ui
 
                     _device.Statistics.RecordSystemFrameTime();
 
-                    double hostFps = _device.Statistics.GetSystemFrameRate();
-                    double gameFps = _device.Statistics.GetGameFrameRate();
-                    string status  = $"| Host FPS: {hostFps:0.0} | Game FPS: {gameFps:0.0}";
-
-                    StatusUpdatedEvent?.Invoke(this, (_device.EnableDeviceVsync, status));
+                    StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs
+                    {
+                        VSyncEnabled        = _device.EnableDeviceVsync,
+                        HostFpsStatus       = $"Host FPS: {_device.Statistics.GetSystemFrameRate():0.0}",
+                        GameFpsStatus       = $"Game FPS: {_device.Statistics.GetGameFrameRate():0.0}",
+                        HostFrameTimeStatus = $"Host Frame Time: {_device.Statistics.GetSystemFrameTime():00.00}ms",
+                        GameFrameTimeStatus = $"Game Frame Time: {_device.Statistics.GetGameFrameTime():00.00}ms"
+                    });
 
                     _device.System.SignalVsync();
 
