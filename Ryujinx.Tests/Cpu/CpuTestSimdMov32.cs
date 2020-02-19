@@ -3,8 +3,6 @@
 using ARMeilleure.State;
 using NUnit.Framework;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -12,7 +10,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestSimdMov32 : CpuTest32
     {
 #if SimdMov32
-        private const int RndCntImm = 10;
+        private const int RndCntImm = 2;
 
         [Test, Pairwise, Description("VMOV.I<size> <Dd/Qd>, #<imm>")]
         public void Movi_V([Range(0u, 10u)] uint variant,

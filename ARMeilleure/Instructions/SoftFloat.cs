@@ -2799,6 +2799,7 @@ namespace ARMeilleure.Instructions
             {
                 bool inf1 = type1 == FPType.Infinity; bool zero1 = type1 == FPType.Zero;
                 bool inf2 = type2 == FPType.Infinity; bool zero2 = type2 == FPType.Zero;
+
                 if (inf1 && inf2 && sign1 == sign2)
                 {
                     result = FPDefaultNaN();

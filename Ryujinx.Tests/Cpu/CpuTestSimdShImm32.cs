@@ -9,7 +9,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestSimdShImm32 : CpuTest32
     {
 #if SimdShImm32
-        private const int RndCnt = 5;
+        private const int RndCnt = 2;
 
         [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, #<imm>")]
         public void Vshl_Imm([Values(0u)] uint rd,

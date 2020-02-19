@@ -238,24 +238,24 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void VmaxNm_S(ArmEmitterContext context)
+        public static void Vmaxnm_S(ArmEmitterContext context)
         {
             EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPMaxNum, SoftFloat64.FPMaxNum, op1, op2));
         }
 
-        public static void VminNm_S(ArmEmitterContext context)
+        public static void Vmaxnm_V(ArmEmitterContext context)
+        {
+            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMaxNumFpscr, SoftFloat64.FPMaxNumFpscr, op1, op2));
+        }
+
+        public static void Vminnm_S(ArmEmitterContext context)
         {
             EmitScalarBinaryOpF32(context, (op1, op2) => EmitSoftFloatCall(context, SoftFloat32.FPMinNum, SoftFloat64.FPMinNum, op1, op2));
         }
 
-        public static void VmaxminNm_V(ArmEmitterContext context)
+        public static void Vminnm_V(ArmEmitterContext context)
         {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-            bool max = (op.Size & 2) == 0; // Op is high bit of size (not used for fp).
-            _F32_F32_F32_Bool f32 = max ? new _F32_F32_F32_Bool(SoftFloat32.FPMaxNumFpscr) : new _F32_F32_F32_Bool(SoftFloat32.FPMinNumFpscr);
-            _F64_F64_F64_Bool f64 = max ? new _F64_F64_F64_Bool(SoftFloat64.FPMaxNumFpscr) : new _F64_F64_F64_Bool(SoftFloat64.FPMinNumFpscr);
-
-            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, f32, f64, op1, op2));
+            EmitVectorBinaryOpSx32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMinNumFpscr, SoftFloat64.FPMinNumFpscr, op1, op2));
         }
 
         public static void Vmax_V(ArmEmitterContext context)

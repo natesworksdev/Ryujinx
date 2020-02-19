@@ -8,11 +8,11 @@ using System.Collections.Generic;
 namespace Ryujinx.Tests.Cpu
 {
     [Category("SimdReg32")]
-    public sealed class CpuTestSimdReg32 : CpuTest32 
+    public sealed class CpuTestSimdReg32 : CpuTest32
     {
 #if SimdReg32
 
-        #region "ValueSource (Types)"
+#region "ValueSource (Types)"
         private static ulong[] _1B1H1S1D_()
         {
             return new ulong[] { 0x0000000000000000ul, 0x000000000000007Ful,
@@ -199,9 +199,9 @@ namespace Ryujinx.Tests.Cpu
                 yield return rnd2;
             }
         }
-        #endregion
+#endregion
 
-        private const int RndCnt = 5;
+        private const int RndCnt = 2;
 
         private static readonly bool NoZeros = false;
         private static readonly bool NoInfs  = false;

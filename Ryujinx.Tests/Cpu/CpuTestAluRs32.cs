@@ -8,6 +8,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestAluRs32 : CpuTest32
     {
 #if AluRs32
+
 #region "ValueSource (Opcodes)"
         private static uint[] _Add_Adds_Rsb_Rsbs_()
         {
@@ -32,7 +33,7 @@ namespace Ryujinx.Tests.Cpu
                 0xe0d00000u  // SBCS R0, R0, R0
             };
         }
-        #endregion
+#endregion
 
         private const int RndCnt = 2;
         private const int RndCntAmount = 2;

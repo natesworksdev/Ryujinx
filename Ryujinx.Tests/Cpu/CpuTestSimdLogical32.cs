@@ -10,6 +10,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestSimdLogical32 : CpuTest32
     {
 #if SimdLogical32
+
 #region "ValueSource (Opcodes)"
         private static uint[] _Vbif_Vbit_Vbsl_Vand_()
         {

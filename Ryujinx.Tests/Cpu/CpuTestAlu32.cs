@@ -9,6 +9,7 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestAlu32 : CpuTest32
     {
 #if Alu32
+
 #region "ValueSource (Opcodes)"
         private static uint[] _Lsr_Lsl_Asr_Ror_()
         {
