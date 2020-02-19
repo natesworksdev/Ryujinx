@@ -691,7 +691,16 @@ namespace Ryujinx.HLE.HOS
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            Result rc = EnsureApplicationSaveData(Device.FileSystem.FsClient, out _, titleId, ref control, ref user);
+            FileSystemClient fs = Device.FileSystem.FsClient;
+
+            Result rc = fs.EnsureApplicationCacheStorage(out _, titleId, ref ControlData.Value);
+
+            if (rc.IsFailure())
+            {
+                Logger.PrintError(LogClass.Application, $"Error calling EnsureApplicationCacheStorage. Result code {rc.ToStringWithName()}");
+            }
+
+            rc = EnsureApplicationSaveData(fs, out _, titleId, ref ControlData.Value, ref user);
 
             if (rc.IsFailure())
             {
