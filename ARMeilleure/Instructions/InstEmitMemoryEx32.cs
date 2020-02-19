@@ -2,9 +2,9 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
-using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
+using static ARMeilleure.Instructions.InstEmitMemoryExHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -153,7 +153,7 @@ namespace ARMeilleure.Instructions
                     // Keep loads atomic - make the call to get the whole region and then decompose it into parts
                     // for the registers.
 
-                    Operand value = EmitExLoad(context, address, exclusive, size);
+                    Operand value = EmitLoadExclusive(context, address, exclusive, size);
 
                     Operand valueLow = context.ConvertI64ToI32(value);
 
@@ -180,7 +180,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    SetIntA32(context, op.Rt, EmitExLoad(context, address, exclusive, size));
+                    SetIntA32(context, op.Rt, EmitLoadExclusive(context, address, exclusive, size));
                 }
             }
             else
@@ -198,7 +198,7 @@ namespace ARMeilleure.Instructions
                     context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 
                     Operand leResult = context.BitwiseOr(lo, context.ShiftLeft(hi, Const(32)));
-                    Operand leS = EmitExStore(context, address, leResult, exclusive, size);
+                    Operand leS = EmitStoreExclusive(context, address, leResult, exclusive, size);
                     if (exclusive)
                     {
                         SetIntA32(context, op.Rd, leS);
@@ -209,7 +209,7 @@ namespace ARMeilleure.Instructions
                     context.MarkLabel(lblBigEndian);
 
                     Operand beResult = context.BitwiseOr(hi, context.ShiftLeft(lo, Const(32)));
-                    Operand beS = EmitExStore(context, address, beResult, exclusive, size);
+                    Operand beS = EmitStoreExclusive(context, address, beResult, exclusive, size);
                     if (exclusive)
                     {
                         SetIntA32(context, op.Rd, beS);
@@ -219,7 +219,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    Operand s = EmitExStore(context, address, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt)), exclusive, size);
+                    Operand s = EmitStoreExclusive(context, address, context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt)), exclusive, size);
                     // This is only needed for exclusive stores. The function returns 0
                     // when the store is successful, and 1 otherwise.
                     if (exclusive)
@@ -227,84 +227,6 @@ namespace ARMeilleure.Instructions
                         SetIntA32(context, op.Rd, s);
                     }
                 }
-            }
-        }
-
-        private static Operand EmitExLoad(
-            ArmEmitterContext context,
-            Operand address,
-            bool exclusive,
-            int size)
-        {
-            Delegate fallbackMethodDlg = null;
-
-            if (exclusive)
-            {
-                switch (size)
-                {
-                    case 0: fallbackMethodDlg = new _U8_U64(NativeInterface.ReadByteExclusive); break;
-                    case 1: fallbackMethodDlg = new _U16_U64(NativeInterface.ReadUInt16Exclusive); break;
-                    case 2: fallbackMethodDlg = new _U32_U64(NativeInterface.ReadUInt32Exclusive); break;
-                    case 3: fallbackMethodDlg = new _U64_U64(NativeInterface.ReadUInt64Exclusive); break;
-                    case 4: fallbackMethodDlg = new _V128_U64(NativeInterface.ReadVector128Exclusive); break;
-                }
-            }
-            else
-            {
-                switch (size)
-                {
-                    case 0: fallbackMethodDlg = new _U8_U64(NativeInterface.ReadByte); break;
-                    case 1: fallbackMethodDlg = new _U16_U64(NativeInterface.ReadUInt16); break;
-                    case 2: fallbackMethodDlg = new _U32_U64(NativeInterface.ReadUInt32); break;
-                    case 3: fallbackMethodDlg = new _U64_U64(NativeInterface.ReadUInt64); break;
-                    case 4: fallbackMethodDlg = new _V128_U64(NativeInterface.ReadVector128); break;
-                }
-            }
-
-            return context.Call(fallbackMethodDlg, address);
-        }
-
-        private static Operand EmitExStore(
-            ArmEmitterContext context,
-            Operand address,
-            Operand value,
-            bool exclusive,
-            int size)
-        {
-            if (size < 3)
-            {
-                value = context.ConvertI64ToI32(value);
-            }
-
-            Delegate fallbackMethodDlg = null;
-
-            if (exclusive)
-            {
-                switch (size)
-                {
-                    case 0: fallbackMethodDlg = new _S32_U64_U8(NativeInterface.WriteByteExclusive); break;
-                    case 1: fallbackMethodDlg = new _S32_U64_U16(NativeInterface.WriteUInt16Exclusive); break;
-                    case 2: fallbackMethodDlg = new _S32_U64_U32(NativeInterface.WriteUInt32Exclusive); break;
-                    case 3: fallbackMethodDlg = new _S32_U64_U64(NativeInterface.WriteUInt64Exclusive); break;
-                    case 4: fallbackMethodDlg = new _S32_U64_V128(NativeInterface.WriteVector128Exclusive); break;
-                }
-
-                return context.Call(fallbackMethodDlg, address, value);
-            }
-            else
-            {
-                switch (size)
-                {
-                    case 0: fallbackMethodDlg = new _Void_U64_U8(NativeInterface.WriteByte); break;
-                    case 1: fallbackMethodDlg = new _Void_U64_U16(NativeInterface.WriteUInt16); break;
-                    case 2: fallbackMethodDlg = new _Void_U64_U32(NativeInterface.WriteUInt32); break;
-                    case 3: fallbackMethodDlg = new _Void_U64_U64(NativeInterface.WriteUInt64); break;
-                    case 4: fallbackMethodDlg = new _Void_U64_V128(NativeInterface.WriteVector128); break;
-                }
-
-                context.Call(fallbackMethodDlg, address, value);
-
-                return null;
             }
         }
 

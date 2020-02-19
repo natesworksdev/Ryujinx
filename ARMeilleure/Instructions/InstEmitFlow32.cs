@@ -3,6 +3,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 
+using static ARMeilleure.Instructions.InstEmitFlowHelper;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -67,7 +68,7 @@ namespace ARMeilleure.Instructions
 
             Operand addr = GetIntA32(context, op.Rm);
             Operand bitOne = context.BitwiseAnd(addr, Const(1));
-            addr = context.BitwiseOr(addr, Const(1)); // Set call flag.
+            addr = context.BitwiseOr(addr, Const(CallFlag)); // Set call flag.
 
             bool isThumb = IsThumb(context.CurrOp);
 
