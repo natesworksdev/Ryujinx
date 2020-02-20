@@ -68,7 +68,7 @@ namespace ARMeilleure.Instructions
 
             Operand addr = GetIntA32(context, op.Rm);
             Operand bitOne = context.BitwiseAnd(addr, Const(1));
-            addr = context.BitwiseOr(addr, Const(CallFlag)); // Set call flag.
+            addr = context.BitwiseOr(addr, Const((int)CallFlag)); // Set call flag.
 
             bool isThumb = IsThumb(context.CurrOp);
 
