@@ -7,6 +7,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Configurations>Debug;Release;Profile Debug;Profile Release</Configurations>
     <Version>1.0.0-dirty</Version>
+    <ForceBeauty>True</ForceBeauty>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Release|AnyCPU'">
@@ -76,6 +77,7 @@
     <PackageReference Include="GLWidget" Version="1.0.0" />
     <PackageReference Include="GtkSharp" Version="3.22.25.56" />
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
+    <PackageReference Include="nulastudio.NetCoreBeauty" Version="1.2.3" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.5.12" />
   </ItemGroup>
 
