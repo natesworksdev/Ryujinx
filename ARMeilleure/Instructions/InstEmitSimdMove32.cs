@@ -13,7 +13,7 @@ namespace ARMeilleure.Instructions
     static partial class InstEmit32
     {
         #region "Masks"
-        // same as InstEmitSimdMove, as the instruction do the same thing.
+        // Same as InstEmitSimdMove, as the instructions do the same thing.
         private static readonly long[] _masksE0_Uzp = new long[]
         {
             13L << 56 | 09L << 48 | 05L << 40 | 01L << 32 | 12L << 24 | 08L << 16 | 04L << 8 | 00L << 0,
@@ -47,7 +47,7 @@ namespace ARMeilleure.Instructions
                 // To general purpose.
                 Operand value = context.VectorExtract(OperandType.I32, vec, op.Vn & 0x3);
                 SetIntA32(context, op.Rt, value);
-            } 
+            }
             else
             {
                 // From general purpose.
@@ -104,7 +104,7 @@ namespace ARMeilleure.Instructions
                 if (sameOwnerVec)
                 {
                     context.Copy(vec, context.VectorInsert(resultVec, highValue, vm1 & 3));
-                } 
+                }
                 else
                 {
                     context.Copy(vec, resultVec);
@@ -263,7 +263,7 @@ namespace ARMeilleure.Instructions
                         }
                     }
 
-                    Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, op.Qd, index + op.Id, 0, false)) : Const(0L); 
+                    Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, op.Qd, index + op.Id, 0, false)) : Const(0L);
 
                     res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes, fallback), index + op.Id, 0);
                 }
@@ -357,7 +357,7 @@ namespace ARMeilleure.Instructions
                         Operand resM = context.AddIntrinsic(X86PunpckhInstruction[op.Size], d, m);
 
                         return (resM, resD);
-                    } 
+                    }
                     else
                     {
                         Operand res = context.AddIntrinsic(X86PunpcklInstruction[op.Size], d, m);
@@ -527,7 +527,7 @@ namespace ARMeilleure.Instructions
             Operand initialM = m;
             Operand initialD = d;
 
-            if (!op.Q) //register swap: move relevant doubleword to side 0, for consistency
+            if (!op.Q) // Register swap: move relevant doubleword to side 0, for consistency.
             {
                 m = EmitSwapDoubleWordToSide(context, m, op.Vm, 0);
                 d = EmitSwapDoubleWordToSide(context, d, op.Vd, 0);
@@ -537,13 +537,17 @@ namespace ARMeilleure.Instructions
 
             bool overlap = op.Qm == op.Qd;
 
-            if (!op.Q) //register insert
+            if (!op.Q) // Register insert.
             {
                 resM = EmitDoubleWordInsert(context, initialM, EmitSwapDoubleWordToSide(context, resM, 0, op.Vm), op.Vm);
                 resD = EmitDoubleWordInsert(context, overlap ? resM : initialD, EmitSwapDoubleWordToSide(context, resD, 0, op.Vd), op.Vd);
             }
 
-            if (!overlap) context.Copy(initialM, resM);
+            if (!overlap)
+            {
+                context.Copy(initialM, resM);
+            }
+
             context.Copy(initialD, resD);
         }
     }
