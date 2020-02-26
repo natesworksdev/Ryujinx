@@ -593,7 +593,10 @@ namespace ARMeilleure.Instructions
             Operand m = GetVecA32(op.Qm);
             Operand d = GetVecA32(op.Qd);
 
-            if (side == -1) side = op.Vd;
+            if (side == -1)
+            {
+                side = op.Vd;
+            }
 
             if (!op.Q) // Register swap: move relevant doubleword to destination side.
             {
@@ -605,7 +608,10 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register insert.
             {
-                if (side != op.Vd) EmitSwapDoubleWordToSide(context, m, side, op.Vd);
+                if (side != op.Vd)
+                {
+                    res = EmitSwapDoubleWordToSide(context, res, side, op.Vd);
+                }
                 res = EmitDoubleWordInsert(context, d, res, op.Vd);
             }
 
@@ -837,45 +843,18 @@ namespace ARMeilleure.Instructions
 
         // Pairwise
 
-        public static void EmitSse2VectorPairwiseOpF32(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
+        public static void EmitSse2VectorPairwiseOpF32(ArmEmitterContext context, Intrinsic inst32)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
 
             EmitVectorBinaryOpSimd32(context, (n, m) =>
             {
-                int sizeF = op.Size & 1;
+                Operand unpck = context.AddIntrinsic(Intrinsic.X86Unpcklps, n, m);
 
-                if (sizeF == 0)
-                {
-                    if (op.RegisterSize == RegisterSize.Simd64)
-                    {
-                        Operand unpck = context.AddIntrinsic(Intrinsic.X86Unpcklps, n, m);
+                Operand part0 = unpck;
+                Operand part1 = context.AddIntrinsic(Intrinsic.X86Movhlps, unpck, unpck);
 
-                        Operand zero = context.VectorZero();
-
-                        Operand part0 = context.AddIntrinsic(Intrinsic.X86Movlhps, unpck, zero);
-                        Operand part1 = context.AddIntrinsic(Intrinsic.X86Movhlps, zero, unpck);
-
-                        return context.AddIntrinsic(inst32, part0, part1);
-                    }
-                    else /* if (op.RegisterSize == RegisterSize.Simd128) */
-                    {
-                        const int sm0 = 2 << 6 | 0 << 4 | 2 << 2 | 0 << 0;
-                        const int sm1 = 3 << 6 | 1 << 4 | 3 << 2 | 1 << 0;
-
-                        Operand part0 = context.AddIntrinsic(Intrinsic.X86Shufps, n, m, Const(sm0));
-                        Operand part1 = context.AddIntrinsic(Intrinsic.X86Shufps, n, m, Const(sm1));
-
-                        return context.AddIntrinsic(inst32, part0, part1);
-                    }
-                }
-                else /* if (sizeF == 1) */
-                {
-                    Operand part0 = context.AddIntrinsic(Intrinsic.X86Unpcklpd, n, m);
-                    Operand part1 = context.AddIntrinsic(Intrinsic.X86Unpckhpd, n, m);
-
-                    return context.AddIntrinsic(inst64, part0, part1);
-                }
+                return context.AddIntrinsic(inst32, part0, part1);
             }, 0);
         }
 

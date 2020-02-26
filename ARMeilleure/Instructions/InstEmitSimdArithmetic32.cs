@@ -60,12 +60,12 @@ namespace ARMeilleure.Instructions
                             return context.AddIntrinsic(Intrinsic.X86Andnpd, mask, m);
                         }
                     });
-                } 
+                }
                 else
                 {
                     EmitVectorUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Abs, Math.Abs, op1));
                 }
-            } 
+            }
             else
             {
                 EmitVectorUnaryOpSx32(context, (op1) => EmitAbs(context, op1));
@@ -104,7 +104,7 @@ namespace ARMeilleure.Instructions
             else if (Optimizations.FastFP)
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) => context.Add(op1, op2));
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPAddFpscr, SoftFloat64.FPAddFpscr, op1, op2));
@@ -117,7 +117,7 @@ namespace ARMeilleure.Instructions
             {
                 OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
                 EmitVectorBinaryOpSimd32(context, (op1, op2) => context.AddIntrinsic(X86PaddInstruction[op.Size], op1, op2));
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpZx32(context, (op1, op2) => context.Add(op1, op2));
@@ -188,13 +188,13 @@ namespace ARMeilleure.Instructions
             int b = startByte;
             long result = 0;
             long result2 = 0;
-            for (int i=0; i<8; i++)
+            for (int i = 0; i < 8; i++)
             {
                 result |= (long)((i >= end || i < start) ? 0x80 : b++) << (i * 8);
             }
             for (int i = 8; i < 16; i++)
             {
-                result2 |= (long)((i >= end || i < start) ? 0x80 : b++) << ((i-8) * 8);
+                result2 |= (long)((i >= end || i < start) ? 0x80 : b++) << ((i - 8) * 8);
             }
             return (result2, result);
         }
@@ -229,7 +229,7 @@ namespace ARMeilleure.Instructions
 
                     return context.AddIntrinsic(Intrinsic.X86Por, nPart, mPart);
                 });
-            } 
+            }
             else
             {
                 Operand res = GetVecA32(op.Qd);
@@ -433,7 +433,7 @@ namespace ARMeilleure.Instructions
                 {
                     EmitVectorUnaryOpF32(context, (op1) => context.Negate(op1));
                 }
-            } 
+            }
             else
             {
                 EmitVectorUnaryOpSx32(context, (op1) => context.Negate(op1));
@@ -512,7 +512,7 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorBinaryOpF32(context, Intrinsic.X86Maxps, Intrinsic.X86Maxpd);
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) =>
@@ -536,7 +536,7 @@ namespace ARMeilleure.Instructions
                 {
                     EmitVectorBinaryOpZx32(context, (op1, op2) => context.ConditionalSelect(context.ICompareGreaterUI(op1, op2), op1, op2));
                 }
-            } 
+            }
             else
             {
                 if (Optimizations.UseSse2)
@@ -555,7 +555,7 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorBinaryOpF32(context, Intrinsic.X86Minps, Intrinsic.X86Minpd);
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) =>
@@ -584,7 +584,7 @@ namespace ARMeilleure.Instructions
             {
                 if (Optimizations.UseSse2)
                 {
-                    EmitVectorBinaryOpSimd32(context, (op1, op2) => context.AddIntrinsic(X86PminuInstruction[op.Size], op1, op2));
+                    EmitVectorBinaryOpSimd32(context, (op1, op2) => context.AddIntrinsic(X86PminsInstruction[op.Size], op1, op2));
                 }
                 else
                 {
@@ -655,7 +655,7 @@ namespace ARMeilleure.Instructions
                 {
                     EmitVectorByScalarOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2));
                 }
-            } 
+            }
             else
             {
                 EmitVectorByScalarOpI32(context, (op1, op2) => context.Multiply(op1, op2), false);
@@ -806,15 +806,14 @@ namespace ARMeilleure.Instructions
 
         public static void Vpadd_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2 && false)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                EmitSse2VectorPairwiseOpF32(context, Intrinsic.X86Addps, Intrinsic.X86Addpd);
-            } 
+                EmitSse2VectorPairwiseOpF32(context, Intrinsic.X86Addps);
+            }
             else
             {
                 EmitVectorPairwiseOpF32(context, (op1, op2) => context.Add(op1, op2));
             }
-            
         }
 
         public static void Vpadd_I(ArmEmitterContext context)
@@ -834,7 +833,7 @@ namespace ARMeilleure.Instructions
         public static void Vrev(ArmEmitterContext context)
         {
             OpCode32SimdRev op = (OpCode32SimdRev)context.CurrOp;
-            
+
             if (Optimizations.UseSsse3)
             {
                 EmitVectorUnaryOpSimd32(context, (op1) =>
@@ -843,7 +842,7 @@ namespace ARMeilleure.Instructions
                     switch (op.Size)
                     {
                         case 3:
-                            // rev64
+                            // Rev64
                             switch (op.Opc)
                             {
                                 case 0:
@@ -857,7 +856,7 @@ namespace ARMeilleure.Instructions
                             }
                             break;
                         case 2:
-                            // rev32
+                            // Rev32
                             switch (op.Opc)
                             {
                                 case 0:
@@ -869,14 +868,14 @@ namespace ARMeilleure.Instructions
                             }
                             break;
                         case 1:
-                            // rev16
+                            // Rev16
                             mask = X86GetElements(context, 0x0e0f_0c0d_0a0b_0809L, 0x_0607_0405_0203_0001L);
                             return context.AddIntrinsic(Intrinsic.X86Pshufb, op1, mask);
                     }
 
-                    throw new InvalidOperationException("Unknown VREV Opcode+Size combo.");
+                    throw new InvalidOperationException("Unknown VREV Opcode + Size combo.");
                 });
-            } 
+            }
             else
             {
                 EmitVectorUnaryOpZx32(context, (op1) =>
@@ -886,19 +885,16 @@ namespace ARMeilleure.Instructions
                         case 0:
                             switch (op.Size) // Swap bytes.
                             {
-                                default:
-                                    return op1;
                                 case 1:
                                     return InstEmitAluHelper.EmitReverseBytes16_32Op(context, op1);
                                 case 2:
                                 case 3:
                                     return context.ByteSwap(op1);
                             }
+                            break;
                         case 1:
                             switch (op.Size)
                             {
-                                default:
-                                    return op1;
                                 case 2:
                                     return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffff0000)), Const(16)),
                                                                 context.ShiftLeft(context.BitwiseAnd(op1, Const(0x0000ffff)), Const(16)));
@@ -909,13 +905,14 @@ namespace ARMeilleure.Instructions
                                         context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0x0000ffff00000000ul)), Const(16)),
                                                              context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000ffff0000ul)), Const(16))));
                             }
+                            break;
                         case 2:
                             // Swap upper and lower halves.
                             return context.BitwiseOr(context.ShiftRightUI(context.BitwiseAnd(op1, Const(0xffffffff00000000ul)), Const(32)),
                                                         context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
                     }
 
-                    return op1;
+                    throw new InvalidOperationException("Unknown VREV Opcode + Size combo.");
                 });
             }
         }
@@ -931,15 +928,15 @@ namespace ARMeilleure.Instructions
                 if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
                 {
                     EmitVectorUnaryOpF32(context, Intrinsic.X86Rcpps, 0);
-                } 
-                else 
+                }
+                else
                 {
                     EmitVectorUnaryOpF32(context, (op1) =>
                     {
                         return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRecipEstimateFpscr, SoftFloat64.FPRecipEstimateFpscr, op1);
                     });
                 }
-            } 
+            }
             else
             {
                 throw new NotImplementedException("Integer Vrecpe not currently implemented.");
@@ -952,6 +949,7 @@ namespace ARMeilleure.Instructions
             {
                 OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
                 bool single = (op.Size & 1) == 0;
+
                 // (2 - (n*m))
                 EmitVectorBinaryOpSimd32(context, (n, m) =>
                 {
@@ -972,7 +970,7 @@ namespace ARMeilleure.Instructions
                         return context.AddIntrinsic(Intrinsic.X86Subpd, maskTwo, res);
                     }
                 });
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) =>
@@ -1001,7 +999,7 @@ namespace ARMeilleure.Instructions
                         return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPRSqrtEstimateFpscr, SoftFloat64.FPRSqrtEstimateFpscr, op1);
                     });
                 }
-            } 
+            }
             else
             {
                 throw new NotImplementedException("Integer Vrsqrte not currently implemented.");
@@ -1014,6 +1012,7 @@ namespace ARMeilleure.Instructions
             {
                 OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
                 bool single = (op.Size & 1) == 0;
+
                 // (3 - (n*m)) / 2
                 EmitVectorBinaryOpSimd32(context, (n, m) =>
                 {
@@ -1069,35 +1068,10 @@ namespace ARMeilleure.Instructions
                     break;
             }
 
-            if (false && Optimizations.UseSse2)
+            EmitScalarBinaryOpI32(context, (op1, op2) =>
             {
-                Operand falseLabel = Label();
-                Operand doneLabel = Label();
-
-                context.BranchIfFalse(condition, falseLabel);
-
-                EmitScalarBinaryOpSimd32(context, (op1, op2) =>
-                {
-                    return op1;
-                });
-
-                context.Branch(doneLabel);
-                context.MarkLabel(falseLabel);
-
-                EmitScalarBinaryOpSimd32(context, (op1, op2) =>
-                {
-                    return op2;
-                });
-
-                context.MarkLabel(doneLabel);
-            }
-            else
-            {
-                EmitScalarBinaryOpI32(context, (op1, op2) =>
-                {
-                    return context.ConditionalSelect(condition, op1, op2);
-                });
-            }
+                return context.ConditionalSelect(condition, op1, op2);
+            });
         }
 
         public static void Vsqrt_S(ArmEmitterContext context)
@@ -1132,7 +1106,7 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 EmitVectorBinaryOpF32(context, Intrinsic.X86Subps, Intrinsic.X86Subpd);
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpF32(context, (op1, op2) => context.Subtract(op1, op2));
@@ -1195,12 +1169,11 @@ namespace ARMeilleure.Instructions
             if (scalar)
             {
                 EmitScalarBinaryOpSimd32(context, genericEmit);
-            } 
+            }
             else
             {
                 EmitVectorBinaryOpSimd32(context, genericEmit);
             }
-            
         }
     }
 }
