@@ -160,7 +160,7 @@ namespace ARMeilleure.Instructions
                 bool unsigned = (op.Opc2 & 1) == 0;
                 bool roundWithFpscr = op.Opc != 1;
 
-                if (!roundWithFpscr && Optimizations.UseSse41 && floatSize == OperandType.FP32)
+                if (!roundWithFpscr && Optimizations.UseSse41)
                 {
                     EmitSse41ConvertInt32(context, FPRoundingMode.TowardsZero, !unsigned);
                 }
@@ -262,7 +262,7 @@ namespace ARMeilleure.Instructions
 
             bool unsigned = (op.Opc & 1) == 0;
 
-            if (Optimizations.UseSse41 && op.Opc2 != 0b00 && floatSize == OperandType.FP32)
+            if (Optimizations.UseSse41 && op.Opc2 != 0b00)
             {
                 EmitSse41ConvertInt32(context, Opc2ToRoundMode(op.Opc2), !unsigned);
             }
