@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 
@@ -104,10 +105,11 @@ namespace ARMeilleure.CodeGen.X86
                         case Instruction.Tailcall:
                             if (callConv == CallConvName.Windows)
                             {
-                                HandleTailcallWindowsAbi(stackAlloc, node, operation);
-                            } else
+                                HandleTailcallWindowsAbi(block.Operations, stackAlloc, node, operation);
+                            } 
+                            else
                             {
-                                HandleTailcallSystemVAbi(stackAlloc, node, operation);
+                                HandleTailcallSystemVAbi(block.Operations, stackAlloc, node, operation);
                             }
                             break;
 
@@ -219,11 +221,11 @@ namespace ARMeilleure.CodeGen.X86
 
                         Operand rax = Gpr(X86Register.Rax, expected.Type);
 
-                        nodes.AddBefore(node, Operation(Instruction.Copy, rax, expected));
+                        nodes.AddBefore(node, new Operation(Instruction.Copy, rax, expected));
 
                         operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
 
-                        node = nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
+                        node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
 
                         operation.Destination = rax;
 
@@ -860,10 +862,8 @@ namespace ARMeilleure.CodeGen.X86
             return node;
         }
 
-        private static void HandleTailcallSystemVAbi(StackAllocator stackAlloc, LLNode node, Operation operation)
+        private static void HandleTailcallSystemVAbi(IntrusiveList<Node> nodes, StackAllocator stackAlloc, Node node, Operation operation)
         {
-            LinkedList<Node> nodes = node.List;
-
             List<Operand> sources = new List<Operand>();
 
             sources.Add(operation.GetSource(0));
@@ -898,8 +898,8 @@ namespace ARMeilleure.CodeGen.X86
                     Operand argReg = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
                     Operand argReg2 = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
 
-                    nodes.AddBefore(node, Operation(Instruction.VectorExtract, argReg, source, Const(0)));
-                    nodes.AddBefore(node, Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
+                    nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg, source, Const(0)));
+                    nodes.AddBefore(node, new Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
 
                     continue;
                 }
@@ -910,9 +910,9 @@ namespace ARMeilleure.CodeGen.X86
                     ? Gpr(CallingConvention.GetIntArgumentRegister(intCount++), source.Type)
                     : Xmm(CallingConvention.GetVecArgumentRegister(vecCount++), source.Type);
 
-                    Operation copyOp = Operation(Instruction.Copy, argReg, source);
+                    Operation copyOp = new Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
+                    HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
 
                     sources.Add(argReg);
                 } 
@@ -927,7 +927,7 @@ namespace ARMeilleure.CodeGen.X86
             // callee saved register (which would be trashed on the epilogue).
             Operand retReg = Gpr(CallingConvention.GetIntReturnRegister(), OperandType.I64);
 
-            Operation addrCopyOp = Operation(Instruction.Copy, retReg, operation.GetSource(0));
+            Operation addrCopyOp = new Operation(Instruction.Copy, retReg, operation.GetSource(0));
 
             nodes.AddBefore(node, addrCopyOp);
 
@@ -936,10 +936,8 @@ namespace ARMeilleure.CodeGen.X86
             operation.SetSources(sources.ToArray());
         }
 
-        private static void HandleTailcallWindowsAbi(StackAllocator stackAlloc, LLNode node, Operation operation)
+        private static void HandleTailcallWindowsAbi(IntrusiveList<Node> nodes, StackAllocator stackAlloc, Node node, Operation operation)
         {
-            LinkedList<Node> nodes = node.List;
-
             int argsCount = operation.SourcesCount - 1;
 
             int maxArgs = CallingConvention.GetArgumentsOnRegsCount();
@@ -962,7 +960,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation copyOp = new Operation(Instruction.Copy, argReg, source);
 
-                HandleConstantCopy(nodes.AddBefore(node, copyOp), copyOp);
+                HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
 
                 sources[1 + index] = argReg;
             }

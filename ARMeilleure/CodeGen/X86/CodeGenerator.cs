@@ -553,7 +553,7 @@ namespace ARMeilleure.CodeGen.X86
 
             EnsureSameType(src2, src3);
 
-            MemoryOperand memOp = MemoryOp(src3.Type, src1);
+            MemoryOperand memOp = new MemoryOperand(src3.Type, src1);
 
             context.Assembler.Cmpxchg(memOp, src3);
         }

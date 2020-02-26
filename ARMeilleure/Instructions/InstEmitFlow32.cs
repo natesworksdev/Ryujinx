@@ -85,7 +85,7 @@ namespace ARMeilleure.Instructions
         {
             IOpCode32BReg op = (IOpCode32BReg)context.CurrOp;
 
-            EmitBxWritePc(context, GetIntA32(context, op.Rm));
+            EmitBxWritePc(context, GetIntA32(context, op.Rm), op.Rm);
         }
     }
 }
