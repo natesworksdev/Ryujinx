@@ -63,6 +63,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Minss,      new IntrinsicInfo(X86Instruction.Minss,      IntrinsicType.Binary));
             Add(Intrinsic.X86Movhlps,    new IntrinsicInfo(X86Instruction.Movhlps,    IntrinsicType.Binary));
             Add(Intrinsic.X86Movlhps,    new IntrinsicInfo(X86Instruction.Movlhps,    IntrinsicType.Binary));
+            Add(Intrinsic.X86Movss,      new IntrinsicInfo(X86Instruction.Movss,      IntrinsicType.Binary));
             Add(Intrinsic.X86Mulpd,      new IntrinsicInfo(X86Instruction.Mulpd,      IntrinsicType.Binary));
             Add(Intrinsic.X86Mulps,      new IntrinsicInfo(X86Instruction.Mulps,      IntrinsicType.Binary));
             Add(Intrinsic.X86Mulsd,      new IntrinsicInfo(X86Instruction.Mulsd,      IntrinsicType.Binary));

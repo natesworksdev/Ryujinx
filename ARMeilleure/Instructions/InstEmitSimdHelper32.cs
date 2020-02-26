@@ -473,10 +473,12 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVecA32(op.Qd), res);
         }
 
-        // Intrinsic Emits
+        // Intrinsic Helpers
 
         public static Operand EmitSwapDoubleWordToSide(ArmEmitterContext context, Operand input, int originalV, int targetV)
         {
+            Debug.Assert(input.Type == OperandType.V128);
+
             int originalSide = originalV & 1;
             int targetSide = targetV & 1;
 
@@ -487,16 +489,18 @@ namespace ARMeilleure.Instructions
 
             if (targetSide == 1)
             {
-                return context.AddIntrinsic(Intrinsic.X86Movlhps, input, input); // low to high
+                return context.AddIntrinsic(Intrinsic.X86Movlhps, input, input); // Low to high.
             } 
             else
             {
-                return context.AddIntrinsic(Intrinsic.X86Movhlps, input, input); // high to low
+                return context.AddIntrinsic(Intrinsic.X86Movhlps, input, input); // High to low.
             }
         }
 
         public static Operand EmitDoubleWordInsert(ArmEmitterContext context, Operand target, Operand value, int targetV)
         {
+            Debug.Assert(target.Type == OperandType.V128 && value.Type == OperandType.V128);
+
             int targetSide = targetV & 1;
             int shuffleMask = 2 | 0;
 
@@ -510,45 +514,56 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand EmitSwapScalar(ArmEmitterContext context, Operand target, int reg, bool doubleWidth)
+        public static Operand EmitScalarInsert(ArmEmitterContext context, Operand target, Operand value, int reg, bool doubleWidth)
         {
-            // index into 0, 0 into index. This swap happens at the start and end of an A32 scalar op if required.
-            int index = reg & (doubleWidth ? 1 : 3);
-            if (index == 0) return target;
+            Debug.Assert(target.Type == OperandType.V128 && value.Type == OperandType.V128);
 
-            if (doubleWidth)
-            {
-                int shuffleMask = 1; // swap top and bottom (b0 = 1, b1 = 0)
-                return context.AddIntrinsic(Intrinsic.X86Shufpd, target, target, Const(shuffleMask));
-            } 
-            else
-            {
-                int shuffleMask = (3 << 6) | (2 << 4) | (1 << 2) | index; // swap index and 0 (others remain)
-                shuffleMask &= ~(3 << (index * 2));
-
-                return context.AddIntrinsic(Intrinsic.X86Shufps, target, target, Const(shuffleMask));
-            }
-        }
-
-        public static Operand EmitInsertScalar(ArmEmitterContext context, Operand target, Operand value, int reg, bool doubleWidth)
-        {
-            // insert from index 0 in value to index in target
+            // Insert from index 0 in value to index in target.
             int index = reg & (doubleWidth ? 1 : 3);
 
             if (doubleWidth)
             {
                 if (index == 1)
                 {
-                    return context.AddIntrinsic(Intrinsic.X86Movlhps, target, value); // low to high
+                    return context.AddIntrinsic(Intrinsic.X86Movlhps, target, value); // Low to high.
                 }
                 else
                 {
-                    return context.AddIntrinsic(Intrinsic.X86Shufpd, value, target, Const(2)); // low to low, keep high from original
+                    return context.AddIntrinsic(Intrinsic.X86Shufpd, value, target, Const(2)); // Low to low, keep high from original.
                 }
             }
             else
             {
-                return context.AddIntrinsic(Intrinsic.X86Insertps, target, value, Const(index << 4));
+                if (Optimizations.UseSse41)
+                {
+                    return context.AddIntrinsic(Intrinsic.X86Insertps, target, value, Const(index << 4));
+                } 
+                else
+                {
+                    target = EmitSwapScalar(context, target, index, doubleWidth); // Swap value to replace into element 0.
+                    target = context.AddIntrinsic(Intrinsic.X86Movss, target, value); // Move the value into element 0 of the vector.
+                    return EmitSwapScalar(context, target, index, doubleWidth); // Swap new value back to the correct index.
+                }
+            }
+        }
+
+        public static Operand EmitSwapScalar(ArmEmitterContext context, Operand target, int reg, bool doubleWidth)
+        {
+            // Index into 0, 0 into index. This swap happens at the start of an A32 scalar op if required.
+            int index = reg & (doubleWidth ? 1 : 3);
+            if (index == 0) return target;
+
+            if (doubleWidth)
+            {
+                int shuffleMask = 1; // Swap top and bottom. (b0 = 1, b1 = 0)
+                return context.AddIntrinsic(Intrinsic.X86Shufpd, target, target, Const(shuffleMask));
+            } 
+            else
+            {
+                int shuffleMask = (3 << 6) | (2 << 4) | (1 << 2) | index; // Swap index and 0. (others remain)
+                shuffleMask &= ~(3 << (index * 2));
+
+                return context.AddIntrinsic(Intrinsic.X86Shufps, target, target, Const(shuffleMask));
             }
         }
 
@@ -679,7 +694,7 @@ namespace ARMeilleure.Instructions
             Operand res = scalarFunc(m);
 
             // Insert scalar into vector.
-            res = EmitInsertScalar(context, d, res, op.Vd, doubleSize);
+            res = EmitScalarInsert(context, d, res, op.Vd, doubleSize);
 
             context.Copy(d, res);
         }
@@ -709,7 +724,7 @@ namespace ARMeilleure.Instructions
             Operand res = scalarFunc(n, m);
 
             // Insert scalar into vector.
-            res = EmitInsertScalar(context, d, res, op.Vd, doubleSize);
+            res = EmitScalarInsert(context, d, res, op.Vd, doubleSize);
 
             context.Copy(d, res);
         }
@@ -741,7 +756,7 @@ namespace ARMeilleure.Instructions
             Operand res = scalarFunc(d, n, m);
 
             // Insert scalar into vector.
-            res = EmitInsertScalar(context, initialD, res, op.Vd, doubleSize);
+            res = EmitScalarInsert(context, initialD, res, op.Vd, doubleSize);
 
             context.Copy(initialD, res);
         }

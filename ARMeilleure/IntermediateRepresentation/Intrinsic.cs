@@ -52,6 +52,7 @@ namespace ARMeilleure.IntermediateRepresentation
         X86Minss,
         X86Movhlps,
         X86Movlhps,
+        X86Movss,
         X86Mulpd,
         X86Mulps,
         X86Mulsd,

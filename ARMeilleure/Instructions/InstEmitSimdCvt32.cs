@@ -173,7 +173,6 @@ namespace ARMeilleure.Instructions
                     // TODO: Fast Path.
                     if (roundWithFpscr)
                     {
-                        // These need to get the FPSCR value, so it's worth noting we'd need to do a c# call at some point.
                         if (floatSize == OperandType.FP64)
                         {
                             if (unsigned)
@@ -363,7 +362,6 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, MathF.Truncate, Math.Truncate, op1));
             }
-            
         }
 
         private static Operand EmitFPConvert(ArmEmitterContext context, Operand value, OperandType type, bool signed)
@@ -382,7 +380,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitSse41ConvertInt32(ArmEmitterContext context, FPRoundingMode roundMode, bool signed)
         {
-            // a port of the similar round function in InstEmitSimdCvt
+            // A port of the similar round function in InstEmitSimdCvt.
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
@@ -457,7 +455,7 @@ namespace ARMeilleure.Instructions
                     nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
                 }
 
-                long fpMaxVal = 0x41E0000000000000L;  // 2147483648.0000000d    (2147483648)
+                long fpMaxVal = 0x41E0000000000000L;  // 2147483648.0000000d (2147483648)
 
                 Operand fpMaxValMask = X86GetScalar(context, fpMaxVal);
 
