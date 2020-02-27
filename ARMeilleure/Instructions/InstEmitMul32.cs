@@ -208,7 +208,7 @@ namespace ARMeilleure.Instructions
             EmitGenericAluStoreA32(context, op.Rd, false, res);
         }
 
-        public static void Smulh(ArmEmitterContext context)
+        public static void Smul__(ArmEmitterContext context)
         {
             OpCode32AluMla op = (OpCode32AluMla)context.CurrOp;
 

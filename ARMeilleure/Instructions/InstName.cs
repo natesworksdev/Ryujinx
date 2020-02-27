@@ -81,7 +81,7 @@ namespace ARMeilleure.Instructions
         Sdiv,
         Smaddl,
         Smsubl,
-        Smulh,
+        Smul__,
         Smull,
         Smulw_,
         Stlr,

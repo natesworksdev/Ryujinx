@@ -158,7 +158,7 @@ namespace ARMeilleure.Decoders
             SetA64("x0011010110xxxxx000011xxxxxxxxxx", InstName.Sdiv,            InstEmit.Sdiv,            typeof(OpCodeAluBinary));
             SetA64("10011011001xxxxx0xxxxxxxxxxxxxxx", InstName.Smaddl,          InstEmit.Smaddl,          typeof(OpCodeMul));
             SetA64("10011011001xxxxx1xxxxxxxxxxxxxxx", InstName.Smsubl,          InstEmit.Smsubl,          typeof(OpCodeMul));
-            SetA64("10011011010xxxxx0xxxxxxxxxxxxxxx", InstName.Smulh,           InstEmit.Smulh,           typeof(OpCodeMul));
+            SetA64("10011011010xxxxx0xxxxxxxxxxxxxxx", InstName.Smul__,           InstEmit.Smulh,           typeof(OpCodeMul));
             SetA64("xx001000100xxxxx1xxxxxxxxxxxxxxx", InstName.Stlr,            InstEmit.Stlr,            typeof(OpCodeMemEx));
             SetA64("1x001000001xxxxx1xxxxxxxxxxxxxxx", InstName.Stlxp,           InstEmit.Stlxp,           typeof(OpCodeMemEx));
             SetA64("xx001000000xxxxx1xxxxxxxxxxxxxxx", InstName.Stlxr,           InstEmit.Stlxr,           typeof(OpCodeMemEx));
@@ -698,7 +698,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<00010010xxxxxxxxxxxx1x00xxxx", InstName.Smlaw_,  InstEmit32.Smlaw_,  typeof(OpCode32AluMla));
             SetA32("<<<<01110101xxxxxxxxxxxx00x1xxxx", InstName.Smmla,   InstEmit32.Smmla,   typeof(OpCode32AluMla));
             SetA32("<<<<01110101xxxxxxxxxxxx11x1xxxx", InstName.Smmls,   InstEmit32.Smmls,   typeof(OpCode32AluMla));
-            SetA32("<<<<00010110xxxxxxxxxxxx1xx0xxxx", InstName.Smulh,   InstEmit32.Smulh,   typeof(OpCode32AluMla));
+            SetA32("<<<<00010110xxxxxxxxxxxx1xx0xxxx", InstName.Smul__,  InstEmit32.Smul__,  typeof(OpCode32AluMla));
             SetA32("<<<<0000110xxxxxxxxxxxxx1001xxxx", InstName.Smull,   InstEmit32.Smull,   typeof(OpCode32AluUmull));
             SetA32("<<<<00010010xxxx0000xxxx1x10xxxx", InstName.Smulw_,  InstEmit32.Smulw_,  typeof(OpCode32AluMla));
             SetA32("<<<<00011000xxxx111111001001xxxx", InstName.Stl,     InstEmit32.Stl,     typeof(OpCode32MemStEx));
