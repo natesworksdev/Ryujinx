@@ -54,7 +54,7 @@ namespace Ryujinx.Tests.Cpu
 
         private const int RndCnt = 2;
 
-        [Test, Pairwise, Description("SMLABB/BT/TB/TT <Rd>, <Rn>, <Rm>, <Ra>")]
+        [Test, Pairwise, Description("SMLA<x><y> <Rd>, <Rn>, <Rm>, <Ra>")]
         public void Smla___32bit([ValueSource("_Smlabb_Smlabt_Smlatb_Smlatt_")] uint opcode,
                                  [Values(0u, 0xdu)] uint rn,
                                  [Values(1u, 0xdu)] uint rm,
@@ -76,7 +76,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("SMLAWB/T <Rd>, <Rn>, <Rm>, <Ra>")]
+        [Test, Pairwise, Description("SMLAW<x> <Rd>, <Rn>, <Rm>, <Ra>")]
         public void Smlaw__32bit([ValueSource("_Smlawb_Smlawt_")] uint opcode,
                                  [Values(0u, 0xdu)] uint rn,
                                  [Values(1u, 0xdu)] uint rm,
@@ -98,7 +98,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("SMULBB/BT/TB/TT <Rd>, <Rn>, <Rm>")]
+        [Test, Pairwise, Description("SMUL<x><y> <Rd>, <Rn>, <Rm>")]
         public void Smul___32bit([ValueSource("_Smulbb_Smulbt_Smultb_Smultt_")] uint opcode,
                                  [Values(0u, 0xdu)] uint rn,
                                  [Values(1u, 0xdu)] uint rm,
@@ -117,7 +117,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("SMULWB/T <Rd>, <Rn>, <Rm>")]
+        [Test, Pairwise, Description("SMULW<x> <Rd>, <Rn>, <Rm>")]
         public void Smulw__32bit([ValueSource("_Smulwb_Smulwt_")] uint opcode,
                                  [Values(0u, 0xdu)] uint rn,
                                  [Values(1u, 0xdu)] uint rm,
