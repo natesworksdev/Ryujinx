@@ -707,7 +707,7 @@ namespace ARMeilleure.Instructions
             {
                 if (part == 0)
                 {
-                    SetIntA32(context, op.Rd, context.BitwiseAnd(value, Const(0xffff)));
+                    SetIntA32(context, op.Rd, context.ZeroExtend16(OperandType.I32, value));
                 }
                 else
                 {
