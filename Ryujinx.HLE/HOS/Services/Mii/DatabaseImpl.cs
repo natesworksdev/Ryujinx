@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                     return ResultCode.CannotFit;
                 }
 
-                elements[count] = new T();
+                elements[count] = default;
                 elements[count].SetFromStoreData(StoreData.BuildDefault(_utilityImpl, i));
                 elements[count].SetSource(Source.Default);
 
@@ -137,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
                 _miiDatabase.Get(metadata, i, out StoreData storeData);
 
-                elements[count] = new T();
+                elements[count] = default;
                 elements[count].SetFromStoreData(storeData);
                 elements[count].SetSource(Source.Database);
 
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         {
             StoreData storeData = StoreData.BuildDefault(_utilityImpl, index);
 
-            charInfo = new CharInfo();
+            charInfo = default;
 
             charInfo.SetFromStoreData(storeData);
         }
@@ -192,7 +192,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         {
             StoreData storeData = StoreData.BuildRandom(_utilityImpl, age, gender, race);
 
-            charInfo = new CharInfo();
+            charInfo = default;
 
             charInfo.SetFromStoreData(storeData);
         }

@@ -4,7 +4,6 @@
     {
         Male,
         Female,
-        // No non binary option..? :/
         All,
 
         Min = 0,

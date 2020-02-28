@@ -28,43 +28,43 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return false;
         }
 
-        public override bool IsUpdated(SourceFlag flag)
+        protected override bool IsUpdated(SourceFlag flag)
         {
             return _database.IsUpdated(_metadata, flag);
         }
 
-        public override bool IsFullDatabase()
+        protected override bool IsFullDatabase()
         {
             return _database.IsFullDatabase();
         }
 
-        public override uint GetCount(SourceFlag flag)
+        protected override uint GetCount(SourceFlag flag)
         {
             return _database.GetCount(_metadata, flag);
         }
 
-        public override ResultCode Get(SourceFlag flag, out int count, Span<CharInfoElement> elements)
+        protected override ResultCode Get(SourceFlag flag, out int count, Span<CharInfoElement> elements)
         {
             return _database.Get(_metadata, flag, out count, elements);
         }
 
-        public override ResultCode Get1(SourceFlag flag, out int count, Span<CharInfo> elements)
+        protected override ResultCode Get1(SourceFlag flag, out int count, Span<CharInfo> elements)
         {
             return _database.Get(_metadata, flag, out count, elements);
         }
 
-        public override ResultCode UpdateLatest(CharInfo oldCharInfo, SourceFlag flag, out CharInfo newCharInfo)
+        protected override ResultCode UpdateLatest(CharInfo oldCharInfo, SourceFlag flag, out CharInfo newCharInfo)
         {
-            newCharInfo = new CharInfo();
+            newCharInfo = default;
 
             return _database.UpdateLatest(_metadata, oldCharInfo, flag, newCharInfo);
         }
 
-        public override ResultCode BuildRandom(Age age, Gender gender, Race race, out CharInfo charInfo)
+        protected override ResultCode BuildRandom(Age age, Gender gender, Race race, out CharInfo charInfo)
         {
             if (age > Age.All || gender > Gender.All || race > Race.All)
             {
-                charInfo = new CharInfo();
+                charInfo = default;
 
                 return ResultCode.InvalidArgument;
             }
@@ -74,11 +74,11 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return ResultCode.Success;
          }
 
-        public override ResultCode BuildDefault(uint index, out CharInfo charInfo)
+        protected override ResultCode BuildDefault(uint index, out CharInfo charInfo)
         {
             if (index >= DefaultMii.TableLength)
             {
-                charInfo = new CharInfo();
+                charInfo = default;
 
                 return ResultCode.InvalidArgument;
             }
@@ -88,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return ResultCode.Success;
         }
 
-        public override ResultCode Get2(SourceFlag flag, out int count, Span<StoreDataElement> elements)
+        protected override ResultCode Get2(SourceFlag flag, out int count, Span<StoreDataElement> elements)
         {
             if (!_isSystem)
             {
@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.Get(_metadata, flag, out count, elements);
         }
 
-        public override ResultCode Get3(SourceFlag flag, out int count, Span<StoreData> elements)
+        protected override ResultCode Get3(SourceFlag flag, out int count, Span<StoreData> elements)
         {
             if (!_isSystem)
             {
@@ -112,9 +112,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.Get(_metadata, flag, out count, elements);
         }
 
-        public override ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newstoreData)
+        protected override ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newstoreData)
         {
-            newstoreData = new StoreData();
+            newstoreData = default;
 
             if (!_isSystem)
             {
@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.UpdateLatest(_metadata, oldStoreData, flag, newstoreData);
         }
 
-        public override ResultCode FindIndex(CreateId createId, bool isSpecial, out int index)
+        protected override ResultCode FindIndex(CreateId createId, bool isSpecial, out int index)
         {
             if (!_isSystem)
             {
@@ -138,7 +138,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return ResultCode.Success;
         }
 
-        public override ResultCode Move(CreateId createId, int newIndex)
+        protected override ResultCode Move(CreateId createId, int newIndex)
         {
             if (!_isSystem)
             {
@@ -153,7 +153,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return ResultCode.InvalidArgument;
         }
 
-        public override ResultCode AddOrReplace(StoreData storeData)
+        protected override ResultCode AddOrReplace(StoreData storeData)
         {
             if (!_isSystem)
             {
@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.AddOrReplace(_metadata, storeData);
         }
 
-        public override ResultCode Delete(CreateId createId)
+        protected override ResultCode Delete(CreateId createId)
         {
             if (!_isSystem)
             {
@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.Delete(_metadata, createId);
         }
 
-        public override ResultCode DestroyFile()
+        protected override ResultCode DestroyFile()
         {
             if (!IsDatabaseTestModeEnabled())
             {
@@ -183,7 +183,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.DestroyFile(_metadata);
         }
 
-        public override ResultCode DeleteFile()
+        protected override ResultCode DeleteFile()
         {
             if (!IsDatabaseTestModeEnabled())
             {
@@ -193,7 +193,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.DeleteFile();
         }
 
-        public override ResultCode Format()
+        protected override ResultCode Format()
         {
             if (!IsDatabaseTestModeEnabled())
             {
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return ResultCode.Success;
         }
 
-        public override ResultCode Import(ReadOnlySpan<byte> data)
+        protected override ResultCode Import(ReadOnlySpan<byte> data)
         {
             if (!IsDatabaseTestModeEnabled())
             {
@@ -215,7 +215,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             throw new NotImplementedException();
         }
 
-        public override ResultCode Export(Span<byte> data)
+        protected override ResultCode Export(Span<byte> data)
         {
             if (!IsDatabaseTestModeEnabled())
             {
@@ -225,7 +225,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             throw new NotImplementedException();
         }
 
-        public override ResultCode IsBrokenDatabaseWithClearFlag(out bool isBrokenDatabase)
+        protected override ResultCode IsBrokenDatabaseWithClearFlag(out bool isBrokenDatabase)
         {
             if (!_isSystem)
             {
@@ -239,27 +239,27 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return ResultCode.Success;
         }
 
-        public override ResultCode GetIndex(CharInfo charInfo, out int index)
+        protected override ResultCode GetIndex(CharInfo charInfo, out int index)
         {
             return _database.GetIndex(_metadata, charInfo, out index);
         }
 
-        public override void SetInterfaceVersion(uint interfaceVersion)
+        protected override void SetInterfaceVersion(uint interfaceVersion)
         {
             _database.SetInterfaceVersion(_metadata, interfaceVersion);
         }
 
-        public override ResultCode Convert(Ver3StoreData ver3StoreData, out CharInfo charInfo)
+        protected override ResultCode Convert(Ver3StoreData ver3StoreData, out CharInfo charInfo)
         {
             throw new NotImplementedException();
         }
 
-        public override ResultCode ConvertCoreDataToCharInfo(CoreData coreData, out CharInfo charInfo)
+        protected override ResultCode ConvertCoreDataToCharInfo(CoreData coreData, out CharInfo charInfo)
         {
             return _database.ConvertCoreDataToCharInfo(coreData, out charInfo);
         }
 
-        public override ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData)
+        protected override ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData)
         {
             return _database.ConvertCharInfoToCoreData(charInfo, out coreData);
         }

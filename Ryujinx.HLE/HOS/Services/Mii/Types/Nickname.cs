@@ -13,7 +13,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         private byte _storage;
 
         public static Nickname Default => FromString("no name");
-
         public static Nickname Question => FromString("???");
 
         public Span<byte> Raw => MemoryMarshal.CreateSpan(ref _storage, SizeConst);
@@ -65,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public bool IsValidForFontRegion(FontRegion fontRegion)
         {
-            // TODO: We need to extract the character tables used here, for now just assume that if it's valid Unicode, it will be valid for any fonts.
+            // TODO: We need to extract the character tables used here, for now just assume that if it's valid Unicode, it will be valid for any font.
             return IsValid();
         }
 

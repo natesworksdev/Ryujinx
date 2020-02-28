@@ -1,6 +1,7 @@
 ﻿using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Utilities;
 using System;
+using System.Buffers.Binary;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
@@ -25,18 +26,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                 }
             }
 
-            ushort result = (ushort)crc;
-
-            byte[] bytes = BitConverter.GetBytes(result);
-            Array.Reverse(bytes, 0, bytes.Length);
-            result = BitConverter.ToUInt16(bytes, 0);
-
-            return result;
+            return BinaryPrimitives.ReverseEndianness((ushort)crc);
         }
 
         public static UInt128 GetDeviceId()
         {
-            // FIXME: call set:cal GetAuthorId
+            // FIXME: call set:sys GetMiiAuthorId
             return SystemStateMgr.DefaultUserId.ToUInt128();
         }
 

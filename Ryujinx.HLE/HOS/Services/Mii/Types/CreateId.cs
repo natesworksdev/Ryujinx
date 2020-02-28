@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public bool Equals(CreateId cmpObj)
         {
-            // Nintendo additionally check that the CreatorId is valid before doing the actual comparaison.
+            // Nintendo additionally check that the CreatorId is valid before doing the actual comparison.
             return IsValid && Raw == cmpObj.Raw;
         }
 

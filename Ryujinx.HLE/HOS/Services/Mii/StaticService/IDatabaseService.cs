@@ -369,56 +369,56 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             context.Memory.WriteBytes(ipcBuff.Position, rawData.ToArray());
         }
 
-        public abstract bool IsUpdated(SourceFlag flag);
+        protected abstract bool IsUpdated(SourceFlag flag);
 
-        public abstract bool IsFullDatabase();
+        protected abstract bool IsFullDatabase();
 
-        public abstract uint GetCount(SourceFlag flag);
+        protected abstract uint GetCount(SourceFlag flag);
 
-        public abstract ResultCode Get(SourceFlag flag, out int count, Span<CharInfoElement> elements);
+        protected abstract ResultCode Get(SourceFlag flag, out int count, Span<CharInfoElement> elements);
 
-        public abstract ResultCode Get1(SourceFlag flag, out int count, Span<CharInfo> elements);
+        protected abstract ResultCode Get1(SourceFlag flag, out int count, Span<CharInfo> elements);
 
-        public abstract ResultCode UpdateLatest(CharInfo oldCharInfo, SourceFlag flag, out CharInfo newCharInfo);
+        protected abstract ResultCode UpdateLatest(CharInfo oldCharInfo, SourceFlag flag, out CharInfo newCharInfo);
 
-        public abstract ResultCode BuildRandom(Age age, Gender gender, Race race, out CharInfo charInfo);
+        protected abstract ResultCode BuildRandom(Age age, Gender gender, Race race, out CharInfo charInfo);
 
-        public abstract ResultCode BuildDefault(uint index, out CharInfo charInfo);
+        protected abstract ResultCode BuildDefault(uint index, out CharInfo charInfo);
 
-        public abstract ResultCode Get2(SourceFlag flag, out int count, Span<StoreDataElement> elements);
+        protected abstract ResultCode Get2(SourceFlag flag, out int count, Span<StoreDataElement> elements);
 
-        public abstract ResultCode Get3(SourceFlag flag, out int count, Span<StoreData> elements);
+        protected abstract ResultCode Get3(SourceFlag flag, out int count, Span<StoreData> elements);
 
-        public abstract ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newstoreData);
+        protected abstract ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newstoreData);
 
-        public abstract ResultCode FindIndex(CreateId createId, bool isSpecial, out int index);
+        protected abstract ResultCode FindIndex(CreateId createId, bool isSpecial, out int index);
 
-        public abstract ResultCode Move(CreateId createId, int newIndex);
+        protected abstract ResultCode Move(CreateId createId, int newIndex);
 
-        public abstract ResultCode AddOrReplace(StoreData storeData);
+        protected abstract ResultCode AddOrReplace(StoreData storeData);
 
-        public abstract ResultCode Delete(CreateId createId);
+        protected abstract ResultCode Delete(CreateId createId);
 
-        public abstract ResultCode DestroyFile();
+        protected abstract ResultCode DestroyFile();
 
-        public abstract ResultCode DeleteFile();
+        protected abstract ResultCode DeleteFile();
 
-        public abstract ResultCode Format();
+        protected abstract ResultCode Format();
 
-        public abstract ResultCode Import(ReadOnlySpan<byte> data);
+        protected abstract ResultCode Import(ReadOnlySpan<byte> data);
 
-        public abstract ResultCode Export(Span<byte> data);
+        protected abstract ResultCode Export(Span<byte> data);
 
-        public abstract ResultCode IsBrokenDatabaseWithClearFlag(out bool isBrokenDatabase);
+        protected abstract ResultCode IsBrokenDatabaseWithClearFlag(out bool isBrokenDatabase);
 
-        public abstract ResultCode GetIndex(CharInfo charInfo, out int index);
+        protected abstract ResultCode GetIndex(CharInfo charInfo, out int index);
 
-        public abstract void SetInterfaceVersion(uint interfaceVersion);
+        protected abstract void SetInterfaceVersion(uint interfaceVersion);
 
-        public abstract ResultCode Convert(Ver3StoreData ver3StoreData, out CharInfo charInfo);
+        protected abstract ResultCode Convert(Ver3StoreData ver3StoreData, out CharInfo charInfo);
 
-        public abstract ResultCode ConvertCoreDataToCharInfo(CoreData coreData, out CharInfo charInfo);
+        protected abstract ResultCode ConvertCoreDataToCharInfo(CoreData coreData, out CharInfo charInfo);
 
-        public abstract ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData);
+        protected abstract ResultCode ConvertCharInfoToCoreData(CharInfo charInfo, out CoreData coreData);
     }
 }
