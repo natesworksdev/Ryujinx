@@ -701,6 +701,8 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<00010110xxxxxxxxxxxx1xx0xxxx", InstName.Smul__,  InstEmit32.Smul__,  typeof(OpCode32AluMla));
             SetA32("<<<<0000110xxxxxxxxxxxxx1001xxxx", InstName.Smull,   InstEmit32.Smull,   typeof(OpCode32AluUmull));
             SetA32("<<<<00010010xxxx0000xxxx1x10xxxx", InstName.Smulw_,  InstEmit32.Smulw_,  typeof(OpCode32AluMla));
+            SetA32("<<<<0110101xxxxxxxxxxxxxxx01xxxx", InstName.Ssat,    InstEmit32.Ssat,    typeof(OpCode32Sat));
+            SetA32("<<<<01101010xxxxxxxx11110011xxxx", InstName.Ssat16,  InstEmit32.Ssat16,  typeof(OpCode32Sat16));
             SetA32("<<<<00011000xxxx111111001001xxxx", InstName.Stl,     InstEmit32.Stl,     typeof(OpCode32MemStEx));
             SetA32("<<<<00011100xxxx111111001001xxxx", InstName.Stlb,    InstEmit32.Stlb,    typeof(OpCode32MemStEx));
             SetA32("<<<<00011000xxxxxxxx11101001xxxx", InstName.Stlex,   InstEmit32.Stlex,   typeof(OpCode32MemStEx));
@@ -739,6 +741,8 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<01110011xxxx1111xxxx0001xxxx", InstName.Udiv,    InstEmit32.Udiv,    typeof(OpCode32AluMla));
             SetA32("<<<<0000101xxxxxxxxxxxxx1001xxxx", InstName.Umlal,   InstEmit32.Umlal,   typeof(OpCode32AluUmull));
             SetA32("<<<<0000100xxxxxxxxxxxxx1001xxxx", InstName.Umull,   InstEmit32.Umull,   typeof(OpCode32AluUmull));
+            SetA32("<<<<0110111xxxxxxxxxxxxxxx01xxxx", InstName.Usat,    InstEmit32.Usat,    typeof(OpCode32Sat));
+            SetA32("<<<<01101110xxxxxxxx11110011xxxx", InstName.Usat16,  InstEmit32.Usat16,  typeof(OpCode32Sat16));
             SetA32("<<<<01101110xxxxxxxxxx000111xxxx", InstName.Uxtb,    InstEmit32.Uxtb,    typeof(OpCode32AluUx));
             SetA32("<<<<01101100xxxxxxxxxx000111xxxx", InstName.Uxtb16,  InstEmit32.Uxtb16,  typeof(OpCode32AluUx));
             SetA32("<<<<01101111xxxxxxxxxx000111xxxx", InstName.Uxth,    InstEmit32.Uxth,    typeof(OpCode32AluUx));
