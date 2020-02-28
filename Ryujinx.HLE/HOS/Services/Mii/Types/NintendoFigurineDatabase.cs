@@ -41,7 +41,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             }
         }
 
-
         public StoreData Get(int index)
         {
             return _figurines[index];
@@ -65,6 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             }
 
             index = -1;
+
             return false;
         }
 
@@ -157,7 +157,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
                             isBroken = true;
                         }
-
 
                         break;
                     }

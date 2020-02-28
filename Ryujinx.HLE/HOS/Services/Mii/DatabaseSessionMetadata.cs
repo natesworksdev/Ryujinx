@@ -18,7 +18,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             UpdateCounter    = updateCounter;
             MiiKeyCode       = miiKeyCode;
         }
-
         public bool IsInterfaceVersionSupported(uint interfaceVersion)
         {
             return InterfaceVersion >= interfaceVersion;

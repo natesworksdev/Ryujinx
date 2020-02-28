@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    interface IStoredData<T> : IElement, IEquatable<T> where T: notnull
+    interface IStoredData<T> : IElement, IEquatable<T> where T : notnull
     {
         byte Type { get; }
 

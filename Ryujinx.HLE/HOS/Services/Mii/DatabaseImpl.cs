@@ -60,7 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return _miiDatabase.IsFullDatabase();
         }
 
-        private ResultCode GetDefault<T>(SourceFlag flag, ref int count, Span<T> elements) where T: struct, IElement
+        private ResultCode GetDefault<T>(SourceFlag flag, ref int count, Span<T> elements) where T : struct, IElement
         {
             if ((flag & SourceFlag.Default) != SourceFlag.Default)
             {
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return ResultCode.Success;
         }
 
-        public ResultCode UpdateLatest<T>(DatabaseSessionMetadata metadata, IStoredData<T> oldMiiData, SourceFlag flag, IStoredData<T> newMiiData) where T: unmanaged
+        public ResultCode UpdateLatest<T>(DatabaseSessionMetadata metadata, IStoredData<T> oldMiiData, SourceFlag flag, IStoredData<T> newMiiData) where T : unmanaged
         {
             if ((flag & SourceFlag.Database) != SourceFlag.Database)
             {

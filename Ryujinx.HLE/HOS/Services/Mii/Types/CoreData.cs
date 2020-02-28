@@ -472,12 +472,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             byte eyeRotateOffset = (byte)(32 - EyeRotateTable[eyeRotateKey1] + eyeRotateKey2);
             byte eyeRotate       = (byte)(32 - EyeRotateTable[(int)coreData.EyeType]);
 
-            coreData.EyeColor        = (CommonColor)Helper.Ver3EyeColorTable[eyeColorInfo.Values[utilImpl.GetRandom(eyeColorInfo.ValuesCount)]];
-            coreData.EyeScale        = 4;
-            coreData.EyeAspect       = 3;
-            coreData.EyeRotate       = (byte)(eyeRotateOffset - eyeRotate);
-            coreData.EyeX            = 2;
-            coreData.EyeY            = (byte)(axisY + 12);
+            coreData.EyeColor  = (CommonColor)Helper.Ver3EyeColorTable[eyeColorInfo.Values[utilImpl.GetRandom(eyeColorInfo.ValuesCount)]];
+            coreData.EyeScale  = 4;
+            coreData.EyeAspect = 3;
+            coreData.EyeRotate = (byte)(eyeRotateOffset - eyeRotate);
+            coreData.EyeX      = 2;
+            coreData.EyeY      = (byte)(axisY + 12);
 
             // Eyebrow
             coreData.EyebrowType = (EyebrowType)eyebrowTypeInfo.Values[utilImpl.GetRandom(eyebrowTypeInfo.ValuesCount)];

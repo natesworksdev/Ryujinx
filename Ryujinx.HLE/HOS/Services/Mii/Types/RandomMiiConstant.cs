@@ -5,7 +5,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     class RandomMiiConstant
     {
-
         public static int[] EyeRotateTable = new int[] 
         {
             0x03, 0x04, 0x04, 0x04, 0x03, 0x04, 0x04, 0x04, 0x03, 0x04, 0x04, 0x04, 0x04, 0x03, 0x03, 0x04,
@@ -97,7 +96,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public static ReadOnlySpan<RandomMiiData4> RandomMiiMouthTypeArray => MemoryMarshal.Cast<byte, RandomMiiData4>(RandomMiiMouthTypeRawArray);
 
         public static ReadOnlySpan<RandomMiiData2> RandomMiiGlassTypeArray => MemoryMarshal.Cast<byte, RandomMiiData2>(RandomMiiGlassTypeRawArray);
-
 
         #region "Random Mii Data Arrays"
         private static ReadOnlySpan<byte> RandomMiiFacelineRawArray => new byte[]

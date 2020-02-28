@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
         public ResultCode UpdateLatest(ServiceCtx context)
         {
             CharInfo   oldCharInfo = context.RequestData.ReadStruct<CharInfo>();
-            SourceFlag flag         = (SourceFlag)context.RequestData.ReadInt32();
+            SourceFlag flag        = (SourceFlag)context.RequestData.ReadInt32();
 
             ResultCode result = UpdateLatest(oldCharInfo, flag, out CharInfo newCharInfo);
 
