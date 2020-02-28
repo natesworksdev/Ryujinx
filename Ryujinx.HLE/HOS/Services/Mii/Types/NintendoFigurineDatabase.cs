@@ -22,6 +22,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         private byte _figurineCount;
         private ushort _crc;
 
+        // Set to true to allow fixing database with invalid storedata device crc instead of deleting them.
+        private const bool AcceptInvalidDeviceCrc = true;
+
         public int Length => _figurineCount;
 
         private Span<StoreData> _figurines
@@ -141,9 +144,20 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
                 {
                     if (!_figurines[i].IsValid())
                     {
-                        Delete(i);
+                        // If the device crc is the only part invalid, we fix it (This is useful to allow importing arbitrary database in Ryujinx)
+                        if (AcceptInvalidDeviceCrc && _figurines[i].CoreData.IsValid() && _figurines[i].IsValidDataCrc())
+                        {
+                            _figurines[i].UpdateCrc();
 
-                        isBroken = true;
+                            UpdateCrc();
+                        }
+                        else
+                        {
+                            Delete(i);
+
+                            isBroken = true;
+                        }
+
 
                         break;
                     }
