@@ -5,7 +5,7 @@ using System.Text;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Pack = 2, Size = SizeConst)]
-    public struct Nickname : IEquatable<Nickname>
+    struct Nickname : IEquatable<Nickname>
     {
         public const int CharCount = 10;
         private const int SizeConst = (CharCount + 1) * 2;

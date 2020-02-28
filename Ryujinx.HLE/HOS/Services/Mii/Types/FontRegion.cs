@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum FontRegion : byte
+    enum FontRegion : byte
     {
         Standard,
         China,

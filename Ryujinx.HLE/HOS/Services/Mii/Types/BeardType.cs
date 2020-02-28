@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum BeardType : byte
+    enum BeardType : byte
     {
         None,
         Goatee,

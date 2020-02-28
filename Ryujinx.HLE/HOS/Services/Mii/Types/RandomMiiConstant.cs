@@ -3,7 +3,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public class RandomMiiConstant
+    class RandomMiiConstant
     {
 
         public static int[] EyeRotateTable = new int[] 

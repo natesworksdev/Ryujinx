@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x48)]
-    public struct StoreDataElement : IElement
+    struct StoreDataElement : IElement
     {
         public StoreData StoreData;
         public Source    Source;

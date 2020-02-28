@@ -1,7 +1,6 @@
 ﻿using Ryujinx.HLE.HOS.Services.Mii.Types;
 using Ryujinx.HLE.HOS.Services.Settings;
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 {

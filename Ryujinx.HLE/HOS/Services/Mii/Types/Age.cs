@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum Age : uint
+    enum Age : uint
     {
         Young,
         Normal,

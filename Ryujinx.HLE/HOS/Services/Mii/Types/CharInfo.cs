@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x58)]
-    public struct CharInfo : IStoredData<CharInfo>
+    struct CharInfo : IStoredData<CharInfo>
     {
         public CreateId CreateId;
         public Nickname Nickname;

@@ -1,9 +1,10 @@
-﻿using Ryujinx.HLE.HOS.Services.Mii.Types;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Mii.Types;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    public class DatabaseImpl
+    class DatabaseImpl
     {
         private static DatabaseImpl _instance;
 

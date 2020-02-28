@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x10)]
-    public struct CreateId : IEquatable<CreateId>
+    struct CreateId : IEquatable<CreateId>
     {
         public UInt128 Raw;
 

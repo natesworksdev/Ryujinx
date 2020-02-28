@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum MustacheType : byte
+    enum MustacheType : byte
     {
         None,
         Walrus,

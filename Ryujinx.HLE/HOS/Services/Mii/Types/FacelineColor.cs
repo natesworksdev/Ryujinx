@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum FacelineColor : byte
+    enum FacelineColor : byte
     {
         Beige,
         WarmBeige,

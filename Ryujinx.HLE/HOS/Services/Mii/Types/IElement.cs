@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public interface IElement
+    interface IElement
     {
         void SetFromStoreData(StoreData storeData);
 

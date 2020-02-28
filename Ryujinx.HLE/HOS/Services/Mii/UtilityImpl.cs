@@ -1,12 +1,11 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Mii.Types;
+﻿using Ryujinx.HLE.HOS.Services.Mii.Types;
 using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    public class UtilityImpl
+    class UtilityImpl
     {
         private uint x;
         private uint y;

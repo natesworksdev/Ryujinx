@@ -8,7 +8,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    public class MiiDatabaseManager
+    class MiiDatabaseManager
     {
         public static bool IsTestModeEnabled = false;
 

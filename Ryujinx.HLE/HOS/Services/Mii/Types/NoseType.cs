@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum NoseType : byte
+    enum NoseType : byte
     {
         Normal,
         Rounded,

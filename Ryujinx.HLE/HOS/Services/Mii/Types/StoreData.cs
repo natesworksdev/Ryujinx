@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = Size)]
-    public struct StoreData : IStoredData<StoreData>
+    struct StoreData : IStoredData<StoreData>
     {
         public const int Size = 0x44;
 

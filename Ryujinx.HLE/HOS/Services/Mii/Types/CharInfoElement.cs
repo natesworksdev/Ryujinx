@@ -3,7 +3,7 @@
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Size = 0x5C)]
-    public struct CharInfoElement : IElement
+    struct CharInfoElement : IElement
     {
         public CharInfo CharInfo;
         public Source   Source;

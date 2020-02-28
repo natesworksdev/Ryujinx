@@ -6,7 +6,7 @@ using static Ryujinx.HLE.HOS.Services.Mii.Types.RandomMiiConstant;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = Size)]
-    public struct CoreData : IEquatable<CoreData>
+    struct CoreData : IEquatable<CoreData>
     {
         public const int Size = 0x30;
 

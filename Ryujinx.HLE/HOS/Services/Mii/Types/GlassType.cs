@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum GlassType : byte
+    enum GlassType : byte
     {
         None,
         Oval,

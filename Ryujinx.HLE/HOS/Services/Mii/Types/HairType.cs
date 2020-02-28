@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    public enum HairType : byte
+    enum HairType : byte
     {
         NormalLong,
         NormalShort,

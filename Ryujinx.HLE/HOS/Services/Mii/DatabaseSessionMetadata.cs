@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
     [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0x10)]
-    public class DatabaseSessionMetadata
+    class DatabaseSessionMetadata
     {
         public uint  InterfaceVersion;
         public ulong UpdateCounter;

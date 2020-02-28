@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Pack = 8, Size = 0x1A98)]
-    public unsafe struct NintendoFigurineDatabase
+    unsafe struct NintendoFigurineDatabase
     {
         private const int DatabaseMagic = ('N' << 0) | ('F' << 8) | ('D' << 16) | ('B' << 24);
         private const byte MaxMii = 100;
