@@ -580,11 +580,6 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             coreData.FontRegion    = 0;
             coreData.Type          = 0;
 
-            if (!coreData.IsValid())
-            {
-                throw new InvalidOperationException();
-            }
-
             return coreData;
         }
 

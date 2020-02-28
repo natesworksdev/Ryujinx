@@ -322,7 +322,5 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
             return ResultCode.Success;
         }
-
-        // TODO: all operations
     }
 }

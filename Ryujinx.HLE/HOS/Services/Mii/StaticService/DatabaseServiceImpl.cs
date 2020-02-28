@@ -45,19 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         public override ResultCode Get(SourceFlag flag, out int count, Span<CharInfoElement> elements)
         {
-            ResultCode result = _database.Get(_metadata, flag, out count, elements);
-
-            for (int i = 0; i < count; i++)
-            {
-                uint errorCode = elements[i].CharInfo.Verify();
-
-                if (errorCode != 0)
-                {
-                    throw new InvalidOperationException();
-                }
-            }
-
-            return result;
+            return _database.Get(_metadata, flag, out count, elements);
         }
 
         public override ResultCode Get1(SourceFlag flag, out int count, Span<CharInfo> elements)

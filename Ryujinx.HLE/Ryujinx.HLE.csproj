@@ -57,8 +57,4 @@
     <PackageReference Include="TimeZoneConverter.Posix" Version="2.1.0" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="HOS\Services\Mii\StaticService\Types\" />
-  </ItemGroup>
-
 </Project>
