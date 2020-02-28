@@ -56,8 +56,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem  _favToggle;
         [GUI] MenuItem       _firmwareInstallFile;
         [GUI] MenuItem       _firmwareInstallDirectory;
-        [GUI] Label          _hostFpsStatus;
-        [GUI] Label          _hostFrameTimeStatus;
+        [GUI] Label          _hostStatus;
         [GUI] MenuItem       _openDebugger;
         [GUI] CheckMenuItem  _iconToggle;
         [GUI] CheckMenuItem  _appToggle;
@@ -68,8 +67,7 @@ namespace Ryujinx.Ui
         [GUI] CheckMenuItem  _fileExtToggle;
         [GUI] CheckMenuItem  _fileSizeToggle;
         [GUI] CheckMenuItem  _pathToggle;
-        [GUI] Label          _gameFpsStatus;
-        [GUI] Label          _gameFrameTimeStatus;
+        [GUI] Label          _gameStatus;
         [GUI] TreeView       _gameTable;
         [GUI] ScrolledWindow _gameTableWindow;
         [GUI] TreeSelection  _gameTableSelection;
@@ -605,21 +603,19 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                _vSyncStatus.Text         = args.VSyncEnabled ? "VSync On" : "VSync Off";
-                _hostFpsStatus.Text       = args.HostFpsStatus;
-                _gameFpsStatus.Text       = args.GameFpsStatus;
-                _hostFrameTimeStatus.Text = args.HostFrameTimeStatus;
-                _gameFrameTimeStatus.Text = args.GameFrameTimeStatus;
+                _vSyncStatus.Text = "VSync";
+                _hostStatus.Text  = args.HostStatus;
+                _gameStatus.Text  = args.GameStatus;
 
                 if (args.VSyncEnabled)
                 {
                     _vSyncStatus.Attributes = new Pango.AttrList();
-                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(0, ushort.MaxValue, 0));
+                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(11822, 60138, 51657));
                 }
                 else
                 {
                     _vSyncStatus.Attributes = new Pango.AttrList();
-                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(ushort.MaxValue, 0, 0));
+                    _vSyncStatus.Attributes.Insert(new Pango.AttrForeground(ushort.MaxValue, 17733, 21588));
                 }
             });
         }
