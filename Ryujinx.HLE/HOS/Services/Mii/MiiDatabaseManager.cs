@@ -143,9 +143,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                         if (result.IsFailure()) return result;
                     }
                 }
+
+                if (result == Result.Success)
+                {
+                    MountCounter++;
+                }
             }
 
-            MountCounter++;
+
 
             return result;
         }
