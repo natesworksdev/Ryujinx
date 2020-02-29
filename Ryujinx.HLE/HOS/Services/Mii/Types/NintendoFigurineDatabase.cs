@@ -127,23 +127,36 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         {
             bool isBroken = false;
 
-            for (int i = 0; i < Length; i++)
+            while (true)
             {
-                if (!Figurines[i].IsValid())
+                int i;
+
+                for (i = 0; i < Length; i++)
                 {
-                    // If the device crc is the only part invalid, we fix it (This is useful to allow importing arbitrary database in Ryujinx)
-                    if (AcceptInvalidDeviceCrc && Figurines[i].CoreData.IsValid() && Figurines[i].IsValidDataCrc())
+                    if (!Figurines[i].IsValid())
                     {
-                        Figurines[i].UpdateCrc();
+                        // If the device crc is the only part invalid, we fix it (This is useful to allow importing arbitrary database in Ryujinx)
+                        if (AcceptInvalidDeviceCrc && Figurines[i].CoreData.IsValid() && Figurines[i].IsValidDataCrc())
+                        {
+                            Figurines[i].UpdateCrc();
 
-                        UpdateCrc();
-                    }
-                    else
-                    {
-                        Delete(i);
+                            UpdateCrc();
+                        }
+                        else
+                        {
+                            Delete(i);
 
-                        isBroken = true;
+                            isBroken = true;
+
+                            // As we removed an element, we need to restart the process from the beginning as indexes are now inconsistent.
+                            break;
+                        }
                     }
+                }
+
+                if (i == Length)
+                {
+                    break;
                 }
             }
 

@@ -10,11 +10,13 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 {
     class MiiDatabaseManager
     {
-        public static bool IsTestModeEnabled = false;
+        private static bool IsTestModeEnabled = false;
+        private static uint MountCounter      = 0;
 
         private const ulong  DatabaseTestSaveDataId = 0x8000000000000031;
         private const ulong  DatabaseSaveDataId     = 0x8000000000000030;
         private const ulong  NsTitleId              = 0x010000000000001F;
+        private const ulong  SdbTitleId             = 0x0100000000000039;
         private const string DatabasePath           = "mii:/MiiDatabase.dat";
         private const string MountName              = "mii";
 
@@ -43,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             _isDirty = true;
 
             UpdateCounter++;
-            metadata.UpdateCounter = UpdateCounter;
+            metadata.UpdateCounter++;
         }
 
         private bool GetAtVirtualIndex(int index, out int realIndex, out StoreData storeData)
@@ -103,36 +105,46 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private Result MountSave()
         {
-            // The sysmodule sets a global flag once it's mounted the save so it doesn't mount it again
+            Result result = Result.Success;
 
-            ulong targetSaveDataId;
-
-            if (IsTestModeEnabled)
+            if (MountCounter == 0)
             {
-                targetSaveDataId = DatabaseTestSaveDataId;
-            }
-            else
-            {
-                targetSaveDataId = DatabaseSaveDataId;
-            }
+                ulong targetSaveDataId;
+                ulong targetTitleId;
 
-            U8Span mountName = new U8Span(MountName);
-
-            Result result = _filesystemClient.MountSystemSaveData(mountName, SaveDataSpaceId.System, targetSaveDataId);
-
-            if (result.IsFailure())
-            {
-                if (ResultFs.TargetNotFound == result)
+                if (IsTestModeEnabled)
                 {
-                    // TODO: We're currently always specifying the owner ID because FS doesn't have a way of
-                    // knowing which process called it
-                    result = _filesystemClient.CreateSystemSaveData(targetSaveDataId, new TitleId(NsTitleId), 0x10000, 0x10000, SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
-                    if (result.IsFailure()) return result;
+                    targetSaveDataId = DatabaseTestSaveDataId;
+                    targetTitleId    = SdbTitleId;
+                }
+                else
+                {
+                    targetSaveDataId = DatabaseSaveDataId;
 
-                    result = _filesystemClient.MountSystemSaveData(mountName, SaveDataSpaceId.System, targetSaveDataId);
-                    if (result.IsFailure()) return result;
+                    // Nintendo use NS TitleID when creating the production save even on sdb, let's follow that behaviour.
+                    targetTitleId = NsTitleId;
+                }
+
+                U8Span mountName = new U8Span(MountName);
+
+                result = _filesystemClient.MountSystemSaveData(mountName, SaveDataSpaceId.System, targetSaveDataId);
+
+                if (result.IsFailure())
+                {
+                    if (ResultFs.TargetNotFound == result)
+                    {
+                        // TODO: We're currently always specifying the owner ID because FS doesn't have a way of
+                        // knowing which process called it
+                        result = _filesystemClient.CreateSystemSaveData(targetSaveDataId, new TitleId(targetTitleId), 0x10000, 0x10000, SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
+                        if (result.IsFailure()) return result;
+
+                        result = _filesystemClient.MountSystemSaveData(mountName, SaveDataSpaceId.System, targetSaveDataId);
+                        if (result.IsFailure()) return result;
+                    }
                 }
             }
+
+            MountCounter++;
 
             return result;
         }
@@ -146,9 +158,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return result;
         }
 
-        public Result LoadFromFile(out bool isBroken)
+        public ResultCode LoadFromFile(out bool isBroken)
         {
             isBroken = false;
+
+            if (MountCounter == 0)
+            {
+                return ResultCode.InvalidArgument;
+            }
 
             UpdateCounter++;
 
@@ -187,14 +204,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
                 _filesystemClient.CloseFile(handle);
 
-                return result;
+                return (ResultCode)result.Value;
             }
             else if (result == ResultFs.PathNotFound)
             {
-                return ForceSaveDatabase();
+                return (ResultCode)ForceSaveDatabase().Value;
             }
 
-            return Result.Success;
+            return ResultCode.Success;
         }
 
         private Result ForceSaveDatabase()
