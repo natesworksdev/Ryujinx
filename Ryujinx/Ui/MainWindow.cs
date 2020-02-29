@@ -603,9 +603,8 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                _vSyncStatus.Text = "VSync";
-                _hostStatus.Text  = args.HostStatus;
-                _gameStatus.Text  = args.GameStatus;
+                _hostStatus.Text = args.HostStatus;
+                _gameStatus.Text = args.GameStatus;
 
                 if (args.VSyncEnabled)
                 {

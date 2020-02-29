@@ -4,8 +4,15 @@ namespace Ryujinx.Ui
 {
     public class StatusUpdatedEventArgs : EventArgs
     {
-        public bool   VSyncEnabled { get; set; }
-        public string HostStatus   { get; set; }
-        public string GameStatus   { get; set; }
+        public bool   VSyncEnabled;
+        public string HostStatus;
+        public string GameStatus;
+
+        public StatusUpdatedEventArgs(bool vSyncEnabled, string hostStatus, string gameStatus)
+        {
+            VSyncEnabled = vSyncEnabled;
+            HostStatus   = hostStatus;
+            GameStatus   = gameStatus;
+        }
     }
 }

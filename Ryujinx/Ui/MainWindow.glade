@@ -477,6 +477,7 @@
                         <property name="halign">start</property>
                         <property name="margin_left">10</property>
                         <property name="margin_right">5</property>
+                        <property name="label" translatable="yes">VSync</property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

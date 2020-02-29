@@ -325,12 +325,10 @@ namespace Ryujinx.Ui
 
                     _device.Statistics.RecordSystemFrameTime();
 
-                    StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs
-                    {
-                        VSyncEnabled = _device.EnableDeviceVsync,
-                        HostStatus   = $"Host: {_device.Statistics.GetSystemFrameRate():00.00}FPS - {_device.Statistics.GetSystemFrameTime():00.00}ms",
-                        GameStatus   = $"Game: {_device.Statistics.GetGameFrameRate():00.00}FPS - { _device.Statistics.GetGameFrameTime():00.00}ms"
-                    });
+                    StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
+                        _device.EnableDeviceVsync, 
+                        $"Host: {_device.Statistics.GetSystemFrameRate():00.00}FPS - {_device.Statistics.GetSystemFrameTime():00.00}ms", 
+                        $"Game: {_device.Statistics.GetGameFrameRate():00.00}FPS - { _device.Statistics.GetGameFrameTime():00.00}ms"));
 
                     _device.System.SignalVsync();
 
