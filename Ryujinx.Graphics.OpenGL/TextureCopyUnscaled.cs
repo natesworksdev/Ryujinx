@@ -22,7 +22,7 @@ namespace Ryujinx.Graphics.OpenGL
             dstWidth = Math.Max(1, dstWidth >> dstLevel);
             dstHeight = Math.Max(1, dstHeight >> dstLevel);
 
-            if (src.Target == Target.Texture3D)
+            if (dst.Target == Target.Texture3D)
             {
                 dstDepth = Math.Max(1, dstDepth >> dstLevel);
             }
