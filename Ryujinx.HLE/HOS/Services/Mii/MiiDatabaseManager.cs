@@ -45,7 +45,8 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             _isDirty = true;
 
             UpdateCounter++;
-            metadata.UpdateCounter++;
+
+            metadata.UpdateCounter = UpdateCounter;
         }
 
         private bool GetAtVirtualIndex(int index, out int realIndex, out StoreData storeData)
