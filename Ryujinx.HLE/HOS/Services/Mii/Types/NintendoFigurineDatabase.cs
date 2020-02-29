@@ -108,17 +108,19 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public void Delete(int index)
         {
+            int newCount = _figurineCount - 1;
+
             // If this isn't the only element in the list, move the data in it.
-            if (_figurineCount - 1 > index)
+            if (index < newCount)
             {
-                int targetLength     = _figurineCount - index;
+                int targetLength     = newCount - index;
                 int sourceIndex      = index + 1;
                 int destinationIndex = index;
 
                 Figurines.Slice(sourceIndex, targetLength).CopyTo(Figurines.Slice(destinationIndex, targetLength));
             }
 
-            _figurineCount--;
+            _figurineCount = (byte)newCount;
 
             UpdateCrc();
         }
@@ -126,39 +128,51 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public bool FixDatabase()
         {
             bool isBroken = false;
+            int i = 0;
 
-            while (true)
+            while (i < Length)
             {
-                int i;
+                ref StoreData figurine = ref Figurines[i];
 
-                for (i = 0; i < Length; i++)
+                if (!figurine.IsValid())
                 {
-                    if (!Figurines[i].IsValid())
+                    if (AcceptInvalidDeviceCrc && figurine.CoreData.IsValid() && figurine.IsValidDataCrc())
                     {
-                        // If the device crc is the only part invalid, we fix it (This is useful to allow importing arbitrary database in Ryujinx)
-                        if (AcceptInvalidDeviceCrc && Figurines[i].CoreData.IsValid() && Figurines[i].IsValidDataCrc())
+                        figurine.UpdateCrc();
+                    }
+                    else
+                    {
+                        Delete(i);
+                        isBroken = true;
+                    }
+                }
+                else
+                {
+                    bool hasDuplicate = false;
+                    CreateId createId = figurine.CreateId;
+
+                    for (int j = 0; j < i; j++)
+                    {
+                        if (Figurines[j].CreateId == createId)
                         {
-                            Figurines[i].UpdateCrc();
-
-                            UpdateCrc();
-                        }
-                        else
-                        {
-                            Delete(i);
-
-                            isBroken = true;
-
-                            // As we removed an element, we need to restart the process from the beginning as indexes are now inconsistent.
+                            hasDuplicate = true;
                             break;
                         }
                     }
-                }
 
-                if (i == Length)
-                {
-                    break;
+                    if (hasDuplicate)
+                    {
+                        Delete(i);
+                        isBroken = true;
+                    }
+                    else
+                    {
+                        i++;
+                    }
                 }
             }
+
+            UpdateCrc();
 
             return isBroken;
         }
