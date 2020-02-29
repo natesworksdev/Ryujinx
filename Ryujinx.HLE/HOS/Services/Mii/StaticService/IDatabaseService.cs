@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.Mii.Types;
 using System;
@@ -389,7 +388,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
 
         protected abstract ResultCode Get3(SourceFlag flag, out int count, Span<StoreData> elements);
 
-        protected abstract ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newstoreData);
+        protected abstract ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newStoreData);
 
         protected abstract ResultCode FindIndex(CreateId createId, bool isSpecial, out int index);
 

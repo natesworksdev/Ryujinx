@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Mii.Types;
+﻿using Ryujinx.HLE.HOS.Services.Mii.Types;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
@@ -33,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         public bool IsUpdated(DatabaseSessionMetadata metadata, SourceFlag flag)
         {
-            if ((flag & SourceFlag.Database) == SourceFlag.Database)
+            if (flag.HasFlag(SourceFlag.Database))
             {
                 return _miiDatabase.IsUpdated(metadata);
             }
@@ -62,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private ResultCode GetDefault<T>(SourceFlag flag, ref int count, Span<T> elements) where T : struct, IElement
         {
-            if ((flag & SourceFlag.Default) != SourceFlag.Default)
+            if (!flag.HasFlag(SourceFlag.Default))
             {
                 return ResultCode.Success;
             }
@@ -71,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             {
                 if (count >= elements.Length)
                 {
-                    return ResultCode.CannotFit;
+                    return ResultCode.BufferTooSmall;
                 }
 
                 elements[count] = default;
@@ -86,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         public ResultCode UpdateLatest<T>(DatabaseSessionMetadata metadata, IStoredData<T> oldMiiData, SourceFlag flag, IStoredData<T> newMiiData) where T : unmanaged
         {
-            if ((flag & SourceFlag.Database) != SourceFlag.Database)
+            if (!flag.HasFlag(SourceFlag.Database))
             {
                 return ResultCode.NotFound;
             }
@@ -122,7 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         {
             count = 0;
 
-            if ((flag & SourceFlag.Database) != SourceFlag.Database)
+            if (!flag.HasFlag(SourceFlag.Database))
             {
                 return GetDefault(flag, ref count, elements);
             }
@@ -133,7 +132,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             {
                 if (count >= elements.Length)
                 {
-                    return ResultCode.CannotFit;
+                    return ResultCode.BufferTooSmall;
                 }
 
                 _miiDatabase.Get(metadata, i, out StoreData storeData);
@@ -225,7 +224,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return ResultCode.Success;
         }
 
-        public int FindIndex(DatabaseSessionMetadata metadata, CreateId createId, bool isSpecial)
+        public int FindIndex(CreateId createId, bool isSpecial)
         {
             if (_miiDatabase.FindIndex(out int index, createId, isSpecial) == ResultCode.Success)
             {
@@ -239,12 +238,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii
         {
             int count = 0;
 
-            if ((flag & SourceFlag.Default) == SourceFlag.Default)
+            if (flag.HasFlag(SourceFlag.Default))
             {
                 count += DefaultMii.TableLength;
             }
 
-            if ((flag & SourceFlag.Database) == SourceFlag.Database)
+            if (flag.HasFlag(SourceFlag.Database))
             {
                 count += _miiDatabase.GetCount(metadata);
             }

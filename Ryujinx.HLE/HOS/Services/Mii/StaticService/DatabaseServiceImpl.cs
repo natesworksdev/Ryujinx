@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             _database.BuildRandom(age, gender, race, out charInfo);
 
             return ResultCode.Success;
-         }
+        }
 
         protected override ResultCode BuildDefault(uint index, out CharInfo charInfo)
         {
@@ -111,16 +111,16 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
             return _database.Get(_metadata, flag, out count, elements);
         }
 
-        protected override ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newstoreData)
+        protected override ResultCode UpdateLatest1(StoreData oldStoreData, SourceFlag flag, out StoreData newStoreData)
         {
-            newstoreData = default;
+            newStoreData = default;
 
             if (!_isSystem)
             {
                 return ResultCode.PermissionDenied;
             }
 
-            return _database.UpdateLatest(_metadata, oldStoreData, flag, newstoreData);
+            return _database.UpdateLatest(_metadata, oldStoreData, flag, newStoreData);
         }
 
         protected override ResultCode FindIndex(CreateId createId, bool isSpecial, out int index)
@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.StaticService
                 return ResultCode.PermissionDenied;
             }
 
-            index = _database.FindIndex(_metadata, createId, isSpecial);
+            index = _database.FindIndex(createId, isSpecial);
 
             return ResultCode.Success;
         }

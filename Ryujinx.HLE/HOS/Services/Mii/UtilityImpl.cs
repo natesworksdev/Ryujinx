@@ -7,32 +7,32 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 {
     class UtilityImpl
     {
-        private uint x;
-        private uint y;
-        private uint z;
-        private uint w;
+        private uint _x;
+        private uint _y;
+        private uint _z;
+        private uint _w;
 
         public UtilityImpl()
         {
-            x = 123456789;
-            y = 362436069;
+            _x = 123456789;
+            _y = 362436069;
 
             TimeSpanType time = TimeManager.Instance.TickBasedSteadyClock.GetCurrentRawTimePoint(null);
 
-            w = (uint)(time.NanoSeconds & uint.MaxValue);
-            z = (uint)((time.NanoSeconds >> 32) & uint.MaxValue);
+            _w = (uint)(time.NanoSeconds & uint.MaxValue);
+            _z = (uint)((time.NanoSeconds >> 32) & uint.MaxValue);
         }
 
         private uint GetRandom()
         {
-            uint t = (x ^ (x << 11));
-            
-            x = y;
-            y = z;
-            z = w;
-            w = (w ^ (w >> 19)) ^ (t ^ (t >> 8));
+            uint t = (_x ^ (_x << 11));
 
-            return w;
+            _x = _y;
+            _y = _z;
+            _z = _w;
+            _w = (_w ^ (_w >> 19)) ^ (t ^ (t >> 8));
+
+            return _w;
         }
 
         public int GetRandom(int end)

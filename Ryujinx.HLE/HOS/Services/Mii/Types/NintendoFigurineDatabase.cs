@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
     [StructLayout(LayoutKind.Sequential, Pack = 8, Size = 0x1A98)]
-    unsafe struct NintendoFigurineDatabase
+    struct NintendoFigurineDatabase
     {
         private const int DatabaseMagic = ('N' << 0) | ('F' << 8) | ('D' << 16) | ('B' << 24);
         private const byte MaxMii = 100;
@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private uint _magic;
 
-        private fixed byte _figurinesStorage[FigurineArraySize];
+        private FigurineStorageStruct _figurineStorage;
 
         private byte _version;
         private byte _figurineCount;
@@ -27,23 +27,14 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public int Length => _figurineCount;
 
-        private Span<StoreData> _figurines
-        {
-            get
-            {
-                unsafe
-                {
-                    fixed (byte *storage = _figurinesStorage)
-                    {
-                        return new Span<StoreData>(storage, MaxMii);
-                    }
-                }
-            }
-        }
+        [StructLayout(LayoutKind.Sequential, Size = FigurineArraySize)]
+        private struct FigurineStorageStruct { }
 
+        private Span<StoreData> Figurines => SpanHelpers.AsSpan<FigurineStorageStruct, StoreData>(ref _figurineStorage);
+        
         public StoreData Get(int index)
         {
-            return _figurines[index];
+            return Figurines[index];
         }
 
         public bool IsFull()
@@ -55,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         {
             for (int i = 0; i < Length; i++)
             {
-                if (_figurines[i].CreateId == createId)
+                if (Figurines[i].CreateId == createId)
                 {
                     index = i;
 
@@ -75,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
                 return ResultCode.NotUpdated;
             }
 
-            StoreData tmp = _figurines[oldIndex];
+            StoreData tmp = Figurines[oldIndex];
 
             int targetLength;
             int sourceIndex;
@@ -94,9 +85,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
                 destinationIndex = oldIndex;
             }
 
-            _figurines.Slice(sourceIndex, targetLength).CopyTo(_figurines.Slice(destinationIndex, targetLength));
+            Figurines.Slice(sourceIndex, targetLength).CopyTo(Figurines.Slice(destinationIndex, targetLength));
 
-            _figurines[newIndex] = tmp;
+            Figurines[newIndex] = tmp;
 
             UpdateCrc();
 
@@ -105,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public void Replace(int index, StoreData storeData)
         {
-            _figurines[index] = storeData;
+            Figurines[index] = storeData;
 
             UpdateCrc();
         }
@@ -124,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
                 int sourceIndex      = index + 1;
                 int destinationIndex = index;
 
-                _figurines.Slice(sourceIndex, targetLength).CopyTo(_figurines.Slice(destinationIndex, targetLength));
+                Figurines.Slice(sourceIndex, targetLength).CopyTo(Figurines.Slice(destinationIndex, targetLength));
             }
 
             _figurineCount--;
@@ -136,35 +127,23 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         {
             bool isBroken = false;
 
-            while (true)
+            for (int i = 0; i < Length; i++)
             {
-                int i = 0;
-
-                for (i = 0; i < Length; i++)
+                if (!Figurines[i].IsValid())
                 {
-                    if (!_figurines[i].IsValid())
+                    // If the device crc is the only part invalid, we fix it (This is useful to allow importing arbitrary database in Ryujinx)
+                    if (AcceptInvalidDeviceCrc && Figurines[i].CoreData.IsValid() && Figurines[i].IsValidDataCrc())
                     {
-                        // If the device crc is the only part invalid, we fix it (This is useful to allow importing arbitrary database in Ryujinx)
-                        if (AcceptInvalidDeviceCrc && _figurines[i].CoreData.IsValid() && _figurines[i].IsValidDataCrc())
-                        {
-                            _figurines[i].UpdateCrc();
+                        Figurines[i].UpdateCrc();
 
-                            UpdateCrc();
-                        }
-                        else
-                        {
-                            Delete(i);
-
-                            isBroken = true;
-                        }
-
-                        break;
+                        UpdateCrc();
                     }
-                }
+                    else
+                    {
+                        Delete(i);
 
-                if (i == Length)
-                {
-                    break;
+                        isBroken = true;
+                    }
                 }
             }
 
@@ -203,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             _figurineCount = 0;
 
             // Fill with empty data
-            _figurines.Fill(new StoreData());
+            Figurines.Fill(new StoreData());
 
             UpdateCrc();
         }
@@ -217,15 +196,15 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         private void UpdateCrc()
         {
-            _crc = CalculcateCrc();
+            _crc = CalculateCrc();
         }
 
         public bool IsValidCrc()
         {
-            return _crc == CalculcateCrc();
+            return _crc == CalculateCrc();
         }
 
-        private ushort CalculcateCrc()
+        private ushort CalculateCrc()
         {
             return Helper.CalculateCrc16BE(AsSpanWithoutCrc());
         }

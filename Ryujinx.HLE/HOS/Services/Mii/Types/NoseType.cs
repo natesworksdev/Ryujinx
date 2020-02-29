@@ -10,7 +10,7 @@
         Triangle,
         Button,
         RoundedInverted,
-        Potatoe,
+        Potato,
         Grecian,
         Snub,
         Aquiline,

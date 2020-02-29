@@ -5,11 +5,11 @@ using System.Buffers.Binary;
 
 namespace Ryujinx.HLE.HOS.Services.Mii
 {
-    class Helper
+    static class Helper
     {
         public static ushort CalculateCrc16BE(ReadOnlySpan<byte> data, int crc = 0)
         {
-            const ushort Poly = 0x1021;
+            const ushort poly = 0x1021;
 
             for (int i = 0; i < data.Length; i++)
             {
@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
                     if ((crc & 0x10000) != 0)
                     {
-                        crc = (crc ^ Poly) & 0xFFFF;
+                        crc = (crc ^ poly) & 0xFFFF;
                     }
                 }
             }
@@ -35,10 +35,10 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return SystemStateMgr.DefaultUserId.ToUInt128();
         }
 
-        public static byte[] Ver3FacelineColorTable = new byte[] { 0, 1, 2, 3, 4, 5 };
-        public static byte[] Ver3HairColorTable     = new byte[] { 8, 1, 2, 3, 4, 5, 6, 7 };
-        public static byte[] Ver3EyeColorTable      = new byte[] { 8, 9, 10, 11, 12, 13 };
-        public static byte[] Ver3MouthColorTable    = new byte[] { 19, 20, 21, 22, 23 };
-        public static byte[] Ver3GlassColorTable    = new byte[] { 8, 14, 15, 16, 17, 18, 0 };
+        public static ReadOnlySpan<byte> Ver3FacelineColorTable => new byte[] { 0, 1, 2, 3, 4, 5 };
+        public static ReadOnlySpan<byte> Ver3HairColorTable     => new byte[] { 8, 1, 2, 3, 4, 5, 6, 7 };
+        public static ReadOnlySpan<byte> Ver3EyeColorTable      => new byte[] { 8, 9, 10, 11, 12, 13 };
+        public static ReadOnlySpan<byte> Ver3MouthColorTable    => new byte[] { 19, 20, 21, 22, 23 };
+        public static ReadOnlySpan<byte> Ver3GlassColorTable    => new byte[] { 8, 14, 15, 16, 17, 18, 0 };
     }
 }

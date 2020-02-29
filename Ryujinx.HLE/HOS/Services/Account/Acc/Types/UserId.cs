@@ -74,12 +74,12 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return HashCode.Combine(Low, High);
         }
 
-        public Uid ToLibHacUid()
+        public readonly Uid ToLibHacUid()
         {
             return new Uid((ulong)High, (ulong)Low);
         }
 
-        public UInt128 ToUInt128()
+        public readonly UInt128 ToUInt128()
         {
             return new UInt128(Low, High);
         }

@@ -1,9 +1,10 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Ryujinx.Common.Utilities;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
-    class RandomMiiConstant
+    static class RandomMiiConstants
     {
         public static int[] EyeRotateTable = new int[] 
         {
@@ -33,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             private int _firstValueByte;
 
-            public ReadOnlySpan<int> Values => MemoryMarshal.CreateReadOnlySpan(ref _firstValueByte, ValuesArraySize / 4);
+            public ReadOnlySpan<int> Values => SpanHelpers.AsSpan<RandomMiiValues, int>(ref this);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0xCC)]
@@ -98,6 +99,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         public static ReadOnlySpan<RandomMiiData2> RandomMiiGlassTypeArray => MemoryMarshal.Cast<byte, RandomMiiData2>(RandomMiiGlassTypeRawArray);
 
         #region "Random Mii Data Arrays"
+
         private static ReadOnlySpan<byte> RandomMiiFacelineRawArray => new byte[]
         {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0a, 0x00, 0x00, 0x00,

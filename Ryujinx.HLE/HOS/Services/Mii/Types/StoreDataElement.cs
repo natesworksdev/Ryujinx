@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public void SetSource(Source source)
         {
-            source = Source;
+            Source = source;
         }
     }
 }

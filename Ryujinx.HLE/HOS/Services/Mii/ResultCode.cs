@@ -8,7 +8,7 @@
         Success = 0,
 
         InvalidArgument        = (1   << ErrorCodeShift) | ModuleId,
-        CannotFit              = (2   << ErrorCodeShift) | ModuleId,
+        BufferTooSmall         = (2   << ErrorCodeShift) | ModuleId,
         NotUpdated             = (3   << ErrorCodeShift) | ModuleId,
         NotFound               = (4   << ErrorCodeShift) | ModuleId,
         DatabaseFull           = (5   << ErrorCodeShift) | ModuleId,

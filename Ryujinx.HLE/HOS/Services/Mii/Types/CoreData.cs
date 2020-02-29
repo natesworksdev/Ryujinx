@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using static Ryujinx.HLE.HOS.Services.Mii.Types.RandomMiiConstant;
+using static Ryujinx.HLE.HOS.Services.Mii.Types.RandomMiiConstants;
 
 namespace Ryujinx.HLE.HOS.Services.Mii.Types
 {
@@ -444,7 +444,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
             var facelineWrinkleInfo = RandomMiiFacelineWrinkleArray[indexFor4];
             var facelineMakeInfo    = RandomMiiFacelineMakeArray[indexFor4];
             var hairTypeInfo        = RandomMiiHairTypeArray[indexFor4];
-            var hairColorinfo       = RandomMiiHairColorArray[3 * (int)race + (int)age];
+            var hairColorInfo       = RandomMiiHairColorArray[3 * (int)race + (int)age];
             var eyeTypeInfo         = RandomMiiEyeTypeArray[indexFor4];
             var eyeColorInfo        = RandomMiiEyeColorArray[(int)race];
             var eyebrowTypeInfo     = RandomMiiEyebrowTypeArray[indexFor4];
@@ -460,7 +460,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             // Hair
             coreData.HairType  = (HairType)hairTypeInfo.Values[utilImpl.GetRandom(hairTypeInfo.ValuesCount)];
-            coreData.HairColor = (CommonColor)Helper.Ver3HairColorTable[hairColorinfo.Values[utilImpl.GetRandom(hairColorinfo.ValuesCount)]];
+            coreData.HairColor = (CommonColor)Helper.Ver3HairColorTable[hairColorInfo.Values[utilImpl.GetRandom(hairColorInfo.ValuesCount)]];
             coreData.HairFlip  = (HairFlip)utilImpl.GetRandom((int)HairFlip.Max + 1);
 
             // Eye
@@ -829,7 +829,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         }
 
         #region "Element Info Array"
-        private static ReadOnlySpan<byte> ElementInfoArray => new byte[0x498]
+        private static ReadOnlySpan<byte> ElementInfoArray => new byte[]
         {
             0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
             0x83, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,

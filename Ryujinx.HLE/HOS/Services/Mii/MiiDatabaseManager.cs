@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private const ulong  DatabaseTestSaveDataId = 0x8000000000000031;
         private const ulong  DatabaseSaveDataId     = 0x8000000000000030;
-        private const ulong  NsTitleId              = 0x10000000000001F;
+        private const ulong  NsTitleId              = 0x010000000000001F;
         private const string DatabasePath           = "mii:/MiiDatabase.dat";
         private const string MountName              = "mii";
 
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             _isDirty = true;
 
             UpdateCounter++;
-            metadata.UpdateCounter++;
+            metadata.UpdateCounter = UpdateCounter;
         }
 
         private bool GetAtVirtualIndex(int index, out int realIndex, out StoreData storeData)
@@ -101,20 +101,19 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             MountSave();
         }
 
-        private LibHac.Result MountSave()
+        private Result MountSave()
         {
+            // The sysmodule sets a global flag once it's mounted the save so it doesn't mount it again
+
             ulong targetSaveDataId;
-            ulong saveDataOwnerTitleId;
 
             if (IsTestModeEnabled)
             {
-                targetSaveDataId     = DatabaseTestSaveDataId;
-                saveDataOwnerTitleId = NsTitleId;
+                targetSaveDataId = DatabaseTestSaveDataId;
             }
             else
             {
-                targetSaveDataId     = DatabaseSaveDataId;
-                saveDataOwnerTitleId = 0;
+                targetSaveDataId = DatabaseSaveDataId;
             }
 
             U8Span mountName = new U8Span(MountName);
@@ -125,7 +124,9 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             {
                 if (ResultFs.TargetNotFound == result)
                 {
-                    result = _filesystemClient.CreateSystemSaveData(SaveDataSpaceId.System, targetSaveDataId, new TitleId(saveDataOwnerTitleId), 0x10000, 0x10000, SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
+                    // TODO: We're currently always specifying the owner ID because FS doesn't have a way of
+                    // knowing which process called it
+                    result = _filesystemClient.CreateSystemSaveData(targetSaveDataId, new TitleId(NsTitleId), 0x10000, 0x10000, SaveDataFlags.KeepAfterResettingSystemSaveDataWithoutUserSaveData);
                     if (result.IsFailure()) return result;
 
                     result = _filesystemClient.MountSystemSaveData(mountName, SaveDataSpaceId.System, targetSaveDataId);
@@ -198,14 +199,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii
 
         private Result ForceSaveDatabase()
         {
-            FileHandle handle;
-
             Result result = _filesystemClient.CreateFile(DatabasePath, Unsafe.SizeOf<NintendoFigurineDatabase>());
 
             if (result.IsSuccess() || result == ResultFs.PathAlreadyExists)
             {
-                result = _filesystemClient.OpenFile(out handle, DatabasePath, OpenMode.Write);
-                
+                result = _filesystemClient.OpenFile(out FileHandle handle, DatabasePath, OpenMode.Write);
+
                 if (result.IsSuccess())
                 {
                     result = _filesystemClient.GetFileSize(out long fileSize, handle);
@@ -350,7 +349,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             return ResultCode.NotFound;
         }
 
-        public ResultCode Move(DatabaseSessionMetadata metadata, int newIndex, CreateId createid)
+        public ResultCode Move(DatabaseSessionMetadata metadata, int newIndex, CreateId createId)
         {
             if (!metadata.MiiKeyCode.IsEnabledSpecialMii())
             {
@@ -364,7 +363,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
                 }
             }
 
-            if (_database.GetIndexByCreatorId(out int oldIndex, createid))
+            if (_database.GetIndexByCreatorId(out int oldIndex, createId))
             {
                 StoreData realStoreData = _database.Get(oldIndex);
 
