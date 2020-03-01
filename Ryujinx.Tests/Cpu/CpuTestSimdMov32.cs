@@ -228,7 +228,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VMOVL.<dt> <Qd>, <Dm>")]
+        [Test, Pairwise, Description("VMOVL.<size> <Qd>, <Dm>")]
         public void Vmovl([Values(0u, 1u, 2u, 3u)] uint vm,
                           [Values(0u, 2u, 4u, 6u)] uint vd,
                           [Values(1u, 2u, 4u)] uint imm3H,
