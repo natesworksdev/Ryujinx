@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
     {
         public static Instruction ToInstFPType(this FPType type)
         {
-            return type == FPType.FP64 ? Instruction.FP64 : Instruction.FP;
+            return type == FPType.FP64 ? Instruction.FP64 : Instruction.FP32;
         }
     }
 }

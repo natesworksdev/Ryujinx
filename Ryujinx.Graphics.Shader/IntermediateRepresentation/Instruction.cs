@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
         Count,
 
-        FP = 1 << 16,
+        FP32 = 1 << 16,
         FP64 = 1 << 17,
 
         MrShift = 18,

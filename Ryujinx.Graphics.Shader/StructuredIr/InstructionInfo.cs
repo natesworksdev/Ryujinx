@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             if (type == VariableType.Scalar)
             {
-                if ((inst & Instruction.FP) != 0)
+                if ((inst & Instruction.FP32) != 0)
                 {
                     return VariableType.F32;
                 }

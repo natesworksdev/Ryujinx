@@ -15,8 +15,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
         public static void Dfma(EmitterContext context) => EmitFPFma(context, Instruction.FP64);
         public static void Dmul(EmitterContext context) => EmitFPMultiply(context, Instruction.FP64);
 
-        public static void Fadd(EmitterContext context) => EmitFPAdd(context, Instruction.FP);
-        public static void Ffma(EmitterContext context) => EmitFPFma(context, Instruction.FP);
+        public static void Fadd(EmitterContext context) => EmitFPAdd(context, Instruction.FP32);
+        public static void Ffma(EmitterContext context) => EmitFPFma(context, Instruction.FP32);
 
         public static void Ffma32i(EmitterContext context)
         {
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             SetFPZnFlags(context, dest, op.SetCondCode);
         }
 
-        public static void Fmul(EmitterContext context) => EmitFPMultiply(context, Instruction.FP);
+        public static void Fmul(EmitterContext context) => EmitFPMultiply(context, Instruction.FP32);
 
         public static void Fset(EmitterContext context)
         {
@@ -474,7 +474,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                     default: throw new InvalidOperationException($"Unexpected condition \"{cond}\".");
                 }
 
-                res = context.Add(inst | Instruction.FP, Local(), srcA, srcB);
+                res = context.Add(inst | Instruction.FP32, Local(), srcA, srcB);
 
                 if ((cond & Condition.Nan) != 0)
                 {
