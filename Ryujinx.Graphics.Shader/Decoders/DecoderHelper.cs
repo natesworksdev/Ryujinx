@@ -65,7 +65,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             if (negate)
             {
-                imm |= 1 << 63;
+                imm |= 1L << 63;
             }
 
             return (float)BitConverter.Int64BitsToDouble(imm);
