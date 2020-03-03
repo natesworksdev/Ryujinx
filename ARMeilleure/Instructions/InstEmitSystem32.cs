@@ -17,7 +17,7 @@ namespace ARMeilleure.Instructions
 
             if (op.Coproc != 15)
             {
-                EmitUndefined(context);
+                InstEmit.Und(context);
                 return;
             }
 
@@ -71,7 +71,7 @@ namespace ARMeilleure.Instructions
 
             if (op.Coproc != 15)
             {
-                EmitUndefined(context);
+                InstEmit.Und(context);
                 return;
             }
 
@@ -121,7 +121,7 @@ namespace ARMeilleure.Instructions
 
             if (op.Coproc != 15)
             {
-                EmitUndefined(context);
+                InstEmit.Und(context);
                 return;
             }
 
@@ -231,12 +231,6 @@ namespace ARMeilleure.Instructions
             SetFlag(context, PState.CFlag, c);
             SetFlag(context, PState.ZFlag, z);
             SetFlag(context, PState.NFlag, n);
-        }
-
-        private static void EmitUndefined(ArmEmitterContext context)
-        {
-            OpCode32 op = (OpCode32)context.CurrOp;
-            context.Call(new _Void_U64_S32(NativeInterface.Undefined), Const(op.Address), Const(op.RawOpCode));
         }
     }
 }
