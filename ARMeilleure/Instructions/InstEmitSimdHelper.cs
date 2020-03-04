@@ -1469,9 +1469,16 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitFloatAbs(ArmEmitterContext context, Operand value, bool single, bool vector)
         {
-            Operand mask = vector ? X86GetAllElements(context, -0f) : X86GetScalar(context, -0f);
+            Operand mask;
+            if (single)
+            {
+                mask = vector ? X86GetAllElements(context, -0f) : X86GetScalar(context, -0f);
+            } 
+            else
+            {
+                mask = vector ? X86GetAllElements(context, -0d) : X86GetScalar(context, -0d);
+            }
 
-            Intrinsic op;
             return context.AddIntrinsic(single ? Intrinsic.X86Andnps : Intrinsic.X86Andnpd, mask, value);
         }
 
