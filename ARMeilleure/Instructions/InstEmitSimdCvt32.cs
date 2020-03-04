@@ -251,7 +251,7 @@ namespace ARMeilleure.Instructions
                     roundMode = FPRoundingMode.TowardsMinusInfinity;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException($"rm");
+                    throw new ArgumentOutOfRangeException(nameof(rm));
             }
             return roundMode;
         }
