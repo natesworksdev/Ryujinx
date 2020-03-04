@@ -236,10 +236,10 @@ namespace ARMeilleure.Instructions
             return context.Call(dlg, n, Const((int)roundMode));
         }
 
-        private static FPRoundingMode Opc2ToRoundMode(int opc2)
+        private static FPRoundingMode RMToRoundMode(int rm)
         {
             FPRoundingMode roundMode;
-            switch (opc2)
+            switch (rm)
             {
                 case 0b01:
                     roundMode = FPRoundingMode.ToNearest;
@@ -251,7 +251,7 @@ namespace ARMeilleure.Instructions
                     roundMode = FPRoundingMode.TowardsMinusInfinity;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException($"Round mode {opc2} out of supported range.");
+                    throw new ArgumentOutOfRangeException($"rm");
             }
             return roundMode;
         }
@@ -263,17 +263,17 @@ namespace ARMeilleure.Instructions
             OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
             bool unsigned = (op.Opc & 1) == 0;
-            int roundMode = op.Opc2 & 3;
+            int rm = op.Opc2 & 3;
 
-            if (Optimizations.UseSse41 && roundMode != 0b00)
+            if (Optimizations.UseSse41 && rm != 0b00)
             {
-                EmitSse41ConvertInt32(context, Opc2ToRoundMode(roundMode), !unsigned);
+                EmitSse41ConvertInt32(context, RMToRoundMode(rm), !unsigned);
             }
             else
             {
                 Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
-                switch (roundMode)
+                switch (rm)
                 {
                     case 0b00: // Away
                         toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
@@ -303,15 +303,15 @@ namespace ARMeilleure.Instructions
 
             OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
-            int roundModeId = op.Opc2 & 3;
+            int rm = op.Opc2 & 3;
 
-            if (Optimizations.UseSse2 && roundModeId != 0b00)
+            if (Optimizations.UseSse2 && rm != 0b00)
             {
                 EmitScalarUnaryOpSimd32(context, (m) =>
                 {
                     Intrinsic inst = (op.Size & 1) == 0 ? Intrinsic.X86Roundss : Intrinsic.X86Roundsd;
 
-                    FPRoundingMode roundMode = Opc2ToRoundMode(roundModeId);
+                    FPRoundingMode roundMode = RMToRoundMode(rm);
 
                     return context.AddIntrinsic(inst, m, Const(X86GetRoundControl(roundMode)));
                 });
@@ -320,7 +320,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
-                switch (roundModeId)
+                switch (rm)
                 {
                     case 0b00: // Away
                         toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
