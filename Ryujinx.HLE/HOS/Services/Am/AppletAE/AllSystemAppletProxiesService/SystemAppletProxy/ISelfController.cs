@@ -14,7 +14,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private KEvent _accumulatedSuspendedTickChangedEvent;
         private int    _accumulatedSuspendedTickChangedEventHandle = 0;
 
-        private int _fatalSectionCount;
+        private object _fatalSectionLock = new object();
+        private int    _fatalSectionCount;
 
         // TODO: Set this when the game goes in suspension (go back to home menu ect), we currently don't support that so we can keep it set to 0.
         private ulong _accumulatedSuspendedTickValue = 0;
@@ -57,7 +58,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // EnterFatalSection()
         public ResultCode EnterFatalSection(ServiceCtx context)
         {
-            Interlocked.Increment(ref _fatalSectionCount);
+            lock (_fatalSectionLock)
+            {
+                _fatalSectionCount++;
+            }
 
             return ResultCode.Success;
         }
@@ -66,16 +70,21 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // LeaveFatalSection()
         public ResultCode LeaveFatalSection(ServiceCtx context)
         {
-            if (_fatalSectionCount < 0)
+            ResultCode result = ResultCode.Success;
+
+            lock (_fatalSectionLock)
             {
-                return ResultCode.UnbalancedFatalSection;
-            }
-            else
-            {
-                Interlocked.Decrement(ref _fatalSectionCount);
+                if (_fatalSectionCount != 0)
+                {
+                    _fatalSectionCount--;
+                }
+                else
+                {
+                    result = ResultCode.UnbalancedFatalSection;
+                }
             }
 
-            return ResultCode.Success;
+            return result;
         }
 
         [Command(9)]
