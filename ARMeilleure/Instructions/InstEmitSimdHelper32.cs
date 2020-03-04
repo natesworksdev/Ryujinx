@@ -475,7 +475,7 @@ namespace ARMeilleure.Instructions
 
         // Intrinsic Helpers
 
-        public static Operand EmitSwapDoubleWordToSide(ArmEmitterContext context, Operand input, int originalV, int targetV)
+        public static Operand EmitMoveDoubleWordToSide(ArmEmitterContext context, Operand input, int originalV, int targetV)
         {
             Debug.Assert(input.Type == OperandType.V128);
 
@@ -502,7 +502,7 @@ namespace ARMeilleure.Instructions
             Debug.Assert(target.Type == OperandType.V128 && value.Type == OperandType.V128);
 
             int targetSide = targetV & 1;
-            int shuffleMask = 2 | 0;
+            int shuffleMask = 2;
 
             if (targetSide == 1)
             {
@@ -578,7 +578,7 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register swap: move relevant doubleword to destination side.
             {
-                m = EmitSwapDoubleWordToSide(context, m, op.Vm, op.Vd);
+                m = EmitMoveDoubleWordToSide(context, m, op.Vm, op.Vd);
             }
 
             Operand res = vectorFunc(m);
@@ -615,8 +615,8 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register swap: move relevant doubleword to destination side.
             {
-                n = EmitSwapDoubleWordToSide(context, n, op.Vn, side);
-                m = EmitSwapDoubleWordToSide(context, m, op.Vm, side);
+                n = EmitMoveDoubleWordToSide(context, n, op.Vn, side);
+                m = EmitMoveDoubleWordToSide(context, m, op.Vm, side);
             }
 
             Operand res = vectorFunc(n, m);
@@ -625,7 +625,7 @@ namespace ARMeilleure.Instructions
             {
                 if (side != op.Vd)
                 {
-                    res = EmitSwapDoubleWordToSide(context, res, side, op.Vd);
+                    res = EmitMoveDoubleWordToSide(context, res, side, op.Vd);
                 }
                 res = EmitDoubleWordInsert(context, d, res, op.Vd);
             }
@@ -652,13 +652,13 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register swap: move relevant doubleword to destination side.
             {
-                n = EmitSwapDoubleWordToSide(context, n, op.Vn, op.Vd);
-                m = EmitSwapDoubleWordToSide(context, m, op.Vm, op.Vd);
+                n = EmitMoveDoubleWordToSide(context, n, op.Vn, op.Vd);
+                m = EmitMoveDoubleWordToSide(context, m, op.Vm, op.Vd);
             }
 
             Operand res = vectorFunc(d, n, m);
 
-            if (!op.Q) //register insert
+            if (!op.Q) // Register insert.
             {
                 res = EmitDoubleWordInsert(context, initialD, res, op.Vd);
             }
@@ -793,7 +793,7 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register swap: move relevant doubleword to destination side.
             {
-                n = EmitSwapDoubleWordToSide(context, n, op.Vn, op.Vd);
+                n = EmitMoveDoubleWordToSide(context, n, op.Vn, op.Vd);
             }
 
             Operand res = vectorFunc(n, m);
@@ -829,7 +829,7 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register swap: move relevant doubleword to destination side.
             {
-                n = EmitSwapDoubleWordToSide(context, n, op.Vn, op.Vd);
+                n = EmitMoveDoubleWordToSide(context, n, op.Vn, op.Vd);
             }
 
             Operand res = vectorFunc(d, n, m);

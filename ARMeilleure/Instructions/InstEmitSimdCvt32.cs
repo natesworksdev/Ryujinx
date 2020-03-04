@@ -238,7 +238,7 @@ namespace ARMeilleure.Instructions
 
         private static FPRoundingMode Opc2ToRoundMode(int opc2)
         {
-            FPRoundingMode roundMode = FPRoundingMode.ToNearest;
+            FPRoundingMode roundMode;
             switch (opc2)
             {
                 case 0b01:
@@ -250,6 +250,8 @@ namespace ARMeilleure.Instructions
                 case 0b11:
                     roundMode = FPRoundingMode.TowardsMinusInfinity;
                     break;
+                default:
+                    throw new ArgumentOutOfRangeException($"Round mode {opc2} out of supported range.");
             }
             return roundMode;
         }
@@ -306,19 +308,8 @@ namespace ARMeilleure.Instructions
                 {
                     Intrinsic inst = (op.Size & 1) == 0 ? Intrinsic.X86Roundss : Intrinsic.X86Roundsd;
 
-                    FPRoundingMode roundMode = FPRoundingMode.ToNearest;
-                    switch (op.Opc2)
-                    {
-                        case 0b01:
-                            roundMode = FPRoundingMode.ToNearest;
-                            break;
-                        case 0b10:
-                            roundMode = FPRoundingMode.TowardsPlusInfinity;
-                            break;
-                        case 0b11:
-                            roundMode = FPRoundingMode.TowardsMinusInfinity;
-                            break;
-                    }
+                    FPRoundingMode roundMode = Opc2ToRoundMode(op.Opc2);
+
                     return context.AddIntrinsic(inst, m, Const(X86GetRoundControl(roundMode)));
                 });
             }
@@ -405,7 +396,7 @@ namespace ARMeilleure.Instructions
                     nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
                 }
 
-                int fpMaxVal = 0x4F000000;  // 2.14748365E9f (2147483648)
+                int fpMaxVal = 0x4F000000; // 2.14748365E9f (2147483648)
 
                 Operand fpMaxValMask = X86GetScalar(context, fpMaxVal);
 
@@ -455,7 +446,7 @@ namespace ARMeilleure.Instructions
                     nRes = context.AddIntrinsic(Intrinsic.X86Pand, nRes, nCmp);
                 }
 
-                long fpMaxVal = 0x41E0000000000000L;  // 2147483648.0000000d (2147483648)
+                long fpMaxVal = 0x41E0000000000000L; // 2147483648.0000000d (2147483648)
 
                 Operand fpMaxValMask = X86GetScalar(context, fpMaxVal);
 

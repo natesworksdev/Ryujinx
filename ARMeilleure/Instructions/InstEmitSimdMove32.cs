@@ -149,14 +149,14 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UseSsse3)
             {
                 Operand d = GetVecA32(op.Qd);
-                Operand m = EmitSwapDoubleWordToSide(context, GetVecA32(op.Qm), op.Vm, 0);
+                Operand m = EmitMoveDoubleWordToSide(context, GetVecA32(op.Qm), op.Vm, 0);
 
                 Operand res;
                 Operand mask = X86GetAllElements(context, 0x0707070707070707L);
 
                 // Fast path for single register table.
                 {
-                    Operand n = EmitSwapDoubleWordToSide(context, GetVecA32(op.Qn), op.Vn, 0);
+                    Operand n = EmitMoveDoubleWordToSide(context, GetVecA32(op.Qn), op.Vn, 0);
 
                     Operand mMask = context.AddIntrinsic(Intrinsic.X86Pcmpgtb, m, mask);
                     mMask = context.AddIntrinsic(Intrinsic.X86Por, mMask, m);
@@ -168,7 +168,7 @@ namespace ARMeilleure.Instructions
                 {
                     int newVn = (op.Vn + index) & 0x1F;
                     (int qn, int ind) = GetQuadwordAndSubindex(newVn, op.RegisterSize);
-                    Operand ni = EmitSwapDoubleWordToSide(context, GetVecA32(qn), newVn, 0);
+                    Operand ni = EmitMoveDoubleWordToSide(context, GetVecA32(qn), newVn, 0);
 
                     Operand idxMask = X86GetAllElements(context, 0x0808080808080808L * index);
 
@@ -192,12 +192,12 @@ namespace ARMeilleure.Instructions
 
                     Operand mMask = context.AddIntrinsic(Intrinsic.X86Por, mPosMask, mNegMask);
 
-                    Operand dMask = context.AddIntrinsic(Intrinsic.X86Pand, EmitSwapDoubleWordToSide(context, d, op.Vd, 0), mMask);
+                    Operand dMask = context.AddIntrinsic(Intrinsic.X86Pand, EmitMoveDoubleWordToSide(context, d, op.Vd, 0), mMask);
 
                     res = context.AddIntrinsic(Intrinsic.X86Por, res, dMask);
                 }
 
-                res = EmitSwapDoubleWordToSide(context, res, 0, op.Vd);
+                res = EmitMoveDoubleWordToSide(context, res, 0, op.Vd);
 
                 context.Copy(d, EmitDoubleWordInsert(context, d, res, op.Vd));
             }
@@ -208,8 +208,7 @@ namespace ARMeilleure.Instructions
                 (int Qx, int Ix)[] tableTuples = new (int, int)[length];
                 for (int i = 0; i < length; i++)
                 {
-                    (int vn, int en) = GetQuadwordAndSubindex(op.Vn + i, op.RegisterSize);
-                    tableTuples[i] = (vn, en);
+                    tableTuples[i] = GetQuadwordAndSubindex(op.Vn + i, op.RegisterSize);
                 }
 
                 int byteLength = length * 8;
@@ -430,12 +429,8 @@ namespace ARMeilleure.Instructions
                             long maskE1 = OddMasks[op.Size];
 
                             mask = X86GetScalar(context, maskE0);
-
                             mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
-                        }
 
-                        if (op.Size < 3)
-                        {
                             d = context.AddIntrinsic(Intrinsic.X86Pshufb, d, mask);
                             m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask);
                         }
@@ -485,9 +480,9 @@ namespace ARMeilleure.Instructions
                     Operand dIns, mIns;
                     if (index >= pairs)
                     {
-                        int pind = index - pairs;
-                        dIns = EmitVectorExtract32(context, op.Qm, (pind << 1) + op.Im, op.Size, false);
-                        mIns = EmitVectorExtract32(context, op.Qm, ((pind << 1) | 1) + op.Im, op.Size, false);
+                        int pairIndex = index - pairs;
+                        dIns = EmitVectorExtract32(context, op.Qm, (pairIndex << 1) + op.Im, op.Size, false);
+                        mIns = EmitVectorExtract32(context, op.Qm, ((pairIndex << 1) | 1) + op.Im, op.Size, false);
                     }
                     else
                     {
@@ -529,8 +524,8 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register swap: move relevant doubleword to side 0, for consistency.
             {
-                m = EmitSwapDoubleWordToSide(context, m, op.Vm, 0);
-                d = EmitSwapDoubleWordToSide(context, d, op.Vd, 0);
+                m = EmitMoveDoubleWordToSide(context, m, op.Vm, 0);
+                d = EmitMoveDoubleWordToSide(context, d, op.Vd, 0);
             }
 
             (Operand resM, Operand resD) = shuffleFunc(m, d);
@@ -539,8 +534,8 @@ namespace ARMeilleure.Instructions
 
             if (!op.Q) // Register insert.
             {
-                resM = EmitDoubleWordInsert(context, initialM, EmitSwapDoubleWordToSide(context, resM, 0, op.Vm), op.Vm);
-                resD = EmitDoubleWordInsert(context, overlap ? resM : initialD, EmitSwapDoubleWordToSide(context, resD, 0, op.Vd), op.Vd);
+                resM = EmitDoubleWordInsert(context, initialM, EmitMoveDoubleWordToSide(context, resM, 0, op.Vm), op.Vm);
+                resD = EmitDoubleWordInsert(context, overlap ? resM : initialD, EmitMoveDoubleWordToSide(context, resD, 0, op.Vd), op.Vd);
             }
 
             if (!overlap)

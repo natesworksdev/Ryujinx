@@ -873,7 +873,7 @@ namespace ARMeilleure.Instructions
                             return context.AddIntrinsic(Intrinsic.X86Pshufb, op1, mask);
                     }
 
-                    throw new InvalidOperationException("Unknown VREV Opcode + Size combo.");
+                    throw new InvalidOperationException("Invalid VREV Opcode + Size combo."); // Should be unreachable.
                 });
             }
             else
@@ -912,7 +912,7 @@ namespace ARMeilleure.Instructions
                                                         context.ShiftLeft(context.BitwiseAnd(op1, Const(0x00000000fffffffful)), Const(32)));
                     }
 
-                    throw new InvalidOperationException("Unknown VREV Opcode + Size combo.");
+                    throw new InvalidOperationException("Invalid VREV Opcode + Size combo."); // Should be unreachable.
                 });
             }
         }

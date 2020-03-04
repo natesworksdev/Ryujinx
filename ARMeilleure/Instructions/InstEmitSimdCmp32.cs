@@ -162,7 +162,7 @@ namespace ARMeilleure.Instructions
             {
                 if (Optimizations.FastFP && Optimizations.UseSse2)
                 {
-                    EmitSse2CmpOpF32(context, CmpCondition.LessThanOrEqual, true);
+                    EmitSse2CmpOpF32(context, CmpCondition.LessThan, true);
                 }
                 else
                 {
@@ -281,13 +281,13 @@ namespace ARMeilleure.Instructions
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool cmpWithZero = (op.Opc & 2) != 0;
-            int fSize = op.Size & 1;
+            int sizeF = op.Size & 1;
 
             if (Optimizations.FastFP && (signalNaNs ? Optimizations.UseAvx : Optimizations.UseSse2))
             {
                 CmpCondition cmpOrdered = signalNaNs ? CmpCondition.OrderedS : CmpCondition.OrderedQ;
 
-                bool doubleSize = fSize != 0;
+                bool doubleSize = sizeF != 0;
                 int shift = doubleSize ? 1 : 2;
                 Operand m = GetVecA32(op.Vm >> shift);
                 Operand n = GetVecA32(op.Vd >> shift);
@@ -310,13 +310,7 @@ namespace ARMeilleure.Instructions
                     Operand zf = context.AddIntrinsicInt(Intrinsic.X86Comisseq, n, m);
                     Operand nf = context.AddIntrinsicInt(Intrinsic.X86Comisslt, n, m);
 
-                    EmitSetFPSCRFlags(context, context.BitwiseOr(
-                        context.ShiftLeft(cf, Const(1)),
-                        context.BitwiseOr(
-                            context.ShiftLeft(zf, Const(2)),
-                            context.ShiftLeft(nf, Const(3))
-                            )
-                        ));
+                    EmitSetFPSCRFlags(context, nf, zf, cf, Const(0));
                 }
                 else
                 {
@@ -330,13 +324,7 @@ namespace ARMeilleure.Instructions
                     Operand zf = context.AddIntrinsicInt(Intrinsic.X86Comisdeq, n, m);
                     Operand nf = context.AddIntrinsicInt(Intrinsic.X86Comisdlt, n, m);
 
-                    EmitSetFPSCRFlags(context, context.BitwiseOr(
-                        context.ShiftLeft(cf, Const(1)),
-                        context.BitwiseOr(
-                            context.ShiftLeft(zf, Const(2)),
-                            context.ShiftLeft(nf, Const(3))
-                            )
-                        ));
+                    EmitSetFPSCRFlags(context, nf, zf, cf, Const(0));
                 }
 
                 context.Branch(lblEnd);
@@ -349,21 +337,21 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                OperandType type = fSize != 0 ? OperandType.FP64 : OperandType.FP32;
+                OperandType type = sizeF != 0 ? OperandType.FP64 : OperandType.FP32;
 
                 Operand ne = ExtractScalar(context, type, op.Vd);
                 Operand me;
 
                 if (cmpWithZero)
                 {
-                    me = fSize == 0 ? ConstF(0f) : ConstF(0d);
+                    me = sizeF == 0 ? ConstF(0f) : ConstF(0d);
                 }
                 else
                 {
                     me = ExtractScalar(context, type, op.Vm);
                 }
 
-                Delegate dlg = fSize != 0
+                Delegate dlg = sizeF != 0
                     ? (Delegate)new _S32_F64_F64_Bool(SoftFloat64.FPCompare)
                     : (Delegate)new _S32_F32_F32_Bool(SoftFloat32.FPCompare);
 
@@ -391,6 +379,14 @@ namespace ARMeilleure.Instructions
             SetFpFlag(context, FPState.CFlag, Extract(nzcv, 1));
             SetFpFlag(context, FPState.ZFlag, Extract(nzcv, 2));
             SetFpFlag(context, FPState.NFlag, Extract(nzcv, 3));
+        }
+
+        private static void EmitSetFPSCRFlags(ArmEmitterContext context, Operand n, Operand z, Operand c, Operand v)
+        {
+            SetFpFlag(context, FPState.VFlag, v);
+            SetFpFlag(context, FPState.CFlag, c);
+            SetFpFlag(context, FPState.ZFlag, z);
+            SetFpFlag(context, FPState.NFlag, n);
         }
 
         private static void EmitSse2CmpOpF32(ArmEmitterContext context, CmpCondition cond, bool zero)
