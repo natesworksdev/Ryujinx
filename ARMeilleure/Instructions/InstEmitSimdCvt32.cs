@@ -263,16 +263,17 @@ namespace ARMeilleure.Instructions
             OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
             bool unsigned = (op.Opc & 1) == 0;
+            int roundMode = op.Opc2 & 3;
 
-            if (Optimizations.UseSse41 && op.Opc2 != 0b00)
+            if (Optimizations.UseSse41 && roundMode != 0b00)
             {
-                EmitSse41ConvertInt32(context, Opc2ToRoundMode(op.Opc2), !unsigned);
+                EmitSse41ConvertInt32(context, Opc2ToRoundMode(roundMode), !unsigned);
             }
             else
             {
                 Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
-                switch (op.Opc2)
+                switch (roundMode)
                 {
                     case 0b00: // Away
                         toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);
@@ -302,13 +303,15 @@ namespace ARMeilleure.Instructions
 
             OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
 
-            if (Optimizations.UseSse2 && op.Opc2 != 0b00)
+            int roundModeId = op.Opc2 & 3;
+
+            if (Optimizations.UseSse2 && roundModeId != 0b00)
             {
                 EmitScalarUnaryOpSimd32(context, (m) =>
                 {
                     Intrinsic inst = (op.Size & 1) == 0 ? Intrinsic.X86Roundss : Intrinsic.X86Roundsd;
 
-                    FPRoundingMode roundMode = Opc2ToRoundMode(op.Opc2);
+                    FPRoundingMode roundMode = Opc2ToRoundMode(roundModeId);
 
                     return context.AddIntrinsic(inst, m, Const(X86GetRoundControl(roundMode)));
                 });
@@ -317,7 +320,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
 
-                switch (op.Opc2)
+                switch (roundModeId)
                 {
                     case 0b00: // Away
                         toConvert = EmitRoundMathCall(context, MidpointRounding.AwayFromZero, toConvert);

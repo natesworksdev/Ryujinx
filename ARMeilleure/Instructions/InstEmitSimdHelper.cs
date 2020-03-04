@@ -1467,6 +1467,14 @@ namespace ARMeilleure.Instructions
             return context.Call(dlg, op1, op2);
         }
 
+        public static Operand EmitFloatAbs(ArmEmitterContext context, Operand value, bool single, bool vector)
+        {
+            Operand mask = vector ? X86GetAllElements(context, -0f) : X86GetScalar(context, -0f);
+
+            Intrinsic op;
+            return context.AddIntrinsic(single ? Intrinsic.X86Andnps : Intrinsic.X86Andnpd, mask, value);
+        }
+
         public static Operand EmitVectorExtractSx(ArmEmitterContext context, int reg, int index, int size)
         {
             return EmitVectorExtract(context, reg, index, size, true);

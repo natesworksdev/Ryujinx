@@ -21,16 +21,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpSimd32(context, (m) =>
                 {
-                    if ((op.Size & 1) == 0)
-                    {
-                        Operand mask = X86GetScalar(context, -0f);
-                        return context.AddIntrinsic(Intrinsic.X86Andnps, mask, m);
-                    }
-                    else
-                    {
-                        Operand mask = X86GetScalar(context, -0d);
-                        return context.AddIntrinsic(Intrinsic.X86Andnpd, mask, m);
-                    }
+                    return EmitFloatAbs(context, m, (op.Size & 1) == 0, false);
                 });
             }
             else
@@ -49,16 +40,7 @@ namespace ARMeilleure.Instructions
                 {
                     EmitVectorUnaryOpSimd32(context, (m) =>
                     {
-                        if ((op.Size & 1) == 0)
-                        {
-                            Operand mask = X86GetScalar(context, -0f);
-                            return context.AddIntrinsic(Intrinsic.X86Andnps, mask, m);
-                        }
-                        else
-                        {
-                            Operand mask = X86GetScalar(context, -0d);
-                            return context.AddIntrinsic(Intrinsic.X86Andnpd, mask, m);
-                        }
+                        return EmitFloatAbs(context, m, (op.Size & 1) == 0, true);
                     });
                 }
                 else
