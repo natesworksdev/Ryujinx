@@ -662,7 +662,7 @@ namespace Ryujinx.Ui
                 }
 
                 CssProvider provider = new CssProvider();
-                provider.LoadFromData("treeview:hover { background-color: " + ctBackground.Color.ToHexString() + "; color: " + ctText.Color.ToHexString() + ";}");
+                provider.LoadFromData($"treeview:hover {{ background-color: {ctBackground.Color.ToHexString()}; color: {ctText.Color.ToHexString()};}}");
 
                 _gameTable.StyleContext.AddProvider(provider, uint.MaxValue);
 
