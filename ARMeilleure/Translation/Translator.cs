@@ -122,40 +122,6 @@ namespace ARMeilleure.Translation
             return func;
         }
 
-        public byte[] GetMachineCode(ulong address)
-        {
-            ArmEmitterContext context = new ArmEmitterContext(_memory, Aarch32Mode.User);
-
-            Logger.StartPass(PassName.Decoding);
-
-            Block[] blocks = Decoder.DecodeFunction(_memory, address, ExecutionMode.Aarch64);
-
-            Logger.EndPass(PassName.Decoding);
-
-            Logger.StartPass(PassName.Translation);
-
-            EmitSynchronization(context);
-
-            if (blocks[0].Address != address)
-            {
-                context.Branch(context.GetLabel(address));
-            }
-
-            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
-
-            Logger.EndPass(PassName.Translation);
-
-            Logger.StartPass(PassName.RegisterUsage);
-
-            RegisterUsage.RunPass(cfg, ExecutionMode.Aarch64, isCompleteFunction: false);
-
-            Logger.EndPass(PassName.RegisterUsage);
-
-            OperandType[] argTypes = new OperandType[] { OperandType.I64 };
-
-            return Compiler.CompileAndGetCf(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq).Code;
-        }
-
         private TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
         {
             ArmEmitterContext context = new ArmEmitterContext(_memory, Aarch32Mode.User);
