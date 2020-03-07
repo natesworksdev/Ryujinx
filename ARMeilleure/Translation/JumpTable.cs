@@ -38,6 +38,8 @@ namespace ARMeilleure.Translation
 
         public const int DynamicTableElems = 1;
 
+        public const int DynamicTableStride = DynamicTableElems * JumpTableStride;
+
         private const int DynamicTableByteSize = DynamicTableSize * JumpTableStride * DynamicTableElems;
 
         private int _tableEnd = 0;
@@ -77,27 +79,28 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public TranslatedFunction TryGetFunction(ulong address)
-        {
-            TranslatedFunction result;
-            if (_targets.TryGetValue(address, out result))
-            {
-                return result;
-            }
-            return null;
-        }
-
-        public int ReserveDynamicEntry()
+        public int ReserveDynamicEntry(bool isJump)
         {
             int entry = Interlocked.Increment(ref _dynTableEnd);
             if (entry >= DynamicTableSize)
             {
                 throw new OutOfMemoryException("JIT Dynamic Jump Table Exhausted.");
             }
+
+            // Initialize all host function pointers to the indirect call stub.
+
+            IntPtr addr = DynamicPointer + entry * DynamicTableStride;
+            long stubPtr = (long)DirectCallStubs.IndirectCallStub(isJump);
+
+            for (int i = 0; i < DynamicTableElems; i++)
+            {
+                Marshal.WriteInt64(addr, i * JumpTableStride + 8, stubPtr);
+            }
+
             return entry;
         }
 
-        public int ReserveTableEntry(long ownerAddress, long address)
+        public int ReserveTableEntry(long ownerAddress, long address, bool isJump)
         {
             int entry = Interlocked.Increment(ref _tableEnd);
             if (entry >= JumpTableSize)
@@ -106,7 +109,8 @@ namespace ARMeilleure.Translation
             }
 
             // Is the address we have already registered? If so, put the function address in the jump table.
-            long value = 0;
+            // If not, it will point to the direct call stub.
+            long value = (long)DirectCallStubs.DirectCallStub(isJump);
             TranslatedFunction func;
             if (_targets.TryGetValue((ulong)address, out func))
             {
@@ -115,7 +119,10 @@ namespace ARMeilleure.Translation
 
             // Make sure changes to the function at the target address update this jump table entry.
             LinkedList<int> targetDependants = _dependants.GetOrAdd((ulong)address, (addr) => new LinkedList<int>());
-            targetDependants.AddLast(entry);
+            lock (targetDependants)
+            {
+                targetDependants.AddLast(entry);
+            }
 
             IntPtr addr = BasePointer + entry * JumpTableStride;
 

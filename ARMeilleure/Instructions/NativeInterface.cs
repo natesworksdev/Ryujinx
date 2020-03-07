@@ -2,6 +2,7 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Instructions
 {
@@ -390,10 +391,16 @@ namespace ARMeilleure.Instructions
             return (ulong)function.GetPointer().ToInt64();
         }
 
-        public static ulong GetHighCqFunctionAddress(ulong address)
+        public static ulong GetIndirectFunctionAddress(ulong address, ulong entryAddress)
         {
-            TranslatedFunction function = _context.Translator.TryGetHighCqFunction(address);
-            return (function != null) ? (ulong)function.GetPointer().ToInt64() : 0;
+            TranslatedFunction function = _context.Translator.GetOrTranslate(address, GetContext().ExecutionMode);
+            ulong ptr = (ulong)function.GetPointer().ToInt64();
+            if (function.HighCq)
+            {
+                // Rewrite the host function address in the table to point to the highCq function.
+                Marshal.WriteInt64((IntPtr)entryAddress, 8, (long)ptr);
+            }
+            return ptr;
         }
 
         public static void ClearExclusive()

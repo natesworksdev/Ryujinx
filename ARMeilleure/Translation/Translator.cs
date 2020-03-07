@@ -39,6 +39,8 @@ namespace ARMeilleure.Translation
             _backgroundQueue = new PriorityQueue<RejitRequest>(2);
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
+
+            DirectCallStubs.InitializeStubs();
         }
 
         private void TranslateQueuedSubs()
@@ -125,11 +127,6 @@ namespace ARMeilleure.Translation
             }
 
             return func;
-        }
-
-        internal TranslatedFunction TryGetHighCqFunction(ulong address)
-        {
-            return _jumpTable.TryGetFunction(address);
         }
 
         private TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
