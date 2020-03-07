@@ -341,7 +341,7 @@ namespace ARMeilleure.Instructions
                 int jumpOffset = entry * JumpTable.JumpTableStride + 8; // Offset directly to the host address.
 
                 // TODO: Relocatable jump table ptr for AOT. Would prefer a solution to patch this constant into functions as they are loaded rather than calculate at runtime.
-                Operand tableEntryPtr = Const(context.JumpTable.BasePointer.ToInt64() + jumpOffset);
+                Operand tableEntryPtr = Const(context.JumpTable.JumpPointer.ToInt64() + jumpOffset);
 
                 Operand funcAddr = context.Load(OperandType.I64, tableEntryPtr);
 

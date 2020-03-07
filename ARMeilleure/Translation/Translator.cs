@@ -34,7 +34,7 @@ namespace ARMeilleure.Translation
 
             _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
-            _jumpTable = new JumpTable();
+            _jumpTable = JumpTable.Instance;
 
             _backgroundQueue = new PriorityQueue<RejitRequest>(2);
 

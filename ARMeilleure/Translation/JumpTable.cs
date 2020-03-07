@@ -9,6 +9,13 @@ namespace ARMeilleure.Translation
 {
     class JumpTable
     {
+        public static JumpTable Instance { get; }
+
+        static JumpTable()
+        {
+            Instance = new JumpTable();
+        }
+
         // The jump table is a block of (guestAddress, hostAddress) function mappings.
         // Each entry corresponds to one branch in a JIT compiled function. The entries are
         // reserved specifically for each call.
@@ -48,13 +55,15 @@ namespace ARMeilleure.Translation
         private ConcurrentDictionary<ulong, TranslatedFunction> _targets;
         private ConcurrentDictionary<ulong, LinkedList<int>> _dependants; // TODO: Attach to TranslatedFunction or a wrapper class.
 
-        public IntPtr BasePointer { get; }
-        public IntPtr DynamicPointer { get; }
+        private ReservedRegion _jumpRegion;
+        private ReservedRegion _dynamicRegion;
+        public IntPtr JumpPointer => _jumpRegion.Pointer;
+        public IntPtr DynamicPointer => _dynamicRegion.Pointer;
 
         public JumpTable()
         {
-            BasePointer = MemoryManagement.Allocate(JumpTableByteSize);
-            DynamicPointer = MemoryManagement.Allocate(DynamicTableByteSize);
+            _jumpRegion = new ReservedRegion(JumpTableByteSize, 65536);
+            _dynamicRegion = new ReservedRegion(DynamicTableByteSize, 65536);
 
             _targets = new ConcurrentDictionary<ulong, TranslatedFunction>();
             _dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
@@ -72,7 +81,7 @@ namespace ARMeilleure.Translation
                 {
                     foreach (var entry in myDependants)
                     {
-                        IntPtr addr = BasePointer + entry * JumpTableStride;
+                        IntPtr addr = _jumpRegion.Pointer + entry * JumpTableStride;
                         Marshal.WriteInt64(addr, 8, funcPtr);
                     }
                 }
@@ -87,9 +96,11 @@ namespace ARMeilleure.Translation
                 throw new OutOfMemoryException("JIT Dynamic Jump Table Exhausted.");
             }
 
+            _dynamicRegion.ExpandIfNeeded((ulong)((entry + 1) * DynamicTableStride));
+
             // Initialize all host function pointers to the indirect call stub.
 
-            IntPtr addr = DynamicPointer + entry * DynamicTableStride;
+            IntPtr addr = _dynamicRegion.Pointer + entry * DynamicTableStride;
             long stubPtr = (long)DirectCallStubs.IndirectCallStub(isJump);
 
             for (int i = 0; i < DynamicTableElems; i++)
@@ -108,6 +119,8 @@ namespace ARMeilleure.Translation
                 throw new OutOfMemoryException("JIT Direct Jump Table Exhausted.");
             }
 
+            _jumpRegion.ExpandIfNeeded((ulong)((entry + 1) * JumpTableStride));
+
             // Is the address we have already registered? If so, put the function address in the jump table.
             // If not, it will point to the direct call stub.
             long value = (long)DirectCallStubs.DirectCallStub(isJump);
@@ -124,7 +137,7 @@ namespace ARMeilleure.Translation
                 targetDependants.AddLast(entry);
             }
 
-            IntPtr addr = BasePointer + entry * JumpTableStride;
+            IntPtr addr = _jumpRegion.Pointer + entry * JumpTableStride;
 
             Marshal.WriteInt64(addr, 0, address);
             Marshal.WriteInt64(addr, 8, value);
