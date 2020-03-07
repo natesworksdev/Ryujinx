@@ -3,6 +3,7 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
 using System.Runtime.InteropServices;
+
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Translation
