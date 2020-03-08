@@ -57,13 +57,6 @@ namespace ARMeilleure.Memory
                 throw new OutOfMemoryException();
             }
 
-            unsafe
-            {
-                ptr = new IntPtr(ptr.ToInt64() + (long)pageSize);
-
-                *((ulong*)ptr - 1) = size;
-            }
-
             return ptr;
         }
 
