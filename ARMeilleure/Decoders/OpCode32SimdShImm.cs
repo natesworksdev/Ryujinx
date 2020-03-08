@@ -35,11 +35,10 @@
                 Instruction = InstDescriptor.Undefined;
             }
 
-            // TODO: Check if we need this.
-            /*if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
+            if (GetType() == typeof(OpCode32SimdShImm) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
             {
                 Instruction = InstDescriptor.Undefined;
-            }*/
+            }
         }
     }
 }

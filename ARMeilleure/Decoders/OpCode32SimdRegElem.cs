@@ -19,7 +19,7 @@
                 Vm = ((opCode >> 5) & 0x1) | ((opCode << 1) & 0x1e);
             }
 
-            if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vn) || Size == 0 || (Size == 1 && F))
+            if (GetType() == typeof(OpCode32SimdRegElem) && DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vn) || Size == 0 || (Size == 1 && F))
             {
                 Instruction = InstDescriptor.Undefined;
             }

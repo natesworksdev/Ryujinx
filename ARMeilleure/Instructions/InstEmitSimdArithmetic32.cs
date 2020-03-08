@@ -647,7 +647,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vmull_1(ArmEmitterContext context)
         {
-            OpCode32SimdRegElemLong op = (OpCode32SimdRegElemLong)context.CurrOp;
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
 
             EmitVectorByScalarLongOpI32(context, (op1, op2) => context.Multiply(op1, op2), !op.U);
         }

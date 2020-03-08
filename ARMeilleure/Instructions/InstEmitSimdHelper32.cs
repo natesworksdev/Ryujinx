@@ -403,7 +403,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitVectorByScalarLongOpI32(ArmEmitterContext context, Func2I emit, bool signed)
         {
-            OpCode32SimdRegElemLong op = (OpCode32SimdRegElemLong)context.CurrOp;
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
 
             Operand m = ExtractElement(context, op.Vm, op.Size, signed);
 
