@@ -35,10 +35,11 @@
                 Instruction = InstDescriptor.Undefined;
             }
 
-            if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
+            // TODO: Check if we need this.
+            /*if (DecoderHelper.VectorArgumentsInvalid(Q, Vd, Vm))
             {
                 Instruction = InstDescriptor.Undefined;
-            }
+            }*/
         }
     }
 }
