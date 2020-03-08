@@ -28,26 +28,59 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
             int shift = GetImmShr(op);
-            int maxShift = (8 << op.Size) - 1;
             long roundConst = 1L << (shift - 1);
 
             if (op.U)
             {
-                EmitVectorUnaryOpZx32(context, (op1) =>
+                if (op.Size < 2)
                 {
-                    op1 = context.Add(op1, Const(op1.Type, roundConst));
+                    EmitVectorUnaryOpZx32(context, (op1) =>
+                    {
+                        op1 = context.Add(op1, Const(op1.Type, roundConst));
 
-                    return (shift > maxShift) ? Const(op1.Type, 0) : context.ShiftRightUI(op1, Const(shift));
-                });
+                        return context.ShiftRightUI(op1, Const(shift));
+                    });
+                }
+                else if (op.Size == 2)
+                {
+                    EmitVectorUnaryOpZx32(context, (op1) =>
+                    {
+                        op1 = context.ZeroExtend32(OperandType.I64, op1);
+                        op1 = context.Add(op1, Const(op1.Type, roundConst));
+
+                        return context.ConvertI64ToI32(context.ShiftRightUI(op1, Const(shift)));
+                    });
+                }
+                else /* if (op.Size == 3) */
+                {
+                    EmitVectorUnaryOpZx32(context, (op1) => EmitShrImm64(context, op1, signed: false, roundConst, shift));
+                }
             }
             else
             {
-                EmitVectorUnaryOpSx32(context, (op1) =>
+                if (op.Size < 2)
                 {
-                    op1 = context.Add(op1, Const(op1.Type, roundConst));
+                    EmitVectorUnaryOpSx32(context, (op1) =>
+                    {
+                        op1 = context.Add(op1, Const(op1.Type, roundConst));
 
-                    return context.ShiftRightSI(op1, Const(Math.Min(maxShift, shift)));
-                });
+                        return context.ShiftRightSI(op1, Const(shift));
+                    });
+                }
+                else if (op.Size == 2)
+                {
+                    EmitVectorUnaryOpSx32(context, (op1) =>
+                    {
+                        op1 = context.SignExtend32(OperandType.I64, op1);
+                        op1 = context.Add(op1, Const(op1.Type, roundConst));
+
+                        return context.ConvertI64ToI32(context.ShiftRightSI(op1, Const(shift)));
+                    });
+                }
+                else /* if (op.Size == 3) */
+                {
+                    EmitVectorUnaryOpZx32(context, (op1) => EmitShrImm64(context, op1, signed: true, roundConst, shift));
+                }
             }
         }
 

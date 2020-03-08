@@ -561,111 +561,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Vmlsl_I(ArmEmitterContext context)
-        {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            EmitVectorTernaryLongOpI32(context, (opD, op1, op2) => context.Subtract(opD, context.Multiply(op1, op2)), !op.U);
-        }
-
-        public static void Vmul_S(ArmEmitterContext context)
-        {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
-            {
-                EmitScalarBinaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd);
-            }
-            else if (Optimizations.FastFP)
-            {
-                EmitScalarBinaryOpF32(context, (op1, op2) => context.Multiply(op1, op2));
-            }
-            else
-            {
-                EmitScalarBinaryOpF32(context, (op1, op2) =>
-                {
-                    return EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2);
-                });
-            }
-        }
-
-        public static void Vmul_V(ArmEmitterContext context)
-        {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
-            {
-                EmitVectorBinaryOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd);
-            }
-            else if (Optimizations.FastFP)
-            {
-                EmitVectorBinaryOpF32(context, (op1, op2) => context.Multiply(op1, op2));
-            }
-            else
-            {
-                EmitVectorBinaryOpF32(context, (op1, op2) =>
-                {
-                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2);
-                });
-            }
-        }
-
-        public static void Vmul_I(ArmEmitterContext context)
-        {
-            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
-
-            if (op.U) // This instruction is always signed, U indicates polynomial mode.
-            {
-                EmitVectorBinaryOpZx32(context, (op1, op2) => EmitPolynomialMultiply(context, op1, op2, 8 << op.Size));
-            }
-            else
-            {
-                EmitVectorBinaryOpSx32(context, (op1, op2) => context.Multiply(op1, op2));
-            }
-        }
-
-        public static void Vmul_1(ArmEmitterContext context)
-        {
-            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
-
-            if (op.F)
-            {
-                if (Optimizations.FastFP && Optimizations.UseSse2)
-                {
-                    EmitVectorByScalarOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd);
-                }
-                else if (Optimizations.FastFP)
-                {
-                    EmitVectorByScalarOpF32(context, (op1, op2) => context.Multiply(op1, op2));
-                }
-                else
-                {
-                    EmitVectorByScalarOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2));
-                }
-            }
-            else
-            {
-                EmitVectorByScalarOpI32(context, (op1, op2) => context.Multiply(op1, op2), false);
-            }
-        }
-
-        public static void Vmull_1(ArmEmitterContext context)
-        {
-            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
-
-            EmitVectorByScalarLongOpI32(context, (op1, op2) => context.Multiply(op1, op2), !op.U);
-        }
-
-        public static void Vmull_I(ArmEmitterContext context)
-        {
-            OpCode32SimdRegLong op = (OpCode32SimdRegLong)context.CurrOp;
-
-            if (op.Polynomial)
-            {
-                EmitVectorBinaryLongOpI32(context, (op1, op2) => EmitPolynomialMultiply(context, op1, op2, 8 << op.Size), false);
-            }
-            else
-            {
-                EmitVectorBinaryLongOpI32(context, (op1, op2) => context.Multiply(op1, op2), !op.U);
-            }
-        }
-
         public static void Vmla_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
@@ -805,6 +700,111 @@ namespace ARMeilleure.Instructions
             else
             {
                 EmitVectorsByScalarOpI32(context, (op1, op2, op3) => context.Subtract(op1, context.Multiply(op2, op3)), false);
+            }
+        }
+
+        public static void Vmlsl_I(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            EmitVectorTernaryLongOpI32(context, (opD, op1, op2) => context.Subtract(opD, context.Multiply(op1, op2)), !op.U);
+        }
+
+        public static void Vmul_S(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitScalarBinaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd);
+            }
+            else if (Optimizations.FastFP)
+            {
+                EmitScalarBinaryOpF32(context, (op1, op2) => context.Multiply(op1, op2));
+            }
+            else
+            {
+                EmitScalarBinaryOpF32(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2);
+                });
+            }
+        }
+
+        public static void Vmul_V(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                EmitVectorBinaryOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd);
+            }
+            else if (Optimizations.FastFP)
+            {
+                EmitVectorBinaryOpF32(context, (op1, op2) => context.Multiply(op1, op2));
+            }
+            else
+            {
+                EmitVectorBinaryOpF32(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2);
+                });
+            }
+        }
+
+        public static void Vmul_I(ArmEmitterContext context)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            if (op.U) // This instruction is always signed, U indicates polynomial mode.
+            {
+                EmitVectorBinaryOpZx32(context, (op1, op2) => EmitPolynomialMultiply(context, op1, op2, 8 << op.Size));
+            }
+            else
+            {
+                EmitVectorBinaryOpSx32(context, (op1, op2) => context.Multiply(op1, op2));
+            }
+        }
+
+        public static void Vmul_1(ArmEmitterContext context)
+        {
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+
+            if (op.F)
+            {
+                if (Optimizations.FastFP && Optimizations.UseSse2)
+                {
+                    EmitVectorByScalarOpF32(context, Intrinsic.X86Mulps, Intrinsic.X86Mulpd);
+                }
+                else if (Optimizations.FastFP)
+                {
+                    EmitVectorByScalarOpF32(context, (op1, op2) => context.Multiply(op1, op2));
+                }
+                else
+                {
+                    EmitVectorByScalarOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMulFpscr, SoftFloat64.FPMulFpscr, op1, op2));
+                }
+            }
+            else
+            {
+                EmitVectorByScalarOpI32(context, (op1, op2) => context.Multiply(op1, op2), false);
+            }
+        }
+
+        public static void Vmull_1(ArmEmitterContext context)
+        {
+            OpCode32SimdRegElem op = (OpCode32SimdRegElem)context.CurrOp;
+
+            EmitVectorByScalarLongOpI32(context, (op1, op2) => context.Multiply(op1, op2), !op.U);
+        }
+
+        public static void Vmull_I(ArmEmitterContext context)
+        {
+            OpCode32SimdRegLong op = (OpCode32SimdRegLong)context.CurrOp;
+
+            if (op.Polynomial)
+            {
+                EmitVectorBinaryLongOpI32(context, (op1, op2) => EmitPolynomialMultiply(context, op1, op2, 8 << op.Size), false);
+            }
+            else
+            {
+                EmitVectorBinaryLongOpI32(context, (op1, op2) => context.Multiply(op1, op2), !op.U);
             }
         }
 

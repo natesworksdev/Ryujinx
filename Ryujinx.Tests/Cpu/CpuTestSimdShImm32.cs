@@ -11,22 +11,34 @@ namespace Ryujinx.Tests.Cpu
 #if SimdShImm32
         private const int RndCnt = 2;
 
-        [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, #<imm>")]
-        public void Vshl_Imm([Values(0u)] uint rd,
+        [Test, Pairwise]
+        public void Vrshr_Vshr_Imm([Values(0u)] uint rd,
                              [Values(2u, 0u)] uint rm,
                              [Values(0u, 1u, 2u, 3u)] uint size,
                              [Random(RndCnt), Values(0u)] uint shiftImm,
                              [Random(RndCnt)] ulong z,
                              [Random(RndCnt)] ulong a,
                              [Random(RndCnt)] ulong b,
-                             [Values] bool q)
+                             [Values] bool u,
+                             [Values] bool q,
+                             [Values] bool round)
         {
-            uint opcode = 0xf2800510u; // VORR.I32 D0, #0 (immediate value changes it into SHL)
+            uint opcode = 0xf2800010u; // VMOV.I32 D0, #0 (immediate value changes it into SHR)
             if (q)
             {
                 opcode |= 1 << 6;
                 rm <<= 1;
                 rd <<= 1;
+            }
+
+            if (round)
+            {
+                opcode |= 1 << 9; // Turn into VRSHR
+            }
+
+            if (u)
+            {
+                opcode |= 1 << 24;
             }
 
             uint imm = 1u << ((int)size + 3);
@@ -45,28 +57,22 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VSHR.<size> {<Vd>}, <Vm>, #<imm>")]
-        public void Vshr_Imm([Values(0u)] uint rd,
+        [Test, Pairwise, Description("VSHL.<size> {<Vd>}, <Vm>, #<imm>")]
+        public void Vshl_Imm([Values(0u)] uint rd,
                              [Values(2u, 0u)] uint rm,
                              [Values(0u, 1u, 2u, 3u)] uint size,
                              [Random(RndCnt), Values(0u)] uint shiftImm,
                              [Random(RndCnt)] ulong z,
                              [Random(RndCnt)] ulong a,
                              [Random(RndCnt)] ulong b,
-                             [Values] bool u,
                              [Values] bool q)
         {
-            uint opcode = 0xf2800010u; // VMOV.I32 D0, #0 (immediate value changes it into SHR)
+            uint opcode = 0xf2800510u; // VORR.I32 D0, #0 (immediate value changes it into SHL)
             if (q)
             {
                 opcode |= 1 << 6;
                 rm <<= 1;
                 rd <<= 1;
-            }
-
-            if (u)
-            {
-                opcode |= 1 << 24;
             }
 
             uint imm = 1u << ((int)size + 3);
