@@ -1,10 +1,10 @@
 ﻿namespace ARMeilleure.Decoders
 {
-    class OpCode32SimdWiden : OpCode32SimdBase
+    class OpCode32SimdLong : OpCode32SimdBase
     {
         public bool U { get; private set; }
 
-        public OpCode32SimdWiden(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
+        public OpCode32SimdLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int imm3h = (opCode >> 19) & 0x7;
 

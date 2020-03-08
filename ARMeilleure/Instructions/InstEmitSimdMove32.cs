@@ -141,9 +141,9 @@ namespace ARMeilleure.Instructions
 
         public static void Vmovl(ArmEmitterContext context)
         {
-            OpCode32SimdWiden op = (OpCode32SimdWiden)context.CurrOp;
+            OpCode32SimdLong op = (OpCode32SimdLong)context.CurrOp;
 
-            Operand res = GetVecA32(op.Qd);
+            Operand res = context.VectorZero();
 
             int elems = op.GetBytesCount() >> op.Size;
 
