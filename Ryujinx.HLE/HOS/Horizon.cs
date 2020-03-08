@@ -571,7 +571,7 @@ namespace Ryujinx.HLE.HOS
 
         private IStorage ApplyLayeredFs(IStorage romStorage, ulong programId)
         {
-            string lfsPath = Path.Combine(Device.FileSystem.GetBasePath(), "lfsContents", programId.ToString("x16"));
+            string lfsPath = Path.Combine(Device.FileSystem.GetBasePath(), "lfsContents", programId.ToString("x16"), "romfs");
 
             if (!Directory.Exists(lfsPath))
                 return romStorage;

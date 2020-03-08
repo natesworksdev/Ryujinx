@@ -6,7 +6,16 @@
     <property name="visible">True</property>
     <property name="can_focus">False</property>
     <child>
-      <object class="GtkMenuItem" id="_openSaveUserDir">
+      <object class="GtkMenuItem" id="_openModDir">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <property name="tooltip_text" translatable="yes">Open the folder where mods for the application is loaded</property>
+        <property name="label" translatable="yes">Open Mod Directory</property>
+        <property name="use_underline">True</property>
+      </object>
+    </child>
+    <child>
+<object class="GtkMenuItem" id="_openSaveUserDir">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
         <property name="tooltip_text" translatable="yes">Open the folder where the User save for the application is loaded</property>
