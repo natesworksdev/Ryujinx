@@ -27,7 +27,7 @@ namespace ARMeilleure.Translation
 
         static JitCache()
         {
-            _jitRegion = new ReservedRegion(CacheSize, 65536);
+            _jitRegion = new ReservedRegion(CacheSize);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {

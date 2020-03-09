@@ -62,8 +62,8 @@ namespace ARMeilleure.Translation
 
         public JumpTable()
         {
-            _jumpRegion = new ReservedRegion(JumpTableByteSize, 65536);
-            _dynamicRegion = new ReservedRegion(DynamicTableByteSize, 65536);
+            _jumpRegion = new ReservedRegion(JumpTableByteSize);
+            _dynamicRegion = new ReservedRegion(DynamicTableByteSize);
 
             _targets = new ConcurrentDictionary<ulong, TranslatedFunction>();
             _dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
