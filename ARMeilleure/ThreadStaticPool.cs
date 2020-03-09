@@ -7,6 +7,8 @@ namespace ARMeilleure
 {
     internal class ThreadStaticPool<T> where T : class, new()
     {
+        private static readonly int PoolSizeIncrement = 200;
+
         [ThreadStatic]
         private static ThreadStaticPool<T> _instance;
         public static ThreadStaticPool<T> Instance
@@ -36,7 +38,7 @@ namespace ARMeilleure
                 Stack<ThreadStaticPool<T>> pools = GetPools(groupId);
                 lock (pools)
                 {
-                    _instance = (pools.Count != 0) ? pools.Pop() : new ThreadStaticPool<T>(_poolSizeIncrement * 2);
+                    _instance = (pools.Count != 0) ? pools.Pop() : new ThreadStaticPool<T>(PoolSizeIncrement * 2);
                 }
             }
         }
@@ -56,7 +58,6 @@ namespace ARMeilleure
         private T[] _pool;
         private int _poolUsed = -1;
         private int _poolSize;
-        private static readonly int _poolSizeIncrement = 200;
 
         public ThreadStaticPool(int initialSize)
         {
@@ -82,7 +83,7 @@ namespace ARMeilleure
 
         private void IncreaseSize()
         {
-            _poolSize += _poolSizeIncrement;
+            _poolSize += PoolSizeIncrement;
 
             T[] newArray = new T[_poolSize];
             Array.Copy(_pool, 0, newArray, 0, _pool.Length);
