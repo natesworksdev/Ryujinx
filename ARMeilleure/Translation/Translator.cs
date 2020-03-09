@@ -16,6 +16,8 @@ namespace ARMeilleure.Translation
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
 
+        private const bool AlwaysTranslateFunctions = true; // If false, only translates a single block for lowCq.
+
         private MemoryManager _memory;
 
         private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
@@ -145,9 +147,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Decoding);
 
-            bool alwaysFunctions = true;
-
-            Block[] blocks = alwaysFunctions
+            Block[] blocks = AlwaysTranslateFunctions
                 ? Decoder.DecodeFunction  (_memory, address, mode, highCq)
                 : Decoder.DecodeBasicBlock(_memory, address, mode);
 

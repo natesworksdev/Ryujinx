@@ -212,25 +212,25 @@ namespace ARMeilleure.CodeGen.X86
             switch (operation.Instruction)
             {
                 case Instruction.CompareAndSwap:
-                    {
-                        // Handle the many restrictions of the compare and exchange (32/64) instruction:
-                        // - The expected value should be in (E/R)AX.
-                        // - The value at the memory location is loaded to (E/R)AX.
+                {
+                    // Handle the many restrictions of the compare and exchange (32/64) instruction:
+                    // - The expected value should be in (E/R)AX.
+                    // - The value at the memory location is loaded to (E/R)AX.
 
-                        Operand expected = operation.GetSource(1);
+                    Operand expected = operation.GetSource(1);
 
-                        Operand rax = Gpr(X86Register.Rax, expected.Type);
+                    Operand rax = Gpr(X86Register.Rax, expected.Type);
 
-                        nodes.AddBefore(node, new Operation(Instruction.Copy, rax, expected));
+                    nodes.AddBefore(node, new Operation(Instruction.Copy, rax, expected));
 
-                        operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
+                    operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
 
-                        node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
+                    node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
 
-                        operation.Destination = rax;
+                    operation.Destination = rax;
 
-                        break;
-                    }
+                    break;
+                }
 
                 case Instruction.CompareAndSwap128:
                 {
@@ -907,8 +907,8 @@ namespace ARMeilleure.CodeGen.X86
                 if (passOnReg)
                 {
                     Operand argReg = source.Type.IsInteger()
-                    ? Gpr(CallingConvention.GetIntArgumentRegister(intCount++), source.Type)
-                    : Xmm(CallingConvention.GetVecArgumentRegister(vecCount++), source.Type);
+                        ? Gpr(CallingConvention.GetIntArgumentRegister(intCount++), source.Type)
+                        : Xmm(CallingConvention.GetVecArgumentRegister(vecCount++), source.Type);
 
                     Operation copyOp = new Operation(Instruction.Copy, argReg, source);
 

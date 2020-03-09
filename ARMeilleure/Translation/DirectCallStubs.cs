@@ -118,7 +118,7 @@ namespace ARMeilleure.Translation
 
             OperandType[] argTypes = new OperandType[]
             {
-                    OperandType.I64
+                OperandType.I64
             };
 
             return Compiler.Compile<GuestFunction>(

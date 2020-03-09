@@ -1,4 +1,4 @@
-using ARMeilleure.CodeGen.Optimizations;
+using ARMeilleure.Decoders.Optimizations;
 using ARMeilleure.Instructions;
 using ARMeilleure.Memory;
 using ARMeilleure.State;

@@ -190,12 +190,11 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand returnAddress)
+        private static void EmitContinueOrReturnCheck(ArmEmitterContext context, Operand returnAddress)
         {
-            // Note: The return value of the called method will be placed
-            // at the Stack, the return value is always a Int64 with the
-            // return address of the function. We check if the address is
-            // correct, if it isn't we keep returning until we reach the dispatcher.
+            // Note: The return value of a translated function is always an Int64 with the
+            // address execution has returned to. We expect this address to be immediately after the
+            // current instruction, if it isn't we keep returning until we reach the dispatcher.
             Operand nextAddr = Const(GetNextOpAddress(context.CurrOp));
 
             // Try to continue within this block.
@@ -250,7 +249,7 @@ namespace ARMeilleure.Instructions
 
         private static void EmitBranchFallback(ArmEmitterContext context, Operand address, bool isJump)
         {
-            address = context.BitwiseOr(address, Const(address.Type, 1)); // Set call flag.
+            address = context.BitwiseOr(address, Const(address.Type, (long)CallFlag)); // Set call flag.
             Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
             EmitNativeCall(context, fallbackAddr, isJump);
         }

@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace ARMeilleure.CodeGen.Optimizations
+namespace ARMeilleure.Decoders.Optimizations
 {
     static class TailCallRemover
     {
@@ -18,7 +18,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 throw new InvalidOperationException("Function entry point is not contained in a block.");
             }
 
-            ulong allowance = 4;
+            const ulong allowance = 4;
             Block entryBlock = blocks[entryBlockId];
             int startBlockIndex = entryBlockId;
             Block startBlock = entryBlock;

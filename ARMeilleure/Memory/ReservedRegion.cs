@@ -6,14 +6,21 @@ namespace ARMeilleure.Memory
 {
     class ReservedRegion
     {
+        private const int DefaultGranularity = 65536; // Mapping granularity in Windows.
+
         public IntPtr Pointer { get; }
 
         private ulong _maxSize;
         private ulong _sizeGranularity;
         private ulong _currentSize;
 
-        public ReservedRegion(ulong maxSize, ulong granularity)
+        public ReservedRegion(ulong maxSize, ulong granularity = 0)
         {
+            if (granularity == 0)
+            {
+                granularity = DefaultGranularity;
+            }
+
             Pointer = MemoryManagement.Reserve(maxSize);
             _maxSize = maxSize;
             _sizeGranularity = granularity;
