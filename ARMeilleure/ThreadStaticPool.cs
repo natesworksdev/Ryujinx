@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace ARMeilleure
@@ -13,9 +15,41 @@ namespace ARMeilleure
             {
                 if (_instance == null)
                 {
-                    _instance = new ThreadStaticPool<T>(_poolSizeIncrement * 2);
+                    PreparePool(0); // So that we can still use a pool when blindly initializing one.
                 }
                 return _instance;
+            }
+        }
+
+        private static ConcurrentDictionary<int, Stack<ThreadStaticPool<T>>> _pools = new ConcurrentDictionary<int, Stack<ThreadStaticPool<T>>>();
+
+        private static Stack<ThreadStaticPool<T>> GetPools(int groupId)
+        {
+            return _pools.GetOrAdd(groupId, x => new Stack<ThreadStaticPool<T>>());
+        }
+
+        public static void PreparePool(int groupId)
+        {
+            // Prepare the pool for this thread, ideally using an existing one from the specified group.
+            if (_instance == null)
+            {
+                Stack<ThreadStaticPool<T>> pools = GetPools(groupId);
+                lock (pools)
+                {
+                    _instance = (pools.Count != 0) ? pools.Pop() : new ThreadStaticPool<T>(_poolSizeIncrement * 2);
+                }
+            }
+        }
+
+        public static void ReturnPool(int groupId)
+        {
+            // Reset and return the pool for this thread to the specified group.
+            Stack<ThreadStaticPool<T>> pools = GetPools(groupId);
+            lock (pools)
+            {
+                _instance.Clear();
+                pools.Push(_instance);
+                _instance = null;
             }
         }
 

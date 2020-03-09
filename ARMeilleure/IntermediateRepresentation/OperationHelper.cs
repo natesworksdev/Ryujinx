@@ -44,9 +44,14 @@
             return Operation().With(instruction, destinations, sources);
         }
 
-        public static void ResetOperationPool()
+        public static void PrepareOperationPool(bool highCq)
         {
-            ThreadStaticPool<Operation>.Instance.Clear();
+            ThreadStaticPool<Operation>.PreparePool(highCq ? 1 : 0);
+        }
+
+        public static void ResetOperationPool(bool highCq)
+        {
+            ThreadStaticPool<Operation>.ReturnPool(highCq ? 1 : 0);
         }
     }
 }

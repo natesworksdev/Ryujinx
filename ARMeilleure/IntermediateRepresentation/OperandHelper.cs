@@ -85,10 +85,16 @@ namespace ARMeilleure.IntermediateRepresentation
             return MemoryOperand().With(type, baseAddress, index, scale, displacement);
         }
 
-        public static void ResetOperandPool()
+        public static void PrepareOperandPool(bool highCq)
         {
-            ThreadStaticPool<Operand>.Instance.Clear();
-            ThreadStaticPool<MemoryOperand>.Instance.Clear();
+            ThreadStaticPool<Operand>.PreparePool(highCq ? 1 : 0);
+            ThreadStaticPool<MemoryOperand>.PreparePool(highCq ? 1 : 0);
+        }
+
+        public static void ResetOperandPool(bool highCq)
+        {
+            ThreadStaticPool<Operand>.ReturnPool(highCq ? 1 : 0);
+            ThreadStaticPool<MemoryOperand>.ReturnPool(highCq ? 1 : 0);
         }
     }
 }
