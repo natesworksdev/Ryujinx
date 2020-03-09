@@ -408,13 +408,16 @@ namespace ARMeilleure.Instructions
             _context.ExclusiveAddress = ulong.MaxValue;
         }
 
-        public static void CheckSynchronization()
+        public static bool CheckSynchronization()
         {
             Statistics.PauseTimer();
 
-            GetContext().CheckInterrupt();
+            ExecutionContext context = GetContext();
+            context.CheckInterrupt();
 
             Statistics.ResumeTimer();
+
+            return context.Running;
         }
 
         public static ExecutionContext GetContext()

@@ -257,7 +257,11 @@ namespace ARMeilleure.Translation
 
             context.BranchIfTrue(lblNonZero, count);
 
-            context.Call(new _Void(NativeInterface.CheckSynchronization));
+            Operand running = context.Call(new _Bool(NativeInterface.CheckSynchronization));
+
+            context.BranchIfTrue(lblExit, running);
+
+            context.Return(Const(0L));
 
             context.Branch(lblExit);
 
