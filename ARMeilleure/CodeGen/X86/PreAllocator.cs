@@ -213,51 +213,53 @@ namespace ARMeilleure.CodeGen.X86
             {
                 case Instruction.CompareAndSwap:
                 {
-                    // Handle the many restrictions of the compare and exchange (32/64) instruction:
-                    // - The expected value should be in (E/R)AX.
-                    // - The value at the memory location is loaded to (E/R)AX.
+                    OperandType type = operation.GetSource(0).Type;
 
-                    Operand expected = operation.GetSource(1);
-
-                    Operand rax = Gpr(X86Register.Rax, expected.Type);
-
-                    nodes.AddBefore(node, new Operation(Instruction.Copy, rax, expected));
-
-                    operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
-
-                    node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
-
-                    operation.Destination = rax;
-
-                    break;
-                }
-
-                case Instruction.CompareAndSwap128:
-                {
-                    // Handle the many restrictions of the compare and exchange (16 bytes) instruction:
-                    // - The expected value should be in RDX:RAX.
-                    // - The new value to be written should be in RCX:RBX.
-                    // - The value at the memory location is loaded to RDX:RAX.
-                    void SplitOperand(Operand source, Operand lr, Operand hr)
+                    if (type == OperandType.V128)
                     {
-                        nodes.AddBefore(node, new Operation(Instruction.VectorExtract, lr, source, Const(0)));
-                        nodes.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
+                        // Handle the many restrictions of the compare and exchange (16 bytes) instruction:
+                        // - The expected value should be in RDX:RAX.
+                        // - The new value to be written should be in RCX:RBX.
+                        // - The value at the memory location is loaded to RDX:RAX.
+                        void SplitOperand(Operand source, Operand lr, Operand hr)
+                        {
+                            nodes.AddBefore(node, new Operation(Instruction.VectorExtract, lr, source, Const(0)));
+                            nodes.AddBefore(node, new Operation(Instruction.VectorExtract, hr, source, Const(1)));
+                        }
+
+                        Operand rax = Gpr(X86Register.Rax, OperandType.I64);
+                        Operand rbx = Gpr(X86Register.Rbx, OperandType.I64);
+                        Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
+                        Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
+
+                        SplitOperand(operation.GetSource(1), rax, rdx);
+                        SplitOperand(operation.GetSource(2), rbx, rcx);
+
+                        node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, rax));
+                        node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, rdx, Const(1)));
+
+                        operation.SetDestinations(new Operand[] { rdx, rax });
+
+                        operation.SetSources(new Operand[] { operation.GetSource(0), rdx, rax, rcx, rbx });
                     }
+                    else
+                    {
+                        // Handle the many restrictions of the compare and exchange (32/64) instruction:
+                        // - The expected value should be in (E/R)AX.
+                        // - The value at the memory location is loaded to (E/R)AX.
 
-                    Operand rax = Gpr(X86Register.Rax, OperandType.I64);
-                    Operand rbx = Gpr(X86Register.Rbx, OperandType.I64);
-                    Operand rcx = Gpr(X86Register.Rcx, OperandType.I64);
-                    Operand rdx = Gpr(X86Register.Rdx, OperandType.I64);
+                        Operand expected = operation.GetSource(1);
 
-                    SplitOperand(operation.GetSource(1), rax, rdx);
-                    SplitOperand(operation.GetSource(2), rbx, rcx);
+                        Operand rax = Gpr(X86Register.Rax, expected.Type);
 
-                    node = nodes.AddAfter(node, new Operation(Instruction.VectorCreateScalar, dest, rax));
-                    node = nodes.AddAfter(node, new Operation(Instruction.VectorInsert,       dest, dest, rdx, Const(1)));
+                        nodes.AddBefore(node, new Operation(Instruction.Copy, rax, expected));
 
-                    operation.SetDestinations(new Operand[] { rdx, rax });
+                        operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
 
-                    operation.SetSources(new Operand[] { operation.GetSource(0), rdx, rax, rcx, rbx });
+                        node = nodes.AddAfter(node, new Operation(Instruction.Copy, dest, rax));
+
+                        operation.Destination = rax;
+                    }
 
                     break;
                 }

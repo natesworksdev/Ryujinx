@@ -35,7 +35,6 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.Clobber,                 GenerateClobber);
             Add(Instruction.CompareAndSwap,          GenerateCompareAndSwap);
-            Add(Instruction.CompareAndSwap128,       GenerateCompareAndSwap128);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
             Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
@@ -548,23 +547,26 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateCompareAndSwap(CodeGenContext context, Operation operation)
         {
             Operand src1 = operation.GetSource(0);
-            Operand src2 = operation.GetSource(1);
-            Operand src3 = operation.GetSource(2);
 
-            EnsureSameType(src2, src3);
+            if (src1.Type == OperandType.V128)
+            {
+                Operand source = operation.GetSource(0);
 
-            MemoryOperand memOp = new MemoryOperand(src3.Type, src1);
+                MemoryOperand memOp = new MemoryOperand(OperandType.I64, source);
 
-            context.Assembler.Cmpxchg(memOp, src3);
-        }
+                context.Assembler.Cmpxchg16b(memOp);
+            }
+            else
+            {
+                Operand src2 = operation.GetSource(1);
+                Operand src3 = operation.GetSource(2);
 
-        private static void GenerateCompareAndSwap128(CodeGenContext context, Operation operation)
-        {
-            Operand source = operation.GetSource(0);
+                EnsureSameType(src2, src3);
 
-            MemoryOperand memOp = new MemoryOperand(OperandType.I64, source);
+                MemoryOperand memOp = new MemoryOperand(src3.Type, src1);
 
-            context.Assembler.Cmpxchg16b(memOp);
+                context.Assembler.Cmpxchg(memOp, src3);
+            }
         }
 
         private static void GenerateCompareEqual(CodeGenContext context, Operation operation)

@@ -158,14 +158,7 @@ namespace ARMeilleure.Translation
 
         public Operand CompareAndSwap(Operand address, Operand expected, Operand desired)
         {
-            if (desired.Type == OperandType.V128)
-            {
-                return Add(Instruction.CompareAndSwap128, Local(OperandType.V128), address, expected, desired);
-            }
-            else
-            {
-                return Add(Instruction.CompareAndSwap, Local(desired.Type), address, expected, desired);
-            }
+            return Add(Instruction.CompareAndSwap, Local(desired.Type), address, expected, desired);
         }
 
         public Operand ConditionalSelect(Operand op1, Operand op2, Operand op3)
