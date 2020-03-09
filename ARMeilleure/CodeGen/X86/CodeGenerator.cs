@@ -550,9 +550,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (src1.Type == OperandType.V128)
             {
-                Operand source = operation.GetSource(0);
-
-                MemoryOperand memOp = new MemoryOperand(OperandType.I64, source);
+                MemoryOperand memOp = new MemoryOperand(OperandType.I64, src1);
 
                 context.Assembler.Cmpxchg16b(memOp);
             }
