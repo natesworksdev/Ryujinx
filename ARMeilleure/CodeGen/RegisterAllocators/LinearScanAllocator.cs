@@ -1033,12 +1033,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     if (memOp.BaseAddress != null)
                     {
-                        yield return memOp.BaseAddress;
+                        action(memOp.BaseAddress);
                     }
 
                     if (memOp.Index != null)
                     {
-                        yield return memOp.Index;
+                        action(memOp.Index);
                     }
                 }
             }
