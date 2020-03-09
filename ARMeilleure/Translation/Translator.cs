@@ -145,6 +145,9 @@ namespace ARMeilleure.Translation
         {
             ArmEmitterContext context = new ArmEmitterContext(_memory, _jumpTable, (long)address, highCq, Aarch32Mode.User);
 
+            OperandHelper.PrepareOperandPool(highCq);
+            OperationHelper.PrepareOperationPool(highCq);
+
             Logger.StartPass(PassName.Decoding);
 
             Block[] blocks = AlwaysTranslateFunctions
@@ -179,6 +182,9 @@ namespace ARMeilleure.Translation
                 : CompilerOptions.None;
 
             GuestFunction func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
+
+            OperandHelper.ResetOperandPool(highCq);
+            OperationHelper.ResetOperationPool(highCq);
 
             return new TranslatedFunction(func, rejit: !highCq);
         }
