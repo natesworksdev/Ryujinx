@@ -6,7 +6,7 @@ using System.Reflection.Emit;
 
 namespace ARMeilleure.Translation
 {
-    static class DelegateHelpers
+    static class DelegateHelper
     {
         private const string DelegateTypesAssemblyName = "JitDelegateTypes";
 
@@ -14,7 +14,7 @@ namespace ARMeilleure.Translation
 
         private static readonly Dictionary<string, Type> _delegateTypesCache;
 
-        static DelegateHelpers()
+        static DelegateHelper()
         {
             AssemblyBuilder asmBuilder = AssemblyBuilder.DefineDynamicAssembly(new AssemblyName(DelegateTypesAssemblyName), AssemblyBuilderAccess.Run);
 

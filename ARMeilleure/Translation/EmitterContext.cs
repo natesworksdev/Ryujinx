@@ -82,7 +82,15 @@ namespace ARMeilleure.Translation
 
         public Operand Call(MethodInfo info, params Operand[] callArgs)
         {
-            if (Ptc.Enabled)
+            if (PtcProfiler.Enabled)
+            {
+                IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
+
+                OperandType retType = GetOperandType(info.ReturnType);
+
+                return Call(Const(funcPtr.ToInt64()), retType, callArgs);
+            }
+            else
             {
                 int index = Delegates.GetDelegateIndex(info);
 
@@ -91,14 +99,6 @@ namespace ARMeilleure.Translation
                 OperandType retType = GetOperandType(info.ReturnType);
 
                 return Call(Const(funcPtr.ToInt64(), true, index), retType, callArgs);
-            }
-            else
-            {
-                IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
-
-                OperandType retType = GetOperandType(info.ReturnType);
-
-                return Call(Const(funcPtr.ToInt64()), retType, callArgs);
             }
         }
 

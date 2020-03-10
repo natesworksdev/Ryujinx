@@ -326,6 +326,9 @@ namespace Ryujinx.Ui
                 _screen.MainLoop();
             }
 
+            Ptc.Stop();
+            PtcProfiler.Stop();
+
             device.Dispose();
 
             _emulationContext = null;
@@ -340,8 +343,6 @@ namespace Ryujinx.Ui
                 _firmwareInstallFile.Sensitive      = true;
                 _firmwareInstallDirectory.Sensitive = true;
             });
-
-            Ptc.Stop();
         }
 
         private static void UpdateGameMetadata(string titleId)
@@ -380,6 +381,7 @@ namespace Ryujinx.Ui
             Logger.Shutdown();
 
             Ptc.Dispose();
+            PtcProfiler.Dispose();
 
             Application.Quit();
         }

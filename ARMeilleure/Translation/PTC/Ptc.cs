@@ -25,7 +25,7 @@ namespace ARMeilleure.Translation.PTC
 
         private const int SaveInterval = 30; // Seconds.
 
-        internal const int MinCodeLengthToSave = 0x180; // Bytes.
+        internal const int MinCodeLengthToSave = 0; // Bytes.
 
         internal const int PageTableIndex = -1; // Must be a negative value.
 
@@ -51,9 +51,8 @@ namespace ARMeilleure.Translation.PTC
         public static string DisplayVersion { get; private set; }
 
         public static bool Enabled { get; private set; }
-        public static bool ReadOnlyMode { get; private set; }
 
-        public static string CachePath { get; private set; }
+        public static string CachePath { get; private set; } // TODO: Rename ?
 
         static Ptc()
         {
@@ -68,7 +67,7 @@ namespace ARMeilleure.Translation.PTC
 
             _waitEvent = new System.Threading.ManualResetEvent(true);
 
-            _basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), BaseDir);
+            _basePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), BaseDir);
 
             _locker = new object();
 
@@ -78,18 +77,28 @@ namespace ARMeilleure.Translation.PTC
             DisplayVersion = DisplayVersionDefault;
 
             Enabled = false;
-            ReadOnlyMode = true;
 
             CachePath = string.Empty;
         }
 
-        public static void InitAndStart(string titleIdText, string displayVersion, bool enabled, bool readOnlyMode)
+        internal static void ClearMemoryStreams()
         {
-            _waitEvent.WaitOne();
-
             _infosStream.SetLength(0L);
             _codesStream.SetLength(0L);
             _relocsStream.SetLength(0L);
+        }
+
+        public static void Init(string titleIdText, string displayVersion, bool enabled)
+        {
+            // Ptc.Stop(); // TODO: .
+
+            Ptc.Wait();
+            Ptc.ClearMemoryStreams();
+
+            // PtcProfiler.Stop(); // TODO: .
+
+            PtcProfiler.Wait();
+            PtcProfiler.ClearEntries();
 
             if (String.IsNullOrEmpty(titleIdText) || titleIdText == TitleIdTextDefault)
             {
@@ -97,7 +106,6 @@ namespace ARMeilleure.Translation.PTC
                 DisplayVersion = DisplayVersionDefault;
 
                 Enabled = false;
-                ReadOnlyMode = true;
 
                 CachePath = string.Empty;
 
@@ -108,95 +116,83 @@ namespace ARMeilleure.Translation.PTC
             DisplayVersion = !String.IsNullOrEmpty(displayVersion) ? displayVersion : DisplayVersionDefault;
 
             Enabled = enabled;
-            ReadOnlyMode = readOnlyMode;
 
-            string workPath = Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
+            string workPath = System.IO.Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
 
             if (enabled && !Directory.Exists(workPath))
             {
                 Directory.CreateDirectory(workPath);
             }
 
-            CachePath = Path.Combine(workPath, DisplayVersion);
+            CachePath = System.IO.Path.Combine(workPath, DisplayVersion);
 
             if (enabled)
             {
                 LoadAndSplit();
 
-                if (!readOnlyMode)
-                {
-                    _timer.Enabled = true;
-                }
-            }
-        }
-
-        public static void Stop()
-        {
-            if (!_disposed)
-            {
-                _timer.Enabled = false;
+                PtcProfiler.Load();
             }
         }
 
         private static void LoadAndSplit()
         {
-            FileInfo cacheInfo = new FileInfo(CachePath);
+            FileInfo fileInfo = new FileInfo(String.Concat(CachePath, ".cache"));
 
-            if (cacheInfo.Exists && cacheInfo.Length != 0L)
+            if (fileInfo.Exists && fileInfo.Length != 0L)
             {
-                using (FileStream compressedCacheStream = new FileStream(CachePath, FileMode.Open))
-                using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, CompressionMode.Decompress, true))
-                using (MemoryStream cacheStream = new MemoryStream())
+                using (FileStream compressedStream = new FileStream(String.Concat(CachePath, ".cache"), FileMode.Open))
+                using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
+                using (MemoryStream stream = new MemoryStream())
                 using (MD5 md5 = MD5.Create())
                 {
                     try
                     {
                         int hashSize = md5.HashSize / 8;
 
-                        deflateStream.CopyTo(cacheStream);
+                        deflateStream.CopyTo(stream);
 
-                        cacheStream.Seek(0L, SeekOrigin.Begin);
+                        stream.Seek(0L, SeekOrigin.Begin);
 
                         byte[] currentHash = new byte[hashSize];
-                        cacheStream.Read(currentHash, 0, hashSize);
+                        stream.Read(currentHash, 0, hashSize);
 
-                        byte[] expectedHash = md5.ComputeHash(cacheStream);
+                        byte[] expectedHash = md5.ComputeHash(stream);
 
                         if (!CompareHash(currentHash, expectedHash))
                         {
-                            InvalidateCompressedCacheStream(compressedCacheStream);
+                            InvalidateCompressedStream(compressedStream);
 
                             return;
                         }
 
-                        cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
+                        stream.Seek((long)hashSize, SeekOrigin.Begin);
 
-                        Header header = ReadHeader(cacheStream);
+                        Header header = ReadHeader(stream);
 
                         if (header.Magic != HeaderMagic)
                         {
-                            InvalidateCompressedCacheStream(compressedCacheStream);
+                            InvalidateCompressedStream(compressedStream);
 
                             return;
                         }
 
                         if (header.CacheFileVersion != InternalVersion)
                         {
-                            InvalidateCompressedCacheStream(compressedCacheStream);
+                            InvalidateCompressedStream(compressedStream);
 
                             return;
                         }
 
                         if (header.FeatureInfo != HardwareCapabilities.FeatureInfo)
                         {
-                            InvalidateCompressedCacheStream(compressedCacheStream);
+                            InvalidateCompressedStream(compressedStream);
 
                             return;
                         }
 
                         if (header.InfosLen % InfoEntry.Size != 0)
                         {
-                            InvalidateCompressedCacheStream(compressedCacheStream);
+                            InvalidateCompressedStream(compressedStream);
 
                             return;
                         }
@@ -205,16 +201,9 @@ namespace ARMeilleure.Translation.PTC
                         byte[] codesBuf = new byte[header.CodesLen];
                         byte[] relocsBuf = new byte[header.RelocsLen];
 
-                        cacheStream.Read(infosBuf, 0, header.InfosLen);
-                        cacheStream.Read(codesBuf, 0, header.CodesLen);
-                        cacheStream.Read(relocsBuf, 0, header.RelocsLen);
-
-                        if (cacheStream.Position != cacheStream.Length)
-                        {
-                            InvalidateCompressedCacheStream(compressedCacheStream);
-
-                            return;
-                        }
+                        stream.Read(infosBuf, 0, header.InfosLen);
+                        stream.Read(codesBuf, 0, header.CodesLen);
+                        stream.Read(relocsBuf, 0, header.RelocsLen);
 
                         try
                         {
@@ -224,14 +213,12 @@ namespace ARMeilleure.Translation.PTC
                         }
                         catch
                         {
-                            _infosStream.SetLength(0L);
-                            _codesStream.SetLength(0L);
-                            _relocsStream.SetLength(0L);
+                            ClearMemoryStreams();
                         }
                     }
                     catch
                     {
-                        InvalidateCompressedCacheStream(compressedCacheStream);
+                        InvalidateCompressedStream(compressedStream);
                     }
                 }
             }
@@ -242,9 +229,9 @@ namespace ARMeilleure.Translation.PTC
             return currentHash.SequenceEqual(expectedHash);
         }
 
-        private static Header ReadHeader(MemoryStream cacheStream)
+        private static Header ReadHeader(MemoryStream stream)
         {
-            using (BinaryReader headerReader = new BinaryReader(cacheStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader headerReader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
             {
                 Header header = new Header();
 
@@ -261,55 +248,52 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void InvalidateCompressedCacheStream(FileStream compressedCacheStream)
+        private static void InvalidateCompressedStream(FileStream compressedStream)
         {
-            if (!ReadOnlyMode)
-            {
-                compressedCacheStream.SetLength(0L);
-            }
+            compressedStream.SetLength(0L);
         }
 
-        private static void MergeAndSave(Object source, ElapsedEventArgs e)
+        internal static void MergeAndSave(Object source, ElapsedEventArgs e)
         {
             _waitEvent.Reset();
 
-            using (MemoryStream cacheStream = new MemoryStream())
+            using (MemoryStream stream = new MemoryStream())
             using (MD5 md5 = MD5.Create())
             {
                 int hashSize = md5.HashSize / 8;
 
-                cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
+                stream.Seek((long)hashSize, SeekOrigin.Begin);
 
-                lock (_locker) // Read.
+                lock (_locker)
                 {
-                    WriteHeader(cacheStream);
+                    WriteHeader(stream);
 
-                    _infosStream.WriteTo(cacheStream);
-                    _codesStream.WriteTo(cacheStream);
-                    _relocsStream.WriteTo(cacheStream);
+                    _infosStream.WriteTo(stream);
+                    _codesStream.WriteTo(stream);
+                    _relocsStream.WriteTo(stream);
                 }
 
-                cacheStream.Seek((long)hashSize, SeekOrigin.Begin);
-                byte[] hash = md5.ComputeHash(cacheStream);
+                stream.Seek((long)hashSize, SeekOrigin.Begin);
+                byte[] hash = md5.ComputeHash(stream);
 
-                cacheStream.Seek(0L, SeekOrigin.Begin);
-                cacheStream.Write(hash, 0, hashSize);
+                stream.Seek(0L, SeekOrigin.Begin);
+                stream.Write(hash, 0, hashSize);
 
-                using (FileStream compressedCacheStream = new FileStream(CachePath, FileMode.OpenOrCreate))
-                using (DeflateStream deflateStream = new DeflateStream(compressedCacheStream, SaveCompressionLevel, true))
+                using (FileStream compressedStream = new FileStream(String.Concat(CachePath, ".cache"), FileMode.OpenOrCreate))
+                using (DeflateStream deflateStream = new DeflateStream(compressedStream, SaveCompressionLevel, true))
                 {
                     try
                     {
-                        cacheStream.WriteTo(deflateStream);
+                        stream.WriteTo(deflateStream);
                     }
                     catch
                     {
-                        compressedCacheStream.Position = 0L;
+                        compressedStream.Position = 0L;
                     }
 
-                    if (compressedCacheStream.Position < compressedCacheStream.Length)
+                    if (compressedStream.Position < compressedStream.Length)
                     {
-                        compressedCacheStream.SetLength(compressedCacheStream.Position);
+                        compressedStream.SetLength(compressedStream.Position);
                     }
                 }
             }
@@ -317,9 +301,9 @@ namespace ARMeilleure.Translation.PTC
             _waitEvent.Set();
         }
 
-        private static void WriteHeader(MemoryStream cacheStream)
+        private static void WriteHeader(MemoryStream stream)
         {
-            using (BinaryWriter headerWriter = new BinaryWriter(cacheStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryWriter headerWriter = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
             {
                 headerWriter.Write((string)HeaderMagic); // Header.Magic
 
@@ -332,7 +316,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void FullTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, IntPtr pageTable)
+        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, IntPtr pageTable)
         {
             if ((int)_infosStream.Length != 0 &&
                 (int)_codesStream.Length != 0 &&
@@ -438,14 +422,14 @@ namespace ARMeilleure.Translation.PTC
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc, rejit : false);
+            TranslatedFunction tFunc = new TranslatedFunction(gFunc);
 
             return tFunc;
         }
 
         internal static void WriteInfoCodeReloc(long address, PtcInfo ptcInfo)
         {
-            lock (_locker) // Write.
+            lock (_locker)
             {
                 // WriteInfo.
                 _infosWriter.Write((long)address); // InfoEntry.Address
@@ -464,7 +448,7 @@ namespace ARMeilleure.Translation.PTC
         {
             public string Magic;
 
-            public int CacheFileVersion;
+            public int CacheFileVersion; // TODO: Rename ?
             public ulong FeatureInfo;
 
             public int InfosLen;
@@ -481,6 +465,26 @@ namespace ARMeilleure.Translation.PTC
             public int RelocEntriesCount;
         }
 
+        internal static void Wait() // TODO: Rename ?
+        {
+            _waitEvent.WaitOne();
+        }
+
+        internal static void Start()
+        {
+            _timer.Enabled = true;
+        }
+
+        public static void Stop()
+        {
+            Enabled = false;
+
+            if (!_disposed)
+            {
+                _timer.Enabled = false;
+            }
+        }
+
         public static void Dispose()
         {
             if (!_disposed)
@@ -490,7 +494,7 @@ namespace ARMeilleure.Translation.PTC
                 _timer.Elapsed -= MergeAndSave;
                 _timer.Dispose();
 
-                _waitEvent.WaitOne();
+                _waitEvent.WaitOne(); // TODO: Wait() ?
                 _waitEvent.Dispose();
 
                 _infosWriter.Dispose();

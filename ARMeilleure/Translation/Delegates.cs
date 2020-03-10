@@ -73,7 +73,7 @@ namespace ARMeilleure.Translation
         {
             string key = GetKey(info);
 
-            Delegate dlg = DelegateHelpers.GetDelegate(info);
+            Delegate dlg = DelegateHelper.GetDelegate(info);
 
             _delegates.Add(key, new DelegateInfo(dlg)); // ArgumentException (key).
         }

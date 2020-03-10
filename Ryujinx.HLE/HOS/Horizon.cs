@@ -562,7 +562,7 @@ namespace Ryujinx.HLE.HOS
 
             Logger.PrintInfo(LogClass.Cpu, $"Initializing Persistent Translation Cache (enabled: {EnablePtc}).");
 
-            Ptc.InitAndStart(TitleIdText, DisplayVersion, EnablePtc, readOnlyMode: false);
+            Ptc.Init(TitleIdText, DisplayVersion, EnablePtc);
 
             ProgramLoader.LoadStaticObjects(this, metaData, staticObjects.ToArray());
         }

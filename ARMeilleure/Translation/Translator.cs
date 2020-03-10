@@ -27,8 +27,7 @@ namespace ARMeilleure.Translation
         private readonly Dictionary<ulong, TranslatedFunction> _funcs;
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
 
-        private readonly int _maxBackgroundQueueCount = 600;
-        private readonly ConcurrentQueue<ulong> _backgroundQueue;
+        private readonly ConcurrentStack<RejitRequest> _backgroundStack;
 
         private readonly AutoResetEvent _backgroundTranslatorEvent;
 
@@ -43,29 +42,30 @@ namespace ARMeilleure.Translation
             _funcs       = new Dictionary<ulong, TranslatedFunction>();
             _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
-            if (Ptc.Enabled)
-            {
-                Ptc.FullTranslate(_funcsHighCq, memory.PageTable);
-
-                _maxBackgroundQueueCount = 300;
-            }
-
-            _backgroundQueue = new ConcurrentQueue<ulong>();
+            _backgroundStack = new ConcurrentStack<RejitRequest>();
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
+
+            if (Ptc.Enabled)
+            {
+                Ptc.LoadTranslations(_funcsHighCq, memory.PageTable);
+            }
         }
 
-        private void TranslateQueuedSubs()
+        private void TranslateStackedSubs()
         {
             while (_threadCount != 0)
             {
-                if (_backgroundQueue.TryDequeue(out ulong address))
+                if (_backgroundStack.TryPop(out RejitRequest request))
                 {
-                    TranslatedFunction func = Translate(address, ExecutionMode.Aarch64, highCq: true);
+                    if (!_funcsHighCq.ContainsKey(request.Address))
+                    {
+                        TranslatedFunction func = Translate(_memory, request.Address, request.Mode, highCq: true);
 
-                    bool isAddressUnique = _funcsHighCq.TryAdd(address, func);
+                        bool isAddressUnique = _funcsHighCq.TryAdd(request.Address, func);
 
-                    Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
+                        Debug.Assert(isAddressUnique, $"The address 0x{request.Address:X16} is not unique.");
+                    }
                 }
                 else
                 {
@@ -78,7 +78,14 @@ namespace ARMeilleure.Translation
         {
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
-                Thread backgroundTranslatorThread = new Thread(TranslateQueuedSubs)
+                if (Ptc.Enabled)
+                {
+                    PtcProfiler.DoAndSaveTranslations(_funcsHighCq, _memory);
+
+                    PtcProfiler.Start();
+                }
+
+                Thread backgroundTranslatorThread = new Thread(TranslateStackedSubs)
                 {
                     Name     = "CPU.BackgroundTranslatorThread",
                     Priority = ThreadPriority.Lowest
@@ -134,18 +141,25 @@ namespace ARMeilleure.Translation
                 {
                     if (!_funcs.TryGetValue(address, out func))
                     {
-                        func = Translate(address, mode, highCq: false);
+                        func = Translate(_memory, address, mode, highCq: false);
 
                         bool isAddressUnique = _funcs.TryAdd(address, func);
 
                         Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
                     }
+                }
 
-                    if (isCallTarget && func.ShouldRejit() && _backgroundQueue.Count < _maxBackgroundQueueCount)
+                if (isCallTarget)
+                {
+                    int callCount = func.GetCallCount();
+
+                    if (PtcProfiler.Enabled && callCount == 1)
                     {
-                        func.ResetRejit();
-
-                        _backgroundQueue.Enqueue(address);
+                        PtcProfiler.AddEntry(address, mode);
+                    }
+                    else if (callCount == 100)
+                    {
+                        _backgroundStack.Push(new RejitRequest(address, mode));
 
                         _backgroundTranslatorEvent.Set();
                     }
@@ -155,15 +169,15 @@ namespace ARMeilleure.Translation
             return func;
         }
 
-        private TranslatedFunction Translate(ulong address, ExecutionMode mode, bool highCq)
+        internal static TranslatedFunction Translate(MemoryManager memory, ulong address, ExecutionMode mode, bool highCq)
         {
-            ArmEmitterContext context = new ArmEmitterContext(_memory, Aarch32Mode.User);
+            ArmEmitterContext context = new ArmEmitterContext(memory, Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 
             Block[] blocks = highCq
-                ? Decoder.DecodeFunction  (_memory, address, mode)
-                : Decoder.DecodeBasicBlock(_memory, address, mode);
+                ? Decoder.DecodeFunction  (memory, address, mode)
+                : Decoder.DecodeBasicBlock(memory, address, mode);
 
             Logger.EndPass(PassName.Decoding);
 
@@ -188,33 +202,28 @@ namespace ARMeilleure.Translation
 
             OperandType[] argTypes = new OperandType[] { OperandType.I64 };
 
+            CompilerOptions options = highCq ? CompilerOptions.HighCq : CompilerOptions.None;
+
             GuestFunction func;
 
-            if (highCq)
+            if (PtcProfiler.Enabled)
             {
-                if (Ptc.Enabled)
-                {
-                    using (PtcInfo ptcInfo = new PtcInfo())
-                    {
-                        func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq, ptcInfo);
-
-                        if ((int)ptcInfo.CodeStream.Length >= Ptc.MinCodeLengthToSave)
-                        {
-                            Ptc.WriteInfoCodeReloc((long)address, ptcInfo);
-                        }
-                    }
-                }
-                else
-                {
-                    func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq);
-                }
+                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
             }
             else
             {
-                func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.None);
+                using (PtcInfo ptcInfo = new PtcInfo())
+                {
+                    func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
+
+                    if ((int)ptcInfo.CodeStream.Length >= Ptc.MinCodeLengthToSave)
+                    {
+                        Ptc.WriteInfoCodeReloc((long)address, ptcInfo);
+                    }
+                }
             }
 
-            return new TranslatedFunction(func, rejit: !highCq);
+            return new TranslatedFunction(func);
         }
 
         private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)

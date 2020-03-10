@@ -75,6 +75,7 @@ namespace Ryujinx
             if (e.IsTerminating)
             {
                 Ptc.Stop();
+                PtcProfiler.Stop();
 
                 Logger.Shutdown();
             }
