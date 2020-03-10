@@ -6,6 +6,7 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -22,7 +23,11 @@ namespace ARMeilleure.Translation
 
         private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
 
+<<<<<<< HEAD
         private JumpTable _jumpTable;
+=======
+        private Queue<TranslatedFunction> _oldFunctions;
+>>>>>>> c40a67d26ba5fb0526a6e53668e8f60a82164c0e
 
         private PriorityQueue<RejitRequest> _backgroundQueue;
 
@@ -42,7 +47,11 @@ namespace ARMeilleure.Translation
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
 
+<<<<<<< HEAD
             DirectCallStubs.InitializeStubs();
+=======
+            _oldFunctions = new Queue<TranslatedFunction>();
+>>>>>>> c40a67d26ba5fb0526a6e53668e8f60a82164c0e
         }
 
         private void TranslateQueuedSubs()
@@ -53,11 +62,36 @@ namespace ARMeilleure.Translation
                 {
                     TranslatedFunction func = Translate(request.Address, request.Mode, highCq: true);
 
+<<<<<<< HEAD
                     _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) => func);
                     _jumpTable.RegisterFunction(request.Address, func);
+=======
+                    _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) =>
+                    {
+                        _oldFunctions.Enqueue(oldFunc);
+
+                        return func;
+                    });
+>>>>>>> c40a67d26ba5fb0526a6e53668e8f60a82164c0e
                 }
                 else
                 {
+                    Queue<TranslatedFunction> skippedFunctions = new Queue<TranslatedFunction>();
+
+                    while (_oldFunctions.TryDequeue(out TranslatedFunction function))
+                    {
+                        if (Interlocked.CompareExchange(ref function.EntryCount, -1, 0) != 0)
+                        {
+                            skippedFunctions.Enqueue(function);
+                        }
+                        else
+                        {
+                            JitCache.Free(function.Pointer);
+                        }
+                    }
+
+                    _oldFunctions = skippedFunctions;
+
                     _backgroundTranslatorEvent.WaitOne();
                 }
             }
@@ -183,10 +217,14 @@ namespace ARMeilleure.Translation
 
             GuestFunction func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
 
+<<<<<<< HEAD
             OperandHelper.ResetOperandPool(highCq);
             OperationHelper.ResetOperationPool(highCq);
 
             return new TranslatedFunction(func, rejit: !highCq);
+=======
+            return new TranslatedFunction(func, address, rejit: !highCq);
+>>>>>>> c40a67d26ba5fb0526a6e53668e8f60a82164c0e
         }
 
         private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)

@@ -19,9 +19,9 @@ namespace ARMeilleure.Translation
 
         private static IntPtr _basePointer => _jitRegion.Pointer;
 
-        private static int _offset;
+        private static JitCacheMemoryAllocator _allocator;
 
-        private static List<JitCacheEntry> _cacheEntries;
+        private static Dictionary<int, JitCacheEntry> _cacheEntries;
 
         private static object _lock;
 
@@ -29,16 +29,22 @@ namespace ARMeilleure.Translation
         {
             _jitRegion = new ReservedRegion(CacheSize);
 
+            int startOffset = 0;
+
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _jitRegion.ExpandIfNeeded(PageSize);
                 JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);
 
                 // The first page is used for the table based SEH structs.
-                _offset = PageSize;
+                startOffset = PageSize;
             }
 
-            _cacheEntries = new List<JitCacheEntry>();
+            ReprotectRange(startOffset, CacheSize - startOffset);
+
+            _allocator = new JitCacheMemoryAllocator(CacheSize, startOffset);
+
+            _cacheEntries = new Dictionary<int, JitCacheEntry>();
 
             _lock = new object();
         }
@@ -54,8 +60,6 @@ namespace ARMeilleure.Translation
                 IntPtr funcPtr = _basePointer + funcOffset;
 
                 Marshal.Copy(code, 0, funcPtr, code.Length);
-
-                ReprotectRange(funcOffset, code.Length);
 
                 Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
 
@@ -79,16 +83,7 @@ namespace ARMeilleure.Translation
             {
                 IntPtr funcPtr = _basePointer + pageStart;
 
-                MemoryManagement.Reprotect(funcPtr, (ulong)fullPagesSize, MemoryProtection.ReadAndExecute);
-            }
-
-            int remaining = endOffs - pageEnd;
-
-            if (remaining != 0)
-            {
-                IntPtr funcPtr = _basePointer + pageEnd;
-
-                MemoryManagement.Reprotect(funcPtr, (ulong)remaining, MemoryProtection.ReadWriteExecute);
+                MemoryManagement.Reprotect(funcPtr, (ulong)fullPagesSize, MemoryProtection.ReadWriteExecute);
             }
         }
 
@@ -96,39 +91,46 @@ namespace ARMeilleure.Translation
         {
             codeSize = checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
 
-            int allocOffset = _offset;
-
-            _offset += codeSize;
-
-            _jitRegion.ExpandIfNeeded((ulong)_offset);
-
-            if ((ulong)(uint)_offset > CacheSize)
-            {
-                throw new OutOfMemoryException();
-            }
+            int allocOffset = _allocator.Allocate(codeSize);
 
             return allocOffset;
         }
 
+        public static void Free(IntPtr address)
+        {
+            ulong offset = (ulong)address - (ulong)_basePointer;
+
+<<<<<<< HEAD
+            _jitRegion.ExpandIfNeeded((ulong)_offset);
+
+            if ((ulong)(uint)_offset > CacheSize)
+=======
+            lock (_lock)
+>>>>>>> c40a67d26ba5fb0526a6e53668e8f60a82164c0e
+            {
+                if (TryFind((int)offset, out JitCacheEntry entry))
+                {
+                    _cacheEntries.Remove((int)offset, out entry);
+
+                    int size = checked(entry.Size + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
+
+                    _allocator.Free((int)entry.Offset, size);
+                }
+            }
+        }
+
         private static void Add(JitCacheEntry entry)
         {
-            _cacheEntries.Add(entry);
+            _cacheEntries.Add(entry.Offset, entry);
         }
 
         public static bool TryFind(int offset, out JitCacheEntry entry)
         {
             lock (_lock)
             {
-                foreach (JitCacheEntry cacheEntry in _cacheEntries)
+                if (_cacheEntries.TryGetValue(offset, out entry))
                 {
-                    int endOffset = cacheEntry.Offset + cacheEntry.Size;
-
-                    if (offset >= cacheEntry.Offset && offset < endOffset)
-                    {
-                        entry = cacheEntry;
-
-                        return true;
-                    }
+                    return true;
                 }
             }
 
