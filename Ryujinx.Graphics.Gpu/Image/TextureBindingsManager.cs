@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
 using System;
@@ -224,7 +225,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     _textureState[stageIndex][index].Texture = hostTexture;
 
-                    _context.Renderer.Pipeline.SetTexture(index, stage, hostTexture);
+                    _context.Renderer.Pipeline.SetTexture(CurrentShaderMeta().GetTextureUnit(stage, index), hostTexture);
                 }
 
                 Sampler sampler = _samplerPool.Get(samplerId);
@@ -235,7 +236,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     _textureState[stageIndex][index].Sampler = hostSampler;
 
-                    _context.Renderer.Pipeline.SetSampler(index, stage, hostSampler);
+                    _context.Renderer.Pipeline.SetSampler(CurrentShaderMeta().GetTextureUnit(stage, index), hostSampler);
                 }
             }
         }
@@ -270,7 +271,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     _imageState[stageIndex][index].Texture = hostTexture;
 
-                    _context.Renderer.Pipeline.SetImage(index, stage, hostTexture);
+                    _context.Renderer.Pipeline.SetImage(CurrentShaderMeta().GetImageUnit(stage, index), hostTexture);
                 }
             }
         }
@@ -362,6 +363,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Rebind()
         {
             _rebind = true;
+        }
+
+        /// <summary>
+        /// Gets the shader meta data for the currently bound shader on the graphics or compute pipeline.
+        /// </summary>
+        /// <returns>Currently bound shader</returns>
+        private ShaderMeta CurrentShaderMeta()
+        {
+            return _isCompute ? _context.Methods.CurrentCpMeta : _context.Methods.CurrentGpMeta;
         }
     }
 }

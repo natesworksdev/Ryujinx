@@ -18,7 +18,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
     partial class Methods
     {
         private readonly GpuContext _context;
-        private readonly ShaderProgramInfo[] _currentProgramInfo;
+
+        /// <summary>
+        /// Meta data of the current graphics shader.
+        /// </summary>
+        public ShaderMeta CurrentGpMeta { get; private set; }
 
         /// <summary>
         /// In-memory shader cache.
@@ -47,8 +51,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
             _context = context;
 
             ShaderCache = new ShaderCache(_context);
-
-            _currentProgramInfo = new ShaderProgramInfo[Constants.ShaderStages];
 
             BufferManager  = new BufferManager(context);
             TextureManager = new TextureManager(context);
@@ -223,9 +225,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// </summary>
         private void UpdateStorageBuffers()
         {
-            for (int stage = 0; stage < _currentProgramInfo.Length; stage++)
+            for (int stage = 0; stage < CurrentGpMeta.Info.Length; stage++)
             {
-                ShaderProgramInfo info = _currentProgramInfo[stage];
+                ShaderProgramInfo info = CurrentGpMeta.Info[stage];
 
                 if (info == null)
                 {
@@ -753,15 +755,15 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 addressesArray[index] = baseAddress + shader.Offset;
             }
 
-            GraphicsShader gs = ShaderCache.GetGraphicsShader(state, addresses);
+            Shader.Shader gs = ShaderCache.GetGraphicsShader(state, addresses);
 
-            _vsUsesInstanceId = gs.Shaders[0]?.Program.Info.UsesInstanceId ?? false;
+            CurrentGpMeta = gs.Meta;
+
+            _vsUsesInstanceId = gs.Meta.Info[0]?.UsesInstanceId ?? false;
 
             for (int stage = 0; stage < Constants.ShaderStages; stage++)
             {
-                ShaderProgramInfo info = gs.Shaders[stage]?.Program.Info;
-
-                _currentProgramInfo[stage] = info;
+                ShaderProgramInfo info = gs.Meta.Info[stage];
 
                 if (info == null)
                 {

@@ -234,28 +234,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets the number of mapped or reserved pages on a given region.
-        /// </summary>
-        /// <param name="gpuVa">Start GPU virtual address of the region</param>
-        /// <param name="maxSize">Maximum size of the data</param>
-        /// <returns>Mapped size in bytes of the specified region</returns>
-        internal ulong GetSubSize(ulong gpuVa, ulong maxSize)
-        {
-            ulong size = 0;
-
-            while (GetPte(gpuVa + size) != PteUnmapped)
-            {
-                size += PageSize;
-                if (size >= maxSize)
-                {
-                    return maxSize;
-                }
-            }
-
-            return size;
-        }
-
-        /// <summary>
         /// Translates a GPU virtual address to a CPU virtual address.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address to be translated</param>
@@ -312,6 +290,29 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             return _pageTable[l0][l1] != PteUnmapped;
+        }
+
+        /// <summary>
+        /// Checks if a given memory page is mapped.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address of the page</param>
+        /// <returns>True if the page is mapped, false otherwise</returns>
+        public bool IsMapped(ulong gpuVa)
+        {
+            if (gpuVa >> PtLvl0Bits + PtLvl1Bits + PtPageBits != 0)
+            {
+                return false;
+            }
+
+            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
+            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
+
+            if (_pageTable[l0] == null)
+            {
+                return false;
+            }
+
+            return (long)_pageTable[l0][l1] >= 0;
         }
 
         /// <summary>

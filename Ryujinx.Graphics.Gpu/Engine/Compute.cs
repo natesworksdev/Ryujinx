@@ -11,6 +11,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
     partial class Methods
     {
         /// <summary>
+        /// Meta data of the current compute shader.
+        /// </summary>
+        public ShaderMeta CurrentCpMeta { get; private set; }
+
+        /// <summary>
         /// Dispatches compute work.
         /// </summary>
         /// <param name="state">Current GPU state</param>
@@ -29,13 +34,15 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             int sharedMemorySize = Math.Min(qmd.SharedMemorySize, _context.Capabilities.MaximumComputeSharedMemorySize);
 
-            ComputeShader cs = ShaderCache.GetComputeShader(
+            Shader.Shader cs = ShaderCache.GetComputeShader(
                 shaderGpuVa,
                 qmd.CtaThreadDimension0,
                 qmd.CtaThreadDimension1,
                 qmd.CtaThreadDimension2,
                 localMemorySize,
                 sharedMemorySize);
+
+            CurrentCpMeta = cs.Meta;
 
             _context.Renderer.Pipeline.SetProgram(cs.HostProgram);
 
@@ -49,7 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             TextureManager.SetComputeTextureBufferIndex(state.Get<int>(MethodOffset.TextureBufferIndex));
 
-            ShaderProgramInfo info = cs.Shader.Program.Info;
+            ShaderProgramInfo info = cs.Meta.Info[0];
 
             uint sbEnableMask = 0;
             uint ubEnableMask = 0;

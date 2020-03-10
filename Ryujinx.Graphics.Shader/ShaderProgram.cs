@@ -6,18 +6,12 @@ namespace Ryujinx.Graphics.Shader
     {
         public ShaderProgramInfo Info { get; }
 
-        public ShaderStage Stage { get; }
-
         public string Code { get; private set; }
 
-        public int Size { get; }
-
-        internal ShaderProgram(ShaderProgramInfo info, ShaderStage stage, string code, int size)
+        internal ShaderProgram(ShaderProgramInfo info, string code)
         {
-            Info  = info;
-            Stage = stage;
-            Code  = code;
-            Size  = size;
+            Info = info;
+            Code = code;
         }
 
         public void Prepend(string line)
