@@ -14,7 +14,7 @@ namespace ARMeilleure.Translation
     {
         private Dictionary<Operand, BasicBlock> _irLabels;
 
-        private LinkedList<BasicBlock> _irBlocks;
+        private IntrusiveList<BasicBlock> _irBlocks;
 
         private BasicBlock _irBlock;
 
@@ -24,7 +24,7 @@ namespace ARMeilleure.Translation
         {
             _irLabels = new Dictionary<Operand, BasicBlock>();
 
-            _irBlocks = new LinkedList<BasicBlock>();
+            _irBlocks = new IntrusiveList<BasicBlock>();
 
             _needsNewBlock = true;
         }
@@ -520,7 +520,8 @@ namespace ARMeilleure.Translation
             if (_irLabels.TryGetValue(label, out BasicBlock nextBlock))
             {
                 nextBlock.Index = _irBlocks.Count;
-                nextBlock.Node  = _irBlocks.AddLast(nextBlock);
+
+                _irBlocks.AddLast(nextBlock);
 
                 NextBlock(nextBlock);
             }
@@ -536,7 +537,7 @@ namespace ARMeilleure.Translation
         {
             BasicBlock block = new BasicBlock(_irBlocks.Count);
 
-            block.Node = _irBlocks.AddLast(block);
+            _irBlocks.AddLast(block);
 
             NextBlock(block);
         }
@@ -568,7 +569,7 @@ namespace ARMeilleure.Translation
 
         public ControlFlowGraph GetControlFlowGraph()
         {
-            return new ControlFlowGraph(_irBlocks.First.Value, _irBlocks);
+            return new ControlFlowGraph(_irBlocks.First, _irBlocks);
         }
     }
 }

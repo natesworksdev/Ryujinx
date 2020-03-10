@@ -1,18 +1,21 @@
 using LibHac;
 using LibHac.Account;
 using LibHac.Common;
+using LibHac.Fs;
 using LibHac.Ncm;
 using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage;
 using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
 using System;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+using AccountUid = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy
 {
@@ -30,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode PopLaunchParameter(ServiceCtx context)
         {
             // Only the first 0x18 bytes of the Data seems to be actually used.
-            MakeObject(context, new AppletAE.IStorage(StorageHelper.MakeLaunchParams()));
+            MakeObject(context, new AppletAE.IStorage(StorageHelper.MakeLaunchParams(context.Device.System.State.Account.LastOpenedUser)));
 
             return ResultCode.Success;
         }
@@ -39,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // EnsureSaveData(nn::account::Uid) -> u64
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
-            Uid     userId  = context.RequestData.ReadStruct<Uid>();
+            Uid     userId  = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
             TitleId titleId = new TitleId(context.Process.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.System.ControlData;
@@ -61,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             }
 
             Result result = EnsureApplicationSaveData(context.Device.FileSystem.FsClient, out long requiredSize, titleId,
-                ref context.Device.System.ControlData.Value, ref userId);
+                ref control, ref userId);
 
             context.ResponseData.Write(requiredSize);
 
@@ -108,6 +111,23 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return ResultCode.Success;
         }
 
+        // GetSaveDataSize(u8, nn::account::Uid) -> (u64, u64)
+        [Command(26)] // 3.0.0+
+        public ResultCode GetSaveDataSize(ServiceCtx context)
+        {
+            SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadByte();
+            context.RequestData.BaseStream.Seek(7, System.IO.SeekOrigin.Current);
+
+            Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+
+            // TODO: We return a size of 2GB as we use a directory based save system. This should be enough for most of the games.
+            context.ResponseData.Write(2000000000u);
+
+            Logger.PrintStub(LogClass.ServiceAm, new { saveDataType, userId });
+
+            return ResultCode.Success;
+        }
+
         [Command(40)]
         // NotifyRunning() -> b8
         public ResultCode NotifyRunning(ServiceCtx context)
@@ -145,6 +165,114 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             int state = context.RequestData.ReadInt32();
 
             Logger.PrintStub(LogClass.ServiceAm, new { state });
+
+            return ResultCode.Success;
+        }
+
+        [Command(100)] // 5.0.0+
+        // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
+        public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
+        {
+            int   width                 = context.RequestData.ReadInt32();
+            int   height                = context.RequestData.ReadInt32();
+            ulong transferMemorySize    = context.RequestData.ReadUInt64();
+            int   transferMemoryHandle  = context.Request.HandleDesc.ToCopy[0];
+            ulong transferMemoryAddress = context.Process.HandleTable.GetObject<KTransferMemory>(transferMemoryHandle).Address;
+
+            ResultCode resultCode = ResultCode.InvalidParameters;
+
+            if (((transferMemorySize & 0x3FFFF) == 0) && width <= 1280 && height <= 720)
+            {
+                resultCode = InitializeApplicationCopyrightFrameBufferImpl(transferMemoryAddress, transferMemorySize, width, height);
+            }
+
+            /*
+            if (transferMemoryHandle)
+            {
+                svcCloseHandle(transferMemoryHandle);
+            }
+            */
+
+            return resultCode;
+        }
+
+        private ResultCode InitializeApplicationCopyrightFrameBufferImpl(ulong transferMemoryAddress, ulong transferMemorySize, int width, int height)
+        {
+            ResultCode resultCode = ResultCode.ObjectInvalid;
+
+            if ((transferMemorySize & 0x3FFFF) != 0)
+            {
+                return ResultCode.InvalidParameters;
+            }
+
+            // if (_copyrightBuffer == null)
+            {
+                // TODO: Initialize buffer and object.
+
+                Logger.PrintStub(LogClass.ServiceAm, new { transferMemoryAddress, transferMemorySize, width, height });
+
+                resultCode = ResultCode.Success;
+            }
+
+            return resultCode;
+        }
+
+        [Command(101)] // 5.0.0+
+        // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
+        public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
+        {
+            long frameBufferPos   = context.Request.SendBuff[0].Position;
+            long frameBufferSize  = context.Request.SendBuff[0].Size;
+            int  x                = context.RequestData.ReadInt32();
+            int  y                = context.RequestData.ReadInt32();
+            int  width            = context.RequestData.ReadInt32();
+            int  height           = context.RequestData.ReadInt32();
+            uint windowOriginMode = context.RequestData.ReadUInt32();
+
+            ResultCode resultCode = ResultCode.InvalidParameters;
+
+            if (((y | x) >= 0) && width >= 1 && height >= 1)
+            {
+                ResultCode result = SetApplicationCopyrightImageImpl(x, y, width, height, frameBufferPos, frameBufferSize, windowOriginMode);
+
+                if (resultCode != ResultCode.Success)
+                {
+                    resultCode = result;
+                }
+                else
+                {
+                    resultCode = ResultCode.Success;
+                }
+            }
+
+            Logger.PrintStub(LogClass.ServiceAm, new { frameBufferPos, frameBufferSize, x, y, width, height, windowOriginMode });
+
+            return resultCode;
+        }
+
+        private ResultCode SetApplicationCopyrightImageImpl(int x, int y, int width, int height, long frameBufferPos, long frameBufferSize, uint windowOriginMode)
+        {
+            /*
+            if (_copyrightBuffer == null)
+            {
+                return ResultCode.NullCopyrightObject;
+            }
+            */
+
+            Logger.PrintStub(LogClass.ServiceAm, new { x, y, width, height, frameBufferPos, frameBufferSize, windowOriginMode });
+
+            return ResultCode.Success;
+        }
+
+        [Command(102)] // 5.0.0+
+        // SetApplicationCopyrightVisibility(bool visible)
+        public ResultCode SetApplicationCopyrightVisibility(ServiceCtx context)
+        {
+            bool visible = context.RequestData.ReadBoolean();
+
+            Logger.PrintStub(LogClass.ServiceAm, new { visible });
+
+            // NOTE: It sets an internal field and return ResultCode.Success in all case.
 
             return ResultCode.Success;
         }

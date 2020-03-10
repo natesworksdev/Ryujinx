@@ -2,18 +2,32 @@ using ARMeilleure.Translation.PTC;
 using Gtk;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
-using Ryujinx.Profiler;
+using Ryujinx.Debugger.Profiler;
 using Ryujinx.Ui;
+using OpenTK;
 using System;
 using System.IO;
+using System.Reflection;
 
 namespace Ryujinx
 {
     class Program
     {
+        public static string Version { get; private set; }
+
+        public static string ConfigurationPath { get; set; }
+		
         static void Main(string[] args)
         {
-            Console.Title = "Ryujinx Console";
+            Toolkit.Init(new ToolkitOptions
+            {
+                Backend = PlatformBackend.PreferNative,
+                EnableHighResolution = true
+            });
+
+            Version = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
+
+            Console.Title = $"Ryujinx Console {Version}";
 
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
@@ -29,30 +43,48 @@ namespace Ryujinx
             // Initialize Discord integration
             DiscordIntegrationModule.Initialize();
 
-            string configurationPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+            string localConfigurationPath  = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
+            string globalBasePath          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
+            string globalConfigurationPath = Path.Combine(globalBasePath, "Config.json");
 
             // Now load the configuration as the other subsystems are now registered
-            if (File.Exists(configurationPath))
+            if (File.Exists(localConfigurationPath))
             {
-                ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(configurationPath);
+                ConfigurationPath = localConfigurationPath;
+
+                ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(localConfigurationPath);
+
+                ConfigurationState.Instance.Load(configurationFileFormat);
+            }
+            else if (File.Exists(globalConfigurationPath))
+            {
+                ConfigurationPath = globalConfigurationPath;
+
+                ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(globalConfigurationPath);
+
                 ConfigurationState.Instance.Load(configurationFileFormat);
             }
             else
             {
                 // No configuration, we load the default values and save it on disk
+                ConfigurationPath = globalConfigurationPath;
+
+                // Make sure to create the Ryujinx directory if needed.
+                Directory.CreateDirectory(globalBasePath);
+
                 ConfigurationState.Instance.LoadDefault();
-                ConfigurationState.Instance.ToFileFormat().SaveConfig(configurationPath);
+                ConfigurationState.Instance.ToFileFormat().SaveConfig(globalConfigurationPath);
             }
 
             Profile.Initialize();
 
             Application.Init();
 
-            string appDataPath     = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx", "system", "prod.keys");
-            string userProfilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
-            if (!File.Exists(appDataPath) && !File.Exists(userProfilePath) && !Migration.IsMigrationNeeded())
+            string globalProdKeysPath = Path.Combine(globalBasePath, "system", "prod.keys");
+            string userProfilePath    = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch", "prod.keys");
+            if (!File.Exists(globalProdKeysPath) && !File.Exists(userProfilePath) && !Migration.IsMigrationNeeded())
             {
-                GtkDialog.CreateErrorDialog("Key file was not found. Please refer to `KEYS.md` for more info");
+                GtkDialog.CreateWarningDialog("Key file was not found", "Please refer to `KEYS.md` for more info");
             }
 
             MainWindow mainWindow = new MainWindow();

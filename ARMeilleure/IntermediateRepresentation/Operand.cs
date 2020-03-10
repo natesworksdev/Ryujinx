@@ -15,13 +15,13 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public int? Index { get; }
 
-        public LinkedList<Node> Assignments { get; }
-        public LinkedList<Node> Uses        { get; }
+        public List<Node> Assignments { get; }
+        public List<Node> Uses        { get; }
 
         private Operand()
         {
-            Assignments = new LinkedList<Node>();
-            Uses        = new LinkedList<Node>();
+            Assignments = new List<Node>();
+            Uses        = new List<Node>();
         }
 
         public Operand(OperandKind kind, OperandType type = OperandType.None) : this()

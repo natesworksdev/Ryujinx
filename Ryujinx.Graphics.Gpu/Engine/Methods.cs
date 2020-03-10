@@ -161,6 +161,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateVertexAttribState(state);
             }
 
+            if (state.QueryModified(MethodOffset.PointSize))
+            {
+                UpdatePointSizeState(state);
+            }
+
             if (state.QueryModified(MethodOffset.PrimitiveRestartState))
             {
                 UpdatePrimitiveRestartState(state);
@@ -281,7 +286,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (color != null)
                 {
-                    color.Modified = true;
+                    color.SignalModified();
                 }
             }
 
@@ -301,7 +306,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             if (depthStencil != null)
             {
-                depthStencil.Modified = true;
+                depthStencil.SignalModified();
             }
         }
 
@@ -505,6 +510,17 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             _context.Renderer.Pipeline.SetVertexAttribs(vertexAttribs);
+        }
+
+        /// <summary>
+        /// Updates host point size based on guest GPU state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        private void UpdatePointSizeState(GpuState state)
+        {
+            float size = state.Get<float>(MethodOffset.PointSize);
+
+            _context.Renderer.Pipeline.SetPointSize(size);
         }
 
         /// <summary>

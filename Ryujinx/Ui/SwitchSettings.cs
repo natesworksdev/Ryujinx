@@ -4,6 +4,7 @@ using Ryujinx.Configuration.Hid;
 using Ryujinx.Configuration.System;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -48,7 +49,6 @@ namespace Ryujinx.Ui
         [GUI] ToggleButton _addDir;
         [GUI] ToggleButton _browseDir;
         [GUI] ToggleButton _removeDir;
-        [GUI] Entry        _logPath;
         [GUI] Entry        _graphicsShadersDumpPath;
         [GUI] Image        _controller1Image;
 
@@ -250,8 +250,6 @@ namespace Ryujinx.Ui
                 _browseThemePath.Sensitive    = false;
             }
 
-            _logPath.Buffer.Text = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Ryujinx.log");
-
             _listeningForKeypress = false;
         }
 
@@ -372,6 +370,16 @@ namespace Ryujinx.Ui
             _browseThemePath.SetStateFlags(0, true);
         }
 
+        private void OpenLogsFolder_Pressed(object sender, EventArgs args)
+        {
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName        = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"),
+                UseShellExecute = true,
+                Verb            = "open"
+            });
+        }
+
         private void SaveToggle_Activated(object sender, EventArgs args)
         {
             List<string> gameDirs = new List<string>();
@@ -445,9 +453,7 @@ namespace Ryujinx.Ui
 
             MainWindow.SaveConfig();
             MainWindow.ApplyTheme();
-#pragma warning disable CS4014
             MainWindow.UpdateGameTable();
-#pragma warning restore CS4014
             Dispose();
         }
 
