@@ -10,6 +10,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
+using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+
 namespace ARMeilleure.CodeGen.X86
 {
     static class CodeGenerator
@@ -34,7 +36,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.Clobber,                 GenerateClobber);
-            Add(Instruction.CompareAndSwap128,       GenerateCompareAndSwap128);
+            Add(Instruction.CompareAndSwap,          GenerateCompareAndSwap);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
             Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
@@ -76,6 +78,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Store16,                 GenerateStore16);
             Add(Instruction.Store8,                  GenerateStore8);
             Add(Instruction.Subtract,                GenerateSubtract);
+            Add(Instruction.Tailcall,                GenerateTailcall);
             Add(Instruction.VectorCreateScalar,      GenerateVectorCreateScalar);
             Add(Instruction.VectorExtract,           GenerateVectorExtract);
             Add(Instruction.VectorExtract16,         GenerateVectorExtract16);
@@ -543,13 +546,27 @@ namespace ARMeilleure.CodeGen.X86
             // register allocator, we don't need to produce any code.
         }
 
-        private static void GenerateCompareAndSwap128(CodeGenContext context, Operation operation)
+        private static void GenerateCompareAndSwap(CodeGenContext context, Operation operation)
         {
-            Operand source = operation.GetSource(0);
+            Operand src1 = operation.GetSource(0);
 
-            MemoryOperand memOp = new MemoryOperand(OperandType.I64, source);
+            if (src1.Type == OperandType.V128)
+            {
+                MemoryOperand memOp = MemoryOp(OperandType.I64, src1);
 
-            context.Assembler.Cmpxchg16b(memOp);
+                context.Assembler.Cmpxchg16b(memOp);
+            }
+            else
+            {
+                Operand src2 = operation.GetSource(1);
+                Operand src3 = operation.GetSource(2);
+
+                EnsureSameType(src2, src3);
+
+                MemoryOperand memOp = MemoryOp(src3.Type, src1);
+
+                context.Assembler.Cmpxchg(memOp, src3);
+            }
         }
 
         private static void GenerateCompareEqual(CodeGenContext context, Operation operation)
@@ -736,7 +753,7 @@ namespace ARMeilleure.CodeGen.X86
             // operand size constant to the destination register.
             context.JumpToNear(X86Condition.NotEqual);
 
-            context.Assembler.Mov(dest, new Operand(operandSize | operandMask), OperandType.I32);
+            context.Assembler.Mov(dest, Const(operandSize | operandMask), OperandType.I32);
 
             context.JumpHere();
 
@@ -744,7 +761,7 @@ namespace ARMeilleure.CodeGen.X86
             // starting from the least significant bit. However we are supposed to
             // return the number of 0 bits on the high end. So, we invert the result
             // of the BSR using XOR to get the correct value.
-            context.Assembler.Xor(dest, new Operand(operandMask), OperandType.I32);
+            context.Assembler.Xor(dest, Const(operandMask), OperandType.I32);
         }
 
         private static void GenerateCpuId(CodeGenContext context, Operation operation)
@@ -813,7 +830,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            MemoryOperand memOp = new MemoryOperand(dest.Type, rsp, null, Multiplier.x1, offs);
+            MemoryOperand memOp = MemoryOp(dest.Type, rsp, null, Multiplier.x1, offs);
 
             GenerateLoad(context, memOp, dest);
         }
@@ -1012,7 +1029,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            MemoryOperand memOp = new MemoryOperand(source.Type, rsp, null, Multiplier.x1, offs);
+            MemoryOperand memOp = MemoryOp(source.Type, rsp, null, Multiplier.x1, offs);
 
             GenerateStore(context, memOp, source);
         }
@@ -1028,7 +1045,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            MemoryOperand memOp = new MemoryOperand(OperandType.I64, rsp, null, Multiplier.x1, offs);
+            MemoryOperand memOp = MemoryOp(OperandType.I64, rsp, null, Multiplier.x1, offs);
 
             context.Assembler.Lea(dest, memOp, OperandType.I64);
         }
@@ -1081,6 +1098,13 @@ namespace ARMeilleure.CodeGen.X86
             {
                 context.Assembler.Subsd(dest, src1, src2);
             }
+        }
+
+        private static void GenerateTailcall(CodeGenContext context, Operation operation)
+        {
+            WriteEpilogue(context);
+
+            context.Assembler.Jmp(operation.GetSource(0));
         }
 
         private static void GenerateVectorCreateScalar(CodeGenContext context, Operation operation)
@@ -1225,7 +1249,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 if ((index & 1) != 0)
                 {
-                    context.Assembler.Shr(dest, new Operand(8), OperandType.I32);
+                    context.Assembler.Shr(dest, Const(8), OperandType.I32);
                 }
                 else
                 {
@@ -1264,7 +1288,7 @@ namespace ARMeilleure.CodeGen.X86
                     context.Assembler.Pinsrw(dest, dest, src2, (byte)(index * words + word));
 
                     // Move next word down.
-                    context.Assembler.Ror(src2, new Operand(16), src2.Type);
+                    context.Assembler.Ror(src2, Const(16), src2.Type);
                 }
             }
 
@@ -1592,7 +1616,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (reservedStackSize != 0)
             {
-                context.Assembler.Sub(rsp, new Operand(reservedStackSize), OperandType.I64);
+                context.Assembler.Sub(rsp, Const(reservedStackSize), OperandType.I64);
             }
 
             int offset = reservedStackSize;
@@ -1605,7 +1629,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 offset -= 16;
 
-                MemoryOperand memOp = new MemoryOperand(OperandType.V128, rsp, null, Multiplier.x1, offset);
+                MemoryOperand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
 
                 context.Assembler.Movdqu(memOp, Xmm((X86Register)bit));
 
@@ -1635,7 +1659,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 offset -= 16;
 
-                MemoryOperand memOp = new MemoryOperand(OperandType.V128, rsp, null, Multiplier.x1, offset);
+                MemoryOperand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
 
                 context.Assembler.Movdqu(Xmm((X86Register)bit), memOp);
 
@@ -1644,7 +1668,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (reservedStackSize != 0)
             {
-                context.Assembler.Add(rsp, new Operand(reservedStackSize), OperandType.I64);
+                context.Assembler.Add(rsp, Const(reservedStackSize), OperandType.I64);
             }
 
             mask = CallingConvention.GetIntCalleeSavedRegisters() & context.AllocResult.IntUsedRegisters;
@@ -1676,7 +1700,7 @@ namespace ARMeilleure.CodeGen.X86
 
             for (int offset = PageSize; offset < size; offset += PageSize)
             {
-                Operand memOp = new MemoryOperand(OperandType.I32, rsp, null, Multiplier.x1, -offset);
+                Operand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, -offset);
 
                 context.Assembler.Mov(temp, memOp, OperandType.I32);
             }
@@ -1689,17 +1713,17 @@ namespace ARMeilleure.CodeGen.X86
                 return operand as MemoryOperand;
             }
 
-            return new MemoryOperand(type, operand);
+            return MemoryOp(type, operand);
         }
 
         private static Operand Register(X86Register register, OperandType type = OperandType.I64)
         {
-            return new Operand((int)register, RegisterType.Integer, type);
+            return OperandHelper.Register((int)register, RegisterType.Integer, type);
         }
 
         private static Operand Xmm(X86Register register)
         {
-            return new Operand((int)register, RegisterType.Vector, OperandType.V128);
+            return OperandHelper.Register((int)register, RegisterType.Vector, OperandType.V128);
         }
     }
 }
