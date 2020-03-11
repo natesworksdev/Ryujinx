@@ -96,7 +96,7 @@ namespace ARMeilleure.Translation
         /// Generates a stub that is used to find function addresses and add them to an indirect table. 
         /// Used for indirect calls entries (already claimed) when their jump table does not have the host address yet.
         /// Takes a NativeContext like a translated guest function, and extracts the target indirect table entry from the NativeContext.
-        /// If the function we find is highCq, the entry in the table us updated to point to that function rather than this stub.
+        /// If the function we find is highCq, the entry in the table is updated to point to that function rather than this stub.
         /// </summary>
         private static GuestFunction GenerateIndirectCallStub(bool tailCall)
         {

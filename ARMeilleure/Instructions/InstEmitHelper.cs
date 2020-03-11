@@ -149,7 +149,7 @@ namespace ARMeilleure.Instructions
             switch (context.CurrOp)
             {
                 case IOpCode32MemMult op:
-                    return true;
+                    return true; // Setting PC using LDM is nearly always a return.
                 case OpCode32AluRsImm op:
                     return op.Rm == RegisterAlias.Aarch32Lr;
                 case OpCode32AluRsReg op:
@@ -157,7 +157,7 @@ namespace ARMeilleure.Instructions
                 case OpCode32AluReg op:
                     return op.Rm == RegisterAlias.Aarch32Lr;
                 case OpCode32Mem op:
-                    return op.Rn == RegisterAlias.Aarch32Sp && op.WBack && !op.Index;
+                    return op.Rn == RegisterAlias.Aarch32Sp && op.WBack && !op.Index; // Setting PC to an address stored on the stack is nearly always a return.
             }
             return false;
         }

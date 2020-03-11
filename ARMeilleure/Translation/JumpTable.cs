@@ -38,7 +38,7 @@ namespace ARMeilleure.Translation
         // If it is 0, NativeInterface is called to find the rejited address of the call.
         // If none is found, the hostAddress entry stays at 0. Otherwise, the new address is placed in the entry.
 
-        // If the table size is exhausted and we didn't find our desired address, we fall back to doing requesting 
+        // If the table size is exhausted and we didn't find our desired address, we fall back to requesting 
         // the function from the JIT.
 
         private const int DynamicTableSize = 1048576;
@@ -76,7 +76,8 @@ namespace ARMeilleure.Translation
 
             // Update all jump table entries that target this address.
             LinkedList<int> myDependants;
-            if (_dependants.TryGetValue(address, out myDependants)) {
+            if (_dependants.TryGetValue(address, out myDependants)) 
+            {
                 lock (myDependants)
                 {
                     foreach (var entry in myDependants)
@@ -93,7 +94,7 @@ namespace ARMeilleure.Translation
             int entry = Interlocked.Increment(ref _dynTableEnd);
             if (entry >= DynamicTableSize)
             {
-                throw new OutOfMemoryException("JIT Dynamic Jump Table Exhausted.");
+                throw new OutOfMemoryException("JIT Dynamic Jump Table exhausted.");
             }
 
             _dynamicRegion.ExpandIfNeeded((ulong)((entry + 1) * DynamicTableStride));
@@ -116,7 +117,7 @@ namespace ARMeilleure.Translation
             int entry = Interlocked.Increment(ref _tableEnd);
             if (entry >= JumpTableSize)
             {
-                throw new OutOfMemoryException("JIT Direct Jump Table Exhausted.");
+                throw new OutOfMemoryException("JIT Direct Jump Table exhausted.");
             }
 
             _jumpRegion.ExpandIfNeeded((ulong)((entry + 1) * JumpTableStride));

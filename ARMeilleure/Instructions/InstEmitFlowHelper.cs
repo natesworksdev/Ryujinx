@@ -198,10 +198,11 @@ namespace ARMeilleure.Instructions
             Operand nextAddr = Const(GetNextOpAddress(context.CurrOp));
 
             // Try to continue within this block.
-            // If the return address isn't to our next instruction, we need to return to the JIT can figure out what to do.
+            // If the return address isn't to our next instruction, we need to return so the JIT can figure out what to do.
             Operand lblContinue = Label();
 
-            context.BranchIfTrue(lblContinue, context.ICompareEqual(context.BitwiseAnd(returnAddress, Const(~1L)), nextAddr));
+            // We need to clear out the call flag for the return address before comparing it.
+            context.BranchIfTrue(lblContinue, context.ICompareEqual(context.BitwiseAnd(returnAddress, Const(~CallFlag)), nextAddr));
 
             context.Return(returnAddress);
 
