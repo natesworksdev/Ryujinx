@@ -61,6 +61,7 @@ namespace ARMeilleure.Translation
                     _backgroundTranslatorEvent.WaitOne();
                 }
             }
+            _backgroundTranslatorEvent.Set(); // Wake up any other background translator threads, to encourage them to exit.
         }
 
         public void Execute(State.ExecutionContext context, ulong address)
