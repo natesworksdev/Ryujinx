@@ -202,6 +202,12 @@ namespace ARMeilleure.Instructions
             bool signedDst = (flags & ShrImmSaturatingNarrowFlags.SignedDst) != 0;
             bool round     = (flags & ShrImmSaturatingNarrowFlags.Round)     != 0;
 
+            if (scalar)
+            {
+                // TODO: Support scalar operation.
+                throw new NotImplementedException();
+            }
+
             int shift = GetImmShr(op);
             long roundConst = 1L << (shift - 1);
 
