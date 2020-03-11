@@ -213,7 +213,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 case Instruction.CompareAndSwap:
                 {
-                    OperandType type = operation.GetSource(0).Type;
+                    OperandType type = operation.GetSource(1).Type;
 
                     if (type == OperandType.V128)
                     {

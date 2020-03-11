@@ -548,7 +548,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             Operand src1 = operation.GetSource(0);
 
-            if (src1.Type == OperandType.V128)
+            if (operation.SourcesCount == 5) // CompareAndSwap128 has 5 sources, compared to CompareAndSwap64/32's 3.
             {
                 MemoryOperand memOp = new MemoryOperand(OperandType.I64, src1);
 
