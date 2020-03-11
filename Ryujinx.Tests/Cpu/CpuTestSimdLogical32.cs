@@ -12,7 +12,7 @@ namespace Ryujinx.Tests.Cpu
 #if SimdLogical32
 
 #region "ValueSource (Opcodes)"
-        private static uint[] _Vbif_Vbit_Vbsl_Vand_()
+        private static uint[] _Vbif_Vbit_Vbsl_Vand_Vorr_Veor_()
         {
             return new uint[]
             {
@@ -29,7 +29,7 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCnt = 2;
 
         [Test, Pairwise]
-        public void Vbif_Vbit_Vbsl_Vand_Vorr_Veor([ValueSource("_Vbif_Vbit_Vbsl_Vand_")] uint opcode,
+        public void Vbif_Vbit_Vbsl_Vand_Vorr_Veor([ValueSource("_Vbif_Vbit_Vbsl_Vand_Vorr_Veor_")] uint opcode,
                                                   [Range(0u, 4u)] uint rd,
                                                   [Range(0u, 4u)] uint rn,
                                                   [Range(0u, 4u)] uint rm,
