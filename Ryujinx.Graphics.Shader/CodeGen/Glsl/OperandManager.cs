@@ -196,15 +196,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                         }
                     }
 
-                    if (isOutAttr)
+                    if (isOutAttr && (value & ~15) == AttributeConsts.ColorX)
                     {
-                        switch (value & ~3)
-                        {
-                            case AttributeConsts.ColorX: return isFragment ? "gl_FragColor.x" : "gl_FrontColor.x";
-                            case AttributeConsts.ColorY: return isFragment ? "gl_FragColor.y" : "gl_FrontColor.y";
-                            case AttributeConsts.ColorZ: return isFragment ? "gl_FragColor.z" : "gl_FrontColor.z";
-                            case AttributeConsts.ColorW: return isFragment ? "gl_FragColor.w" : "gl_FrontColor.w";
-                        }
+                        return isFragment ? $"gl_FragColor.{swzMask}" : $"gl_FrontColor.{swzMask}";
                     }
 
                     string name = builtInAttr.Name;
