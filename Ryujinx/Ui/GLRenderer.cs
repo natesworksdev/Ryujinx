@@ -181,10 +181,10 @@ namespace Ryujinx.Ui
                 string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? " - Application"
                     : $" - {_device.System.TitleName}";
 
-                string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? $" ({_device.System.TitleArchitecture})"
+                string titleInfoSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? $" ({_device.System.TitleArchitecture})"
                     : $" ({_device.System.TitleIdText.ToUpper()}, {_device.System.TitleArchitecture})";
 
-                parent.Title = $"Ryujinx [GUI, {Program.Version}]{titleNameSection}{titleIdSection}";
+                parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleInfoSection}";
             });
 
             Thread renderLoopThread = new Thread(Render)
@@ -297,6 +297,18 @@ namespace Ryujinx.Ui
             GraphicsContext.MakeCurrent(WindowInfo);
 
             _renderer.Initialize();
+
+            // Add GPU information to title, after renderer has been initialized.
+            Gtk.Window parent = this.Toplevel as Gtk.Window;
+
+            Gtk.Application.Invoke(delegate
+            {
+                string[] gpuVersion = _renderer.GpuVersion.Trim().Split(' ');
+
+                string gpuInfoSection = $" [{_renderer.GpuVendor.Trim().Split(' ')[0]} {_renderer.GpuRenderer.Trim().Split('/')[0]}, {gpuVersion[gpuVersion.Length - 1]}]";
+
+                parent.Title += gpuInfoSection;
+            });
 
             // Make sure the first frame is not transparent.
             GL.ClearColor(OpenTK.Color.Black);
