@@ -87,6 +87,8 @@ namespace Ryujinx.Graphics.OpenGL
             GpuVendor   = GL.GetString(StringName.Vendor);
             GpuRenderer = GL.GetString(StringName.Renderer);
             GpuVersion  = GL.GetString(StringName.Version);
+
+            Logger.PrintInfo(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
 
         public void ResetCounter(CounterType type)
