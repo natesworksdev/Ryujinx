@@ -125,6 +125,8 @@ namespace Ryujinx.HLE.HOS
             IExecutable[] staticObjects,
             byte[]        arguments = null)
         {
+            Logger.PrintInfo(LogClass.Loader, metaData.Is64Bit ? "64-bit" : "32-bit", "TitleArchitecture");
+
             ulong argsStart = 0;
             int   argsSize  = 0;
             ulong codeStart = metaData.Is64Bit ? 0x8000000UL : 0x200000UL;
