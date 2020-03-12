@@ -34,6 +34,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             { AttributeConsts.PositionY,           new BuiltInAttribute("gl_Position.y",      VariableType.F32)  },
             { AttributeConsts.PositionZ,           new BuiltInAttribute("gl_Position.z",      VariableType.F32)  },
             { AttributeConsts.PositionW,           new BuiltInAttribute("gl_Position.w",      VariableType.F32)  },
+            { AttributeConsts.ColorX,              new BuiltInAttribute("gl_Color.x",         VariableType.F32)  },
+            { AttributeConsts.ColorY,              new BuiltInAttribute("gl_Color.y",         VariableType.F32)  },
+            { AttributeConsts.ColorZ,              new BuiltInAttribute("gl_Color.z",         VariableType.F32)  },
+            { AttributeConsts.ColorW,              new BuiltInAttribute("gl_Color.w",         VariableType.F32)  },
             { AttributeConsts.ClipDistance0,       new BuiltInAttribute("gl_ClipDistance[0]", VariableType.F32)  },
             { AttributeConsts.ClipDistance1,       new BuiltInAttribute("gl_ClipDistance[1]", VariableType.F32)  },
             { AttributeConsts.ClipDistance2,       new BuiltInAttribute("gl_ClipDistance[2]", VariableType.F32)  },
@@ -169,10 +173,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     return $"{DefaultNames.OAttributePrefix}{(value >> 4)}.{swzMask}";
                 }
+                else if (value >= AttributeConsts.TexCoordAttributeBase &&
+                         value < AttributeConsts.TexCoordAttributeEnd)
+                {
+                    value -= AttributeConsts.TexCoordAttributeBase;
+
+                    return $"gl_TexCoord[{value >> 6}].{swzMask}";
+                }
                 else if (_builtInAttributes.TryGetValue(value & ~3, out BuiltInAttribute builtInAttr))
                 {
                     // TODO: There must be a better way to handle this...
-                    if (stage == ShaderStage.Fragment)
+                    bool isFragment = stage == ShaderStage.Fragment;
+
+                    if (isFragment)
                     {
                         switch (value & ~3)
                         {
@@ -180,6 +193,17 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                             case AttributeConsts.PositionY: return "gl_FragCoord.y";
                             case AttributeConsts.PositionZ: return "gl_FragCoord.z";
                             case AttributeConsts.PositionW: return "1.0";
+                        }
+                    }
+
+                    if (isOutAttr)
+                    {
+                        switch (value & ~3)
+                        {
+                            case AttributeConsts.ColorX: return isFragment ? "gl_FragColor.x" : "gl_FrontColor.x";
+                            case AttributeConsts.ColorY: return isFragment ? "gl_FragColor.y" : "gl_FrontColor.y";
+                            case AttributeConsts.ColorZ: return isFragment ? "gl_FragColor.z" : "gl_FrontColor.z";
+                            case AttributeConsts.ColorW: return isFragment ? "gl_FragColor.w" : "gl_FrontColor.w";
                         }
                     }
 

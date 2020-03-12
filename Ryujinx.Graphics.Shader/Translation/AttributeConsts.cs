@@ -8,6 +8,10 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int PositionY     = 0x074;
         public const int PositionZ     = 0x078;
         public const int PositionW     = 0x07c;
+        public const int ColorX        = 0x280;
+        public const int ColorY        = 0x284;
+        public const int ColorZ        = 0x288;
+        public const int ColorW        = 0x28c;
         public const int ClipDistance0 = 0x2c0;
         public const int ClipDistance1 = 0x2c4;
         public const int ClipDistance2 = 0x2c8;
@@ -28,6 +32,9 @@ namespace Ryujinx.Graphics.Shader.Translation
         public const int UserAttributeBase   = 0x80;
         public const int UserAttributeEnd    = UserAttributeBase + UserAttributesCount * 16;
 
+        public const int TexCoordAttributesCount = 8;
+        public const int TexCoordAttributeBase = 0x300;
+        public const int TexCoordAttributeEnd = TexCoordAttributeBase + TexCoordAttributesCount * 16;
 
         // Note: Those attributes are used internally by the translator
         // only, they don't exist on Maxwell.

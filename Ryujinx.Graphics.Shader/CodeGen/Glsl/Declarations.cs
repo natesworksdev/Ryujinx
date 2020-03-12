@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
-            context.AppendLine("#version 420 core");
+            context.AppendLine("#version 420 compatibility");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
             context.AppendLine("#extension GL_ARB_shader_ballot : enable");
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
