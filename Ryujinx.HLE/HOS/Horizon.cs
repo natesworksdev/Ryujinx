@@ -117,6 +117,8 @@ namespace Ryujinx.HLE.HOS
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
 
+        public string TitleArchitecture { get; private set; }
+
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
         public int GlobalAccessLogMode { get; set; }
@@ -498,7 +500,8 @@ namespace Ryujinx.HLE.HOS
 
             LoadExeFs(codeFs, out Npdm metaData);
             
-            TitleId = metaData.Aci0.TitleId;
+            TitleId           = metaData.Aci0.TitleId;
+            TitleArchitecture = metaData.Is64Bit ? "64-bit" : "32-bit";
 
             if (controlNca != null)
             {
@@ -551,7 +554,8 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleId = metaData.Aci0.TitleId;
+            TitleId           = metaData.Aci0.TitleId;
+            TitleArchitecture = metaData.Is64Bit ? "64-bit" : "32-bit";
 
             LoadNso("rtld");
             LoadNso("main");
@@ -653,8 +657,9 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries(Device);
 
-            TitleName = metaData.TitleName;
-            TitleId   = metaData.Aci0.TitleId;
+            TitleName         = metaData.TitleName;
+            TitleId           = metaData.Aci0.TitleId;
+            TitleArchitecture = metaData.Is64Bit ? "64-bit" : "32-bit";
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }

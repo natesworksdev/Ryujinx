@@ -178,13 +178,13 @@ namespace Ryujinx.Ui
             {
                 parent.Present();
 
-                string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
-                    : " | " + _device.System.TitleName;
+                string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? " - Application"
+                    : $" - {_device.System.TitleName}";
 
-                string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? string.Empty
-                    : " | " + _device.System.TitleIdText.ToUpper();
+                string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? $" ({_device.System.TitleArchitecture})"
+                    : $" ({_device.System.TitleIdText.ToUpper()}, {_device.System.TitleArchitecture})";
 
-                parent.Title = $"Ryujinx {Program.Version}{titleNameSection}{titleIdSection}";
+                parent.Title = $"Ryujinx [GUI, {Program.Version}]{titleNameSection}{titleIdSection}";
             });
 
             Thread renderLoopThread = new Thread(Render)
