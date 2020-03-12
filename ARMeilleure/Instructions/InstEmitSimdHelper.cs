@@ -32,7 +32,7 @@ namespace ARMeilleure.Instructions
             15L << 56 | 14L << 48 | 13L << 40 | 12L << 32 | 07L << 24 | 06L << 16 | 05L << 8 | 04L << 0  // S
         };
 
-        private static readonly long _zeroMask = 128L << 56 | 128L << 48 | 128L << 40 | 128L << 32 | 128L << 24 | 128L << 16 | 128L << 8 | 128L << 0;
+        public static readonly long ZeroMask = 128L << 56 | 128L << 48 | 128L << 40 | 128L << 32 | 128L << 24 | 128L << 16 | 128L << 8 | 128L << 0;
 #endregion
 
 #region "X86 SSE Intrinsics"
@@ -998,8 +998,8 @@ namespace ARMeilleure.Instructions
 
             if (op.RegisterSize == RegisterSize.Simd64)
             {
-                Operand zeroEvenMask = X86GetElements(context, _zeroMask, EvenMasks[op.Size]);
-                Operand zeroOddMask  = X86GetElements(context, _zeroMask, OddMasks [op.Size]);
+                Operand zeroEvenMask = X86GetElements(context, ZeroMask, EvenMasks[op.Size]);
+                Operand zeroOddMask  = X86GetElements(context, ZeroMask, OddMasks [op.Size]);
 
                 Operand mN = context.AddIntrinsic(Intrinsic.X86Punpcklqdq, n, m); // m:n
 
@@ -1439,6 +1439,21 @@ namespace ARMeilleure.Instructions
             return context.Call(info, op1, op2);
         }
 
+        public static Operand EmitFloatAbs(ArmEmitterContext context, Operand value, bool single, bool vector)
+        {
+            Operand mask;
+            if (single)
+            {
+                mask = vector ? X86GetAllElements(context, -0f) : X86GetScalar(context, -0f);
+            } 
+            else
+            {
+                mask = vector ? X86GetAllElements(context, -0d) : X86GetScalar(context, -0d);
+            }
+
+            return context.AddIntrinsic(single ? Intrinsic.X86Andnps : Intrinsic.X86Andnpd, mask, value);
+        }
+
         public static Operand EmitVectorExtractSx(ArmEmitterContext context, int reg, int index, int size)
         {
             return EmitVectorExtract(context, reg, index, size, true);
@@ -1500,7 +1515,7 @@ namespace ARMeilleure.Instructions
         {
             ThrowIfInvalid(index, size);
 
-            if (size < 3)
+            if (size < 3 && value.Type == OperandType.I64)
             {
                 value = context.ConvertI64ToI32(value);
             }
@@ -1516,7 +1531,7 @@ namespace ARMeilleure.Instructions
             return vector;
         }
 
-        private static void ThrowIfInvalid(int index, int size)
+        public static void ThrowIfInvalid(int index, int size)
         {
             if ((uint)size > 3u)
             {

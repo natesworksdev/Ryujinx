@@ -286,6 +286,54 @@ namespace ARMeilleure.Instructions
             EmitCmtstOp(context, scalar: false);
         }
 
+        public static void Facge_S(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseAvx)
+            {
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThanOrEqual, scalar: true, absolute: true);
+            }
+            else
+            {
+                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGE), scalar: true, absolute: true);
+            }
+        }
+
+        public static void Facge_V(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseAvx)
+            {
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThanOrEqual, scalar: false, absolute: true);
+            }
+            else
+            {
+                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGE), scalar: false, absolute: true);
+            }
+        }
+
+        public static void Facgt_S(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseAvx)
+            {
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThan, scalar: true, absolute: true);
+            }
+            else
+            {
+                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGT), scalar: true, absolute: true);
+            }
+        }
+
+        public static void Facgt_V(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseAvx)
+            {
+                EmitSse2OrAvxCmpOpF(context, CmpCondition.GreaterThan, scalar: false, absolute: true);
+            }
+            else
+            {
+                EmitCmpOpF(context, nameof(SoftFloat32.FPCompareGT), scalar: false, absolute: true);
+            }
+        }
+
         public static void Fccmp_S(ArmEmitterContext context)
         {
             EmitFccmpOrFccmpe(context, signalNaNs: false);
@@ -631,7 +679,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitCmpOpF(ArmEmitterContext context, string name, bool scalar)
+        private static void EmitCmpOpF(ArmEmitterContext context, string name, bool scalar, bool absolute = false)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -657,6 +705,12 @@ namespace ARMeilleure.Instructions
                     me = sizeF == 0 ? ConstF(0f) : ConstF(0d);
                 }
 
+                if (absolute)
+                {
+                    ne = EmitUnaryMathCall(context, nameof(Math.Abs), ne);
+                    me = EmitUnaryMathCall(context, nameof(Math.Abs), me);
+                }
+
                 Operand e = EmitSoftFloatCall(context, name, ne, me);
 
                 res = context.VectorInsert(res, e, index);
@@ -665,7 +719,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitSse2OrAvxCmpOpF(ArmEmitterContext context, CmpCondition cond, bool scalar)
+        private static void EmitSse2OrAvxCmpOpF(ArmEmitterContext context, CmpCondition cond, bool scalar, bool absolute = false)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -676,6 +730,14 @@ namespace ARMeilleure.Instructions
 
             if (sizeF == 0)
             {
+                if (absolute)
+                {
+                    Operand mask = scalar ? X86GetScalar(context, int.MaxValue) : X86GetAllElements(context, int.MaxValue);
+
+                    n = context.AddIntrinsic(Intrinsic.X86Andps, n, mask);
+                    m = context.AddIntrinsic(Intrinsic.X86Andps, m, mask);
+                }
+
                 Intrinsic inst = scalar ? Intrinsic.X86Cmpss : Intrinsic.X86Cmpps;
 
                 Operand res = context.AddIntrinsic(inst, n, m, Const((int)cond));
@@ -693,6 +755,14 @@ namespace ARMeilleure.Instructions
             }
             else /* if (sizeF == 1) */
             {
+                if (absolute)
+                {
+                    Operand mask = scalar ? X86GetScalar(context, long.MaxValue) : X86GetAllElements(context, long.MaxValue);
+
+                    n = context.AddIntrinsic(Intrinsic.X86Andpd, n, mask);
+                    m = context.AddIntrinsic(Intrinsic.X86Andpd, m, mask);
+                }
+
                 Intrinsic inst = scalar ? Intrinsic.X86Cmpsd : Intrinsic.X86Cmppd;
 
                 Operand res = context.AddIntrinsic(inst, n, m, Const((int)cond));

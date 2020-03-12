@@ -47,7 +47,7 @@ namespace ARMeilleure.Decoders
             {
                 if (!visited.TryGetValue(blkAddress, out Block block))
                 {
-                    if (opsCount > MaxInstsPerFunction)
+                    if (opsCount > MaxInstsPerFunction || !memory.IsMapped((long)blkAddress))
                     {
                         return null;
                     }
@@ -292,15 +292,16 @@ namespace ARMeilleure.Decoders
 
         private static bool IsCall(OpCode opCode)
         {
-            // TODO (CQ): ARM32 support.
             return opCode.Instruction.Name == InstName.Bl ||
-                   opCode.Instruction.Name == InstName.Blr;
+                   opCode.Instruction.Name == InstName.Blr ||
+                   opCode.Instruction.Name == InstName.Blx;
         }
 
         private static bool IsException(OpCode opCode)
         {
             return opCode.Instruction.Name == InstName.Brk ||
                    opCode.Instruction.Name == InstName.Svc ||
+                   opCode.Instruction.Name == InstName.Trap ||
                    opCode.Instruction.Name == InstName.Und;
         }
 

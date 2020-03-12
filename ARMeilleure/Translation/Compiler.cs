@@ -13,8 +13,22 @@ namespace ARMeilleure.Translation
     {
         public static T Compile<T>(
             ControlFlowGraph cfg,
-            OperandType[]    funcArgTypes,
-            OperandType      funcReturnType,
+            OperandType[]    argTypes,
+            OperandType      retType,
+            CompilerOptions  options,
+            PtcInfo          ptcInfo = null)
+        {
+            CompiledFunction func = CompileAndGetCf(cfg, argTypes, retType, options, ptcInfo);
+
+            IntPtr codePtr = JitCache.Map(func);
+
+            return Marshal.GetDelegateForFunctionPointer<T>(codePtr);
+        }
+
+        public static CompiledFunction CompileAndGetCf(
+            ControlFlowGraph cfg,
+            OperandType[]    argTypes,
+            OperandType      retType,
             CompilerOptions  options,
             PtcInfo          ptcInfo = null)
         {
@@ -38,13 +52,9 @@ namespace ARMeilleure.Translation
 
             Logger.EndPass(PassName.SsaConstruction, cfg);
 
-            CompilerContext cctx = new CompilerContext(cfg, funcArgTypes, funcReturnType, options);
+            CompilerContext cctx = new CompilerContext(cfg, argTypes, retType, options);
 
-            CompiledFunction func = CodeGenerator.Generate(cctx, ptcInfo);
-
-            IntPtr codePtr = JitCache.Map(func);
-
-            return Marshal.GetDelegateForFunctionPointer<T>(codePtr);
+            return CodeGenerator.Generate(cctx, ptcInfo);
         }
     }
 }
