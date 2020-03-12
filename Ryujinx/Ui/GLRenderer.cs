@@ -298,18 +298,6 @@ namespace Ryujinx.Ui
 
             _renderer.Initialize();
 
-            // Add GPU information to title, after renderer has been initialized.
-            Gtk.Window parent = this.Toplevel as Gtk.Window;
-
-            Gtk.Application.Invoke(delegate
-            {
-                string[] gpuVersion = _renderer.GpuVersion.Trim().Split(' ');
-
-                string gpuInfoSection = $" [{_renderer.GpuVendor.Trim().Split(' ')[0]} {_renderer.GpuRenderer.Trim().Split('/')[0]}, {gpuVersion[gpuVersion.Length - 1]}]";
-
-                parent.Title += gpuInfoSection;
-            });
-
             // Make sure the first frame is not transparent.
             GL.ClearColor(OpenTK.Color.Black);
             GL.Clear(ClearBufferMask.ColorBufferBit);
