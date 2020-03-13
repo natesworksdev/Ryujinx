@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
@@ -882,7 +883,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     BitMap liveOut = blkLiveOut[block.Index];
 
-                    if ((block.Next != null && liveOut.Set(blkLiveIn[block.Next.Index])) || (block.Branch != null && liveOut.Set(blkLiveIn[block.Branch.Index])))
+                    if ((block.Next != null && liveOut.Set(blkLiveIn[block.Next.Index])) || 
+                        (block.Branch != null && liveOut.Set(blkLiveIn[block.Branch.Index])))
                     {
                         modified = true;
                     }
@@ -967,7 +969,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             while (mask != 0)
             {
-                int regIndex = BitUtils.LowestBitSet(mask);
+                int regIndex = BitOperations.TrailingZeroCount(mask);
 
                 Register callerSavedReg = new Register(regIndex, regType);
 

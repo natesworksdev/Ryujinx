@@ -197,7 +197,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public void AddUsePosition(int position)
         {
-            // Inserts are in descending order, but ascending is faster for SortedList<>.
+            // Inserts are in descending order, but ascending is faster for SortedIntegerList<>.
             // We flip the ordering, then iterate backwards when using the final list.
             _usePositions.Add(-position);
         }

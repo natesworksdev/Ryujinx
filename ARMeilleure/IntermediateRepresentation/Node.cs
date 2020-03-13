@@ -36,14 +36,16 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void Resize(List<Operand> list, int size)
         {
-            while (list.Count > size)
+            if (list.Count > size)
             {
-                list.RemoveAt(list.Count - 1);
-            }
-
-            while (list.Count < size)
+                list.RemoveRange(size, list.Count - size);
+            } 
+            else
             {
-                list.Add(null);
+                while (list.Count < size)
+                {
+                    list.Add(null);
+                }
             }
         }
 

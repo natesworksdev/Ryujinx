@@ -26,11 +26,11 @@ namespace ARMeilleure.IntermediateRepresentation
             Type = type;
         }
 
-        public Operand With(OperandKind kind, OperandType type = OperandType.None)
+        public Operand With(OperandKind kind, OperandType type = OperandType.None, ulong value = 0)
         {
             Kind = kind;
             Type = type;
-            Value = 0;
+            Value = value;
 
             Assignments.Clear();
             Uses.Clear();
@@ -39,51 +39,37 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operand With(int value)
         {
-            With(OperandKind.Constant, OperandType.I32);
-            Value = (uint)value;
-            return this;
+            return With(OperandKind.Constant, OperandType.I32, (uint)value);
         }
 
         public Operand With(uint value)
         {
-            With(OperandKind.Constant, OperandType.I32);
-            Value = (uint)value;
-            return this;
+            return With(OperandKind.Constant, OperandType.I32, value);
         }
 
         public Operand With(long value)
         {
-            With(OperandKind.Constant, OperandType.I64);
-            Value = (ulong)value;
-            return this;
+            return With(OperandKind.Constant, OperandType.I64, (ulong)value);
         }
 
         public Operand With(ulong value)
         {
-            With(OperandKind.Constant, OperandType.I64);
-            Value = value;
-            return this;
+            return With(OperandKind.Constant, OperandType.I64, value);
         }
 
         public Operand With(float value)
         {
-            With(OperandKind.Constant, OperandType.FP32);
-            Value = (ulong)BitConverter.SingleToInt32Bits(value);
-            return this;
+            return With(OperandKind.Constant, OperandType.FP32, (ulong)BitConverter.SingleToInt32Bits(value));
         }
 
         public Operand With(double value)
         {
-            With(OperandKind.Constant, OperandType.FP64);
-            Value = (ulong)BitConverter.DoubleToInt64Bits(value);
-            return this;
+            return With(OperandKind.Constant, OperandType.FP64, (ulong)BitConverter.DoubleToInt64Bits(value));
         }
 
         public Operand With(int index, RegisterType regType, OperandType type)
         {
-            With(OperandKind.Register, type);
-            Value = (ulong)((int)regType << 24 | index);
-            return this;
+            return With(OperandKind.Register, type, (ulong)((int)regType << 24 | index));
         }
 
         public Register GetRegister()

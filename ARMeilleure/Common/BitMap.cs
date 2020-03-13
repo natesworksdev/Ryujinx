@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace ARMeilleure.Common
 {
@@ -166,7 +167,7 @@ namespace ARMeilleure.Common
                 }
                 _enumMask = _masks[_enumIndex];
             }
-            _enumBit = BitUtils.LowestBitSet(_enumMask);
+            _enumBit = BitOperations.TrailingZeroCount(_enumMask);
             return true;
         }
 
@@ -180,6 +181,5 @@ namespace ARMeilleure.Common
         public void Dispose() { }
 
 #endregion
-
     }
 }

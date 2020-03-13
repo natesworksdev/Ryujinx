@@ -9,6 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
@@ -1596,7 +1597,7 @@ namespace ARMeilleure.CodeGen.X86
 
             while (mask != 0)
             {
-                int bit = BitUtils.LowestBitSet(mask);
+                int bit = BitOperations.TrailingZeroCount(mask);
 
                 context.Assembler.Push(Register((X86Register)bit));
 
@@ -1625,7 +1626,7 @@ namespace ARMeilleure.CodeGen.X86
 
             while (mask != 0)
             {
-                int bit = BitUtils.LowestBitSet(mask);
+                int bit = BitOperations.TrailingZeroCount(mask);
 
                 offset -= 16;
 
@@ -1655,7 +1656,7 @@ namespace ARMeilleure.CodeGen.X86
 
             while (mask != 0)
             {
-                int bit = BitUtils.LowestBitSet(mask);
+                int bit = BitOperations.TrailingZeroCount(mask);
 
                 offset -= 16;
 

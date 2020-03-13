@@ -3,11 +3,11 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace ARMeilleure
+namespace ARMeilleure.Common
 {
     internal class ThreadStaticPool<T> where T : class, new()
     {
-        private static readonly int PoolSizeIncrement = 200;
+        private const int PoolSizeIncrement = 200;
 
         [ThreadStatic]
         private static ThreadStaticPool<T> _instance;

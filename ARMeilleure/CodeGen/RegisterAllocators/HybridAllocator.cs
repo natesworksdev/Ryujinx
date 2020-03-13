@@ -1,8 +1,8 @@
-using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Numerics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 using static ARMeilleure.IntermediateRepresentation.OperationHelper;
@@ -318,7 +318,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             if (info.IsBlockLocal && mask != 0)
                             {
-                                int selectedReg = BitUtils.LowestBitSet(mask);
+                                int selectedReg = BitOperations.TrailingZeroCount(mask);
 
                                 info.Register = selectedReg;
 
@@ -416,7 +416,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private static Operand GetSpillTemp(Operand local, int freeMask, ref int useMask)
         {
-            int selectedReg = BitUtils.LowestBitSet(freeMask & ~useMask);
+            int selectedReg = BitOperations.TrailingZeroCount(freeMask & ~useMask);
 
             useMask |= 1 << selectedReg;
 

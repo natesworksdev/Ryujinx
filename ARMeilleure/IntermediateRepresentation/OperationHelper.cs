@@ -1,4 +1,6 @@
-﻿namespace ARMeilleure.IntermediateRepresentation
+﻿using ARMeilleure.Common;
+
+namespace ARMeilleure.IntermediateRepresentation
 {
     static class OperationHelper
     {

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace ARMeilleure.Common
 {
@@ -27,65 +28,28 @@ namespace ARMeilleure.Common
 
         public bool Add(int value)
         {
-            if (_items.Count > 0 && value > Last())
+            if (_items.Count == 0 || value > Last())
             {
                 _items.Add(value);
                 return true;
             }
             else
             {
-                // Binary search for the location to insert.
-                int min = 0;
-                int max = Count - 1;
-
-                while (min <= max)
+                int index = _items.BinarySearch(value);
+                if (index >= 0)
                 {
-                    int mid = min + (max - min) / 2;
-                    int existing = _items[mid];
-                    if (value > existing)
-                    {
-                        min = mid + 1;
-                    }
-                    else if (value < existing)
-                    {
-                        max = mid - 1;
-                    }
-                    else
-                    {
-                        // This value already exists in the list. Return false.
-                        return false;
-                    }
+                    return false;
                 }
 
-                _items.Insert(min, value);
+                _items.Insert(-1 - index, value);
                 return true;
             }
         }
 
         public int FindLessEqualIndex(int value)
         {
-            int min = 0;
-            int max = Count - 1;
-
-            while (min <= max)
-            {
-                int mid = min + (max - min) / 2;
-                int existing = _items[mid];
-                if (value > existing)
-                {
-                    min = mid + 1;
-                }
-                else if (value < existing)
-                {
-                    max = mid - 1;
-                }
-                else
-                {
-                    return mid;
-                }
-            }
-
-            return max;
+            int index = _items.BinarySearch(value);
+            return (index < 0) ? (-2 - index) : index;
         }
 
         public void RemoveRange(int index, int count)

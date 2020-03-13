@@ -1,5 +1,4 @@
-using ARMeilleure.State;
-using System;
+using ARMeilleure.Common;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
