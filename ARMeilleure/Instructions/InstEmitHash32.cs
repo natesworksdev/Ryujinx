@@ -43,8 +43,8 @@ namespace ARMeilleure.Instructions
         {
             IOpCode32AluReg op = (IOpCode32AluReg)context.CurrOp;
 
-            Operand n = GetIntOrZR(context, op.Rn);
-            Operand m = GetIntOrZR(context, op.Rm);
+            Operand n = GetIntA32(context, op.Rn);
+            Operand m = GetIntA32(context, op.Rm);
 
             Operand d = context.Call(dlg, n, m);
 
