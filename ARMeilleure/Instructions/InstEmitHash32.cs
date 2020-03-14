@@ -1,9 +1,9 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
+using static ARMeilleure.Instructions.InstEmitHashHelper;
 
 namespace ARMeilleure.Instructions
 {
@@ -11,42 +11,42 @@ namespace ARMeilleure.Instructions
     {
         public static void Crc32b(ArmEmitterContext context)
         {
-            EmitCrc32Call(context, new _U32_U32_U8(SoftFallback.Crc32b));
+            EmitCrc32Call(context, ByteSizeLog2, false);
         }
 
         public static void Crc32h(ArmEmitterContext context)
         {
-            EmitCrc32Call(context, new _U32_U32_U16(SoftFallback.Crc32h));
+            EmitCrc32Call(context, HWordSizeLog2, false);
         }
 
         public static void Crc32w(ArmEmitterContext context)
         {
-            EmitCrc32Call(context, new _U32_U32_U32(SoftFallback.Crc32w));
+            EmitCrc32Call(context, WordSizeLog2, false);
         }
 
         public static void Crc32cb(ArmEmitterContext context)
         {
-            EmitCrc32Call(context, new _U32_U32_U8(SoftFallback.Crc32cb));
+            EmitCrc32Call(context, ByteSizeLog2, true);
         }
 
         public static void Crc32ch(ArmEmitterContext context)
         {
-            EmitCrc32Call(context, new _U32_U32_U16(SoftFallback.Crc32ch));
+            EmitCrc32Call(context, HWordSizeLog2, true);
         }
 
         public static void Crc32cw(ArmEmitterContext context)
         {
-            EmitCrc32Call(context, new _U32_U32_U32(SoftFallback.Crc32cw));
+            EmitCrc32Call(context, WordSizeLog2, true);
         }
 
-        private static void EmitCrc32Call(ArmEmitterContext context, Delegate dlg)
+        private static void EmitCrc32Call(ArmEmitterContext context, int size, bool c)
         {
             IOpCode32AluReg op = (IOpCode32AluReg)context.CurrOp;
 
             Operand n = GetIntA32(context, op.Rn);
             Operand m = GetIntA32(context, op.Rm);
 
-            Operand d = context.Call(dlg, n, m);
+            Operand d = EmitCrc32(context, n, m, size, c);
 
             EmitAluStore(context, d);
         }
