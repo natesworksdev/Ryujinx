@@ -99,18 +99,18 @@ namespace Ryujinx.Graphics.Gpu
         /// <param name="releaseCallback">Texture release callback</param>
         /// <param name="userObj">User defined object passed to the release callback</param>
         public void EnqueueFrameThreadSafe(
-            ulong          address,
-            int            width,
-            int            height,
-            int            stride,
-            bool           isLinear,
-            int            gobBlocksInY,
-            Format         format,
-            int            bytesPerPixel,
-            ImageCrop      crop,
+            ulong                      address,
+            int                        width,
+            int                        height,
+            int                        stride,
+            bool                       isLinear,
+            int                        gobBlocksInY,
+            Format                     format,
+            int                        bytesPerPixel,
+            ImageCrop                  crop,
             Action<GpuContext, object> acquireCallback,
-            Action<object> releaseCallback,
-            object         userObj)
+            Action<object>             releaseCallback,
+            object                     userObj)
         {
             FormatInfo formatInfo = new FormatInfo(format, 1, 1, bytesPerPixel);
 

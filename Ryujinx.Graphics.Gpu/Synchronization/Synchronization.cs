@@ -4,9 +4,8 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Synchronization
 {
-
     /// <summary>
-    /// GPU synchronization handling
+    /// GPU synchronization manager.
     /// </summary>
     public class Synchronization
     {
@@ -31,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         }
 
         /// <summary>
-        /// Increment the value of a syncpoint with a given id
+        /// Increment the value of a syncpoint with a given id.
         /// </summary>
         /// <param name="id">The id of the syncpoint</param>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
@@ -47,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         }
 
         /// <summary>
-        /// Get the value of a syncpoint with a given id
+        /// Get the value of a syncpoint with a given id.
         /// </summary>
         /// <param name="id">The id of the syncpoint</param>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
@@ -70,8 +69,8 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// <param name="threshold">The target threshold</param>
         /// <param name="callback">The callback to call when the threshold is reached</param>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
-        /// <returns>the created SyncpointWaiterInformation object or null if already past threshold</returns>
-        public SyncpointWaiterInformation RegisterCallbackOnSyncpoint(uint id, uint threshold, Action callback)
+        /// <returns>The created SyncpointWaiterHandle object or null if already past threshold</returns>
+        public SyncpointWaiterHandle RegisterCallbackOnSyncpoint(uint id, uint threshold, Action callback)
         {
             if (id >= MaxHarwareSyncpoints)
             {
@@ -87,7 +86,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// <param name="id">The id of the syncpoint</param>
         /// <param name="waiterInformation">The waiter information to unregister</param>
         /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
-        public void UnregisterCallback(uint id, SyncpointWaiterInformation waiterInformation)
+        public void UnregisterCallback(uint id, SyncpointWaiterHandle waiterInformation)
         {
             if (id >= MaxHarwareSyncpoints)
             {

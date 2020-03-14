@@ -111,11 +111,11 @@ namespace Ryujinx.Graphics.Gpu
 
         /// <summary>
         /// Push a GPFIFO entry in the form of a prefetched command buffer.
-        /// This is used by nvservices to handles special cases.
+        /// This is used by nvservices to handle special cases.
         /// </summary>
         /// <param name="commandBuffer">The command buffer containing the prefetched commands</param>
-        /// <param name="completionCallback">A callback called when the command buffer has been processed.</param>
-        /// <param name="completionCallbackArgument">Argument used in the completion callback.</param>
+        /// <param name="completionCallback">A callback called when the command buffer has been processed</param>
+        /// <param name="completionCallbackArgument">Argument used in the completion callback</param>
         public void PushHostCommandBuffer(int [] commandBuffer)
         {
             _commandBufferQueue.Enqueue(new CommandBuffer
@@ -128,10 +128,10 @@ namespace Ryujinx.Graphics.Gpu
         }
 
         /// <summary>
-        /// Pushes a GPFIFO entries. (Guest commands)
+        /// Pushes GPFIFO entries.
         /// </summary>
         /// <param name="entries">GPFIFO entries</param>
-        public void PushEntries(Span<ulong> entries)
+        public void PushEntries(ReadOnlySpan<ulong> entries)
         {
             // TODO: implemnet "prefetch barrier".
             foreach (ulong entry in entries)

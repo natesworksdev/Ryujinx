@@ -14,9 +14,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private byte _fenceStorageStart;
 
-        public Span<byte> Storage => MemoryMarshal.CreateSpan(ref _fenceStorageStart, Unsafe.SizeOf<NvFence>() * 4);
+        private Span<byte> _storage => MemoryMarshal.CreateSpan(ref _fenceStorageStart, Unsafe.SizeOf<NvFence>() * 4);
 
-        private Span<NvFence> _nvFences => MemoryMarshal.Cast<byte, NvFence>(Storage);
+        private Span<NvFence> _nvFences => MemoryMarshal.Cast<byte, NvFence>(_storage);
 
         public static MultiFence NoFence
         {

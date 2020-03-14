@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    internal class NvHostSyncpt
+    class NvHostSyncpt
     {
         public const int EventsCount = 64;
 
@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 }
             }
 
-            Logger.PrintError(LogClass.ServiceNv, $"Cannot allocate a new syncpoint!");
+            Logger.PrintError(LogClass.ServiceNv, "Cannot allocate a new syncpoint!");
             return 0;
         }
 

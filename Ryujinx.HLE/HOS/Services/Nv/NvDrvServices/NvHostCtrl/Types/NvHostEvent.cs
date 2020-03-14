@@ -11,9 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         public NvHostEventState State;
         public KEvent           Event;
 
-        private uint                       _eventId;
-        private NvHostSyncpt               _syncpointManager;
-        private SyncpointWaiterInformation _waiterInformation;
+        private uint                  _eventId;
+        private NvHostSyncpt          _syncpointManager;
+        private SyncpointWaiterHandle _waiterInformation;
 
         public NvHostEvent(NvHostSyncpt syncpointManager, uint eventId, Horizon system)
         {

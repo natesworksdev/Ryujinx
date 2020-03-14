@@ -249,12 +249,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             // Try to invalidate the CPU cache and check for expiration again.
-            uint newCachedValueSyncpointValue = _device.System.HostSyncpoint.UpdateMin(fence.Id);
+            uint newCachedSyncpointValue = _device.System.HostSyncpoint.UpdateMin(fence.Id);
 
             // Has the fence already expired?
             if (_device.System.HostSyncpoint.IsSyncpointExpired(fence.Id, fence.Value))
             {
-                value = newCachedValueSyncpointValue;
+                value = newCachedSyncpointValue;
 
                 return NvInternalResult.Success;
             }

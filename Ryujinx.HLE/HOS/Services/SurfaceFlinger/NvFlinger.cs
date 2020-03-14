@@ -120,11 +120,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private ResultCode GbpDequeueBuffer(ServiceCtx context, BinaryReader parcelReader)
         {
             // TODO: Errors.
-            int async         = parcelReader.ReadInt32();
-            int width         = parcelReader.ReadInt32();
-            int height        = parcelReader.ReadInt32();
-            int format        = parcelReader.ReadInt32();
-            int usage         = parcelReader.ReadInt32();
+            int async  = parcelReader.ReadInt32();
+            int width  = parcelReader.ReadInt32();
+            int height = parcelReader.ReadInt32();
+            int format = parcelReader.ReadInt32();
+            int usage  = parcelReader.ReadInt32();
 
             int slot = GetFreeSlotBlocking(width, height);
 

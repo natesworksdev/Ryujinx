@@ -22,12 +22,12 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         public uint Value => (uint)_storedValue;
 
         // TODO: switch to something handling concurrency?
-        private List<SyncpointWaiterInformation> _waiters;
+        private List<SyncpointWaiterHandle> _waiters;
 
         public Syncpoint(uint id)
         {
             Id       = id;
-            _waiters = new List<SyncpointWaiterInformation>();
+            _waiters = new List<SyncpointWaiterHandle>();
         }
 
         /// <summary>
@@ -36,8 +36,8 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// </summary>
         /// <param name="threshold">The target threshold</param>
         /// <param name="callback">The callback to call when the threshold is reached</param>
-        /// <returns>the created SyncpointWaiterInformation object or null if already past threshold</returns>
-        public SyncpointWaiterInformation RegisterCallback(uint threshold, Action callback)
+        /// <returns>the created SyncpointWaiterHandle object or null if already past threshold</returns>
+        public SyncpointWaiterHandle RegisterCallback(uint threshold, Action callback)
         {
             lock (_listLock)
             {
@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                 }
                 else
                 {
-                    SyncpointWaiterInformation waiterInformation = new SyncpointWaiterInformation
+                    SyncpointWaiterHandle waiterInformation = new SyncpointWaiterHandle
                     {
                         Threshold = threshold,
                         Callback  = callback
@@ -62,7 +62,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
             }
         }
 
-        public void UnregisterCallback(SyncpointWaiterInformation waiterInformation)
+        public void UnregisterCallback(SyncpointWaiterHandle waiterInformation)
         {
             lock (_listLock)
             {
@@ -95,6 +95,5 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
 
             return currentValue;
         }
-
     }
 }

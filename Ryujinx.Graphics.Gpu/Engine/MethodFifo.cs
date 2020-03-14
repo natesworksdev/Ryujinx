@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
     partial class Methods
     {
         /// <summary>
-        /// Wait for the GPU to be idle
+        /// Waits for the GPU to be idle.
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="argument">Method call argument</param>
@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         }
 
         /// <summary>
-        /// Send macro code/data to the MME
+        /// Send macro code/data to the MME.
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="argument">Method call argument</param>
@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         }
 
         /// <summary>
-        /// Bind a macro index to a position for the MME
+        /// Bind a macro index to a position for the MME.
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="argument">Method call argument</param>
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         }
 
         /// <summary>
-        /// Apply a fence operation on a syncpoint
+        /// Apply a fence operation on a syncpoint.
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="argument">Method call argument</param>
