@@ -1445,7 +1445,7 @@ namespace ARMeilleure.Instructions
             if (single)
             {
                 mask = vector ? X86GetAllElements(context, -0f) : X86GetScalar(context, -0f);
-            } 
+            }
             else
             {
                 mask = vector ? X86GetAllElements(context, -0d) : X86GetScalar(context, -0d);

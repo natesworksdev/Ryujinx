@@ -173,22 +173,30 @@ namespace ARMeilleure.Translation.PTC
         {
             if (_profiledFuncsHighCq.Count != 0)
             {
-                int translateCount = 0;
+                int translateCount = 0; // TODO: bool ?
 
                 void Informer()
                 {
                     const int refreshRate = 1; // Seconds.
 
-                    while (Ptc.Enabled)
+                    do
                     {
-                        Console.WriteLine($"Informer: {translateCount} of {_profiledFuncsHighCq.Count} functions to translate."); // TODO: .
+                        Console.WriteLine($"Informer: {funcsHighCq.Count} of {_profiledFuncsHighCq.Count} functions to translate."); // TODO: .
 
                         Thread.Sleep(refreshRate * 1000);
+
+                        if (!Ptc.Enabled)
+                        {
+                            break;
+                        }
                     }
+                    while (funcsHighCq.Count < _profiledFuncsHighCq.Count);
                 }
 
                 Thread informer = new Thread(Informer);
 
+                //informer.Name = "Informer"; // TODO: .
+                //informer.Priority = ThreadPriority.Lowest;
                 informer.IsBackground = true;
                 informer.Start();
 
@@ -216,7 +224,7 @@ namespace ARMeilleure.Translation.PTC
                 //});
                 }
 
-                Ptc.Stop();
+                Ptc.Stop(onlyTimer: true);
 
                 Ptc.Wait();
 
@@ -229,7 +237,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void Wait() // TODO: Rename ?
+        internal static void Wait()
         {
             _waitEvent.WaitOne();
         }
@@ -263,7 +271,7 @@ namespace ARMeilleure.Translation.PTC
                 _timer.Elapsed -= Save;
                 _timer.Dispose();
 
-                _waitEvent.WaitOne(); // TODO: Wait() ?
+                Wait();
                 _waitEvent.Dispose();
             }
         }

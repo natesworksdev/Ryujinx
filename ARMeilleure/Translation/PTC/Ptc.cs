@@ -67,7 +67,7 @@ namespace ARMeilleure.Translation.PTC
 
             _waitEvent = new System.Threading.ManualResetEvent(true);
 
-            _basePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), BaseDir);
+            _basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), BaseDir);
 
             _locker = new object();
 
@@ -90,12 +90,12 @@ namespace ARMeilleure.Translation.PTC
 
         public static void Init(string titleIdText, string displayVersion, bool enabled)
         {
-            // Ptc.Stop(); // TODO: .
+            Ptc.Stop();
 
             Ptc.Wait();
             Ptc.ClearMemoryStreams();
 
-            // PtcProfiler.Stop(); // TODO: .
+            PtcProfiler.Stop();
 
             PtcProfiler.Wait();
             PtcProfiler.ClearEntries();
@@ -117,14 +117,14 @@ namespace ARMeilleure.Translation.PTC
 
             Enabled = enabled;
 
-            string workPath = System.IO.Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
+            string workPath = Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
 
             if (enabled && !Directory.Exists(workPath))
             {
                 Directory.CreateDirectory(workPath);
             }
 
-            CachePath = System.IO.Path.Combine(workPath, DisplayVersion);
+            CachePath = Path.Combine(workPath, DisplayVersion);
 
             if (enabled)
             {
@@ -465,7 +465,7 @@ namespace ARMeilleure.Translation.PTC
             public int RelocEntriesCount;
         }
 
-        internal static void Wait() // TODO: Rename ?
+        internal static void Wait()
         {
             _waitEvent.WaitOne();
         }
@@ -475,9 +475,12 @@ namespace ARMeilleure.Translation.PTC
             _timer.Enabled = true;
         }
 
-        public static void Stop()
+        public static void Stop(bool onlyTimer = false)
         {
-            Enabled = false;
+            if (!onlyTimer)
+            {
+                Enabled = false;
+            }
 
             if (!_disposed)
             {
@@ -494,7 +497,7 @@ namespace ARMeilleure.Translation.PTC
                 _timer.Elapsed -= MergeAndSave;
                 _timer.Dispose();
 
-                _waitEvent.WaitOne(); // TODO: Wait() ?
+                Wait();
                 _waitEvent.Dispose();
 
                 _infosWriter.Dispose();
