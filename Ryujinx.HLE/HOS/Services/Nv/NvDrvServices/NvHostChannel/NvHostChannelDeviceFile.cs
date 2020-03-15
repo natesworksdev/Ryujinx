@@ -388,18 +388,25 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 return NvInternalResult.InvalidInput;
             }
 
-            if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceWait))
+            if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceWait) && !_device.System.HostSyncpoint.IsSyncpointExpired(header.Fence.Id, header.Fence.Value))
             {
                 _device.Gpu.DmaPusher.PushHostCommandBuffer(CreateWaitCommandBuffer(header.Fence));
             }
 
             _device.Gpu.DmaPusher.PushEntries(entries);
 
-            header.Fence = _channelSyncpoint;
+            header.Fence.Id = _channelSyncpoint.Id;
 
             if (header.Flags.HasFlag(SubmitGpfifoFlags.FenceIncrement) || header.Flags.HasFlag(SubmitGpfifoFlags.IncrementWithValue))
             {
-                header.Fence.Value = _device.System.HostSyncpoint.IncrementSyncpointMaxExt(header.Fence.Id, 2);
+                uint incrementCount = header.Flags.HasFlag(SubmitGpfifoFlags.FenceIncrement) ? 2u : 0u;
+
+                if (header.Flags.HasFlag(SubmitGpfifoFlags.IncrementWithValue))
+                {
+                    incrementCount += header.Fence.Value;
+                }
+
+                header.Fence.Value = _device.System.HostSyncpoint.IncrementSyncpointMaxExt(header.Fence.Id, (int)incrementCount);
             }
             else
             {
@@ -411,10 +418,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 _device.Gpu.DmaPusher.PushHostCommandBuffer(CreateIncrementCommandBuffer(ref header.Fence, header.Flags));
             }
 
-            if (header.Flags.HasFlag(SubmitGpfifoFlags.IncrementWithValue))
-            {
-                header.Fence.Value += _device.System.HostSyncpoint.ReadSyncpointValue(header.Fence.Id);
-            }
+            header.Flags = SubmitGpfifoFlags.None;
 
             _device.Gpu.DmaPusher.SignalNewEntries();
 

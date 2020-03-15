@@ -297,6 +297,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public uint IncrementSyncpointMaxExt(uint id, int count)
         {
+            if (count == 0)
+            {
+                return ReadSyncpointMaxValue(id);
+            }
+
             uint result = 0;
 
             for (int i = 0; i < count; i++)
