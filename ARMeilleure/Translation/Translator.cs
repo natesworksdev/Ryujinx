@@ -20,12 +20,16 @@ namespace ARMeilleure.Translation
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
 
+        private const bool AlwaysTranslateFunctions = true; // If false, only translates a single block for lowCq.
+
         private readonly MemoryManager _memory;
 
         private readonly object _locker;
 
         private readonly Dictionary<ulong, TranslatedFunction> _funcs;
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
+
+        private static JumpTable _jumpTable; // TODO: readonly ?
 
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
 
@@ -42,9 +46,13 @@ namespace ARMeilleure.Translation
             _funcs       = new Dictionary<ulong, TranslatedFunction>();
             _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
+            _jumpTable = JumpTable.Instance;
+
             _backgroundStack = new ConcurrentStack<RejitRequest>();
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
+
+            DirectCallStubs.InitializeStubs();
 
             if (Ptc.Enabled)
             {
@@ -65,6 +73,8 @@ namespace ARMeilleure.Translation
                         bool isAddressUnique = _funcsHighCq.TryAdd(request.Address, func);
 
                         Debug.Assert(isAddressUnique, $"The address 0x{request.Address:X16} is not unique.");
+
+                        _jumpTable.RegisterFunction(request.Address, func);
                     }
                 }
                 else
@@ -72,6 +82,8 @@ namespace ARMeilleure.Translation
                     _backgroundTranslatorEvent.WaitOne();
                 }
             }
+
+            _backgroundTranslatorEvent.Set(); // Wake up any other background translator threads, to encourage them to exit.
         }
 
         public void Execute(State.ExecutionContext context, ulong address)
@@ -85,18 +97,30 @@ namespace ARMeilleure.Translation
                     PtcProfiler.Start();
                 }
 
-                Thread backgroundTranslatorThread = new Thread(TranslateStackedSubs)
-                {
-                    Name     = "CPU.BackgroundTranslatorThread",
-                    Priority = ThreadPriority.Lowest
-                };
+                // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core+ht etc).
+                // All threads are normal priority except from the last, which just fills as much of the last core as the os lets it with a low priority.
+                // If we only have one rejit thread, it should be normal priority as highCq code is performance critical.
+                // TODO: Use physical cores rather than logical. This only really makes sense for processors with hyperthreading. Requires OS specific code.
+                int unboundedThreadCount = Math.Max(1, (Environment.ProcessorCount - 6) / 3);
+                int threadCount = Math.Min(3, unboundedThreadCount);
 
-                backgroundTranslatorThread.Start();
+                for (int i = 0; i < threadCount; i++)
+                {
+                    bool last = i != 0 && i == unboundedThreadCount - 1;
+
+                    Thread backgroundTranslatorThread = new Thread(TranslateStackedSubs)
+                    {
+                        Name = "CPU.BackgroundTranslatorThread." + i,
+                        Priority = last ? ThreadPriority.Lowest : ThreadPriority.Normal
+                    };
+
+                    backgroundTranslatorThread.Start();
+                }
             }
 
             Statistics.InitializeTimer();
 
-            NativeInterface.RegisterThread(context, _memory);
+            NativeInterface.RegisterThread(context, _memory, this);
 
             do
             {
@@ -125,7 +149,7 @@ namespace ARMeilleure.Translation
             return nextAddr;
         }
 
-        private TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
+        internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
             // TODO: Investigate how we should handle code at unaligned addresses.
             // Currently, those low bits are used to store special flags.
@@ -171,12 +195,12 @@ namespace ARMeilleure.Translation
 
         internal static TranslatedFunction Translate(MemoryManager memory, ulong address, ExecutionMode mode, bool highCq)
         {
-            ArmEmitterContext context = new ArmEmitterContext(memory, Aarch32Mode.User);
+            ArmEmitterContext context = new ArmEmitterContext(memory, _jumpTable, (long)address, highCq, Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = highCq
-                ? Decoder.DecodeFunction  (memory, address, mode)
+            Block[] blocks = AlwaysTranslateFunctions
+                ? Decoder.DecodeFunction  (memory, address, mode, highCq)
                 : Decoder.DecodeBasicBlock(memory, address, mode);
 
             Logger.EndPass(PassName.Decoding);
@@ -223,7 +247,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            return new TranslatedFunction(func);
+            return new TranslatedFunction(func, rejit: !highCq); // TODO: .
         }
 
         private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)
@@ -278,7 +302,7 @@ namespace ARMeilleure.Translation
                         // with some kind of branch).
                         if (isLastOp && block.Next == null)
                         {
-                            context.Return(Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
+                            InstEmitFlowHelper.EmitTailContinue(context, Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
                         }
                     }
                 }
@@ -300,7 +324,11 @@ namespace ARMeilleure.Translation
 
             context.BranchIfTrue(lblNonZero, count);
 
-            context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));
+            Operand running = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.CheckSynchronization)));
+
+            context.BranchIfTrue(lblExit, running);
+
+            context.Return(Const(0L));
 
             context.Branch(lblExit);
 

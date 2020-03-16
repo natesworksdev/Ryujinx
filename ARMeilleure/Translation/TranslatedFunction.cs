@@ -1,3 +1,5 @@
+using System;
+using System.Runtime.InteropServices;
 using System.Threading;
 
 namespace ARMeilleure.Translation
@@ -6,11 +8,15 @@ namespace ARMeilleure.Translation
     {
         private GuestFunction _func;
 
+        private bool _rejit;
         private int _callCount;
 
-        public TranslatedFunction(GuestFunction func)
+        public bool HighCq => !_rejit; // TODO: .
+
+        public TranslatedFunction(GuestFunction func, bool rejit)
         {
             _func = func;
+            _rejit = rejit;
         }
 
         public ulong Execute(State.ExecutionContext context)
@@ -21,6 +27,11 @@ namespace ARMeilleure.Translation
         public int GetCallCount()
         {
             return Interlocked.Increment(ref _callCount);
+        }
+
+        public IntPtr GetPointer()
+        {
+            return Marshal.GetFunctionPointerForDelegate(_func);
         }
     }
 }
