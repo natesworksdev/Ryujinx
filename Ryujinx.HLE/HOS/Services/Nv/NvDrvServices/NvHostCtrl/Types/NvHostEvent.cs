@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             Fence.Id = NvFence.InvalidSyncPointId;
 
-            State = NvHostEventState.Registered;
+            State = NvHostEventState.Availaible;
 
             Event = new KEvent(system);
 
@@ -32,14 +32,21 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             Fence.Id    = NvFence.InvalidSyncPointId;
             Fence.Value = 0;
-            State       = NvHostEventState.Registered;
+            State       = NvHostEventState.Availaible;
         }
 
         private void Signal()
         {
-            State = NvHostEventState.Free;
+            NvHostEventState oldState = State;
 
-            Event.WritableEvent.Signal();
+            State = NvHostEventState.Signaling;
+
+            if (oldState == NvHostEventState.Waiting)
+            {
+                Event.WritableEvent.Signal();
+            }
+
+            State = NvHostEventState.Signaled;
         }
 
         private void GpuSignaled()
@@ -55,6 +62,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                 Signal();
             }
+
+            Event.WritableEvent.Clear();
         }
 
         public void Wait(GpuContext gpuContext, NvFence fence)
@@ -63,6 +72,23 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             State = NvHostEventState.Waiting;
 
             _waiterInformation = gpuContext.Synchronization.RegisterCallbackOnSyncpoint(Fence.Id, Fence.Value, GpuSignaled);
+        }
+
+        public string DumpState(GpuContext gpuContext)
+        {
+            string res = $"\nNvHostEvent {_eventId}:\n";
+            res += $"\tState: {State}\n";
+
+            if (State == NvHostEventState.Waiting)
+            {
+                res += "\tFence:\n";
+                res += $"\t\tId            : {Fence.Id}\n";
+                res += $"\t\tThreshold     : {Fence.Value}\n";
+                res += $"\t\tCurrent Value : {gpuContext.Synchronization.GetSyncpointValue(Fence.Id)}\n";
+                res += $"\t\tWaiter Valid  : {_waiterInformation != null}\n";
+            }
+
+            return res;
         }
     }
 }

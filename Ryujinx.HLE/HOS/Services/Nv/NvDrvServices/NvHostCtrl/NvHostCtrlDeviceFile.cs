@@ -129,12 +129,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             uint dummyValue = 0;
 
-            return EventWait(ref arguments.Fence, ref dummyValue, async: false);
+            return EventWait(ref arguments.Fence, ref dummyValue, arguments.Timeout, async: false);
         }
 
         private NvInternalResult SyncptWaitEx(ref SyncptWaitExArguments arguments)
         {
-            return EventWait(ref arguments.Input.Fence, ref arguments.Value, async: false);
+            return EventWait(ref arguments.Input.Fence, ref arguments.Value, arguments.Input.Timeout, async: false);
         }
 
         private NvInternalResult SyncptReadMax(ref NvFence arguments)
@@ -186,12 +186,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult EventWait(ref EventWaitArguments arguments)
         {
-            return EventWait(ref arguments.Fence, ref arguments.Value, async: false);
+            return EventWait(ref arguments.Fence, ref arguments.Value, arguments.Timeout, async: false);
         }
 
         private NvInternalResult EventWaitAsync(ref EventWaitArguments arguments)
         {
-            return EventWait(ref arguments.Fence, ref arguments.Value, async: true);
+            return EventWait(ref arguments.Fence, ref arguments.Value, arguments.Timeout, async: true);
         }
 
         private NvInternalResult EventRegister(ref uint userEventId)
@@ -211,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult EventSignal(ref uint userEventId)
         {
-            return _device.System.HostSyncpoint.SignalEvent(userEventId);
+            return _device.System.HostSyncpoint.SignalEvent(userEventId & ushort.MaxValue);
         }
 
         private NvInternalResult SyncptReadMinOrMax(ref NvFence arguments, bool max)
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return NvInternalResult.Success;
         }
 
-        private NvInternalResult EventWait(ref NvFence fence, ref uint value, bool async)
+        private NvInternalResult EventWait(ref NvFence fence, ref uint value, int timeout, bool async)
         {
             if (fence.Id >= Synchronization.MaxHarwareSyncpoints)
             {
@@ -257,6 +257,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 value = newCachedSyncpointValue;
 
                 return NvInternalResult.Success;
+            }
+
+            // If the timeout is 0, directly return.
+            if (timeout == 0)
+            {
+                return NvInternalResult.TryAgain;
             }
 
             // The syncpoint value isn't at the fence yet, we need to wait.
@@ -289,9 +295,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             if (Event != null &&
-               (Event.State == NvHostEventState.Registered ||
-                Event.State == NvHostEventState.Waiting    ||
-                Event.State == NvHostEventState.Free))
+               (Event.State == NvHostEventState.Availaible ||
+                Event.State == NvHostEventState.Signaled   ||
+                Event.State == NvHostEventState.Cancelled))
             {
                 Event.Wait(_device.Gpu, fence);
 
@@ -310,6 +316,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
             else
             {
+                Logger.PrintError(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (async: {async})");
+
+                if (Event != null)
+                {
+                    Logger.PrintError(LogClass.ServiceNv, Event.DumpState(_device.Gpu));
+                }
+
                 result = NvInternalResult.InvalidInput;
             }
 
