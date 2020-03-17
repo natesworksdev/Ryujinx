@@ -75,7 +75,7 @@ namespace ARMeilleure.Translation
             Operand address = context.Load(OperandType.I64, context.Add(nativeContextPtr, Const((long)NativeContext.GetCallAddressOffset())));
 
             address = context.BitwiseOr(address, Const(address.Type, 1)); // Set call flag.
-            Operand functionAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
+            Operand functionAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
             EmitCall(context, functionAddr, tailCall);
 
             ControlFlowGraph cfg = context.GetControlFlowGraph();
@@ -109,7 +109,7 @@ namespace ARMeilleure.Translation
 
             // We need to find the missing function. If the function is HighCq, then it replaces this stub in the indirect table.
             // Either way, we call it afterwards.
-            Operand functionAddr = context.Call(new _U64_U64_U64(NativeInterface.GetIndirectFunctionAddress), address, entryAddress);
+            Operand functionAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetIndirectFunctionAddress)), address, entryAddress);
 
             // Call and save the function.
             EmitCall(context, functionAddr, tailCall);

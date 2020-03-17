@@ -11,7 +11,7 @@ namespace ARMeilleure.Translation
         private bool _rejit;
         private int _callCount;
 
-        public bool HighCq => !_rejit; // TODO: .
+        public bool HighCq => !_rejit;
 
         public TranslatedFunction(GuestFunction func, bool rejit)
         {

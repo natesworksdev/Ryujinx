@@ -20,8 +20,6 @@ namespace ARMeilleure.Translation
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
 
-        private const bool AlwaysTranslateFunctions = true; // If false, only translates a single block for lowCq.
-
         private readonly MemoryManager _memory;
 
         private readonly object _locker;
@@ -29,9 +27,9 @@ namespace ARMeilleure.Translation
         private readonly Dictionary<ulong, TranslatedFunction> _funcs;
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
 
-        private static JumpTable _jumpTable; // TODO: readonly ?
+        private readonly JumpTable _jumpTable;
 
-        private readonly ConcurrentStack<RejitRequest> _backgroundStack;
+        private readonly ConcurrentQueue<RejitRequest> _backgroundQueue;
 
         private readonly AutoResetEvent _backgroundTranslatorEvent;
 
@@ -48,7 +46,7 @@ namespace ARMeilleure.Translation
 
             _jumpTable = JumpTable.Instance;
 
-            _backgroundStack = new ConcurrentStack<RejitRequest>();
+            _backgroundQueue = new ConcurrentQueue<RejitRequest>();
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
 
@@ -60,15 +58,15 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private void TranslateStackedSubs()
+        private void TranslateQueuedSubs()
         {
             while (_threadCount != 0)
             {
-                if (_backgroundStack.TryPop(out RejitRequest request))
+                if (_backgroundQueue.TryDequeue(out RejitRequest request))
                 {
                     if (!_funcsHighCq.ContainsKey(request.Address))
                     {
-                        TranslatedFunction func = Translate(_memory, request.Address, request.Mode, highCq: true);
+                        TranslatedFunction func = Translate(_memory, _jumpTable, request.Address, request.Mode, highCq: true);
 
                         bool isAddressUnique = _funcsHighCq.TryAdd(request.Address, func);
 
@@ -92,7 +90,7 @@ namespace ARMeilleure.Translation
             {
                 if (Ptc.Enabled)
                 {
-                    PtcProfiler.DoAndSaveTranslations(_funcsHighCq, _memory);
+                    PtcProfiler.DoAndSaveTranslations(_funcsHighCq, _memory, _jumpTable);
 
                     PtcProfiler.Start();
                 }
@@ -108,7 +106,7 @@ namespace ARMeilleure.Translation
                 {
                     bool last = i != 0 && i == unboundedThreadCount - 1;
 
-                    Thread backgroundTranslatorThread = new Thread(TranslateStackedSubs)
+                    Thread backgroundTranslatorThread = new Thread(TranslateQueuedSubs)
                     {
                         Name = "CPU.BackgroundTranslatorThread." + i,
                         Priority = last ? ThreadPriority.Lowest : ThreadPriority.Normal
@@ -151,6 +149,8 @@ namespace ARMeilleure.Translation
 
         internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
+            const int MinCallsForRejit = 100;
+
             // TODO: Investigate how we should handle code at unaligned addresses.
             // Currently, those low bits are used to store special flags.
             bool isCallTarget = (address & CallFlag) != 0;
@@ -165,7 +165,7 @@ namespace ARMeilleure.Translation
                 {
                     if (!_funcs.TryGetValue(address, out func))
                     {
-                        func = Translate(_memory, address, mode, highCq: false);
+                        func = Translate(_memory, _jumpTable, address, mode, highCq: false);
 
                         bool isAddressUnique = _funcs.TryAdd(address, func);
 
@@ -181,9 +181,9 @@ namespace ARMeilleure.Translation
                     {
                         PtcProfiler.AddEntry(address, mode);
                     }
-                    else if (callCount == 100)
+                    else if (callCount == MinCallsForRejit)
                     {
-                        _backgroundStack.Push(new RejitRequest(address, mode));
+                        _backgroundQueue.Enqueue(new RejitRequest(address, mode));
 
                         _backgroundTranslatorEvent.Set();
                     }
@@ -193,9 +193,11 @@ namespace ARMeilleure.Translation
             return func;
         }
 
-        internal static TranslatedFunction Translate(MemoryManager memory, ulong address, ExecutionMode mode, bool highCq)
+        internal static TranslatedFunction Translate(MemoryManager memory, JumpTable jumpTable, ulong address, ExecutionMode mode, bool highCq)
         {
-            ArmEmitterContext context = new ArmEmitterContext(memory, _jumpTable, (long)address, highCq, Aarch32Mode.User);
+            const bool AlwaysTranslateFunctions = true; // If false, only translates a single block for lowCq.
+
+            ArmEmitterContext context = new ArmEmitterContext(memory, jumpTable, (long)address, highCq, Aarch32Mode.User);
 
             Logger.StartPass(PassName.Decoding);
 
@@ -247,7 +249,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            return new TranslatedFunction(func, rejit: !highCq); // TODO: .
+            return new TranslatedFunction(func, rejit: !highCq);
         }
 
         private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)

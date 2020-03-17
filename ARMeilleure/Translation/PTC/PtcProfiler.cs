@@ -169,7 +169,7 @@ namespace ARMeilleure.Translation.PTC
             _waitEvent.Set();
         }
 
-        internal static void DoAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, MemoryManager memory)
+        internal static void DoAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, MemoryManager memory, JumpTable jumpTable)
         {
             if (_profiledFuncsHighCq.Count != 0)
             {
@@ -195,9 +195,10 @@ namespace ARMeilleure.Translation.PTC
 
                 Thread informer = new Thread(Informer);
 
-                //informer.Name = "Informer"; // TODO: .
-                //informer.Priority = ThreadPriority.Lowest;
                 informer.IsBackground = true;
+                informer.Name = nameof(Informer);
+                informer.Priority = ThreadPriority.Lowest;
+
                 informer.Start();
 
                 Ptc.Start();
@@ -207,11 +208,13 @@ namespace ARMeilleure.Translation.PTC
                 {
                     if (!funcsHighCq.ContainsKey(item.Key))
                     {
-                        TranslatedFunction func = Translator.Translate(memory, item.Key, item.Value, highCq: true);
+                        TranslatedFunction func = Translator.Translate(memory, jumpTable, item.Key, item.Value, highCq: true);
 
                         bool isAddressUnique = funcsHighCq.TryAdd(item.Key, func);
 
                         Debug.Assert(isAddressUnique, $"The address 0x{item.Key:X16} is not unique.");
+
+                        jumpTable.RegisterFunction(item.Key, func); // TODO: .
 
                         Interlocked.Increment(ref translateCount);
                     }

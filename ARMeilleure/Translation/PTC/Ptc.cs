@@ -422,7 +422,7 @@ namespace ARMeilleure.Translation.PTC
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc);
+            TranslatedFunction tFunc = new TranslatedFunction(gFunc, rejit: false);
 
             return tFunc;
         }

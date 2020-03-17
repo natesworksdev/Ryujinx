@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.Memory;
 using System;
+//using System.Collections.Generic;
 using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
@@ -30,7 +31,8 @@ namespace ARMeilleure.Translation
 
             /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                _jitRegion.ExpandIfNeeded(PageSize);
+                _jitRegion.ExpandIfNeeded((ulong)PageSize);
+
                 JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);
 
                 // The first page is used for the table based SEH structs.

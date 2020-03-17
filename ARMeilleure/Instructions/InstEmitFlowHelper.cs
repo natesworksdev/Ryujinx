@@ -230,7 +230,7 @@ namespace ARMeilleure.Instructions
                     address = context.BitwiseOr(address, Const(1L));
                 }
 
-                Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
+                Operand fallbackAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
 
                 EmitNativeCall(context, fallbackAddr, true);
             } 
@@ -251,7 +251,7 @@ namespace ARMeilleure.Instructions
         private static void EmitBranchFallback(ArmEmitterContext context, Operand address, bool isJump)
         {
             address = context.BitwiseOr(address, Const(address.Type, (long)CallFlag)); // Set call flag.
-            Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
+            Operand fallbackAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
             EmitNativeCall(context, fallbackAddr, isJump);
         }
 
