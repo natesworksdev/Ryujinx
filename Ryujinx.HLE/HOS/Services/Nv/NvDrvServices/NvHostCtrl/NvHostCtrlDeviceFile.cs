@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult SyncptIncr(ref uint id)
         {
-            if (id >= Synchronization.MaxHarwareSyncpoints)
+            if (id >= SynchronizationManager.MaxHarwareSyncpoints)
             {
                 return NvInternalResult.InvalidInput;
             }
@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult SyncptReadMinOrMax(ref NvFence arguments, bool max)
         {
-            if (arguments.Id >= Synchronization.MaxHarwareSyncpoints)
+            if (arguments.Id >= SynchronizationManager.MaxHarwareSyncpoints)
             {
                 return NvInternalResult.InvalidInput;
             }
@@ -235,7 +235,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult EventWait(ref NvFence fence, ref uint value, int timeout, bool async)
         {
-            if (fence.Id >= Synchronization.MaxHarwareSyncpoints)
+            if (fence.Id >= SynchronizationManager.MaxHarwareSyncpoints)
             {
                 return NvInternalResult.InvalidInput;
             }

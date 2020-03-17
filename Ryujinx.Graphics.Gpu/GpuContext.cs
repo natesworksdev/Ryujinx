@@ -1,9 +1,8 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine;
 using Ryujinx.Graphics.Gpu.Memory;
+using Ryujinx.Graphics.Gpu.Synchronization;
 using System;
-
-using NvSynchronization = Ryujinx.Graphics.Gpu.Synchronization.Synchronization;
 
 namespace Ryujinx.Graphics.Gpu
 {
@@ -50,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <summary>
         /// GPU synchronization manager.
         /// </summary>
-        public NvSynchronization Synchronization { get; }
+        public SynchronizationManager Synchronization { get; }
 
         /// <summary>
         /// Presentation window.
@@ -88,7 +87,7 @@ namespace Ryujinx.Graphics.Gpu
 
             DmaPusher = new DmaPusher(this);
 
-            Synchronization = new NvSynchronization();
+            Synchronization = new SynchronizationManager();
 
             Window = new Window(this);
 

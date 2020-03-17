@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Logging;
-using System;
+﻿using System;
 using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Synchronization
@@ -7,7 +6,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
     /// <summary>
     /// GPU synchronization manager.
     /// </summary>
-    public class Synchronization
+    public class SynchronizationManager
     {
         /// <summary>
         /// The maximum number of syncpoints supported by the GM20B.
@@ -19,7 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// </summary>
         private Syncpoint[] _syncpoints;
 
-        public Synchronization()
+        public SynchronizationManager()
         {
             _syncpoints = new Syncpoint[MaxHarwareSyncpoints];
 
