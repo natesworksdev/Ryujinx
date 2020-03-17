@@ -272,7 +272,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 value = 0;
             }
 
-            NvHostEvent Event;
+            NvHostEvent hostEvent;
 
             NvInternalResult result;
 
@@ -287,19 +287,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     return NvInternalResult.InvalidInput;
                 }
 
-                Event = _device.System.HostSyncpoint.Events[eventIndex];
+                hostEvent = _device.System.HostSyncpoint.Events[eventIndex];
             }
             else
             {
-                Event = _device.System.HostSyncpoint.GetFreeEvent(fence.Id, out eventIndex);
+                hostEvent = _device.System.HostSyncpoint.GetFreeEvent(fence.Id, out eventIndex);
             }
 
-            if (Event != null &&
-               (Event.State == NvHostEventState.Availaible ||
-                Event.State == NvHostEventState.Signaled   ||
-                Event.State == NvHostEventState.Cancelled))
+            if (hostEvent != null &&
+               (hostEvent.State == NvHostEventState.Availaible ||
+                hostEvent.State == NvHostEventState.Signaled   ||
+                hostEvent.State == NvHostEventState.Cancelled))
             {
-                Event.Wait(_device.Gpu, fence);
+                hostEvent.Wait(_device.Gpu, fence);
 
                 if (!async)
                 {
@@ -318,9 +318,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             {
                 Logger.PrintError(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (async: {async})");
 
-                if (Event != null)
+                if (hostEvent != null)
                 {
-                    Logger.PrintError(LogClass.ServiceNv, Event.DumpState(_device.Gpu));
+                    Logger.PrintError(LogClass.ServiceNv, hostEvent.DumpState(_device.Gpu));
                 }
 
                 result = NvInternalResult.InvalidInput;
