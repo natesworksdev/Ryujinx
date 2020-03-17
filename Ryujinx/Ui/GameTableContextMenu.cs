@@ -464,7 +464,7 @@ namespace Ryujinx.Ui
         {
             string appDataPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
             string titleId = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string romfsPath = System.IO.Path.Combine(appDataPath, "Ryujinx", "lfsContents", titleId, "romfs");
+            string romfsPath = System.IO.Path.Combine(appDataPath, "Ryujinx", "mods", titleId);
 
             if (!Directory.Exists(romfsPath))
             {
