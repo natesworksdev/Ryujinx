@@ -587,7 +587,7 @@ namespace Ryujinx.HLE.HOS
 
             Logger.PrintInfo(LogClass.Loader, "Creating layered FS.");
 
-            List<IFileSystem> romSources = new List<IFileSystem> { new RomFsFileSystem(romStorage) };
+            List<IFileSystem> romSources = new List<IFileSystem>();
             LocalFileSystem modRootFs = new LocalFileSystem(lfsPath);
 
             DirectoryEntry dirEntry = default;
@@ -620,6 +620,8 @@ namespace Ryujinx.HLE.HOS
 
                 romSources.Add(modRomFs);
             }
+
+            romSources.Add(new RomFsFileSystem(romStorage));
 
             LayeredFileSystem layeredFs = new LayeredFileSystem(romSources);
 
