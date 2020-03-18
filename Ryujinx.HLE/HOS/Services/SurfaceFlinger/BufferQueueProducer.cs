@@ -92,7 +92,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     return Status.BadValue;
                 }
 
-                Core.FreeAllBuffersLocked();
                 Core.OverrideMaxBufferCount = bufferCount;
                 Core.SignalDequeueEvent();
 
