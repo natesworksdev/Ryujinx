@@ -145,7 +145,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             Slots[slot].Fence = AndroidFence.NoFence;
 
-            return Status.Success;
+            return result;
         }
 
         protected virtual bool StillTracking(int slotIndex, ref AndroidStrongPointer<GraphicBuffer> graphicBuffer)

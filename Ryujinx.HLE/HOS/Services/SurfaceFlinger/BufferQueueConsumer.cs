@@ -27,11 +27,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
                 }
 
-                if (numAcquiredBuffers > Core.MaxAcquiredBufferCount + 1)
+                if (numAcquiredBuffers >= Core.MaxAcquiredBufferCount + 1)
                 {
                     bufferItem = null;
 
-                    Logger.PrintError(LogClass.SurfaceFlinger, $"Max acquired buffer count reached: {numAcquiredBuffers} (max: {Core.MaxAcquiredBufferCount})");
+                    Logger.PrintDebug(LogClass.SurfaceFlinger, $"Max acquired buffer count reached: {numAcquiredBuffers} (max: {Core.MaxAcquiredBufferCount})");
 
                     return Status.InvalidOperation;
                 }

@@ -179,7 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                     PostFrameBuffer(layer, item);
                 }
-                else if (acquireStatus != Status.NoBufferAvailaible)
+                else if (acquireStatus != Status.NoBufferAvailaible && acquireStatus != Status.InvalidOperation)
                 {
                     throw new InvalidOperationException();
                 }

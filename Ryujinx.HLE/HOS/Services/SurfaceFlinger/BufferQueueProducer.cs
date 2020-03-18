@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 for (int slot = 0; slot < Core.Slots.Length; slot++)
                 {
-                    if (Core.Slots[slot].BufferState != BufferState.Dequeued)
+                    if (Core.Slots[slot].BufferState == BufferState.Dequeued)
                     {
                         return Status.BadValue;
                     }
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 int minBufferSlots = Core.GetMinMaxBufferCountLocked(false);
 
-                if (minBufferSlots < bufferCount)
+                if (bufferCount < minBufferSlots)
                 {
                     return Status.BadValue;
                 }
@@ -164,18 +164,26 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     || graphicBuffer.Format != format
                     || (graphicBuffer.Usage & usage) != usage)
                 {
-                    // NOTE: On Regular Android, this should set Status.BufferNeedsReallocation, but as Nintendo only support preallocated buffer, it just return here.
+                    if (Core.Slots[slot].GraphicBuffer.IsNull)
+                    {
+                        slot  = BufferSlotArray.InvalidBufferSlot;
+                        fence = AndroidFence.NoFence;
 
-                    string formatedError = $"Preallocated buffer mismatch - slot {slot}\n" +
-                                           $"available: Width = {graphicBuffer.Width} Height = {graphicBuffer.Height} format = {graphicBuffer.Format} Usage = {graphicBuffer.Usage:x} " +
-                                           $"requested: Width = {width} Height = {height} format = {format} Usage = {usage:x}";
+                        return Status.NoMemory;
+                    }
+                    else
+                    {
+                        string formatedError = $"Preallocated buffer mismatch - slot {slot}\n" +
+                                               $"available: Width = {graphicBuffer.Width} Height = {graphicBuffer.Height} format = {graphicBuffer.Format} Usage = {graphicBuffer.Usage:x} " +
+                                               $"requested: Width = {width} Height = {height} format = {format} Usage = {usage:x}";
 
-                    Logger.PrintError(LogClass.SurfaceFlinger, formatedError);
+                        Logger.PrintError(LogClass.SurfaceFlinger, formatedError);
 
-                    slot  = BufferSlotArray.InvalidBufferSlot;
-                    fence = AndroidFence.NoFence;
+                        slot  = BufferSlotArray.InvalidBufferSlot;
+                        fence = AndroidFence.NoFence;
 
-                    return Status.NoInit;
+                        return Status.NoInit;
+                    }
                 }
 
                 fence = Core.Slots[slot].Fence;
@@ -183,13 +191,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Core.Slots[slot].Fence = AndroidFence.NoFence;
 
                 Core.CheckSystemEventsLocked(Core.GetMaxBufferCountLocked(async));
-            }
-
-            if ((returnFlags & Status.BufferNeedsReallocation) == Status.BufferNeedsReallocation)
-            {
-                // NOTE: Should never happens, this is a leftover that Nintendo missed to remove..
-                // NOTE: This is supposed to allocate a graphic buffer if BufferNeedsReallocation is set..
-                throw new NotImplementedException();
             }
 
             if (attachedByConsumer)
@@ -590,6 +591,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Core.Slots[slot].FrameNumber           = 0;
 
                 Core.Slots[slot].GraphicBuffer.Set(graphicBuffer);
+
+                if (!Core.Slots[slot].GraphicBuffer.IsNull)
+                {
+                    Core.Slots[slot].GraphicBuffer.Object.Buffer.Usage &= (int)Core.ConsumerUsageBits;
+                }
 
                 bool cleared = false;
 
