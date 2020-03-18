@@ -249,7 +249,7 @@ namespace Ryujinx.HLE.HOS
 
             LocalFileSystem codeFs = new LocalFileSystem(exeFsDir);
 
-            LoadExeFs(codeFs, out _);
+            LoadExeFs(codeFs);
 
             if (TitleId != 0)
             {
@@ -450,7 +450,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             // This is not a normal NSP, it's actually a ExeFS as a NSP
-            LoadExeFs(nsp, out _);
+            LoadExeFs(nsp);
         }
 
         public void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
@@ -543,21 +543,21 @@ namespace Ryujinx.HLE.HOS
                 return;
             }
 
-            LoadExeFs(codeFs, out Npdm metaData);
-
-            TitleId = metaData.Aci0.TitleId;
-
             if (dataStorage == null)
             {
                 Logger.PrintWarning(LogClass.Loader, "No RomFS found in NCA");
             }
             else
             {
-                IStorage layeredStorage = ApplyLayeredFs(dataStorage, TitleId);
+                ulong titleId = OpenNpdm(codeFs).Aci0.TitleId;
+
+                IStorage layeredStorage = ApplyLayeredFs(dataStorage, titleId);
                 Device.FileSystem.SetRomFs(layeredStorage.AsStream(FileAccess.Read));
             }
 
             TitleIs64Bit = metaData.Is64Bit;
+            LoadExeFs(codeFs);
+
             if (controlNca != null)
             {
                 ReadControlData(controlNca);
@@ -625,24 +625,18 @@ namespace Ryujinx.HLE.HOS
 
             LayeredFileSystem layeredFs = new LayeredFileSystem(romSources);
 
+            Logger.PrintInfo(LogClass.Loader, $"Building RomFs");
             IStorage layeredRomStorage = new RomFsBuilder(layeredFs).Build();
+            Logger.PrintInfo(LogClass.Loader, $"Finished building RomFs");
+
+            Environment.Exit(0);
+
             return layeredRomStorage;
         }
 
-        private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
+        private void LoadExeFs(IFileSystem codeFs)
         {
-            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm".ToU8Span(), OpenMode.Read);
-
-            if (ResultFs.PathNotFound.Includes(result))
-            {
-                Logger.PrintWarning(LogClass.Loader, "NPDM file not found, using default values!");
-
-                metaData = GetDefaultNpdm();
-            }
-            else
-            {
-                metaData = new Npdm(npdmFile.AsStream());
-            }
+            Npdm metaData = OpenNpdm(codeFs);
 
             List<IExecutable> staticObjects = new List<IExecutable>();
 
@@ -676,6 +670,24 @@ namespace Ryujinx.HLE.HOS
             ContentManager.LoadEntries(Device);
 
             ProgramLoader.LoadNsos(KernelContext, metaData, staticObjects.ToArray());
+        }
+
+        private Npdm OpenNpdm(IFileSystem codeFs)
+        {
+            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
+            using (npdmFile)
+            {
+                if (ResultFs.PathNotFound.Includes(result))
+                {
+                    Logger.PrintWarning(LogClass.Loader, "NPDM file not found, using default values!");
+
+                    return GetDefaultNpdm();
+                }
+                else
+                {
+                    return new Npdm(npdmFile.AsStream());
+                }
+            }
         }
 
         public void LoadProgram(string filePath)
