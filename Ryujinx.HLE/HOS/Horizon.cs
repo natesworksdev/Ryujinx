@@ -629,8 +629,6 @@ namespace Ryujinx.HLE.HOS
             IStorage layeredRomStorage = new RomFsBuilder(layeredFs).Build();
             Logger.PrintInfo(LogClass.Loader, $"Finished building RomFs");
 
-            Environment.Exit(0);
-
             return layeredRomStorage;
         }
 
