@@ -35,7 +35,10 @@ namespace ARMeilleure.Translation
         public IntPtr GetPointer()
         {
             if (_funcPtr == IntPtr.Zero)
+            {
                 _funcPtr = Marshal.GetFunctionPointerForDelegate(_func);
+            }
+
             return _funcPtr;
         }
     }
