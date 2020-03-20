@@ -56,11 +56,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public Status ReleaseBuffer(BufferItem bufferItem)
+        public Status ReleaseBuffer(BufferItem bufferItem, ref AndroidFence fence)
         {
             lock (Lock)
             {
-                return ReleaseBufferLocked(bufferItem.Slot, ref bufferItem.GraphicBuffer);
+                Status result = AddReleaseFenceLocked(bufferItem.Slot, ref bufferItem.GraphicBuffer, ref fence);
+
+                if (result == Status.Success)
+                {
+                    result = ReleaseBufferLocked(bufferItem.Slot, ref bufferItem.GraphicBuffer);
+                }
+
+                return result;
             }
         }
 

@@ -129,6 +129,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return Status.Success;
         }
 
+        protected virtual Status AddReleaseFenceLocked(int slot, ref AndroidStrongPointer<GraphicBuffer> graphicBuffer, ref AndroidFence fence)
+        {
+            if (!StillTracking(slot, ref graphicBuffer))
+            {
+                return Status.Success;
+            }
+
+            Slots[slot].Fence = fence;
+
+            return Status.Success;
+        }
+
         protected virtual Status ReleaseBufferLocked(int slot, ref AndroidStrongPointer<GraphicBuffer> graphicBuffer)
         {
             if (!StillTracking(slot, ref graphicBuffer))

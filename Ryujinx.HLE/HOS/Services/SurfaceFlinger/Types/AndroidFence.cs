@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private Span<byte> _storage => MemoryMarshal.CreateSpan(ref _fenceStorageStart, Unsafe.SizeOf<NvFence>() * 4);
 
-        private Span<NvFence> _nvFences => MemoryMarshal.Cast<byte, NvFence>(_storage);
+        public Span<NvFence> NvFences => MemoryMarshal.Cast<byte, NvFence>(_storage);
 
         public static AndroidFence NoFence
         {
@@ -27,10 +27,15 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     FenceCount = 0
                 };
 
-                fence._nvFences[0].Id = NvFence.InvalidSyncPointId;
+                fence.NvFences[0].Id = NvFence.InvalidSyncPointId;
 
                 return fence;
             }
+        }
+
+        public void AddFence(NvFence fence)
+        {
+            NvFences[FenceCount++] = fence;
         }
 
         public void WaitForever(GpuContext gpuContext)
@@ -42,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             for (int i = 0; i < FenceCount; i++)
             {
-                _nvFences[i].Wait(gpuContext, timeout);
+                NvFences[i].Wait(gpuContext, timeout);
             }
         }
 

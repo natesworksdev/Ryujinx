@@ -2,7 +2,9 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
+using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -11,6 +13,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     class SurfaceFlinger : IConsumerListener, IDisposable
     {
+        private const int TargetFps = 60;
+
         private Switch _device;
 
         private Dictionary<long, Layer> _layers;
@@ -18,6 +22,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private bool _isRunning;
 
         private Thread _composerThread;
+
+        private System.Diagnostics.Stopwatch _chrono;
+
+        private AndroidFence _vblankFence;
+
+        private long _ticks;
+        private long _ticksPerFrame;
 
         private int _swapInterval;
 
@@ -34,8 +45,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private class TextureCallbackInformation
         {
-            public Layer      Layer;
-            public BufferItem Item;
+            public Layer        Layer;
+            public BufferItem   Item;
+            public AndroidFence Fence;
         }
 
         public SurfaceFlinger(Switch device)
@@ -49,9 +61,37 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Name = "SurfaceFlinger.Composer"
             };
 
-            _composerThread.Start();
+            _chrono = new System.Diagnostics.Stopwatch();
 
-            _swapInterval = 1;
+            _ticks = 0;
+
+            UpdateSwapInterval(1);
+
+            _vblankFence = AndroidFence.NoFence;
+            _vblankFence.AddFence(new NvFence
+            {
+                Id    = NvHostSyncpt.VBlank0SyncpointId,
+                Value = 0
+            });
+
+            _composerThread.Start();
+        }
+
+        private void UpdateSwapInterval(int swapInterval)
+        {
+            _swapInterval = swapInterval;
+
+            Logger.PrintWarning(LogClass.SurfaceFlinger, $"Changing swap interval to {swapInterval}");
+
+            // If the swap interval is 0, Game VSync is disabled.
+            if (_swapInterval == 0)
+            {
+                _ticksPerFrame = 1;
+            }
+            else
+            {
+                _ticksPerFrame = System.Diagnostics.Stopwatch.Frequency / (TargetFps / _swapInterval);
+            }
         }
 
         public IGraphicBufferProducer OpenLayer(KProcess process, long layerId)
@@ -152,10 +192,21 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             while (_isRunning)
             {
-                Compose();
+                _ticks += _chrono.ElapsedTicks;
 
-                _device.System.SignalVsync();
-                Thread.Sleep(8 * _swapInterval);
+                _chrono.Restart();
+
+                if (_ticks >= _ticksPerFrame)
+                {
+                    Compose();
+
+                    _device.System.SignalVsync();
+
+                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                }
+
+                // Sleep the minimal amount of time to avoid being too expensive.
+                Thread.Sleep(1);
             }
         }
 
@@ -163,6 +214,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (Lock)
             {
+                _vblankFence.NvFences[0].Increment(_device.Gpu);
+
                 // TODO: support multilayers (& multidisplay ?)
                 if (_layers.Count == 0)
                 {
@@ -175,7 +228,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 if (acquireStatus == Status.Success)
                 {
-                    _swapInterval = item.SwapInterval;
+                    if (item.SwapInterval != _swapInterval)
+                    {
+                        UpdateSwapInterval(item.SwapInterval);
+                    }
 
                     PostFrameBuffer(layer, item);
                 }
@@ -226,10 +282,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 flipX,
                 flipY);
 
+            // Enforce that dequeueBuffer wait for the next vblank
+            _vblankFence.NvFences[0].Value++;
+
             TextureCallbackInformation textureCallbackInformation = new TextureCallbackInformation
             {
                 Layer = layer,
-                Item  = item
+                Item  = item,
+                Fence = _vblankFence
             };
 
             _device.Gpu.Window.EnqueueFrameThreadSafe(
@@ -254,7 +314,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private void ReleaseBuffer(TextureCallbackInformation information)
         {
-            information.Layer.Consumer.ReleaseBuffer(information.Item);
+            information.Layer.Consumer.ReleaseBuffer(information.Item, ref information.Fence);
         }
 
         private void AcquireBuffer(GpuContext ignored, object obj)

@@ -50,6 +50,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             item.IsDroppable               = IsDroppable;
             item.AcquireCalled             = AcquireCalled;
             item.TransformToDisplayInverse = TransformToDisplayInverse;
+            item.SwapInterval              = SwapInterval;
             item.Fence                     = Fence;
             item.Crop                      = Crop;
 
