@@ -323,21 +323,21 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 for (int i = 0; i < modifiedRanges.Length; i++)
                 {
-                    (ulong address, ulong size) = modifiedRanges[i];
+                    (ulong modifiedAddress, ulong modifiedSize) = modifiedRanges[i];
 
-                    if (address < Address)
+                    if (modifiedAddress < Address)
                     {
-                        size -= (Address - address);
-                        address = Address;
+                        modifiedSize -= (Address - modifiedAddress);
+                        modifiedAddress = Address;
                     }
 
-                    if (size > Size)
+                    if (modifiedSize > Size)
                     {
-                        size = Size;
+                        modifiedSize = Size;
                     }
 
-                    int offset = (int)(address - Address);
-                    int length = (int)size;
+                    int offset = (int)(modifiedAddress - Address);
+                    int length = (int)modifiedSize;
 
                     data.Slice(offset, length).CopyTo(gpuData.Slice(offset, length));
                 }
