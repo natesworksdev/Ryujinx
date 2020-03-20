@@ -561,7 +561,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         overlap.HostTexture.CopyTo(newView, 0, 0);
 
-                        // Inheritc modification from overlapping texture, do that before replacing
+                        // Inherit modification from overlapping texture, do that before replacing
                         // the view since the replacement operation removes it from the list.
                         if (IsTextureModified(overlap))
                         {
