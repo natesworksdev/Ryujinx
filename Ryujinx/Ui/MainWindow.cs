@@ -303,6 +303,23 @@ namespace Ryujinx.Ui
             }
             else
             {
+                if (ConfigurationState.Instance.Logger.EnableDebug.Value)
+                {
+                    MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    {
+                        Text          = "You have debug logs enabled!",
+                        SecondaryText = "Enabling debug logs causes losses to FPS, would you like to disable them?"
+                    };
+
+                    if (debugWarningDialog.Run() == (int)ResponseType.Yes)
+                    {
+                        ConfigurationState.Instance.Logger.EnableDebug.Value = false;
+                        SaveConfig();
+                    }
+
+                    debugWarningDialog.Dispose();
+                }
+                
                 Logger.RestartTime();
 
                 HLE.Switch device = InitializeSwitchInstance();
