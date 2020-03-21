@@ -49,7 +49,7 @@ namespace Ryujinx.Ui
         private HotkeyButtons _prevHotkeyButtons = 0;
 
         private Input.NpadController _primaryController;
-
+        
         public GLRenderer(Switch device)
             : base (new GraphicsMode(new ColorFormat()),
             3, 3,
@@ -329,7 +329,7 @@ namespace Ryujinx.Ui
                         _device.EnableDeviceVsync, 
                         $"Host: {_device.Statistics.GetSystemFrameRate():00.00} FPS", 
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
-                        $"GPU: {_renderer.GpuVendor.Trim().Split(' ')[0]}"));
+                        $"GPU: {_renderer.gpuVendor}"));
 
                     _device.System.SignalVsync();
 
