@@ -49,7 +49,7 @@ namespace Ryujinx.Ui
         private HotkeyButtons _prevHotkeyButtons = 0;
 
         private Input.NpadController _primaryController;
-        
+
         public GLRenderer(Switch device)
             : base (new GraphicsMode(new ColorFormat()),
             3, 3,
