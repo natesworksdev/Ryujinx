@@ -319,7 +319,24 @@ namespace Ryujinx.Ui
 
                     debugWarningDialog.Dispose();
                 }
-                
+
+                if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
+                {
+                    MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    {
+                        Text          = "You have shader dumping enabled!",
+                        SecondaryText = "Enabling shader dumping causes losses to FPS, would you like to disable it?"
+                    };
+
+                    if (shadersDumpWarningDialog.Run() == (int)ResponseType.Yes)
+                    {
+                        ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = "";
+                        SaveConfig();
+                    }
+
+                    shadersDumpWarningDialog.Dispose();
+                }
+
                 Logger.RestartTime();
 
                 HLE.Switch device = InitializeSwitchInstance();
