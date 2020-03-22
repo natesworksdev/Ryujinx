@@ -15,7 +15,8 @@ namespace Ryujinx.Graphics.Gpu
         private enum CommandBufferType
         {
             Prefetch,
-            NoPrefetch
+            NoPrefetch,
+            Unknown
         }
 
         private struct CommandBuffer
@@ -39,6 +40,21 @@ namespace Ryujinx.Graphics.Gpu
             /// The count of entries inside this GPFIFO entry.
             /// </summary>
             public uint EntryCount;
+
+            /// <summary>
+            /// Function called when the command buffer is starting execution.
+            /// </summary>
+            public void StartProcessing(GpuContext context)
+            {
+                int[] wordsPrefetched = null;
+
+                if (Type == CommandBufferType.Prefetch)
+                {
+                    wordsPrefetched = MemoryMarshal.Cast<byte, int>(context.MemoryAccessor.GetSpan(EntryAddress, EntryCount * 4)).ToArray();
+                }
+
+                WordsPrefetched = wordsPrefetched;
+            }
 
             /// <summary>
             /// Read inside the command buffer.
@@ -80,6 +96,10 @@ namespace Ryujinx.Graphics.Gpu
 
         private bool _ibEnable;
 
+        private CommandBufferType _previousCommandBufferType;
+
+        private bool _forcePrefetchOnNext;
+
         private GpuContext _context;
 
         private AutoResetEvent _event;
@@ -99,6 +119,10 @@ namespace Ryujinx.Graphics.Gpu
             _commandBufferQueue = new ConcurrentQueue<CommandBuffer>();
 
             _event = new AutoResetEvent(false);
+
+            _forcePrefetchOnNext = false;
+
+            _previousCommandBufferType = CommandBufferType.Unknown;
         }
 
         /// <summary>
@@ -152,23 +176,17 @@ namespace Ryujinx.Graphics.Gpu
             bool noPrefetch = (entry & (1UL << 63)) != 0;
 
             CommandBufferType type = CommandBufferType.Prefetch;
+            //CommandBufferType type = CommandBufferType.NoPrefetch;
 
             if (noPrefetch)
             {
                 type = CommandBufferType.NoPrefetch;
             }
 
-            int[] wordsPrefetched = null;
-
-            if (type == CommandBufferType.Prefetch)
-            {
-                wordsPrefetched = MemoryMarshal.Cast<byte, int>(_context.MemoryAccessor.GetSpan(startAddres, length * 4)).ToArray();
-            }
-
             _commandBufferQueue.Enqueue(new CommandBuffer
             {
                 Type            = type,
-                WordsPrefetched = wordsPrefetched,
+                WordsPrefetched = null,
                 EntryAddress    = startAddres,
                 EntryCount      = (uint)length
             });
@@ -273,8 +291,24 @@ namespace Ryujinx.Graphics.Gpu
             }
             else if (_ibEnable && _commandBufferQueue.TryDequeue(out CommandBuffer entry))
             {
+                if (_forcePrefetchOnNext && entry.Type == CommandBufferType.NoPrefetch)
+                {
+                    entry.Type = CommandBufferType.Prefetch;
+                }
+
+                if (!_forcePrefetchOnNext && _previousCommandBufferType == CommandBufferType.Prefetch && entry.Type == CommandBufferType.NoPrefetch)
+                {
+                    _forcePrefetchOnNext = true;
+                }
+                else if (_forcePrefetchOnNext && entry.Type == CommandBufferType.Prefetch)
+                {
+                    _forcePrefetchOnNext = false;
+                }
+
                 _currentCommandBuffer = entry;
                 _wordsPosition        = 0;
+
+                _currentCommandBuffer.StartProcessing(_context);
             }
             else
             {
