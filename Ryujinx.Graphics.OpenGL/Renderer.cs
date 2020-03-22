@@ -25,8 +25,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         public string GpuVersion { get; private set; }
 
-        public string gpuVendor { get; private set; }
-
         public Renderer()
         {
             _pipeline = new Pipeline();
@@ -81,18 +79,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             PrintGpuInformation();
 
-            Vendor();
+            
 
             _counters.Initialize();
-        }
-
-        private void Vendor()
-        {
-            gpuVendor = "Unknown";
-
-            if (GpuVendor.ToLower().Contains("nvidia")) gpuVendor = "NVIDIA";
-            if (GpuVendor.ToLower().Contains("amd")) gpuVendor = "AMD";
-            if (GpuVendor.ToLower().Contains("intel")) gpuVendor = "Intel";
         }
 
         private void PrintGpuInformation()
