@@ -79,8 +79,6 @@ namespace Ryujinx.Graphics.OpenGL
         {
             PrintGpuInformation();
 
-            
-
             _counters.Initialize();
         }
 
