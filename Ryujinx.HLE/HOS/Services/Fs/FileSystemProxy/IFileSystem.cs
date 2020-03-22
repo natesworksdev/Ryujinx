@@ -15,6 +15,11 @@ namespace Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy
             _fileSystem = provider;
         }
 
+        public LibHac.Fs.IFileSystem GetBaseFileSystem()
+        {
+            return _fileSystem;
+        }
+
         [Command(0)]
         // CreateFile(u32 createOption, u64 size, buffer<bytes<0x301>, 0x19, 0x301> path)
         public ResultCode CreateFile(ServiceCtx context)
