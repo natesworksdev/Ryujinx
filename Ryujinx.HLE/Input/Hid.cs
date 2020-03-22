@@ -13,6 +13,7 @@ namespace Ryujinx.HLE.Input
         internal ref HidSharedMemory SharedMemory => ref _device.Memory.GetStructRef<HidSharedMemory>(_hidMemoryAddress);
         internal const int SharedMemEntryCount = 17;
 
+        public DebugPad DebugPad;
         public TouchDevice Touchscreen;
         public MouseDevice Mouse;
         public KeyboardDevice Keyboard;
@@ -34,6 +35,7 @@ namespace Ryujinx.HLE.Input
 
         public void InitDevices()
         {
+            DebugPad = new DebugPad(_device, true);
             Touchscreen = new TouchDevice(_device, true);
             Mouse = new MouseDevice(_device, false);
             Keyboard = new KeyboardDevice(_device, false);

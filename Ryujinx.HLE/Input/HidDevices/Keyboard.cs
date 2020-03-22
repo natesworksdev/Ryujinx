@@ -17,16 +17,16 @@ namespace Ryujinx.HLE.Input
         {
             ref var keyboard = ref _device.Hid.SharedMemory.Keyboard;
 
-            int lastIndex;
-            int curIndex = UpdateEntriesHeader(ref keyboard.Header, out lastIndex);
+            int prevIndex;
+            int curIndex = UpdateEntriesHeader(ref keyboard.Header, out prevIndex);
 
             if (!Active) return;
 
             ref var curEntry = ref keyboard.Entries[curIndex];
-            var lastEntry = keyboard.Entries[lastIndex];
+            var prevEntry = keyboard.Entries[prevIndex];
 
-            curEntry.SequenceNumber = lastEntry.SequenceNumber + 1;
-            curEntry.SequenceNumber2 = lastEntry.SequenceNumber2 + 1;
+            curEntry.SequenceNumber = prevEntry.SequenceNumber + 1;
+            curEntry.SequenceNumber2 = prevEntry.SequenceNumber2 + 1;
 
             for (int i = 0; i < 8; ++i)
             {

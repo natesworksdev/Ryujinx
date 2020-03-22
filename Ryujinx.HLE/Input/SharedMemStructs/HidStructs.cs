@@ -198,9 +198,22 @@ namespace Ryujinx.HLE.Input
         public fixed byte _Unk2[0xDF8];
     }
 
+    unsafe struct HidDebugPadEntry
+    {
+        public ulong SequenceNumber;
+        public fixed byte _Unk[0x20];
+    }
+
+    struct HidDebugPad
+    {
+        public HidCommonEntriesHeader Header;
+        public Array17<HidDebugPadEntry> Entries;
+    }
+
     unsafe struct HidSharedMemory
     {
-        public fixed byte _Header[0x400];
+        public HidDebugPad DebugPad;
+        public fixed byte _Pad[0x138];
         public HidTouchScreen Touchscreen;
         public HidMouse Mouse;
         public HidKeyboard Keyboard;
