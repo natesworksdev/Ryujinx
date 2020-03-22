@@ -382,7 +382,7 @@ namespace Ryujinx.Ui
             }
 
             HotkeyButtons currentHotkeyButtons = 0;
-            ControllerButtons currentButton = 0;
+            ControllerKeys currentButton = 0;
             JoystickPosition leftJoystick;
             JoystickPosition rightJoystick;
             HLE.Input.Keyboard? hidKeyboard = null;
@@ -489,8 +489,8 @@ namespace Ryujinx.Ui
 
                     TouchPoint currentPoint = new TouchPoint
                     {
-                        X = mX,
-                        Y = mY,
+                        X = (uint)mX,   // can be -ve?
+                        Y = (uint)mY,
 
                         // Placeholder values till more data is acquired
                         DiameterX = 10,
@@ -500,23 +500,26 @@ namespace Ryujinx.Ui
 
                     hasTouch = true;
 
-                    _device.Hid.SetTouchPoints(currentPoint);
+                    _device.Hid.Touchscreen.Update(currentPoint);
                 }
             }
 
             if (!hasTouch)
             {
-                _device.Hid.SetTouchPoints();
+                _device.Hid.Touchscreen.Update();
             }
 
             if (ConfigurationState.Instance.Hid.EnableKeyboard && hidKeyboard.HasValue)
             {
-                _device.Hid.WriteKeyboard(hidKeyboard.Value);
+                _device.Hid.Keyboard.Update(hidKeyboard.Value);
             }
 
-            BaseController controller = _device.Hid.PrimaryController;
-
-            controller.SendInput(currentButton, leftJoystick, rightJoystick);
+            _device.Hid.Npads.SetGamepadsInput(new NpadDevices.GamepadInput{
+                PlayerId = HidControllerID.Auto,
+                Buttons = currentButton,
+                LStick = leftJoystick,
+                RStick = rightJoystick
+            });
 
             // Toggle vsync
             if (currentHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync) &&

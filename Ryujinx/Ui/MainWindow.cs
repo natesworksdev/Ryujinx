@@ -446,7 +446,19 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow(HLE.Switch device)
         {
-            device.Hid.InitializePrimaryController(ConfigurationState.Instance.Hid.ControllerType);
+            HLE.Input.ControllerType type = (Ryujinx.Configuration.Hid.ControllerType)ConfigurationState.Instance.Hid.ControllerType switch {
+                Ryujinx.Configuration.Hid.ControllerType.ProController => HLE.Input.ControllerType.ProController,
+                Ryujinx.Configuration.Hid.ControllerType.Handheld => HLE.Input.ControllerType.Handheld,
+                Ryujinx.Configuration.Hid.ControllerType.NpadPair => HLE.Input.ControllerType.JoyconPair,
+                Ryujinx.Configuration.Hid.ControllerType.NpadLeft => HLE.Input.ControllerType.JoyconLeft,
+                Ryujinx.Configuration.Hid.ControllerType.NpadRight => HLE.Input.ControllerType.JoyconRight,
+                _ => HLE.Input.ControllerType.Handheld
+            };
+            
+            device.Hid.Npads.AddControllers(new HLE.Input.NpadDevices.ControllerConfig {
+                PlayerId = HLE.Input.HidControllerID.Player1,
+                Type = type
+            });
 
             _gLWidget = new GLRenderer(_emulationContext);
 
