@@ -1,0 +1,29 @@
+using static Ryujinx.HLE.Input.Hid;
+
+namespace Ryujinx.HLE.Input
+{
+    public abstract class BaseDevice
+    {
+        protected readonly Switch _device;
+        public bool Active;
+
+        public BaseDevice(Switch device, bool active)
+        {
+            _device = device;
+            Active = active;
+        }
+
+        internal static int UpdateEntriesHeader(ref HidCommonEntriesHeader header, out int lastEntry)
+        {
+            header.NumEntries = SharedMemEntryCount;
+            header.MaxEntryIndex = SharedMemEntryCount - 1;
+
+            lastEntry = (int)header.LatestEntry;
+            header.LatestEntry = (header.LatestEntry + 1) % SharedMemEntryCount;
+
+            header.TimestampTicks = GetTimestampTicks();
+
+            return (int)header.LatestEntry; // EntryCount shouldn't overflow int
+        }
+    }
+}
