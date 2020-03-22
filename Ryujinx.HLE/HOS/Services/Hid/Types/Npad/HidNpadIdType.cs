@@ -1,5 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Hid
 {
+    // TODO: Refactor out to use HidControllerID and HidUtils conversion functions
     public enum HidNpadIdType
     {
         Player1  = 0,

@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
 
         public DeviceState State = DeviceState.Unavailable;
 
-        public ControllerId  Handle;
+        public HidControllerID  Handle;
         public HidNpadIdType NpadIdType;
     }
 }
