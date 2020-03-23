@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public NvHostEvent(NvHostSyncpt syncpointManager, uint eventId, Horizon system)
         {
-            Fence.Id = NvFence.InvalidSyncPointId;
+            Fence.Id = 0;
 
             State = NvHostEventState.Availaible;
 

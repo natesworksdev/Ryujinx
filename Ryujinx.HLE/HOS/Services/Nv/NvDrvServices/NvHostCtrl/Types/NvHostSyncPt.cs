@@ -242,17 +242,20 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         public KEvent QueryEvent(uint eventId)
         {
             uint eventSlot;
+            uint syncpointId;
 
             if ((eventId >> 28) == 1)
             {
-                eventSlot = eventId & 0xFFFF;
+                eventSlot   = eventId & 0xFFFF;
+                syncpointId = (eventId >> 16) & 0xFFF;
             }
             else
             {
-                eventSlot = eventId & 0xFF;
+                eventSlot   = eventId & 0xFF;
+                syncpointId = eventId >> 4;
             }
 
-            if (eventSlot >= EventsCount)
+            if (eventSlot >= EventsCount || Events[eventSlot].Fence.Id != syncpointId)
             {
                 return null;
             }
