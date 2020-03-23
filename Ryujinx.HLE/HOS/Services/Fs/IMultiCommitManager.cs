@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
 
 namespace Ryujinx.HLE.HOS.Services.Fs
 {
-    class IMultiCommitManager : IpcService
+    class IMultiCommitManager : IpcService // 6.0.0+
     {
         private LibHac.FsService.IMultiCommitManager _baseCommitManager;
 

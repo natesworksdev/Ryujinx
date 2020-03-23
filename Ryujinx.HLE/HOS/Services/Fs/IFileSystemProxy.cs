@@ -514,7 +514,8 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             return ResultCode.Success;
         }
 
-        [Command(1200)]
+        [Command(1200)] // 6.0.0+
+        // OpenMultiCommitManager() -> object<nn::fssrv::sf::IMultiCommitManager>
         public ResultCode OpenMultiCommitManager(ServiceCtx context)
         {
             Result result = _baseFileSystemProxy.OpenMultiCommitManager(out LibHac.FsService.IMultiCommitManager commitManager);
