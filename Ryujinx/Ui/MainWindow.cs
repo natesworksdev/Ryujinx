@@ -1,5 +1,7 @@
 using Gtk;
 using JsonPrettyPrinterPlus;
+using LibHac.Common;
+using LibHac.Ns;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -9,6 +11,7 @@ using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
@@ -34,6 +37,7 @@ namespace Ryujinx.Ui
         private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
 
         private static ListStore _tableStore;
+        private static List<BlitStruct<ApplicationControlProperty>> _gameListControl;
 
         private static bool _updatingGameTable;
         private static bool _gameLoaded;
@@ -156,12 +160,15 @@ namespace Ryujinx.Ui
                 typeof(string),
                 typeof(string),
                 typeof(string),
-                typeof(string));
+                typeof(string),
+                typeof(int));
 
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
             _tableStore.SetSortFunc(8, FileSizeSort);
             _tableStore.SetSortColumnId(0, SortType.Descending);
+
+            _gameListControl = new List<BlitStruct<ApplicationControlProperty>>();
 
             UpdateColumns();
             UpdateGameTable();
@@ -278,6 +285,7 @@ namespace Ryujinx.Ui
             _updatingGameTable = true;
 
             _tableStore.Clear();
+            _gameListControl.Clear();
 
             Thread applicationLibraryThread = new Thread(() =>
             {
@@ -570,7 +578,9 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                _tableStore.AppendValues(
+                _gameListControl.Add(args.AppData.ControlHolder);
+
+                TreeIter iter = _tableStore.AppendValues(
                     args.AppData.Favorite,
                     new Gdk.Pixbuf(args.AppData.Icon, 75, 75),
                     $"{args.AppData.TitleName}\n{args.AppData.TitleId.ToUpper()}",
@@ -580,7 +590,9 @@ namespace Ryujinx.Ui
                     args.AppData.LastPlayed,
                     args.AppData.FileExtension,
                     args.AppData.FileSize,
-                    args.AppData.Path);
+                    args.AppData.Path,
+                    _gameListControl.Count - 1);
+
             });
         }
 
@@ -653,7 +665,9 @@ namespace Ryujinx.Ui
 
             if (treeIter.UserData == IntPtr.Zero) return;
 
-            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, treeIter, _virtualFileSystem);
+            int controlDataIndex = (int)_tableStore.GetValue(treeIter, 10);
+
+            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, _gameListControl[controlDataIndex], treeIter, _virtualFileSystem);
             contextMenu.ShowAll();
             contextMenu.PopupAtPointer(null);
         }
