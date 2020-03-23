@@ -1,5 +1,4 @@
-﻿using Ryujinx.HLE.Input;
-using System;
+﻿using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
 {

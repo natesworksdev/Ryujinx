@@ -1,5 +1,5 @@
 ﻿using OpenTK.Input;
-using Ryujinx.HLE.Input;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.UI.Input;
 
 namespace Ryujinx.Ui
@@ -222,9 +222,9 @@ namespace Ryujinx.Ui
             new KeyMappingEntry { TargetKey = Key.NumLock,      Target = 10 },
         };
 
-        public static HLE.Input.Keyboard GetKeysDown(NpadKeyboard npad, KeyboardState keyboard)
+        public static KeyboardInput GetKeysDown(NpadKeyboard npad, KeyboardState keyboard)
         {
-            HLE.Input.Keyboard hidKeyboard = new HLE.Input.Keyboard
+            KeyboardInput hidKeyboard = new KeyboardInput
             {
                     Modifier = 0,
                     Keys     = new int[0x8]

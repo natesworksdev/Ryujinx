@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Hid;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
@@ -30,12 +31,12 @@ namespace Ryujinx.HLE.HOS.Applets
             var _ = _normalSession.Pop();   // unknown
 
             var controllerSupportArgPrivate = _normalSession.Pop();
-            var c = ReadStruct<HidLaControllerSupportArgPrivate>(controllerSupportArgPrivate);
+            var c = ReadStruct<ControllerSupportArgPrivate>(controllerSupportArgPrivate);
 
             Logger.PrintStub(LogClass.ServiceHid, $"ControllerApplet ArgPriv {c.PrivateSize} {c.ArgSize} {c.Mode}"+ 
-                        $"HoldType:{(HLE.Input.HidJoyHoldType)c.NpadJoyHoldType} StyleSets:{(HLE.Input.ControllerType)c.NpadStyleSet}");
+                        $"HoldType:{(HidJoyHoldType)c.NpadJoyHoldType} StyleSets:{(ControllerType)c.NpadStyleSet}");
 
-            if (c.Mode != HidLaControllerSupportMode.ShowControllerSupport)
+            if (c.Mode != ControllerSupportMode.ShowControllerSupport)
             {
                 _normalSession.Push(BuildResponse());   // Dummy response for other modes
                 AppletStateChanged?.Invoke(this, null);
@@ -45,37 +46,31 @@ namespace Ryujinx.HLE.HOS.Applets
 
             var controllerSupportArg = _normalSession.Pop();
 
-            HidLaControllerSupportArgHeader h;
+            ControllerSupportArgHeader h;
 
-            if (c.ArgSize == Marshal.SizeOf<HidLaControllerSupportArg>())
+            if (c.ArgSize == Marshal.SizeOf<ControllerSupportArg>())
             {
-                var arg = ReadStruct<HidLaControllerSupportArg>(controllerSupportArg);
-                h = arg.Header;
-                // Read enable text here?
-            }
-            else if (c.ArgSize == Marshal.SizeOf<HidLaControllerSupportArgV3>())
-            {
-                var arg = ReadStruct<HidLaControllerSupportArgV3>(controllerSupportArg);
+                var arg = ReadStruct<ControllerSupportArg>(controllerSupportArg);
                 h = arg.Header;
                 // Read enable text here?
             }
             else
             {
-                Logger.PrintStub(LogClass.ServiceHid, $"Unknown revision of HidLaControllerSupportArg.");
-                h = ReadStruct<HidLaControllerSupportArgHeader>(controllerSupportArg); // Read just the header
+                Logger.PrintStub(LogClass.ServiceHid, $"Unknown revision of ControllerSupportArg.");
+                h = ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
 
             Logger.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {h.PlayerCountMin} {h.PlayerCountMax} {h.EnableTakeOverConnection}");
 
+            // Currently, the only purpose of this applet is to help 
+            // choose the primary input controller for the game
+            // TODO: Ideally should hook back to HID.Controller. When applet is called, can choose appropriate controller and attach to appropriate id.
             if (h.PlayerCountMin > 1)
             {
-                // TODO: Ideally should hook back to Input.HID.Controller
                 Logger.PrintWarning(LogClass.ServiceHid, "Game requested more than 1 controller!");
             }
 
-            // Currently, the only purpose of this applet is to help 
-            // choose the primary input controller for the game
-            var result = new HidLaControllerSupportResultInfo
+            var result = new ControllerSupportResultInfo
             {
                 PlayerCount = 1,
                 SelectedId = (uint)HLE.HOS.Services.Hid.HidServer.HidUtils.GetNpadIdTypeFromIndex(_system.Device.Hid.Npads.PrimaryControllerId)
@@ -94,14 +89,14 @@ namespace Ryujinx.HLE.HOS.Applets
             return ResultCode.Success;
         }
 
-        private byte[] BuildResponse(HidLaControllerSupportResultInfo result)
+        private byte[] BuildResponse(ControllerSupportResultInfo result)
         {
             UserProfile currentUser = _system.State.Account.LastOpenedUser;
 
             using (MemoryStream stream = new MemoryStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
-                writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Marshal.SizeOf<HidLaControllerSupportResultInfo>())));
+                writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Marshal.SizeOf<ControllerSupportResultInfo>())));
 
                 currentUser.UserId.Write(writer);
 

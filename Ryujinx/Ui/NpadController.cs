@@ -1,8 +1,9 @@
 ﻿using OpenTK;
 using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.HLE.Input;
+using Ryujinx.HLE.HOS.Services.Hid;
 using System;
+using Ryujinx.Common.Logging;
 
 using InnerNpadController = Ryujinx.Common.Configuration.Hid.NpadController;
 
@@ -56,7 +57,7 @@ namespace Ryujinx.Ui.Input
             return buttons;
         }
 
-        private bool IsActivated(JoystickState joystickState,ControllerInputId controllerInputId)
+        private bool IsActivated(JoystickState joystickState, ControllerInputId controllerInputId)
         {
             if (controllerInputId <= ControllerInputId.Button20)
             {

@@ -1,6 +1,6 @@
-using static Ryujinx.HLE.Input.Hid;
+using static Ryujinx.HLE.HOS.Services.Hid.Hid;
 
-namespace Ryujinx.HLE.Input
+namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public abstract class BaseDevice
     {

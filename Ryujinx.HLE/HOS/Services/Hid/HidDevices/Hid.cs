@@ -1,10 +1,8 @@
 using Ryujinx.Common;
 using System.Runtime.InteropServices;
-using Ryujinx.HLE.HOS;
 
-namespace Ryujinx.HLE.Input
+namespace Ryujinx.HLE.HOS.Services.Hid
 {
-
     public class Hid
     {
         private readonly Switch _device;
@@ -26,8 +24,7 @@ namespace Ryujinx.HLE.Input
 
             if (Marshal.SizeOf<HidSharedMemory>() != Horizon.HidSize)
             {
-                // use a better exception here?
-                throw new System.DataMisalignedException("HidSharedMemory struct is the wrong size!");
+                throw new System.DataMisalignedException($"HidSharedMemory struct is the wrong size! Expected:{Horizon.HidSize} Got:{Marshal.SizeOf<HidSharedMemory>()}");
             }
 
             device.Memory.FillWithZeros(sharedHidMemoryAddress, Horizon.HidSize);

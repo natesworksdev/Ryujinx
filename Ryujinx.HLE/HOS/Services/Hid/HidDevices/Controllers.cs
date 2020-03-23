@@ -1,27 +1,24 @@
 using System;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Common.Logging;
-using static Ryujinx.HLE.Input.Hid;
+using System.Runtime.InteropServices;
 
-
-namespace Ryujinx.HLE.Input
+namespace Ryujinx.HLE.HOS.Services.Hid
 {
+    public struct GamepadInput
+    {
+        public HidControllerID PlayerId;
+        public ControllerKeys Buttons;
+        public JoystickPosition LStick;
+        public JoystickPosition RStick;
+    }
+    public struct ControllerConfig
+    {
+        public HidControllerID PlayerId;
+        public ControllerType Type;
+    }
     public class NpadDevices : BaseDevice
     {
-        public struct GamepadInput
-        {
-            public HidControllerID PlayerId;
-            public ControllerKeys Buttons;
-            public JoystickPosition LStick;
-            public JoystickPosition RStick;
-        }
-
-        public struct ControllerConfig
-        {
-            public HidControllerID PlayerId;
-            public ControllerType Type;
-        }
-
         internal HidJoyHoldType JoyHoldType = HidJoyHoldType.Vertical;
         internal bool SixAxisActive = false;  // TODO: link to hidserver when implemented
 
@@ -63,6 +60,11 @@ namespace Ryujinx.HLE.Input
 
         public NpadDevices(Switch device, bool active = true) : base(device, active)
         {
+            if (Marshal.SizeOf<HidController>() != 0x5000)
+            {
+                throw new System.DataMisalignedException($"HidController struct is the wrong size! Expected:0x5000 Got:{Marshal.SizeOf<HidController>()}");
+            }
+
             _configuredNpads = new NpadConfig[_maxControllers];
 
             _styleSetUpdateEvents = new KEvent[_maxControllers];
@@ -80,8 +82,8 @@ namespace Ryujinx.HLE.Input
         {
             for (int i = 0; i < configs.Length; ++i)
             {
-                var playerId = configs[i].PlayerId;
-                var type = configs[i].Type;
+                HidControllerID playerId = configs[i].PlayerId;
+                ControllerType type = configs[i].Type;
                 if (playerId > HidControllerID.Handheld) throw new ArgumentOutOfRangeException("playerId must be Player1-8 or Handheld");
 
                 if (type == ControllerType.Handheld)
@@ -101,7 +103,7 @@ namespace Ryujinx.HLE.Input
 
             for (int i = 0; i < _configuredNpads.Length; ++i)
             {
-                ref var p = ref _configuredNpads[i];
+                ref NpadConfig p = ref _configuredNpads[i];
 
                 if (p.State == FilterState.Unconfigured) continue;  // Ignore unconfigured
 
@@ -119,16 +121,16 @@ namespace Ryujinx.HLE.Input
             // Couldn't find any matching configuration. Reassign to something that works.
             if (PrimaryControllerId == HidControllerID.Unknown)
             {
-                var npadsTypeList = (ControllerType[])Enum.GetValues(typeof(ControllerType));
+                ControllerType[] npadsTypeList = (ControllerType[])Enum.GetValues(typeof(ControllerType));
 
                 // Skipping None
                 for (int i = 1; i < npadsTypeList.Length; ++i)
                 {
-                    var type = npadsTypeList[i];
+                    ControllerType type = npadsTypeList[i];
                     if ((type & _supportedStyleSets) != 0)
                     {
                         Logger.PrintWarning(LogClass.Hid, $"No matching controllers found. Reassigning input as ControllerType {type}...");
-                        
+
                         InitController(type == ControllerType.Handheld ? HidControllerID.Handheld : HidControllerID.Player1, type);
                         return;
                     }
@@ -147,23 +149,23 @@ namespace Ryujinx.HLE.Input
         {
             if (type == ControllerType.Handheld) playerId = HidControllerID.Handheld;
 
-            ref var controller = ref _device.Hid.SharedMemory.Controllers[(int)playerId];
+            ref HidController controller = ref _device.Hid.SharedMemory.Controllers[(int)playerId];
 
             controller = new HidController(); // Zero it
 
             // TODO: Allow customizing colors at config
-            var cHeader = new HidControllerHeader
+            HidControllerHeader cHeader = new HidControllerHeader
             {
                 IsHalf = false,
-                SingleColorBody = NpadColor.Black,
-                SingleColorButtons = NpadColor.Black,
+                SingleColorBody = NpadColor.BodyGray,
+                SingleColorButtons = NpadColor.ButtonGray,
                 LeftColorBody = NpadColor.BodyNeonBlue,
-                LeftColorButtons = NpadColor.Black,
+                LeftColorButtons = NpadColor.ButtonGray,
                 RightColorBody = NpadColor.BodyNeonRed,
-                RightColorButtons = NpadColor.Black
+                RightColorButtons = NpadColor.ButtonGray
             };
 
-            var commonFlags = DeviceFlags.PowerInfo0Connected | DeviceFlags.PowerInfo1Connected | DeviceFlags.PowerInfo2Connected;
+            DeviceFlags commonFlags = DeviceFlags.PowerInfo0Connected | DeviceFlags.PowerInfo1Connected | DeviceFlags.PowerInfo2Connected;
 
             controller.Misc.BatteryCharge = _fullBattery;
 
@@ -266,46 +268,46 @@ namespace Ryujinx.HLE.Input
         private void SetGamepadState(HidControllerID playerId, ControllerKeys buttons,
                     JoystickPosition leftJoystick, JoystickPosition rightJoystick)
         {
-            if(playerId == HidControllerID.Auto) playerId = PrimaryControllerId;
-            if(playerId == HidControllerID.Unknown) return;
+            if (playerId == HidControllerID.Auto) playerId = PrimaryControllerId;
+            if (playerId == HidControllerID.Unknown) return;
 
-            var p = _configuredNpads[(int)playerId];
+            NpadConfig p = _configuredNpads[(int)playerId];
             if (p.State != FilterState.Accepted) return;
 
-            ref var curNpad = ref _device.Hid.SharedMemory.Controllers[(int)playerId];
-            ref var curLayout = ref curNpad.Layouts[(int)ControllerTypeToLayout(curNpad.Header.Type)];
+            ref HidController curNpad = ref _device.Hid.SharedMemory.Controllers[(int)playerId];
+            ref HidControllerLayout curLayout = ref curNpad.Layouts[(int)ControllerTypeToLayout(curNpad.Header.Type)];
 
-            ref var curEntry = ref curLayout.Entries[(int)curLayout.Header.LatestEntry];
+            ref HidControllerInputEntry curEntry = ref curLayout.Entries[(int)curLayout.Header.LatestEntry];
 
             curEntry.Buttons = buttons;
             curEntry.Joysticks[0] = leftJoystick;
             curEntry.Joysticks[1] = rightJoystick;
 
             // Mirror data to Default layout just in case
-            ref var mainLayout = ref curNpad.Layouts[(int)ControllerLayoutType.Default];
+            ref HidControllerLayout mainLayout = ref curNpad.Layouts[(int)ControllerLayoutType.Default];
             mainLayout.Entries[(int)mainLayout.Header.LatestEntry] = curEntry;
         }
 
         public void UpdateAllEntries()
         {
-            ref var controllers = ref _device.Hid.SharedMemory.Controllers;
+            ref Array10<HidController> controllers = ref _device.Hid.SharedMemory.Controllers;
             for (int i = 0; i < controllers.Length; ++i)
             {
-                ref var layouts = ref controllers[i].Layouts;
+                ref Array7<HidControllerLayout> layouts = ref controllers[i].Layouts;
                 for (int l = 0; l < layouts.Length; ++l)
                 {
                     int curIndex, prevIndex;
-                    ref var curLayout = ref layouts[l];
+                    ref HidControllerLayout curLayout = ref layouts[l];
                     curIndex = UpdateEntriesHeader(ref curLayout.Header, out prevIndex);
 
-                    ref var curEntry = ref curLayout.Entries[curIndex];
-                    var prevEntry = curLayout.Entries[prevIndex];
+                    ref HidControllerInputEntry curEntry = ref curLayout.Entries[curIndex];
+                    HidControllerInputEntry prevEntry = curLayout.Entries[prevIndex];
 
-                    curEntry.SequenceNumber = prevEntry.SequenceNumber + 1;
-                    curEntry.SequenceNumber2 = prevEntry.SequenceNumber2 + 1;
+                    curEntry.SampleTimestamp = prevEntry.SampleTimestamp + 1;
+                    curEntry.SampleTimestamp2 = prevEntry.SampleTimestamp2 + 1;
 
-                    if(controllers[i].Header.Type == 0) continue;
-                    
+                    if (controllers[i].Header.Type == 0) continue;
+
                     curEntry.ConnectionState = HidControllerConnectionState.ControllerStateConnected;
                     switch (controllers[i].Header.Type)
                     {

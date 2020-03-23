@@ -7,7 +7,7 @@ using OpenTK.Platform;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
-using Ryujinx.HLE.Input;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.Ui;
 using System;
 using System.Collections.Generic;
@@ -385,7 +385,7 @@ namespace Ryujinx.Ui
             ControllerKeys currentButton = 0;
             JoystickPosition leftJoystick;
             JoystickPosition rightJoystick;
-            HLE.Input.Keyboard? hidKeyboard = null;
+            KeyboardInput? hidKeyboard = null;
 
             int leftJoystickDx = 0;
             int leftJoystickDy = 0;
@@ -417,7 +417,7 @@ namespace Ryujinx.Ui
 
             if (!hidKeyboard.HasValue)
             {
-                hidKeyboard = new HLE.Input.Keyboard
+                hidKeyboard = new KeyboardInput
                 {
                     Modifier = 0,
                     Keys = new int[0x8]
@@ -516,7 +516,7 @@ namespace Ryujinx.Ui
 
             _device.Hid.DebugPad.Update();
 
-            _device.Hid.Npads.SetGamepadsInput(new NpadDevices.GamepadInput{
+            _device.Hid.Npads.SetGamepadsInput(new GamepadInput{
                 PlayerId = HidControllerID.Auto,
                 Buttons = currentButton,
                 LStick = leftJoystick,

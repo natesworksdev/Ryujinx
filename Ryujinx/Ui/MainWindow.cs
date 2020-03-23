@@ -10,6 +10,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -446,17 +447,17 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow(HLE.Switch device)
         {
-            HLE.Input.ControllerType type = (Ryujinx.Configuration.Hid.ControllerType)ConfigurationState.Instance.Hid.ControllerType switch {
-                Ryujinx.Configuration.Hid.ControllerType.ProController => HLE.Input.ControllerType.ProController,
-                Ryujinx.Configuration.Hid.ControllerType.Handheld => HLE.Input.ControllerType.Handheld,
-                Ryujinx.Configuration.Hid.ControllerType.NpadPair => HLE.Input.ControllerType.JoyconPair,
-                Ryujinx.Configuration.Hid.ControllerType.NpadLeft => HLE.Input.ControllerType.JoyconLeft,
-                Ryujinx.Configuration.Hid.ControllerType.NpadRight => HLE.Input.ControllerType.JoyconRight,
-                _ => HLE.Input.ControllerType.Handheld
+            ControllerType type = (Ryujinx.Configuration.Hid.ControllerType)ConfigurationState.Instance.Hid.ControllerType switch {
+                Ryujinx.Configuration.Hid.ControllerType.ProController => ControllerType.ProController,
+                Ryujinx.Configuration.Hid.ControllerType.Handheld => ControllerType.Handheld,
+                Ryujinx.Configuration.Hid.ControllerType.NpadPair => ControllerType.JoyconPair,
+                Ryujinx.Configuration.Hid.ControllerType.NpadLeft => ControllerType.JoyconLeft,
+                Ryujinx.Configuration.Hid.ControllerType.NpadRight => ControllerType.JoyconRight,
+                _ => ControllerType.Handheld
             };
             
-            device.Hid.Npads.AddControllers(new HLE.Input.NpadDevices.ControllerConfig {
-                PlayerId = HLE.Input.HidControllerID.Player1,
+            device.Hid.Npads.AddControllers(new ControllerConfig {
+                PlayerId = HidControllerID.Player1,
                 Type = type
             });
 

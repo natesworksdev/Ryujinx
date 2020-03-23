@@ -3,7 +3,6 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
-using Ryujinx.HLE.Input;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
@@ -539,7 +538,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         // SetSupportedNpadStyleSet(nn::applet::AppletResourceUserId, nn::hid::NpadStyleTag)
         public ResultCode SetSupportedNpadStyleSet(ServiceCtx context)
         {
-            var type = (ControllerType)context.RequestData.ReadInt32();
+            ControllerType type = (ControllerType)context.RequestData.ReadInt32();
             
             long appletResourceUserId = context.RequestData.ReadInt64();
 
