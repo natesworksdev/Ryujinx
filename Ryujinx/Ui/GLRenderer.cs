@@ -337,9 +337,9 @@ namespace Ryujinx.Ui
 
                     string gpuVendor = "Unknown";
 
-                    if (_renderer.GpuVendor.ToLower().Contains("nvidia")) gpuVendor = "NVIDIA";
-                    if (_renderer.GpuVendor.ToLower().Contains("amd") || _renderer.GpuVendor.ToLower().Contains("ati")) gpuVendor = "AMD";
-                    if (_renderer.GpuVendor.ToLower().Contains("intel")) gpuVendor = "Intel";
+                    if (_renderer.GpuVendor.ToLower().Contains("nvidia ")) gpuVendor = "NVIDIA";
+                    if (_renderer.GpuVendor.ToLower().Contains("amd ") || _renderer.GpuVendor.ToLower().Contains("ati ")) gpuVendor = "AMD";
+                    if (_renderer.GpuVendor.ToLower().Contains("intel ")) gpuVendor = "Intel";
 
                     StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                         _device.EnableDeviceVsync, 
