@@ -18,8 +18,7 @@ namespace ARMeilleure.Instructions
             Operand res;
             if (Optimizations.UseAesni)
             {
-                res = context.AddIntrinsic(Intrinsic.X86Aesdeclast, context.AddIntrinsic(Intrinsic.X86Xorpd, d, n), n);
-                res = context.AddIntrinsic(Intrinsic.X86Xorpd, res, n);
+                res = context.AddIntrinsic(Intrinsic.X86Aesdeclast, context.AddIntrinsic(Intrinsic.X86Xorpd, d, n), context.VectorZero());
             }
             else
             {
@@ -39,8 +38,7 @@ namespace ARMeilleure.Instructions
             Operand res;
             if (Optimizations.UseAesni)
             {
-                res = context.AddIntrinsic(Intrinsic.X86Aesenclast, context.AddIntrinsic(Intrinsic.X86Xorpd, d, n), n);
-                res = context.AddIntrinsic(Intrinsic.X86Xorpd, res, n);
+                res = context.AddIntrinsic(Intrinsic.X86Aesenclast, context.AddIntrinsic(Intrinsic.X86Xorpd, d, n), context.VectorZero());
             }
             else
             {
