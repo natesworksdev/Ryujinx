@@ -52,26 +52,31 @@ namespace Ryujinx.Ui
             List<string> applications = new List<string>();
             foreach (string appDir in appDirs)
             {
-                if (!Directory.Exists(appDir))
+                try
                 {
-                    Logger.PrintWarning(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
-
-                    continue;
-                }
-
-                foreach (string app in Directory.GetFiles(appDir, "*.*", SearchOption.AllDirectories))
-                {
-                    if ((Path.GetExtension(app).ToLower() == ".nsp") ||
-                        (Path.GetExtension(app).ToLower() == ".pfs0")||
-                        (Path.GetExtension(app).ToLower() == ".xci") ||
-                        (Path.GetExtension(app).ToLower() == ".nca") ||
-                        (Path.GetExtension(app).ToLower() == ".nro") ||
-                        (Path.GetExtension(app).ToLower() == ".nso"))
+                    if (!Directory.Exists(appDir))
                     {
-                        applications.Add(app);
-                        numApplicationsFound++;
+                        Logger.PrintWarning(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
+
+                        continue;
                     }
-                }
+
+                    foreach (string app in Directory.GetFiles(appDir, "*.*", SearchOption.AllDirectories))
+                    {
+                        if ((Path.GetExtension(app).ToLower() == ".nsp") ||
+                            (Path.GetExtension(app).ToLower() == ".pfs0") ||
+                            (Path.GetExtension(app).ToLower() == ".xci") ||
+                            (Path.GetExtension(app).ToLower() == ".nca") ||
+                            (Path.GetExtension(app).ToLower() == ".nro") ||
+                            (Path.GetExtension(app).ToLower() == ".nso"))
+                        {
+
+                            applications.Add(app);
+                            numApplicationsFound++;
+
+                        }
+                    }
+                } catch (UnauthorizedAccessException) { }
             }
 
             // Loops through applications list, creating a struct and then firing an event containing the struct for each application
