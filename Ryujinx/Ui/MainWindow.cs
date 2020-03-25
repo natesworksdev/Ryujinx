@@ -364,6 +364,7 @@ namespace Ryujinx.Ui
                 {
                     Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
                     device.Dispose();
+
                     return;
                 }
 
