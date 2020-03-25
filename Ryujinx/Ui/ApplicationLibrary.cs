@@ -54,7 +54,7 @@ namespace Ryujinx.Ui
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    Logger.PrintWarning(LogClass.Application, $"Failed to get access to directory to list files: \"{dir}\"");
+                    Logger.PrintWarning(LogClass.Application, $"Failed to get access to directory: \"{dir}\"");
                 }
 
                 if (content.Length > 0)
