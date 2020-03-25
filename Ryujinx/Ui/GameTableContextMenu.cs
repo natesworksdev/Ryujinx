@@ -57,9 +57,9 @@ namespace Ryujinx.Ui
             _openSaveUserDir.Sensitive   = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize > 0;
             _openSaveDeviceDir.Sensitive = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.DeviceSaveDataSize > 0;
 
-            _extractRomFs.Activated      += ExtractRomFs_Clicked;
-            _extractExeFs.Activated      += ExtractExeFs_Clicked;
-            _extractLogo.Activated       += ExtractLogo_Clicked;
+            _extractRomFs.Activated += ExtractRomFs_Clicked;
+            _extractExeFs.Activated += ExtractExeFs_Clicked;
+            _extractLogo.Activated  += ExtractLogo_Clicked;
 
             _gameTableStore    = gameTableStore;
             _rowIter           = rowIter;
