@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // RequestImmediateTransmission()
         public ResultCode RequestImmediateTransmission(ServiceCtx context)
         {
-            // It signals an event of nn::prepo::detail::service::core::TransmissionStatusManager that requets the transmission of the report.
+            // It signals an event of nn::prepo::detail::service::core::TransmissionStatusManager that requests the transmission of the report.
             // Since we don't use reports it's fine to do nothing.
 
             return ResultCode.Success;
