@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using Ryujinx.Graphics.Shader.Instructions;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
-    class OpCodeNop
+    class OpCodeNop : OpCode
     {
-        public OpCodeNop(InstEmitter emitter, ulong address, long opCode) : base(emitter, address, opCode)
-        {
-
-        }
+        public OpCodeNop(InstEmitter emitter, ulong address, long opCode) : base(emitter, address, opCode) {}
     }
 }
