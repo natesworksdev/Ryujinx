@@ -43,7 +43,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 // Signedness is different, but for max, result will always fit a U32,
                 // since one of the inputs can't be negative, and the result is the one
-                // with higuest value. For min, it will always fit on a S32, since
+                // with highest value. For min, it will always fit on a S32, since
                 // one of the input can't be greater than INT_MAX and we want the lowest value.
                 resSigned = !max;
 
