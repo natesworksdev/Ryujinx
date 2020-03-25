@@ -3,8 +3,8 @@
     enum VideoType
     {
         U8  = 0,
-        U16 = 2,
-        U32 = 3,
+        U16 = 1,
+        U32 = 2,
 
         Signed = 1 << 2,
 
