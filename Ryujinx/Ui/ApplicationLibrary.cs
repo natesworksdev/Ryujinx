@@ -39,6 +39,47 @@ namespace Ryujinx.Ui
         private static Language          _desiredTitleLanguage;
         private static bool              _loadingError;
 
+        public static IEnumerable<string> GetFilesInDirectory(string directory)
+        {
+            Stack<string> stack = new Stack<string>();
+            stack.Push(directory);
+            while (stack.Count > 0)
+            {
+                string dir = stack.Pop();
+                string[] content = { };
+
+                try
+                {
+                    content = Directory.GetFiles(dir, "*");
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Logger.PrintWarning(LogClass.Application, $"Failed to get access to directory to list files: \"{dir}\"");
+                }
+
+                if (content.Length > 0)
+                {
+                    foreach (string file in content)
+                        yield return file;
+                }
+
+                try
+                {
+                    content = Directory.GetDirectories(dir);
+                }
+                catch (UnauthorizedAccessException)
+                {
+                    Logger.PrintWarning(LogClass.Application, $"Failed to get access to directory: \"{dir}\"");
+                }
+
+                if (content.Length > 0)
+                {
+                    foreach (string subdir in content)
+                        stack.Push(subdir);
+                }
+            }
+        }
+
         public static void LoadApplications(List<string> appDirs, VirtualFileSystem virtualFileSystem, Language desiredTitleLanguage)
         {
             int numApplicationsFound  = 0;
@@ -52,31 +93,32 @@ namespace Ryujinx.Ui
             List<string> applications = new List<string>();
             foreach (string appDir in appDirs)
             {
-                try
+                
+                if (!Directory.Exists(appDir))
                 {
-                    if (!Directory.Exists(appDir))
+                    Logger.PrintWarning(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
+
+                    continue;
+                }
+
+                
+                
+                foreach (string app in GetFilesInDirectory(appDir))
+                {
+
+                    if ((Path.GetExtension(app).ToLower() == ".nsp") ||
+                        (Path.GetExtension(app).ToLower() == ".pfs0") ||
+                        (Path.GetExtension(app).ToLower() == ".xci") ||
+                        (Path.GetExtension(app).ToLower() == ".nca") ||
+                        (Path.GetExtension(app).ToLower() == ".nro") ||
+                        (Path.GetExtension(app).ToLower() == ".nso"))
                     {
-                        Logger.PrintWarning(LogClass.Application, $"The \"game_dirs\" section in \"Config.json\" contains an invalid directory: \"{appDir}\"");
 
-                        continue;
+                        applications.Add(app);
+                        numApplicationsFound++;
+
                     }
-
-                    foreach (string app in Directory.GetFiles(appDir, "*.*", SearchOption.AllDirectories))
-                    {
-                        if ((Path.GetExtension(app).ToLower() == ".nsp") ||
-                            (Path.GetExtension(app).ToLower() == ".pfs0") ||
-                            (Path.GetExtension(app).ToLower() == ".xci") ||
-                            (Path.GetExtension(app).ToLower() == ".nca") ||
-                            (Path.GetExtension(app).ToLower() == ".nro") ||
-                            (Path.GetExtension(app).ToLower() == ".nso"))
-                        {
-
-                            applications.Add(app);
-                            numApplicationsFound++;
-
-                        }
-                    }
-                } catch (UnauthorizedAccessException) { }
+                }
             }
 
             // Loops through applications list, creating a struct and then firing an event containing the struct for each application
