@@ -37,7 +37,6 @@ namespace Ryujinx.Ui
         private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
 
         private static ListStore _tableStore;
-        private static List<BlitStruct<ApplicationControlProperty>> _gameListControl;
 
         private static bool _updatingGameTable;
         private static bool _gameLoaded;
@@ -161,14 +160,12 @@ namespace Ryujinx.Ui
                 typeof(string),
                 typeof(string),
                 typeof(string),
-                typeof(int));
+                typeof(BlitStruct<ApplicationControlProperty>));
 
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
             _tableStore.SetSortFunc(8, FileSizeSort);
             _tableStore.SetSortColumnId(0, SortType.Descending);
-
-            _gameListControl = new List<BlitStruct<ApplicationControlProperty>>();
 
             UpdateColumns();
             UpdateGameTable();
@@ -285,7 +282,6 @@ namespace Ryujinx.Ui
             _updatingGameTable = true;
 
             _tableStore.Clear();
-            _gameListControl.Clear();
 
             Thread applicationLibraryThread = new Thread(() =>
             {
@@ -578,8 +574,6 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                _gameListControl.Add(args.AppData.ControlHolder);
-
                 TreeIter iter = _tableStore.AppendValues(
                     args.AppData.Favorite,
                     new Gdk.Pixbuf(args.AppData.Icon, 75, 75),
@@ -591,8 +585,7 @@ namespace Ryujinx.Ui
                     args.AppData.FileExtension,
                     args.AppData.FileSize,
                     args.AppData.Path,
-                    _gameListControl.Count - 1);
-
+                    args.AppData.ControlHolder);
             });
         }
 
@@ -665,9 +658,9 @@ namespace Ryujinx.Ui
 
             if (treeIter.UserData == IntPtr.Zero) return;
 
-            int controlDataIndex = (int)_tableStore.GetValue(treeIter, 10);
+            BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 
-            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, _gameListControl[controlDataIndex], treeIter, _virtualFileSystem);
+            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, controlData, treeIter, _virtualFileSystem);
             contextMenu.ShowAll();
             contextMenu.PopupAtPointer(null);
         }
