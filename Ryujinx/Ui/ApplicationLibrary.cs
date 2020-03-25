@@ -109,7 +109,7 @@ namespace Ryujinx.Ui
                         (Path.GetExtension(app).ToLower() == ".nca") ||
                         (Path.GetExtension(app).ToLower() == ".nro") ||
                         (Path.GetExtension(app).ToLower() == ".nso"))
-                    { 
+                    {
                         applications.Add(app);
                         numApplicationsFound++;
                     }
