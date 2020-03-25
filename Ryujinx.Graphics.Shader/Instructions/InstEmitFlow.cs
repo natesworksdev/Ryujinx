@@ -51,6 +51,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
+        public static void Depbar(EmitterContext context)
+        {
+            return;
+        }
+
         public static void Exit(EmitterContext context)
         {
             OpCodeExit op = (OpCodeExit)context.CurrOp;
@@ -66,6 +71,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
         public static void Kil(EmitterContext context)
         {
             context.Discard();
+        }
+
+        public static void Nop(EmitterContext context)
+        {
+            return;
         }
 
         public static void Pbk(EmitterContext context)
