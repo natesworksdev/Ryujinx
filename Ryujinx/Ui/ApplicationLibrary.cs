@@ -101,22 +101,17 @@ namespace Ryujinx.Ui
                     continue;
                 }
 
-                
-                
                 foreach (string app in GetFilesInDirectory(appDir))
                 {
-
                     if ((Path.GetExtension(app).ToLower() == ".nsp") ||
                         (Path.GetExtension(app).ToLower() == ".pfs0") ||
                         (Path.GetExtension(app).ToLower() == ".xci") ||
                         (Path.GetExtension(app).ToLower() == ".nca") ||
                         (Path.GetExtension(app).ToLower() == ".nro") ||
                         (Path.GetExtension(app).ToLower() == ".nso"))
-                    {
-
+                    { 
                         applications.Add(app);
                         numApplicationsFound++;
-
                     }
                 }
             }
