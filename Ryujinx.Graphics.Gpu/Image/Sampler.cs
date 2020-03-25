@@ -1,3 +1,4 @@
+using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
 
@@ -40,7 +41,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             float maxLod     = descriptor.UnpackMaxLod();
             float mipLodBias = descriptor.UnpackMipLodBias();
 
-            float maxAnisotropy = descriptor.UnpackMaxAnisotropy();
+            float maxRequestedAnisotropy = GraphicsConfig.MaxAnisotropy >= 0 && GraphicsConfig.MaxAnisotropy <= 16 ? GraphicsConfig.MaxAnisotropy : descriptor.UnpackMaxAnisotropy();
+            float maxSupportedAnisotropy = GL.GetFloat((GetPName)All.MaxTextureMaxAnisotropy);
+
+            if (maxRequestedAnisotropy > maxSupportedAnisotropy)
+                maxRequestedAnisotropy = maxSupportedAnisotropy;
 
             HostSampler = context.Renderer.CreateSampler(new SamplerCreateInfo(
                 minFilter,
@@ -54,7 +59,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 minLod,
                 maxLod,
                 mipLodBias,
-                maxAnisotropy));
+                maxRequestedAnisotropy));
         }
 
         /// <summary>
