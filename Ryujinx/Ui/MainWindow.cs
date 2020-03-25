@@ -574,7 +574,7 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                TreeIter iter = _tableStore.AppendValues(
+                _tableStore.AppendValues(
                     args.AppData.Favorite,
                     new Gdk.Pixbuf(args.AppData.Icon, 75, 75),
                     $"{args.AppData.TitleName}\n{args.AppData.TitleId.ToUpper()}",
