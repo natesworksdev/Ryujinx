@@ -2,11 +2,10 @@ using MsgPack;
 using MsgPack.Serialization;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.Utilities;
-using System.IO;
 using System.Text;
-using Utf8Json;
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
 {
@@ -96,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             }
 
             builder.AppendLine($" Room: {room}");
-            builder.AppendLine($" Report: {deserializedReport}");
+            builder.AppendLine($" Report: {MessagePackObjectFormatter.Format(deserializedReport)}");
 
             return builder.ToString();
         }
