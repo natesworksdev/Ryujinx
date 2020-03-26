@@ -19,21 +19,21 @@ namespace Ryujinx.Graphics.OpenGL
 
         private PrimitiveType _primitiveType;
 
-        private int  _stencilFrontMask;
+        private int _stencilFrontMask;
         private bool _depthMask;
         private bool _depthTest;
         private bool _hasDepthBuffer;
 
         private TextureView _unit0Texture;
 
-        private ClipOrigin    _clipOrigin;
+        private ClipOrigin _clipOrigin;
         private ClipDepthMode _clipDepthMode;
 
         private uint[] _componentMasks;
 
         internal Pipeline()
         {
-            _clipOrigin    = ClipOrigin.LowerLeft;
+            _clipOrigin = ClipOrigin.LowerLeft;
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
         }
 
@@ -56,6 +56,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.ClearBuffer(ClearBuffer.Color, index, colors);
 
             RestoreComponentMask(index);
+
+            _framebuffer.SignalModified();
         }
 
         public void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
@@ -98,6 +100,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.DepthMask(_depthMask);
             }
+
+            _framebuffer.SignalModified();
         }
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
@@ -137,6 +141,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 DrawImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
+
+            _framebuffer.SignalModified();
         }
 
         private void DrawQuadsImpl(
@@ -247,7 +253,7 @@ namespace Ryujinx.Graphics.OpenGL
             switch (_elementsType)
             {
                 case DrawElementsType.UnsignedShort: indexElemSize = 2; break;
-                case DrawElementsType.UnsignedInt:   indexElemSize = 4; break;
+                case DrawElementsType.UnsignedInt: indexElemSize = 4; break;
             }
 
             IntPtr indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
@@ -281,15 +287,17 @@ namespace Ryujinx.Graphics.OpenGL
                     firstVertex,
                     firstInstance);
             }
+
+            _framebuffer.SignalModified();
         }
 
         private void DrawQuadsIndexedImpl(
-            int    indexCount,
-            int    instanceCount,
+            int indexCount,
+            int instanceCount,
             IntPtr indexBaseOffset,
-            int    indexElemSize,
-            int    firstVertex,
-            int    firstInstance)
+            int indexElemSize,
+            int firstVertex,
+            int firstInstance)
         {
             int quadsCount = indexCount / 4;
 
@@ -363,12 +371,12 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private void DrawQuadStripIndexedImpl(
-            int    indexCount,
-            int    instanceCount,
+            int indexCount,
+            int instanceCount,
             IntPtr indexBaseOffset,
-            int    indexElemSize,
-            int    firstVertex,
-            int    firstInstance)
+            int indexElemSize,
+            int firstVertex,
+            int firstInstance)
         {
             // TODO: Instanced rendering.
             int quadsCount = (indexCount - 2) / 2;
@@ -404,11 +412,11 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private void DrawIndexedImpl(
-            int    indexCount,
-            int    instanceCount,
+            int indexCount,
+            int instanceCount,
             IntPtr indexBaseOffset,
-            int    firstVertex,
-            int    firstInstance)
+            int firstVertex,
+            int firstInstance)
         {
             if (firstInstance == 0 && firstVertex == 0 && instanceCount == 1)
             {
