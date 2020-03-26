@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public struct MousePosition
+    struct MousePosition
     {
         public int X;
         public int Y;

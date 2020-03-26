@@ -13,12 +13,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Active = active;
         }
 
-        internal static int UpdateEntriesHeader(ref HidCommonEntriesHeader header, out int lastEntry)
+        internal static int UpdateEntriesHeader(ref CommonEntriesHeader header, out int previousEntry)
         {
             header.NumEntries = SharedMemEntryCount;
             header.MaxEntryIndex = SharedMemEntryCount - 1;
 
-            lastEntry = (int)header.LatestEntry;
+            previousEntry = (int)header.LatestEntry;
             header.LatestEntry = (header.LatestEntry + 1) % SharedMemEntryCount;
 
             header.TimestampTicks = GetTimestampTicks();

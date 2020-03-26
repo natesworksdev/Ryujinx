@@ -65,8 +65,9 @@ namespace Ryujinx.HLE
             return Marshal.PtrToStructure<T>((IntPtr)(_ramPtr + position));
         }
 
-        public unsafe ref T GetStructRef<T>(long position) {
-            return ref Unsafe.AsRef<T>((void*)(IntPtr)(_ramPtr+position));
+        public unsafe ref T GetStructRef<T>(long position)
+        {
+            return ref Unsafe.AsRef<T>((void*)(IntPtr)(_ramPtr + position));
         }
 
         public void WriteSByte(long position, sbyte value)

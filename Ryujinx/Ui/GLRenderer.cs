@@ -517,7 +517,7 @@ namespace Ryujinx.Ui
             _device.Hid.DebugPad.Update();
 
             _device.Hid.Npads.SetGamepadsInput(new GamepadInput{
-                PlayerId = HidControllerID.Auto,
+                PlayerId = PlayerIndex.Auto,
                 Buttons = currentButton,
                 LStick = leftJoystick,
                 RStick = rightJoystick

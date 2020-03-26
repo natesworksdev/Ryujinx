@@ -4,39 +4,39 @@ namespace Ryujinx.HLE.HOS.Services.Hid.HidServer
 {
     static class HidUtils
     {
-        public static HidControllerID GetIndexFromNpadIdType(HidNpadIdType npadIdType)
+        public static PlayerIndex GetIndexFromNpadIdType(NpadIdType npadIdType)
         {
             switch (npadIdType)
             {
-                case HidNpadIdType.Player1:  return HidControllerID.Player1;
-                case HidNpadIdType.Player2:  return HidControllerID.Player2;
-                case HidNpadIdType.Player3:  return HidControllerID.Player3;
-                case HidNpadIdType.Player4:  return HidControllerID.Player4;
-                case HidNpadIdType.Player5:  return HidControllerID.Player5;
-                case HidNpadIdType.Player6:  return HidControllerID.Player6;
-                case HidNpadIdType.Player7:  return HidControllerID.Player7;
-                case HidNpadIdType.Player8:  return HidControllerID.Player8;
-                case HidNpadIdType.Handheld: return HidControllerID.Handheld;
-                case HidNpadIdType.Unknown:  return HidControllerID.Unknown;
+                case NpadIdType.Player1:  return PlayerIndex.Player1;
+                case NpadIdType.Player2:  return PlayerIndex.Player2;
+                case NpadIdType.Player3:  return PlayerIndex.Player3;
+                case NpadIdType.Player4:  return PlayerIndex.Player4;
+                case NpadIdType.Player5:  return PlayerIndex.Player5;
+                case NpadIdType.Player6:  return PlayerIndex.Player6;
+                case NpadIdType.Player7:  return PlayerIndex.Player7;
+                case NpadIdType.Player8:  return PlayerIndex.Player8;
+                case NpadIdType.Handheld: return PlayerIndex.Handheld;
+                case NpadIdType.Unknown:  return PlayerIndex.Unknown;
 
                 default: throw new ArgumentOutOfRangeException(nameof(npadIdType));
             }
         }
 
-        public static HidNpadIdType GetNpadIdTypeFromIndex(HidControllerID index)
+        public static NpadIdType GetNpadIdTypeFromIndex(PlayerIndex index)
         {
             switch (index)
             {
-                case HidControllerID.Player1:  return HidNpadIdType.Player1;
-                case HidControllerID.Player2:  return HidNpadIdType.Player2;
-                case HidControllerID.Player3:  return HidNpadIdType.Player3;
-                case HidControllerID.Player4:  return HidNpadIdType.Player4;
-                case HidControllerID.Player5:  return HidNpadIdType.Player5;
-                case HidControllerID.Player6:  return HidNpadIdType.Player6;
-                case HidControllerID.Player7:  return HidNpadIdType.Player7;
-                case HidControllerID.Player8:  return HidNpadIdType.Player8;
-                case HidControllerID.Handheld: return HidNpadIdType.Handheld;
-                case HidControllerID.Unknown:  return HidNpadIdType.Unknown;
+                case PlayerIndex.Player1:  return NpadIdType.Player1;
+                case PlayerIndex.Player2:  return NpadIdType.Player2;
+                case PlayerIndex.Player3:  return NpadIdType.Player3;
+                case PlayerIndex.Player4:  return NpadIdType.Player4;
+                case PlayerIndex.Player5:  return NpadIdType.Player5;
+                case PlayerIndex.Player6:  return NpadIdType.Player6;
+                case PlayerIndex.Player7:  return NpadIdType.Player7;
+                case PlayerIndex.Player8:  return NpadIdType.Player8;
+                case PlayerIndex.Handheld: return NpadIdType.Handheld;
+                case PlayerIndex.Unknown:  return NpadIdType.Unknown;
 
                 default: throw new ArgumentOutOfRangeException(nameof(index));
             }

@@ -1,8 +1,7 @@
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
-    public enum BatteryCharge : int
+    enum BatteryCharge : int
     {
-        // TODO : Check if these are the correct states
         Percent0 = 0,
         Percent25 = 1,
         Percent50 = 2,

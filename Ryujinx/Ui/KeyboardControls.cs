@@ -1,10 +1,11 @@
-﻿using OpenTK.Input;
+﻿using System;
+using OpenTK.Input;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.UI.Input;
 
 namespace Ryujinx.Ui
 {
-    [System.Flags]
+    [Flags]
     public enum HotkeyButtons
     {
         ToggleVSync = 1 << 0,
