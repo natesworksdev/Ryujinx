@@ -433,6 +433,13 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
+            if (_intelWarView != null)
+            {
+                _intelWarView.Dispose();
+
+                _intelWarView = null;
+            }
+
             if (Handle != 0)
             {
                 GL.DeleteTexture(Handle);
