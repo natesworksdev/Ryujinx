@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
+using LibHac;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -288,7 +289,6 @@ namespace Ryujinx.HLE.HOS
                 }
 
                 size = BitUtils.AlignUp(size, KMemoryManager.PageSize);
-
                 return process.MemoryManager.SetProcessMemoryPermission(address, size, permission);
             }
 
@@ -305,6 +305,7 @@ namespace Ryujinx.HLE.HOS
             {
                 return result;
             }
+
 
             return SetProcessMemoryPermission(dataStart, end - dataStart, MemoryPermission.ReadAndWrite);
         }

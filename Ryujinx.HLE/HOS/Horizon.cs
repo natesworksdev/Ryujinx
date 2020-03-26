@@ -271,7 +271,7 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadKip(string kipFile)
         {
-            using (FileStream fs = new FileStream(kipFile, FileMode.Open))
+            using (IStorage fs = new LocalStorage(kipFile, FileAccess.Read))
             {
                 ProgramLoader.LoadKernelInitalProcess(this, new KernelInitialProcess(fs));
             }
@@ -544,8 +544,8 @@ namespace Ryujinx.HLE.HOS
                     Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
                     codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                    NxStaticObject staticObject = new NxStaticObject(nsoFile.AsStream());
+                    
+                    NxStaticObject staticObject = new NxStaticObject(nsoFile.AsStorage());
 
                     staticObjects.Add(staticObject);
                 }
@@ -569,12 +569,12 @@ namespace Ryujinx.HLE.HOS
 
             bool isNro = Path.GetExtension(filePath).ToLower() == ".nro";
 
-            FileStream input = new FileStream(filePath, FileMode.Open);
 
             IExecutable staticObject;
 
             if (isNro)
             {
+                FileStream input = new FileStream(filePath, FileMode.Open);
                 NxRelocatableObject obj = new NxRelocatableObject(input);
                 staticObject = obj;
 
@@ -648,7 +648,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                staticObject = new NxStaticObject(input);
+                staticObject = new NxStaticObject(new LocalStorage(filePath, FileAccess.Read));
             }
 
             ContentManager.LoadEntries(Device);
