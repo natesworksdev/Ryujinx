@@ -29,5 +29,33 @@ namespace Ryujinx.Ui
         {
             CreateDialog("Ryujinx - Error", "Ryujinx has encountered an error", errorMessage);
         }
+
+        internal static bool isExitDialogOpen = false;
+        internal static bool CreateExitDialog()
+        {
+            if (isExitDialogOpen)
+                return false;
+            isExitDialogOpen = true;
+
+            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)
+            {
+                Title = "Ryujinx - Exit",
+                Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                Text = "Are you sure you want to stop emulation?",
+                SecondaryText = "All unsaved data will be lost",
+                WindowPosition = WindowPosition.Center
+            };
+            messageDialog.SetSizeRequest(100, 20);
+            ResponseType res = (ResponseType)messageDialog.Run();
+            messageDialog.Dispose();
+            isExitDialogOpen = false;
+            
+            if (res == ResponseType.Ok)
+            {
+                return true;
+            } 
+            
+            return false;
+        }
     }
 }

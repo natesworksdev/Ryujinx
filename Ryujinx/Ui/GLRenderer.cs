@@ -116,7 +116,7 @@ namespace Ryujinx.Ui
         }
 
         public void HandleScreenState(KeyboardState keyboard)
-        {
+        { 
             bool toggleFullscreen = keyboard.IsKeyDown(OpenTK.Input.Key.F11)
                                 || ((keyboard.IsKeyDown(OpenTK.Input.Key.AltLeft)
                                 ||   keyboard.IsKeyDown(OpenTK.Input.Key.AltRight))
@@ -138,7 +138,8 @@ namespace Ryujinx.Ui
                     {
                         if (keyboard.IsKeyDown(OpenTK.Input.Key.Escape))
                         {
-                            Exit();
+                            if (GtkDialog.CreateExitDialog())
+                                Exit();
                         }
                         else
                         {
