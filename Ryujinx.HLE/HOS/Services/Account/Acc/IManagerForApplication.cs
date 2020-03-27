@@ -1,3 +1,4 @@
+using GLib;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Arp;
 
@@ -36,6 +37,17 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
+        [Command(2)]
+        //EnsureIdTokenCacheAsync() -> object<nn::account::detail::IAsyncContext>
+        public ResultCode EnsureIdTokenCacheAsync(ServiceCtx context)
+        {
+            MakeObject(context, new IAsyncContext(context));
+
+            return ResultCode.Success;
+        }
+
+        [Command(3)]
+        public ResultCode 
         [Command(130)]
         // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, buffer<nn::account::nas::NasUserBaseForApplication, 0x1a>, buffer<bytes, 6>)
         public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
