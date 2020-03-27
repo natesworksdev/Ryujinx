@@ -300,7 +300,7 @@ namespace Ryujinx.Ui
 
             // Shader cache setup.
             string basePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
-            string workPath = System.IO.Path.Combine(basePath, "games", _device.System.TitleIdText, "cache", "gpu");
+            string workPath = System.IO.Path.Combine(basePath, "shaders", _device.System.TitleIdText);
 
             _device.Gpu.SetShaderCachePath(workPath);
             _device.Gpu.LoadShaderCache();

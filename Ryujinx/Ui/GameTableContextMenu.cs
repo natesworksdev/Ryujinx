@@ -31,6 +31,7 @@ namespace Ryujinx.Ui
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
         [GUI] MenuItem _openSaveDir;
+        [GUI] MenuItem _openShaderDir;
         [GUI] MenuItem _extractRomFs;
         [GUI] MenuItem _extractExeFs;
         [GUI] MenuItem _extractLogo;
@@ -45,6 +46,7 @@ namespace Ryujinx.Ui
             builder.Autoconnect(this);
 
             _openSaveDir.Activated  += OpenSaveDir_Clicked;
+            _openShaderDir.Activated += OpenShaderDir_Clicked;
             _extractRomFs.Activated += ExtractRomFs_Clicked;
             _extractExeFs.Activated += ExtractExeFs_Clicked;
             _extractLogo.Activated  += ExtractLogo_Clicked;
@@ -409,6 +411,26 @@ namespace Ryujinx.Ui
                 FileName        = saveDir,
                 UseShellExecute = true,
                 Verb            = "open"
+            });
+        }
+
+        private void OpenShaderDir_Clicked(object sender, EventArgs e)
+        {
+            string titleId = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
+            string basePath = System.IO.Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
+
+            string shaderDir = System.IO.Path.Combine(basePath, "shaders", titleId);
+
+            if (!Directory.Exists(shaderDir))
+            {
+                Directory.CreateDirectory(shaderDir);
+            }
+
+            Process.Start(new ProcessStartInfo()
+            {
+                FileName = shaderDir,
+                UseShellExecute = true,
+                Verb = "open"
             });
         }
 
