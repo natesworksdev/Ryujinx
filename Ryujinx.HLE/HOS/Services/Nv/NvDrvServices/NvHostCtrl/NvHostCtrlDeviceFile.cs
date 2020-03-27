@@ -129,12 +129,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             uint dummyValue = 0;
 
-            return EventWait(ref arguments.Fence, ref dummyValue, arguments.Timeout, async: false);
+            return EventWait(ref arguments.Fence, ref dummyValue, arguments.Timeout, isWaitEventAsyncCmd: false, isWaitEventCmd: false);
         }
 
         private NvInternalResult SyncptWaitEx(ref SyncptWaitExArguments arguments)
         {
-            return EventWait(ref arguments.Input.Fence, ref arguments.Value, arguments.Input.Timeout, async: false);
+            return EventWait(ref arguments.Input.Fence, ref arguments.Value, arguments.Input.Timeout, isWaitEventAsyncCmd: false, isWaitEventCmd: false);
         }
 
         private NvInternalResult SyncptReadMax(ref NvFence arguments)
@@ -186,12 +186,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult EventWait(ref EventWaitArguments arguments)
         {
-            return EventWait(ref arguments.Fence, ref arguments.Value, arguments.Timeout, async: false);
+            return EventWait(ref arguments.Fence, ref arguments.Value, arguments.Timeout, isWaitEventAsyncCmd: false, isWaitEventCmd: true);
         }
 
         private NvInternalResult EventWaitAsync(ref EventWaitArguments arguments)
         {
-            return EventWait(ref arguments.Fence, ref arguments.Value, arguments.Timeout, async: true);
+            return EventWait(ref arguments.Fence, ref arguments.Value, arguments.Timeout, isWaitEventAsyncCmd: true, isWaitEventCmd: false);
         }
 
         private NvInternalResult EventRegister(ref uint userEventId)
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return NvInternalResult.Success;
         }
 
-        private NvInternalResult EventWait(ref NvFence fence, ref uint value, int timeout, bool async)
+        private NvInternalResult EventWait(ref NvFence fence, ref uint value, int timeout, bool isWaitEventAsyncCmd, bool isWaitEventCmd)
         {
             if (fence.Id >= SynchronizationManager.MaxHarwareSyncpoints)
             {
@@ -267,7 +267,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
             // The syncpoint value isn't at the fence yet, we need to wait.
 
-            if (!async)
+            if (!isWaitEventAsyncCmd)
             {
                 value = 0;
             }
@@ -278,7 +278,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
             uint eventIndex;
 
-            if (async)
+            if (isWaitEventAsyncCmd)
             {
                 eventIndex = value;
 
@@ -301,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             {
                 hostEvent.Wait(_device.Gpu, fence);
 
-                if (!async)
+                if (isWaitEventCmd)
                 {
                     value = ((fence.Id & 0xfff) << 16) | 0x10000000;
                 }
@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
             else
             {
-                Logger.PrintError(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (async: {async})");
+                Logger.PrintError(LogClass.ServiceNv, $"Invalid Event at index {eventIndex} (isWaitEventAsyncCmd: {isWaitEventAsyncCmd}, isWaitEventCmd: {isWaitEventCmd})");
 
                 if (hostEvent != null)
                 {
