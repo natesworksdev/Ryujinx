@@ -34,7 +34,9 @@ namespace Ryujinx.Ui
         internal static bool CreateExitDialog()
         {
             if (isExitDialogOpen)
+            {
                 return false;
+            }
             isExitDialogOpen = true;
 
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)

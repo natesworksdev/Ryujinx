@@ -139,7 +139,9 @@ namespace Ryujinx.Ui
                         if (keyboard.IsKeyDown(OpenTK.Input.Key.Escape))
                         {
                             if (GtkDialog.CreateExitDialog())
+                            {
                                 Exit();
+                            }
                         }
                         else
                         {
