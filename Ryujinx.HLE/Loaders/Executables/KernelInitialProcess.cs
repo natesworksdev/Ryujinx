@@ -1,16 +1,16 @@
-using Ryujinx.HLE.Loaders.Compression;
-using System.IO;
 using LibHac;
 using LibHac.Fs;
+using Ryujinx.HLE.Loaders.Compression;
+using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
     class KernelInitialProcess : Kip, IExecutable
     {
 
-        public byte[] Text { get; private set; }
-        public byte[] Ro { get; private set; }
-        public byte[] Data { get; private set; }
+        public byte[] Text { get; }
+        public byte[] Ro { get; }
+        public byte[] Data { get; }
 
         public int TextOffset => Header.Sections[0].OutOffset;
         public int RoOffset => Header.Sections[1].OutOffset;
@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int BssOffset => Header.Sections[3].OutOffset;
         public int BssSize => Header.Sections[3].DecompressedSize;
 
-        public int[] Capabilities { get; set; }
+        public int[] Capabilities { get; }
 
         public KernelInitialProcess(IStorage inStorage) : base(inStorage)
         {

@@ -1,17 +1,17 @@
+using LibHac;
+using LibHac.Fs;
 using Ryujinx.HLE.Loaders.Compression;
 using System;
 using System.IO;
-using LibHac.Fs;
-using LibHac;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
     class NxStaticObject : Nso, IExecutable
     {
 
-        public byte[] Text { get; private set; }
-        public byte[] Ro { get; private set; }
-        public byte[] Data { get; private set; }
+        public byte[] Text { get; }
+        public byte[] Ro { get; }
+        public byte[] Data { get; }
 
         public int TextOffset => (int)Sections[0].MemoryOffset;
         public int RoOffset => (int)Sections[1].MemoryOffset;
