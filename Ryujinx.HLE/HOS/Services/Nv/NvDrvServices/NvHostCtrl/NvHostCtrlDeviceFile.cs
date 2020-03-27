@@ -295,7 +295,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             if (hostEvent != null &&
-               (hostEvent.State == NvHostEventState.Availaible ||
+               (hostEvent.State == NvHostEventState.Available ||
                 hostEvent.State == NvHostEventState.Signaled   ||
                 hostEvent.State == NvHostEventState.Cancelled))
             {

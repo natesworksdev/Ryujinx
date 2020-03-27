@@ -41,7 +41,6 @@ using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 
-
 namespace Ryujinx.HLE.HOS
 {
     public class Horizon : IDisposable

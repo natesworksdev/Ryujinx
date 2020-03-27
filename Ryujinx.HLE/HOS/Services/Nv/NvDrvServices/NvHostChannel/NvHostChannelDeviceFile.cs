@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
             ChannelSyncpoints = new uint[MaxModuleSyncpoint];
 
-            _channelSyncpoint.Id    = _device.System.HostSyncpoint.AllocateSyncpoint(false);
+            _channelSyncpoint.Id = _device.System.HostSyncpoint.AllocateSyncpoint(false);
             _channelSyncpoint.UpdateValue(_device.System.HostSyncpoint);
         }
 
@@ -162,11 +162,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             if (ChannelResourcePolicy == ResourcePolicy.Device)
             {
                 arguments.Value = GetSyncpointDevice(_device.System.HostSyncpoint, arguments.Parameter, false);
-
             }
             else
             {
-                arguments.Value = GetSyncpointDevice(_device.System.HostSyncpoint, arguments.Parameter, false);
+                arguments.Value = GetSyncpointChannel(arguments.Parameter, false);
             }
 
             if (arguments.Value == 0)

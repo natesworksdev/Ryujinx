@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             Fence.Id = 0;
 
-            State = NvHostEventState.Availaible;
+            State = NvHostEventState.Available;
 
             Event = new KEvent(system);
 
@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             Fence.Id    = NvFence.InvalidSyncPointId;
             Fence.Value = 0;
-            State       = NvHostEventState.Availaible;
+            State       = NvHostEventState.Available;
         }
 
         private void Signal()

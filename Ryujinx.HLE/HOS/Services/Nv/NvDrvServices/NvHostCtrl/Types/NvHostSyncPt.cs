@@ -57,6 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             Logger.PrintError(LogClass.ServiceNv, "Cannot allocate a new syncpoint!");
+
             return 0;
         }
 
@@ -105,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                 if (Event != null)
                 {
-                    if (Event.State == NvHostEventState.Availaible ||
+                    if (Event.State == NvHostEventState.Available ||
                         Event.State == NvHostEventState.Signaled   ||
                         Event.State == NvHostEventState.Cancelled)
                     {
@@ -166,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 return NvInternalResult.Success;
             }
 
-            if (hostEvent.State == NvHostEventState.Availaible || hostEvent.State == NvHostEventState.Cancelled || hostEvent.State == NvHostEventState.Signaled)
+            if (hostEvent.State == NvHostEventState.Available || hostEvent.State == NvHostEventState.Cancelled || hostEvent.State == NvHostEventState.Signaled)
             {
                 Events[eventId] = null;
 
