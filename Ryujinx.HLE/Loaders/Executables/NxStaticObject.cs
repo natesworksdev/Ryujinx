@@ -1,6 +1,5 @@
 using LibHac;
 using LibHac.Fs;
-using Ryujinx.HLE.Loaders.Compression;
 using System;
 using System.IO;
 
