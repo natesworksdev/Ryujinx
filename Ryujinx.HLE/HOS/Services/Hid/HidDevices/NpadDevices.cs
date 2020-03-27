@@ -65,7 +65,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _fullBattery[0] = _fullBattery[1] = _fullBattery[2] = BatteryCharge.Percent100;
         }
 
-
         public void AddControllers(params ControllerConfig[] configs)
         {
             for (int i = 0; i < configs.Length; ++i)
@@ -134,7 +133,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     }
                 }
 
-                Logger.PrintError(LogClass.Hid, "Something went wrong! Couldn't find any appropriate controller!");
+                Logger.PrintError(LogClass.Hid, "Couldn't find any appropriate controller.");
             }
         }
 

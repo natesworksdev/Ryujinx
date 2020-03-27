@@ -1,6 +1,7 @@
 ﻿using Ryujinx.HLE.HOS.Services.Am.AppletAE;
-using System.Runtime.InteropServices;
 using System;
+using System.Runtime.InteropServices;
+
 
 namespace Ryujinx.HLE.HOS.Applets
 {
@@ -13,18 +14,9 @@ namespace Ryujinx.HLE.HOS.Applets
 
         ResultCode GetResult();
 
-        static T ReadStruct<T>(byte[] data) where T : struct
+        static T ReadStruct<T>(ReadOnlySpan<byte> data) where T : struct
         {
-            GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
-
-            try
-            {
-                return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
-            }
-            finally
-            {
-                handle.Free();
-            }
+            return MemoryMarshal.Cast<byte,T>(data)[0];
         }
     }
 }

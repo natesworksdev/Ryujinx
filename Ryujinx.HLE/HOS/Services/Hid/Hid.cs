@@ -1,6 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.Exceptions;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
@@ -20,27 +20,27 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         static Hid()
         {
-            if (Marshal.SizeOf<ShMemDebugPad>() != 0x400)
+            if (Unsafe.SizeOf<ShMemDebugPad>() != 0x400)
             {
                 throw new InvalidStructLayoutException(typeof(ShMemDebugPad), 0x400);
             }
-            if (Marshal.SizeOf<ShMemTouchScreen>() != 0x3000)
+            if (Unsafe.SizeOf<ShMemTouchScreen>() != 0x3000)
             {
                 throw new InvalidStructLayoutException(typeof(ShMemTouchScreen), 0x3000);
             }
-            if (Marshal.SizeOf<ShMemKeyboard>() != 0x400)
+            if (Unsafe.SizeOf<ShMemKeyboard>() != 0x400)
             {
                 throw new InvalidStructLayoutException(typeof(ShMemKeyboard), 0x400);
             }
-            if (Marshal.SizeOf<ShMemMouse>() != 0x400)
+            if (Unsafe.SizeOf<ShMemMouse>() != 0x400)
             {
                 throw new InvalidStructLayoutException(typeof(ShMemMouse), 0x400);
             }
-            if (Marshal.SizeOf<ShMemNpad>() != 0x5000)
+            if (Unsafe.SizeOf<ShMemNpad>() != 0x5000)
             {
                 throw new InvalidStructLayoutException(typeof(ShMemNpad), 0x5000);
             }
-            if (Marshal.SizeOf<HidSharedMemory>() != Horizon.HidSize)
+            if (Unsafe.SizeOf<HidSharedMemory>() != Horizon.HidSize)
             {
                 throw new InvalidStructLayoutException(typeof(HidSharedMemory), Horizon.HidSize);
             }
@@ -84,6 +84,5 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             return (ulong)PerformanceCounter.ElapsedMilliseconds * 19200;
         }
-
     }
 }

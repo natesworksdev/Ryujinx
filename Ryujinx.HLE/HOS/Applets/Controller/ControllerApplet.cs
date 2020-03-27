@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
@@ -25,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Applets
         {
             _normalSession = normalSession;
 
-            byte[] launchParams = _normalSession.Pop();   // unknown
+            byte[] launchParams = _normalSession.Pop();
 
             byte[] controllerSupportArgPrivate = _normalSession.Pop();
             ControllerSupportArgPrivate privateArg = IApplet.ReadStruct<ControllerSupportArgPrivate>(controllerSupportArgPrivate);
@@ -35,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
             if (privateArg.Mode != ControllerSupportMode.ShowControllerSupport)
             {
-                _normalSession.Push(BuildResponse());   // Dummy response for other modes
+                _normalSession.Push(BuildResponse()); // Dummy response for other modes
                 AppletStateChanged?.Invoke(this, null);
 
                 return ResultCode.Success;
@@ -64,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Applets
             // TODO: Ideally should hook back to HID.Controller. When applet is called, can choose appropriate controller and attach to appropriate id.
             if (argHeader.PlayerCountMin > 1)
             {
-                Logger.PrintWarning(LogClass.ServiceHid, "Game requested more than 1 controller!");
+                Logger.PrintWarning(LogClass.ServiceHid, "More than one controller was requested.");
             }
 
             ControllerSupportResultInfo result = new ControllerSupportResultInfo
@@ -91,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Applets
             using (MemoryStream stream = new MemoryStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
-                writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Marshal.SizeOf<ControllerSupportResultInfo>())));
+                writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
                 return stream.ToArray();
             }
         }

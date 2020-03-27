@@ -3,7 +3,6 @@ using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
-using Ryujinx.Common.Logging;
 
 using InnerNpadController = Ryujinx.Common.Configuration.Hid.NpadController;
 

@@ -4,6 +4,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         public CommonEntriesHeader Header;
         public Array17<DebugPadEntry> Entries;
-        fixed byte _padding[0x138];
+        fixed byte padding[0x138];
     }
 }

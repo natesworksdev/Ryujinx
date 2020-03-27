@@ -4,6 +4,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         public CommonEntriesHeader Header;
         public Array17<KeyboardState> Entries;
-        fixed byte _padding[0x28];
+        fixed byte padding[0x28];
     }
 }

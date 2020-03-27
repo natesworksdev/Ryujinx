@@ -78,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            // context.Device.Hid.Touchscreen.Active = true;
+            context.Device.Hid.Touchscreen.Active = true;
             Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            // context.Device.Hid.Mouse.Active = true;
+            context.Device.Hid.Mouse.Active = true;
             Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            // context.Device.Hid.Keyboard.Active = true;
+            context.Device.Hid.Keyboard.Active = true;
             Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
@@ -593,7 +593,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            // context.Device.Hid.Npads.Active = true;
+            context.Device.Hid.Npads.Active = true;
             Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
@@ -605,7 +605,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            // context.Device.Hid.Npads.Active = false;
+            context.Device.Hid.Npads.Active = false;
             Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
 
             return ResultCode.Success;
@@ -619,7 +619,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long appletResourceUserId = context.RequestData.ReadInt64();
             long npadStyleSet         = context.RequestData.ReadInt64();
 
-            ref KEvent e = ref context.Device.Hid.Npads.GetStyleSetUpdateEvent(npadId);
+            KEvent e = context.Device.Hid.Npads.GetStyleSetUpdateEvent(npadId);
             if (context.Process.HandleTable.GenerateHandle(e.ReadableEvent, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");

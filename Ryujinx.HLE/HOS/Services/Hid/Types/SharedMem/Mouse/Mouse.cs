@@ -5,6 +5,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         public CommonEntriesHeader Header;
         public Array17<MouseState> Entries;
-        fixed byte _padding[0xB0];
+        fixed byte padding[0xB0];
     }
 }
