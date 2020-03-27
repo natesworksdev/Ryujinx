@@ -1,4 +1,3 @@
-using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
 
@@ -42,7 +41,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             float mipLodBias = descriptor.UnpackMipLodBias();
 
             float maxRequestedAnisotropy = GraphicsConfig.MaxAnisotropy >= 0 && GraphicsConfig.MaxAnisotropy <= 16 ? GraphicsConfig.MaxAnisotropy : descriptor.UnpackMaxAnisotropy();
-            float maxSupportedAnisotropy = GL.GetFloat((GetPName)All.MaxTextureMaxAnisotropy);
+            float maxSupportedAnisotropy = context.Capabilities.MaxSupportedAnisotropy;
 
             if (maxRequestedAnisotropy > maxSupportedAnisotropy)
                 maxRequestedAnisotropy = maxSupportedAnisotropy;
