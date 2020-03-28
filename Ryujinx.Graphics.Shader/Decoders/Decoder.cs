@@ -245,7 +245,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     continue;
                 }
 
-                if(opActivator == null)
+                if (opActivator == null)
                 {
                     throw new ArgumentNullException(nameof(opActivator));
                 }
