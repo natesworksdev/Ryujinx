@@ -69,7 +69,6 @@ namespace Ryujinx.Graphics.OpenGL
                     GL.EnableVertexAttribArray(attribIndex);
                 }
                 
-
                 int offset = attrib.Offset;
                 int size   = fmtInfo.Components;
 
