@@ -37,6 +37,7 @@ namespace Ryujinx.Ui
             {
                 return false;
             }
+
             isExitDialogOpen = true;
 
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)
@@ -47,6 +48,7 @@ namespace Ryujinx.Ui
                 SecondaryText = "All unsaved data will be lost",
                 WindowPosition = WindowPosition.Center
             };
+
             messageDialog.SetSizeRequest(100, 20);
             ResponseType res = (ResponseType)messageDialog.Run();
             messageDialog.Dispose();
