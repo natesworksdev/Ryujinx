@@ -1,5 +1,4 @@
 using Gtk;
-using JsonPrettyPrinterPlus;
 using LibHac.Common;
 using LibHac.Ns;
 using Ryujinx.Audio;
@@ -12,7 +11,6 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
