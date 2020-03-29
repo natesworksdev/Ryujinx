@@ -116,20 +116,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static string GetVec4Indexed(string vectorName, string indexExpr)
         {
-            bool canIndexVec4 = false;
-            if (canIndexVec4)
+            string result = $"{vectorName}.x";
+            for (int i = 1; i < 4; i++)
             {
-                return $"{vectorName}[{indexExpr}]";
-            } 
-            else
-            {
-                string result = $"{vectorName}.x";
-                for (int i = 1; i < 4; i++)
-                {
-                    result = $"(({indexExpr}) == {i}) ? ({vectorName}.{GetSwizzleMask(i)}) : ({result})";
-                }
-                return $"({result})";
+                result = $"(({indexExpr}) == {i}) ? ({vectorName}.{GetSwizzleMask(i)}) : ({result})";
             }
+            return $"({result})";
         }
 
         public static string GetConstantBufferName(IAstNode slot, string offsetExpr, ShaderStage stage)
