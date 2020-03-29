@@ -5,6 +5,8 @@ namespace Ryujinx.Ui
 {
     internal class GtkDialog
     {
+        internal static bool _isExitDialogOpen = false;
+
         internal static void CreateDialog(string title, string text, string secondaryText)
         {
             MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, null)
@@ -30,15 +32,14 @@ namespace Ryujinx.Ui
             CreateDialog("Ryujinx - Error", "Ryujinx has encountered an error", errorMessage);
         }
 
-        internal static bool isExitDialogOpen = false;
         internal static bool CreateExitDialog()
         {
-            if (isExitDialogOpen)
+            if (_isExitDialogOpen)
             {
                 return false;
             }
 
-            isExitDialogOpen = true;
+            _isExitDialogOpen = true;
 
             MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)
             {
@@ -52,7 +53,7 @@ namespace Ryujinx.Ui
             messageDialog.SetSizeRequest(100, 20);
             ResponseType res = (ResponseType)messageDialog.Run();
             messageDialog.Dispose();
-            isExitDialogOpen = false;
+            _isExitDialogOpen = false;
             
             if (res == ResponseType.Ok)
             {
