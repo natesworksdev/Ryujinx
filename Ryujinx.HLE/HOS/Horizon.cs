@@ -32,7 +32,7 @@ using System.Reflection;
 using System.Threading;
 
 using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
-using NsoExecutable     = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
+using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 

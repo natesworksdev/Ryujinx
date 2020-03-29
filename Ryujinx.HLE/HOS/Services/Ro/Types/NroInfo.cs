@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         public ulong  NroMappedAddress { get; set;         }
 
         public NroInfo(
-            NroExecutable executable,
+            NroExecutable       executable,
             byte[]              hash,
             ulong               nroAddress,
             ulong               nroSize,
