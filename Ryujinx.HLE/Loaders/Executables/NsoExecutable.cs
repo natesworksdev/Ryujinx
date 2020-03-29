@@ -5,7 +5,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class NxStaticObject : Nso, IExecutable
+    class NsoExecutable : Nso, IExecutable
     {
 
         public byte[] Text { get; }
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         public new int BssSize => (int)base.BssSize;
 
-        public NxStaticObject(IStorage inStorage) : base(inStorage)
+        public NsoExecutable(IStorage inStorage) : base(inStorage)
         {
             Text = Sections[0].DecompressSection();
             Ro = Sections[1].DecompressSection();

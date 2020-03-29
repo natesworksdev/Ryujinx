@@ -32,7 +32,7 @@ using System.Reflection;
 using System.Threading;
 
 using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
-using NxStaticObject     = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
+using NsoExecutable     = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 
@@ -273,7 +273,7 @@ namespace Ryujinx.HLE.HOS
         {
             using (IStorage fs = new LocalStorage(kipFile, FileAccess.Read))
             {
-                ProgramLoader.LoadKernelInitalProcess(this, new KernelInitialProcess(fs));
+                ProgramLoader.LoadKernelInitalProcess(this, new KipExecutable(fs));
             }
         }
 
@@ -544,7 +544,7 @@ namespace Ryujinx.HLE.HOS
                     Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
                     codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();               
-                    NxStaticObject staticObject = new NxStaticObject(nsoFile.AsStorage());
+                    NsoExecutable staticObject = new NsoExecutable(nsoFile.AsStorage());
 
                     staticObjects.Add(staticObject);
                 }
@@ -574,7 +574,7 @@ namespace Ryujinx.HLE.HOS
             if (isNro)
             {
                 FileStream input = new FileStream(filePath, FileMode.Open);
-                NxRelocatableObject obj = new NxRelocatableObject(input);
+                NroExecutable obj = new NroExecutable(input);
                 staticObject = obj;
 
                 // homebrew NRO can actually have some data after the actual NRO
@@ -647,7 +647,7 @@ namespace Ryujinx.HLE.HOS
             }
             else
             {
-                staticObject = new NxStaticObject(new LocalStorage(filePath, FileAccess.Read));
+                staticObject = new NsoExecutable(new LocalStorage(filePath, FileAccess.Read));
             }
 
             ContentManager.LoadEntries(Device);

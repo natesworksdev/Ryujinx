@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS
         private const int ArgsDataSize   = 0x9000;
         private const int ArgsTotalSize  = ArgsHeaderSize + ArgsDataSize;
 
-        public static bool LoadKernelInitalProcess(Horizon system, KernelInitialProcess kip)
+        public static bool LoadKernelInitalProcess(Horizon system, KipExecutable kip)
         {
             int endOffset = kip.DataOffset + kip.Data.Length;
 

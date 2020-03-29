@@ -4,7 +4,7 @@ using System.IO;
 
 namespace Ryujinx.HLE.Loaders.Executables
 {
-    class KernelInitialProcess : Kip, IExecutable
+    class KipExecutable : Kip, IExecutable
     {
 
         public byte[] Text { get; }
@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.Loaders.Executables
 
         public int[] Capabilities { get; }
 
-        public KernelInitialProcess(IStorage inStorage) : base(inStorage)
+        public KipExecutable(IStorage inStorage) : base(inStorage)
         {
             Capabilities = new int[32];
 
