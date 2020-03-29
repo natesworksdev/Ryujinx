@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private TextureView _emulatedViewParent;
 
-        private TextureView _intelWarView;
+        private TextureView _incompatibleFormatView;
 
         private readonly TextureCreateInfo _info;
 
@@ -125,22 +125,22 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public int GetIntelWarViewHandle()
+        public int GetIncompatibleFormatViewHandle()
         {
-            // Intel has a bug where the view format is always ignored,
+            // AMD and Intel has a bug where the view format is always ignored,
             // it uses the parent format instead.
             // As workaround we create a new texture with the correct
             // format, and then do a copy after the draw.
             if (_parent.Info.Format != Format)
             {
-                if (_intelWarView == null)
+                if (_incompatibleFormatView == null)
                 {
-                    _intelWarView = (TextureView)_renderer.CreateTexture(_info);
+                    _incompatibleFormatView = (TextureView)_renderer.CreateTexture(_info);
                 }
 
-                TextureCopyUnscaled.Copy(_parent.Info, _intelWarView._info, _parent.Handle, _intelWarView.Handle, FirstLayer, 0, FirstLevel, 0);
+                TextureCopyUnscaled.Copy(_parent.Info, _incompatibleFormatView._info, _parent.Handle, _incompatibleFormatView.Handle, FirstLayer, 0, FirstLevel, 0);
 
-                return _intelWarView.Handle;
+                return _incompatibleFormatView.Handle;
             }
 
             return Handle;
@@ -148,9 +148,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SignalModified()
         {
-            if (_intelWarView != null)
+            if (_incompatibleFormatView != null)
             {
-                TextureCopyUnscaled.Copy(_intelWarView._info, _parent.Info, _intelWarView.Handle, _parent.Handle, 0, FirstLayer, 0, FirstLevel);
+                TextureCopyUnscaled.Copy(_incompatibleFormatView._info, _parent.Info, _incompatibleFormatView.Handle, _parent.Handle, 0, FirstLayer, 0, FirstLevel);
             }
         }
 
@@ -433,11 +433,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
-            if (_intelWarView != null)
+            if (_incompatibleFormatView != null)
             {
-                _intelWarView.Dispose();
+                _incompatibleFormatView.Dispose();
 
-                _intelWarView = null;
+                _incompatibleFormatView = null;
             }
 
             if (Handle != 0)

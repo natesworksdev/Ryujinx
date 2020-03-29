@@ -10,16 +10,17 @@ namespace Ryujinx.Graphics.OpenGL
         private static readonly Lazy<int> _maximumComputeSharedMemorySize = new Lazy<int>(() => GetLimit(All.MaxComputeSharedMemorySize));
         private static readonly Lazy<int> _storageBufferOffsetAlignment   = new Lazy<int>(() => GetLimit(All.ShaderStorageBufferOffsetAlignment));
 
-        private enum GpuVendor
+        public enum GpuVendor
         {
             Unknown,
+            Amd,
             Intel,
             Nvidia
         }
 
         private static readonly Lazy<GpuVendor> _gpuVendor = new Lazy<GpuVendor>(GetGpuVendor);
 
-        public static bool IsIntelDriver => _gpuVendor.Value == GpuVendor.Intel;
+        public static GpuVendor Vendor => _gpuVendor.Value;
 
         public static bool SupportsAstcCompression          => _supportsAstcCompression.Value;
         public static bool SupportsNonConstantTextureOffset => _gpuVendor.Value == GpuVendor.Nvidia;
@@ -49,15 +50,19 @@ namespace Ryujinx.Graphics.OpenGL
 
         private static GpuVendor GetGpuVendor()
         {
-            string vendor = GL.GetString(StringName.Vendor);
+            string vendor = GL.GetString(StringName.Vendor).ToLower();
 
-            if (vendor == "NVIDIA Corporation")
+            if (vendor == "nvidia corporation")
             {
                 return GpuVendor.Nvidia;
             }
-            else if (vendor == "Intel")
+            else if (vendor == "intel")
             {
                 return GpuVendor.Intel;
+            }
+            else if (vendor == "ati technologies inc." || vendor == "advanced micro devices, inc.")
+            {
+                return GpuVendor.Amd;
             }
             else
             {
