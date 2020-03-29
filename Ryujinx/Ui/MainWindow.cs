@@ -307,8 +307,9 @@ namespace Ryujinx.Ui
                 {
                     MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                     {
-                        Text          = "You have debug logs enabled!",
-                        SecondaryText = "Enabling debug logs causes losses to FPS, would you like to disable them?"
+                        Title         = "Ryujinx - Warning",
+                        Text          = "You have debug logging enabled, which is designed to be used by developers only.",
+                        SecondaryText = "For optimal performance, it's recommended to disable debug logging. Would you like to disable debug logging now?"
                     };
 
                     if (debugWarningDialog.Run() == (int)ResponseType.Yes)
@@ -324,8 +325,9 @@ namespace Ryujinx.Ui
                 {
                     MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                     {
-                        Text          = "You have shader dumping enabled!",
-                        SecondaryText = "Enabling shader dumping causes losses to FPS, would you like to disable it?"
+                        Title         = "Ryujinx - Warning",
+                        Text          = "You have shader dumping enabled, which is designed to be used by developers only.",
+                        SecondaryText = "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?"
                     };
 
                     if (shadersDumpWarningDialog.Run() == (int)ResponseType.Yes)
