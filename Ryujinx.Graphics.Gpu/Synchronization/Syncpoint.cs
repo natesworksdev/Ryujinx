@@ -13,7 +13,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
 
         public readonly uint Id;
 
-        // TODO: get ride of this lock
+        // TODO: get rid of this lock
         private object _listLock = new object();
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// </summary>
         /// <param name="threshold">The target threshold</param>
         /// <param name="callback">The callback to call when the threshold is reached</param>
-        /// <returns>the created SyncpointWaiterHandle object or null if already past threshold</returns>
+        /// <returns>The created SyncpointWaiterHandle object or null if already past threshold</returns>
         public SyncpointWaiterHandle RegisterCallback(uint threshold, Action callback)
         {
             lock (_listLock)

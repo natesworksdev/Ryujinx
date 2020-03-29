@@ -25,15 +25,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             _device        = device;
             Events         = new NvHostEvent[EventsCount];
-            _counterMin    = new int[SynchronizationManager.MaxHarwareSyncpoints];
-            _counterMax    = new int[SynchronizationManager.MaxHarwareSyncpoints];
-            _clientManaged = new bool[SynchronizationManager.MaxHarwareSyncpoints];
-            _assigned      = new bool[SynchronizationManager.MaxHarwareSyncpoints];
+            _counterMin    = new int[SynchronizationManager.MaxHardwareSyncpoints];
+            _counterMax    = new int[SynchronizationManager.MaxHardwareSyncpoints];
+            _clientManaged = new bool[SynchronizationManager.MaxHardwareSyncpoints];
+            _assigned      = new bool[SynchronizationManager.MaxHardwareSyncpoints];
         }
 
         private void ReserveSyncpointLocked(uint id, bool isClientManaged)
         {
-            if (id >= SynchronizationManager.MaxHarwareSyncpoints || _assigned[id])
+            if (id >= SynchronizationManager.MaxHardwareSyncpoints || _assigned[id])
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         {
             lock (SyncpointAllocatorLock)
             {
-                for (uint i = 1; i < SynchronizationManager.MaxHarwareSyncpoints; i++)
+                for (uint i = 1; i < SynchronizationManager.MaxHardwareSyncpoints; i++)
                 {
                     if (!_assigned[i])
                     {
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
             lock (SyncpointAllocatorLock)
             {
-                if (id >= SynchronizationManager.MaxHarwareSyncpoints || !_assigned[id])
+                if (id >= SynchronizationManager.MaxHardwareSyncpoints || !_assigned[id])
                 {
                     throw new ArgumentOutOfRangeException(nameof(id));
                 }
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public void SetSyncpointMinEqualSyncpointMax(uint id)
         {
-            if (id >= SynchronizationManager.MaxHarwareSyncpoints)
+            if (id >= SynchronizationManager.MaxHardwareSyncpoints)
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -266,7 +266,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private bool IsClientManaged(uint id)
         {
-            if (id >= SynchronizationManager.MaxHarwareSyncpoints)
+            if (id >= SynchronizationManager.MaxHardwareSyncpoints)
             {
                 return false;
             }

@@ -475,7 +475,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             {
                 result = new int[8];
 
-                // WaitForInterupt(handle)
+                // WaitForInterrupt(handle)
                 result[offset++] = 0x2001001E;
                 result[offset++] = 0x0;
             }
@@ -488,7 +488,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             result[offset++] = 0x2001001C;
             result[offset++] = 0x0;
 
-            // Increment the syncpoint 2 time. (mitigate an hardware bug)
+            // Increment the syncpoint 2 times. (mitigate a hardware bug)
 
             // SyncpointAction(fence.id, increment: true, switch_en: false);
             result[offset++] = 0x2001001D;

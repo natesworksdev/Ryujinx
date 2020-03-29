@@ -118,28 +118,26 @@ namespace Ryujinx.Graphics.Gpu
         /// This is used by nvservices to handle special cases.
         /// </summary>
         /// <param name="commandBuffer">The command buffer containing the prefetched commands</param>
-        /// <param name="completionCallback">A callback called when the command buffer has been processed</param>
-        /// <param name="completionCallbackArgument">Argument used in the completion callback</param>
-        public void PushHostCommandBuffer(int [] commandBuffer)
+        public void PushHostCommandBuffer(int[] commandBuffer)
         {
             _commandBufferQueue.Enqueue(new CommandBuffer
             {
                 Type            = CommandBufferType.Prefetch,
-                Words = commandBuffer,
+                Words           = commandBuffer,
                 EntryAddress    = ulong.MaxValue,
                 EntryCount      = (uint)commandBuffer.Length
             });
         }
 
         /// <summary>
-        /// Create a CommandBufer from a GPFIFO entry.
+        /// Create a CommandBuffer from a GPFIFO entry.
         /// </summary>
         /// <param name="entry">The GPFIFO entry</param>
         /// <returns></returns>
         private CommandBuffer CreateCommandBuffer(ulong entry)
         {
-            ulong length = (entry >> 42) & 0x1fffff;
-            ulong startAddres = entry & 0xfffffffffc;
+            ulong length       = (entry >> 42) & 0x1fffff;
+            ulong startAddress = entry & 0xfffffffffc;
 
             bool noPrefetch = (entry & (1UL << 63)) != 0;
 
@@ -154,7 +152,7 @@ namespace Ryujinx.Graphics.Gpu
             {
                 Type            = type,
                 Words           = null,
-                EntryAddress    = startAddres,
+                EntryAddress    = startAddress,
                 EntryCount      = (uint)length
             };
         }

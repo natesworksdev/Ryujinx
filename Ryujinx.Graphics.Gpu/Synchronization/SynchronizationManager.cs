@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// <summary>
         /// The maximum number of syncpoints supported by the GM20B.
         /// </summary>
-        public const int MaxHarwareSyncpoints = 192;
+        public const int MaxHardwareSyncpoints = 192;
 
         /// <summary>
         /// Array containing all hardware syncpoints.
@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
 
         public SynchronizationManager()
         {
-            _syncpoints = new Syncpoint[MaxHarwareSyncpoints];
+            _syncpoints = new Syncpoint[MaxHardwareSyncpoints];
 
             for (uint i = 0; i < _syncpoints.Length; i++)
             {
@@ -32,11 +32,11 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// Increment the value of a syncpoint with a given id.
         /// </summary>
         /// <param name="id">The id of the syncpoint</param>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHardwareSyncpoints</exception>
         /// <returns>The incremented value of the syncpoint</returns>
         public uint IncrementSyncpoint(uint id)
         {
-            if (id >= MaxHarwareSyncpoints)
+            if (id >= MaxHardwareSyncpoints)
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -48,11 +48,11 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// Get the value of a syncpoint with a given id.
         /// </summary>
         /// <param name="id">The id of the syncpoint</param>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHardwareSyncpoints</exception>
         /// <returns>The value of the syncpoint</returns>
         public uint GetSyncpointValue(uint id)
         {
-            if (id >= MaxHarwareSyncpoints)
+            if (id >= MaxHardwareSyncpoints)
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -67,11 +67,11 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// <param name="id">The id of the syncpoint</param>
         /// <param name="threshold">The target threshold</param>
         /// <param name="callback">The callback to call when the threshold is reached</param>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHardwareSyncpoints</exception>
         /// <returns>The created SyncpointWaiterHandle object or null if already past threshold</returns>
         public SyncpointWaiterHandle RegisterCallbackOnSyncpoint(uint id, uint threshold, Action callback)
         {
-            if (id >= MaxHarwareSyncpoints)
+            if (id >= MaxHardwareSyncpoints)
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -84,10 +84,10 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// </summary>
         /// <param name="id">The id of the syncpoint</param>
         /// <param name="waiterInformation">The waiter information to unregister</param>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHardwareSyncpoints</exception>
         public void UnregisterCallback(uint id, SyncpointWaiterHandle waiterInformation)
         {
-            if (id >= MaxHarwareSyncpoints)
+            if (id >= MaxHardwareSyncpoints)
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
@@ -101,13 +101,12 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
         /// </summary>
         /// <param name="id">The id of the syncpoint</param>
         /// <param name="threshold">The target threshold</param>
-        /// <param name="callback">The callback to call when the threshold is reached</param>
         /// <param name="timeout">The timeout</param>
-        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHarwareSyncpoints</exception>
+        /// <exception cref="System.ArgumentOutOfRangeException">Thrown when id >= MaxHardwareSyncpoints</exception>
         /// <returns>True if timed out</returns>
         public bool WaitOnSyncpoint(uint id, uint threshold, TimeSpan timeout)
         {
-            if (id >= MaxHarwareSyncpoints)
+            if (id >= MaxHardwareSyncpoints)
             {
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
