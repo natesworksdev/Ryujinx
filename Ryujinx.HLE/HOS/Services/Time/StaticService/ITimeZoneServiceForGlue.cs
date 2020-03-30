@@ -71,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                         return ResultCode.LocationNameTooLong;
                     }
 
-                    context.Memory.WriteBytes(bufferPosition + offset, Encoding.ASCII.GetBytes(locationName));
+                    context.Memory.Write((ulong)bufferPosition + offset, Encoding.ASCII.GetBytes(locationName));
                     MemoryHelper.FillWithZeros(context.Memory, bufferPosition + offset + locationName.Length, padding);
 
                     offset += 0x24;

@@ -322,8 +322,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 serverHeader.ReceiveListType,
                 serverHeader.ReceiveListOffset);
 
-            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 0, clientHeader.Word0);
-            serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 4, clientHeader.Word1);
+            serverProcess.CpuMemory.Write(serverMsg.Address + 0, clientHeader.Word0);
+            serverProcess.CpuMemory.Write(serverMsg.Address + 4, clientHeader.Word1);
 
             uint offset;
 
@@ -337,13 +337,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     return KernelResult.InvalidCombination;
                 }
 
-                serverProcess.CpuMemory.WriteUInt32((long)serverMsg.Address + 8, clientHeader.Word2);
+                serverProcess.CpuMemory.Write(serverMsg.Address + 8, clientHeader.Word2);
 
                 offset = 3;
 
                 if (clientHeader.HasPid)
                 {
-                    serverProcess.CpuMemory.WriteInt64((long)serverMsg.Address + offset * 4, clientProcess.Pid);
+                    serverProcess.CpuMemory.Write(serverMsg.Address + offset * 4, clientProcess.Pid);
 
                     offset += 2;
                 }
@@ -359,7 +359,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         clientResult = GetCopyObjectHandle(clientThread, serverProcess, handle, out newHandle);
                     }
 
-                    serverProcess.CpuMemory.WriteInt32((long)serverMsg.Address + offset * 4, newHandle);
+                    serverProcess.CpuMemory.Write(serverMsg.Address + offset * 4, newHandle);
 
                     offset++;
                 }
@@ -382,7 +382,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         }
                     }
 
-                    serverProcess.CpuMemory.WriteInt32((long)serverMsg.Address + offset * 4, newHandle);
+                    serverProcess.CpuMemory.Write(serverMsg.Address + offset * 4, newHandle);
 
                     offset++;
                 }
@@ -450,7 +450,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                     descriptor.BufferAddress = 0;
                 }
 
-                serverProcess.CpuMemory.WriteUInt64((long)serverMsg.Address + offset * 4, descriptor.Pack());
+                serverProcess.CpuMemory.Write(serverMsg.Address + offset * 4, descriptor.Pack());
 
                 offset += 2;
             }
@@ -542,11 +542,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 descWord2 |= (uint)(dstAddress >> 34) & 0x3ffffffc;
                 descWord2 |= (uint)(dstAddress >> 4)  & 0xf0000000;
 
-                long serverDescAddress = (long)serverMsg.Address + offset * 4;
+                ulong serverDescAddress = serverMsg.Address + offset * 4;
 
-                serverProcess.CpuMemory.WriteUInt32(serverDescAddress + 0, descWord0);
-                serverProcess.CpuMemory.WriteUInt32(serverDescAddress + 4, descWord1);
-                serverProcess.CpuMemory.WriteUInt32(serverDescAddress + 8, descWord2);
+                serverProcess.CpuMemory.Write(serverDescAddress + 0, descWord0);
+                serverProcess.CpuMemory.Write(serverDescAddress + 4, descWord1);
+                serverProcess.CpuMemory.Write(serverDescAddress + 8, descWord2);
 
                 offset += 3;
             }
@@ -723,7 +723,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 {
                     int newHandle = 0;
 
-                    int handle = serverProcess.CpuMemory.ReadInt32((long)serverMsg.Address + offset * 4);
+                    int handle = serverProcess.CpuMemory.Read<int>(serverMsg.Address + offset * 4);
 
                     if (handle != 0)
                     {
@@ -739,7 +739,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 {
                     int newHandle = 0;
 
-                    int handle = serverProcess.CpuMemory.ReadInt32((long)serverMsg.Address + offset * 4);
+                    int handle = serverProcess.CpuMemory.Read<int>(serverMsg.Address + offset * 4);
 
                     if (handle != 0)
                     {
@@ -768,7 +768,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             for (int index = 0; index < serverHeader.PointerBuffersCount; index++)
             {
-                ulong pointerDesc = serverProcess.CpuMemory.ReadUInt64((long)serverMsg.Address + offset * 4);
+                ulong pointerDesc = serverProcess.CpuMemory.Read<ulong>(serverMsg.Address + offset * 4);
 
                 PointerBufferDesc descriptor = new PointerBufferDesc(pointerDesc);
 
@@ -889,9 +889,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             KProcess currentProcess = System.Scheduler.GetCurrentProcess();
 
-            uint word0 = currentProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 0);
-            uint word1 = currentProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 4);
-            uint word2 = currentProcess.CpuMemory.ReadUInt32((long)serverMsg.Address + 8);
+            uint word0 = currentProcess.CpuMemory.Read<uint>(serverMsg.Address + 0);
+            uint word1 = currentProcess.CpuMemory.Read<uint>(serverMsg.Address + 4);
+            uint word2 = currentProcess.CpuMemory.Read<uint>(serverMsg.Address + 8);
 
             return new MessageHeader(word0, word1, word2);
         }
@@ -1067,20 +1067,20 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 if (header.HasPid)
                 {
-                    process.CpuMemory.WriteInt64((long)message.Address + offset * 4, 0);
+                    process.CpuMemory.Write(message.Address + offset * 4, 0L);
 
                     offset += 2;
                 }
 
                 for (int index = 0; index < totalHandeslCount; index++)
                 {
-                    int handle = process.CpuMemory.ReadInt32((long)message.Address + offset * 4);
+                    int handle = process.CpuMemory.Read<int>(message.Address + offset * 4);
 
                     if (handle != 0)
                     {
                         process.HandleTable.CloseHandle(handle);
 
-                        process.CpuMemory.WriteInt32((long)message.Address + offset * 4, 0);
+                        process.CpuMemory.Write(message.Address + offset * 4, 0);
                     }
 
                     offset++;

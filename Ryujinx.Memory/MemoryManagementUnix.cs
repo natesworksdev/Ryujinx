@@ -10,7 +10,6 @@ namespace Ryujinx.Memory
             ulong pageSize = (ulong)Syscall.sysconf(SysconfName._SC_PAGESIZE);
 
             const MmapProts prot = MmapProts.PROT_READ | MmapProts.PROT_WRITE;
-
             const MmapFlags flags = MmapFlags.MAP_PRIVATE | MmapFlags.MAP_ANONYMOUS;
 
             IntPtr ptr = Syscall.mmap(IntPtr.Zero, size + pageSize, prot, flags, -1, 0);

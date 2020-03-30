@@ -1109,15 +1109,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 default: throw new ArgumentException(nameof(addrSpaceType));
             }
 
-            bool useFlatPageTable = memRegion == MemoryRegion.Application;
-
-            CpuMemory = new MemoryManager(_system.Device.Memory.Pointer, addrSpaceBits, useFlatPageTable);
+            CpuMemory = new MemoryManager(_system.Device.Allocator, _system.Device.Memory, 1UL << addrSpaceBits);
 
             Translator = new Translator(CpuMemory);
 
             // TODO: This should eventually be removed.
             // The GPU shouldn't depend on the CPU memory manager at all.
-            _system.Device.Gpu.SetVmm(CpuMemory);
+            _system.Device.Gpu.SetVmm(CpuMemory, _system.Device.Memory.Impl);
 
             MemoryManager = new KMemoryManager(_system, CpuMemory);
         }

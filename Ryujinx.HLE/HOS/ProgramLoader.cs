@@ -270,9 +270,9 @@ namespace Ryujinx.HLE.HOS
                 end = bssStart + (ulong)image.BssSize;
             }
 
-            process.CpuMemory.WriteBytes((long)textStart, image.Text);
-            process.CpuMemory.WriteBytes((long)roStart,   image.Ro);
-            process.CpuMemory.WriteBytes((long)dataStart, image.Data);
+            process.CpuMemory.Write(textStart, image.Text);
+            process.CpuMemory.Write(roStart,   image.Ro);
+            process.CpuMemory.Write(dataStart, image.Data);
 
             MemoryHelper.FillWithZeros(process.CpuMemory, (long)bssStart, image.BssSize);
 

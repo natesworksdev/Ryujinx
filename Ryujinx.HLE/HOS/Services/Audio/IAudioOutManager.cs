@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
             if ((ulong)deviceNameBuffer.Length <= (ulong)size)
             {
-                context.Memory.WriteBytes(position, deviceNameBuffer);
+                context.Memory.Write((ulong)position, deviceNameBuffer);
 
                 nameCount++;
             }
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
             if ((ulong)deviceNameBuffer.Length <= (ulong)receiveSize)
             {
-                context.Memory.WriteBytes(receivePosition, deviceNameBuffer);
+                context.Memory.Write((ulong)receivePosition, deviceNameBuffer);
             }
             else
             {

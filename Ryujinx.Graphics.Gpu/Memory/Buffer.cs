@@ -30,7 +30,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public ulong EndAddress => Address + Size;
 
-        private int[] _sequenceNumbers;
+        private readonly (ulong, ulong)[] _modifiedRanges;
 
         /// <summary>
         /// Creates a new instance of the buffer.
@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             HostBuffer = context.Renderer.CreateBuffer((int)size);
 
-            _sequenceNumbers = new int[size / MemoryManager.PageSize];
+            _modifiedRanges = new (ulong, ulong)[size / PhysicalMemory.PageSize];
         }
 
         /// <summary>
@@ -87,42 +87,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the range to synchronize</param>
         public void SynchronizeMemory(ulong address, ulong size)
         {
-            int currentSequenceNumber = _context.SequenceNumber;
+            int count = _context.PhysicalMemory.QueryModified(address, size, ResourceName.Buffer, _modifiedRanges);
 
-            bool needsSync = false;
-
-            ulong buffOffset = address - Address;
-
-            ulong buffEndOffset = (buffOffset + size + MemoryManager.PageMask) & ~MemoryManager.PageMask;
-
-            int startIndex = (int)(buffOffset    / MemoryManager.PageSize);
-            int endIndex   = (int)(buffEndOffset / MemoryManager.PageSize);
-
-            for (int index = startIndex; index < endIndex; index++)
+            for (int index = 0; index < count; index++)
             {
-                if (_sequenceNumbers[index] != currentSequenceNumber)
-                {
-                    _sequenceNumbers[index] = currentSequenceNumber;
-
-                    needsSync = true;
-                }
-            }
-
-            if (!needsSync)
-            {
-                return;
-            }
-
-            (ulong, ulong)[] modifiedRanges = _context.PhysicalMemory.GetModifiedRanges(address, size, ResourceName.Buffer);
-
-            for (int index = 0; index < modifiedRanges.Length; index++)
-            {
-                (ulong mAddress, ulong mSize) = modifiedRanges[index];
+                (ulong mAddress, ulong mSize) = _modifiedRanges[index];
 
                 int offset = (int)(mAddress - Address);
 
                 HostBuffer.SetData(offset, _context.PhysicalMemory.GetSpan(mAddress, mSize));
             }
+        }
+
+        private void InvalidateRangeInternal(ulong offset, int size)
+        {
+            /*Span<byte> dataSpan = _data;
+
+            HostBuffer.SetData((int)offset, dataSpan.Slice((int)offset, size));*/
         }
 
         /// <summary>

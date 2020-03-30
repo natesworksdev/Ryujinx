@@ -18,7 +18,7 @@ namespace ARMeilleure.Translation
 
         private const bool AlwaysTranslateFunctions = true; // If false, only translates a single block for lowCq.
 
-        private MemoryManager _memory;
+        private IMemoryManager _memory;
 
         private ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
 
@@ -30,7 +30,7 @@ namespace ARMeilleure.Translation
 
         private volatile int _threadCount;
 
-        public Translator(MemoryManager memory)
+        public Translator(IMemoryManager memory)
         {
             _memory = memory;
 

@@ -1,10 +1,9 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory
 {
-    static class MemoryManagementWin
+    static class MemoryManagementWindows
     {
         [Flags]
         private enum AllocationType : uint
@@ -36,12 +35,6 @@ namespace Ryujinx.Memory
             WriteCombineModifierflag = 0x400
         }
 
-        private enum WriteWatchFlags : uint
-        {
-            None = 0,
-            Reset = 1
-        }
-
         [DllImport("kernel32.dll")]
         private static extern IntPtr VirtualAlloc(
             IntPtr lpAddress,
@@ -54,15 +47,6 @@ namespace Ryujinx.Memory
             IntPtr lpAddress,
             IntPtr dwSize,
             AllocationType dwFreeType);
-
-        [DllImport("kernel32.dll")]
-        private unsafe static extern int GetWriteWatch(
-            WriteWatchFlags dwFlags,
-            IntPtr lpBaseAddress,
-            IntPtr dwRegionSize,
-            IntPtr* lpAddresses,
-            ref ulong lpdwCount,
-            out uint lpdwGranularity);
 
         public static IntPtr Allocate(IntPtr size)
         {
@@ -84,29 +68,6 @@ namespace Ryujinx.Memory
         public static bool Free(IntPtr address)
         {
             return VirtualFree(address, IntPtr.Zero, AllocationType.Release);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public unsafe static bool QueryModifiedPages(IntPtr address, IntPtr size, Span<IntPtr> addresses, out ulong count)
-        {
-            ulong pagesCount = (ulong)addresses.Length;
-
-            int result;
-
-            fixed (IntPtr* addressesPtr = addresses)
-            {
-                result = GetWriteWatch(
-                    WriteWatchFlags.Reset,
-                    address,
-                    size,
-                    addressesPtr,
-                    ref pagesCount,
-                    out _);
-            }
-
-            count = pagesCount;
-
-            return result == 0;
         }
     }
 }

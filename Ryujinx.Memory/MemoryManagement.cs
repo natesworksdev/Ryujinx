@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory
@@ -12,7 +11,7 @@ namespace Ryujinx.Memory
             {
                 IntPtr sizeNint = new IntPtr((long)size);
 
-                return MemoryManagementWin.Allocate(sizeNint);
+                return MemoryManagementWindows.Allocate(sizeNint);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
                      RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -29,7 +28,7 @@ namespace Ryujinx.Memory
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                return MemoryManagementWin.Free(address);
+                return MemoryManagementWindows.Free(address);
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ||
                      RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -39,24 +38,6 @@ namespace Ryujinx.Memory
             else
             {
                 throw new PlatformNotSupportedException();
-            }
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static bool QueryModifiedPages(IntPtr address, IntPtr size, Span<IntPtr> addresses, out ulong count)
-        {
-            // This is only supported on windows, but returning
-            // false (failed) is also valid for platforms without
-            // write tracking support on the OS.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                return MemoryManagementWin.QueryModifiedPages(address, size, addresses, out count);
-            }
-            else
-            {
-                count = 0;
-
-                return false;
             }
         }
     }
