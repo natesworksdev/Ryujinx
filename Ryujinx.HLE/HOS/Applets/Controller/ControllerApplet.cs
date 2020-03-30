@@ -27,7 +27,6 @@ namespace Ryujinx.HLE.HOS.Applets
             _normalSession = normalSession;
 
             byte[] launchParams = _normalSession.Pop();
-
             byte[] controllerSupportArgPrivate = _normalSession.Pop();
             ControllerSupportArgPrivate privateArg = IApplet.ReadStruct<ControllerSupportArgPrivate>(controllerSupportArgPrivate);
 
@@ -55,6 +54,7 @@ namespace Ryujinx.HLE.HOS.Applets
             else
             {
                 Logger.PrintStub(LogClass.ServiceHid, $"Unknown revision of ControllerSupportArg.");
+
                 argHeader = IApplet.ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
 
@@ -93,6 +93,7 @@ namespace Ryujinx.HLE.HOS.Applets
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 writer.Write(MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref result, Unsafe.SizeOf<ControllerSupportResultInfo>())));
+
                 return stream.ToArray();
             }
         }
@@ -103,6 +104,7 @@ namespace Ryujinx.HLE.HOS.Applets
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 writer.Write((ulong)ResultCode.Success);
+                
                 return stream.ToArray();
             }
         }

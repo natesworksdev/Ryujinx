@@ -489,7 +489,7 @@ namespace Ryujinx.Ui
 
                     TouchPoint currentPoint = new TouchPoint
                     {
-                        X = (uint)mX,   // Can't be -ve?
+                        X = (uint)mX,
                         Y = (uint)mY,
 
                         // Placeholder values till more data is acquired

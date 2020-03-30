@@ -3,6 +3,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     unsafe struct DebugPadEntry
     {
         public ulong SampleTimestamp;
-        fixed byte unknown[0x20];
+        fixed byte _unknown[0x20];
     }
 }

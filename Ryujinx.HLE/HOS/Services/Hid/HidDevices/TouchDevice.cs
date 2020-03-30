@@ -43,6 +43,5 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 };
             }
         }
-
     }
 }
