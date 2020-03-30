@@ -5,7 +5,7 @@ using Ryujinx.HLE.HOS.Services.Nv.Types;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    internal class NvHostEvent
+    class NvHostEvent
     {
         public NvFence          Fence;
         public NvHostEventState State;

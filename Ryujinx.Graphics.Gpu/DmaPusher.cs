@@ -122,10 +122,10 @@ namespace Ryujinx.Graphics.Gpu
         {
             _commandBufferQueue.Enqueue(new CommandBuffer
             {
-                Type            = CommandBufferType.Prefetch,
-                Words           = commandBuffer,
-                EntryAddress    = ulong.MaxValue,
-                EntryCount      = (uint)commandBuffer.Length
+                Type         = CommandBufferType.Prefetch,
+                Words        = commandBuffer,
+                EntryAddress = ulong.MaxValue,
+                EntryCount   = (uint)commandBuffer.Length
             });
         }
 
@@ -150,10 +150,10 @@ namespace Ryujinx.Graphics.Gpu
 
             return new CommandBuffer
             {
-                Type            = type,
-                Words           = null,
-                EntryAddress    = startAddress,
-                EntryCount      = (uint)length
+                Type         = type,
+                Words        = null,
+                EntryAddress = startAddress,
+                EntryCount   = (uint)length
             };
         }
 

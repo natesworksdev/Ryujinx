@@ -328,13 +328,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             return NvInternalResult.Success;
         }
 
-        private NvInternalResult EnsuremGpfifoExFence()
-        {
-            _channelSyncpoint.Value = _device.System.HostSyncpoint.ReadSyncpointValue(_channelSyncpoint.Id);
-
-            return NvInternalResult.Success;
-        }
-
         private NvInternalResult AllocGpfifoEx(ref AllocGpfifoExArguments arguments)
         {
             _channelSyncpoint.UpdateValue(_device.System.HostSyncpoint);
@@ -450,55 +443,55 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private static int[] CreateWaitCommandBuffer(NvFence fence)
         {
-            int[] result = new int[4];
+            int[] commandBuffer = new int[4];
 
             // SyncpointValue = fence.Value;
-            result[0] = 0x2001001C;
-            result[1] = (int)fence.Value;
+            commandBuffer[0] = 0x2001001C;
+            commandBuffer[1] = (int)fence.Value;
 
             // SyncpointAction(fence.id, increment: false, switch_en: true);
-            result[2] = 0x2001001D;
-            result[3] = (((int)fence.Id << 8) | (0 << 0) | (1 << 4));
+            commandBuffer[2] = 0x2001001D;
+            commandBuffer[3] = (((int)fence.Id << 8) | (0 << 0) | (1 << 4));
 
-            return result;
+            return commandBuffer;
         }
 
         private int[] CreateIncrementCommandBuffer(ref NvFence fence, SubmitGpfifoFlags flags)
         {
             bool hasWfi = !flags.HasFlag(SubmitGpfifoFlags.SuppressWfi);
 
-            int[] result;
+            int[] commandBuffer;
 
             int offset = 0;
 
             if (hasWfi)
             {
-                result = new int[8];
+                commandBuffer = new int[8];
 
                 // WaitForInterrupt(handle)
-                result[offset++] = 0x2001001E;
-                result[offset++] = 0x0;
+                commandBuffer[offset++] = 0x2001001E;
+                commandBuffer[offset++] = 0x0;
             }
             else
             {
-                result = new int[6];
+                commandBuffer = new int[6];
             }
 
             // SyncpointValue = 0x0;
-            result[offset++] = 0x2001001C;
-            result[offset++] = 0x0;
+            commandBuffer[offset++] = 0x2001001C;
+            commandBuffer[offset++] = 0x0;
 
             // Increment the syncpoint 2 times. (mitigate a hardware bug)
 
             // SyncpointAction(fence.id, increment: true, switch_en: false);
-            result[offset++] = 0x2001001D;
-            result[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
+            commandBuffer[offset++] = 0x2001001D;
+            commandBuffer[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
 
             // SyncpointAction(fence.id, increment: true, switch_en: false);
-            result[offset++] = 0x2001001D;
-            result[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
+            commandBuffer[offset++] = 0x2001001D;
+            commandBuffer[offset++] = (((int)fence.Id << 8) | (1 << 0) | (0 << 4));
 
-            return result;
+            return commandBuffer;
         }
 
         public override void Close() { }

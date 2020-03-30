@@ -17,9 +17,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private Switch _device;
 
-        public NvHostEvent[] Events { get; private set; }
+        public NvHostEvent[] Events { get; }
 
-        private object SyncpointAllocatorLock = new object();
+        private object _syncpointAllocatorLock = new object();
 
         public NvHostSyncpt(Switch device)
         {
@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public uint AllocateSyncpoint(bool isClientManaged)
         {
-            lock (SyncpointAllocatorLock)
+            lock (_syncpointAllocatorLock)
             {
                 for (uint i = 1; i < SynchronizationManager.MaxHardwareSyncpoints; i++)
                 {
@@ -68,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 return;
             }
 
-            lock (SyncpointAllocatorLock)
+            lock (_syncpointAllocatorLock)
             {
                 if (id >= SynchronizationManager.MaxHardwareSyncpoints || !_assigned[id])
                 {
@@ -167,7 +167,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 return NvInternalResult.Success;
             }
 
-            if (hostEvent.State == NvHostEventState.Available || hostEvent.State == NvHostEventState.Cancelled || hostEvent.State == NvHostEventState.Signaled)
+            if (hostEvent.State == NvHostEventState.Available ||
+                hostEvent.State == NvHostEventState.Cancelled ||
+                hostEvent.State == NvHostEventState.Signaled)
             {
                 Events[eventId] = null;
 

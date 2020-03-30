@@ -295,8 +295,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             if (hostEvent != null &&
-               (hostEvent.State == NvHostEventState.Available  ||
-                hostEvent.State == NvHostEventState.Signaled   ||
+               (hostEvent.State == NvHostEventState.Available ||
+                hostEvent.State == NvHostEventState.Signaled  ||
                 hostEvent.State == NvHostEventState.Cancelled))
             {
                 hostEvent.Wait(_device.Gpu, fence);
