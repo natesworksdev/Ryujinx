@@ -120,6 +120,10 @@ namespace Ryujinx.HLE.HOS
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
 
+        public string TitleVersionString { get; private set; }
+
+        public bool TitleIs64Bit { get; private set; }
+
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
 
         public int GlobalAccessLogMode { get; set; }
@@ -371,6 +375,8 @@ namespace Ryujinx.HLE.HOS
                         TitleName = ControlData.Value.Titles.ToArray()
                             .FirstOrDefault(x => x.Name[0] != 0).Name.ToString();
                     }
+
+                    TitleVersionString = ControlData.Value.DisplayVersion.ToString();
                 }
             }
             else
@@ -546,7 +552,8 @@ namespace Ryujinx.HLE.HOS
 
             LoadExeFs(codeFs, out Npdm metaData);
             
-            TitleId = metaData.Aci0.TitleId;
+            TitleId      = metaData.Aci0.TitleId;
+            TitleIs64Bit = metaData.Is64Bit;
 
             if (controlNca != null)
             {
@@ -561,6 +568,8 @@ namespace Ryujinx.HLE.HOS
             {
                 EnsureSaveData(new TitleId(TitleId));
             }
+
+            Logger.PrintInfo(LogClass.Loader, $"Application Loaded: {TitleName} v{TitleVersionString} [{TitleIdText}] [{(TitleIs64Bit ? "64-bit" : "32-bit")}]");
         }
 
         private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
@@ -599,7 +608,8 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleId = metaData.Aci0.TitleId;
+            TitleId      = metaData.Aci0.TitleId;
+            TitleIs64Bit = metaData.Is64Bit;
 
             LoadNso("rtld");
             LoadNso("main");
@@ -701,8 +711,9 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries(Device);
 
-            TitleName = metaData.TitleName;
-            TitleId   = metaData.Aci0.TitleId;
+            TitleName    = metaData.TitleName;
+            TitleId      = metaData.Aci0.TitleId;
+            TitleIs64Bit = metaData.Is64Bit;
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }
