@@ -18,6 +18,8 @@ namespace ARMeilleure.Translation
 
         private bool _needsNewBlock;
 
+        private static OperandType[] _typeCodeToOperandTypeTable;
+
         public EmitterContext()
         {
             _irLabels = new Dictionary<Operand, BasicBlock>();
@@ -25,6 +27,24 @@ namespace ARMeilleure.Translation
             _irBlocks = new IntrusiveList<BasicBlock>();
 
             _needsNewBlock = true;
+        }
+
+        static EmitterContext()
+        {
+            _typeCodeToOperandTypeTable = new OperandType[19];
+
+            _typeCodeToOperandTypeTable[(int)TypeCode.Boolean] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Byte] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Char] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Double] = OperandType.FP64;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Int16] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Int32] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Int64] = OperandType.I64;
+            _typeCodeToOperandTypeTable[(int)TypeCode.SByte] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Single] = OperandType.FP32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.UInt16] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.UInt32] = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.UInt64] = OperandType.I64;
         }
 
         public Operand Add(Operand op1, Operand op2)
@@ -90,26 +110,11 @@ namespace ARMeilleure.Translation
             return Call(Const(ptr.ToInt64()), returnType, callArgs);
         }
 
-        private static Dictionary<TypeCode, OperandType> _typeCodeToOperandTypeMap =
-                   new Dictionary<TypeCode, OperandType>()
-        {
-            { TypeCode.Boolean, OperandType.I32  },
-            { TypeCode.Byte,    OperandType.I32  },
-            { TypeCode.Char,    OperandType.I32  },
-            { TypeCode.Double,  OperandType.FP64 },
-            { TypeCode.Int16,   OperandType.I32  },
-            { TypeCode.Int32,   OperandType.I32  },
-            { TypeCode.Int64,   OperandType.I64  },
-            { TypeCode.SByte,   OperandType.I32  },
-            { TypeCode.Single,  OperandType.FP32 },
-            { TypeCode.UInt16,  OperandType.I32  },
-            { TypeCode.UInt32,  OperandType.I32  },
-            { TypeCode.UInt64,  OperandType.I64  }
-        };
-
         private static OperandType GetOperandType(Type type)
         {
-            if (_typeCodeToOperandTypeMap.TryGetValue(Type.GetTypeCode(type), out OperandType ot))
+            OperandType ot = _typeCodeToOperandTypeTable[(int)Type.GetTypeCode(type)];
+
+            if (ot != OperandType.None)
             {
                 return ot;
             }
