@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
@@ -31,20 +32,22 @@ namespace ARMeilleure.Translation
 
         static EmitterContext()
         {
-            _typeCodeToOperandTypeTable = new OperandType[19];
+            _typeCodeToOperandTypeTable = new OperandType[EnumUtils.GetMaxValue(typeof(TypeCode)) + 1];
+            
+            Array.Fill(_typeCodeToOperandTypeTable, OperandType.None);
 
-            _typeCodeToOperandTypeTable[(int)TypeCode.Boolean] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Byte] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Char] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Double] = OperandType.FP64;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Int16] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Int32] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Int64] = OperandType.I64;
-            _typeCodeToOperandTypeTable[(int)TypeCode.SByte] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.Single] = OperandType.FP32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.UInt16] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.UInt32] = OperandType.I32;
-            _typeCodeToOperandTypeTable[(int)TypeCode.UInt64] = OperandType.I64;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Boolean]  = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Byte]     = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Char]     = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Double]   = OperandType.FP64;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Int16]    = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Int32]    = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Int64]    = OperandType.I64;
+            _typeCodeToOperandTypeTable[(int)TypeCode.SByte]    = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.Single]   = OperandType.FP32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.UInt16]   = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.UInt32]   = OperandType.I32;
+            _typeCodeToOperandTypeTable[(int)TypeCode.UInt64]   = OperandType.I64;
         }
 
         public Operand Add(Operand op1, Operand op2)
