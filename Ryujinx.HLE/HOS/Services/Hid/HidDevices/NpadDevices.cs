@@ -1,7 +1,6 @@
 using System;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Common.Logging;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
@@ -259,14 +258,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 player = PrimaryController;
             }
+
             if (player == PlayerIndex.Unknown)
             {
                 return;
             }
 
-            NpadConfig p = _configuredNpads[(int)player];
-
-            if (p.State != FilterState.Accepted)
+            if (_configuredNpads[(int)player].State != FilterState.Accepted)
             {
                 return;
             }
@@ -303,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     currentEntry.SampleTimestamp = previousEntry.SampleTimestamp + 1;
                     currentEntry.SampleTimestamp2 = previousEntry.SampleTimestamp2 + 1;
 
-                    if (controllers[i].Header.Type == 0)
+                    if (controllers[i].Header.Type == ControllerType.None)
                     {
                         continue;
                     }

@@ -2,7 +2,6 @@
 using System;
 using System.Runtime.InteropServices;
 
-
 namespace Ryujinx.HLE.HOS.Applets
 {
     interface IApplet

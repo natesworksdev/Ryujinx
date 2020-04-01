@@ -1,6 +1,3 @@
-
-using System.Runtime.InteropServices;
-
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public class MouseDevice : BaseDevice

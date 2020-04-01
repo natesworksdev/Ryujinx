@@ -539,7 +539,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public ResultCode SetSupportedNpadStyleSet(ServiceCtx context)
         {
             ControllerType type = (ControllerType)context.RequestData.ReadInt32();
-            
             long appletResourceUserId = context.RequestData.ReadInt64();
 
             Logger.PrintStub(LogClass.ServiceHid, new { 
