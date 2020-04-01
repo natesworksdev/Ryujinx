@@ -645,6 +645,7 @@ namespace Ryujinx.Ui
                     if (!File.Exists(updatePath))
                     {
                         version = "";
+
                         return false;
                     }
 
@@ -670,7 +671,10 @@ namespace Ryujinx.Ui
 
                             Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
 
-                            if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != titleId) break;
+                            if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != titleId)
+                            {
+                                break;
+                            }
 
                             if (nca.Header.ContentType == NcaContentType.Control)
                             {
@@ -680,6 +684,7 @@ namespace Ryujinx.Ui
                                 nacpFile.Read(out long _, 0, controlData.ByteSpan, ReadOption.None).ThrowIfFailure();
 
                                 version = controlData.Value.DisplayVersion.ToString();
+
                                 return true;
                             }
                         }
@@ -688,6 +693,7 @@ namespace Ryujinx.Ui
             }
 
             version = "";
+
             return false;
         }
     }

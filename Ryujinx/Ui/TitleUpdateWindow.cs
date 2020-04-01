@@ -1,18 +1,18 @@
 using Gtk;
 using JsonPrettyPrinterPlus;
+using LibHac;
+using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
+using LibHac.Ns;
+using LibHac.Spl;
 using Ryujinx.Common.Configuration;
 using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
-using LibHac;
-using LibHac.Common;
-using LibHac.Ns;
-using LibHac.Spl;
 using Utf8Json;
 using Utf8Json.Resolvers;
 
@@ -74,7 +74,9 @@ namespace Ryujinx.Ui
             foreach (KeyValuePair<RadioButton, string> keyValuePair in _radioButtonToPathDictionary)
             {
                 if (keyValuePair.Value == _titleUpdateWindowData.Selected)
+                {
                     keyValuePair.Key.Active = true;
+                }
             }
         }
 

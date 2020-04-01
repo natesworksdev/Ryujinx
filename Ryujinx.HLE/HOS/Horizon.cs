@@ -494,7 +494,10 @@ namespace Ryujinx.HLE.HOS
 
                             Nca nca = new Nca(KeySet, ncaFile.AsStorage());
 
-                            if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16")) break;
+                            if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
+                            {
+                                break;
+                            }
 
                             if (nca.Header.ContentType == NcaContentType.Program)
                             {
