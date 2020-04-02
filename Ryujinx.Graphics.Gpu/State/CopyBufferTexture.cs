@@ -5,8 +5,8 @@ namespace Ryujinx.Graphics.Gpu.State
     /// </summary>
     struct CopyBufferTexture
     {
-        public MemoryLayout MemoryLayout;
 #pragma warning disable CS0649
+        public MemoryLayout MemoryLayout;
         public int          Width;
         public int          Height;
         public int          Depth;

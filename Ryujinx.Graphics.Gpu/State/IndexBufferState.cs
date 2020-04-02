@@ -8,8 +8,8 @@ namespace Ryujinx.Graphics.Gpu.State
     /// </summary>
     struct IndexBufferState
     {
-        public GpuVa     Address;
 #pragma warning disable CS0649
+        public GpuVa     Address;
         public GpuVa     EndAddress;
         public IndexType Type;
         public int       First;

@@ -5,9 +5,9 @@ namespace Ryujinx.Graphics.Gpu.State
     /// </summary>
     struct CopyBufferParams
     {
+#pragma warning disable CS0649
         public GpuVa SrcAddress;
         public GpuVa DstAddress;
-#pragma warning disable CS0649
         public int   SrcStride;
         public int   DstStride;
         public int   XCount;
