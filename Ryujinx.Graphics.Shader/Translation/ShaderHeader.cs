@@ -107,8 +107,8 @@ namespace Ryujinx.Graphics.Shader.Translation
         public ImapPixelType[] ImapTypes { get; }
 
         public OmapTarget[] OmapTargets    { get; }
-        public bool              OmapSampleMask { get; }
-        public bool              OmapDepth      { get; }
+        public bool         OmapSampleMask { get; }
+        public bool         OmapDepth      { get; }
 
         public ShaderHeader(ReadOnlySpan<byte> code)
         {
