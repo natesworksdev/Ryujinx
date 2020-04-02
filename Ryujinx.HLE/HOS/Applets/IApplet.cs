@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         static T ReadStruct<T>(ReadOnlySpan<byte> data) where T : struct
         {
-            return MemoryMarshal.Cast<byte,T>(data)[0];
+            return MemoryMarshal.Cast<byte, T>(data)[0];
         }
     }
 }

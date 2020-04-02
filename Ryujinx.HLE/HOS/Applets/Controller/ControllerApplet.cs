@@ -6,6 +6,8 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 
+using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
+
 namespace Ryujinx.HLE.HOS.Applets
 {
     internal class ControllerApplet : IApplet
@@ -71,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Applets
             ControllerSupportResultInfo result = new ControllerSupportResultInfo
             {
                 PlayerCount = 1,
-                SelectedId = (uint)HLE.HOS.Services.Hid.HidServer.HidUtils.GetNpadIdTypeFromIndex(_system.Device.Hid.Npads.PrimaryController)
+                SelectedId = (uint)GetNpadIdTypeFromIndex(_system.Device.Hid.Npads.PrimaryController)
             };
 
             Logger.PrintStub(LogClass.ServiceHid, $"ControllerApplet ReturnResult {result.PlayerCount} {result.SelectedId}");
@@ -104,7 +106,7 @@ namespace Ryujinx.HLE.HOS.Applets
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 writer.Write((ulong)ResultCode.Success);
-                
+
                 return stream.ToArray();
             }
         }

@@ -1,13 +1,15 @@
 using System;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.Exceptions
 {
-    public class InvalidStructLayoutException : Exception 
+    public class InvalidStructLayoutException<T> : Exception 
     {
+        static readonly Type _structType = typeof(T);
+
         public InvalidStructLayoutException(string message) : base(message) {}
         
-        public InvalidStructLayoutException(Type structType, int expectedSize) : 
-            base($"Type {structType.Name} has the wrong size. Expected: {expectedSize} bytes, Got: {Marshal.SizeOf(structType)} bytes") {}
+        public InvalidStructLayoutException(int expectedSize) : 
+            base($"Type {_structType.Name} has the wrong size. Expected: {expectedSize} bytes, Got: {Unsafe.SizeOf<T>()} bytes") {}
     }
 }

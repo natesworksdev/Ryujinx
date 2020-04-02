@@ -22,27 +22,27 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             if (Unsafe.SizeOf<ShMemDebugPad>() != 0x400)
             {
-                throw new InvalidStructLayoutException(typeof(ShMemDebugPad), 0x400);
+                throw new InvalidStructLayoutException<ShMemDebugPad>(0x400);
             }
             if (Unsafe.SizeOf<ShMemTouchScreen>() != 0x3000)
             {
-                throw new InvalidStructLayoutException(typeof(ShMemTouchScreen), 0x3000);
+                throw new InvalidStructLayoutException<ShMemTouchScreen>(0x3000);
             }
             if (Unsafe.SizeOf<ShMemKeyboard>() != 0x400)
             {
-                throw new InvalidStructLayoutException(typeof(ShMemKeyboard), 0x400);
+                throw new InvalidStructLayoutException<ShMemKeyboard>(0x400);
             }
             if (Unsafe.SizeOf<ShMemMouse>() != 0x400)
             {
-                throw new InvalidStructLayoutException(typeof(ShMemMouse), 0x400);
+                throw new InvalidStructLayoutException<ShMemMouse>(0x400);
             }
             if (Unsafe.SizeOf<ShMemNpad>() != 0x5000)
             {
-                throw new InvalidStructLayoutException(typeof(ShMemNpad), 0x5000);
+                throw new InvalidStructLayoutException<ShMemNpad>(0x5000);
             }
             if (Unsafe.SizeOf<HidSharedMemory>() != Horizon.HidSize)
             {
-                throw new InvalidStructLayoutException(typeof(HidSharedMemory), Horizon.HidSize);
+                throw new InvalidStructLayoutException<HidSharedMemory>(Horizon.HidSize);
             }
         }
 
