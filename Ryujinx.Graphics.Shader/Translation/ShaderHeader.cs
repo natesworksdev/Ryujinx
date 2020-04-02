@@ -36,7 +36,7 @@ namespace Ryujinx.Graphics.Shader.Translation
         }
     }
 
-    struct OutputMapTarget
+    struct OmapTarget
     {
         public bool Red   { get; }
         public bool Green { get; }
@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public bool Enabled => Red || Green || Blue || Alpha;
 
-        public OutputMapTarget(bool red, bool green, bool blue, bool alpha)
+        public OmapTarget(bool red, bool green, bool blue, bool alpha)
         {
             Red   = red;
             Green = green;
@@ -106,7 +106,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ImapPixelType[] ImapTypes { get; }
 
-        public OutputMapTarget[] OmapTargets    { get; }
+        public OmapTarget[] OmapTargets    { get; }
         public bool              OmapSampleMask { get; }
         public bool              OmapDepth      { get; }
 
@@ -180,11 +180,11 @@ namespace Ryujinx.Graphics.Shader.Translation
             int type2OmapTarget = header[18];
             int type2Omap       = header[19];
 
-            OmapTargets = new OutputMapTarget[8];
+            OmapTargets = new OmapTarget[8];
 
             for (int offset = 0; offset < OmapTargets.Length * 4; offset += 4)
             {
-                OmapTargets[offset >> 2] = new OutputMapTarget(
+                OmapTargets[offset >> 2] = new OmapTarget(
                     type2OmapTarget.Extract(offset + 0),
                     type2OmapTarget.Extract(offset + 1),
                     type2OmapTarget.Extract(offset + 2),

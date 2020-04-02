@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ImapPixelType[] ImapTypes { get; }
 
-        public OutputMapTarget[] OmapTargets    { get; }
+        public OmapTarget[] OmapTargets    { get; }
         public bool              OmapSampleMask { get; }
         public bool              OmapDepth      { get; }
 
