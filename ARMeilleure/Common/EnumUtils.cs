@@ -9,18 +9,24 @@ namespace ARMeilleure.Common
             return Enum.GetNames(enumType).Length;
         }
 
-        public static int GetMaxValue(Type enumType)
+        public static int GetArrayLengthForEnum(Type enumType)
         {
-            int maxValue = int.MinValue;
-            foreach (int item in Enum.GetValues(enumType))
+            var values = Enum.GetValues(enumType);
+            if (values == null || values.Length == 0)
             {
-                if (item > maxValue)
+                return 0;
+            }
+
+            int maxValue = 0;
+            foreach (int value in values)
+            {
+                if (value > maxValue)
                 {
-                    maxValue = item;
+                    maxValue = value;
                 }
             }
 
-            return maxValue;
+            return maxValue + 1;
         }
     }
 }
