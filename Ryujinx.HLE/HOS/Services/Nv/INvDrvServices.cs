@@ -383,7 +383,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // GetStatus() -> (unknown<0x20>, u32 error_code)
         public ResultCode GetStatus(ServiceCtx context)
         {
-            throw new ServiceNotImplementedException(context);
+            Logger.PrintStub(LogClass.ServiceNv);
+
+            return ResultCode.Success;
         }
 
         [Command(7)]
