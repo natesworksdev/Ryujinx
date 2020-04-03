@@ -235,7 +235,7 @@ namespace ARMeilleure.Instructions
                 {
                     if (allowRejit)
                     {
-                        address = context.BitwiseOr(address, Const(1L));
+                        address = context.BitwiseOr(address, Const(CallFlag));
                     }
 
                     Operand fallbackAddr = context.Call(new _U64_U64(NativeInterface.GetFunctionAddress), address);
