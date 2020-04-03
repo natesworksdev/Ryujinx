@@ -289,6 +289,7 @@ namespace Ryujinx.HLE.HOS
                 }
 
                 size = BitUtils.AlignUp(size, KMemoryManager.PageSize);
+
                 return process.MemoryManager.SetProcessMemoryPermission(address, size, permission);
             }
 
@@ -305,7 +306,6 @@ namespace Ryujinx.HLE.HOS
             {
                 return result;
             }
-
 
             return SetProcessMemoryPermission(dataStart, end - dataStart, MemoryPermission.ReadAndWrite);
         }

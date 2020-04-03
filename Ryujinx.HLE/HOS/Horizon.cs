@@ -543,7 +543,8 @@ namespace Ryujinx.HLE.HOS
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
-                    codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();               
+                    codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();          
+                         
                     NsoExecutable staticObject = new NsoExecutable(nsoFile.AsStorage());
 
                     staticObjects.Add(staticObject);

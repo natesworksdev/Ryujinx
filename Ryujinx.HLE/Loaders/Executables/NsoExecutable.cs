@@ -7,7 +7,6 @@ namespace Ryujinx.HLE.Loaders.Executables
 {
     class NsoExecutable : Nso, IExecutable
     {
-
         public byte[] Text { get; }
         public byte[] Ro { get; }
         public byte[] Data { get; }
@@ -25,6 +24,5 @@ namespace Ryujinx.HLE.Loaders.Executables
             Ro = Sections[1].DecompressSection();
             Data =  Sections[2].DecompressSection();
         }
-
     }
 }

@@ -6,7 +6,6 @@ namespace Ryujinx.HLE.Loaders.Executables
 {
     class KipExecutable : Kip, IExecutable
     {
-
         public byte[] Text { get; }
         public byte[] Ro { get; }
         public byte[] Data { get; }
@@ -28,11 +27,9 @@ namespace Ryujinx.HLE.Loaders.Executables
                 Capabilities[index] = System.BitConverter.ToInt32(Header.Capabilities, index * 4);
             }
 
-
             Text = DecompressSection(0);
             Ro = DecompressSection(1);
             Data = DecompressSection(2);
         }
-
     }
 }
