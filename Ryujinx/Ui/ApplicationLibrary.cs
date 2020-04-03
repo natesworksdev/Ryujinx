@@ -592,7 +592,7 @@ namespace Ryujinx.Ui
             {
                 foreach (ApplicationControlTitle controlTitle in controlData.Titles)
                 {
-                    if (!controlTitle.Name.IsNull() && !string.IsNullOrWhiteSpace(controlTitle.Name.ToString()))
+                    if (!((U8Span)controlTitle.Name).IsEmpty())
                     {
                         titleName = controlTitle.Name.ToString();
                         break;
@@ -604,7 +604,7 @@ namespace Ryujinx.Ui
             {
                 foreach (ApplicationControlTitle controlTitle in controlData.Titles)
                 {
-                    if (!controlTitle.Publisher.IsNull() && !string.IsNullOrWhiteSpace(controlTitle.Publisher.ToString()))
+                    if (!((U8Span)controlTitle.Publisher).IsEmpty())
                     {
                         publisher = controlTitle.Publisher.ToString();
                         break;
