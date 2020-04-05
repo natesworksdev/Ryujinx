@@ -289,7 +289,7 @@ namespace Ryujinx.Debugger.UI
                                 _sortedProfileData = _sortedProfileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
                             }
                         }
-                        catch (ArgumentException argException)
+                        catch (ArgumentException)
                         {
                             // Skip filtering for invalid regex
                         }

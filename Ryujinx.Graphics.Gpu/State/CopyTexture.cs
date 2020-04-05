@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.State
         public int          Stride;
         public int          Width;
         public int          Height;
-#pragma warning restore CS0649
         public GpuVa        Address;
+#pragma warning restore CS0649
     }
 }

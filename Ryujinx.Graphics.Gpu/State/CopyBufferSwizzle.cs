@@ -5,7 +5,6 @@ namespace Ryujinx.Graphics.Gpu.State
     /// </summary>
     struct CopyBufferSwizzle
     {
-
 #pragma warning disable CS0649
         public uint Swizzle;
 #pragma warning restore CS0649
