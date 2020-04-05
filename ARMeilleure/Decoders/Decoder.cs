@@ -1,10 +1,9 @@
+using ARMeilleure.Decoders.Optimizations;
 using ARMeilleure.Instructions;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Reflection.Emit;
 
 namespace ARMeilleure.Decoders
 {
@@ -15,14 +14,8 @@ namespace ARMeilleure.Decoders
         // take too long to compile and use too much memory.
         private const int MaxInstsPerFunction = 5000;
 
-        private delegate object MakeOp(InstDescriptor inst, ulong address, int opCode);
-
-        private static ConcurrentDictionary<Type, MakeOp> _opActivators;
-
-        static Decoder()
-        {
-            _opActivators = new ConcurrentDictionary<Type, MakeOp>();
-        }
+        // For lower code quality translation, we set a lower limit since we're blocking execution.
+        private const int MaxInstsPerFunctionLowCq = 500;
 
         public static Block[] DecodeBasicBlock(MemoryManager memory, ulong address, ExecutionMode mode)
         {
@@ -33,7 +26,7 @@ namespace ARMeilleure.Decoders
             return new Block[] { block };
         }
 
-        public static Block[] DecodeFunction(MemoryManager memory, ulong address, ExecutionMode mode)
+        public static Block[] DecodeFunction(MemoryManager memory, ulong address, ExecutionMode mode, bool highCq)
         {
             List<Block> blocks = new List<Block>();
 
@@ -43,11 +36,13 @@ namespace ARMeilleure.Decoders
 
             int opsCount = 0;
 
+            int instructionLimit = highCq ? MaxInstsPerFunction : MaxInstsPerFunctionLowCq;
+
             Block GetBlock(ulong blkAddress)
             {
                 if (!visited.TryGetValue(blkAddress, out Block block))
                 {
-                    if (opsCount > MaxInstsPerFunction)
+                    if (opsCount > instructionLimit || !memory.IsMapped((long)blkAddress))
                     {
                         return null;
                     }
@@ -121,7 +116,7 @@ namespace ARMeilleure.Decoders
                         currBlock.Branch = GetBlock((ulong)op.Immediate);
                     }
 
-                    if (!IsUnconditionalBranch(lastOp) /*|| isCall*/)
+                    if (!IsUnconditionalBranch(lastOp) || isCall)
                     {
                         currBlock.Next = GetBlock(currBlock.EndAddress);
                     }
@@ -140,10 +135,12 @@ namespace ARMeilleure.Decoders
                 }
             }
 
+            TailCallRemover.RunPass(address, blocks);
+
             return blocks.ToArray();
         }
 
-        private static bool BinarySearch(List<Block> blocks, ulong address, out int index)
+        public static bool BinarySearch(List<Block> blocks, ulong address, out int index)
         {
             index = 0;
 
@@ -292,15 +289,16 @@ namespace ARMeilleure.Decoders
 
         private static bool IsCall(OpCode opCode)
         {
-            // TODO (CQ): ARM32 support.
             return opCode.Instruction.Name == InstName.Bl ||
-                   opCode.Instruction.Name == InstName.Blr;
+                   opCode.Instruction.Name == InstName.Blr ||
+                   opCode.Instruction.Name == InstName.Blx;
         }
 
         private static bool IsException(OpCode opCode)
         {
             return opCode.Instruction.Name == InstName.Brk ||
                    opCode.Instruction.Name == InstName.Svc ||
+                   opCode.Instruction.Name == InstName.Trap ||
                    opCode.Instruction.Name == InstName.Und;
         }
 
@@ -310,56 +308,32 @@ namespace ARMeilleure.Decoders
 
             InstDescriptor inst;
 
-            Type type;
+            OpCodeTable.MakeOp makeOp;
 
             if (mode == ExecutionMode.Aarch64)
             {
-                (inst, type) = OpCodeTable.GetInstA64(opCode);
+                (inst, makeOp) = OpCodeTable.GetInstA64(opCode);
             }
             else
             {
                 if (mode == ExecutionMode.Aarch32Arm)
                 {
-                    (inst, type) = OpCodeTable.GetInstA32(opCode);
+                    (inst, makeOp) = OpCodeTable.GetInstA32(opCode);
                 }
                 else /* if (mode == ExecutionMode.Aarch32Thumb) */
                 {
-                    (inst, type) = OpCodeTable.GetInstT32(opCode);
+                    (inst, makeOp) = OpCodeTable.GetInstT32(opCode);
                 }
             }
 
-            if (type != null)
+            if (makeOp != null)
             {
-                return MakeOpCode(inst, type, address, opCode);
+                return (OpCode)makeOp(inst, address, opCode);
             }
             else
             {
                 return new OpCode(inst, address, opCode);
             }
-        }
-
-        private static OpCode MakeOpCode(InstDescriptor inst, Type type, ulong address, int opCode)
-        {
-            MakeOp createInstance = _opActivators.GetOrAdd(type, CacheOpActivator);
-
-            return (OpCode)createInstance(inst, address, opCode);
-        }
-
-        private static MakeOp CacheOpActivator(Type type)
-        {
-            Type[] argTypes = new Type[] { typeof(InstDescriptor), typeof(ulong), typeof(int) };
-
-            DynamicMethod mthd = new DynamicMethod($"Make{type.Name}", type, argTypes);
-
-            ILGenerator generator = mthd.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldarg_1);
-            generator.Emit(OpCodes.Ldarg_2);
-            generator.Emit(OpCodes.Newobj, type.GetConstructor(argTypes));
-            generator.Emit(OpCodes.Ret);
-
-            return (MakeOp)mthd.CreateDelegate(typeof(MakeOp));
         }
     }
 }

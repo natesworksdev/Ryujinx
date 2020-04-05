@@ -5,6 +5,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 {
     public class SystemStateMgr
     {
+        public static readonly UserId DefaultUserId = new UserId("00000000000000010000000000000000");
+
         internal static string[] LanguageCodes = new string[]
         {
             "ja",
@@ -35,6 +37,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         internal long DesiredLanguageCode { get; private set; }
 
+        internal uint DesiredRegionCode { get; private set; }
+
         public TitleLanguage DesiredTitleLanguage { get; private set; }
 
         internal string ActiveAudioOutput { get; private set; }
@@ -53,10 +57,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 
             Account = new AccountUtils();
 
-            UserId defaultUid = new UserId("00000000000000010000000000000000");
-
-            Account.AddUser(defaultUid, "Player");
-            Account.OpenUser(defaultUid);
+            Account.AddUser(DefaultUserId, "Player");
+            Account.OpenUser(DefaultUserId);
         }
 
         public void SetLanguage(SystemLanguage language)
@@ -77,6 +79,11 @@ namespace Ryujinx.HLE.HOS.SystemState
                     DesiredTitleLanguage = Enum.Parse<TitleLanguage>(Enum.GetName(typeof(SystemLanguage), language));
                     break;
             }
+        }
+
+        public void SetRegion(SystemRegion region)
+        {
+            DesiredRegionCode = (uint)region;
         }
 
         public void SetAudioOutputAsTv()

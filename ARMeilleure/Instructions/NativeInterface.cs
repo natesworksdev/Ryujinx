@@ -1,6 +1,8 @@
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using ARMeilleure.Translation;
 using System;
+using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Instructions
 {
@@ -10,17 +12,19 @@ namespace ARMeilleure.Instructions
 
         private class ThreadContext
         {
-            public ExecutionContext Context { get; }
-            public MemoryManager    Memory  { get; }
+            public ExecutionContext Context    { get; }
+            public MemoryManager    Memory     { get; }
+            public Translator       Translator { get; }
 
             public ulong ExclusiveAddress   { get; set; }
             public ulong ExclusiveValueLow  { get; set; }
             public ulong ExclusiveValueHigh { get; set; }
 
-            public ThreadContext(ExecutionContext context, MemoryManager memory)
+            public ThreadContext(ExecutionContext context, MemoryManager memory, Translator translator)
             {
-                Context = context;
-                Memory  = memory;
+                Context    = context;
+                Memory     = memory;
+                Translator = translator;
 
                 ExclusiveAddress = ulong.MaxValue;
             }
@@ -29,9 +33,9 @@ namespace ARMeilleure.Instructions
         [ThreadStatic]
         private static ThreadContext _context;
 
-        public static void RegisterThread(ExecutionContext context, MemoryManager memory)
+        public static void RegisterThread(ExecutionContext context, MemoryManager memory, Translator translator)
         {
-            _context = new ThreadContext(context, memory);
+            _context = new ThreadContext(context, memory, translator);
         }
 
         public static void UnregisterThread()
@@ -87,14 +91,37 @@ namespace ARMeilleure.Instructions
             return (ulong)GetContext().Fpsr;
         }
 
+        public static uint GetFpscr()
+        {
+            ExecutionContext context = GetContext();
+            uint result = (uint)(context.Fpsr & FPSR.A32Mask) | (uint)(context.Fpcr & FPCR.A32Mask);
+
+            result |= context.GetFPstateFlag(FPState.NFlag) ? (1u << 31) : 0;
+            result |= context.GetFPstateFlag(FPState.ZFlag) ? (1u << 30) : 0;
+            result |= context.GetFPstateFlag(FPState.CFlag) ? (1u << 29) : 0;
+            result |= context.GetFPstateFlag(FPState.VFlag) ? (1u << 28) : 0;
+
+            return result;
+        }
+
         public static ulong GetTpidrEl0()
         {
             return (ulong)GetContext().TpidrEl0;
         }
 
+        public static uint GetTpidrEl032()
+        {
+            return (uint)GetContext().TpidrEl0;
+        }
+
         public static ulong GetTpidr()
         {
             return (ulong)GetContext().Tpidr;
+        }
+
+        public static uint GetTpidr32()
+        {
+            return (uint)GetContext().Tpidr;
         }
 
         public static ulong GetCntfrqEl0()
@@ -117,13 +144,31 @@ namespace ARMeilleure.Instructions
             GetContext().Fpsr = (FPSR)value;
         }
 
+        public static void SetFpscr(uint value)
+        {
+            ExecutionContext context = GetContext();
+
+            context.SetFPstateFlag(FPState.NFlag, (value & (1u << 31)) != 0);
+            context.SetFPstateFlag(FPState.ZFlag, (value & (1u << 30)) != 0);
+            context.SetFPstateFlag(FPState.CFlag, (value & (1u << 29)) != 0);
+            context.SetFPstateFlag(FPState.VFlag, (value & (1u << 28)) != 0);
+
+            context.Fpsr = FPSR.A32Mask & (FPSR)value;
+            context.Fpcr = FPCR.A32Mask & (FPCR)value;
+        }
+
         public static void SetTpidrEl0(ulong value)
         {
             GetContext().TpidrEl0 = (long)value;
         }
-#endregion
 
-#region "Read"
+        public static void SetTpidrEl032(uint value)
+        {
+            GetContext().TpidrEl0 = (long)value;
+        }
+        #endregion
+
+        #region "Read"
         public static byte ReadByte(ulong address)
         {
             return GetMemoryManager().ReadByte((long)address);
@@ -340,18 +385,39 @@ namespace ARMeilleure.Instructions
             return address & ~((4UL << ErgSizeLog2) - 1);
         }
 
+        public static ulong GetFunctionAddress(ulong address)
+        {
+            TranslatedFunction function = _context.Translator.GetOrTranslate(address, GetContext().ExecutionMode);
+            return (ulong)function.GetPointer().ToInt64();
+        }
+
+        public static ulong GetIndirectFunctionAddress(ulong address, ulong entryAddress)
+        {
+            TranslatedFunction function = _context.Translator.GetOrTranslate(address, GetContext().ExecutionMode);
+            ulong ptr = (ulong)function.GetPointer().ToInt64();
+            if (function.HighCq)
+            {
+                // Rewrite the host function address in the table to point to the highCq function.
+                Marshal.WriteInt64((IntPtr)entryAddress, 8, (long)ptr);
+            }
+            return ptr;
+        }
+
         public static void ClearExclusive()
         {
             _context.ExclusiveAddress = ulong.MaxValue;
         }
 
-        public static void CheckSynchronization()
+        public static bool CheckSynchronization()
         {
             Statistics.PauseTimer();
 
-            GetContext().CheckInterrupt();
+            ExecutionContext context = GetContext();
+            context.CheckInterrupt();
 
             Statistics.ResumeTimer();
+
+            return context.Running;
         }
 
         public static ExecutionContext GetContext()

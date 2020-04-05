@@ -51,6 +51,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
         }
 
+        public static void Depbar(EmitterContext context) { }
+
         public static void Exit(EmitterContext context)
         {
             OpCodeExit op = (OpCodeExit)context.CurrOp;
@@ -67,6 +69,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             context.Discard();
         }
+
+        public static void Nop(EmitterContext context) { }
 
         public static void Pbk(EmitterContext context)
         {
@@ -145,10 +149,24 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             if (op is OpCodeBranch opBranch && opBranch.Condition != Condition.Always)
             {
-                pred = context.BitwiseAnd(pred, GetCondition(context, opBranch.Condition));
-            }
+                Operand cond = GetCondition(context, opBranch.Condition);
 
-            if (op.Predicate.IsPT)
+                if (op.Predicate.IsPT)
+                {
+                    pred = cond;
+                }
+                else if (op.InvertPredicate)
+                {
+                    pred = context.BitwiseAnd(context.BitwiseNot(pred), cond);
+                }
+                else
+                {
+                    pred = context.BitwiseAnd(pred, cond);
+                }
+
+                context.BranchIfTrue(label, pred);
+            }
+            else if (op.Predicate.IsPT)
             {
                 context.Branch(label);
             }

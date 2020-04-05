@@ -12,7 +12,7 @@ namespace ARMeilleure.Translation
     {
         private Dictionary<Operand, BasicBlock> _irLabels;
 
-        private LinkedList<BasicBlock> _irBlocks;
+        private IntrusiveList<BasicBlock> _irBlocks;
 
         private BasicBlock _irBlock;
 
@@ -22,7 +22,7 @@ namespace ARMeilleure.Translation
         {
             _irLabels = new Dictionary<Operand, BasicBlock>();
 
-            _irBlocks = new LinkedList<BasicBlock>();
+            _irBlocks = new IntrusiveList<BasicBlock>();
 
             _needsNewBlock = true;
         }
@@ -143,9 +143,22 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public Operand CompareAndSwap128(Operand address, Operand expected, Operand desired)
+        public void Tailcall(Operand address, params Operand[] callArgs)
         {
-            return Add(Instruction.CompareAndSwap128, Local(OperandType.V128), address, expected, desired);
+            Operand[] args = new Operand[callArgs.Length + 1];
+
+            args[0] = address;
+
+            Array.Copy(callArgs, 0, args, 1, callArgs.Length);
+
+            Add(Instruction.Tailcall, null, args);
+
+            _needsNewBlock = true;
+        }
+
+        public Operand CompareAndSwap(Operand address, Operand expected, Operand desired)
+        {
+            return Add(Instruction.CompareAndSwap, Local(desired.Type), address, expected, desired);
         }
 
         public Operand ConditionalSelect(Operand op1, Operand op2, Operand op3)
@@ -446,14 +459,63 @@ namespace ARMeilleure.Translation
             return Add(Instruction.ZeroExtend8, Local(type), op1);
         }
 
-        private Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
+        private void NewNextBlockIfNeeded()
         {
             if (_needsNewBlock)
             {
                 NewNextBlock();
             }
+        }
 
-            Operation operation = new Operation(inst, dest, sources);
+        private Operand Add(Instruction inst, Operand dest = null)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = OperationHelper.Operation(inst, dest);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return dest;
+        }
+
+        private Operand Add(Instruction inst, Operand dest, Operand[] sources)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = OperationHelper.Operation(inst, dest, sources);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return dest;
+        }
+
+        private Operand Add(Instruction inst, Operand dest, Operand source0)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = OperationHelper.Operation(inst, dest, source0);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return dest;
+        }
+
+        private Operand Add(Instruction inst, Operand dest, Operand source0, Operand source1)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = OperationHelper.Operation(inst, dest, source0, source1);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return dest;
+        }
+
+        private Operand Add(Instruction inst, Operand dest, Operand source0, Operand source1, Operand source2)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = OperationHelper.Operation(inst, dest, source0, source1, source2);
 
             _irBlock.Operations.AddLast(operation);
 
@@ -508,7 +570,8 @@ namespace ARMeilleure.Translation
             if (_irLabels.TryGetValue(label, out BasicBlock nextBlock))
             {
                 nextBlock.Index = _irBlocks.Count;
-                nextBlock.Node  = _irBlocks.AddLast(nextBlock);
+
+                _irBlocks.AddLast(nextBlock);
 
                 NextBlock(nextBlock);
             }
@@ -524,7 +587,7 @@ namespace ARMeilleure.Translation
         {
             BasicBlock block = new BasicBlock(_irBlocks.Count);
 
-            block.Node = _irBlocks.AddLast(block);
+            _irBlocks.AddLast(block);
 
             NextBlock(block);
         }
@@ -556,7 +619,7 @@ namespace ARMeilleure.Translation
 
         public ControlFlowGraph GetControlFlowGraph()
         {
-            return new ControlFlowGraph(_irBlocks.First.Value, _irBlocks);
+            return new ControlFlowGraph(_irBlocks.First, _irBlocks);
         }
     }
 }

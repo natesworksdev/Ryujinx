@@ -17,6 +17,11 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Addps,      new IntrinsicInfo(X86Instruction.Addps,      IntrinsicType.Binary));
             Add(Intrinsic.X86Addsd,      new IntrinsicInfo(X86Instruction.Addsd,      IntrinsicType.Binary));
             Add(Intrinsic.X86Addss,      new IntrinsicInfo(X86Instruction.Addss,      IntrinsicType.Binary));
+            Add(Intrinsic.X86Aesdec,     new IntrinsicInfo(X86Instruction.Aesdec,     IntrinsicType.Binary));
+            Add(Intrinsic.X86Aesdeclast, new IntrinsicInfo(X86Instruction.Aesdeclast, IntrinsicType.Binary));
+            Add(Intrinsic.X86Aesenc,     new IntrinsicInfo(X86Instruction.Aesenc,     IntrinsicType.Binary));
+            Add(Intrinsic.X86Aesenclast, new IntrinsicInfo(X86Instruction.Aesenclast, IntrinsicType.Binary));
+            Add(Intrinsic.X86Aesimc,     new IntrinsicInfo(X86Instruction.Aesimc,     IntrinsicType.Unary));
             Add(Intrinsic.X86Andnpd,     new IntrinsicInfo(X86Instruction.Andnpd,     IntrinsicType.Binary));
             Add(Intrinsic.X86Andnps,     new IntrinsicInfo(X86Instruction.Andnps,     IntrinsicType.Binary));
             Add(Intrinsic.X86Andpd,      new IntrinsicInfo(X86Instruction.Andpd,      IntrinsicType.Binary));
@@ -52,6 +57,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Divss,      new IntrinsicInfo(X86Instruction.Divss,      IntrinsicType.Binary));
             Add(Intrinsic.X86Haddpd,     new IntrinsicInfo(X86Instruction.Haddpd,     IntrinsicType.Binary));
             Add(Intrinsic.X86Haddps,     new IntrinsicInfo(X86Instruction.Haddps,     IntrinsicType.Binary));
+            Add(Intrinsic.X86Insertps,   new IntrinsicInfo(X86Instruction.Insertps,   IntrinsicType.TernaryImm));
             Add(Intrinsic.X86Maxpd,      new IntrinsicInfo(X86Instruction.Maxpd,      IntrinsicType.Binary));
             Add(Intrinsic.X86Maxps,      new IntrinsicInfo(X86Instruction.Maxps,      IntrinsicType.Binary));
             Add(Intrinsic.X86Maxsd,      new IntrinsicInfo(X86Instruction.Maxsd,      IntrinsicType.Binary));
@@ -62,6 +68,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Minss,      new IntrinsicInfo(X86Instruction.Minss,      IntrinsicType.Binary));
             Add(Intrinsic.X86Movhlps,    new IntrinsicInfo(X86Instruction.Movhlps,    IntrinsicType.Binary));
             Add(Intrinsic.X86Movlhps,    new IntrinsicInfo(X86Instruction.Movlhps,    IntrinsicType.Binary));
+            Add(Intrinsic.X86Movss,      new IntrinsicInfo(X86Instruction.Movss,      IntrinsicType.Binary));
             Add(Intrinsic.X86Mulpd,      new IntrinsicInfo(X86Instruction.Mulpd,      IntrinsicType.Binary));
             Add(Intrinsic.X86Mulps,      new IntrinsicInfo(X86Instruction.Mulps,      IntrinsicType.Binary));
             Add(Intrinsic.X86Mulsd,      new IntrinsicInfo(X86Instruction.Mulsd,      IntrinsicType.Binary));

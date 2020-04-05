@@ -10,11 +10,12 @@ namespace ARMeilleure.State
         private const int IntSize   = 8;
         private const int VecSize   = 16;
         private const int FlagSize  = 4;
-        private const int ExtraSize = 4;
+        private const int ExtraSize = 8;
 
         private const int TotalSize = RegisterConsts.IntRegsCount * IntSize  +
                                       RegisterConsts.VecRegsCount * VecSize  +
-                                      RegisterConsts.FlagsCount   * FlagSize + ExtraSize;
+                                      RegisterConsts.FlagsCount   * FlagSize +
+                                      RegisterConsts.FpFlagsCount * FlagSize + ExtraSize;
 
         public IntPtr BasePtr { get; }
 
@@ -100,6 +101,38 @@ namespace ARMeilleure.State
             Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
         }
 
+        public bool GetFPStateFlag(FPState flag)
+        {
+            if ((uint)flag >= RegisterConsts.FlagsCount)
+            {
+                throw new ArgumentException($"Invalid flag \"{flag}\" specified.");
+            }
+
+            int offset =
+                RegisterConsts.IntRegsCount * IntSize  +
+                RegisterConsts.VecRegsCount * VecSize  + 
+                RegisterConsts.FlagsCount   * FlagSize + (int)flag * FlagSize;
+
+            int value = Marshal.ReadInt32(BasePtr, offset);
+
+            return value != 0;
+        }
+
+        public void SetFPStateFlag(FPState flag, bool value)
+        {
+            if ((uint)flag >= RegisterConsts.FlagsCount)
+            {
+                throw new ArgumentException($"Invalid flag \"{flag}\" specified.");
+            }
+
+            int offset =
+                RegisterConsts.IntRegsCount * IntSize  +
+                RegisterConsts.VecRegsCount * VecSize  +
+                RegisterConsts.FlagsCount   * FlagSize + (int)flag * FlagSize;
+
+            Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
+        }
+
         public int GetCounter()
         {
             return Marshal.ReadInt32(BasePtr, GetCounterOffset());
@@ -144,9 +177,18 @@ namespace ARMeilleure.State
 
         public static int GetCounterOffset()
         {
-            return RegisterConsts.IntRegsCount * IntSize +
-                   RegisterConsts.VecRegsCount * VecSize +
-                   RegisterConsts.FlagsCount   * FlagSize;
+            return RegisterConsts.IntRegsCount * IntSize  +
+                   RegisterConsts.VecRegsCount * VecSize  +
+                   RegisterConsts.FlagsCount   * FlagSize +
+                   RegisterConsts.FpFlagsCount * FlagSize;
+        }
+
+        public static int GetCallAddressOffset()
+        {
+            return RegisterConsts.IntRegsCount * IntSize  +
+                   RegisterConsts.VecRegsCount * VecSize  +
+                   RegisterConsts.FlagsCount   * FlagSize +
+                   RegisterConsts.FpFlagsCount * FlagSize + 4;
         }
 
         public void Dispose()

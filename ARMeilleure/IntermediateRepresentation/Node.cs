@@ -3,52 +3,89 @@ using System.Collections.Generic;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class Node
+    class Node : IIntrusiveListNode<Node>
     {
+        public Node ListPrevious { get; set; }
+        public Node ListNext { get; set; }
+
         public Operand Destination
         {
             get
             {
-                return _destinations.Length != 0 ? GetDestination(0) : null;
+                return _destinations.Count != 0 ? GetDestination(0) : null;
             }
             set
             {
                 if (value != null)
                 {
-                    SetDestinations(new Operand[] { value });
+                    SetDestination(value);
                 }
                 else
                 {
-                    SetDestinations(new Operand[0]);
+                    _destinations.Clear();
                 }
             }
         }
 
-        private Operand[] _destinations;
-        private Operand[] _sources;
+        private List<Operand> _destinations;
+        private List<Operand> _sources;
+        private bool _clearedDest;
 
-        private LinkedListNode<Node>[] _asgUseNodes;
-        private LinkedListNode<Node>[] _srcUseNodes;
+        public int DestinationsCount => _destinations.Count;
+        public int SourcesCount      => _sources.Count;
 
-        public int DestinationsCount => _destinations.Length;
-        public int SourcesCount      => _sources.Length;
+        private void Resize(List<Operand> list, int size)
+        {
+            if (list.Count > size)
+            {
+                list.RemoveRange(size, list.Count - size);
+            } 
+            else
+            {
+                while (list.Count < size)
+                {
+                    list.Add(null);
+                }
+            }
+        }
 
-        public Node(Operand destination, int sourcesCount)
+        public Node()
+        {
+            _destinations = new List<Operand>();
+            _sources = new List<Operand>();
+        }
+
+        public Node(Operand destination, int sourcesCount) : this()
         {
             Destination = destination;
 
-            _sources = new Operand[sourcesCount];
-
-            _srcUseNodes = new LinkedListNode<Node>[sourcesCount];
+            Resize(_sources, sourcesCount);
         }
 
-        public Node(Operand[] destinations, int sourcesCount)
+        private void Reset(int sourcesCount)
         {
+            _clearedDest = true;
+            _sources.Clear();
+            ListPrevious = null;
+            ListNext = null;
+
+            Resize(_sources, sourcesCount);
+        }
+
+        public Node With(Operand destination, int sourcesCount)
+        {
+            Reset(sourcesCount);
+            Destination = destination;
+
+            return this;
+        }
+
+        public Node With(Operand[] destinations, int sourcesCount)
+        {
+            Reset(sourcesCount);
             SetDestinations(destinations ?? throw new ArgumentNullException(nameof(destinations)));
 
-            _sources = new Operand[sourcesCount];
-
-            _srcUseNodes = new LinkedListNode<Node>[sourcesCount];
+            return this;
         }
 
         public Operand GetDestination(int index)
@@ -63,60 +100,58 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void SetDestination(int index, Operand destination)
         {
-            Operand oldOp = _destinations[index];
-
-            if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
+            if (!_clearedDest) 
             {
-                oldOp.Assignments.Remove(_asgUseNodes[index]);
+                RemoveAssignment(_destinations[index]);
             }
 
-            if (destination != null && destination.Kind == OperandKind.LocalVariable)
-            {
-                _asgUseNodes[index] = destination.Assignments.AddLast(this);
-            }
+            AddAssignment(destination);
+
+            _clearedDest = false;
 
             _destinations[index] = destination;
         }
 
         public void SetSource(int index, Operand source)
         {
-            Operand oldOp = _sources[index];
+            RemoveUse(_sources[index]);
 
-            if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
-            {
-                oldOp.Uses.Remove(_srcUseNodes[index]);
-            }
-
-            if (source != null && source.Kind == OperandKind.LocalVariable)
-            {
-                _srcUseNodes[index] = source.Uses.AddLast(this);
-            }
+            AddUse(source);
 
             _sources[index] = source;
         }
 
+        private void RemoveOldDestinations()
+        {
+            if (_destinations != null && !_clearedDest)
+            {
+                for (int index = 0; index < _destinations.Count; index++)
+                {
+                    RemoveAssignment(_destinations[index]);
+                }
+            }
+            _clearedDest = false;
+        }
+
+        public void SetDestination(Operand destination)
+        {
+            RemoveOldDestinations();
+
+            Resize(_destinations, 1);
+
+            _destinations[0] = destination;
+
+            if (destination.Kind == OperandKind.LocalVariable)
+            {
+                destination.Assignments.Add(this);
+            }
+        }
+
         public void SetDestinations(Operand[] destinations)
         {
-            if (_destinations != null)
-            {
-                for (int index = 0; index < _destinations.Length; index++)
-                {
-                    Operand oldOp = _destinations[index];
+            RemoveOldDestinations();
 
-                    if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
-                    {
-                        oldOp.Assignments.Remove(_asgUseNodes[index]);
-                    }
-                }
-
-                _destinations = destinations;
-            }
-            else
-            {
-                _destinations = new Operand[destinations.Length];
-            }
-
-            _asgUseNodes = new LinkedListNode<Node>[destinations.Length];
+            Resize(_destinations, destinations.Length);
 
             for (int index = 0; index < destinations.Length; index++)
             {
@@ -124,28 +159,37 @@ namespace ARMeilleure.IntermediateRepresentation
 
                 _destinations[index] = newOp;
 
-                if (newOp.Kind == OperandKind.LocalVariable)
-                {
-                    _asgUseNodes[index] = newOp.Assignments.AddLast(this);
-                }
+                AddAssignment(newOp);
+            }
+        }
+
+        private void RemoveOldSources()
+        {
+            for (int index = 0; index < _sources.Count; index++)
+            {
+                RemoveUse(_sources[index]);
+            }
+        }
+
+        public void SetSource(Operand source)
+        {
+            RemoveOldSources();
+
+            Resize(_sources, 1);
+
+            _sources[0] = source;
+
+            if (source.Kind == OperandKind.LocalVariable)
+            {
+                source.Uses.Add(this);
             }
         }
 
         public void SetSources(Operand[] sources)
         {
-            for (int index = 0; index < _sources.Length; index++)
-            {
-                Operand oldOp = _sources[index];
+            RemoveOldSources();
 
-                if (oldOp != null && oldOp.Kind == OperandKind.LocalVariable)
-                {
-                    oldOp.Uses.Remove(_srcUseNodes[index]);
-                }
-            }
-
-            _sources = new Operand[sources.Length];
-
-            _srcUseNodes = new LinkedListNode<Node>[sources.Length];
+            Resize(_sources, sources.Length);
 
             for (int index = 0; index < sources.Length; index++)
             {
@@ -153,9 +197,114 @@ namespace ARMeilleure.IntermediateRepresentation
 
                 _sources[index] = newOp;
 
-                if (newOp.Kind == OperandKind.LocalVariable)
+                AddUse(newOp);
+            }
+        }
+
+        private void AddAssignment(Operand op)
+        {
+            if (op == null)
+            {
+                return;
+            }
+
+            if (op.Kind == OperandKind.LocalVariable)
+            {
+                op.Assignments.Add(this);
+            }
+            else if (op.Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = (MemoryOperand)op;
+
+                if (memOp.BaseAddress != null)
                 {
-                    _srcUseNodes[index] = newOp.Uses.AddLast(this);
+                    memOp.BaseAddress.Assignments.Add(this);
+                }
+                
+                if (memOp.Index != null)
+                {
+                    memOp.Index.Assignments.Add(this);
+                }
+            }
+        }
+
+        private void RemoveAssignment(Operand op)
+        {
+            if (op == null)
+            {
+                return;
+            }
+
+            if (op.Kind == OperandKind.LocalVariable)
+            {
+                op.Assignments.Remove(this);
+            }
+            else if (op.Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = (MemoryOperand)op;
+
+                if (memOp.BaseAddress != null)
+                {
+                    memOp.BaseAddress.Assignments.Remove(this);
+                }
+
+                if (memOp.Index != null)
+                {
+                    memOp.Index.Assignments.Remove(this);
+                }
+            }
+        }
+
+        private void AddUse(Operand op)
+        {
+            if (op == null)
+            {
+                return;
+            }
+
+            if (op.Kind == OperandKind.LocalVariable)
+            {
+                op.Uses.Add(this);
+            }
+            else if (op.Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = (MemoryOperand)op;
+
+                if (memOp.BaseAddress != null)
+                {
+                    memOp.BaseAddress.Uses.Add(this);
+                }
+
+                if (memOp.Index != null)
+                {
+                    memOp.Index.Uses.Add(this);
+                }
+            }
+        }
+
+        private void RemoveUse(Operand op)
+        {
+            if (op == null)
+            {
+                return;
+            }
+
+            if (op.Kind == OperandKind.LocalVariable)
+            {
+                op.Uses.Remove(this);
+            }
+            else if (op.Kind == OperandKind.Memory)
+            {
+                MemoryOperand memOp = (MemoryOperand)op;
+
+                if (memOp.BaseAddress != null)
+                {
+                    memOp.BaseAddress.Uses.Remove(this);
+                }
+
+                if (memOp.Index != null)
+                {
+                    memOp.Index.Uses.Remove(this);
                 }
             }
         }

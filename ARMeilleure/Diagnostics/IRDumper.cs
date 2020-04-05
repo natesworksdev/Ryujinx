@@ -35,7 +35,7 @@ namespace ARMeilleure.Diagnostics
 
             IncreaseIndentation();
 
-            foreach (BasicBlock block in cfg.Blocks)
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
                 string blockName = GetBlockName(block);
 
@@ -55,7 +55,7 @@ namespace ARMeilleure.Diagnostics
 
                 IncreaseIndentation();
 
-                foreach (Node node in block.Operations)
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     string[] sources = new string[node.SourcesCount];
 
@@ -134,6 +134,7 @@ namespace ARMeilleure.Diagnostics
                 switch (reg.Type)
                 {
                     case RegisterType.Flag:    name = "b" + reg.Index; break;
+                    case RegisterType.FpFlag:  name = "f" + reg.Index; break;
                     case RegisterType.Integer: name = "r" + reg.Index; break;
                     case RegisterType.Vector:  name = "v" + reg.Index; break;
                 }

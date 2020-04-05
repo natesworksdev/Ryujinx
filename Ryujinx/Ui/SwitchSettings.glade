@@ -166,11 +166,98 @@
                                         <property name="position">1</property>
                                       </packing>
                                     </child>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Change System Region</property>
+                                        <property name="halign">end</property>
+                                        <property name="label" translatable="yes">System Region:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkComboBoxText" id="_systemRegionSelect">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Change System Region</property>
+                                        <property name="margin_left">5</property>
+                                        <items>
+                                          <item id="Japan" translatable="yes">Japan</item>
+                                          <item id="USA" translatable="yes">USA</item>
+                                          <item id="Europe" translatable="yes">Europe</item>
+                                          <item id="Australia" translatable="yes">Australia</item>
+                                          <item id="China" translatable="yes">China</item>
+                                          <item id="Korea" translatable="yes">Korea</item>
+                                          <item id="Taiwan" translatable="yes">Taiwan</item>
+                                        </items>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">3</property>
+                                      </packing>
+                                    </child>
                                   </object>
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox" id="box2">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="orientation">vertical</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="tooltip_text" translatable="yes">Change System TimeZone</property>
+                                            <property name="halign">end</property>
+                                            <property name="label" translatable="yes">System TimeZone:</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkComboBoxText" id="_systemTimeZoneSelect">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="tooltip_text" translatable="yes">Change System TimeZone</property>
+                                            <property name="margin_left">5</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">2</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">1</property>
                                   </packing>
                                 </child>
                                 <child>
@@ -187,7 +274,7 @@
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
-                                    <property name="position">1</property>
+                                    <property name="position">2</property>
                                   </packing>
                                 </child>
                               </object>
@@ -1374,6 +1461,52 @@
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
+                                    <property name="position">3</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Level of Anisotropic Filtering (set to Auto to use the value requested by the game)</property>
+                                        <property name="label" translatable="yes">Anisotropic Filtering:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkComboBoxText" id="_anisotropy">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Level of Anisotropic Filtering (set to Auto to use the value requested by the game)</property>
+                                        <property name="active_id">-1</property>
+                                        <items>
+                                          <item id="-1" translatable="yes">Auto</item>
+                                          <item id="2" translatable="yes">2x</item>
+                                          <item id="4" translatable="yes">4x</item>
+                                          <item id="8" translatable="yes">8x</item>
+                                          <item id="16" translatable="yes">16x</item>
+                                        </items>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
                                     <property name="position">4</property>
                                   </packing>
                                 </child>
@@ -1438,54 +1571,41 @@
                                 <property name="margin_right">10</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="_fileLogToggle">
-                                    <property name="label" translatable="yes">Enable Logging to File</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enables or disables logging to a file on disk</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin_top">5</property>
-                                    <property name="margin_bottom">5</property>
-                                    <property name="draw_indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
                                   <object class="GtkBox">
                                     <property name="visible">True</property>
                                     <property name="can_focus">False</property>
-                                    <property name="margin_left">5</property>
-                                    <property name="margin_bottom">10</property>
                                     <child>
-                                      <object class="GtkLabel">
+                                      <object class="GtkCheckButton" id="_fileLogToggle">
+                                        <property name="label" translatable="yes">Enable Logging to File</property>
                                         <property name="visible">True</property>
-                                        <property name="can_focus">False</property>
-                                        <property name="tooltip_text" translatable="yes">Location of the log file</property>
-                                        <property name="label" translatable="yes">Log File Location:</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="receives_default">False</property>
+                                        <property name="tooltip_text" translatable="yes">Enables or disables logging to a file on disk</property>
+                                        <property name="halign">start</property>
+                                        <property name="margin_top">5</property>
+                                        <property name="margin_bottom">5</property>
+                                        <property name="draw_indicator">True</property>
                                       </object>
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>
-                                        <property name="padding">5</property>
                                         <property name="position">0</property>
                                       </packing>
                                     </child>
                                     <child>
-                                      <object class="GtkEntry" id="_logPath">
+                                      <object class="GtkButton" id="_openLogsFolderButton">
+                                        <property name="label" translatable="yes">Open Logs Folder</property>
                                         <property name="visible">True</property>
                                         <property name="can_focus">True</property>
-                                        <property name="tooltip_text" translatable="yes">Location of the log file</property>
-                                        <property name="valign">center</property>
-                                        <property name="editable">False</property>
-                                        <property name="caps_lock_warning">False</property>
+                                        <property name="receives_default">True</property>
+                                        <property name="tooltip_text" translatable="yes">Opens the folder where logs are written to.</property>
+                                        <property name="margin_left">5</property>
+                                        <property name="margin_top">5</property>
+                                        <property name="margin_bottom">5</property>
+                                        <signal name="clicked" handler="OpenLogsFolder_Pressed" swapped="no"/>
                                       </object>
                                       <packing>
-                                        <property name="expand">True</property>
+                                        <property name="expand">False</property>
                                         <property name="fill">True</property>
                                         <property name="position">1</property>
                                       </packing>
@@ -1494,8 +1614,7 @@
                                   <packing>
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
-                                    <property name="padding">5</property>
-                                    <property name="position">1</property>
+                                    <property name="position">0</property>
                                   </packing>
                                 </child>
                                 <child>

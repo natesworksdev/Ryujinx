@@ -96,17 +96,27 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             OpCodeIpa op = (OpCodeIpa)context.CurrOp;
 
-            InterpolationQualifier iq = InterpolationQualifier.None;
+            Operand res = Attribute(op.AttributeOffset);
 
-            switch (op.Mode)
+            if (op.AttributeOffset >= AttributeConsts.UserAttributeBase &&
+                op.AttributeOffset <  AttributeConsts.UserAttributeEnd)
             {
-                case InterpolationMode.Constant: iq = InterpolationQualifier.Flat;          break;
-                case InterpolationMode.Pass:     iq = InterpolationQualifier.NoPerspective; break;
+                int index = (op.AttributeOffset - AttributeConsts.UserAttributeBase) >> 4;
+
+                if (context.Config.ImapTypes[index].GetFirstUsedType() == PixelImap.Perspective)
+                {
+                    res = context.FPMultiply(res, Attribute(AttributeConsts.PositionW));
+                }
+            }
+ 
+            if (op.Mode == InterpolationMode.Default)
+            {
+                Operand srcB = GetSrcB(context);
+
+                res = context.FPMultiply(res, srcB);
             }
 
-            Operand srcA = Attribute(op.AttributeOffset, iq);
-
-            Operand res = context.FPSaturate(srcA, op.Saturate);
+            res = context.FPSaturate(res, op.Saturate);
 
             context.Copy(GetDest(context), res);
         }
@@ -138,11 +148,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             int count = op.Size == IntegerSize.B64 ? 2 : 1;
 
-            Operand wordOffset = context.ShiftRightU32(GetSrcA(context), Const(2));
+            Operand addr = context.IAdd(GetSrcA(context), Const(op.Offset));
 
-            wordOffset = context.IAdd(wordOffset, Const(op.Offset));
+            Operand wordOffset = context.ShiftRightU32(addr, Const(2));
 
-            Operand bitOffset = GetBitOffset(context, GetSrcA(context));
+            Operand bitOffset = GetBitOffset(context, addr);
 
             for (int index = 0; index < count; index++)
             {

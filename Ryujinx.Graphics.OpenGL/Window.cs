@@ -9,28 +9,47 @@ namespace Ryujinx.Graphics.OpenGL
         private const int NativeWidth  = 1280;
         private const int NativeHeight = 720;
 
+        private readonly Renderer _renderer;
+
         private int _width;
         private int _height;
 
         private int _copyFramebufferHandle;
 
-        public Window()
+        public Window(Renderer renderer)
         {
+            _renderer = renderer;
+
             _width  = NativeWidth;
             _height = NativeHeight;
         }
 
         public void Present(ITexture texture, ImageCrop crop)
         {
-            TextureView view = (TextureView)texture;
-
             GL.Disable(EnableCap.FramebufferSrgb);
+
+            CopyTextureToFrameBufferRGB(0, GetCopyFramebufferHandleLazy(), (TextureView)texture, crop);
+
+            GL.Enable(EnableCap.FramebufferSrgb);
+        }
+
+        public void SetSize(int width, int height)
+        {
+            _width  = width;
+            _height = height;
+        }
+
+        private void CopyTextureToFrameBufferRGB(int drawFramebuffer, int readFramebuffer, TextureView view, ImageCrop crop)
+        {
+            bool[] oldFramebufferColorWritemask = new bool[4];
 
             int oldReadFramebufferHandle = GL.GetInteger(GetPName.ReadFramebufferBinding);
             int oldDrawFramebufferHandle = GL.GetInteger(GetPName.DrawFramebufferBinding);
 
-            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, 0);
-            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, GetCopyFramebufferHandleLazy());
+            GL.GetBoolean(GetIndexedPName.ColorWritemask, drawFramebuffer, oldFramebufferColorWritemask);
+
+            GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, drawFramebuffer);
+            GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, readFramebuffer);
 
             GL.FramebufferTexture(
                 FramebufferTarget.ReadFramebuffer,
@@ -39,6 +58,8 @@ namespace Ryujinx.Graphics.OpenGL
                 0);
 
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+
+            GL.Disable(EnableCap.ScissorTest);
 
             GL.Clear(ClearBufferMask.ColorBufferBit);
 
@@ -93,16 +114,19 @@ namespace Ryujinx.Graphics.OpenGL
                 ClearBufferMask.ColorBufferBit,
                 BlitFramebufferFilter.Linear);
 
+            // Remove Alpha channel
+            GL.ColorMask(drawFramebuffer, false, false, false, true);
+            GL.ClearBuffer(ClearBuffer.Color, 0, new float[] { 0.0f, 0.0f, 0.0f, 1.0f });
+            GL.ColorMask(drawFramebuffer,
+                oldFramebufferColorWritemask[0],
+                oldFramebufferColorWritemask[1],
+                oldFramebufferColorWritemask[2],
+                oldFramebufferColorWritemask[3]);
+
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, oldReadFramebufferHandle);
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
 
-            GL.Enable(EnableCap.FramebufferSrgb);
-        }
-
-        public void SetSize(int width, int height)
-        {
-            _width  = width;
-            _height = height;
+            ((Pipeline)_renderer.Pipeline).RestoreScissorEnable();
         }
 
         private int GetCopyFramebufferHandleLazy()

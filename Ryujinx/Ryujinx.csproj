@@ -75,7 +75,8 @@
 
   <ItemGroup>
     <PackageReference Include="DiscordRichPresence" Version="1.0.147" />
-    <PackageReference Include="GtkSharp" Version="3.22.25.24" />
+    <PackageReference Include="GLWidget" Version="1.0.1" />
+    <PackageReference Include="GtkSharp" Version="3.22.25.56" />
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.4" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="4.7.0" />
@@ -93,10 +94,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Config.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="RPsupported.dat">
+    <None Update="Config.json" Condition="'$(Configuration)' == 'Debug' OR '$(Configuration)' == 'Profile Debug'">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
   </ItemGroup>

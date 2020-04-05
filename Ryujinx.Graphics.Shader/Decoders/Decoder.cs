@@ -1,10 +1,8 @@
 using Ryujinx.Graphics.Shader.Instructions;
 using System;
 using System.Buffers.Binary;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection.Emit;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -12,15 +10,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
 {
     static class Decoder
     {
-        private delegate object OpActivator(InstEmitter emitter, ulong address, long opCode);
-
-        private static ConcurrentDictionary<Type, OpActivator> _opActivators;
-
-        static Decoder()
-        {
-            _opActivators = new ConcurrentDictionary<Type, OpActivator>();
-        }
-
         public static Block[] Decode(ReadOnlySpan<byte> code, ulong headerSize)
         {
             List<Block> blocks = new List<Block>();
@@ -245,7 +234,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
                 long opCode = word0 | (long)word1 << 32;
 
-                (InstEmitter emitter, Type opCodeType) = OpCodeTable.GetEmitter(opCode);
+                (InstEmitter emitter, OpCodeTable.OpActivator opActivator) = OpCodeTable.GetEmitter(opCode);
 
                 if (emitter == null)
                 {
@@ -256,7 +245,12 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     continue;
                 }
 
-                OpCode op = MakeOpCode(opCodeType, emitter, opAddress, opCode);
+                if (opActivator == null)
+                {
+                    throw new ArgumentNullException(nameof(opActivator));
+                }
+
+                OpCode op = (OpCode)opActivator(emitter, opAddress, opCode);
 
                 block.OpCodes.Add(op);
             }
@@ -293,35 +287,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
         private static bool IsExit(OpCode opCode)
         {
             return opCode is OpCodeExit;
-        }
-
-        private static OpCode MakeOpCode(Type type, InstEmitter emitter, ulong address, long opCode)
-        {
-            if (type == null)
-            {
-                throw new ArgumentNullException(nameof(type));
-            }
-
-            OpActivator createInstance = _opActivators.GetOrAdd(type, CacheOpActivator);
-
-            return (OpCode)createInstance(emitter, address, opCode);
-        }
-
-        private static OpActivator CacheOpActivator(Type type)
-        {
-            Type[] argTypes = new Type[] { typeof(InstEmitter), typeof(ulong), typeof(long) };
-
-            DynamicMethod mthd = new DynamicMethod($"Make{type.Name}", type, argTypes);
-
-            ILGenerator generator = mthd.GetILGenerator();
-
-            generator.Emit(OpCodes.Ldarg_0);
-            generator.Emit(OpCodes.Ldarg_1);
-            generator.Emit(OpCodes.Ldarg_2);
-            generator.Emit(OpCodes.Newobj, type.GetConstructor(argTypes));
-            generator.Emit(OpCodes.Ret);
-
-            return (OpActivator)mthd.CreateDelegate(typeof(OpActivator));
         }
 
         private struct PathBlockState
@@ -390,7 +355,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             void Push(PathBlockState pbs)
             {
-                if (pbs.Block == null || visited.Add(pbs.Block))
+                // When block is null, this means we are pushing a restore operation.
+                // Restore operations are used to undo the work done inside a block
+                // when we return from it, for example it pops addresses pushed by
+                // SSY/PBK instructions inside the block, and pushes addresses poped
+                // by SYNC/BRK.
+                // For blocks, if it's already visited, we just ignore to avoid going
+                // around in circles and getting stuck here.
+                if (pbs.Block == null || !visited.Contains(pbs.Block))
                 {
                     workQueue.Push(pbs);
                 }
@@ -408,6 +380,14 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 }
 
                 Block current = pbs.Block;
+
+                // If the block was already processed, we just ignore it, otherwise
+                // we would push the same child blocks of an already processed block,
+                // and go around in circles until memory is exhausted.
+                if (!visited.Add(current))
+                {
+                    continue;
+                }
 
                 int pushOpsCount = current.PushOpCodes.Count;
 
@@ -434,7 +414,9 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 }
                 else if (current.GetLastOp() is OpCodeBranchIndir brIndir)
                 {
-                    foreach (Block possibleTarget in brIndir.PossibleTargets)
+                    // By adding them in descending order (sorted by address), we process the blocks
+                    // in order (of ascending address), since we work with a LIFO.
+                    foreach (Block possibleTarget in brIndir.PossibleTargets.OrderByDescending(x => x.Address))
                     {
                         Push(new PathBlockState(possibleTarget));
                     }
@@ -453,6 +435,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
                     }
                     else
                     {
+                        // First we push the target address (this will be used to push the
+                        // address back into the SSY/PBK stack when we return from that block),
+                        // then we push the block itself into the work "queue" (well, it's a stack)
+                        // for processing.
                         Push(new PathBlockState(targetAddress));
                         Push(new PathBlockState(blocks[targetAddress]));
                     }

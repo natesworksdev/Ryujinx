@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.OpenGL
 {
     public sealed class Renderer : IRenderer
     {
-        private Pipeline _pipeline;
+        private readonly Pipeline _pipeline;
 
         public IPipeline Pipeline => _pipeline;
 
@@ -19,15 +19,21 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal TextureCopy TextureCopy { get; }
 
+        public string GpuVendor { get; private set; }
+
+        public string GpuRenderer { get; private set; }
+
+        public string GpuVersion { get; private set; }
+
         public Renderer()
         {
             _pipeline = new Pipeline();
 
             _counters = new Counters();
 
-            _window = new Window();
+            _window = new Window(this);
 
-            TextureCopy = new TextureCopy();
+            TextureCopy = new TextureCopy(this);
         }
 
         public IShader CompileShader(ShaderProgram shader)
@@ -61,7 +67,8 @@ namespace Ryujinx.Graphics.OpenGL
                 HwCapabilities.SupportsAstcCompression,
                 HwCapabilities.SupportsNonConstantTextureOffset,
                 HwCapabilities.MaximumComputeSharedMemorySize,
-                HwCapabilities.StorageBufferOffsetAlignment);
+                HwCapabilities.StorageBufferOffsetAlignment,
+                HwCapabilities.MaxSupportedAnisotropy);
         }
 
         public ulong GetCounter(CounterType type)
@@ -78,11 +85,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PrintGpuInformation()
         {
-            string gpuVendor   = GL.GetString(StringName.Vendor);
-            string gpuRenderer = GL.GetString(StringName.Renderer);
-            string gpuVersion  = GL.GetString(StringName.Version);
+            GpuVendor   = GL.GetString(StringName.Vendor);
+            GpuRenderer = GL.GetString(StringName.Renderer);
+            GpuVersion  = GL.GetString(StringName.Version);
 
-            Logger.PrintInfo(LogClass.Gpu, $"{gpuVendor} {gpuRenderer} ({gpuVersion})");
+            Logger.PrintInfo(LogClass.Gpu, $"{GpuVendor} {GpuRenderer} ({GpuVersion})");
         }
 
         public void ResetCounter(CounterType type)

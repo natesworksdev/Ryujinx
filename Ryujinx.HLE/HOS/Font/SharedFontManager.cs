@@ -1,10 +1,12 @@
+using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
-using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.IO;
@@ -18,8 +20,6 @@ namespace Ryujinx.HLE.HOS.Font
         private Switch _device;
 
         private long _physicalAddress;
-
-        private string _fontsPath;
 
         private struct FontInfo
         {
@@ -38,10 +38,7 @@ namespace Ryujinx.HLE.HOS.Font
         public SharedFontManager(Switch device, long physicalAddress)
         {
             _physicalAddress = physicalAddress;
-
-            _device = device;
-
-            _fontsPath = Path.Combine(device.FileSystem.GetSystemPath(), "fonts");
+            _device          = device;
         }
 
         public void Initialize(ContentManager contentManager)
@@ -49,7 +46,6 @@ namespace Ryujinx.HLE.HOS.Font
             _fontData?.Clear();
             _fontData = null;
 
-            EnsureInitialized(contentManager);
         }
 
         public void EnsureInitialized(ContentManager contentManager)
@@ -77,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Font
                                 Nca         nca          = new Nca(_device.System.KeySet, ncaFileStream);
                                 IFileSystem romfs        = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
 
-                                romfs.OpenFile(out IFile fontFile, "/" + fontFilename, OpenMode.Read).ThrowIfFailure();
+                                romfs.OpenFile(out IFile fontFile, ("/" + fontFilename).ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                                 data = DecryptFont(fontFile.AsStream());
                             }
@@ -97,32 +93,19 @@ namespace Ryujinx.HLE.HOS.Font
 
                             return info;
                         }
-                    }
-
-                    string fontFilePath = Path.Combine(_fontsPath, name + ".ttf");
-
-                    if (File.Exists(fontFilePath))
-                    {
-                        byte[] data = File.ReadAllBytes(fontFilePath);
-
-                        FontInfo info = new FontInfo((int)fontOffset, data.Length);
-
-                        WriteMagicAndSize(_physicalAddress + fontOffset, data.Length);
-
-                        fontOffset += 8;
-
-                        uint start = fontOffset;
-
-                        for (; fontOffset - start < data.Length; fontOffset++)
+                        else
                         {
-                            _device.Memory.WriteByte(_physicalAddress + fontOffset, data[fontOffset - start]);
-                        }
+                            if (!contentManager.TryGetSystemTitlesName(fontTitle, out string titleName))
+                            {
+                                titleName = "Unknown";
+                            }
 
-                        return info;
+                            throw new InvalidSystemResourceException($"{titleName} ({fontTitle:x8}) system title not found! This font will not work, provide the system archive to fix this error. (See https://github.com/Ryujinx/Ryujinx#requirements for more information)");
+                        }
                     }
                     else
                     {
-                        throw new InvalidSystemResourceException($"Font \"{name}.ttf\" not found. Please provide it in \"{_fontsPath}\".");
+                        throw new ArgumentException($"Unknown font \"{name}\"!");
                     }
                 }
 

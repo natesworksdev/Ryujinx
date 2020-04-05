@@ -14,6 +14,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Mii;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sm;
@@ -232,6 +233,8 @@ namespace Ryujinx.HLE.HOS
             // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
 
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
+
+            DatabaseImpl.Instance.InitializeDatabase(device);
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -289,7 +292,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx ticketEntry in securePartition.EnumerateEntries("/", "*.tik"))
             {
-                Result result = securePartition.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                Result result = securePartition.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
 
                 if (result.IsSuccess())
                 {
@@ -301,7 +304,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx fileEntry in securePartition.EnumerateEntries("/", "*.nca"))
             {
-                Result result = securePartition.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read);
+                Result result = securePartition.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read);
                 if (result.IsFailure())
                 {
                     continue;
@@ -349,7 +352,7 @@ namespace Ryujinx.HLE.HOS
         {
             IFileSystem controlFs = controlNca.OpenFileSystem(NcaSectionType.Data, FsIntegrityCheckLevel);
 
-            Result result = controlFs.OpenFile(out IFile controlFile, "/control.nacp", OpenMode.Read);
+            Result result = controlFs.OpenFile(out IFile controlFile, "/control.nacp".ToU8Span(), OpenMode.Read);
 
             if (result.IsSuccess())
             {
@@ -390,7 +393,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
             {
-                Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath, OpenMode.Read);
+                Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
 
                 if (result.IsSuccess())
                 {
@@ -406,7 +409,7 @@ namespace Ryujinx.HLE.HOS
 
             foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
             {
-                nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath, OpenMode.Read).ThrowIfFailure();
+                nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                 Nca nca = new Nca(KeySet, ncaFile.AsStorage());
 
@@ -514,9 +517,9 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
         {
-            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
+            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm".ToU8Span(), OpenMode.Read);
 
-            if (result == ResultFs.PathNotFound)
+            if (ResultFs.PathNotFound.Includes(result))
             {
                 Logger.PrintWarning(LogClass.Loader, "NPDM file not found, using default values!");
 
@@ -540,7 +543,7 @@ namespace Ryujinx.HLE.HOS
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
-                    codeFs.OpenFile(out IFile nsoFile, file.FullPath, OpenMode.Read).ThrowIfFailure();
+                    codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                     NxStaticObject staticObject = new NxStaticObject(nsoFile.AsStream());
 
@@ -688,7 +691,16 @@ namespace Ryujinx.HLE.HOS
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            Result rc = EnsureApplicationSaveData(Device.FileSystem.FsClient, out _, titleId, ref ControlData.Value, ref user);
+            FileSystemClient fs = Device.FileSystem.FsClient;
+
+            Result rc = fs.EnsureApplicationCacheStorage(out _, titleId, ref ControlData.Value);
+
+            if (rc.IsFailure())
+            {
+                Logger.PrintError(LogClass.Application, $"Error calling EnsureApplicationCacheStorage. Result code {rc.ToStringWithName()}");
+            }
+
+            rc = EnsureApplicationSaveData(fs, out _, titleId, ref ControlData.Value, ref user);
 
             if (rc.IsFailure())
             {

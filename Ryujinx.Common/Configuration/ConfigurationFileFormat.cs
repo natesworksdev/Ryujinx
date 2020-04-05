@@ -16,7 +16,17 @@ namespace Ryujinx.Configuration
 {
     public class ConfigurationFileFormat
     {
+        /// <summary>
+        /// The current version of the file format
+        /// </summary>
+        public const int CurrentVersion = 4;
+
         public int Version { get; set; }
+
+        /// <summary>
+        /// Max Anisotropy. Values range from 0 - 16. Set to -1 to let the game decide.
+        /// </summary>
+        public float MaxAnisotropy { get; set; }
 
         /// <summary>
         /// Dumps shaders in this local directory
@@ -72,6 +82,16 @@ namespace Ryujinx.Configuration
         /// Change System Language
         /// </summary>
         public Language SystemLanguage { get; set; }
+
+        /// <summary>
+        /// Change System Region
+        /// </summary>
+        public Region SystemRegion { get; set; }
+
+        /// <summary>
+        /// Change System TimeZone
+        /// </summary>
+        public string SystemTimeZone { get; set; }
 
         /// <summary>
         /// Enables or disables Docked Mode

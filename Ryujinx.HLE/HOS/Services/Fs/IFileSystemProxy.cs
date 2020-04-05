@@ -448,6 +448,37 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             return (ResultCode)result.Value;
         }
 
+        [Command(630)]
+        // SetSdCardAccessibility(u8)
+        public ResultCode SetSdCardAccessibility(ServiceCtx context)
+        {
+            bool isAccessible = context.RequestData.ReadBoolean();
+
+            return (ResultCode)_baseFileSystemProxy.SetSdCardAccessibility(isAccessible).Value;
+        }
+
+        [Command(631)]
+        // IsSdCardAccessible() -> u8
+        public ResultCode IsSdCardAccessible(ServiceCtx context)
+        {
+            Result result = _baseFileSystemProxy.IsSdCardAccessible(out bool isAccessible);
+
+            context.ResponseData.Write(isAccessible);
+
+            return (ResultCode)result.Value;
+        }
+
+        [Command(1004)]
+        // SetGlobalAccessLogMode(u32 mode)
+        public ResultCode SetGlobalAccessLogMode(ServiceCtx context)
+        {
+            int mode = context.RequestData.ReadInt32();
+
+            context.Device.System.GlobalAccessLogMode = mode;
+
+            return ResultCode.Success;
+        }
+
         [Command(1005)]
         // GetGlobalAccessLogMode() -> u32 logMode
         public ResultCode GetGlobalAccessLogMode(ServiceCtx context)
@@ -481,6 +512,20 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             context.ResponseData.Write(programCount);
 
             return ResultCode.Success;
+        }
+
+        [Command(1200)] // 6.0.0+
+        // OpenMultiCommitManager() -> object<nn::fssrv::sf::IMultiCommitManager>
+        public ResultCode OpenMultiCommitManager(ServiceCtx context)
+        {
+            Result result = _baseFileSystemProxy.OpenMultiCommitManager(out LibHac.FsService.IMultiCommitManager commitManager);
+
+            if (result.IsSuccess())
+            {
+                MakeObject(context, new IMultiCommitManager(commitManager));
+            }
+
+            return (ResultCode)result.Value;
         }
     }
 }

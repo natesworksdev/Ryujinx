@@ -3,6 +3,7 @@ using ARMeilleure.State;
 using System;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.Translation
 {
@@ -10,6 +11,7 @@ namespace ARMeilleure.Translation
     {
         private const long CallerSavedIntRegistersMask = 0x7fL  << 9;
         private const long PStateNzcvFlagsMask         = 0xfL   << 60;
+        private const long FpStateNzcvFlagsMask        = 0xfL   << 60;
 
         private const long CallerSavedVecRegistersMask = 0xffffL << 16;
 
@@ -68,15 +70,15 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public static void RunPass(ControlFlowGraph cfg, bool isCompleteFunction)
+        public static void RunPass(ControlFlowGraph cfg, ExecutionMode mode, bool isCompleteFunction)
         {
             // Compute local register inputs and outputs used inside blocks.
             RegisterMask[] localInputs  = new RegisterMask[cfg.Blocks.Count];
             RegisterMask[] localOutputs = new RegisterMask[cfg.Blocks.Count];
 
-            foreach (BasicBlock block in cfg.Blocks)
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                foreach (Node node in block.Operations)
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     Operation operation = node as Operation;
 
@@ -192,41 +194,41 @@ namespace ARMeilleure.Translation
             while (modified);
 
             // Insert load and store context instructions where needed.
-            foreach (BasicBlock block in cfg.Blocks)
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
                 bool hasContextLoad = HasContextLoad(block);
 
                 if (hasContextLoad)
                 {
-                    block.Operations.RemoveFirst();
+                    block.Operations.Remove(block.Operations.First);
                 }
 
                 // The only block without any predecessor should be the entry block.
                 // It always needs a context load as it is the first block to run.
                 if (block.Predecessors.Count == 0 || hasContextLoad)
                 {
-                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector);
-                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer);
+                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector,  mode);
+                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer, mode);
                 }
 
                 bool hasContextStore = HasContextStore(block);
 
                 if (hasContextStore)
                 {
-                    block.Operations.RemoveLast();
+                    block.Operations.Remove(block.Operations.Last);
                 }
 
                 if (EndsWithReturn(block) || hasContextStore)
                 {
-                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, isCompleteFunction);
-                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  isCompleteFunction);
+                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, mode, isCompleteFunction);
+                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  mode, isCompleteFunction);
                 }
             }
         }
 
         private static bool HasContextLoad(BasicBlock block)
         {
-            return StartsWith(block, Instruction.LoadFromContext) && block.Operations.First.Value.SourcesCount == 0;
+            return StartsWith(block, Instruction.LoadFromContext) && block.Operations.First.SourcesCount == 0;
         }
 
         private static bool HasContextStore(BasicBlock block)
@@ -241,7 +243,7 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return block.Operations.First.Value is Operation operation && operation.Instruction == inst;
+            return block.Operations.First is Operation operation && operation.Instruction == inst;
         }
 
         private static bool EndsWith(BasicBlock block, Instruction inst)
@@ -251,7 +253,7 @@ namespace ARMeilleure.Translation
                 return false;
             }
 
-            return block.Operations.Last.Value is Operation operation && operation.Instruction == inst;
+            return block.Operations.Last is Operation operation && operation.Instruction == inst;
         }
 
         private static RegisterMask GetMask(Register register)
@@ -263,6 +265,7 @@ namespace ARMeilleure.Translation
             {
                 case RegisterType.Flag:    intMask = (1L << RegsCount) << register.Index; break;
                 case RegisterType.Integer: intMask =  1L               << register.Index; break;
+                case RegisterType.FpFlag:  vecMask = (1L << RegsCount) << register.Index; break;
                 case RegisterType.Vector:  vecMask =  1L               << register.Index; break;
             }
 
@@ -278,7 +281,7 @@ namespace ARMeilleure.Translation
             return oldValue != value;
         }
 
-        private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType)
+        private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType, ExecutionMode mode)
         {
             Operand arg0 = Local(OperandType.I64);
 
@@ -291,27 +294,27 @@ namespace ARMeilleure.Translation
                     continue;
                 }
 
-                Operand dest = GetRegFromBit(bit, baseType);
+                Operand dest = GetRegFromBit(bit, baseType, mode);
 
                 long offset = NativeContext.GetRegisterOffset(dest.GetRegister());
 
                 Operand addr = Local(OperandType.I64);
 
-                Operation loadOp = new Operation(Instruction.Load, dest, addr);
+                Operation loadOp = Operation(Instruction.Load, dest, addr);
 
                 block.Operations.AddFirst(loadOp);
 
-                Operation calcOffsOp = new Operation(Instruction.Add, addr, arg0, Const(offset));
+                Operation calcOffsOp = Operation(Instruction.Add, addr, arg0, Const(offset));
 
                 block.Operations.AddFirst(calcOffsOp);
             }
 
-            Operation loadArg0 = new Operation(Instruction.LoadArgument, arg0, Const(0));
+            Operation loadArg0 = Operation(Instruction.LoadArgument, arg0, Const(0));
 
             block.Operations.AddFirst(loadArg0);
         }
 
-        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, bool isCompleteFunction)
+        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, ExecutionMode mode, bool isCompleteFunction)
         {
             if (Optimizations.AssumeStrictAbiCompliance && isCompleteFunction)
             {
@@ -319,7 +322,7 @@ namespace ARMeilleure.Translation
                 {
                     outputs = ClearCallerSavedIntRegs(outputs);
                 }
-                else /* if (baseType == RegisterType.Vector) */
+                else /* if (baseType == RegisterType.Vector || baseType == RegisterType.FpFlag) */
                 {
                     outputs = ClearCallerSavedVecRegs(outputs);
                 }
@@ -327,7 +330,7 @@ namespace ARMeilleure.Translation
 
             Operand arg0 = Local(OperandType.I64);
 
-            Operation loadArg0 = new Operation(Instruction.LoadArgument, arg0, Const(0));
+            Operation loadArg0 = Operation(Instruction.LoadArgument, arg0, Const(0));
 
             block.Append(loadArg0);
 
@@ -340,31 +343,35 @@ namespace ARMeilleure.Translation
                     continue;
                 }
 
-                Operand source = GetRegFromBit(bit, baseType);
+                Operand source = GetRegFromBit(bit, baseType, mode);
 
                 long offset = NativeContext.GetRegisterOffset(source.GetRegister());
 
                 Operand addr = Local(OperandType.I64);
 
-                Operation calcOffsOp = new Operation(Instruction.Add, addr, arg0, Const(offset));
+                Operation calcOffsOp = Operation(Instruction.Add, addr, arg0, Const(offset));
 
                 block.Append(calcOffsOp);
 
-                Operation storeOp = new Operation(Instruction.Store, null, addr, source);
+                Operation storeOp = Operation(Instruction.Store, null, addr, source);
 
                 block.Append(storeOp);
             }
         }
 
-        private static Operand GetRegFromBit(int bit, RegisterType baseType)
+        private static Operand GetRegFromBit(int bit, RegisterType baseType, ExecutionMode mode)
         {
             if (bit < RegsCount)
             {
-                return new Operand(bit, baseType, GetOperandType(baseType));
+                return OperandHelper.Register(bit, baseType, GetOperandType(baseType, mode));
             }
             else if (baseType == RegisterType.Integer)
             {
-                return new Operand(bit & RegsMask, RegisterType.Flag, OperandType.I32);
+                return OperandHelper.Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
+            }
+            else if (baseType == RegisterType.Vector)
+            {
+                return OperandHelper.Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
             }
             else
             {
@@ -372,12 +379,13 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static OperandType GetOperandType(RegisterType type)
+        private static OperandType GetOperandType(RegisterType type, ExecutionMode mode)
         {
             switch (type)
             {
                 case RegisterType.Flag:    return OperandType.I32;
-                case RegisterType.Integer: return OperandType.I64;
+                case RegisterType.FpFlag:  return OperandType.I32;
+                case RegisterType.Integer: return (mode == ExecutionMode.Aarch64) ? OperandType.I64 : OperandType.I32;
                 case RegisterType.Vector:  return OperandType.V128;
             }
 
@@ -405,7 +413,7 @@ namespace ARMeilleure.Translation
         private static long ClearCallerSavedVecRegs(long mask)
         {
             // TODO: ARM32 support.
-            mask &= ~CallerSavedVecRegistersMask;
+            mask &= ~(CallerSavedVecRegistersMask | FpStateNzcvFlagsMask);
 
             return mask;
         }

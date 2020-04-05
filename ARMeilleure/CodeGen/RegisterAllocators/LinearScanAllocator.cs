@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Numerics;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
@@ -28,11 +29,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private LiveInterval[] _parentIntervals;
 
-        private List<LinkedListNode<Node>> _operationNodes;
+        private List<(IntrusiveList<Node>, Node)> _operationNodes;
 
         private int _operationsCount;
 
-        private class AllocationContext
+        private class AllocationContext : IDisposable
         {
             public RegisterMasks Masks { get; }
 
@@ -49,8 +50,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 StackAlloc = stackAlloc;
                 Masks      = masks;
 
-                Active   = new BitMap(intervalsCount);
-                Inactive = new BitMap(intervalsCount);
+                Active   = BitMapPool.Allocate(intervalsCount);
+                Inactive = BitMapPool.Allocate(intervalsCount);
             }
 
             public void MoveActiveToInactive(int bit)
@@ -68,6 +69,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 source.Clear(bit);
 
                 dest.Set(bit);
+            }
+
+            public void Dispose()
+            {
+                BitMapPool.Release();
             }
         }
 
@@ -121,10 +127,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             InsertSplitCopies();
             InsertSplitCopiesAtEdges(cfg);
 
-            return new AllocationResult(
+            AllocationResult result = new AllocationResult(
                 context.IntUsedRegisters,
                 context.VecUsedRegisters,
                 context.StackAlloc.TotalSize);
+
+            context.Dispose();
+
+            return result;
         }
 
         private void AllocateInterval(AllocationContext context, LiveInterval current, int cIndex)
@@ -583,15 +593,19 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 int splitPosition = kv.Key;
 
-                LinkedListNode<Node> node = GetOperationNode(splitPosition);
+                (IntrusiveList<Node> nodes, Node node) = GetOperationNode(splitPosition);
 
                 Operation[] sequence = copyResolver.Sequence();
 
-                node = node.List.AddBefore(node, sequence[0]);
+                nodes.AddBefore(node, sequence[0]);
+
+                node = sequence[0];
 
                 for (int index = 1; index < sequence.Length; index++)
                 {
-                    node = node.List.AddAfter(node, sequence[index]);
+                    nodes.AddAfter(node, sequence[index]);
+
+                    node = sequence[index];
                 }
             }
         }
@@ -605,10 +619,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 return block.Index >= blocksCount;
             }
 
-            for (LinkedListNode<BasicBlock> node = cfg.Blocks.First; node != null; node = node.Next)
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                BasicBlock block = node.Value;
-
                 if (IsSplitEdgeBlock(block))
                 {
                     continue;
@@ -616,15 +628,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 bool hasSingleOrNoSuccessor = block.Next == null || block.Branch == null;
 
-                foreach (BasicBlock successor in Successors(block))
+                for (int i = 0; i < 2; i++)
                 {
+                    // This used to use an enumerable, but it ended up generating a lot of garbage, so now it is a loop.
+                    BasicBlock successor = (i == 0) ? block.Next : block.Branch;
+                    if (successor == null)
+                    {
+                        continue;
+                    }
+
                     int succIndex = successor.Index;
 
                     // If the current node is a split node, then the actual successor node
                     // (the successor before the split) should be right after it.
                     if (IsSplitEdgeBlock(successor))
                     {
-                        succIndex = Successors(successor).First().Index;
+                        succIndex = FirstSuccessor(successor).Index;
                     }
 
                     CopyResolver copyResolver = new CopyResolver();
@@ -666,13 +685,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                     else if (successor.Predecessors.Count == 1)
                     {
-                        LinkedListNode<Node> prependNode = successor.Operations.AddFirst(sequence[0]);
+                        successor.Operations.AddFirst(sequence[0]);
+
+                        Node prependNode = sequence[0];
 
                         for (int index = 1; index < sequence.Length; index++)
                         {
                             Operation operation = sequence[index];
 
-                            prependNode = successor.Operations.AddAfter(prependNode, operation);
+                            successor.Operations.AddAfter(prependNode, operation);
+
+                            prependNode = operation;
                         }
                     }
                     else
@@ -693,9 +716,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Operand register = GetRegister(current);
 
-            foreach (int usePosition in current.UsePositions())
+            IList<int> usePositions = current.UsePositions();
+            for (int i = usePositions.Count - 1; i >= 0; i--)
             {
-                Node operation = GetOperationNode(usePosition).Value;
+                int usePosition = -usePositions[i];
+                (_, Node operation) = GetOperationNode(usePosition);
 
                 for (int index = 0; index < operation.SourcesCount; index++)
                 {
@@ -704,6 +729,20 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     if (source == current.Local)
                     {
                         operation.SetSource(index, register);
+                    }
+                    else if (source.Kind == OperandKind.Memory)
+                    {
+                        MemoryOperand memOp = (MemoryOperand)source;
+
+                        if (memOp.BaseAddress == current.Local)
+                        {
+                            memOp.BaseAddress = register;
+                        }
+
+                        if (memOp.Index == current.Local)
+                        {
+                            memOp.Index = register;
+                        }
                     }
                 }
 
@@ -723,20 +762,20 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Debug.Assert(!interval.IsSpilled, "Spilled intervals are not allowed.");
 
-            return new Operand(
+            return OperandHelper.Register(
                 interval.Register.Index,
                 interval.Register.Type,
                 interval.Local.Type);
         }
 
-        private LinkedListNode<Node> GetOperationNode(int position)
+        private (IntrusiveList<Node>, Node) GetOperationNode(int position)
         {
             return _operationNodes[position / InstructionGap];
         }
 
         private void NumberLocals(ControlFlowGraph cfg)
         {
-            _operationNodes = new List<LinkedListNode<Node>>();
+            _operationNodes = new List<(IntrusiveList<Node>, Node)>();
 
             _intervals = new List<LiveInterval>();
 
@@ -754,14 +793,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             {
                 BasicBlock block = cfg.PostOrderBlocks[index];
 
-                for (LinkedListNode<Node> node = block.Operations.First; node != null; node = node.Next)
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
-                    _operationNodes.Add(node);
+                    _operationNodes.Add((block.Operations, node));
 
-                    Node operation = node.Value;
-
-                    foreach (Operand dest in Destinations(operation))
+                    for (int i = 0; i < node.DestinationsCount; i++)
                     {
+                        Operand dest = node.GetDestination(i);
                         if (dest.Kind == OperandKind.LocalVariable && visited.Add(dest))
                         {
                             dest.NumberLocal(_intervals.Count);
@@ -776,7 +814,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 if (block.Operations.Count == 0)
                 {
                     // Pretend we have a dummy instruction on the empty block.
-                    _operationNodes.Add(null);
+                    _operationNodes.Add((null, null));
 
                     _operationsCount += InstructionGap;
                 }
@@ -795,14 +833,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             BitMap[] blkLiveKill = new BitMap[cfg.Blocks.Count];
 
             // Compute local live sets.
-            foreach (BasicBlock block in cfg.Blocks)
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                BitMap liveGen  = new BitMap(mapSize);
-                BitMap liveKill = new BitMap(mapSize);
+                BitMap liveGen  = BitMapPool.Allocate(mapSize);
+                BitMap liveKill = BitMapPool.Allocate(mapSize);
 
-                foreach (Node node in block.Operations)
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
-                    foreach (Operand source in Sources(node))
+                    Sources(node, (source) =>
                     {
                         int id = GetOperandId(source);
 
@@ -810,10 +848,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             liveGen.Set(id);
                         }
-                    }
+                    });
 
-                    foreach (Operand dest in Destinations(node))
+                    for (int i = 0; i < node.DestinationsCount; i++)
                     {
+                        Operand dest = node.GetDestination(i);
                         liveKill.Set(GetOperandId(dest));
                     }
                 }
@@ -828,8 +867,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             for (int index = 0; index < cfg.Blocks.Count; index++)
             {
-                blkLiveIn [index] = new BitMap(mapSize);
-                blkLiveOut[index] = new BitMap(mapSize);
+                blkLiveIn [index] = BitMapPool.Allocate(mapSize);
+                blkLiveOut[index] = BitMapPool.Allocate(mapSize);
             }
 
             bool modified;
@@ -844,12 +883,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     BitMap liveOut = blkLiveOut[block.Index];
 
-                    foreach (BasicBlock successor in Successors(block))
+                    if ((block.Next != null && liveOut.Set(blkLiveIn[block.Next.Index])) || 
+                        (block.Branch != null && liveOut.Set(blkLiveIn[block.Branch.Index])))
                     {
-                        if (liveOut.Set(blkLiveIn[successor.Index]))
-                        {
-                            modified = true;
-                        }
+                        modified = true;
                     }
 
                     BitMap liveIn = blkLiveIn[block.Index];
@@ -902,21 +939,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     operationPos -= InstructionGap;
 
-                    foreach (Operand dest in Destinations(node))
+                    for (int i = 0; i < node.DestinationsCount; i++)
                     {
+                        Operand dest = node.GetDestination(i);
                         LiveInterval interval = _intervals[GetOperandId(dest)];
 
                         interval.SetStart(operationPos + 1);
                         interval.AddUsePosition(operationPos + 1);
                     }
 
-                    foreach (Operand source in Sources(node))
+                    Sources(node, (source) =>
                     {
                         LiveInterval interval = _intervals[GetOperandId(source)];
 
                         interval.AddRange(blockStart, operationPos + 1);
                         interval.AddUsePosition(operationPos);
-                    }
+                    });
 
                     if (node is Operation operation && operation.Instruction == Instruction.Call)
                     {
@@ -931,7 +969,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             while (mask != 0)
             {
-                int regIndex = BitUtils.LowestBitSet(mask);
+                int regIndex = BitOperations.TrailingZeroCount(mask);
 
                 Register callerSavedReg = new Register(regIndex, regType);
 
@@ -964,40 +1002,24 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
         }
 
-        private static IEnumerable<BasicBlock> Successors(BasicBlock block)
+        private static BasicBlock FirstSuccessor(BasicBlock block)
         {
-            if (block.Next != null)
-            {
-                yield return block.Next;
-            }
-
-            if (block.Branch != null)
-            {
-                yield return block.Branch;
-            }
+            return block.Next ?? block.Branch;
         }
 
         private static IEnumerable<Node> BottomOperations(BasicBlock block)
         {
-            LinkedListNode<Node> node = block.Operations.Last;
+            Node node = block.Operations.Last;
 
-            while (node != null && !(node.Value is PhiNode))
+            while (node != null && !(node is PhiNode))
             {
-                yield return node.Value;
+                yield return node;
 
-                node = node.Previous;
+                node = node.ListPrevious;
             }
         }
 
-        private static IEnumerable<Operand> Destinations(Node node)
-        {
-            for (int index = 0; index < node.DestinationsCount; index++)
-            {
-                yield return node.GetDestination(index);
-            }
-        }
-
-        private static IEnumerable<Operand> Sources(Node node)
+        private static void Sources(Node node, Action<Operand> action)
         {
             for (int index = 0; index < node.SourcesCount; index++)
             {
@@ -1005,7 +1027,21 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                 if (IsLocalOrRegister(source.Kind))
                 {
-                    yield return source;
+                    action(source);
+                }
+                else if (source.Kind == OperandKind.Memory)
+                {
+                    MemoryOperand memOp = (MemoryOperand)source;
+
+                    if (memOp.BaseAddress != null)
+                    {
+                        action(memOp.BaseAddress);
+                    }
+
+                    if (memOp.Index != null)
+                    {
+                        action(memOp.Index);
+                    }
                 }
             }
         }

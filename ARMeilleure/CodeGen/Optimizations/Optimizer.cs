@@ -1,8 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace ARMeilleure.CodeGen.Optimizations
 {
@@ -16,17 +14,17 @@ namespace ARMeilleure.CodeGen.Optimizations
             {
                 modified = false;
 
-                foreach (BasicBlock block in cfg.Blocks)
+                for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
-                    LinkedListNode<Node> node = block.Operations.First;
+                    Node node = block.Operations.First;
 
                     while (node != null)
                     {
-                        LinkedListNode<Node> nextNode = node.Next;
+                        Node nextNode = node.ListNext;
 
-                        bool isUnused = IsUnused(node.Value);
+                        bool isUnused = IsUnused(node);
 
-                        if (!(node.Value is Operation operation) || isUnused)
+                        if (!(node is Operation operation) || isUnused)
                         {
                             if (isUnused)
                             {
@@ -60,6 +58,36 @@ namespace ARMeilleure.CodeGen.Optimizations
             while (modified);
         }
 
+        public static void RemoveUnusedNodes(ControlFlowGraph cfg)
+        {
+            bool modified;
+
+            do
+            {
+                modified = false;
+
+                for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
+                {
+                    Node node = block.Operations.First;
+
+                    while (node != null)
+                    {
+                        Node nextNode = node.ListNext;
+
+                        if (IsUnused(node))
+                        {
+                            RemoveNode(block, node);
+
+                            modified = true;
+                        }
+
+                        node = nextNode;
+                    }
+                }
+            }
+            while (modified);
+        }
+
         private static void PropagateCopy(Operation copyOp)
         {
             // Propagate copy source operand to all uses of the destination operand.
@@ -80,13 +108,11 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static void RemoveNode(BasicBlock block, LinkedListNode<Node> llNode)
+        private static void RemoveNode(BasicBlock block, Node node)
         {
             // Remove a node from the nodes list, and also remove itself
             // from all the use lists on the operands that this node uses.
-            block.Operations.Remove(llNode);
-
-            Node node = llNode.Value;
+            block.Operations.Remove(node);
 
             for (int index = 0; index < node.SourcesCount; index++)
             {
@@ -110,7 +136,9 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static bool HasSideEffects(Node node)
         {
-            return (node is Operation operation) && operation.Instruction == Instruction.Call;
+            return (node is Operation operation) && (operation.Instruction == Instruction.Call
+                || operation.Instruction == Instruction.Tailcall
+                || operation.Instruction == Instruction.CompareAndSwap);
         }
 
         private static bool IsPropagableCopy(Operation operation)

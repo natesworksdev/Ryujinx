@@ -14,6 +14,8 @@ namespace ARMeilleure.CodeGen.X86
         private const byte RexWPrefix = 0x48;
         private const byte LockPrefix = 0xf0;
 
+        private const int MaxRegNumber = 15;
+
         [Flags]
         private enum InstructionFlags
         {
@@ -72,6 +74,11 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Addps,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstructionFlags.Vex));
             Add(X86Instruction.Addsd,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstructionFlags.Vex | InstructionFlags.PrefixF2));
             Add(X86Instruction.Addss,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstructionFlags.Vex | InstructionFlags.PrefixF3));
+            Add(X86Instruction.Aesdec,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38de, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Aesdeclast, new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38df, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Aesenc,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38dc, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Aesenclast, new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38dd, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Aesimc,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38db, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.And,        new InstructionInfo(0x00000021, 0x04000083, 0x04000081, BadOp,      0x00000023, InstructionFlags.None));
             Add(X86Instruction.Andnpd,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Andnps,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f55, InstructionFlags.Vex));
@@ -88,6 +95,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cmpps,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstructionFlags.Vex));
             Add(X86Instruction.Cmpsd,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstructionFlags.Vex | InstructionFlags.PrefixF2));
             Add(X86Instruction.Cmpss,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fc2, InstructionFlags.Vex | InstructionFlags.PrefixF3));
+            Add(X86Instruction.Cmpxchg,    new InstructionInfo(0x00000fb1, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.None));
             Add(X86Instruction.Cmpxchg16b, new InstructionInfo(0x01000fc7, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.RexW));
             Add(X86Instruction.Comisd,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Comiss,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f2f, InstructionFlags.Vex));
@@ -115,6 +123,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Imul,       new InstructionInfo(BadOp,      0x0000006b, 0x00000069, BadOp,      0x00000faf, InstructionFlags.None));
             Add(X86Instruction.Imul128,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x050000f7, InstructionFlags.None));
             Add(X86Instruction.Insertps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a21, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Jmp,        new InstructionInfo(0x040000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.None));
             Add(X86Instruction.Lea,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x0000008d, InstructionFlags.None));
             Add(X86Instruction.Maxpd,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Maxps,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstructionFlags.Vex));
@@ -326,6 +335,13 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte(0x99);
         }
 
+        public void Cmpxchg(MemoryOperand memOp, Operand src)
+        {
+            WriteByte(LockPrefix);
+
+            WriteInstruction(memOp, src, src.Type, X86Instruction.Cmpxchg);
+        }
+
         public void Cmpxchg16b(MemoryOperand memOp)
         {
             WriteByte(LockPrefix);
@@ -476,6 +492,11 @@ namespace ARMeilleure.CodeGen.X86
             {
                 throw new ArgumentOutOfRangeException(nameof(offset));
             }
+        }
+
+        public void Jmp(Operand dest)
+        {
+            WriteInstruction(dest, null, OperandType.None, X86Instruction.Jmp);
         }
 
         public void Lea(Operand dest, Operand source, OperandType type)
@@ -842,10 +863,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 X86Register shiftReg = (X86Register)source.GetRegister().Index;
 
-                if (shiftReg != X86Register.Rcx)
-                {
-                    throw new ArgumentException($"Invalid shift register \"{shiftReg}\".");
-                }
+                Debug.Assert(shiftReg == X86Register.Rcx, $"Invalid shift register \"{shiftReg}\".");
 
                 source = null;
             }
@@ -1080,6 +1098,8 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (baseReg.Index >= 8)
                 {
+                    Debug.Assert((uint)baseReg.Index <= MaxRegNumber);
+
                     rexPrefix |= RexPrefix | (baseReg.Index >> 3);
                 }
 
@@ -1091,13 +1111,12 @@ namespace ARMeilleure.CodeGen.X86
                     {
                         int indexReg = memOp.Index.GetRegister().Index;
 
-                        if (indexReg == (int)X86Register.Rsp)
-                        {
-                            throw new ArgumentException("Using RSP as index register on the memory operand is not allowed.");
-                        }
+                        Debug.Assert(indexReg != (int)X86Register.Rsp, "Using RSP as index register on the memory operand is not allowed.");
 
                         if (indexReg >= 8)
                         {
+                            Debug.Assert((uint)indexReg <= MaxRegNumber);
+
                             rexPrefix |= RexPrefix | (indexReg >> 3) << 1;
                         }
 

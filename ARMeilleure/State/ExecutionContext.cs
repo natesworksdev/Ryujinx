@@ -5,7 +5,7 @@ namespace ARMeilleure.State
 {
     public class ExecutionContext
     {
-        private const int MinCountForCheck = 40000;
+        private const int MinCountForCheck = 4000;
 
         private NativeContext _nativeContext;
 
@@ -36,6 +36,7 @@ namespace ARMeilleure.State
 
         public FPCR Fpcr { get; set; }
         public FPSR Fpsr { get; set; }
+        public FPCR StandardFpcrValue => (Fpcr & (FPCR.Ahp)) | FPCR.Dn | FPCR.Fz;
 
         public bool IsAarch32 { get; set; }
 
@@ -56,7 +57,7 @@ namespace ARMeilleure.State
             }
         }
 
-        public bool Running { get; set; }
+        internal bool Running { get; private set; }
 
         public event EventHandler<EventArgs>              Interrupt;
         public event EventHandler<InstExceptionEventArgs> Break;
@@ -90,6 +91,9 @@ namespace ARMeilleure.State
         public bool GetPstateFlag(PState flag)             => _nativeContext.GetPstateFlag(flag);
         public void SetPstateFlag(PState flag, bool value) => _nativeContext.SetPstateFlag(flag, value);
 
+        public bool GetFPstateFlag(FPState flag) => _nativeContext.GetFPStateFlag(flag);
+        public void SetFPstateFlag(FPState flag, bool value) => _nativeContext.SetFPStateFlag(flag, value);
+
         internal void CheckInterrupt()
         {
             if (_interrupted)
@@ -120,6 +124,12 @@ namespace ARMeilleure.State
         internal void OnUndefined(ulong address, int opCode)
         {
             Undefined?.Invoke(this, new InstUndefinedEventArgs(address, opCode));
+        }
+
+        public void StopRunning()
+        {
+            Running = false;
+            _nativeContext.SetCounter(0);
         }
 
         public void Dispose()
