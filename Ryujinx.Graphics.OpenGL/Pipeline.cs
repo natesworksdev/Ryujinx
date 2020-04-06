@@ -10,6 +10,8 @@ namespace Ryujinx.Graphics.OpenGL
     {
         private Program _program;
 
+        private bool _rasterizerDiscard;
+
         private VertexArray _vertexArray;
         private Framebuffer _framebuffer;
 
@@ -35,6 +37,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal Pipeline()
         {
+            _rasterizerDiscard = false;
             _clipOrigin = ClipOrigin.LowerLeft;
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
         }
@@ -652,6 +655,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.Disable(EnableCap.RasterizerDiscard);
             }
+
+            _rasterizerDiscard = discard;
         }
 
         public void SetRenderTargetColorMasks(uint[] componentMasks)
@@ -977,6 +982,14 @@ namespace Ryujinx.Graphics.OpenGL
             if (_scissor0Enable)
             {
                 GL.Enable(IndexedEnableCap.ScissorTest, 0);
+            }
+        }
+
+        public void RestoreRasterizerDiscard()
+        {
+            if (_rasterizerDiscard)
+            {
+                GL.Enable(EnableCap.RasterizerDiscard);
             }
         }
 

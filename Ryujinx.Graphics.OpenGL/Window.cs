@@ -128,6 +128,7 @@ namespace Ryujinx.Graphics.OpenGL
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, oldDrawFramebufferHandle);
 
             ((Pipeline)_renderer.Pipeline).RestoreScissor0Enable();
+            ((Pipeline)_renderer.Pipeline).RestoreRasterizerDiscard();
         }
 
         private int GetCopyFramebufferHandleLazy()
