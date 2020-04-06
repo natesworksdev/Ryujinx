@@ -216,10 +216,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
             CommitBindings();
         }
 
+        /// <summary>
+        /// Updates Rasterizer primitive discard state based on guest gpu state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
         private void UpdateRasterizerState(GpuState state)
         {
-            int enable = state.Get<int>(MethodOffset.RasterizeEnable);
-            _context.Renderer.Pipeline.SetRasterizerDiscard(enable == 0);
+            Boolean32 enable = state.Get<Boolean32>(MethodOffset.RasterizeEnable);
+            _context.Renderer.Pipeline.SetRasterizerDiscard(!enable);
         }
 
         /// <summary>
