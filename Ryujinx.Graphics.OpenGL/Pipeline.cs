@@ -31,15 +31,12 @@ namespace Ryujinx.Graphics.OpenGL
 
         private uint[] _componentMasks;
 
-        private const int MaxViewports = 16;
-        private readonly bool[] _scissorEnable;
+        private bool _scissor0Enable = false;
 
         internal Pipeline()
         {
             _clipOrigin = ClipOrigin.LowerLeft;
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
-
-            _scissorEnable = new bool[MaxViewports];
         }
 
         public void Barrier()
@@ -710,7 +707,10 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Disable(IndexedEnableCap.ScissorTest, index);
             }
 
-            _scissorEnable[index] = enable;
+            if (index == 0)
+            {
+                _scissor0Enable = enable;
+            }
         }
 
         public void SetScissor(int index, int x, int y, int width, int height)
@@ -972,14 +972,11 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void RestoreScissorEnable()
+        public void RestoreScissor0Enable()
         {
-            for (int index = 0; index < _scissorEnable.Length; index++)
+            if (_scissor0Enable)
             {
-                if (_scissorEnable[index])
-                {
-                    GL.Enable(IndexedEnableCap.ScissorTest, index);
-                }
+                GL.Enable(IndexedEnableCap.ScissorTest, 0);
             }
         }
 
