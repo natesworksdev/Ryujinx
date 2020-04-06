@@ -163,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             HostThread = new Thread(customHostThreadStart ?? (() => ThreadStart(entrypoint)));
 
-            Context = new ARMeilleure.State.ExecutionContext();
+            Context = new ARMeilleure.State.ExecutionContext(System.Device.Allocator);
 
             bool isAarch32 = (Owner.MmuFlags & 1) == 0;
 

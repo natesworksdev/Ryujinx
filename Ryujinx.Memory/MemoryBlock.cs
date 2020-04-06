@@ -25,11 +25,42 @@ namespace Ryujinx.Memory
         /// Initializes a new instance of the memory block class.
         /// </summary>
         /// <param name="size">Size of the memory block</param>
-        public MemoryBlock(ulong size)
+        /// <param name="flags">Flags that control memory block memory allocation</param>
+        public MemoryBlock(ulong size, MemoryAllocationFlags flags = MemoryAllocationFlags.None)
         {
-            _pointer = MemoryManagement.Allocate(size);
+            if (flags.HasFlag(MemoryAllocationFlags.Reserve))
+            {
+                _pointer = MemoryManagement.Reserve(size);
+            }
+            else
+            {
+                _pointer = MemoryManagement.Allocate(size);
+            }
 
             Size = size;
+        }
+
+        /// <summary>
+        /// Commits a region of memory that has previously been reserved.
+        /// This can be used to allocate memory on demand.
+        /// </summary>
+        /// <param name="offset">Starting offset of the range to be commited</param>
+        /// <param name="size">Size of the range to be commited</param>
+        /// <returns>True if the operation was successful, false otherwise</returns>
+        public bool Commit(ulong offset, ulong size)
+        {
+            return MemoryManagement.Commit(GetPointerInternal(offset, size), size);
+        }
+
+        /// <summary>
+        /// Reprotects a region of memory.
+        /// </summary>
+        /// <param name="offset">Starting offset of the range to be reprotected</param>
+        /// <param name="size">Size of the range to be reprotected</param>
+        /// <param name="permission">New memory permissions</param>
+        public void Reprotect(ulong offset, ulong size, MemoryPermission permission)
+        {
+            MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission);
         }
 
         /// <summary>
@@ -148,7 +179,11 @@ namespace Ryujinx.Memory
         /// <param name="size">Size in bytes of the region</param>
         /// <returns>The pointer to the memory region</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public IntPtr GetPointer(ulong offset, int size)
+        public IntPtr GetPointer(ulong offset, int size) => GetPointerInternal(offset, (ulong)size);
+
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private IntPtr GetPointerInternal(ulong offset, ulong size)
         {
             IntPtr ptr = _pointer;
 

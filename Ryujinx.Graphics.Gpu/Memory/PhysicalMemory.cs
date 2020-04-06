@@ -1,4 +1,3 @@
-using Ryujinx.Memory;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -20,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Creates a new instance of the physical memory.
         /// </summary>
         /// <param name="cpuMemory">CPU memory manager of the application process</param>
-        public PhysicalMemory(CpuMemoryManager cpuMemory, MemoryBlock backingMemory)
+        public PhysicalMemory(CpuMemoryManager cpuMemory)
         {
             _cpuMemory = cpuMemory;
         }

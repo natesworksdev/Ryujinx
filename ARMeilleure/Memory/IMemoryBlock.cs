@@ -6,11 +6,16 @@ namespace ARMeilleure.Memory
     {
         IntPtr Pointer { get; }
 
-        T Read<T>(ulong address) where T : unmanaged;
-        void Write<T>(ulong address, T value) where T : unmanaged;
+        bool Commit(ulong offset, ulong size);
 
-        IntPtr GetPointer(ulong address, int size);
-        Span<byte> GetSpan(ulong address, int size);
-        ref T GetRef<T>(ulong address) where T : unmanaged;
+        void MapAsRx(ulong offset, ulong size);
+        void MapAsRwx(ulong offset, ulong size);
+
+        T Read<T>(ulong offset) where T : unmanaged;
+        void Write<T>(ulong offset, T value) where T : unmanaged;
+
+        IntPtr GetPointer(ulong offset, int size);
+        Span<byte> GetSpan(ulong offset, int size);
+        ref T GetRef<T>(ulong offset) where T : unmanaged;
     }
 }

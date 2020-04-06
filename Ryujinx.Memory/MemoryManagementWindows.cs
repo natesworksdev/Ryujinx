@@ -43,18 +43,27 @@ namespace Ryujinx.Memory
             MemoryProtection flProtect);
 
         [DllImport("kernel32.dll")]
-        private static extern bool VirtualFree(
+        private static extern bool VirtualProtect(
             IntPtr lpAddress,
             IntPtr dwSize,
-            AllocationType dwFreeType);
+            MemoryProtection flNewProtect,
+            out MemoryProtection lpflOldProtect);
+
+        [DllImport("kernel32.dll")]
+        private static extern bool VirtualFree(IntPtr lpAddress, IntPtr dwSize, AllocationType dwFreeType);
 
         public static IntPtr Allocate(IntPtr size)
         {
-            const AllocationType flags =
-                AllocationType.Reserve |
-                AllocationType.Commit |
-                AllocationType.WriteWatch;
+            return AllocateInternal(size, AllocationType.Reserve | AllocationType.Commit);
+        }
 
+        public static IntPtr Reserve(IntPtr size)
+        {
+            return AllocateInternal(size, AllocationType.Reserve);
+        }
+
+        private static IntPtr AllocateInternal(IntPtr size, AllocationType flags = 0)
+        {
             IntPtr ptr = VirtualAlloc(IntPtr.Zero, size, flags, MemoryProtection.ReadWrite);
 
             if (ptr == IntPtr.Zero)
@@ -63,6 +72,30 @@ namespace Ryujinx.Memory
             }
 
             return ptr;
+        }
+
+        public static bool Commit(IntPtr location, IntPtr size)
+        {
+            return VirtualAlloc(location, size, AllocationType.Commit, MemoryProtection.ReadWrite) != IntPtr.Zero;
+        }
+
+        public static bool Reprotect(IntPtr address, IntPtr size, MemoryPermission permission)
+        {
+            return VirtualProtect(address, size, GetProtection(permission), out _);
+        }
+
+        private static MemoryProtection GetProtection(MemoryPermission permission)
+        {
+            return permission switch
+            {
+                MemoryPermission.None => MemoryProtection.NoAccess,
+                MemoryPermission.Read => MemoryProtection.ReadOnly,
+                MemoryPermission.ReadAndWrite => MemoryProtection.ReadWrite,
+                MemoryPermission.ReadAndExecute => MemoryProtection.ExecuteRead,
+                MemoryPermission.ReadWriteExecute => MemoryProtection.ExecuteReadWrite,
+                MemoryPermission.Execute => MemoryProtection.Execute,
+                _ => throw new ArgumentException($"Invalid permission \"{permission}\".")
+            };
         }
 
         public static bool Free(IntPtr address)

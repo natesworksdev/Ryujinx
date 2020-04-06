@@ -2,7 +2,6 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Engine;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Synchronization;
-using Ryujinx.Memory;
 using System;
 
 namespace Ryujinx.Graphics.Gpu
@@ -110,9 +109,9 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         /// <param name="cpuMemory">CPU memory manager</param>
         /// <param name="backingMemory">Backing memory</param>
-        public void SetVmm(ARMeilleure.Memory.MemoryManager cpuMemory, MemoryBlock backingMemory)
+        public void SetVmm(ARMeilleure.Memory.MemoryManager cpuMemory)
         {
-            PhysicalMemory = new PhysicalMemory(cpuMemory, backingMemory);
+            PhysicalMemory = new PhysicalMemory(cpuMemory);
         }
 
         /// <summary>

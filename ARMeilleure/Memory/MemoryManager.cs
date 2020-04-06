@@ -16,10 +16,6 @@ namespace ARMeilleure.Memory
 
         private const int PteSize = 8;
 
-        internal int PtLevelBits { get; }
-        internal int PtLevelSize { get; }
-        internal int PtLevelMask { get; }
-
         public int AddressSpaceBits { get; }
         internal ulong AddressSpaceSize { get; }
 
@@ -46,10 +42,6 @@ namespace ARMeilleure.Memory
 
                 asBits++;
             }
-
-            PtLevelBits = asBits - PageBits;
-            PtLevelSize = 1 << PtLevelBits;
-            PtLevelMask = PtLevelSize - 1;
 
             AddressSpaceBits = asBits;
             AddressSpaceSize = asSize;

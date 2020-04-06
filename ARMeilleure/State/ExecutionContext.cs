@@ -1,3 +1,4 @@
+using ARMeilleure.Memory;
 using System;
 using System.Diagnostics;
 
@@ -73,9 +74,9 @@ namespace ARMeilleure.State
             _tickCounter.Start();
         }
 
-        public ExecutionContext()
+        public ExecutionContext(IMemoryAllocator allocator)
         {
-            _nativeContext = new NativeContext();
+            _nativeContext = new NativeContext(allocator);
 
             Running = true;
 
