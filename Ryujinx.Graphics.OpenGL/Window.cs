@@ -59,6 +59,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
 
+            GL.Disable(EnableCap.RasterizerDiscard);
             GL.Disable(EnableCap.ScissorTest);
 
             GL.Clear(ClearBufferMask.ColorBufferBit);

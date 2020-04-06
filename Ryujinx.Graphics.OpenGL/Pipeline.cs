@@ -644,6 +644,18 @@ namespace Ryujinx.Graphics.OpenGL
             _program.Bind();
         }
 
+        public void SetRasterizerDiscard(bool discard)
+        {
+            if (discard)
+            {
+                GL.Enable(EnableCap.RasterizerDiscard);
+            }
+            else
+            {
+                GL.Disable(EnableCap.RasterizerDiscard);
+            }
+        }
+
         public void SetRenderTargetColorMasks(uint[] componentMasks)
         {
             _componentMasks = (uint[])componentMasks.Clone();

@@ -108,6 +108,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateShaderState(state);
             }
 
+            if (state.QueryModified(MethodOffset.RasterizeEnable))
+            {
+                UpdateRasterizerState(state);
+            }
+
             if (state.QueryModified(MethodOffset.RtColorState,
                                     MethodOffset.RtDepthStencilState,
                                     MethodOffset.RtControl,
@@ -209,6 +214,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             CommitBindings();
+        }
+
+        private void UpdateRasterizerState(GpuState state)
+        {
+            int enable = state.Get<int>(MethodOffset.RasterizeEnable);
+            _context.Renderer.Pipeline.SetRasterizerDiscard(enable == 0);
         }
 
         /// <summary>
