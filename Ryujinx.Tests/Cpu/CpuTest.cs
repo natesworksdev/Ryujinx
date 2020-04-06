@@ -7,7 +7,6 @@ using NUnit.Framework;
 using Ryujinx.Tests.Unicorn;
 
 using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -15,11 +14,11 @@ namespace Ryujinx.Tests.Cpu
     public class CpuTest
     {
         private ulong _currAddress;
-        private long  _size;
+        private ulong _size;
 
         private ulong _entryPoint;
 
-        private IntPtr _ramPointer;
+        private IMemoryBlock _ram;
 
         private MemoryManager _memory;
 
@@ -48,18 +47,19 @@ namespace Ryujinx.Tests.Cpu
 
             _entryPoint = _currAddress;
 
-            _ramPointer = Marshal.AllocHGlobal(new IntPtr(_size));
-            _memory = new MemoryManager(_ramPointer);
-            _memory.Map((long)_currAddress, 0, _size);
+            MemoryAllocator allocator = new MemoryAllocator();
+            _ram = allocator.Allocate(_size);
+            _memory = new MemoryManager(allocator, _ram, 1UL << 16);
+            _memory.Map(_currAddress, 0, _size);
 
-            _context = new ExecutionContext();
+            _context = new ExecutionContext(allocator);
 
-            _translator = new Translator(_memory);
+            _translator = new Translator(allocator, _memory);
 
             if (_unicornAvailable)
             {
                 _unicornEmu = new UnicornAArch64();
-                _unicornEmu.MemoryMap(_currAddress, (ulong)_size, MemoryPermission.READ | MemoryPermission.EXEC);
+                _unicornEmu.MemoryMap(_currAddress, _size, MemoryPermission.READ | MemoryPermission.EXEC);
                 _unicornEmu.PC = _entryPoint;
             }
         }
@@ -67,7 +67,7 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
-            Marshal.FreeHGlobal(_ramPointer);
+            _ram.Dispose();
             _memory     = null;
             _context    = null;
             _translator = null;
@@ -82,11 +82,11 @@ namespace Ryujinx.Tests.Cpu
 
         protected void Opcode(uint opcode)
         {
-            _memory.WriteUInt32((long)_currAddress, opcode);
+            _memory.Write(_currAddress, opcode);
 
             if (_unicornAvailable)
             {
-                _unicornEmu.MemoryWrite32((ulong)_currAddress, opcode);
+                _unicornEmu.MemoryWrite32(_currAddress, opcode);
             }
 
             _currAddress += 4;
@@ -172,7 +172,7 @@ namespace Ryujinx.Tests.Cpu
 
             if (_unicornAvailable)
             {
-                _unicornEmu.RunForCount((ulong)(_currAddress - _entryPoint - 4) / 4);
+                _unicornEmu.RunForCount((_currAddress - _entryPoint - 4) / 4);
             }
         }
 

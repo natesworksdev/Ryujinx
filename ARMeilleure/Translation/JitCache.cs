@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
 {
-    class JitCache
+    static class JitCache
     {
         private const int PageSize = 4 * 1024;
         private const int PageMask = PageSize - 1;
