@@ -95,14 +95,14 @@ namespace ARMeilleure.CodeGen.Optimizations
         private static void TryEliminateBitwiseExlusiveOr(Operation operation)
         {
             // Try to recognize and optimize those 2 patterns (in order):
-            // x ^ y == 0x00000000  when x == y
+            // x ^ y == 0x00000000 when x == y
             // 0x00000000 ^ y == y, x ^ 0x00000000 == x
             Operand x = operation.GetSource(0);
             Operand y = operation.GetSource(1);
 
             if (x == y && x.Type.IsInteger())
             {
-                operation.TurnIntoCopy(Const(0));
+                operation.TurnIntoCopy(Const(x.Type, 0));
             }
             else
             {
