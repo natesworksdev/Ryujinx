@@ -255,10 +255,15 @@ namespace Ryujinx.Memory
         /// <remarks>
         /// It's an error to use the memory block after disposal.
         /// </remarks>
-        public void Dispose()
+        public void Dispose() => FreeMemory();
+
+        ~MemoryBlock() => FreeMemory();
+
+        private void FreeMemory()
         {
             IntPtr ptr = Interlocked.Exchange(ref _pointer, IntPtr.Zero);
 
+            // If pointer is null, the memory was already freed or never allocated.
             if (ptr != IntPtr.Zero)
             {
                 MemoryManagement.Free(ptr);
