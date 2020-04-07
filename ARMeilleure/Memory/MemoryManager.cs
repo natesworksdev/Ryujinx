@@ -195,11 +195,13 @@ namespace ARMeilleure.Memory
         {
             if (!IsContiguous(va, Unsafe.SizeOf<T>()))
             {
-                throw new MemoryNotContiguousException();
+                ThrowMemoryNotContiguousException();
             }
 
             return ref _backingMemory.GetRef<T>(GetPhysicalAddressWritableInternal(va));
         }
+
+        private void ThrowMemoryNotContiguousException() => throw new MemoryNotContiguousException();
 
         // TODO: Remove that once we have proper 8-bits and 16-bits CAS.
         public ref T GetRefNoChecks<T>(ulong va) where T : unmanaged

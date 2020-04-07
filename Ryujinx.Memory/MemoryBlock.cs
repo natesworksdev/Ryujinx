@@ -178,7 +178,7 @@ namespace Ryujinx.Memory
 
             if (ptr == IntPtr.Zero)
             {
-                throw new ObjectDisposedException(nameof(MemoryBlock));
+                ThrowObjectDisposedException();
             }
 
             int size = Unsafe.SizeOf<T>();
@@ -187,7 +187,7 @@ namespace Ryujinx.Memory
 
             if (endOffset > Size || endOffset < offset)
             {
-                throw new ArgumentOutOfRangeException(nameof(size));
+                ThrowArgumentOutOfRangeException();
             }
 
             return ref Unsafe.AsRef<T>((void*)PtrAddr(ptr, offset));
@@ -211,14 +211,14 @@ namespace Ryujinx.Memory
 
             if (ptr == IntPtr.Zero)
             {
-                throw new ObjectDisposedException(nameof(MemoryBlock));
+                ThrowObjectDisposedException();
             }
 
             ulong endOffset = offset + size;
 
             if (endOffset > Size || endOffset < offset)
             {
-                throw new ArgumentOutOfRangeException(nameof(size));
+                ThrowArgumentOutOfRangeException();
             }
 
             return PtrAddr(ptr, offset);
@@ -269,5 +269,8 @@ namespace Ryujinx.Memory
                 MemoryManagement.Free(ptr);
             }
         }
+
+        private void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(MemoryBlock));
+        private void ThrowArgumentOutOfRangeException() => throw new ArgumentOutOfRangeException();
     }
 }
