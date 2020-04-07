@@ -19,7 +19,7 @@ namespace ARMeilleure.Translation
         private static readonly List<JitCacheEntry> _cacheEntries = new List<JitCacheEntry>();
 
         private static readonly object _lock = new object();
-        private static readonly bool _initialized;
+        private static bool _initialized;
 
         public static void Initialize(IMemoryAllocator allocator)
         {
@@ -37,6 +37,7 @@ namespace ARMeilleure.Translation
                     // The first page is used for the table based SEH structs.
                     _offset = PageSize;
                 }
+                _initialized = true;
             }
         }
 
