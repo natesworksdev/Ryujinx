@@ -201,6 +201,12 @@ namespace ARMeilleure.Memory
             return ref _backingMemory.GetRef<T>(GetPhysicalAddressWritableInternal(va));
         }
 
+        // TODO: Remove that once we have proper 8-bits and 16-bits CAS.
+        public ref T GetRefNoChecks<T>(ulong va) where T : unmanaged
+        {
+            return ref _backingMemory.GetRef<T>(GetPhysicalAddressWritableInternal(va));
+        }
+
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsContiguous(ulong va, int size)
         {

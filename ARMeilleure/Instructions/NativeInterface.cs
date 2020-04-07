@@ -288,7 +288,7 @@ namespace ARMeilleure.Instructions
 
             if (success)
             {
-                ref int valueRef = ref _context.Memory.GetRef<int>(address);
+                ref int valueRef = ref _context.Memory.GetRefNoChecks<int>(address);
 
                 int currentValue = valueRef;
 
@@ -314,7 +314,7 @@ namespace ARMeilleure.Instructions
 
             if (success)
             {
-                ref int valueRef = ref _context.Memory.GetRef<int>(address);
+                ref int valueRef = ref _context.Memory.GetRefNoChecks<int>(address);
 
                 int currentValue = valueRef;
 

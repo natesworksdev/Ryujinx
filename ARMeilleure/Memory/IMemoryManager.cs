@@ -12,6 +12,7 @@ namespace ARMeilleure.Memory
         void Write<T>(ulong va, T value) where T : unmanaged;
 
         ref T GetRef<T>(ulong va) where T : unmanaged;
+        ref T GetRefNoChecks<T>(ulong va) where T : unmanaged;
 
         bool IsMapped(ulong va);
     }
