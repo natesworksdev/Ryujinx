@@ -94,7 +94,7 @@ namespace Ryujinx.Memory
                 MemoryPermission.ReadAndExecute => MemoryProtection.ExecuteRead,
                 MemoryPermission.ReadWriteExecute => MemoryProtection.ExecuteReadWrite,
                 MemoryPermission.Execute => MemoryProtection.Execute,
-                _ => throw new ArgumentException($"Invalid permission \"{permission}\".")
+                _ => throw new MemoryProtectionException(permission)
             };
         }
 

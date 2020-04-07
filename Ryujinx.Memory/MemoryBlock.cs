@@ -26,6 +26,8 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <param name="size">Size of the memory block</param>
         /// <param name="flags">Flags that control memory block memory allocation</param>
+        /// <exception cref="OutOfMemoryException">Throw when there's no enough memory to allocate the requested size</exception>
+        /// <exception cref="PlatformNotSupportedException">Throw when the current platform is not supported</exception>
         public MemoryBlock(ulong size, MemoryAllocationFlags flags = MemoryAllocationFlags.None)
         {
             if (flags.HasFlag(MemoryAllocationFlags.Reserve))
@@ -47,6 +49,8 @@ namespace Ryujinx.Memory
         /// <param name="offset">Starting offset of the range to be commited</param>
         /// <param name="size">Size of the range to be commited</param>
         /// <returns>True if the operation was successful, false otherwise</returns>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         public bool Commit(ulong offset, ulong size)
         {
             return MemoryManagement.Commit(GetPointerInternal(offset, size), size);
@@ -58,6 +62,9 @@ namespace Ryujinx.Memory
         /// <param name="offset">Starting offset of the range to be reprotected</param>
         /// <param name="size">Size of the range to be reprotected</param>
         /// <param name="permission">New memory permissions</param>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
+        /// <exception cref="MemoryProtectionException">Throw when <paramref name="permission"/> is invalid</exception>
         public void Reprotect(ulong offset, ulong size, MemoryPermission permission)
         {
             MemoryManagement.Reprotect(GetPointerInternal(offset, size), size, permission);
@@ -68,6 +75,8 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <param name="offset">Starting offset of the range being read</param>
         /// <param name="data">Span where the bytes being read will be copied to</param>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when the memory region specified for the the data is out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Read(ulong offset, Span<byte> data)
         {
@@ -80,6 +89,8 @@ namespace Ryujinx.Memory
         /// <typeparam name="T">Type of the data</typeparam>
         /// <param name="offset">Offset where the data is located</param>
         /// <returns>Data at the specified address</returns>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when the memory region specified for the the data is out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Read<T>(ulong offset) where T : unmanaged
         {
@@ -91,6 +102,8 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <param name="offset">Starting offset of the range being written</param>
         /// <param name="data">Span where the bytes being written will be copied from</param>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when the memory region specified for the the data is out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write(ulong offset, ReadOnlySpan<byte> data)
         {
@@ -103,6 +116,8 @@ namespace Ryujinx.Memory
         /// <typeparam name="T">Type of the data being written</typeparam>
         /// <param name="offset">Offset to write the data into</param>
         /// <param name="data">Data to be written</param>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when the memory region specified for the the data is out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Write<T>(ulong offset, T data) where T : unmanaged
         {
@@ -115,6 +130,8 @@ namespace Ryujinx.Memory
         /// <param name="srcOffset">Source offset to read the data from</param>
         /// <param name="dstOffset">Destination offset to write the data into</param>
         /// <param name="size">Size of the copy in bytes</param>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when <paramref name="srcOffset"/>, <paramref name="dstOffset"/> or <paramref name="size"/> is out of range</exception>
         public void Copy(ulong srcOffset, ulong dstOffset, ulong size)
         {
             const int MaxChunckSize = 1 << 30;
@@ -132,6 +149,8 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <param name="offset">Offset of the region to fill with zeros</param>
         /// <param name="size">Size in bytes of the region to fill</param>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         public void ZeroFill(ulong offset, ulong size)
         {
             const int MaxChunckSize = 1 << 30;
@@ -150,6 +169,8 @@ namespace Ryujinx.Memory
         /// <typeparam name="T">Data type</typeparam>
         /// <param name="offset">Offset of the memory region</param>
         /// <returns>A reference to the given memory region data</returns>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe ref T GetRef<T>(ulong offset) where T : unmanaged
         {
@@ -162,9 +183,9 @@ namespace Ryujinx.Memory
 
             int size = Unsafe.SizeOf<T>();
 
-            ulong endAddress = offset + (ulong)size;
+            ulong endOffset = offset + (ulong)size;
 
-            if (endAddress > Size || endAddress < offset)
+            if (endOffset > Size || endOffset < offset)
             {
                 throw new ArgumentOutOfRangeException(nameof(size));
             }
@@ -178,9 +199,10 @@ namespace Ryujinx.Memory
         /// <param name="offset">Start offset of the memory region</param>
         /// <param name="size">Size in bytes of the region</param>
         /// <returns>The pointer to the memory region</returns>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public IntPtr GetPointer(ulong offset, int size) => GetPointerInternal(offset, (ulong)size);
-
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private IntPtr GetPointerInternal(ulong offset, ulong size)
@@ -192,9 +214,9 @@ namespace Ryujinx.Memory
                 throw new ObjectDisposedException(nameof(MemoryBlock));
             }
 
-            ulong endAddress = offset + (ulong)size;
+            ulong endOffset = offset + size;
 
-            if (endAddress > Size || endAddress < offset)
+            if (endOffset > Size || endOffset < offset)
             {
                 throw new ArgumentOutOfRangeException(nameof(size));
             }
@@ -208,6 +230,8 @@ namespace Ryujinx.Memory
         /// <param name="offset">Start offset of the memory region</param>
         /// <param name="size">Size in bytes of the region</param>
         /// <returns>Span of the memory region</returns>
+        /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe Span<byte> GetSpan(ulong offset, int size)
         {

@@ -17,7 +17,8 @@ namespace ARMeilleure.Memory
         private const int PteSize = 8;
 
         public int AddressSpaceBits { get; }
-        internal ulong AddressSpaceSize { get; }
+
+        private readonly ulong _addressSpaceSize;
 
         private readonly IMemoryBlock _backingMemory;
         private readonly IMemoryBlock _pageTable;
@@ -44,7 +45,7 @@ namespace ARMeilleure.Memory
             }
 
             AddressSpaceBits = asBits;
-            AddressSpaceSize = asSize;
+            _addressSpaceSize = asSize;
             _backingMemory = backingMemory;
             _pageTable = allocator.Allocate((asSize / PageSize) * PteSize);
         }
@@ -337,7 +338,7 @@ namespace ARMeilleure.Memory
 
         private bool ValidateAddress(ulong va)
         {
-            return va < AddressSpaceSize;
+            return va < _addressSpaceSize;
         }
 
         /// <summary>
