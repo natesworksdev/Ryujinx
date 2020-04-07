@@ -73,6 +73,8 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
+            _memory.Dispose();
+            _context.Dispose();
             _ram.Dispose();
             _memory = null;
             _context = null;
