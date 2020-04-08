@@ -126,9 +126,11 @@ namespace ARMeilleure.Memory
         /// <param name="data">Data to be written</param>
         public void Write(ulong va, ReadOnlySpan<byte> data)
         {
+            MarkRegionAsModified(va, (ulong)data.Length);
+
             if (IsContiguous(va, data.Length))
             {
-                data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressWritableInternal(va), data.Length));
+                data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressInternal(va), data.Length));
             }
             else
             {
@@ -136,7 +138,7 @@ namespace ARMeilleure.Memory
 
                 if ((va & PageMask) != 0)
                 {
-                    ulong pa = GetPhysicalAddressWritableInternal(va);
+                    ulong pa = GetPhysicalAddressInternal(va);
 
                     size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
 
@@ -147,7 +149,7 @@ namespace ARMeilleure.Memory
 
                 for (; offset < data.Length; offset += size)
                 {
-                    ulong pa = GetPhysicalAddressWritableInternal(va + (ulong)offset);
+                    ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
 
                     size = Math.Min(data.Length - offset, PageSize);
 
@@ -198,7 +200,9 @@ namespace ARMeilleure.Memory
                 ThrowMemoryNotContiguousException();
             }
 
-            return ref _backingMemory.GetRef<T>(GetPhysicalAddressWritableInternal(va));
+            MarkRegionAsModified(va, (ulong)Unsafe.SizeOf<T>());
+
+            return ref _backingMemory.GetRef<T>(GetPhysicalAddressInternal(va));
         }
 
         private void ThrowMemoryNotContiguousException() => throw new MemoryNotContiguousException();
@@ -206,7 +210,9 @@ namespace ARMeilleure.Memory
         // TODO: Remove that once we have proper 8-bits and 16-bits CAS.
         public ref T GetRefNoChecks<T>(ulong va) where T : unmanaged
         {
-            return ref _backingMemory.GetRef<T>(GetPhysicalAddressWritableInternal(va));
+            MarkRegionAsModified(va, (ulong)Unsafe.SizeOf<T>());
+
+            return ref _backingMemory.GetRef<T>(GetPhysicalAddressInternal(va));
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -394,28 +400,33 @@ namespace ARMeilleure.Memory
             return PteToPa(_pageTable.Read<ulong>((va / PageSize) * PteSize) & ~(0xffffUL << 48)) + (va & PageMask);
         }
 
-        private ulong GetPhysicalAddressWritableInternal(ulong va)
+        private void MarkRegionAsModified(ulong va, ulong size)
         {
-            ref long pageRef = ref _pageTable.GetRef<long>((va / PageSize) * PteSize);
+            ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
 
-            long pte, oldPte;
-
-            do
+            while (va < endVa)
             {
-                pte = Volatile.Read(ref pageRef);
+                ref long pageRef = ref _pageTable.GetRef<long>((va >> PageBits) * PteSize);
 
-                if (pte >= 0)
+                long pte, oldPte;
+
+                do
                 {
-                    break;
+                    pte = Volatile.Read(ref pageRef);
+
+                    if (pte >= 0)
+                    {
+                        break;
+                    }
+
+                    oldPte = pte;
+
+                    pte &= ~(0xffffL << 48);
                 }
+                while (Interlocked.CompareExchange(ref pageRef, pte, oldPte) != oldPte);
 
-                oldPte = pte;
-
-                pte &= ~(0xffffL << 48);
+                va += PageSize;
             }
-            while (Interlocked.CompareExchange(ref pageRef, pte, oldPte) != oldPte);
-
-            return PteToPa((ulong)pte) + (va & PageMask);
         }
 
         private ulong PaToPte(ulong pa)
