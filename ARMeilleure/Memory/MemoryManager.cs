@@ -266,9 +266,31 @@ namespace ARMeilleure.Memory
             }
         }
 
+        /// <summary>
+        /// Checks if a specified virtual memory region has been modified by the CPU since the last call.
+        /// </summary>
+        /// <param name="va">Virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <param name="id">Resource identifier number (maximum is 15)</param>
+        /// <param name="modifiedRanges">Optional array where the modified ranges should be written</param>
+        /// <returns>The number of modified ranges</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public int QueryModified(ulong va, ulong size, int id, (ulong, ulong)[] modifiedRanges = null)
         {
+            if (!ValidateAddress(va))
+            {
+                return 0;
+            }
+
+            ulong maxSize = _addressSpaceSize - va;
+
+            if (size > maxSize)
+            {
+                size = maxSize;
+            }
+
+            // We need to ensure that the tagged pointer value is negative,
+            // JIT generated code checks that to take the slow paths and call the MemoryManager Read/Write methods.
             long tag = (0x8000L | (1L << id)) << 48;
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
@@ -286,39 +308,47 @@ namespace ARMeilleure.Memory
 
                 for (; va < endVa; va += PageSize, pagePtr++)
                 {
-                    long pte = *pagePtr;
-
-                    if ((pte & tag) == tag)
+                    while (true)
                     {
-                        if (rgSize != 0)
+                        long pte = *pagePtr;
+
+                        if ((pte & tag) == tag)
                         {
-                            if (modifiedRanges != null)
+                            if (rgSize != 0)
                             {
-                                modifiedRanges[rangeIndex] = (rgStart, rgSize);
+                                if (modifiedRanges != null && rangeIndex < modifiedRanges.Length)
+                                {
+                                    modifiedRanges[rangeIndex] = (rgStart, rgSize);
+                                }
+
+                                rangeIndex++;
+
+                                rgSize = 0;
                             }
 
-                            rangeIndex++;
-
-                            rgSize = 0;
+                            break;
                         }
-                    }
-                    else
-                    {
-                        if (rgSize == 0)
+                        else
                         {
-                            rgStart = va;
+                            if (Interlocked.CompareExchange(ref *pagePtr, pte | tag, pte) == pte)
+                            {
+                                if (rgSize == 0)
+                                {
+                                    rgStart = va;
+                                }
+
+                                rgSize += PageSize;
+
+                                break;
+                            }
                         }
-
-                        rgSize += PageSize;
-
-                        Interlocked.CompareExchange(ref *pagePtr, pte | tag, pte);
                     }
                 }
             }
 
             if (rgSize != 0)
             {
-                if (modifiedRanges != null)
+                if (modifiedRanges != null && rangeIndex < modifiedRanges.Length)
                 {
                     modifiedRanges[rangeIndex] = (rgStart, rgSize);
                 }
