@@ -408,7 +408,7 @@ namespace ARMeilleure.Memory
             {
                 ref long pageRef = ref _pageTable.GetRef<long>((va >> PageBits) * PteSize);
 
-                long pte, oldPte;
+                long pte;
 
                 do
                 {
@@ -418,12 +418,8 @@ namespace ARMeilleure.Memory
                     {
                         break;
                     }
-
-                    oldPte = pte;
-
-                    pte &= ~(0xffffL << 48);
                 }
-                while (Interlocked.CompareExchange(ref pageRef, pte, oldPte) != oldPte);
+                while (Interlocked.CompareExchange(ref pageRef, pte & ~(0xffffL << 48), pte) != pte);
 
                 va += PageSize;
             }
