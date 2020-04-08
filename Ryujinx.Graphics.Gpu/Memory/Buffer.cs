@@ -99,13 +99,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        private void InvalidateRangeInternal(ulong offset, int size)
-        {
-            /*Span<byte> dataSpan = _data;
-
-            HostBuffer.SetData((int)offset, dataSpan.Slice((int)offset, size));*/
-        }
-
         /// <summary>
         /// Performs copy of all the buffer data from one buffer to another.
         /// </summary>

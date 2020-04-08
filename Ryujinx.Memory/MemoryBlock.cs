@@ -46,8 +46,8 @@ namespace Ryujinx.Memory
         /// Commits a region of memory that has previously been reserved.
         /// This can be used to allocate memory on demand.
         /// </summary>
-        /// <param name="offset">Starting offset of the range to be commited</param>
-        /// <param name="size">Size of the range to be commited</param>
+        /// <param name="offset">Starting offset of the range to be committed</param>
+        /// <param name="size">Size of the range to be committed</param>
         /// <returns>True if the operation was successful, false otherwise</returns>
         /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
         /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
@@ -134,11 +134,11 @@ namespace Ryujinx.Memory
         /// <exception cref="ArgumentOutOfRangeException">Throw when <paramref name="srcOffset"/>, <paramref name="dstOffset"/> or <paramref name="size"/> is out of range</exception>
         public void Copy(ulong srcOffset, ulong dstOffset, ulong size)
         {
-            const int MaxChunckSize = 1 << 30;
+            const int MaxChunkSize = 1 << 30;
             
-            for (ulong offset = 0; offset < size; offset += MaxChunckSize)
+            for (ulong offset = 0; offset < size; offset += MaxChunkSize)
             {
-                int copySize = (int)Math.Min(MaxChunckSize, size - offset);
+                int copySize = (int)Math.Min(MaxChunkSize, size - offset);
 
                 Write(dstOffset + offset, GetSpan(srcOffset + offset, copySize));
             }   
@@ -153,11 +153,11 @@ namespace Ryujinx.Memory
         /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         public void ZeroFill(ulong offset, ulong size)
         {
-            const int MaxChunckSize = 1 << 30;
+            const int MaxChunkSize = 1 << 30;
 
-            for (ulong subOffset = 0; subOffset < size; subOffset += MaxChunckSize)
+            for (ulong subOffset = 0; subOffset < size; subOffset += MaxChunkSize)
             {
-                int copySize = (int)Math.Min(MaxChunckSize, size - subOffset);
+                int copySize = (int)Math.Min(MaxChunkSize, size - subOffset);
 
                 GetSpan(offset + subOffset, copySize).Fill(0);
             }
