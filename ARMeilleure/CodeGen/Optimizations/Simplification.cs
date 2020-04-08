@@ -24,7 +24,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                     break;
 
                 case Instruction.BitwiseExclusiveOr:
-                    TryEliminateBitwiseExlusiveOr(operation);
+                    TryEliminateBitwiseExclusiveOr(operation);
                     break;
 
                 case Instruction.ConditionalSelect:
@@ -92,7 +92,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static void TryEliminateBitwiseExlusiveOr(Operation operation)
+        private static void TryEliminateBitwiseExclusiveOr(Operation operation)
         {
             // Try to recognize and optimize those 2 patterns (in order):
             // x ^ y == 0x00000000 when x == y
