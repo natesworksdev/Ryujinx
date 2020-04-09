@@ -48,7 +48,7 @@ namespace Ryujinx
             Logger.PrintInfo(LogClass.Application, $"Ryujinx Version: {Version}");
             Logger.PrintInfo(LogClass.Application, $"Operating System: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
             Logger.PrintInfo(LogClass.Application, $"CPU: {GetCpuName()}");
-            Logger.PrintInfo(LogClass.Application, $"Total RAM: {GetRamSizeMb()} MB");
+            Logger.PrintInfo(LogClass.Application, $"Total RAM: {GetRamSizeMb()}");
 
             string localConfigurationPath  = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
             string globalBasePath          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
@@ -133,31 +133,24 @@ namespace Ryujinx
                         return process.StandardOutput.ReadToEnd().Trim().Split("=")[1];
                     }
                 }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return File.ReadAllLines("/proc/cpuinfo").Where(line => line.StartsWith("model name")).ToList()[0].Split(":")[1].Trim();
+                }
                 else
                 {
-                    using (Process process = Process.Start(new ProcessStartInfo
-                    {
-                        FileName               = "cat",
-                        Arguments              = "/proc/cpuinfo",
-                        RedirectStandardOutput = true
-                    }))
-                    {
-                        foreach (string line in process.StandardOutput.ReadToEnd().Split("\n").Where(line => line.StartsWith("model name")))
-                        {
-                            return line.Split(":")[1].Trim();
-                        }
-
-                        return "Unknown";
-                    }
+                    throw new NotImplementedException("Unsupported OS");
                 }
             }
-            catch 
+            catch (Exception exception)
             {
+                Logger.PrintWarning(LogClass.Application, $"Failed to retrieve CPU name with exception: {exception}");
+
                 return "Unknown";
             }
         }
 
-        private static double GetRamSizeMb()
+        private static string GetRamSizeMb()
         {
             try
             {
@@ -170,25 +163,23 @@ namespace Ryujinx
                         RedirectStandardOutput = true
                     }))
                     {
-                        return Math.Round(double.Parse(process.StandardOutput.ReadToEnd().Trim().Split("=")[1]) / 1024, 0);
+                        return $"{Math.Round(double.Parse(process.StandardOutput.ReadToEnd().Trim().Split("=")[1]) / 1024, 0)} MB";
                     }
+                }
+                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+                {
+                    return $"{Math.Round(double.Parse(File.ReadAllLines("/proc/meminfo")[0].Split(":")[1].Trim().Split(" ")[0]) / 1024, 0)} MB";
                 }
                 else
                 {
-                    using (Process process = Process.Start(new ProcessStartInfo
-                    {
-                        FileName               = "cat",
-                        Arguments              = "/proc/meminfo",
-                        RedirectStandardOutput = true
-                    }))
-                    {
-                        return Math.Round(double.Parse(process.StandardOutput.ReadToEnd().Split("\n")[0].Split(":")[1].Trim().Split(" ")[0]) / 1024, 0);
-                    }
+                    throw new NotImplementedException("Unsupported OS");
                 }
             }
-            catch
+            catch (Exception exception)
             {
-                return 0;
+                Logger.PrintWarning(LogClass.Application, $"Failed to retrieve RAM size with exception: {exception}");
+
+                return "Unknown";
             }
         }
     }
