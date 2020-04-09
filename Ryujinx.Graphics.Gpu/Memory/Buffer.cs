@@ -32,6 +32,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private readonly (ulong, ulong)[] _modifiedRanges;
 
+        private readonly int[] _sequenceNumbers;
+
         /// <summary>
         /// Creates a new instance of the buffer.
         /// </summary>
@@ -47,6 +49,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             HostBuffer = context.Renderer.CreateBuffer((int)size);
 
             _modifiedRanges = new (ulong, ulong)[size / PhysicalMemory.PageSize];
+
+            _sequenceNumbers = new int[size / MemoryManager.PageSize];
         }
 
         /// <summary>
@@ -87,6 +91,32 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the range to synchronize</param>
         public void SynchronizeMemory(ulong address, ulong size)
         {
+            int currentSequenceNumber = _context.SequenceNumber;
+
+            bool needsSync = false;
+
+            ulong buffOffset = address - Address;
+
+            ulong buffEndOffset = (buffOffset + size + MemoryManager.PageMask) & ~MemoryManager.PageMask;
+
+            int startIndex = (int)(buffOffset    / MemoryManager.PageSize);
+            int endIndex   = (int)(buffEndOffset / MemoryManager.PageSize);
+
+            for (int index = startIndex; index < endIndex; index++)
+            {
+                if (_sequenceNumbers[index] != currentSequenceNumber)
+                {
+                    _sequenceNumbers[index] = currentSequenceNumber;
+
+                    needsSync = true;
+                }
+            }
+
+            if (!needsSync)
+            {
+                return;
+            }
+
             int count = _context.PhysicalMemory.QueryModified(address, size, ResourceName.Buffer, _modifiedRanges);
 
             for (int index = 0; index < count; index++)
