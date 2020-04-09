@@ -50,43 +50,30 @@ namespace ARMeilleure.State
             _e1 = (ulong)BitConverter.ToInt64(data, 8);
         }
 
-        public float  AsFloat()            => GetFloat(0);
-        public double AsDouble()           => GetDouble(0);
-        public float  GetFloat(int index)  => BitConverter.Int32BitsToSingle(GetInt32(index));
-        public double GetDouble(int index) => BitConverter.Int64BitsToDouble(GetInt64(index));
-        public int    GetInt32(int index)  => (int)GetUInt32(index);
-        public long   GetInt64(int index)  => (long)GetUInt64(index);
-
-        public uint GetUInt32(int index)
+        public T As<T>() where T : unmanaged
         {
-            if ((uint)index > 3U)
-                ThrowIndexOutOfRange();
-
-            return Unsafe.Add(ref Unsafe.As<ulong, uint>(ref _e0), index);
+            return Get<T>(0);
         }
 
-        public ulong GetUInt64(int index)
+        public T Get<T>(int index) where T : unmanaged
         {
-            if ((uint)index > 1U)
+            if ((uint)index >= GetElementCount<T>())
                 ThrowIndexOutOfRange();
 
-            return Unsafe.Add(ref _e0, index);
+            return Unsafe.Add(ref Unsafe.As<V128, T>(ref this), index);
         }
 
-        public void Insert(int index, uint value)
+        public void Set<T>(int index, T value) where T : unmanaged
         {
-            if ((uint)index > 3U)
+            if ((uint)index >= GetElementCount<T>())
                 ThrowIndexOutOfRange();
 
-            Unsafe.Add(ref Unsafe.As<ulong, uint>(ref _e0), index) = value;
+            Unsafe.Add(ref Unsafe.As<V128, T>(ref this), index) = value;
         }
 
-        public void Insert(int index, ulong value)
+        private uint GetElementCount<T>() where T : unmanaged
         {
-            if ((uint)index > 1U)
-                ThrowIndexOutOfRange();
-
-            Unsafe.Add(ref _e0, index) = value;
+            return (uint)(Unsafe.SizeOf<V128>() / Unsafe.SizeOf<T>());
         }
 
         public byte[] ToArray()
