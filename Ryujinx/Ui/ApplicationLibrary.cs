@@ -531,7 +531,21 @@ namespace Ryujinx.Ui
 
             using (Stream stream = File.OpenRead(metadataFile))
             {
-                appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                try
+                {
+                    appMetadata = JsonSerializer.Deserialize<ApplicationMetadata>(stream, resolver);
+                }
+                catch (JsonParsingException)
+                {
+                    Logger.PrintWarning(LogClass.Application, $"Failed to parse metadata json for {titleId}. Loading defaults.");
+                    
+                    appMetadata = new ApplicationMetadata
+                    {
+                        Favorite   = false,
+                        TimePlayed = 0,
+                        LastPlayed = "Never"
+                    };
+                }
             }
 
             if (modifyFunction != null)
