@@ -8,6 +8,7 @@ using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Spl;
 using Ryujinx.Common.Logging;
+using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -35,6 +36,7 @@ using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+
 
 namespace Ryujinx.HLE.HOS
 {
@@ -217,8 +219,22 @@ namespace Ryujinx.HLE.HOS
             // We assume the rtc is system time.
             TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
 
+            // Configure and setup internal offset
+            DateTime systemTimeOffset = DateTime.Now.AddSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+
+            if(DateTime.Now.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
+            {
+                systemTimeOffset = systemTimeOffset.AddHours(1);
+            }
+            else if(!DateTime.Now.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
+            {
+                systemTimeOffset = systemTimeOffset.AddHours(-1);
+            }
+
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(-(long)(systemTimeOffset - DateTime.Now).TotalSeconds);
+
             // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, TimeSpanType.Zero, TimeSpanType.Zero, false);
+            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
             TimeServiceManager.Instance.SetupStandardLocalSystemClock(null, new SystemClockContext(), systemTime.ToSeconds());
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
