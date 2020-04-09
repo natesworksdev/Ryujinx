@@ -37,7 +37,6 @@ using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 
-
 namespace Ryujinx.HLE.HOS
 {
     public class Horizon : IDisposable
@@ -220,18 +219,19 @@ namespace Ryujinx.HLE.HOS
             TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
 
             // Configure and setup internal offset
-            DateTime systemTimeOffset = DateTime.Now.AddSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
-            if(DateTime.Now.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
+            if(systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
             {
-                systemTimeOffset = systemTimeOffset.AddHours(1);
+                internalOffset = internalOffset.AddSeconds(3600L);
             }
-            else if(!DateTime.Now.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
+            else if(!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
             {
-                systemTimeOffset = systemTimeOffset.AddHours(-1);
+                internalOffset = internalOffset.AddSeconds(-3600L);
             }
 
-            TimeSpanType internalOffset = TimeSpanType.FromSeconds(-(long)(systemTimeOffset - DateTime.Now).TotalSeconds);
+            internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
 
             // First init the standard steady clock
             TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);

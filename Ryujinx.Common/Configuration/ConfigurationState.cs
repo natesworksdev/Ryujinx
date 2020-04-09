@@ -515,6 +515,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if(configurationFileFormat.Version < 5)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 5.");
+
+                configurationFileFormat.SystemTimeOffset = 0;
+
+                configurationFileUpdated = true;
+            }
+
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
