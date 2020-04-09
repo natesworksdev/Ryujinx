@@ -4,12 +4,10 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.State
 {
-     [StructLayout(LayoutKind.Explicit, Size = 16)]
+    [StructLayout(LayoutKind.Sequential, Size = 16)]
     public struct V128 : IEquatable<V128>
     {
-        [FieldOffset(0)]
         private ulong _e0;
-        [FieldOffset(8)]
         private ulong _e1;
 
         public static V128 Zero => new V128(0, 0);
