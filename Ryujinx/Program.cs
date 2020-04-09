@@ -42,6 +42,9 @@ namespace Ryujinx
             // Initialize Discord integration
             DiscordIntegrationModule.Initialize();
 
+            Logger.PrintInfo(LogClass.Application, $"Ryujinx Version: {Version}");
+            Logger.PrintInfo(LogClass.Application, $"Operating System: {System.Runtime.InteropServices.RuntimeInformation.OSDescription}");
+
             string localConfigurationPath  = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
             string globalBasePath          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
             string globalConfigurationPath = Path.Combine(globalBasePath, "Config.json");
