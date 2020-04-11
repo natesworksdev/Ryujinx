@@ -123,12 +123,14 @@ namespace Ryujinx
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    using (Process process = Process.Start(new ProcessStartInfo
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo
                     {
                         FileName               = "wmic",
                         Arguments              = "cpu get Name /Value",
                         RedirectStandardOutput = true
-                    }))
+                    };
+
+                    using (Process process = Process.Start(processStartInfo))
                     {
                         return process.StandardOutput.ReadToEnd().Trim().Split("=")[1];
                     }
@@ -156,12 +158,14 @@ namespace Ryujinx
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    using (Process process = Process.Start(new ProcessStartInfo
+                    ProcessStartInfo processStartInfo = new ProcessStartInfo
                     {
                         FileName               = "wmic",
                         Arguments              = "OS get TotalVisibleMemorySize /Value",
                         RedirectStandardOutput = true
-                    }))
+                    };
+
+                    using (Process process = Process.Start(processStartInfo))
                     {
                         return $"{Math.Round(double.Parse(process.StandardOutput.ReadToEnd().Trim().Split("=")[1]) / 1024, 0)} MB";
                     }
