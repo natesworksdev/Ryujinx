@@ -8,8 +8,8 @@
     <property name="page_increment">10</property>
   </object>
   <object class="GtkAdjustment" id="_systemTimeYearSpinAdjustment">
-    <property name="lower">1970</property>
-    <property name="upper">2070</property>
+    <property name="lower">2000</property>
+    <property name="upper">2060</property>
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>

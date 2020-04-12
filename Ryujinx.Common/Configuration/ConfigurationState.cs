@@ -159,12 +159,9 @@ namespace Ryujinx.Configuration
             public ReactiveObject<string> TimeZone { get; private set; }
 
             /// <summary>
-            /// System Time Offset in Seconds
+            /// System Time Offset in seconds
             /// </summary>
-            public ReactiveObject<long> SystemTimeOffset
-            {
-                get; private set;
-            }
+            public ReactiveObject<long> SystemTimeOffset { get; private set; }
 
             /// <summary>
             /// Enables or disables Docked Mode

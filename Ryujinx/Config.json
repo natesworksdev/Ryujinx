@@ -14,7 +14,7 @@
     "system_language": "AmericanEnglish",
     "system_region": "USA",
     "system_time_zone": "UTC",
-    "system_time_offset":  0,
+    "system_time_offset": 0,
     "docked_mode": false,
     "enable_discord_integration": true,
     "enable_vsync": true,

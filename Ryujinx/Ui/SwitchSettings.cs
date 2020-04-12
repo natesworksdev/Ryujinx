@@ -280,20 +280,20 @@ namespace Ryujinx.Ui
 
             _listeningForKeypress = false;
 
-            //Setup System Time Spinners
+            //Setup system time spinners
             UpdateSystemTimeSpinners();
         }
 
         private void UpdateSystemTimeSpinners()
         {
-            //Unbind System Time Spin Events
+            //Unbind system time spin events
             _systemTimeYearSpin.ValueChanged   -= SystemTimeSpin_ValueChanged;
             _systemTimeMonthSpin.ValueChanged  -= SystemTimeSpin_ValueChanged;
             _systemTimeDaySpin.ValueChanged    -= SystemTimeSpin_ValueChanged;
             _systemTimeHourSpin.ValueChanged   -= SystemTimeSpin_ValueChanged;
             _systemTimeMinuteSpin.ValueChanged -= SystemTimeSpin_ValueChanged;
 
-            //Apply Actual System Time + SystemTimeOffset To System Time Spin Buttons
+            //Apply actual system time + SystemTimeOffset to system time spin buttons
             DateTime systemTime = DateTime.Now.AddSeconds(_systemTimeOffset);
 
             _systemTimeYearSpinAdjustment.Value   = systemTime.Year;
@@ -302,14 +302,14 @@ namespace Ryujinx.Ui
             _systemTimeHourSpinAdjustment.Value   = systemTime.Hour;
             _systemTimeMinuteSpinAdjustment.Value = systemTime.Minute;
 
-            //Format Spin Buttons Text To Include Leading Zeros
+            //Format spin buttons text to include leading zeros
             _systemTimeYearSpin.Text   = systemTime.Year.ToString("0000");
             _systemTimeMonthSpin.Text  = systemTime.Month.ToString("00");
             _systemTimeDaySpin.Text    = systemTime.Day.ToString("00");
             _systemTimeHourSpin.Text   = systemTime.Hour.ToString("00");
             _systemTimeMinuteSpin.Text = systemTime.Minute.ToString("00");
 
-            //Bind System Time Spin Button Events
+            //Bind system time spin button events
             _systemTimeYearSpin.ValueChanged   += SystemTimeSpin_ValueChanged;
             _systemTimeMonthSpin.ValueChanged  += SystemTimeSpin_ValueChanged;
             _systemTimeDaySpin.ValueChanged    += SystemTimeSpin_ValueChanged;
@@ -320,22 +320,24 @@ namespace Ryujinx.Ui
         //Events
         private void SystemTimeSpin_ValueChanged(Object sender, EventArgs e)
         {
-            int year = _systemTimeYearSpin.ValueAsInt;
-            int month = _systemTimeMonthSpin.ValueAsInt;
-            int day = _systemTimeDaySpin.ValueAsInt;
-            int hour = _systemTimeHourSpin.ValueAsInt;
+            int year   = _systemTimeYearSpin.ValueAsInt;
+            int month  = _systemTimeMonthSpin.ValueAsInt;
+            int day    = _systemTimeDaySpin.ValueAsInt;
+            int hour   = _systemTimeHourSpin.ValueAsInt;
             int minute = _systemTimeMinuteSpin.ValueAsInt;
 
-            if(!DateTime.TryParse(year + "-" + month + "-" + day + " " + hour + ":" + minute, out DateTime newTime))
+            if (!DateTime.TryParse(year + "-" + month + "-" + day + " " + hour + ":" + minute, out DateTime newTime))
             {
                 UpdateSystemTimeSpinners();
+
                 return;
             }
 
             newTime = newTime.AddSeconds(DateTime.Now.Second).AddMilliseconds(DateTime.Now.Millisecond);
+
             long systemTimeOffset = (long)Math.Ceiling((newTime - DateTime.Now).TotalMinutes) * 60L;
 
-            if(_systemTimeOffset != systemTimeOffset)
+            if (_systemTimeOffset != systemTimeOffset)
             {
                 _systemTimeOffset = systemTimeOffset;
                 UpdateSystemTimeSpinners();

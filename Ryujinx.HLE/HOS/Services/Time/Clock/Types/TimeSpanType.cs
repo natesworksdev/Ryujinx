@@ -29,7 +29,8 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return new TimeSpanType(NanoSeconds + (seconds * NanoSecondsPerSecond));
         }
 
-        public bool IsDaylightSavingTime() {
+        public bool IsDaylightSavingTime()
+        {
             return UnixEpoch.AddSeconds(ToSeconds()).ToLocalTime().IsDaylightSavingTime();
         }
 

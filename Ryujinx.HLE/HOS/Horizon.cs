@@ -220,13 +220,14 @@ namespace Ryujinx.HLE.HOS
 
             // Configure and setup internal offset
             TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+            
             TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
 
-            if(systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
+            if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
             {
                 internalOffset = internalOffset.AddSeconds(3600L);
             }
-            else if(!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
+            else if (!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
             {
                 internalOffset = internalOffset.AddSeconds(-3600L);
             }
