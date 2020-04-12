@@ -678,12 +678,13 @@ namespace Ryujinx.Ui
 
                             if (nca.Header.ContentType == NcaContentType.Control)
                             {
-                                BlitStruct<ApplicationControlProperty> controlData = new BlitStruct<ApplicationControlProperty>(1);
+                                ApplicationControlProperty controlData = new ApplicationControlProperty();
 
                                 nca.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None).OpenFile(out IFile nacpFile, "/control.nacp".ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                                nacpFile.Read(out long _, 0, controlData.ByteSpan, ReadOption.None).ThrowIfFailure();
+                                
+                                nacpFile.Read(out long _, 0, SpanHelpers.AsByteSpan(ref controlData), ReadOption.None).ThrowIfFailure();
 
-                                version = controlData.Value.DisplayVersion.ToString();
+                                version = controlData.DisplayVersion.ToString();
 
                                 return true;
                             }
