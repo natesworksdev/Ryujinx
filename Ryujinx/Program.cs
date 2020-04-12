@@ -1,15 +1,13 @@
 using Gtk;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Debugger.Profiler;
 using Ryujinx.Ui;
 using OpenTK;
 using System;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx
 {
@@ -46,9 +44,11 @@ namespace Ryujinx
             DiscordIntegrationModule.Initialize();
 
             Logger.PrintInfo(LogClass.Application, $"Ryujinx Version: {Version}");
-            Logger.PrintInfo(LogClass.Application, $"Operating System: {RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})");
-            Logger.PrintInfo(LogClass.Application, $"CPU: {GetCpuName()}");
-            Logger.PrintInfo(LogClass.Application, $"Total RAM: {GetRamSizeMb()}");
+
+            SystemInfo systemInfo = new SystemInfo();
+            Logger.PrintInfo(LogClass.Application, $"Operating System: {systemInfo.OsDescription}");
+            Logger.PrintInfo(LogClass.Application, $"CPU: {systemInfo.CpuName}");
+            Logger.PrintInfo(LogClass.Application, $"Total RAM: {systemInfo.RamSize}");
 
             string localConfigurationPath  = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
             string globalBasePath          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");
@@ -114,76 +114,6 @@ namespace Ryujinx
             if (e.IsTerminating)
             {
                 Logger.Shutdown();
-            }
-        }
-
-        private static string GetCpuName()
-        {
-            try
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    ProcessStartInfo processStartInfo = new ProcessStartInfo
-                    {
-                        FileName               = "wmic",
-                        Arguments              = "cpu get Name /Value",
-                        RedirectStandardOutput = true
-                    };
-
-                    using (Process process = Process.Start(processStartInfo))
-                    {
-                        return process.StandardOutput.ReadToEnd().Trim().Split("=")[1];
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    return File.ReadAllLines("/proc/cpuinfo").Where(line => line.StartsWith("model name")).ToList()[0].Split(":")[1].Trim();
-                }
-                else
-                {
-                    throw new NotImplementedException("Unsupported OS");
-                }
-            }
-            catch (Exception exception)
-            {
-                Logger.PrintWarning(LogClass.Application, $"Failed to retrieve CPU name with exception: {exception}");
-
-                return "Unknown";
-            }
-        }
-
-        private static string GetRamSizeMb()
-        {
-            try
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    ProcessStartInfo processStartInfo = new ProcessStartInfo
-                    {
-                        FileName               = "wmic",
-                        Arguments              = "OS get TotalVisibleMemorySize /Value",
-                        RedirectStandardOutput = true
-                    };
-
-                    using (Process process = Process.Start(processStartInfo))
-                    {
-                        return $"{Math.Round(double.Parse(process.StandardOutput.ReadToEnd().Trim().Split("=")[1]) / 1024, 0)} MB";
-                    }
-                }
-                else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-                {
-                    return $"{Math.Round(double.Parse(File.ReadAllLines("/proc/meminfo")[0].Split(":")[1].Trim().Split(" ")[0]) / 1024, 0)} MB";
-                }
-                else
-                {
-                    throw new NotImplementedException("Unsupported OS");
-                }
-            }
-            catch (Exception exception)
-            {
-                Logger.PrintWarning(LogClass.Application, $"Failed to retrieve RAM size with exception: {exception}");
-
-                return "Unknown";
             }
         }
     }
