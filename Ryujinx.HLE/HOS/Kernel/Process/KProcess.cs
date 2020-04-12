@@ -4,7 +4,6 @@ using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.SupervisorCall;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Collections.Generic;
@@ -80,8 +79,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public MemoryManager CpuMemory { get; private set; }
         public CpuContext CpuContext { get; private set; }
 
-        private SvcHandler _svcHandler;
-
         public HleProcessDebugger Debugger { get; private set; }
 
         public KProcess(KernelContext context) : base(context)
@@ -99,8 +96,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             RandomEntropy = new long[KScheduler.CpuCoresCount];
 
             _threads = new LinkedList<KThread>();
-
-            _svcHandler = new SvcHandler(context.Device, this, context);
 
             Debugger = new HleProcessDebugger(this);
         }
@@ -788,7 +783,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public void SubscribeThreadEventHandlers(ARMeilleure.State.ExecutionContext context)
         {
             context.Interrupt      += InterruptHandler;
-            context.SupervisorCall += _svcHandler.SvcCall;
+            context.SupervisorCall += KernelContext.SyscallHandler.SvcCall;
             context.Undefined      += UndefinedInstructionHandler;
         }
 

@@ -354,7 +354,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 _context.CriticalSection.Leave();
 
-                return (KernelResult)currentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
 
             _context.CriticalSection.Leave();
@@ -436,7 +436,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 _context.CriticalSection.Leave();
 
-                return (KernelResult)currentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
 
             _context.CriticalSection.Leave();
