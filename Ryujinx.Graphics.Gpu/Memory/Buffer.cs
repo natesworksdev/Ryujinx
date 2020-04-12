@@ -1,3 +1,4 @@
+using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
 using System;
 
@@ -8,6 +9,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     class Buffer : IRange, IDisposable
     {
+        private static ulong GranularBufferThreshold = 4096;
+
         private readonly GpuContext _context;
 
         /// <summary>
@@ -30,9 +33,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public ulong EndAddress => Address + Size;
 
-        private readonly (ulong, ulong)[] _modifiedRanges;
+        private CpuSmartMultiRegionHandle _memoryTrackingGranular;
+        private CpuRegionHandle _memoryTracking;
+        private int _sequenceNumber;
 
-        private readonly int[] _sequenceNumbers;
+        private bool _useGranular;
 
         /// <summary>
         /// Creates a new instance of the buffer.
@@ -48,9 +53,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             Handle = context.Renderer.CreateBuffer((int)size);
 
-            _modifiedRanges = new (ulong, ulong)[size / PhysicalMemory.PageSize];
+            _useGranular = size > GranularBufferThreshold;
 
-            _sequenceNumbers = new int[size / MemoryManager.PageSize];
+            if (_useGranular)
+            {
+                _memoryTrackingGranular = context.PhysicalMemory.BeginSmartGranularTracking(address, size, 4096);
+            }
+            else
+            {
+                _memoryTracking = context.PhysicalMemory.BeginTracking(address, size);
+            }
         }
 
         /// <summary>
@@ -91,41 +103,35 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the range to synchronize</param>
         public void SynchronizeMemory(ulong address, ulong size)
         {
-            int currentSequenceNumber = _context.SequenceNumber;
-
-            bool needsSync = false;
-
-            ulong buffOffset = address - Address;
-
-            ulong buffEndOffset = (buffOffset + size + MemoryManager.PageMask) & ~MemoryManager.PageMask;
-
-            int startIndex = (int)(buffOffset    / MemoryManager.PageSize);
-            int endIndex   = (int)(buffEndOffset / MemoryManager.PageSize);
-
-            for (int index = startIndex; index < endIndex; index++)
+            if (_useGranular)
             {
-                if (_sequenceNumbers[index] != currentSequenceNumber)
+                _memoryTrackingGranular.QueryModified(address, size, (ulong mAddress, ulong mSize) =>
                 {
-                    _sequenceNumbers[index] = currentSequenceNumber;
+                    if (mAddress < Address)
+                    {
+                        mAddress = Address;
+                    }
 
-                    needsSync = true;
+                    ulong maxSize = Address + Size - mAddress;
+
+                    if (mSize > maxSize)
+                    {
+                        mSize = maxSize;
+                    }
+
+                    int offset = (int)(mAddress - Address);
+
+                    _context.Renderer.SetBufferData(Handle, offset, _context.PhysicalMemory.GetSpan(mAddress, (int)mSize));
+                }, _context.SequenceNumber);
+            }
+            else
+            {
+                if (_memoryTracking.Dirty && _context.SequenceNumber != _sequenceNumber)
+                {
+                    _memoryTracking.Reprotect();
+                    _context.Renderer.SetBufferData(Handle, 0, _context.PhysicalMemory.GetSpan(Address, (int)Size));
+                    _sequenceNumber = _context.SequenceNumber;
                 }
-            }
-
-            if (!needsSync)
-            {
-                return;
-            }
-
-            int count = _context.PhysicalMemory.QueryModified(address, size, ResourceName.Buffer, _modifiedRanges);
-
-            for (int index = 0; index < count; index++)
-            {
-                (ulong mAddress, ulong mSize) = _modifiedRanges[index];
-
-                int offset = (int)(mAddress - Address);
-
-                _context.Renderer.SetBufferData(Handle, offset, _context.PhysicalMemory.GetSpan(mAddress, (int)mSize));
             }
         }
 
@@ -152,7 +158,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             byte[] data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
 
             // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
-            _context.PhysicalMemory.WriteUntracked(address, data);
+            _context.PhysicalMemory.Write(address, data);
         }
 
         /// <summary>
@@ -161,6 +167,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void Dispose()
         {
             _context.Renderer.DeleteBuffer(Handle);
+
+            _memoryTrackingGranular?.Dispose();
+            _memoryTracking?.Dispose();
         }
     }
 }

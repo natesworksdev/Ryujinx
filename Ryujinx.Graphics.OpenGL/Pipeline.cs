@@ -5,6 +5,7 @@ using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
 using System;
+using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -50,6 +51,8 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _tfEnabled;
 
         private ColorF _blendConstant;
+
+        private Thread _mainThread;
 
         internal Pipeline()
         {
@@ -1155,6 +1158,7 @@ namespace Ryujinx.Graphics.OpenGL
                 _framebuffer = new Framebuffer();
 
                 int boundHandle = _framebuffer.Bind();
+                _mainThread = Thread.CurrentThread;
                 _boundDrawFramebuffer = _boundReadFramebuffer = boundHandle;
 
                 GL.Enable(EnableCap.FramebufferSrgb);
@@ -1163,6 +1167,11 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal (int drawHandle, int readHandle) GetBoundFramebuffers()
         {
+            if (Thread.CurrentThread != _mainThread)
+            {
+                return (0, 0);
+            }
+
             return (_boundDrawFramebuffer, _boundReadFramebuffer);
         }
 

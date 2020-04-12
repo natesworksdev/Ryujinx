@@ -46,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             Texture texture = Items[id];
 
-            if (texture == null)
+            if (texture == null || texture.Invalidated)
             {
                 TextureDescriptor descriptor = GetDescriptor(id);
 

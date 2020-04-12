@@ -36,5 +36,7 @@ namespace Ryujinx.Graphics.GAL
         void ResetCounter(CounterType type);
 
         void Initialize(GraphicsDebugLevel logLevel);
+
+        void BackgroundContextAction(Action action);
     }
 }

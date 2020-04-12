@@ -886,7 +886,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (!isSamplerTexture)
             {
                 _cache.Add(texture);
-                texture.Modified += CacheTextureModified;
                 texture.Disposed += CacheTextureDisposed;
             }
 
