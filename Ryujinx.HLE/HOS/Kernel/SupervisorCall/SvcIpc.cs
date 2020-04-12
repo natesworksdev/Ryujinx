@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             handle = 0;
 
-            if (!KernelTransfer.UserToKernelString(_system, namePtr, 12, out string name))
+            if (!KernelTransfer.UserToKernelString(_context, namePtr, 12, out string name))
             {
                 return KernelResult.UserCopyFailed;
             }
@@ -54,14 +54,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.MaximumExceeded;
             }
 
-            KAutoObject autoObj = KAutoObject.FindNamedObject(_system, name);
+            KAutoObject autoObj = KAutoObject.FindNamedObject(_context, name);
 
             if (!(autoObj is KClientPort clientPort))
             {
                 return KernelResult.NotFound;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KernelResult result = currentProcess.HandleTable.ReserveHandle(out handle);
 
@@ -88,12 +88,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult SendSyncRequest64([R(0)] int handle)
         {
-            return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
+            return SendSyncRequest((ulong)_context.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
         }
 
         public KernelResult SendSyncRequest32([R(0)] int handle)
         {
-            return SendSyncRequest((ulong)_system.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
+            return SendSyncRequest((ulong)_context.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
         }
 
         public KernelResult SendSyncRequestWithUserBuffer64([R(0)] ulong messagePtr, [R(1)] ulong size, [R(2)] int handle)
@@ -121,9 +121,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (clientSession != null)
             {
-                _system.CriticalSection.Enter();
+                _context.CriticalSection.Enter();
 
-                KThread currentThread = _system.Scheduler.GetCurrentThread();
+                KThread currentThread = _context.Scheduler.GetCurrentThread();
 
                 currentThread.SignaledObj   = null;
                 currentThread.ObjSyncResult = KernelResult.Success;
@@ -138,9 +138,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     message,
                     (long)messagePtr));
 
-                _system.ThreadCounter.AddCount();
+                _context.ThreadCounter.AddCount();
 
-                _system.CriticalSection.Leave();
+                _context.CriticalSection.Leave();
 
                 return currentThread.ObjSyncResult;
             }
@@ -165,14 +165,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 ipcMessage.Message,
                 ipcMessage.MessagePtr);
 
-            _system.ThreadCounter.Signal();
+            _context.ThreadCounter.Signal();
 
             ipcMessage.Thread.Reschedule(ThreadSchedState.Running);
         }
 
         private KernelResult SendSyncRequest_(int handle)
         {
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KClientSession session = currentProcess.HandleTable.GetObject<KClientSession>(handle);
 
@@ -211,20 +211,20 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             serverSessionHandle = 0;
             clientSessionHandle = 0;
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KResourceLimit resourceLimit = currentProcess.ResourceLimit;
-
-            KernelResult result = KernelResult.Success;
 
             if (resourceLimit != null && !resourceLimit.Reserve(LimitableResource.Session, 1))
             {
                 return KernelResult.ResLimitExceeded;
             }
 
+            KernelResult result;
+
             if (isLight)
             {
-                KLightSession session = new KLightSession(_system);
+                KLightSession session = new KLightSession(_context);
 
                 result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
@@ -245,7 +245,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
             else
             {
-                KSession session = new KSession(_system);
+                KSession session = new KSession(_context);
 
                 result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
@@ -282,7 +282,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             sessionHandle = 0;
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KServerPort serverPort = currentProcess.HandleTable.GetObject<KServerPort>(portHandle);
 
@@ -366,7 +366,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.MaximumExceeded;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             ulong copySize = (ulong)((long)handlesCount * 4);
 
@@ -382,7 +382,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             int[] handles = new int[handlesCount];
 
-            if (!KernelTransfer.UserToKernelInt32Array(_system, handlesPtr, handles))
+            if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
             {
                 return KernelResult.UserCopyFailed;
             }
@@ -420,7 +420,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 }
             }
 
-            while ((result = _system.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+            while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
             {
                 KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
 
@@ -472,9 +472,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.MaximumExceeded;
             }
 
-            KPort port = new KPort(_system, maxSessions, isLight, (long)namePtr);
+            KPort port = new KPort(_context, maxSessions, isLight, (long)namePtr);
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KernelResult result = currentProcess.HandleTable.GenerateHandle(port.ClientPort, out clientPortHandle);
 
@@ -507,7 +507,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             handle = 0;
 
-            if (!KernelTransfer.UserToKernelString(_system, namePtr, 12, out string name))
+            if (!KernelTransfer.UserToKernelString(_context, namePtr, 12, out string name))
             {
                 return KernelResult.UserCopyFailed;
             }
@@ -519,12 +519,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (maxSessions == 0)
             {
-                return KClientPort.RemoveName(_system, name);
+                return KAutoObject.RemoveName(_context, name);
             }
 
-            KPort port = new KPort(_system, maxSessions, false, 0);
+            KPort port = new KPort(_context, maxSessions, false, 0);
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KernelResult result = currentProcess.HandleTable.GenerateHandle(port.ServerPort, out handle);
 
@@ -557,7 +557,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             clientSessionHandle = 0;
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KClientPort clientPort = currentProcess.HandleTable.GetObject<KClientPort>(clientPortHandle);
 

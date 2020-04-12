@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(src, size))
             {
@@ -156,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(src, size))
             {
@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidPermission;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KSharedMemory sharedMemory = currentProcess.HandleTable.GetObject<KSharedMemory>(handle);
 
@@ -288,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KSharedMemory sharedMemory = currentProcess.HandleTable.GetObject<KSharedMemory>(handle);
 
@@ -360,7 +360,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            KTransferMemory transferMemory = new KTransferMemory(_system, address, size);
+            KTransferMemory transferMemory = new KTransferMemory(_context, address, size);
 
             return _process.HandleTable.GenerateHandle(transferMemory, out handle);
         }
@@ -392,7 +392,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemRange;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if ((currentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
@@ -435,7 +435,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidMemRange;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if ((currentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
@@ -477,7 +477,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidSize;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KProcess targetProcess = currentProcess.HandleTable.GetObject<KProcess>(handle);
 
@@ -528,7 +528,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidSize;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KProcess targetProcess = currentProcess.HandleTable.GetObject<KProcess>(handle);
 
@@ -592,7 +592,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidPermission;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KProcess targetProcess = currentProcess.HandleTable.GetObject<KProcess>(handle);
 

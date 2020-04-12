@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             handle = 0;
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if (cpuCore == -2)
             {
@@ -65,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.ResLimitExceeded;
             }
 
-            KThread thread = new KThread(_system);
+            KThread thread = new KThread(_context);
 
             KernelResult result = currentProcess.InitializeThread(
                 thread,
@@ -136,9 +136,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private void ExitThread()
         {
-            KThread currentThread = _system.Scheduler.GetCurrentThread();
+            KThread currentThread = _context.Scheduler.GetCurrentThread();
 
-            _system.Scheduler.ExitThread(currentThread);
+            _context.Scheduler.ExitThread(currentThread);
 
             currentThread.Exit();
         }
@@ -157,7 +157,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private void SleepThread(long timeout)
         {
-            KThread currentThread = _system.Scheduler.GetCurrentThread();
+            KThread currentThread = _context.Scheduler.GetCurrentThread();
 
             if (timeout < 1)
             {
@@ -277,7 +277,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult SetThreadCoreMask(int handle, int preferredCore, long affinityMask)
         {
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if (preferredCore == -2)
             {
@@ -323,12 +323,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public int GetCurrentProcessorNumber64()
         {
-            return _system.Scheduler.GetCurrentThread().CurrentCore;
+            return _context.Scheduler.GetCurrentThread().CurrentCore;
         }
 
         public int GetCurrentProcessorNumber32()
         {
-            return _system.Scheduler.GetCurrentThread().CurrentCore;
+            return _context.Scheduler.GetCurrentThread().CurrentCore;
         }
 
         public KernelResult GetThreadId64([R(1)] int handle, [R(1)] out long threadUid)
@@ -385,12 +385,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidHandle;
             }
 
-            if (thread.Owner != _system.Scheduler.GetCurrentProcess())
+            if (thread.Owner != _context.Scheduler.GetCurrentProcess())
             {
                 return KernelResult.InvalidHandle;
             }
 
-            if (thread == _system.Scheduler.GetCurrentThread())
+            if (thread == _context.Scheduler.GetCurrentThread())
             {
                 return KernelResult.InvalidThread;
             }
@@ -410,8 +410,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult GetThreadContext3(ulong address, int handle)
         {
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
-            KThread  currentThread  = _system.Scheduler.GetCurrentThread();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+            KThread  currentThread  = _context.Scheduler.GetCurrentThread();
 
             KThread thread = _process.HandleTable.GetObject<KThread>(handle);
 

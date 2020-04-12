@@ -49,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 syncObjs.Add(syncObj);
             }
 
-            return _system.Synchronization.WaitFor(syncObjs.ToArray(), timeout, out handleIndex);
+            return _context.Synchronization.WaitFor(syncObjs.ToArray(), timeout, out handleIndex);
         }
 
         public KernelResult CancelSynchronization64([R(0)] int handle)
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidAddress;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             return currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidAddress;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             return currentProcess.AddressArbiter.ArbitrateUnlock(mutexAddress);
         }
@@ -167,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidAddress;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             return currentProcess.AddressArbiter.WaitProcessWideKeyAtomic(
                 mutexAddress,
@@ -188,7 +188,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult SignalProcessWideKey(ulong address, int count)
         {
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             currentProcess.AddressArbiter.SignalProcessWideKey(address, count);
 
@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidAddress;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KernelResult result;
 
@@ -267,7 +267,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidAddress;
             }
 
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KernelResult result;
 

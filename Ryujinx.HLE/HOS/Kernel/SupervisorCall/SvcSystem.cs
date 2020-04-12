@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (process != null)
             {
-                if (process == _system.Scheduler.GetCurrentProcess())
+                if (process == _context.Scheduler.GetCurrentProcess())
                 {
                     result = KernelResult.Success;
                     process.DecrementToZeroWhileTerminatingCurrent();
@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private void ExitProcess()
         {
-            _system.Scheduler.GetCurrentProcess().TerminateCurrentProcess();
+            _context.Scheduler.GetCurrentProcess().TerminateCurrentProcess();
         }
 
         public KernelResult SignalEvent64([R(0)] int handle)
@@ -171,7 +171,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult ResetSignal(int handle)
         {
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KReadableEvent readableEvent = currentProcess.HandleTable.GetObject<KReadableEvent>(handle);
 
@@ -200,12 +200,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public ulong GetSystemTick64()
         {
-            return _system.Scheduler.GetCurrentThread().Context.CntpctEl0;
+            return _context.Scheduler.GetCurrentThread().Context.CntpctEl0;
         }
 
         public void GetSystemTick32([R(0)] out uint resultLow, [R(1)] out uint resultHigh)
         {
-            ulong result = _system.Scheduler.GetCurrentThread().Context.CntpctEl0;
+            ulong result = _context.Scheduler.GetCurrentThread().Context.CntpctEl0;
 
             resultLow  = (uint)(result & uint.MaxValue);
             resultHigh = (uint)(result >> 32);
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult GetProcessId(int handle, out long pid)
         {
-            KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KProcess process = currentProcess.HandleTable.GetKProcess(handle);
 
@@ -263,7 +263,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private void Break(ulong reason)
         {
-            KThread currentThread = _system.Scheduler.GetCurrentThread();
+            KThread currentThread = _context.Scheduler.GetCurrentThread();
 
             if ((reason & (1UL << 31)) == 0)
             {
@@ -357,7 +357,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                    KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+                    KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
                     KProcess process = currentProcess.HandleTable.GetKProcess(handle);
 
@@ -425,7 +425,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                    value = _system.Scheduler.GetCurrentProcess().Debug ? 1 : 0;
+                    value = _context.Scheduler.GetCurrentProcess().Debug ? 1 : 0;
 
                     break;
                 }
@@ -442,7 +442,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                    KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+                    KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
                     if (currentProcess.ResourceLimit != null)
                     {
@@ -469,14 +469,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidHandle;
                     }
 
-                    int currentCore = _system.Scheduler.GetCurrentThread().CurrentCore;
+                    int currentCore = _context.Scheduler.GetCurrentThread().CurrentCore;
 
                     if (subId != -1 && subId != currentCore)
                     {
                         return KernelResult.InvalidCombination;
                     }
 
-                    value = _system.Scheduler.CoreContexts[currentCore].TotalIdleTimeTicks;
+                    value = _context.Scheduler.CoreContexts[currentCore].TotalIdleTimeTicks;
 
                     break;
                 }
@@ -493,7 +493,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                    KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+                    KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
 
                     value = currentProcess.RandomEntropy[subId];
@@ -508,14 +508,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                    KThread thread = _system.Scheduler.GetCurrentProcess().HandleTable.GetKThread(handle);
+                    KThread thread = _context.Scheduler.GetCurrentProcess().HandleTable.GetKThread(handle);
 
                     if (thread == null)
                     {
                         return KernelResult.InvalidHandle;
                     }
 
-                    KThread currentThread = _system.Scheduler.GetCurrentThread();
+                    KThread currentThread = _context.Scheduler.GetCurrentThread();
 
                     int currentCore = currentThread.CurrentCore;
 
@@ -524,7 +524,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.Success;
                     }
 
-                    KCoreContext coreContext = _system.Scheduler.CoreContexts[currentCore];
+                    KCoreContext coreContext = _context.Scheduler.CoreContexts[currentCore];
 
                     long timeDelta = PerformanceCounter.ElapsedMilliseconds - coreContext.LastContextSwitchTime;
 
@@ -565,7 +565,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private KernelResult CreateEvent(out int wEventHandle, out int rEventHandle)
         {
-            KEvent Event = new KEvent(_system);
+            KEvent Event = new KEvent(_context);
 
             KernelResult result = _process.HandleTable.GenerateHandle(Event.WritableEvent, out wEventHandle);
 
@@ -607,7 +607,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (maxCount != 0)
             {
-                KProcess currentProcess = _system.Scheduler.GetCurrentProcess();
+                KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
                 ulong copySize = (ulong)maxCount * 8;
 
@@ -624,13 +624,13 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             int copyCount = 0;
 
-            lock (_system.Processes)
+            lock (_context.Processes)
             {
-                foreach (KProcess process in _system.Processes.Values)
+                foreach (KProcess process in _context.Processes.Values)
                 {
                     if (copyCount < maxCount)
                     {
-                        if (!KernelTransfer.KernelToUserInt64(_system, address + (ulong)copyCount * 8, process.Pid))
+                        if (!KernelTransfer.KernelToUserInt64(_context, address + (ulong)copyCount * 8, process.Pid))
                         {
                             return KernelResult.UserCopyFailed;
                         }
@@ -683,7 +683,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                     return KernelResult.InvalidCombination;
                 }
 
-                KMemoryRegionManager region = _system.MemoryRegions[subId];
+                KMemoryRegionManager region = _context.MemoryRegions[subId];
 
                 switch (id)
                 {
@@ -710,8 +710,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 switch (subId)
                 {
-                    case 0: value = _system.PrivilegedProcessLowestId;  break;
-                    case 1: value = _system.PrivilegedProcessHighestId; break;
+                    case 0: value = _context.PrivilegedProcessLowestId;  break;
+                    case 1: value = _context.PrivilegedProcessHighestId; break;
                 }
             }
 

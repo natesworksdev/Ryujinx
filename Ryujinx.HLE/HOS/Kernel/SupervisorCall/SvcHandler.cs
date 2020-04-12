@@ -7,15 +7,15 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        private Switch   _device;
-        private KProcess _process;
-        private Horizon  _system;
+        private Switch        _device;
+        private KProcess      _process;
+        private KernelContext _context;
 
-        public SvcHandler(Switch device, KProcess process)
+        public SvcHandler(Switch device, KProcess process, KernelContext context)
         {
             _device  = device;
             _process = process;
-            _system  = device.System;
+            _context = context;
         }
 
         public void SvcCall(object sender, InstExceptionEventArgs e)
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         private void PostSvcHandler()
         {
-            KThread currentThread = _system.Scheduler.GetCurrentThread();
+            KThread currentThread = _context.Scheduler.GetCurrentThread();
 
             currentThread.HandlePostSyscall();
         }
