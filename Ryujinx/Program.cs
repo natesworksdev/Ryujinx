@@ -45,10 +45,9 @@ namespace Ryujinx
 
             Logger.PrintInfo(LogClass.Application, $"Ryujinx Version: {Version}");
 
-            SystemInfo systemInfo = new SystemInfo();
-            Logger.PrintInfo(LogClass.Application, $"Operating System: {systemInfo.OsDescription}");
-            Logger.PrintInfo(LogClass.Application, $"CPU: {systemInfo.CpuName}");
-            Logger.PrintInfo(LogClass.Application, $"Total RAM: {systemInfo.RamSize}");
+            Logger.PrintInfo(LogClass.Application, $"Operating System: {SystemInfo.OsDescription}");
+            Logger.PrintInfo(LogClass.Application, $"CPU: {SystemInfo.CpuName}");
+            Logger.PrintInfo(LogClass.Application, $"Total RAM: {SystemInfo.RamSize}");
 
             string localConfigurationPath  = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
             string globalBasePath          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");

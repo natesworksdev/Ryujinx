@@ -6,13 +6,13 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common
 {
-    public class SystemInfo
+    public static class SystemInfo
     {
-        public string OsDescription { get; private set; }
-        public string CpuName       { get; private set; }
-        public string RamSize       { get; private set; }
+        public static string OsDescription { get; private set; }
+        public static string CpuName       { get; private set; }
+        public static string RamSize       { get; private set; }
 
-        public SystemInfo()
+        static SystemInfo()
         {
             OsDescription = $"{RuntimeInformation.OSDescription} ({RuntimeInformation.OSArchitecture})";
             CpuName       = "Unknown";
