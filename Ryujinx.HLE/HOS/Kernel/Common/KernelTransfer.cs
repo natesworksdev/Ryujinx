@@ -1,5 +1,5 @@
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.HOS.Kernel.Process;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {

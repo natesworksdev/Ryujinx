@@ -12,6 +12,7 @@ namespace ARMeilleure.Instructions
     {
         private const int PageBits = 12;
         private const int PageMask = (1 << PageBits) - 1;
+
         private enum Extension
         {
             Zx,
