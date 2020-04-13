@@ -31,7 +31,7 @@ namespace ARMeilleure.Translation
 
         private volatile int _threadCount;
 
-        public Translator(IMemoryAllocator allocator, IMemoryManager memory)
+        public Translator(IJitMemoryAllocator allocator, IMemoryManager memory)
         {
             _memory = memory;
 

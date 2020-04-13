@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private Switch _device;
 
-        private ARMeilleure.Memory.MemoryManager _memory;
+        private Cpu.MemoryManager _memory;
 
         public enum ResourcePolicy
         {

@@ -53,7 +53,7 @@ namespace ARMeilleure.Translation
         public IntPtr JumpPointer => _jumpRegion.Pointer;
         public IntPtr DynamicPointer => _dynamicRegion.Pointer;
 
-        public JumpTable(IMemoryAllocator allocator)
+        public JumpTable(IJitMemoryAllocator allocator)
         {
             _jumpRegion = new ReservedRegion(allocator, JumpTableByteSize);
             _dynamicRegion = new ReservedRegion(allocator, DynamicTableByteSize);

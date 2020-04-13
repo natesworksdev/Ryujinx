@@ -3,23 +3,21 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
-    using CpuMemoryManager = ARMeilleure.Memory.MemoryManager;
-
     /// <summary>
     /// Represents physical memory, accessible from the GPU.
     /// This is actually working CPU virtual addresses, of memory mapped on the application process.
     /// </summary>
     class PhysicalMemory
     {
-        public const int PageSize = CpuMemoryManager.PageSize;
+        public const int PageSize = Cpu.MemoryManager.PageSize;
 
-        private readonly CpuMemoryManager _cpuMemory;
+        private readonly Cpu.MemoryManager _cpuMemory;
 
         /// <summary>
         /// Creates a new instance of the physical memory.
         /// </summary>
         /// <param name="cpuMemory">CPU memory manager of the application process</param>
-        public PhysicalMemory(CpuMemoryManager cpuMemory)
+        public PhysicalMemory(Cpu.MemoryManager cpuMemory)
         {
             _cpuMemory = cpuMemory;
         }

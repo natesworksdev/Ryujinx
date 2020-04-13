@@ -74,7 +74,7 @@ namespace ARMeilleure.State
             _tickCounter.Start();
         }
 
-        public ExecutionContext(IMemoryAllocator allocator)
+        public ExecutionContext(IJitMemoryAllocator allocator)
         {
             _nativeContext = new NativeContext(allocator);
 

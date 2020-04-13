@@ -1,9 +1,11 @@
-﻿using System;
+﻿using ARMeilleure.Memory;
+using Ryujinx.Memory;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace ARMeilleure.Memory
+namespace Ryujinx.Cpu
 {
     /// <summary>
     /// Represents a CPU memory manager.
@@ -20,8 +22,8 @@ namespace ARMeilleure.Memory
 
         private readonly ulong _addressSpaceSize;
 
-        private readonly IMemoryBlock _backingMemory;
-        private readonly IMemoryBlock _pageTable;
+        private readonly MemoryBlock _backingMemory;
+        private readonly MemoryBlock _pageTable;
 
         public IntPtr PageTablePointer => _pageTable.Pointer;
 
@@ -31,23 +33,21 @@ namespace ARMeilleure.Memory
         /// <param name="allocator">Allocator used for internal allocations on the memory manager</param>
         /// <param name="backingMemory">Physical backing memory where virtual memory will be mapped to</param>
         /// <param name="addressSpaceSize">Size of the address space</param>
-        public MemoryManager(IMemoryAllocator allocator, IMemoryBlock backingMemory, ulong addressSpaceSize)
+        public MemoryManager(MemoryBlock backingMemory, ulong addressSpaceSize)
         {
             ulong asSize = PageSize;
-
-            int asBits = 12;
+            int asBits = PageBits;
 
             while (asSize < addressSpaceSize)
             {
                 asSize <<= 1;
-
                 asBits++;
             }
 
             AddressSpaceBits = asBits;
             _addressSpaceSize = asSize;
             _backingMemory = backingMemory;
-            _pageTable = allocator.Allocate((asSize / PageSize) * PteSize);
+            _pageTable = new MemoryBlock((asSize / PageSize) * PteSize);
         }
 
         /// <summary>
@@ -197,7 +197,7 @@ namespace ARMeilleure.Memory
         {
             if (!IsContiguous(va, Unsafe.SizeOf<T>()))
             {
-                ThrowMemoryNotContiguousException();
+                ThrowMemoryNotContiguous();
             }
 
             MarkRegionAsModified(va, (ulong)Unsafe.SizeOf<T>());
@@ -205,7 +205,7 @@ namespace ARMeilleure.Memory
             return ref _backingMemory.GetRef<T>(GetPhysicalAddressInternal(va));
         }
 
-        private void ThrowMemoryNotContiguousException() => throw new MemoryNotContiguousException();
+        private void ThrowMemoryNotContiguous() => throw new MemoryNotContiguousException();
 
         // TODO: Remove that once we have proper 8-bits and 16-bits CAS.
         public ref T GetRefNoChecks<T>(ulong va) where T : unmanaged
@@ -308,45 +308,42 @@ namespace ARMeilleure.Memory
 
             int rangeIndex = 0;
 
-            unsafe
+            for (; va < endVa; va += PageSize)
             {
-                long* pagePtr = (long*)_pageTable.Pointer + (va >> PageBits);
-
-                for (; va < endVa; va += PageSize, pagePtr++)
+                while (true)
                 {
-                    while (true)
+                    ref long pte = ref _pageTable.GetRef<long>((va >> PageBits) * PteSize);
+
+                    long pteValue = pte;
+
+                    if ((pteValue & tag) == tag)
                     {
-                        long pte = *pagePtr;
-
-                        if ((pte & tag) == tag)
+                        if (rgSize != 0)
                         {
-                            if (rgSize != 0)
+                            if (modifiedRanges != null && rangeIndex < modifiedRanges.Length)
                             {
-                                if (modifiedRanges != null && rangeIndex < modifiedRanges.Length)
-                                {
-                                    modifiedRanges[rangeIndex] = (rgStart, rgSize);
-                                }
-
-                                rangeIndex++;
-
-                                rgSize = 0;
+                                modifiedRanges[rangeIndex] = (rgStart, rgSize);
                             }
+
+                            rangeIndex++;
+
+                            rgSize = 0;
+                        }
+
+                        break;
+                    }
+                    else
+                    {
+                        if (Interlocked.CompareExchange(ref pte, pteValue | tag, pteValue) == pteValue)
+                        {
+                            if (rgSize == 0)
+                            {
+                                rgStart = va;
+                            }
+
+                            rgSize += PageSize;
 
                             break;
-                        }
-                        else
-                        {
-                            if (Interlocked.CompareExchange(ref *pagePtr, pte | tag, pte) == pte)
-                            {
-                                if (rgSize == 0)
-                                {
-                                    rgStart = va;
-                                }
-
-                                rgSize += PageSize;
-
-                                break;
-                            }
                         }
                     }
                 }

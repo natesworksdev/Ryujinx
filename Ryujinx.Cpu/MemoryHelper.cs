@@ -1,9 +1,9 @@
-using System;
+﻿using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace ARMeilleure.Memory
+namespace Ryujinx.Cpu
 {
     public static class MemoryHelper
     {
@@ -28,7 +28,7 @@ namespace ARMeilleure.Memory
 
             byte[] data = new byte[size];
 
-           memory.Read((ulong)position, data);
+            memory.Read((ulong)position, data);
 
             fixed (byte* ptr = data)
             {

@@ -1,6 +1,6 @@
-using ARMeilleure.Memory;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
+using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Audio.AudioOutManager;
 using System.Text;

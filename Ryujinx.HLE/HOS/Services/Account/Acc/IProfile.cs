@@ -1,5 +1,5 @@
-using ARMeilleure.Memory;
 using Ryujinx.Common.Logging;
+using Ryujinx.Cpu;
 using Ryujinx.HLE.Utilities;
 using System.IO;
 using System.Reflection;

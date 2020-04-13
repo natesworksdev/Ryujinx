@@ -1,6 +1,5 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using System;
 
@@ -11,6 +10,8 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitMemoryHelper
     {
+        private const int PageBits = 12;
+        private const int PageMask = (1 << PageBits) - 1;
         private enum Extension
         {
             Zx,
@@ -333,7 +334,7 @@ namespace ARMeilleure.Instructions
 
             Operand pte = Const(context.Memory.PageTablePointer.ToInt64());
 
-            int bit = MemoryManager.PageBits;
+            int bit = PageBits;
 
             do
             {
@@ -361,7 +362,7 @@ namespace ARMeilleure.Instructions
 
             context.BranchIfTrue(lblSlowPath, context.ICompareLess(pte, Const(0L)));
 
-            Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, MemoryManager.PageMask));
+            Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, PageMask));
 
             if (pageOffset.Type == OperandType.I32)
             {

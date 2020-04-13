@@ -21,7 +21,7 @@ namespace ARMeilleure.Translation
         private static readonly object _lock = new object();
         private static bool _initialized;
 
-        public static void Initialize(IMemoryAllocator allocator)
+        public static void Initialize(IJitMemoryAllocator allocator)
         {
             if (_initialized) return;
             lock (_lock)

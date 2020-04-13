@@ -3,10 +3,12 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 
 using NUnit.Framework;
-
+using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using Ryujinx.Tests.Unicorn;
 
 using System;
+using MemoryPermission = Ryujinx.Tests.Unicorn.MemoryPermission;
 
 namespace Ryujinx.Tests.Cpu
 {
@@ -18,13 +20,13 @@ namespace Ryujinx.Tests.Cpu
 
         private uint _entryPoint;
 
-        private IMemoryBlock _ram;
+        private MemoryBlock _ram;
 
         private MemoryManager _memory;
 
         private ExecutionContext _context;
 
-        private Translator _translator;
+        private CpuContext _cpuContext;
 
         private static bool _unicornAvailable;
         private UnicornAArch32 _unicornEmu;
@@ -49,17 +51,14 @@ namespace Ryujinx.Tests.Cpu
 
             _entryPoint = _currAddress;
 
-            MemoryAllocator allocator = new MemoryAllocator();
-            _ram = allocator.Allocate(_size * 2);
-            _memory = new MemoryManager(allocator, _ram, 1UL << 16);
+            _ram = new MemoryBlock(_size * 2);
+            _memory = new MemoryManager(_ram, 1UL << 16);
             _memory.Map(_currAddress, 0, _size * 2);
 
-            _context = new ExecutionContext(allocator)
-            {
-                IsAarch32 = true
-            };
+            _context = CpuContext.CreateExecutionContext();
+            _context.IsAarch32 = true;
 
-            _translator = new Translator(allocator, _memory);
+            _cpuContext = new CpuContext(_memory);
 
             if (_unicornAvailable)
             {
@@ -78,7 +77,7 @@ namespace Ryujinx.Tests.Cpu
             _ram.Dispose();
             _memory = null;
             _context = null;
-            _translator = null;
+            _cpuContext = null;
             _unicornEmu = null;
         }
 
@@ -173,7 +172,7 @@ namespace Ryujinx.Tests.Cpu
 
         protected void ExecuteOpcodes(bool runUnicorn = true)
         {
-            _translator.Execute(_context, _entryPoint);
+            _cpuContext.Execute(_context, _entryPoint);
 
             if (_unicornAvailable && runUnicorn)
             {

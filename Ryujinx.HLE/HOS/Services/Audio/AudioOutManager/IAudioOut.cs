@@ -1,5 +1,5 @@
-using ARMeilleure.Memory;
 using Ryujinx.Audio;
+using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;

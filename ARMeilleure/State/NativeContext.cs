@@ -17,11 +17,11 @@ namespace ARMeilleure.State
                                       RegisterConsts.FlagsCount   * FlagSize +
                                       RegisterConsts.FpFlagsCount * FlagSize + ExtraSize;
 
-        private IMemoryBlock _block;
+        private IJitMemoryBlock _block;
 
         public IntPtr BasePtr => _block.Pointer;
 
-        public NativeContext(IMemoryAllocator allocator)
+        public NativeContext(IJitMemoryAllocator allocator)
         {
             _block = allocator.Allocate(TotalSize);
         }
