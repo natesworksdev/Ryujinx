@@ -541,11 +541,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Gets the texture descriptor for a given texture on the pool.
         /// </summary>
         /// <param name="state">Current GPU state</param>
-        /// <param name="index">Index of the texture (this is the shader "fake" handle)</param>
+        /// <param name="handle">Index of the texture (this is the shader "fake" handle)</param>
         /// <returns>Texture descriptor</returns>
-        private TextureDescriptor GetComputeTextureDescriptor(GpuState state, int index)
+        private TextureDescriptor GetComputeTextureDescriptor(GpuState state, int handle)
         {
-            return _context.Methods.TextureManager.GetComputeTextureDescriptor(state, index);
+            return _context.Methods.TextureManager.GetComputeTextureDescriptor(state, handle);
         }
 
         /// <summary>
@@ -553,11 +553,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="stageIndex">Index of the shader stage</param>
-        /// <param name="index">Index of the texture (this is the shader "fake" handle)</param>
+        /// <param name="handle">Index of the texture (this is the shader "fake" handle)</param>
         /// <returns>Texture descriptor</returns>
-        private TextureDescriptor GetGraphicsTextureDescriptor(GpuState state, int stageIndex, int index)
+        private TextureDescriptor GetGraphicsTextureDescriptor(GpuState state, int stageIndex, int handle)
         {
-            return _context.Methods.TextureManager.GetGraphicsTextureDescriptor(state, stageIndex, index);
+            return _context.Methods.TextureManager.GetGraphicsTextureDescriptor(state, stageIndex, handle);
         }
 
         /// <summary>
