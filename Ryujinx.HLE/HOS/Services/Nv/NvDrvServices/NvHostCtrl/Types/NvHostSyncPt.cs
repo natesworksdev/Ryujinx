@@ -8,8 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
     class NvHostSyncpt
     {
-        public const int EventsCount = 64;
-
         private int[]  _counterMin;
         private int[]  _counterMax;
         private bool[] _clientManaged;
@@ -17,14 +15,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private Switch _device;
 
-        public NvHostEvent[] Events { get; }
-
         private object _syncpointAllocatorLock = new object();
 
         public NvHostSyncpt(Switch device)
         {
             _device        = device;
-            Events         = new NvHostEvent[EventsCount];
             _counterMin    = new int[SynchronizationManager.MaxHardwareSyncpoints];
             _counterMax    = new int[SynchronizationManager.MaxHardwareSyncpoints];
             _clientManaged = new bool[SynchronizationManager.MaxHardwareSyncpoints];
@@ -94,139 +89,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             Interlocked.Exchange(ref _counterMax[id], value);
         }
 
-        public NvHostEvent GetFreeEvent(uint id, out uint eventIndex)
-        {
-            eventIndex = EventsCount;
-
-            uint nullIndex = EventsCount;
-
-            for (uint index = 0; index < EventsCount; index++)
-            {
-                NvHostEvent Event = Events[index];
-
-                if (Event != null)
-                {
-                    if (Event.State == NvHostEventState.Available ||
-                        Event.State == NvHostEventState.Signaled   ||
-                        Event.State == NvHostEventState.Cancelled)
-                    {
-                        eventIndex = index;
-
-                        if (Event.Fence.Id == id)
-                        {
-                            return Event;
-                        }
-                    }
-                }
-                else if (nullIndex == EventsCount)
-                {
-                    nullIndex = index;
-                }
-            }
-
-            if (nullIndex < EventsCount)
-            {
-                eventIndex = nullIndex;
-
-                RegisterEvent(eventIndex);
-
-                return Events[nullIndex];
-            }
-
-            if (eventIndex < EventsCount)
-            {
-                return Events[eventIndex];
-            }
-
-            return null;
-        }
-
-        public NvInternalResult RegisterEvent(uint eventId)
-        {
-            NvInternalResult result = UnregisterEvent(eventId);
-
-            if (result == NvInternalResult.Success)
-            {
-                Events[eventId] = new NvHostEvent(this, eventId, _device.System);
-            }
-
-            return result;
-        }
-
-        public NvInternalResult UnregisterEvent(uint eventId)
-        {
-            if (eventId >= EventsCount)
-            {
-                return NvInternalResult.InvalidInput;
-            }
-
-            NvHostEvent hostEvent = Events[eventId];
-
-            if (hostEvent == null)
-            {
-                return NvInternalResult.Success;
-            }
-
-            if (hostEvent.State == NvHostEventState.Available ||
-                hostEvent.State == NvHostEventState.Cancelled ||
-                hostEvent.State == NvHostEventState.Signaled)
-            {
-                Events[eventId] = null;
-
-                return NvInternalResult.Success;
-            }
-
-            return NvInternalResult.Busy;
-        }
-
-        public NvInternalResult KillEvent(ulong eventMask)
-        {
-            NvInternalResult result = NvInternalResult.Success;
-
-            for (uint eventId = 0; eventId < EventsCount; eventId++)
-            {
-                if ((eventMask & (1UL << (int)eventId)) != 0)
-                {
-                    NvInternalResult tmp = UnregisterEvent(eventId);
-
-                    if (tmp != NvInternalResult.Success)
-                    {
-                        result = tmp;
-                    }
-                }
-            }
-
-            return result;
-        }
-
-        public NvInternalResult SignalEvent(uint eventId)
-        {
-            if (eventId >= EventsCount)
-            {
-                return NvInternalResult.InvalidInput;
-            }
-
-            NvHostEvent hostEvent = Events[eventId];
-
-            if (hostEvent == null)
-            {
-                return NvInternalResult.InvalidInput;
-            }
-
-            NvHostEventState oldState = hostEvent.State;
-
-            if (oldState == NvHostEventState.Waiting)
-            {
-                hostEvent.State = NvHostEventState.Cancelling;
-
-                hostEvent.Cancel(_device.Gpu);
-            }
-
-            hostEvent.State = NvHostEventState.Cancelled;
-
-            return NvInternalResult.Success;
-        }
-
         public uint ReadSyncpointValue(uint id)
         {
             return UpdateMin(id);
@@ -240,30 +102,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         public uint ReadSyncpointMaxValue(uint id)
         {
             return (uint)_counterMax[id];
-        }
-
-        public KEvent QueryEvent(uint eventId)
-        {
-            uint eventSlot;
-            uint syncpointId;
-
-            if ((eventId >> 28) == 1)
-            {
-                eventSlot   = eventId & 0xFFFF;
-                syncpointId = (eventId >> 16) & 0xFFF;
-            }
-            else
-            {
-                eventSlot   = eventId & 0xFF;
-                syncpointId = eventId >> 4;
-            }
-
-            if (eventSlot >= EventsCount || Events[eventSlot].Fence.Id != syncpointId)
-            {
-                return null;
-            }
-
-            return Events[eventSlot].Event;
         }
 
         private bool IsClientManaged(uint id)

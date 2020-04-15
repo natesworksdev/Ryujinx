@@ -13,8 +13,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
     internal class NvHostCtrlDeviceFile : NvDeviceFile
     {
+        public const int EventsCount = 64;
+
         private bool          _isProductionMode;
         private Switch        _device;
+        private NvHostEvent[] _events;
 
         public NvHostCtrlDeviceFile(ServiceCtx context) : base(context)
         {
@@ -28,6 +31,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             _device = context.Device;
+
+            _events = new NvHostEvent[EventsCount];
         }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
@@ -87,9 +92,33 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return result;
         }
 
+        private KEvent QueryEvent(uint eventId)
+        {
+            uint eventSlot;
+            uint syncpointId;
+
+            if ((eventId >> 28) == 1)
+            {
+                eventSlot   = eventId & 0xFFFF;
+                syncpointId = (eventId >> 16) & 0xFFF;
+            }
+            else
+            {
+                eventSlot   = eventId & 0xFF;
+                syncpointId = eventId >> 4;
+            }
+
+            if (eventSlot >= EventsCount || _events[eventSlot].Fence.Id != syncpointId)
+            {
+                return null;
+            }
+
+            return _events[eventSlot].Event;
+        }
+
         public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
         {
-            KEvent targetEvent = _device.System.HostSyncpoint.QueryEvent(eventId);
+            KEvent targetEvent = QueryEvent(eventId);
 
             if (targetEvent != null)
             {
@@ -196,22 +225,90 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         private NvInternalResult EventRegister(ref uint userEventId)
         {
-            return _device.System.HostSyncpoint.RegisterEvent(userEventId);
+            NvInternalResult result = EventUnregister(ref userEventId);
+
+            if (result == NvInternalResult.Success)
+            {
+                _events[userEventId] = new NvHostEvent(_device.System.HostSyncpoint, userEventId, _device.System);
+            }
+
+            return result;
         }
 
         private NvInternalResult EventUnregister(ref uint userEventId)
         {
-            return _device.System.HostSyncpoint.UnregisterEvent(userEventId);
+            if (userEventId >= EventsCount)
+            {
+                return NvInternalResult.InvalidInput;
+            }
+
+            NvHostEvent hostEvent = _events[userEventId];
+
+            if (hostEvent == null)
+            {
+                return NvInternalResult.Success;
+            }
+
+            if (hostEvent.State == NvHostEventState.Available ||
+                hostEvent.State == NvHostEventState.Cancelled ||
+                hostEvent.State == NvHostEventState.Signaled)
+            {
+                _events[userEventId] = null;
+
+                return NvInternalResult.Success;
+            }
+
+            return NvInternalResult.Busy;
         }
 
         private NvInternalResult EventKill(ref ulong eventMask)
         {
-            return _device.System.HostSyncpoint.KillEvent(eventMask);
+            NvInternalResult result = NvInternalResult.Success;
+
+            for (uint eventId = 0; eventId < EventsCount; eventId++)
+            {
+                if ((eventMask & (1UL << (int)eventId)) != 0)
+                {
+                    NvInternalResult tmp = EventUnregister(ref eventId);
+
+                    if (tmp != NvInternalResult.Success)
+                    {
+                        result = tmp;
+                    }
+                }
+            }
+
+            return result;
         }
 
         private NvInternalResult EventSignal(ref uint userEventId)
         {
-            return _device.System.HostSyncpoint.SignalEvent(userEventId & ushort.MaxValue);
+            uint eventId = userEventId & ushort.MaxValue;
+
+            if (eventId >= EventsCount)
+            {
+                return NvInternalResult.InvalidInput;
+            }
+
+            NvHostEvent hostEvent = _events[eventId];
+
+            if (hostEvent == null)
+            {
+                return NvInternalResult.InvalidInput;
+            }
+
+            NvHostEventState oldState = hostEvent.State;
+
+            if (oldState == NvHostEventState.Waiting)
+            {
+                hostEvent.State = NvHostEventState.Cancelling;
+
+                hostEvent.Cancel(_device.Gpu);
+            }
+
+            hostEvent.State = NvHostEventState.Cancelled;
+
+            return NvInternalResult.Success;
         }
 
         private NvInternalResult SyncptReadMinOrMax(ref NvFence arguments, bool max)
@@ -282,16 +379,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             {
                 eventIndex = value;
 
-                if (eventIndex >= NvHostSyncpt.EventsCount)
+                if (eventIndex >= EventsCount)
                 {
                     return NvInternalResult.InvalidInput;
                 }
 
-                hostEvent = _device.System.HostSyncpoint.Events[eventIndex];
+                hostEvent = _events[eventIndex];
             }
             else
             {
-                hostEvent = _device.System.HostSyncpoint.GetFreeEvent(fence.Id, out eventIndex);
+                hostEvent = GetFreeEvent(fence.Id, out eventIndex);
             }
 
             if (hostEvent != null &&
@@ -329,6 +426,60 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return result;
         }
 
-        public override void Close() { }
+        public NvHostEvent GetFreeEvent(uint id, out uint eventIndex)
+        {
+            eventIndex = EventsCount;
+
+            uint nullIndex = EventsCount;
+
+            for (uint index = 0; index < EventsCount; index++)
+            {
+                NvHostEvent Event = _events[index];
+
+                if (Event != null)
+                {
+                    if (Event.State == NvHostEventState.Available ||
+                        Event.State == NvHostEventState.Signaled   ||
+                        Event.State == NvHostEventState.Cancelled)
+                    {
+                        eventIndex = index;
+
+                        if (Event.Fence.Id == id)
+                        {
+                            return Event;
+                        }
+                    }
+                }
+                else if (nullIndex == EventsCount)
+                {
+                    nullIndex = index;
+                }
+            }
+
+            if (nullIndex < EventsCount)
+            {
+                eventIndex = nullIndex;
+
+                EventRegister(ref eventIndex);
+
+                return _events[nullIndex];
+            }
+
+            if (eventIndex < EventsCount)
+            {
+                return _events[eventIndex];
+            }
+
+            return null;
+        }
+
+        public override void Close()
+        {
+            // Kill all events when closing the channel
+
+            ulong killMask = ulong.MaxValue;
+
+            EventKill(ref killMask);
+        }
     }
 }
