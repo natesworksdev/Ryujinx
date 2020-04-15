@@ -52,10 +52,10 @@ namespace ARMeilleure.State
 
         public T As<T>() where T : unmanaged
         {
-            return Get<T>(0);
+            return Extract<T>(0);
         }
 
-        public T Get<T>(int index) where T : unmanaged
+        public T Extract<T>(int index) where T : unmanaged
         {
             if ((uint)index >= GetElementCount<T>())
                 ThrowIndexOutOfRange();
@@ -63,7 +63,7 @@ namespace ARMeilleure.State
             return Unsafe.Add(ref Unsafe.As<V128, T>(ref this), index);
         }
 
-        public void Set<T>(int index, T value) where T : unmanaged
+        public void Insert<T>(int index, T value) where T : unmanaged
         {
             if ((uint)index >= GetElementCount<T>())
                 ThrowIndexOutOfRange();

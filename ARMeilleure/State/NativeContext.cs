@@ -67,8 +67,8 @@ namespace ARMeilleure.State
 
             int offset = RegisterConsts.IntRegsCount * IntSize + index * VecSize;
 
-            Marshal.WriteInt64(BasePtr, offset + 0, value.Get<long>(0));
-            Marshal.WriteInt64(BasePtr, offset + 8, value.Get<long>(1));
+            Marshal.WriteInt64(BasePtr, offset + 0, value.Extract<long>(0));
+            Marshal.WriteInt64(BasePtr, offset + 8, value.Extract<long>(1));
         }
 
         public bool GetPstateFlag(PState flag)
