@@ -4,6 +4,7 @@ namespace Ryujinx.Graphics.GAL
     {
         public bool Enable { get; }
 
+        public ColorF      ConstantBlend  { get; }
         public BlendOp     ColorOp        { get; }
         public BlendFactor ColorSrcFactor { get; }
         public BlendFactor ColorDstFactor { get; }
@@ -13,6 +14,7 @@ namespace Ryujinx.Graphics.GAL
 
         public BlendDescriptor(
             bool        enable,
+            ColorF      constantBlend,
             BlendOp     colorOp,
             BlendFactor colorSrcFactor,
             BlendFactor colorDstFactor,
@@ -21,6 +23,7 @@ namespace Ryujinx.Graphics.GAL
             BlendFactor alphaDstFactor)
         {
             Enable         = enable;
+            ConstantBlend  = constantBlend;
             ColorOp        = colorOp;
             ColorSrcFactor = colorSrcFactor;
             ColorDstFactor = colorDstFactor;

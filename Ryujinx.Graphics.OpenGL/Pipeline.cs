@@ -35,6 +35,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         private bool _scissor0Enable = false;
 
+        ColorF _constantBlend = new ColorF(0,0,0,0);
+
         internal Pipeline()
         {
             _rasterizerDiscard = false;
@@ -478,11 +480,6 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void SetBlendColor(ColorF color)
-        {
-            GL.BlendColor(color.Red, color.Green, color.Blue, color.Alpha);
-        }
-
         public void SetBlendState(int index, BlendDescriptor blend)
         {
             if (!blend.Enable)
@@ -503,6 +500,17 @@ namespace Ryujinx.Graphics.OpenGL
                 (BlendingFactorDest)blend.ColorDstFactor.Convert(),
                 (BlendingFactorSrc)blend.AlphaSrcFactor.Convert(),
                 (BlendingFactorDest)blend.AlphaDstFactor.Convert());
+
+            if (_constantBlend != blend.ConstantBlend)
+            {
+                _constantBlend = blend.ConstantBlend;
+
+                GL.BlendColor(
+                    blend.ConstantBlend.Red,
+                    blend.ConstantBlend.Green,
+                    blend.ConstantBlend.Blue,
+                    blend.ConstantBlend.Alpha);
+            }
 
             GL.Enable(IndexedEnableCap.Blend, index);
         }

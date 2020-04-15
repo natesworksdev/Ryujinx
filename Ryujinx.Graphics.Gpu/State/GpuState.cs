@@ -141,6 +141,16 @@ namespace Ryujinx.Graphics.Gpu.State
             {
                 _backingMemory[(int)MethodOffset.RtColorMask + index] = 0x1111;
             }
+
+            // Default blend states
+            var defaultBlendStateCommon = MemoryMarshal.Cast<BlendStateCommon, int>(MemoryMarshal.CreateReadOnlySpan(ref BlendStateCommon.Default, 1));
+            defaultBlendStateCommon.CopyTo(_backingMemory.AsSpan().Slice((int)MethodOffset.BlendStateCommon, defaultBlendStateCommon.Length));
+
+            var defaultBlendState = MemoryMarshal.Cast<BlendState, int>(MemoryMarshal.CreateReadOnlySpan(ref BlendState.Default, 1));
+            for (int index = 0; index < Constants.TotalRenderTargets; index++)
+            {
+                defaultBlendState.CopyTo(_backingMemory.AsSpan().Slice((int)MethodOffset.BlendState + index * defaultBlendState.Length, defaultBlendState.Length));
+            }
         }
 
         /// <summary>
@@ -268,6 +278,31 @@ namespace Ryujinx.Graphics.Gpu.State
             _registers[(int)m3].Modified = false;
             _registers[(int)m4].Modified = false;
             _registers[(int)m5].Modified = false;
+
+            return modified;
+        }
+
+        public bool QueryModified(
+            MethodOffset m1,
+            MethodOffset m2,
+            MethodOffset m3,
+            MethodOffset m4,
+            MethodOffset m5,
+            MethodOffset m6)
+        {
+            bool modified = _registers[(int)m1].Modified ||
+                            _registers[(int)m2].Modified ||
+                            _registers[(int)m3].Modified ||
+                            _registers[(int)m4].Modified ||
+                            _registers[(int)m5].Modified ||
+                            _registers[(int)m6].Modified;
+
+            _registers[(int)m1].Modified = false;
+            _registers[(int)m2].Modified = false;
+            _registers[(int)m3].Modified = false;
+            _registers[(int)m4].Modified = false;
+            _registers[(int)m5].Modified = false;
+            _registers[(int)m6].Modified = false;
 
             return modified;
         }

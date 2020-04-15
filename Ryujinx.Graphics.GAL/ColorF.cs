@@ -14,5 +14,11 @@ namespace Ryujinx.Graphics.GAL
             Blue  = blue;
             Alpha = alpha;
         }
+
+        public static bool operator ==(ColorF l, ColorF r) => l.Red == r.Red && 
+                                                              l.Green == r.Green && 
+                                                              l.Blue == r.Blue && 
+                                                              l.Alpha == r.Alpha;
+        public static bool operator !=(ColorF l, ColorF r) => !(l == r);
     }
 }
