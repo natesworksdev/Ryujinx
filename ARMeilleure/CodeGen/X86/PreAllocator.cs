@@ -22,22 +22,16 @@ namespace ARMeilleure.CodeGen.X86
 
             for (BasicBlock block = cctx.Cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Node nextNode;
-
-                for (Node node = block.Operations.First; node != null; node = nextNode)
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
-                    nextNode = node.ListNext;
-
                     if (!(node is Operation operation))
                     {
                         continue;
                     }
 
                     HandleConstantCopy(block.Operations, node, operation);
-
-                    HandleSameDestSrc1Copy(block.Operations, node, operation);
-
-                    HandleFixedRegisterCopy(block.Operations, node, operation);
+                    node = HandleDestructiveRegCopy(block.Operations, node, operation);
+                    node = HandleConstrainedRegCopy(block.Operations, node, operation);
 
                     switch (operation.Instruction)
                     {
@@ -71,17 +65,17 @@ namespace ARMeilleure.CodeGen.X86
                             break;
 
                         case Instruction.ConvertToFPUI:
-                            HandleConvertToFPUI(block.Operations, node, operation);
+                            node = HandleConvertToFPUI(block.Operations, node, operation);
                             break;
 
                         case Instruction.LoadArgument:
                             if (callConv == CallConvName.Windows)
                             {
-                                HandleLoadArgumentWindowsAbi(cctx, block.Operations, node, preservedArgs, operation);
+                                node = HandleLoadArgumentWindowsAbi(cctx, block.Operations, node, preservedArgs, operation);
                             }
                             else /* if (callConv == CallConvName.SystemV) */
                             {
-                                HandleLoadArgumentSystemVAbi(cctx, block.Operations, node, preservedArgs, operation);
+                                node = HandleLoadArgumentSystemVAbi(cctx, block.Operations, node, preservedArgs, operation);
                             }
                             break;
 
@@ -206,7 +200,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static Node HandleFixedRegisterCopy(IntrusiveList<Node> nodes, Node node, Operation operation)
+        private static Node HandleConstrainedRegCopy(IntrusiveList<Node> nodes, Node node, Operation operation)
         {
             Operand dest = operation.Destination;
 
@@ -248,14 +242,20 @@ namespace ARMeilleure.CodeGen.X86
                         // Handle the many restrictions of the compare and exchange (32/64) instruction:
                         // - The expected value should be in (E/R)AX.
                         // - The value at the memory location is loaded to (E/R)AX.
-
                         Operand expected = operation.GetSource(1);
+                        Operand newValue = operation.GetSource(2);
 
                         Operand rax = Gpr(X86Register.Rax, expected.Type);
 
                         nodes.AddBefore(node, Operation(Instruction.Copy, rax, expected));
 
-                        operation.SetSources(new Operand[] { operation.GetSource(0), rax, operation.GetSource(2) });
+                        // We need to store the new value into a temp, since it may
+                        // be a constant, and this instruction does not support immediate operands.
+                        Operand temp = Local(newValue.Type);
+
+                        nodes.AddBefore(node, Operation(Instruction.Copy, temp, newValue));
+
+                        operation.SetSources(new Operand[] { operation.GetSource(0), rax, temp });
 
                         node = nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
 
@@ -391,7 +391,7 @@ namespace ARMeilleure.CodeGen.X86
             return node;
         }
 
-        private static Node HandleSameDestSrc1Copy(IntrusiveList<Node> nodes, Node node, Operation operation)
+        private static Node HandleDestructiveRegCopy(IntrusiveList<Node> nodes, Node node, Operation operation)
         {
             if (operation.Destination == null || operation.SourcesCount == 0)
             {
@@ -867,9 +867,10 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleTailcallSystemVAbi(IntrusiveList<Node> nodes, StackAllocator stackAlloc, Node node, Operation operation)
         {
-            List<Operand> sources = new List<Operand>();
-
-            sources.Add(operation.GetSource(0));
+            List<Operand> sources = new List<Operand>
+            {
+                operation.GetSource(0)
+            };
 
             int argsCount = operation.SourcesCount - 1;
 
@@ -982,7 +983,7 @@ namespace ARMeilleure.CodeGen.X86
             operation.SetSources(sources);
         }
 
-        private static void HandleLoadArgumentWindowsAbi(
+        private static Node HandleLoadArgumentWindowsAbi(
             CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
@@ -1035,17 +1036,20 @@ namespace ARMeilleure.CodeGen.X86
                     ? Instruction.Load
                     : Instruction.Copy, dest, preservedArgs[index]);
 
-                nodes.AddBefore(node, argCopyOp);
+                Node newNode = nodes.AddBefore(node, argCopyOp);
 
                 Delete(nodes, node, operation);
+
+                return newNode;
             }
             else
             {
                 // TODO: Pass on stack.
+                return node;
             }
         }
 
-        private static void HandleLoadArgumentSystemVAbi(
+        private static Node HandleLoadArgumentSystemVAbi(
             CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
@@ -1134,13 +1138,16 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation argCopyOp = Operation(Instruction.Copy, dest, preservedArgs[index]);
 
-                nodes.AddBefore(node, argCopyOp);
+                Node newNode = nodes.AddBefore(node, argCopyOp);
 
                 Delete(nodes, node, operation);
+
+                return newNode;
             }
             else
             {
                 // TODO: Pass on stack.
+                return node;
             }
         }
 
