@@ -25,7 +25,7 @@ namespace ARMeilleure.State
         /// Initializes a new instance of the <see cref="V128"/> struct with the specified <see cref="double"/> value
         /// as a scalar.
         /// </summary>
-        /// <param name="value">Scalar value.</param>
+        /// <param name="value">Scalar value</param>
         public V128(double value) : this(value, 0) { }
 
         /// <summary>
