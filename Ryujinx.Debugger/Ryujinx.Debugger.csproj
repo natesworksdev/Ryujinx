@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <Configurations>Debug;Release;Profile Release;Profile Debug</Configurations>
   </PropertyGroup>
 
@@ -24,7 +24,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="GtkSharp" Version="3.22.25.56" />
+    <PackageReference Include="GtkSharp" Version="3.22.25.74" />
     <PackageReference Include="SkiaSharp.NativeAssets.Linux" Version="1.68.1.1" />
     <PackageReference Include="SkiaSharp.Views.Gtk3" Version="1.68.1.1" />
   </ItemGroup>
