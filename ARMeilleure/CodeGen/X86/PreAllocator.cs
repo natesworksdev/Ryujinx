@@ -29,7 +29,7 @@ namespace ARMeilleure.CodeGen.X86
                         continue;
                     }
 
-                    HandleConstantCopy(block.Operations, node, operation);
+                    HandleConstantRegCopy(block.Operations, node, operation);
                     node = HandleDestructiveRegCopy(block.Operations, node, operation);
                     node = HandleConstrainedRegCopy(block.Operations, node, operation);
 
@@ -119,7 +119,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static void HandleConstantCopy(IntrusiveList<Node> nodes, Node node, Operation operation)
+        private static void HandleConstantRegCopy(IntrusiveList<Node> nodes, Node node, Operation operation)
         {
             if (operation.SourcesCount == 0 || IsIntrinsic(operation.Instruction))
             {
@@ -683,7 +683,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation storeOp = Operation(Instruction.Store, null, stackAddr, source);
 
-                    HandleConstantCopy(nodes, nodes.AddBefore(node, storeOp), storeOp);
+                    HandleConstantRegCopy(nodes, nodes.AddBefore(node, storeOp), storeOp);
 
                     operation.SetSource(index, stackAddr);
                 }
@@ -709,7 +709,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
+                HandleConstantRegCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
 
                 sources[1 + retArgs + index] = argReg;
             }
@@ -724,7 +724,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation spillOp = Operation(Instruction.SpillArg, null, offset, source);
 
-                HandleConstantCopy(nodes, nodes.AddBefore(node, spillOp), spillOp);
+                HandleConstantRegCopy(nodes, nodes.AddBefore(node, spillOp), spillOp);
             }
 
             if (dest != null)
@@ -818,7 +818,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
+                    HandleConstantRegCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
 
                     sources.Add(argReg);
                 }
@@ -828,7 +828,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation spillOp = Operation(Instruction.SpillArg, null, offset, source);
 
-                    HandleConstantCopy(nodes, nodes.AddBefore(node, spillOp), spillOp);
+                    HandleConstantRegCopy(nodes, nodes.AddBefore(node, spillOp), spillOp);
 
                     stackOffset += source.Type.GetSizeInBytes();
                 }
@@ -916,7 +916,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
+                    HandleConstantRegCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
 
                     sources.Add(argReg);
                 } 
@@ -964,7 +964,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                HandleConstantCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
+                HandleConstantRegCopy(nodes, nodes.AddBefore(node, copyOp), copyOp);
 
                 sources[1 + index] = argReg;
             }
