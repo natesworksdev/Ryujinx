@@ -24,8 +24,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 case Condition.ResultNonZero:
                     return CounterNonZero(condState.Address.Pack());
                 case Condition.Equal:
+                    return CounterCompare(condState.Address.Pack(), true);
                 case Condition.NotEqual:
-                    return CounterCompare(condState.Address.Pack(), condState.Condition);
+                    return CounterCompare(condState.Address.Pack(), false);
             }
 
             Logger.PrintWarning(LogClass.Gpu, $"Invalid conditional render condition \"{condState.Condition}\".");
@@ -52,9 +53,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// Checks if the counter at a given GPU memory address passes a specified equality comparison.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address</param>
-        /// <param name="cond">Equality condition</param>
+        /// <param name="isEqual">True to check if the values are equal, false to check if they are not equal</param>
         /// <returns>True if the condition is met, false otherwise</returns>
-        private bool CounterCompare(ulong gpuVa, Condition cond)
+        private bool CounterCompare(ulong gpuVa, bool isEqual)
         {
             if (!FindAndFlush(gpuVa) && !FindAndFlush(gpuVa + 16))
             {
@@ -64,7 +65,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             ulong x = _context.MemoryAccessor.ReadUInt64(gpuVa);
             ulong y = _context.MemoryAccessor.ReadUInt64(gpuVa + 16);
 
-            return cond == Condition.Equal ? x == y : x != y;
+            return isEqual ? x == y : x != y;
         }
 
         /// <summary>
