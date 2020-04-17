@@ -126,6 +126,11 @@ namespace Ryujinx.Cpu
         /// <param name="data">Data to be written</param>
         public void Write(ulong va, ReadOnlySpan<byte> data)
         {
+            if (data.Length == 0)
+            {
+                return;
+            }
+
             MarkRegionAsModified(va, (ulong)data.Length);
 
             if (IsContiguous(va, data.Length))
@@ -170,6 +175,11 @@ namespace Ryujinx.Cpu
         /// <returns>A read-only span of the data</returns>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size)
         {
+            if (size == 0)
+            {
+                return ReadOnlySpan<byte>.Empty;
+            }
+
             if (IsContiguous(va, size))
             {
                 return _backingMemory.GetSpan(GetPhysicalAddressInternal(va), size);
@@ -249,6 +259,11 @@ namespace Ryujinx.Cpu
 
         private void ReadImpl(ulong va, Span<byte> data)
         {
+            if (data.Length == 0)
+            {
+                return;
+            }
+
             int offset = 0, size;
 
             if ((va & PageMask) != 0)
