@@ -519,5 +519,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             return ResultCode.Success;
         }
+
+        public static void Destroy()
+        {
+            foreach (object entry in _deviceFileIdRegistry.Values)
+            {
+                NvDeviceFile deviceFile = (NvDeviceFile)entry;
+
+                deviceFile.Close();
+            }
+
+            _deviceFileIdRegistry.Clear();
+        }
     }
 }

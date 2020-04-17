@@ -2,10 +2,11 @@ using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Synchronization;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
-    class NvHostEvent
+    class NvHostEvent : IDisposable
     {
         public NvFence          Fence;
         public NvHostEventState State;
@@ -89,6 +90,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             }
 
             return res;
+        }
+
+        public void Dispose()
+        {
+            Event.ReadableEvent.DecrementReferenceCount();
+            Event.WritableEvent.DecrementReferenceCount();
         }
     }
 }

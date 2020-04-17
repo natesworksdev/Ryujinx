@@ -8,6 +8,7 @@ using Ryujinx.HLE.HOS.Services.Settings;
 
 using System;
 using System.Text;
+using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 {
@@ -108,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 syncpointId = eventId >> 4;
             }
 
-            if (eventSlot >= EventsCount || _events[eventSlot].Fence.Id != syncpointId)
+            if (eventSlot >= EventsCount || _events[eventSlot] == null || _events[eventSlot].Fence.Id != syncpointId)
             {
                 return null;
             }
@@ -253,6 +254,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                 hostEvent.State == NvHostEventState.Cancelled ||
                 hostEvent.State == NvHostEventState.Signaled)
             {
+                _events[userEventId].Dispose();
                 _events[userEventId] = null;
 
                 return NvInternalResult.Success;
@@ -475,11 +477,42 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public override void Close()
         {
-            // Kill all events when closing the channel
+            Logger.PrintWarning(LogClass.ServiceNv, "Closing channel");
 
-            ulong killMask = ulong.MaxValue;
+            // If the device file need to be closed, cancel all user events and dispose events.
+            for (int i = 0; i < _events.Length; i++)
+            {
+                NvHostEvent evnt = _events[i];
 
-            EventKill(ref killMask);
+                if (evnt != null)
+                {
+                    if (evnt.State == NvHostEventState.Waiting)
+                    {
+                        evnt.State = NvHostEventState.Cancelling;
+
+                        evnt.Cancel(_device.Gpu);
+                    }
+                    else if (evnt.State == NvHostEventState.Signaling)
+                    {
+                        // Wait at max 9ms if the guest app is trying to signal the event while closing it..
+                        int retryCount = 0;
+                        do
+                        {
+                            if (retryCount++ > 9)
+                            {
+                                break;
+                            }
+
+                            // TODO: This should be handled by the kernel (reschedule the current thread ect), waiting for Kernel decoupling work.
+                            Thread.Sleep(1);
+                        } while (evnt.State != NvHostEventState.Signaled);
+                    }
+
+                    evnt.Dispose();
+
+                   _events[i] = null;
+                }
+            }
         }
     }
 }

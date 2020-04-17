@@ -40,6 +40,7 @@ using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+using Ryujinx.HLE.HOS.Services.Nv;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -853,6 +854,10 @@ namespace Ryujinx.HLE.HOS
                 {
                     Device.VsyncEvent.Set();
                 }
+
+                // Destroy nvservices channels as KThread could be waiting on some user events.
+                // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
+                INvDrvServices.Destroy();
 
                 // This is needed as the IPC Dummy KThread is also counted in the ThreadCounter.
                 ThreadCounter.Signal();
