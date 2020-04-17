@@ -143,13 +143,11 @@ namespace Ryujinx.Graphics.Gpu.State
             }
 
             // Default blend states
-            var defaultBlendStateCommon = MemoryMarshal.Cast<BlendStateCommon, int>(MemoryMarshal.CreateReadOnlySpan(ref BlendStateCommon.Default, 1));
-            defaultBlendStateCommon.CopyTo(_backingMemory.AsSpan().Slice((int)MethodOffset.BlendStateCommon, defaultBlendStateCommon.Length));
+            Set(MethodOffset.BlendStateCommon, BlendStateCommon.Default);
 
-            var defaultBlendState = MemoryMarshal.Cast<BlendState, int>(MemoryMarshal.CreateReadOnlySpan(ref BlendState.Default, 1));
             for (int index = 0; index < Constants.TotalRenderTargets; index++)
             {
-                defaultBlendState.CopyTo(_backingMemory.AsSpan().Slice((int)MethodOffset.BlendState + index * defaultBlendState.Length, defaultBlendState.Length));
+                Set(MethodOffset.BlendState, index, BlendState.Default);
             }
         }
 
@@ -335,6 +333,37 @@ namespace Ryujinx.Graphics.Gpu.State
         public T Get<T>(MethodOffset offset) where T : struct
         {
             return MemoryMarshal.Cast<int, T>(_backingMemory.AsSpan().Slice((int)offset))[0];
+        }
+
+        /// <summary>
+        /// Sets indexed data to a given register offset.
+        /// </summary>
+        /// <typeparam name="T">Type of the data</typeparam>
+        /// <param name="offset">Register offset</param>
+        /// <param name="index">Index for indexed data</param>
+        /// <param name="data">The data to set</param>
+        public void Set<T>(MethodOffset offset, int index, T data) where T : struct
+        {
+            Register register = _registers[(int)offset];
+
+            if ((uint)index >= register.Count)
+            {
+                throw new ArgumentOutOfRangeException(nameof(index));
+            }
+
+            Set(offset + index * register.Stride, data);
+        }
+
+        /// <summary>
+        /// Sets data to a given register offset.
+        /// </summary>
+        /// <typeparam name="T">Type of the data</typeparam>
+        /// <param name="offset">Register offset</param>
+        /// <param name="data">The data to set</param>
+        public void Set<T>(MethodOffset offset, T data) where T : struct
+        {
+            ReadOnlySpan<int> intSpan = MemoryMarshal.Cast<T, int>(MemoryMarshal.CreateReadOnlySpan(ref data, 1));
+            intSpan.CopyTo(_backingMemory.AsSpan().Slice((int)offset, intSpan.Length));
         }
     }
 }
