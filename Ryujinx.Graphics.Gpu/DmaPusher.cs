@@ -115,7 +115,7 @@ namespace Ryujinx.Graphics.Gpu
 
         /// <summary>
         /// Push a GPFIFO entry in the form of a prefetched command buffer.
-        /// This is used by nvservices to handle special cases.
+        /// It is intended to be used by nvservices to handle special cases.
         /// </summary>
         /// <param name="commandBuffer">The command buffer containing the prefetched commands</param>
         public void PushHostCommandBuffer(int[] commandBuffer)
@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Create a CommandBuffer from a GPFIFO entry.
         /// </summary>
         /// <param name="entry">The GPFIFO entry</param>
-        /// <returns></returns>
+        /// <returns>A new CommandBuffer based on the GPFIFO entry</returns>
         private CommandBuffer CreateCommandBuffer(ulong entry)
         {
             ulong length       = (entry >> 42) & 0x1fffff;

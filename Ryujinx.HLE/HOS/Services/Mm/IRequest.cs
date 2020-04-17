@@ -71,10 +71,10 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
             Logger.PrintStub(LogClass.ServiceMm, new { operationType });
 
-            MultiMediaSession session = GetSessionByType(operationType);
-
             lock (_sessionListLock)
             {
+                MultiMediaSession session = GetSessionByType(operationType);
+
                 uint currentValue = session == null ? 0 : session.CurrentValue;
 
                 context.ResponseData.Write(currentValue);
@@ -142,10 +142,10 @@ namespace Ryujinx.HLE.HOS.Services.Mm
 
             Logger.PrintStub(LogClass.ServiceMm, new { id });
 
-            MultiMediaSession session = GetSessionById(id);
-
             lock (_sessionListLock)
             {
+                MultiMediaSession session = GetSessionById(id);
+
                 uint currentValue = session == null ? 0 : session.CurrentValue;
 
                 context.ResponseData.Write(currentValue);

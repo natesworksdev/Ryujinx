@@ -2,10 +2,10 @@
 {
     class MultiMediaSession
     {
-        public MultiMediaOperationType Type { get; private set; }
+        public MultiMediaOperationType Type { get; }
 
-        public bool IsAutoClearEvent { get; private set; }
-        public uint Id               { get; private set; }
+        public bool IsAutoClearEvent { get; }
+        public uint Id               { get; }
         public uint CurrentValue     { get; private set; }
 
         public MultiMediaSession(uint id, MultiMediaOperationType type, bool isAutoClearEvent)

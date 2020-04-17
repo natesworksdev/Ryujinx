@@ -5,7 +5,7 @@ using System.Threading;
 namespace Ryujinx.Graphics.Gpu.Synchronization
 {
     /// <summary>
-    /// Represent GPU hardware syncpoint.
+    /// Represents GPU hardware syncpoint.
     /// </summary>
     class Syncpoint
     {
