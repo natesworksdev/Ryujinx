@@ -4,7 +4,7 @@ namespace Ryujinx.Common
 {
     public static class PerformanceCounter
     {
-        private static double _ticksToNs;
+        private static readonly double _ticksToNs = 1000000000.0 / Stopwatch.Frequency;
 
         /// <summary>
         /// Represents the number of ticks in 1 day.
@@ -34,39 +34,17 @@ namespace Ryujinx.Common
         /// <summary>
         /// Gets the number of milliseconds elapsed since the system started.
         /// </summary>
-        public static long ElapsedTicks
-        {
-            get
-            {
-                return Stopwatch.GetTimestamp();
-            }
-        }
+        public static long ElapsedTicks => Stopwatch.GetTimestamp();
 
         /// <summary>
         /// Gets the number of milliseconds elapsed since the system started.
         /// </summary>
-        public static long ElapsedMilliseconds
-        {
-            get
-            {
-                long timestamp = Stopwatch.GetTimestamp();
-
-                return timestamp / TicksPerMillisecond;
-            }
-        }
+        public static long ElapsedMilliseconds => Stopwatch.GetTimestamp() / TicksPerMillisecond;
 
         /// <summary>
         /// Gets the number of nanoseconds elapsed since the system started.
         /// </summary>
-        public static long ElapsedNanoseconds
-        {
-            get
-            {
-                long timestamp = Stopwatch.GetTimestamp();
-
-                return (long)(timestamp * _ticksToNs);
-            }
-        }
+        public static long ElapsedNanoseconds => (long)(Stopwatch.GetTimestamp() * _ticksToNs);
 
         static PerformanceCounter()
         {
@@ -75,8 +53,6 @@ namespace Ryujinx.Common
             TicksPerMinute      = TicksPerSecond * 60;
             TicksPerHour        = TicksPerMinute * 60;
             TicksPerDay         = TicksPerHour * 24;
-
-            _ticksToNs = 1000000000.0 / (double)Stopwatch.Frequency;
         }
     }
 }

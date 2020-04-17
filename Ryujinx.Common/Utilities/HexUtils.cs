@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Text;
 
 namespace Ryujinx.Common
@@ -7,13 +8,16 @@ namespace Ryujinx.Common
     {
         private static readonly char[] HexChars = "0123456789ABCDEF".ToCharArray();
 
+        public static char ToHexChar(int value) => HexChars[value];
+
         private const int HexTableColumnWidth = 8;
         private const int HexTableColumnSpace = 3;
 
         // Modified for Ryujinx
         // Original by Pascal Ganaye - CPOL License
         // https://www.codeproject.com/Articles/36747/Quick-and-Dirty-HexDump-of-a-Byte-Array
-        public static string HexTable(byte[] bytes, int bytesPerLine = 16)
+        [return: NotNull]
+        public static string HexTable([MaybeNull] byte[] bytes, int bytesPerLine = 16)
         {
             if (bytes == null)
             {
@@ -35,7 +39,7 @@ namespace Ryujinx.Common
                 + bytesPerLine
                 + Environment.NewLine.Length;
 
-            char[] line = (new String(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
+            char[] line = (new string(' ', lineLength - Environment.NewLine.Length) + Environment.NewLine).ToCharArray();
 
             int expectedLines = (bytesLength + bytesPerLine - 1) / bytesPerLine;
 

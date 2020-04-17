@@ -8,7 +8,7 @@ namespace Ryujinx.Common.Logging
 {
     public static class Logger
     {
-        private static Stopwatch m_Time;
+        private static readonly Stopwatch m_Time;
 
         private static readonly bool[] m_EnabledLevels;
         private static readonly bool[] m_EnabledClasses;
@@ -19,8 +19,8 @@ namespace Ryujinx.Common.Logging
 
         static Logger()
         {
-            m_EnabledLevels  = new bool[Enum.GetNames(typeof(LogLevel)).Length];
-            m_EnabledClasses = new bool[Enum.GetNames(typeof(LogClass)).Length];
+            m_EnabledLevels  = new bool[EnumUtils.GetCount<LogLevel>()];
+            m_EnabledClasses = new bool[EnumUtils.GetCount<LogClass>()];
 
             m_EnabledLevels[(int)LogLevel.Stub]      = true;
             m_EnabledLevels[(int)LogLevel.Info]      = true;

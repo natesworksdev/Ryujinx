@@ -19,15 +19,15 @@ namespace Ryujinx.Common.Logging
 
     public class AsyncLogTargetWrapper : ILogTarget
     {
-        private ILogTarget _target;
+        private readonly ILogTarget _target;
 
-        private Thread _messageThread;
+        private readonly Thread _messageThread;
 
-        private BlockingCollection<LogEventArgs> _messageQueue;
+        private readonly BlockingCollection<LogEventArgs> _messageQueue;
 
         private readonly int _overflowTimeout;
 
-        string ILogTarget.Name { get => _target.Name; }
+        string ILogTarget.Name => _target.Name;
 
         public AsyncLogTargetWrapper(ILogTarget target)
             : this(target, -1, AsyncLogTargetOverflowAction.Block)

@@ -9,7 +9,7 @@ namespace ARMeilleure.Common
         private const int IntSize = 64;
         private const int IntMask = IntSize - 1;
 
-        private List<long> _masks;
+        private readonly List<long> _masks;
 
         private int _enumIndex;
         private long _enumMask;

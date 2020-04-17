@@ -416,7 +416,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void AppendHelperFunction(CodeGenContext context, string filename)
         {
-            string code = EmbeddedResources.ReadAllText(filename);
+            string code = EmbeddedResourcesUtils.ReadAllText(filename);
 
             context.AppendLine(code.Replace("\t", CodeGenContext.Tab));
             context.AppendLine();

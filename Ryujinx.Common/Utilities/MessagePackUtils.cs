@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ryujinx.Common.Utilities
 {
-    public static class MessagePackObjectFormatter
+    public static class MessagePackUtils
     {
         public static string ToString(this MessagePackObject obj, bool pretty)
         {
@@ -45,43 +45,42 @@ namespace Ryujinx.Common.Utilities
             {
                 var literal = obj.ToObject();
 
-                if (literal is String)
+                switch (literal)
                 {
-                    builder.AppendQuotedString(obj.AsStringUtf16());
-                }
-                else if (literal is byte[] byteArray)
-                {
-                    FormatByteArray(byteArray, builder);
-                }
-                else if (literal is MessagePackExtendedTypeObject extObject)
-                {
-                    builder.Append('{');
+                    case string _:
+                        builder.AppendQuotedString(obj.AsStringUtf16());
+                        break;
+                    case byte[] byteArray:
+                        FormatByteArray(byteArray, builder);
+                        break;
+                    case MessagePackExtendedTypeObject extObject:
+                        builder.Append('{');
 
-                    // Indent
-                    builder.IncreaseIndent()
-                           .AppendLine();
+                        // Indent
+                        builder.IncreaseIndent()
+                               .AppendLine();
 
-                    // Print TypeCode field
-                    builder.AppendQuotedString("TypeCode")
-                           .Append(": ")
-                           .Append(extObject.TypeCode)
-                           .AppendLine(",");
+                        // Print TypeCode field
+                        builder.AppendQuotedString("TypeCode")
+                               .Append(": ")
+                               .Append(extObject.TypeCode)
+                               .AppendLine(",");
 
-                    // Print Value field
-                    builder.AppendQuotedString("Value")
-                           .Append(": ");
+                        // Print Value field
+                        builder.AppendQuotedString("Value")
+                               .Append(": ");
 
-                    FormatByteArrayAsString(extObject.GetBody(), builder, true);
+                        FormatByteArrayAsString(extObject.GetBody(), builder, true);
 
-                    // Unindent
-                    builder.DecreaseIndent()
-                           .AppendLine();
+                        // Unindent
+                        builder.DecreaseIndent()
+                               .AppendLine();
 
-                    builder.Append('}');
-                }
-                else
-                {
-                    builder.Append(literal);
+                        builder.Append('}');
+                        break;
+                    default:
+                        builder.Append(literal);
+                        break;
                 }
             }
         }
@@ -93,8 +92,8 @@ namespace Ryujinx.Common.Utilities
             foreach (var b in arr)
             {
                 builder.Append("0x");
-                builder.Append(ToHexChar(b >> 4));
-                builder.Append(ToHexChar(b & 0xF));
+                builder.Append(HexUtils.ToHexChar(b >> 4));
+                builder.Append(HexUtils.ToHexChar(b & 0xF));
                 builder.Append(", ");
             }
 
@@ -115,8 +114,8 @@ namespace Ryujinx.Common.Utilities
 
             foreach (var b in arr)
             {
-                builder.Append(ToHexChar(b >> 4));
-                builder.Append(ToHexChar(b & 0xF));
+                builder.Append(HexUtils.ToHexChar(b >> 4));
+                builder.Append(HexUtils.ToHexChar(b & 0xF));
             }
 
             builder.Append('"');
@@ -173,25 +172,13 @@ namespace Ryujinx.Common.Utilities
             builder.Append(" ]");
         }
 
-        private static char ToHexChar(int b)
-        {
-            if (b < 10)
-            {
-                return unchecked((char)('0' + b));
-            }
-            else
-            {
-                return unchecked((char)('A' + (b - 10)));
-            }
-        }
-
         internal class IndentedStringBuilder
         {
             const string DefaultIndent = "    ";
 
             private int _indentCount = 0;
             private int _newLineIndex = 0;
-            private StringBuilder _builder;
+            private readonly StringBuilder _builder;
 
             public string IndentString { get; set; } = DefaultIndent;
 
@@ -244,9 +231,7 @@ namespace Ryujinx.Common.Utilities
 
             public IndentedStringBuilder Append(object value)
             {
-                this.Append(value.ToString());
-
-                return this;
+                return Append(value.ToString());
             }
 
             public IndentedStringBuilder AppendQuotedString(string value)
@@ -265,7 +250,9 @@ namespace Ryujinx.Common.Utilities
                 _builder.AppendLine();
 
                 for (int i = 0; i < _indentCount; i++)
+                {
                     _builder.Append(IndentString);
+                }
 
                 return this;
             }

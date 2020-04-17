@@ -56,6 +56,17 @@ namespace ARMeilleure.Memory
             IntPtr         dwSize,
             AllocationType dwFreeType);
 
+        [DllImport("kernel32.dll")]
+        private static extern IntPtr GetCurrentProcess();
+
+        [DllImport("kernel32.dll")]
+        private static extern bool FlushInstructionCache(
+            IntPtr hProcess,
+            IntPtr lpBaseAddress,
+            IntPtr dwSize);
+
+        private static readonly IntPtr CurrentProcess = GetCurrentProcess();
+
         public static IntPtr Allocate(IntPtr size)
         {
             const AllocationType flags =
@@ -117,6 +128,11 @@ namespace ARMeilleure.Memory
             }
 
             return ptr;
+        }
+
+        public static bool FlushInstructionCache(IntPtr address, IntPtr size)
+        {
+            return FlushInstructionCache(CurrentProcess, address, size);
         }
 
         private static MemoryProtection GetProtection(Memory.MemoryProtection protection)

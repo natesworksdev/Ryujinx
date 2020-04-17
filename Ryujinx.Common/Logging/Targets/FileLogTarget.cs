@@ -7,13 +7,11 @@ namespace Ryujinx.Common.Logging
 {
     public class FileLogTarget : ILogTarget
     {
-        private static readonly ObjectPool<StringBuilder> _stringBuilderPool = SharedPools.Default<StringBuilder>();
-
         private readonly StreamWriter  _logWriter;
         private readonly ILogFormatter _formatter;
         private readonly string        _name;
 
-        string ILogTarget.Name { get => _name; }
+        string ILogTarget.Name => _name;
 
         public FileLogTarget(string path, string name)
             : this(path, name, FileShare.Read, FileMode.Append)

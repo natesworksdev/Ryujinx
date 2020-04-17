@@ -1,10 +1,10 @@
 using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.CodeGen.Unwinding;
-using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -24,7 +24,7 @@ namespace ARMeilleure.CodeGen.X86
 
         static CodeGenerator()
         {
-            _instTable = new Action<CodeGenContext, Operation>[EnumUtils.GetCount(typeof(Instruction))];
+            _instTable = new Action<CodeGenContext, Operation>[EnumUtils.GetCount<Instruction>()];
 
             Add(Instruction.Add,                     GenerateAdd);
             Add(Instruction.BitwiseAnd,              GenerateBitwiseAnd);

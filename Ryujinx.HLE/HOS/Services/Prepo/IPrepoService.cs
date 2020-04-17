@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             }
 
             builder.AppendLine($" Room: {room}");
-            builder.AppendLine($" Report: {MessagePackObjectFormatter.Format(deserializedReport)}");
+            builder.AppendLine($" Report: {MessagePackUtils.Format(deserializedReport)}");
 
             return builder.ToString();
         }

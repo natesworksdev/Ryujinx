@@ -39,7 +39,7 @@ namespace ARMeilleure.Memory
                 // Lock, and then check again. We only want to commit once.
                 lock (this)
                 {
-                    if (desiredSize >= _currentSize)
+                    if (desiredSize > _currentSize)
                     {
                         ulong overflowBytes = desiredSize - _currentSize;
                         ulong moreToCommit = (((_sizeGranularity - 1) + overflowBytes) / _sizeGranularity) * _sizeGranularity; // Round up.

@@ -34,7 +34,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
             private int _firstValueByte;
 
-            public ReadOnlySpan<int> Values => SpanHelpers.AsSpan<RandomMiiValues, int>(ref this);
+            public ReadOnlySpan<int> Values => SpanUtils.AsSpan<RandomMiiValues, int>(ref this);
         }
 
         [StructLayout(LayoutKind.Sequential, Pack = 4, Size = 0xCC)]

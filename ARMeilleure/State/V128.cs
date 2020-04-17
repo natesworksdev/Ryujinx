@@ -7,9 +7,7 @@ namespace ARMeilleure.State
         private ulong _e0;
         private ulong _e1;
 
-        private static V128 _zero = new V128(0, 0);
-
-        public static V128 Zero => _zero;
+        public static readonly V128 Zero = new V128(0, 0);
 
         public V128(float value) : this(value, 0, 0, 0) { }
 

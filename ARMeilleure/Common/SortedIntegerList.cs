@@ -5,7 +5,7 @@ namespace ARMeilleure.Common
 {
     public class SortedIntegerList
     {
-        private List<int> _items;
+        private readonly List<int> _items;
 
         public int Count => _items.Count;
 

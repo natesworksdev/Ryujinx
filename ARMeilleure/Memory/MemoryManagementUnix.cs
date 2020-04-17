@@ -60,6 +60,12 @@ namespace ARMeilleure.Memory
             return ptr;
         }
 
+        public static bool FlushInstructionCache(IntPtr address, ulong size)
+        {
+            // TODO : Implement me!
+            return true;
+        }
+
         private static MmapProts GetProtection(Memory.MemoryProtection protection)
         {
             switch (protection)

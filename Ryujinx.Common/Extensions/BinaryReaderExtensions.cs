@@ -48,7 +48,7 @@ namespace Ryujinx.Common
 
             fixed (byte* ptr = data)
             {
-                Marshal.StructureToPtr<T>(value, (IntPtr)ptr, false);
+                Marshal.StructureToPtr(value, (IntPtr)ptr, false);
             }
 
             writer.Write(data);

@@ -1,5 +1,5 @@
-using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
+using Ryujinx.Common;
 
 namespace ARMeilleure.CodeGen.X86
 {
@@ -11,7 +11,7 @@ namespace ARMeilleure.CodeGen.X86
 
         static IntrinsicTable()
         {
-            _intrinTable = new IntrinsicInfo[EnumUtils.GetCount(typeof(Intrinsic))];
+            _intrinTable = new IntrinsicInfo[EnumUtils.GetCount<Intrinsic>()];
 
             Add(Intrinsic.X86Addpd,      new IntrinsicInfo(X86Instruction.Addpd,      IntrinsicType.Binary));
             Add(Intrinsic.X86Addps,      new IntrinsicInfo(X86Instruction.Addps,      IntrinsicType.Binary));

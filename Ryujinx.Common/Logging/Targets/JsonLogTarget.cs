@@ -6,11 +6,11 @@ namespace Ryujinx.Common.Logging
 {
     public class JsonLogTarget : ILogTarget
     {
-        private Stream _stream;
-        private bool   _leaveOpen;
-        private string _name;
+        private readonly Stream _stream;
+        private readonly bool   _leaveOpen;
+        private readonly string _name;
 
-        string ILogTarget.Name { get => _name; }
+        string ILogTarget.Name => _name;
 
         public JsonLogTarget(Stream stream, string name)
         {

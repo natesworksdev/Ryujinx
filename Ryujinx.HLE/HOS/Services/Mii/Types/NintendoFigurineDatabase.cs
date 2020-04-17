@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
         [StructLayout(LayoutKind.Sequential, Size = FigurineArraySize)]
         private struct FigurineStorageStruct { }
 
-        private Span<StoreData> Figurines => SpanHelpers.AsSpan<FigurineStorageStruct, StoreData>(ref _figurineStorage);
+        private Span<StoreData> Figurines => SpanUtils.AsSpan<FigurineStorageStruct, StoreData>(ref _figurineStorage);
         
         public StoreData Get(int index)
         {
@@ -238,12 +238,12 @@ namespace Ryujinx.HLE.HOS.Services.Mii.Types
 
         public Span<byte> AsSpan()
         {
-            return SpanHelpers.AsByteSpan(ref this);
+            return SpanUtils.AsByteSpan(ref this);
         }
 
-        public ReadOnlySpan<byte> AsReadOnlySpan()
+        public readonly ReadOnlySpan<byte> AsReadOnlySpan()
         {
-            return SpanHelpers.AsReadOnlyByteSpan(ref this);
+            return SpanUtils.AsReadOnlyByteSpan(in this);
         }
 
         private ReadOnlySpan<byte> AsSpanWithoutCrc()

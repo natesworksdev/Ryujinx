@@ -6,15 +6,13 @@ namespace ARMeilleure.Diagnostics
 {
     static class Logger
     {
+#if M_DEBUG
         private static long _startTime;
 
-        private static long[] _accumulatedTime;
+        private static readonly long[] _accumulatedTime = new long[(int)PassName.Count];
+#endif
 
-        static Logger()
-        {
-            _accumulatedTime = new long[(int)PassName.Count];
-        }
-
+        [Conditional("M_DEBUG")]
         public static void StartPass(PassName name)
         {
 #if M_DEBUG
@@ -24,6 +22,7 @@ namespace ARMeilleure.Diagnostics
 #endif
         }
 
+        [Conditional("M_DEBUG")]
         public static void EndPass(PassName name, ControlFlowGraph cfg)
         {
 #if M_DEBUG
@@ -35,6 +34,7 @@ namespace ARMeilleure.Diagnostics
 #endif
         }
 
+        [Conditional("M_DEBUG")]
         public static void EndPass(PassName name)
         {
 #if M_DEBUG
@@ -46,6 +46,7 @@ namespace ARMeilleure.Diagnostics
 #endif
         }
 
+#if M_DEBUG
         private static long GetMilliseconds(long ticks)
         {
             return (long)(((double)ticks / Stopwatch.Frequency) * 1000);
@@ -55,5 +56,6 @@ namespace ARMeilleure.Diagnostics
         {
             Console.WriteLine(text);
         }
+#endif
     }
 }

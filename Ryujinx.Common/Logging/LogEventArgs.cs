@@ -4,22 +4,14 @@ namespace Ryujinx.Common.Logging
 {
     public class LogEventArgs : EventArgs
     {
-        public LogLevel Level      { get; private set; }
-        public TimeSpan Time       { get; private set; }
-        public string   ThreadName { get; private set; }
+        public LogLevel Level      { get; }
+        public TimeSpan Time       { get; }
+        public string   ThreadName { get; }
 
-        public string Message { get; private set; }
-        public object Data    { get; private set; }
+        public string Message { get; }
+        public object Data    { get; }
 
-        public LogEventArgs(LogLevel level, TimeSpan time, string threadName, string message)
-        {
-            Level      = level;
-            Time       = time;
-            ThreadName = threadName;
-            Message    = message;
-        }
-
-        public LogEventArgs(LogLevel level, TimeSpan time, string threadName, string message, object data)
+        public LogEventArgs(LogLevel level, TimeSpan time, string threadName, string message, object data = null)
         {
             Level      = level;
             Time       = time;
