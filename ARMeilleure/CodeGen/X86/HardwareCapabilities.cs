@@ -4,8 +4,6 @@ namespace ARMeilleure.CodeGen.X86
 {
     static class HardwareCapabilities
     {
-        private delegate ulong GetFeatureInfo();
-
         public static bool SupportsSse => Sse.IsSupported;
         public static bool SupportsSse2 => Sse2.IsSupported;
         public static bool SupportsSse3 => Sse3.IsSupported;

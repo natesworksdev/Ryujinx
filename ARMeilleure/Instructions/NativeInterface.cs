@@ -13,18 +13,18 @@ namespace ARMeilleure.Instructions
 
         private class ThreadContext
         {
-            public State.ExecutionContext Context    { get; }
-            public IMemoryManager         Memory     { get; }
-            public Translator             Translator { get; }
+            public State.ExecutionContext Context { get; }
+            public IMemoryManager Memory { get; }
+            public Translator Translator { get; }
 
-            public ulong ExclusiveAddress   { get; set; }
-            public ulong ExclusiveValueLow  { get; set; }
+            public ulong ExclusiveAddress { get; set; }
+            public ulong ExclusiveValueLow { get; set; }
             public ulong ExclusiveValueHigh { get; set; }
 
             public ThreadContext(State.ExecutionContext context, IMemoryManager memory, Translator translator)
             {
-                Context    = context;
-                Memory     = memory;
+                Context = context;
+                Memory = memory;
                 Translator = translator;
 
                 ExclusiveAddress = ulong.MaxValue;
@@ -71,7 +71,7 @@ namespace ARMeilleure.Instructions
             Statistics.ResumeTimer();
         }
 
-#region "System registers"
+        #region "System registers"
         public static ulong GetCtrEl0()
         {
             return (ulong)GetContext().CtrEl0;
@@ -195,15 +195,15 @@ namespace ARMeilleure.Instructions
         {
             return GetMemoryManager().Read<V128>(address);
         }
-#endregion
+        #endregion
 
-#region "Read exclusive"
+        #region "Read exclusive"
         public static byte ReadByteExclusive(ulong address)
         {
             byte value = _context.Memory.Read<byte>(address);
 
-            _context.ExclusiveAddress   = GetMaskedExclusiveAddress(address);
-            _context.ExclusiveValueLow  = value;
+            _context.ExclusiveAddress = GetMaskedExclusiveAddress(address);
+            _context.ExclusiveValueLow = value;
             _context.ExclusiveValueHigh = 0;
 
             return value;
@@ -213,8 +213,8 @@ namespace ARMeilleure.Instructions
         {
             ushort value = _context.Memory.Read<ushort>(address);
 
-            _context.ExclusiveAddress   = GetMaskedExclusiveAddress(address);
-            _context.ExclusiveValueLow  = value;
+            _context.ExclusiveAddress = GetMaskedExclusiveAddress(address);
+            _context.ExclusiveValueLow = value;
             _context.ExclusiveValueHigh = 0;
 
             return value;
@@ -224,8 +224,8 @@ namespace ARMeilleure.Instructions
         {
             uint value = _context.Memory.Read<uint>(address);
 
-            _context.ExclusiveAddress   = GetMaskedExclusiveAddress(address);
-            _context.ExclusiveValueLow  = value;
+            _context.ExclusiveAddress = GetMaskedExclusiveAddress(address);
+            _context.ExclusiveValueLow = value;
             _context.ExclusiveValueHigh = 0;
 
             return value;
@@ -235,8 +235,8 @@ namespace ARMeilleure.Instructions
         {
             ulong value = _context.Memory.Read<ulong>(address);
 
-            _context.ExclusiveAddress   = GetMaskedExclusiveAddress(address);
-            _context.ExclusiveValueLow  = value;
+            _context.ExclusiveAddress = GetMaskedExclusiveAddress(address);
+            _context.ExclusiveValueLow = value;
             _context.ExclusiveValueHigh = 0;
 
             return value;
@@ -246,8 +246,8 @@ namespace ARMeilleure.Instructions
         {
             V128 value = MemoryManagerPal.AtomicLoad128(ref _context.Memory.GetRef<V128>(address));
 
-            _context.ExclusiveAddress   = GetMaskedExclusiveAddress(address);
-            _context.ExclusiveValueLow  = value.Extract<ulong>(0);
+            _context.ExclusiveAddress = GetMaskedExclusiveAddress(address);
+            _context.ExclusiveValueLow = value.Extract<ulong>(0);
             _context.ExclusiveValueHigh = value.Extract<ulong>(1);
 
             return value;
@@ -279,9 +279,9 @@ namespace ARMeilleure.Instructions
         {
             GetMemoryManager().Write(address, value);
         }
-#endregion
+        #endregion
 
-#region "Write exclusive"
+        #region "Write exclusive"
         public static int WriteByteExclusive(ulong address, byte value)
         {
             bool success = _context.ExclusiveAddress == GetMaskedExclusiveAddress(address);
@@ -295,7 +295,7 @@ namespace ARMeilleure.Instructions
                 byte expected = (byte)_context.ExclusiveValueLow;
 
                 int expected32 = (currentValue & ~byte.MaxValue) | expected;
-                int desired32  = (currentValue & ~byte.MaxValue) | value;
+                int desired32 = (currentValue & ~byte.MaxValue) | value;
 
                 success = Interlocked.CompareExchange(ref valueRef, desired32, expected32) == expected32;
 
@@ -321,7 +321,7 @@ namespace ARMeilleure.Instructions
                 ushort expected = (ushort)_context.ExclusiveValueLow;
 
                 int expected32 = (currentValue & ~ushort.MaxValue) | expected;
-                int desired32  = (currentValue & ~ushort.MaxValue) | value;
+                int desired32 = (currentValue & ~ushort.MaxValue) | value;
 
                 success = Interlocked.CompareExchange(ref valueRef, desired32, expected32) == expected32;
 
