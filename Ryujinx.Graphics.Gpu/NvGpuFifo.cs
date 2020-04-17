@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Bind a macro index to a position for the MME
         /// </summary>
         /// <param name="index">The macro index</param>
-        /// <param name="data">The position of the macro</param>
+        /// <param name="position">The position of the macro</param>
         public void BindMacro(int index, int position)
         {
             _macros[index] = new CachedMacro(position);

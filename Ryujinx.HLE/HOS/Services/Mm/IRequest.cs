@@ -184,7 +184,7 @@ namespace Ryujinx.HLE.HOS.Services.Mm
         {
             lock (_sessionListLock)
             {
-                // Nintendo ignore the fgm id as the other interface were deprecated.
+                // Nintendo ignore the fgm id as the other interfaces were deprecated.
                 MultiMediaSession session = new MultiMediaSession(_uniqueId++, type, isAutoClearEvent);
 
                 _sessionList.Add(session);
