@@ -85,9 +85,9 @@ namespace ARMeilleure.Diagnostics
 
                         if (operation.Instruction == Instruction.Extended)
                         {
-                            var intrinsOp = (IntrinsicOperation)operation;
+                            var intrinOp = (IntrinsicOperation)operation;
 
-                            instName += "." + intrinsOp.Intrinsic.ToString();
+                            instName += "." + intrinOp.Intrinsic.ToString();
                         }
                     }
 
