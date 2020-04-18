@@ -79,12 +79,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private void UpdateSwapInterval(int swapInterval)
         {
-            // Ignore the swap interval if vsync setting is disabled.
-            if (!_device.EnableDeviceVsync)
-            {
-                swapInterval = 0;
-            }
-
             _swapInterval = swapInterval;
 
             // If the swap interval is 0, Game VSync is disabled.
@@ -232,7 +226,15 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 if (acquireStatus == Status.Success)
                 {
-                    if (item.SwapInterval != _swapInterval)
+                    // If device vsync is disabled, reflect the change.
+                    if (!_device.EnableDeviceVsync)
+                    {
+                        if (_swapInterval != 0)
+                        {
+                            UpdateSwapInterval(0);
+                        }
+                    }
+                    else if (item.SwapInterval != _swapInterval)
                     {
                         UpdateSwapInterval(item.SwapInterval);
                     }
