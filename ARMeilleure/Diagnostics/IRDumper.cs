@@ -82,6 +82,13 @@ namespace ARMeilleure.Diagnostics
                         }
 
                         instName = operation.Instruction.ToString();
+
+                        if (operation.Instruction == Instruction.Extended)
+                        {
+                            var intrinsicOperation = (IntrinsicOperation)operation;
+
+                            instName += "." + intrinsicOperation.Intrinsic.ToString();
+                        }
                     }
 
                     string allSources = string.Join(", ", sources);
@@ -141,7 +148,35 @@ namespace ARMeilleure.Diagnostics
             }
             else if (operand.Kind == OperandKind.Constant)
             {
-                name = "0x" + operand.Value.ToString("X");
+                name = Symbols.Get(operand.Value);
+
+                if (name == null)
+                {
+                    name = "0x" + operand.Value.ToString("X");
+                }
+            }
+            else if (operand.Kind == OperandKind.Memory)
+            {
+                var memOp = (MemoryOperand)operand;
+
+                name = "[" + GetOperandName(memOp.BaseAddress, localNames);
+
+                if (memOp.Index != null)
+                {
+                    name += " + " + GetOperandName(memOp.Index, localNames);
+
+                    if (memOp.Scale > Multiplier.x1)
+                    {
+                        name += "*" + memOp.Scale.ToString()[1];
+                    }
+                }
+
+                if (memOp.Displacement != 0)
+                {
+                    name += " + 0x" + memOp.Displacement.ToString("X");
+                }
+
+                name += "]";
             }
             else
             {
