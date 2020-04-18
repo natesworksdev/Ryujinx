@@ -207,7 +207,7 @@ namespace Ryujinx.Graphics.Gpu.State
         }
 
         /// <summary>
-        /// Checks if two registers have been modified since the last call to this method.
+        /// Checks if three registers have been modified since the last call to this method.
         /// </summary>
         /// <param name="m1">First register offset</param>
         /// <param name="m2">Second register offset</param>
@@ -227,7 +227,7 @@ namespace Ryujinx.Graphics.Gpu.State
         }
 
         /// <summary>
-        /// Checks if two registers have been modified since the last call to this method.
+        /// Checks if four registers have been modified since the last call to this method.
         /// </summary>
         /// <param name="m1">First register offset</param>
         /// <param name="m2">Second register offset</param>
@@ -250,7 +250,7 @@ namespace Ryujinx.Graphics.Gpu.State
         }
 
         /// <summary>
-        /// Checks if two registers have been modified since the last call to this method.
+        /// Checks if five registers have been modified since the last call to this method.
         /// </summary>
         /// <param name="m1">First register offset</param>
         /// <param name="m2">Second register offset</param>
@@ -280,6 +280,16 @@ namespace Ryujinx.Graphics.Gpu.State
             return modified;
         }
 
+        /// <summary>
+        /// Checks if six registers have been modified since the last call to this method.
+        /// </summary>
+        /// <param name="m1">First register offset</param>
+        /// <param name="m2">Second register offset</param>
+        /// <param name="m3">Third register offset</param>
+        /// <param name="m4">Fourth register offset</param>
+        /// <param name="m5">Fifth register offset</param>
+        /// <param name="m6">Sixth register offset</param>
+        /// <returns>True if any register was modified, false otherwise</returns>
         public bool QueryModified(
             MethodOffset m1,
             MethodOffset m2,
