@@ -1,4 +1,5 @@
-﻿using ARMeilleure.Decoders;
+﻿using ARMeilleure.Common;
+using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
@@ -378,7 +379,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
-            int shift = doubleSize ? 1 : 2;
+            int shift = (!doubleSize).AsInt() + 1;
             Operand n = GetVecA32(op.Vm >> shift);
             n = EmitSwapScalar(context, n, op.Vm, doubleSize);
 

@@ -8,30 +8,27 @@ namespace ARMeilleure.Decoders
 
         public OpCodeAluImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            if (DataOp == DataOp.Arithmetic)
+            switch (DataOp)
             {
-                Immediate = (opCode >> 10) & 0xfff;
+                case DataOp.Arithmetic:
+                    int shift = ((opCode >> 22) & 3) * 12;
+                    Immediate = ((opCode >> 10) & 0xfff) << shift;
+                    break;
 
-                int shift = (opCode >> 22) & 3;
+                case DataOp.Logical:
+                    var bm = DecoderHelper.DecodeBitMask(opCode, true);
 
-                Immediate <<= shift * 12;
-            }
-            else if (DataOp == DataOp.Logical)
-            {
-                var bm = DecoderHelper.DecodeBitMask(opCode, true);
+                    if (bm.IsUndefined)
+                    {
+                        Instruction = InstDescriptor.Undefined;
+                        return;
+                    }
 
-                if (bm.IsUndefined)
-                {
-                    Instruction = InstDescriptor.Undefined;
+                    Immediate = bm.WMask;
+                    break;
 
-                    return;
-                }
-
-                Immediate = bm.WMask;
-            }
-            else
-            {
-                throw new ArgumentException(nameof(opCode));
+                default:
+                    throw new ArgumentException(nameof(opCode));
             }
         }
     }

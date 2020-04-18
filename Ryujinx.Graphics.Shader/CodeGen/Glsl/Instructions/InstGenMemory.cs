@@ -1,3 +1,4 @@
+using Ryujinx.Common.Extensions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using System;
@@ -20,7 +21,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string texCall = "imageStore";
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = isBindless.AsInt();
 
             string Src(VariableType type)
             {
@@ -167,7 +168,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
 
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = (isBindless || isIndexed).AsInt();
 
             string coordsExpr;
 
@@ -282,7 +283,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += "Offsets";
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = isBindless.AsInt();
 
             string Src(VariableType type)
             {
@@ -488,7 +489,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
 
-            int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
+            int lodSrcIndex = (isBindless || isIndexed).AsInt();
 
             IAstNode lod = operation.GetSource(lodSrcIndex);
 

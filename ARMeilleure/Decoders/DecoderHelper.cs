@@ -1,4 +1,4 @@
-using Ryujinx.Common;
+using ARMeilleure.Common;
 
 namespace ARMeilleure.Decoders
 {
@@ -72,15 +72,33 @@ namespace ARMeilleure.Decoders
                    MoveBit(imm, 1, 49) | MoveBit( imm, 0, 48);
         }
 
-        public struct BitMask
+        public readonly struct BitMask
         {
-            public long WMask;
-            public long TMask;
-            public int  Pos;
-            public int  Shift;
-            public bool IsUndefined;
+            public readonly long WMask;
+            public readonly long TMask;
+            public readonly int  Pos;
+            public readonly int  Shift;
+            public readonly bool IsUndefined;
 
-            public static BitMask Invalid => new BitMask { IsUndefined = true };
+            public static readonly BitMask Invalid = new BitMask(isUndefined: true);
+
+            private BitMask(bool isUndefined = false)
+            {
+                WMask = default;
+                TMask = default;
+                Pos = default;
+                Shift = default;
+                IsUndefined = isUndefined;
+            }
+
+            internal BitMask(long wMask, long tMask, int pos, int shift)
+            {
+                WMask = wMask;
+                TMask = tMask;
+                Pos = pos;
+                Shift = shift;
+                IsUndefined = false;
+            }
         }
 
         public static BitMask DecodeBitMask(int opCode, bool immediate)
@@ -103,30 +121,29 @@ namespace ARMeilleure.Decoders
             int levels = size - 1;
 
             int s = immS & levels;
-            int r = immR & levels;
 
             if (immediate && s == levels)
             {
                 return BitMask.Invalid;
             }
 
-            long wMask = BitUtils.FillWithOnes(s + 1);
-            long tMask = BitUtils.FillWithOnes(((s - r) & levels) + 1);
+            int r = immR & levels;
+
+            long wMask = BitUtils.OneBits(s + 1);
+            long tMask = BitUtils.OneBits(((s - r) & levels) + 1);
 
             if (r > 0)
             {
                 wMask  = BitUtils.RotateRight(wMask, r, size);
-                wMask &= BitUtils.FillWithOnes(size);
+                wMask &= BitUtils.OneBits(size);
             }
 
-            return new BitMask()
-            {
-                WMask = BitUtils.Replicate(wMask, size),
-                TMask = BitUtils.Replicate(tMask, size),
-
-                Pos   = immS,
-                Shift = immR
-            };
+            return new BitMask(
+                wMask: BitUtils.Replicate(wMask, size),
+                tMask: BitUtils.Replicate(tMask, size),
+                pos: immS,
+                shift: immR
+            );
         }
 
         public static long DecodeImm24_2(int opCode)

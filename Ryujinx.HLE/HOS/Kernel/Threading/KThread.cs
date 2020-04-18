@@ -1,4 +1,5 @@
 using ARMeilleure.Memory;
+using Ryujinx.Common.Extensions;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -72,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private int _shallBeTerminated;
 
-        public bool ShallBeTerminated { get => _shallBeTerminated != 0; set => _shallBeTerminated = value ? 1 : 0; }
+        public bool ShallBeTerminated { get => _shallBeTerminated != 0; set => _shallBeTerminated = value.AsInt(); }
 
         public bool SyncCancelled { get; set; }
         public bool WaitingSync   { get; set; }
@@ -1164,22 +1165,24 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         protected override void Destroy()
         {
-            if (_hasBeenInitialized)
+            if (!_hasBeenInitialized)
             {
-                FreeResources();
+                return;
+            }
+            
+            FreeResources();
 
-                bool released = Owner != null || _hasBeenReleased;
+            bool released = Owner != null || _hasBeenReleased;
 
-                if (Owner != null)
-                {
-                    Owner.ResourceLimit?.Release(LimitableResource.Thread, 1, released ? 0 : 1);
+            if (Owner != null)
+            {
+                Owner.ResourceLimit?.Release(LimitableResource.Thread, 1, (!released).AsInt());
 
-                    Owner.DecrementReferenceCount();
-                }
-                else
-                {
-                    System.ResourceLimit.Release(LimitableResource.Thread, 1, released ? 0 : 1);
-                }
+                Owner.DecrementReferenceCount();
+            }
+            else
+            {
+                System.ResourceLimit.Release(LimitableResource.Thread, 1, (!released).AsInt());
             }
         }
 

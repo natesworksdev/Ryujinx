@@ -1,4 +1,4 @@
-using Ryujinx.Common;
+using ARMeilleure.Common;
 
 namespace ARMeilleure.Decoders
 {
@@ -13,7 +13,7 @@ namespace ARMeilleure.Decoders
             int value = (opCode >> 0) & 0xff;
             int shift = (opCode >> 8) & 0xf;
 
-            Immediate = BitUtils.RotateRight(value, shift * 2, 32);
+            Immediate = BitUtils.RotateRight(value, shift * 2);
 
             IsRotated = shift != 0;
         }

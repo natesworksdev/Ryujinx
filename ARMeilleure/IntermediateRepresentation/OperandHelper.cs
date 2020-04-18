@@ -21,7 +21,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static Operand Const(bool value)
         {
-            return Operand().With(value ? 1 : 0);
+            return Operand().With(value.AsInt());
         }
 
         public static Operand Const(int value)
@@ -86,14 +86,16 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static void PrepareOperandPool(bool highCq)
         {
-            ThreadStaticPool<Operand>.PreparePool(highCq ? 1 : 0);
-            ThreadStaticPool<MemoryOperand>.PreparePool(highCq ? 1 : 0);
+            var highCqInt = highCq.AsInt();
+            ThreadStaticPool<Operand>.PreparePool(highCqInt);
+            ThreadStaticPool<MemoryOperand>.PreparePool(highCqInt);
         }
 
         public static void ResetOperandPool(bool highCq)
         {
-            ThreadStaticPool<Operand>.ReturnPool(highCq ? 1 : 0);
-            ThreadStaticPool<MemoryOperand>.ReturnPool(highCq ? 1 : 0);
+            var highCqInt = highCq.AsInt();
+            ThreadStaticPool<Operand>.ReturnPool(highCqInt);
+            ThreadStaticPool<MemoryOperand>.ReturnPool(highCqInt);
         }
     }
 }

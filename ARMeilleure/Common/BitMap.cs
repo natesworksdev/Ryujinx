@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.Common
 {
-    class BitMap : IEnumerator<int>
+    sealed class BitMap : IEnumerator<int>
     {
         private const int IntSize = 64;
         private const int IntMask = IntSize - 1;
@@ -16,14 +17,17 @@ namespace ARMeilleure.Common
         private int _enumBit;
 
         public int Current => _enumIndex * IntSize + _enumBit;
+
         object IEnumerator.Current => Current;
 
+        [MethodImpl(MethodOptions.FastInline)]
         public BitMap()
         {
             _masks = new List<long>(0);
         }
 
-        public BitMap(int initialCapacity)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal BitMap(int initialCapacity)
         {
             int count = (initialCapacity + IntMask) / IntSize;
 
@@ -35,7 +39,8 @@ namespace ARMeilleure.Common
             }
         }
 
-        public void Reset(int initialCapacity)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal void Reset(int initialCapacity)
         {
             int count = (initialCapacity + IntMask) / IntSize;
 
@@ -52,7 +57,8 @@ namespace ARMeilleure.Common
             }
         }
 
-        public bool Set(int bit)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal bool Set(int bit)
         {
             EnsureCapacity(bit + 1);
 
@@ -71,7 +77,8 @@ namespace ARMeilleure.Common
             return true;
         }
 
-        public void Clear(int bit)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal void Clear(int bit)
         {
             EnsureCapacity(bit + 1);
 
@@ -83,7 +90,8 @@ namespace ARMeilleure.Common
             _masks[wordIndex] &= ~wordMask;
         }
 
-        public bool IsSet(int bit)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal bool IsSet(int bit)
         {
             EnsureCapacity(bit + 1);
 
@@ -93,7 +101,8 @@ namespace ARMeilleure.Common
             return (_masks[wordIndex] & (1L << wordBit)) != 0;
         }
 
-        public bool Set(BitMap map)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal bool Set(BitMap map)
         {
             EnsureCapacity(map._masks.Count * IntSize);
 
@@ -114,7 +123,8 @@ namespace ARMeilleure.Common
             return modified;
         }
 
-        public bool Clear(BitMap map)
+        [MethodImpl(MethodOptions.FastInline)]
+        internal bool Clear(BitMap map)
         {
             EnsureCapacity(map._masks.Count * IntSize);
 
@@ -135,10 +145,7 @@ namespace ARMeilleure.Common
             return modified;
         }
 
- #region IEnumerable<long> Methods
-
-        // Note: The bit enumerator is embedded in this class to avoid creating garbage when enumerating.
-
+        [MethodImpl(MethodOptions.FastInline)]
         private void EnsureCapacity(int size)
         {
             while (_masks.Count * IntSize < size)
@@ -147,12 +154,18 @@ namespace ARMeilleure.Common
             }
         }
 
+        #region IEnumerable<int> Methods
+
+        // Note: The bit enumerator is embedded in this class to avoid creating garbage when enumerating.
+
+        [MethodImpl(MethodOptions.FastInline)]
         public IEnumerator<int> GetEnumerator()
         {
             Reset();
             return this;
         }
 
+        [MethodImpl(MethodOptions.FastInline)]
         public bool MoveNext()
         {
             if (_enumMask != 0)
@@ -171,6 +184,7 @@ namespace ARMeilleure.Common
             return true;
         }
 
+        [MethodImpl(MethodOptions.FastInline)]
         public void Reset()
         {
             _enumIndex = -1;
@@ -178,8 +192,9 @@ namespace ARMeilleure.Common
             _enumBit = 0;
         }
 
+        [MethodImpl(MethodOptions.FastInline)]
         public void Dispose() { }
 
-#endregion
+        #endregion
     }
 }

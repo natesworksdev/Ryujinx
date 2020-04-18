@@ -33,7 +33,7 @@ namespace ARMeilleure.CodeGen.X86
             PrefixF2   = 3 << PrefixBit
         }
 
-        private struct InstructionInfo
+        private readonly struct InstructionInfo
         {
             public int OpRMR     { get; }
             public int OpRMImm8  { get; }
@@ -60,7 +60,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static InstructionInfo[] _instTable;
+        private static readonly InstructionInfo[] _instTable;
 
         private Stream _stream;
 
@@ -267,7 +267,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Xorps,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex));
         }
 
-        private static void Add(X86Instruction inst, InstructionInfo info)
+        private static void Add(X86Instruction inst, in InstructionInfo info)
         {
             _instTable[(int)inst] = info;
         }

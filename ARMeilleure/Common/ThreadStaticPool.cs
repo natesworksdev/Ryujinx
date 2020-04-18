@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace ARMeilleure.Common
 {
-    internal class ThreadStaticPool<T> where T : class, new()
+    sealed internal class ThreadStaticPool<T> where T : class, new()
     {
         private const int PoolSizeIncrement = 200;
 
@@ -13,6 +14,7 @@ namespace ARMeilleure.Common
         private static ThreadStaticPool<T> _instance;
         public static ThreadStaticPool<T> Instance
         {
+            [MethodImpl(MethodOptions.FastInline)]
             get
             {
                 if (_instance == null)
@@ -71,6 +73,7 @@ namespace ARMeilleure.Common
             _poolSize = initialSize;
         }
 
+        [MethodImpl(MethodOptions.FastInline)]
         public T Allocate()
         {
             int index = Interlocked.Increment(ref _poolUsed);
@@ -81,6 +84,7 @@ namespace ARMeilleure.Common
             return _pool[index];
         }
 
+        [MethodImpl(MethodOptions.FastInline)]
         private void IncreaseSize()
         {
             _poolSize += PoolSizeIncrement;

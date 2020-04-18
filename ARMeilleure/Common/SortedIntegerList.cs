@@ -1,15 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 namespace ARMeilleure.Common
 {
-    public class SortedIntegerList
+    internal class SortedIntegerList
     {
         private readonly List<int> _items;
 
-        public int Count => _items.Count;
+        internal int Count => _items.Count;
 
-        public int this[int index]
+        internal int this[int index]
         {
             get
             {
@@ -21,12 +20,12 @@ namespace ARMeilleure.Common
             }
         }
 
-        public SortedIntegerList()
+        internal SortedIntegerList()
         {
             _items = new List<int>();
         }
 
-        public bool Add(int value)
+        internal bool Add(int value)
         {
             if (_items.Count == 0 || value > Last())
             {
@@ -46,13 +45,13 @@ namespace ARMeilleure.Common
             }
         }
 
-        public int FindLessEqualIndex(int value)
+        internal int FindLessEqualIndex(int value)
         {
             int index = _items.BinarySearch(value);
             return (index < 0) ? (-2 - index) : index;
         }
 
-        public void RemoveRange(int index, int count)
+        internal void RemoveRange(int index, int count)
         {
             if (count > 0)
             {
@@ -60,12 +59,12 @@ namespace ARMeilleure.Common
             }
         }
 
-        public int Last()
+        internal int Last()
         {
             return _items[Count - 1];
         }
 
-        public List<int> GetList()
+        internal List<int> GetList()
         {
             return _items;
         }

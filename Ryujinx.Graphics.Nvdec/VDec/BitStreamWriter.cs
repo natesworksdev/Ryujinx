@@ -1,3 +1,4 @@
+using Ryujinx.Common.Extensions;
 using System.IO;
 
 namespace Ryujinx.Graphics.VDec
@@ -18,7 +19,7 @@ namespace Ryujinx.Graphics.VDec
 
         public void WriteBit(bool value)
         {
-            WriteBits(value ? 1 : 0, 1);
+            WriteBits(value.AsInt(), 1);
         }
 
         public void WriteBits(int value, int valueSize)

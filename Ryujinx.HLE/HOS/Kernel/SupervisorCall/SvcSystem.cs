@@ -1,5 +1,6 @@
 using ARMeilleure.Memory;
 using Ryujinx.Common;
+using Ryujinx.Common.Extensions;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -425,7 +426,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                    value = _system.Scheduler.GetCurrentProcess().Debug ? 1 : 0;
+                    value = _system.Scheduler.GetCurrentProcess().Debug.AsInt();
 
                     break;
                 }

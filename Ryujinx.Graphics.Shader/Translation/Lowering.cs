@@ -1,3 +1,4 @@
+using Ryujinx.Common.Extensions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -248,7 +249,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                sources[dstIndex++] = texOp.GetSource(srcIndex++);
             }
 
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = (isBindless || isIndexed).AsInt();
 
             int componentIndex = texOp.Index;
 

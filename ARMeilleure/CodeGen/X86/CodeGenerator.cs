@@ -1,13 +1,14 @@
 using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.CodeGen.Unwinding;
+using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using Ryujinx.Common;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Numerics;
 
@@ -20,11 +21,13 @@ namespace ARMeilleure.CodeGen.X86
         private const int PageSize       = 0x1000;
         private const int StackGuardSize = 0x2000;
 
-        private static Action<CodeGenContext, Operation>[] _instTable;
+        private delegate void Generator([DisallowNull] CodeGenContext context, [DisallowNull] Operation operation);
+
+        private static readonly Generator[] _instTable;
 
         static CodeGenerator()
         {
-            _instTable = new Action<CodeGenContext, Operation>[EnumUtils.GetCount<Instruction>()];
+            _instTable = new Generator[EnumUtils.GetCount<Instruction>()];
 
             Add(Instruction.Add,                     GenerateAdd);
             Add(Instruction.BitwiseAnd,              GenerateBitwiseAnd);
@@ -96,7 +99,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ZeroExtend8,             GenerateZeroExtend8);
         }
 
-        private static void Add(Instruction inst, Action<CodeGenContext, Operation> func)
+        private static void Add(Instruction inst, Generator func)
         {
             _instTable[(int)inst] = func;
         }
@@ -188,7 +191,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
 
-                IntrinsicInfo info = IntrinsicTable.GetInfo(intrinOp.Intrinsic);
+                ref IntrinsicInfo info = ref IntrinsicTable.GetInfo(intrinOp.Intrinsic);
 
                 switch (info.Type)
                 {
@@ -410,7 +413,7 @@ namespace ARMeilleure.CodeGen.X86
             }
             else
             {
-                Action<CodeGenContext, Operation> func = _instTable[(int)operation.Instruction];
+                Generator func = _instTable[(int)operation.Instruction];
 
                 if (func != null)
                 {

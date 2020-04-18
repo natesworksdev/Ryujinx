@@ -99,47 +99,6 @@ namespace Ryujinx.Common
             return (value >> 32) | (value << 32);
         }
 
-        public static int CountBits(int value) => BitOperations.PopCount(unchecked((uint)value));
-
-        public static long FillWithOnes(int bits)
-        {
-            return (bits == 64) ?
-                -1L :
-                (1L << bits) - 1;
-        }
-
-        public static int HighestBitSet(int value) => 31 - BitOperations.LeadingZeroCount((uint)value);
-
         public static int HighestBitSetNibble(int value) => HbsNibbleLut[value];
-
-        public static long Replicate(long bits, int size)
-        {
-            long output = 0;
-
-            for (int bit = 0; bit < 64; bit += size)
-            {
-                output |= bits << bit;
-            }
-
-            return output;
-        }
-
-        public static int RotateRight(int bits, int shift, int size) => (int)RotateRight((uint)bits, shift, size);
-
-        public static uint RotateRight(uint bits, int shift, int size)
-        {
-            return size == 32 ?
-                BitOperations.RotateRight(bits, shift) :
-                (bits >> shift) | (bits << (size - shift));
-        }
-
-        public static long RotateRight(long bits, int shift, int size) => (long)RotateRight((ulong)bits, shift, size);
-
-        public static ulong RotateRight(ulong bits, int shift, int size)
-        {
-            return size == 64 ?
-                BitOperations.RotateRight(bits, shift) :
-                (bits >> shift) | (bits << (size - shift));
-        }
     }
 }

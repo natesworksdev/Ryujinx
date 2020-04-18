@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
@@ -993,7 +994,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(source.Kind == OperandKind.Constant, "Non-constant LoadArgument source kind.");
 
-            int retArgs = cctx.FuncReturnType == OperandType.V128 ? 1 : 0;
+            int retArgs = (cctx.FuncReturnType == OperandType.V128).AsInt();
 
             int index = source.AsInt32() + retArgs;
 

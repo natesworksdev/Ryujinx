@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using System;
@@ -98,7 +99,7 @@ namespace ARMeilleure.State
                 RegisterConsts.IntRegsCount * IntSize +
                 RegisterConsts.VecRegsCount * VecSize + (int)flag * FlagSize;
 
-            Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
+            Marshal.WriteInt32(BasePtr, offset, value.AsInt());
         }
 
         public bool GetFPStateFlag(FPState flag)
@@ -130,7 +131,7 @@ namespace ARMeilleure.State
                 RegisterConsts.VecRegsCount * VecSize  +
                 RegisterConsts.FlagsCount   * FlagSize + (int)flag * FlagSize;
 
-            Marshal.WriteInt32(BasePtr, offset, value ? 1 : 0);
+            Marshal.WriteInt32(BasePtr, offset, value.AsInt());
         }
 
         public int GetCounter()

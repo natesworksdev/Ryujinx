@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.Decoders.Optimizations;
 using ARMeilleure.Instructions;
 using ARMeilleure.Memory;
@@ -127,7 +128,7 @@ namespace ARMeilleure.Decoders
                 {
                     Block nBlock = blocks[nBlkIndex];
 
-                    blocks.Insert(nBlkIndex + (nBlock.Address < currBlock.Address ? 1 : 0), currBlock);
+                    blocks.Insert(nBlkIndex + (nBlock.Address < currBlock.Address).AsInt(), currBlock);
                 }
                 else
                 {

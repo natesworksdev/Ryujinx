@@ -1,4 +1,5 @@
-﻿using ARMeilleure.State;
+﻿using ARMeilleure.Common;
+using ARMeilleure.State;
 
 namespace ARMeilleure.Decoders
 {
@@ -32,7 +33,7 @@ namespace ARMeilleure.Decoders
             } 
             else 
             {
-                Increment = (((IndexAlign >> Size) & 1) == 0) ? 1 : 2;
+                Increment = (((IndexAlign >> Size) & 1) != 0).AsInt() + 1;
                 Index = IndexAlign >> (1 + Size);
             }
 

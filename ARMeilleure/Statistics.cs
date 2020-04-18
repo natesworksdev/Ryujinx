@@ -7,8 +7,9 @@ using System.Text;
 
 namespace ARMeilleure
 {
-    public static class Statistics
+    internal static class Statistics
     {
+#if M_PROFILE
         private const int ReportMaxFunctions = 100;
 
         [ThreadStatic]
@@ -20,8 +21,10 @@ namespace ARMeilleure
         {
             _ticksPerFunction = new ConcurrentDictionary<ulong, long>();
         }
+#endif
 
-        public static void InitializeTimer()
+        [Conditional("M_PROFILE")]
+        internal static void InitializeTimer()
         {
 #if M_PROFILE
             if (_executionTimer == null)
@@ -31,6 +34,7 @@ namespace ARMeilleure
 #endif
         }
 
+        [Conditional("M_PROFILE")]
         internal static void StartTimer()
         {
 #if M_PROFILE
@@ -38,6 +42,7 @@ namespace ARMeilleure
 #endif
         }
 
+        [Conditional("M_PROFILE")]
         internal static void StopTimer(ulong funcAddr)
         {
 #if M_PROFILE
@@ -49,6 +54,7 @@ namespace ARMeilleure
 #endif
         }
 
+        [Conditional("M_PROFILE")]
         internal static void ResumeTimer()
         {
 #if M_PROFILE
@@ -56,6 +62,7 @@ namespace ARMeilleure
 #endif
         }
 
+        [Conditional("M_PROFILE")]
         internal static void PauseTimer()
         {
 #if M_PROFILE
@@ -63,14 +70,15 @@ namespace ARMeilleure
 #endif
         }
 
-        public static string GetReport()
+        internal static string GetReport()
         {
-            int count = 0;
-
-            StringBuilder sb = new StringBuilder();
+            var sb = new StringBuilder();
 
             sb.AppendLine(" Function address   | Time");
             sb.AppendLine("--------------------------");
+
+#if M_PROFILE
+            int count = 0;
 
             KeyValuePair<ulong, long>[] funcTable = _ticksPerFunction.ToArray();
 
@@ -85,6 +93,7 @@ namespace ARMeilleure
                     break;
                 }
             }
+#endif
 
             return sb.ToString();
         }

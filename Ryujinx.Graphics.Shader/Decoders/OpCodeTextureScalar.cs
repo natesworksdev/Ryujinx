@@ -1,4 +1,5 @@
 // ReSharper disable InconsistentNaming
+using Ryujinx.Common.Extensions;
 using Ryujinx.Graphics.Shader.Instructions;
 
 namespace Ryujinx.Graphics.Shader.Decoders
@@ -56,7 +57,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             IsFp16 = !opCode.Extract(59);
 
-            ComponentMask = _maskLut[Rd1.IsRZ ? 0 : 1, compSel];
+            ComponentMask = _maskLut[(!Rd1.IsRZ).AsInt(), compSel];
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using OpenTK.Input;
+using Ryujinx.Common.Extensions;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.UI.Input;
 
@@ -233,14 +234,14 @@ namespace Ryujinx.Ui
 
             foreach (KeyMappingEntry entry in KeyMapping)
             {
-                int value = keyboard[entry.TargetKey] ? 1 : 0;
+                int value = keyboard[entry.TargetKey].AsInt();
 
                 hidKeyboard.Keys[entry.Target / 0x20] |= (value << (entry.Target % 0x20));
             }
 
             foreach (KeyMappingEntry entry in KeyModifierMapping)
             {
-                int value = keyboard[entry.TargetKey] ? 1 : 0;
+                int value = keyboard[entry.TargetKey].AsInt();
 
                 hidKeyboard.Modifier |= value << entry.Target;
             }

@@ -1,13 +1,11 @@
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
-using Ryujinx.Common;
 
 namespace ARMeilleure.CodeGen.X86
 {
     static class IntrinsicTable
     {
-        private const int BadOp = 0;
-
-        private static IntrinsicInfo[] _intrinTable;
+        private static readonly IntrinsicInfo[] _intrinTable;
 
         static IntrinsicTable()
         {
@@ -162,14 +160,14 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Xorps,      new IntrinsicInfo(X86Instruction.Xorps,      IntrinsicType.Binary));
         }
 
-        private static void Add(Intrinsic intrin, IntrinsicInfo info)
+        private static void Add(Intrinsic intrin, in IntrinsicInfo info)
         {
             _intrinTable[(int)intrin] = info;
         }
 
-        public static IntrinsicInfo GetInfo(Intrinsic intrin)
+        public static ref IntrinsicInfo GetInfo(Intrinsic intrin)
         {
-            return _intrinTable[(int)intrin];
+            return ref _intrinTable[(int)intrin];
         }
     }
 }

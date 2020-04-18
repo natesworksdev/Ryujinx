@@ -1,3 +1,4 @@
+using Ryujinx.Common.Extensions;
 using System;
 using System.IO;
 
@@ -63,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Ipc
             {
                 BinaryWriter writer = new BinaryWriter(ms);
 
-                int word = HasPId ? 1 : 0;
+                int word = HasPId.AsInt();
 
                 word |= (ToCopy.Length & 0xf) << 1;
                 word |= (ToMove.Length & 0xf) << 5;

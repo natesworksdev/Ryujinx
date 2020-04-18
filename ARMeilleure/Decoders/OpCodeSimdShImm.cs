@@ -1,4 +1,4 @@
-using Ryujinx.Common;
+using ARMeilleure.Common;
 
 namespace ARMeilleure.Decoders
 {

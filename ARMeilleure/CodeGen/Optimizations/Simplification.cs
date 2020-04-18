@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using System;
 
@@ -147,7 +148,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             // The condition is constant, we can turn it into a copy, and select
             // the source based on the condition value.
-            int srcIndex = cond.Value != 0 ? 1 : 2;
+            int srcIndex = (cond.Value == 0).AsInt() + 1;
 
             Operand source = operation.GetSource(srcIndex);
 

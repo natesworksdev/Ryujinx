@@ -1,5 +1,6 @@
 using ARMeilleure.Memory;
 using Ryujinx.Audio;
+using Ryujinx.Common.Extensions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -84,7 +85,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         {
             long tag = context.RequestData.ReadInt64();
 
-            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag) ? 1 : 0);
+            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag).AsInt());
 
             return 0;
         }
