@@ -1,10 +1,13 @@
-﻿namespace ARMeilleure.Diagnostics
+﻿#if M_DEBUG
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+#endif
+
+namespace ARMeilleure.Diagnostics
 {
     static class Symbols
     {
 #if M_DEBUG
-        using System.Collections.Concurrent;
-        using System.Collections.Generic;
 
         private static readonly ConcurrentDictionary<ulong, string> _symbols;
         private static readonly List<(ulong Start, ulong End, ulong ElementSize, string Name)> _rangedSymbols;
