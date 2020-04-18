@@ -16,7 +16,12 @@ namespace ARMeilleure.Diagnostics
 
         public static string Get(ulong address)
         {
-            if (!_symbols.TryGetValue(address, out string result))
+            if (_symbols.TryGetValue(address, out string result))
+            {
+                return result;
+            }
+
+            lock (_rangedSymbols)
             {
                 foreach ((ulong Start, ulong End, ulong ElementSize, string Name) in _rangedSymbols)
                 {
@@ -27,7 +32,7 @@ namespace ARMeilleure.Diagnostics
                 }
             }
 
-            return result;
+            return null;
         }
 
         public static void Add(ulong address, string name)
@@ -37,7 +42,10 @@ namespace ARMeilleure.Diagnostics
 
         public static void Add(ulong address, ulong size, ulong elemSize, string name)
         {
-            _rangedSymbols.Add((address, address + size, elemSize, name));
+            lock (_rangedSymbols)
+            {
+                _rangedSymbols.Add((address, address + size, elemSize, name));
+            }
         }
     }
 }
