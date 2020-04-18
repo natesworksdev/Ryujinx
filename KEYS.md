@@ -21,6 +21,8 @@ To dump your `prod.keys` and `title.keys` please follow these following steps.
 11. Copy these files and paste them in `Ryujinx/system`.
 And you're done!
 
+For Windows `Ryujinx/system` is located in `%appdata%/Ryujinx/system`.
+
 ## Title keys
 
 These are only used for games that are not dumped from cartridges but from games downloaded from the Nintendo eShop, these are also only used if the eShop dump does *not* have a `ticket`. If the game does have a ticket, Ryujinx will read the key directly from that ticket.
