@@ -70,7 +70,7 @@ namespace ARMeilleure.Translation
             _dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
 
             Symbols.Add((ulong)_jumpRegion.Pointer.ToInt64(), JumpTableByteSize, JumpTableStride, "JMP_TABLE");
-            Symbols.Add((ulong)_dynamicRegion.Pointer.ToInt64(), DynamicTableByteSize, DynamicTableStride, "JMP_TABLE");
+            Symbols.Add((ulong)_dynamicRegion.Pointer.ToInt64(), DynamicTableByteSize, DynamicTableStride, "DYN_TABLE");
         }
 
         public void RegisterFunction(ulong address, TranslatedFunction func) {
