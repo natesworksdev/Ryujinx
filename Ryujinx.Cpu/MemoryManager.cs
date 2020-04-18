@@ -30,7 +30,6 @@ namespace Ryujinx.Cpu
         /// <summary>
         /// Creates a new instance of the memory manager.
         /// </summary>
-        /// <param name="allocator">Allocator used for internal allocations on the memory manager</param>
         /// <param name="backingMemory">Physical backing memory where virtual memory will be mapped to</param>
         /// <param name="addressSpaceSize">Size of the address space</param>
         public MemoryManager(MemoryBlock backingMemory, ulong addressSpaceSize)
