@@ -6,13 +6,29 @@ namespace ARMeilleure.Diagnostics
 {
     static class Symbols
     {
+        private struct RangedSymbol
+        {
+            public readonly ulong Start;
+            public readonly ulong End;
+            public readonly ulong ElementSize;
+            public readonly string Name;
+
+            public RangedSymbol(ulong start, ulong end, ulong elemSize, string name)
+            {
+                Start = start;
+                End = end;
+                ElementSize = elemSize;
+                Name = name;
+            }
+        }
+
         private static readonly ConcurrentDictionary<ulong, string> _symbols;
-        private static readonly List<(ulong Start, ulong End, ulong ElementSize, string Name)> _rangedSymbols;
+        private static readonly List<RangedSymbol> _rangedSymbols;
 
         static Symbols()
         {
             _symbols = new ConcurrentDictionary<ulong, string>();
-            _rangedSymbols = new List<(ulong Start, ulong End, ulong ElementSize, string Name)>();
+            _rangedSymbols = new List<RangedSymbol>();
         }
 
         public static string Get(ulong address)
@@ -24,11 +40,11 @@ namespace ARMeilleure.Diagnostics
 
             lock (_rangedSymbols)
             {
-                foreach ((ulong Start, ulong End, ulong ElementSize, string Name) in _rangedSymbols)
+                foreach (RangedSymbol symbol in _rangedSymbols)
                 {
-                    if (address >= Start && address <= End)
+                    if (address >= symbol.Start && address <= symbol.End)
                     {
-                        return Name + "_" + (address - Start) / ElementSize;
+                        return symbol.Name + "_" + (address - symbol.Start) / symbol.ElementSize;
                     }
                 }
             }
@@ -47,7 +63,7 @@ namespace ARMeilleure.Diagnostics
         {
             lock (_rangedSymbols)
             {
-                _rangedSymbols.Add((address, address + size, elemSize, name));
+                _rangedSymbols.Add(new RangedSymbol(address, address + size, elemSize, name));
             }
         }
     }
