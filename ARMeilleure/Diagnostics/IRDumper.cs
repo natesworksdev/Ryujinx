@@ -61,13 +61,15 @@ namespace ARMeilleure.Diagnostics
 
                     string instName = string.Empty;
 
+                    var symbols = new List<(ulong Value, string Name)>();
+
                     if (node is PhiNode phi)
                     {
                         for (int index = 0; index < sources.Length; index++)
                         {
                             string phiBlockName = GetBlockName(phi.GetBlock(index));
 
-                            string operName = GetOperandName(phi.GetSource(index), localNames);
+                            string operName = GetOperandName(phi.GetSource(index), localNames, symbols);
 
                             sources[index] = $"({phiBlockName}: {operName})";
                         }
@@ -78,7 +80,7 @@ namespace ARMeilleure.Diagnostics
                     {
                         for (int index = 0; index < sources.Length; index++)
                         {
-                            sources[index] = GetOperandName(operation.GetSource(index), localNames);
+                            sources[index] = GetOperandName(operation.GetSource(index), localNames, symbols);
                         }
 
                         instName = operation.Instruction.ToString();
@@ -95,9 +97,23 @@ namespace ARMeilleure.Diagnostics
 
                     string line = instName + " " + allSources;
 
+                    if (symbols.Count == 1)
+                    {
+                        line += " ; " + symbols[0].Name;
+                    }
+                    else if (symbols.Count > 1)
+                    {
+                        line += " ;";
+
+                        foreach ((ulong value, string name) in symbols)
+                        {
+                            line += $" 0x{value:X2} = {name}";
+                        }
+                    }
+
                     if (node.Destination != null)
                     {
-                        line = GetOperandName(node.Destination, localNames) + " = " + line;
+                        line = GetOperandName(node.Destination, localNames, symbols) + " = " + line;
                     }
 
                     AppendLine(line);
@@ -114,7 +130,7 @@ namespace ARMeilleure.Diagnostics
             return $"block{block.Index}";
         }
 
-        private static string GetOperandName(Operand operand, Dictionary<Operand, string> localNames)
+        private static string GetOperandName(Operand operand, Dictionary<Operand, string> localNames, List<(ulong Value, string Name)> symbols)
         {
             if (operand == null)
             {
@@ -148,23 +164,25 @@ namespace ARMeilleure.Diagnostics
             }
             else if (operand.Kind == OperandKind.Constant)
             {
-                name = Symbols.Get(operand.Value);
+                string symbolName = Symbols.Get(operand.Value);
 
-                if (name == null)
+                if (symbolName != null)
                 {
-                    name = "0x" + operand.Value.ToString("X");
+                    symbols.Add((operand.Value, Symbols.Get(operand.Value)));
                 }
+
+                name = "0x" + operand.Value.ToString("X");
             }
             else if (operand.Kind == OperandKind.Memory)
             {
                 var memOp = (MemoryOperand)operand;
-                var sb = new StringBuilder();
+                var sb = new StringBuilder(64);
 
-                sb.Append('[').Append(GetOperandName(memOp.BaseAddress, localNames));
+                sb.Append('[').Append(GetOperandName(memOp.BaseAddress, localNames, symbols));
 
                 if (memOp.Index != null)
                 {
-                    sb.Append(" + ").Append(GetOperandName(memOp.Index, localNames));
+                    sb.Append(" + ").Append(GetOperandName(memOp.Index, localNames, symbols));
 
                     switch (memOp.Scale)
                     {
