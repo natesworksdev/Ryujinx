@@ -1,57 +1,39 @@
-using System.ComponentModel.DataAnnotations;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Common
 {
     public static class BitUtils
     {
-        private static readonly sbyte[] HbsNibbleLut = { -1, 0, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3 };
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int AlignUp(int value, int size) => unchecked((value + (size - 1)) & -size);
 
-        public static int AlignUp(int value, int size)
-        {
-            return (value + (size - 1)) & -size;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static ulong AlignUp(ulong value, int size) => unchecked((ulong)AlignUp((long)value, size));
 
-        public static ulong AlignUp(ulong value, int size)
-        {
-            return (ulong)AlignUp((long)value, size);
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static long AlignUp(long value, int size) => unchecked((value + (size - 1)) & -(long)size);
 
-        public static long AlignUp(long value, int size)
-        {
-            return (value + (size - 1)) & -(long)size;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int AlignDown(int value, int size) => unchecked(value & -size);
 
-        public static int AlignDown(int value, int size)
-        {
-            return value & -size;
-        }
 
-        public static ulong AlignDown(ulong value, int size)
-        {
-            return (ulong)AlignDown((long)value, size);
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static ulong AlignDown(ulong value, int size) => unchecked((ulong)AlignDown((long)value, size));
 
-        public static long AlignDown(long value, int size)
-        {
-            return value & -(long)size;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static long AlignDown(long value, int size) => unchecked(value & -(long)size);
 
-        public static int DivRoundUp(int value, int dividend)
-        {
-            return (value + dividend - 1) / dividend;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int DivRoundUp(int value, int dividend) => (value + dividend - 1) / dividend;
 
-        public static ulong DivRoundUp(ulong value, uint dividend)
-        {
-            return (value + dividend - 1) / dividend;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static ulong DivRoundUp(ulong value, uint dividend) => (value + dividend - 1) / dividend;
 
-        public static long DivRoundUp(long value, int dividend)
-        {
-            return (value + dividend - 1) / dividend;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static long DivRoundUp(long value, int dividend) => (value + dividend - 1) / dividend;
 
+        [MethodImpl(MethodOptions.FastInline)]
         public static int Pow2RoundUp(int value)
         {
             value--;
@@ -65,30 +47,29 @@ namespace Ryujinx.Common
             return ++value;
         }
 
-        public static int Pow2RoundDown(int value)
-        {
-            return IsPowerOfTwo(value) ? value : Pow2RoundUp(value) >> 1;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int Pow2RoundDown(int value) => IsPowerOfTwo(value) ? value : Pow2RoundUp(value) >> 1;
 
-        public static bool IsPowerOfTwo(int value)
-        {
-            return value != 0 && (value & (value - 1)) == 0;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static bool IsPowerOfTwo(int value) => (value != 0) && unchecked(value & (value - 1)) == 0;
 
-        public static bool IsPowerOfTwo(long value)
-        {
-            return value != 0 && (value & (value - 1)) == 0;
-        }
+        [MethodImpl(MethodOptions.FastInline)]
+        public static bool IsPowerOfTwo(long value) => (value != 0L) && unchecked(value & (value - 1L)) == 0L;
 
-        public static int CountLeadingZeros32(int value) => BitOperations.LeadingZeroCount(unchecked((uint)value));
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int CountLeadingZeros(int value) => BitOperations.LeadingZeroCount(unchecked((uint)value));
 
-        public static int CountLeadingZeros64(long value) => BitOperations.LeadingZeroCount(unchecked((ulong)value));
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int CountLeadingZeros(long value) => BitOperations.LeadingZeroCount(unchecked((ulong)value));
 
-        public static int CountTrailingZeros32(int value) => BitOperations.TrailingZeroCount(value);
+        [MethodImpl(MethodOptions.FastInline)]
+        public static int CountTrailingZeros(int value) => BitOperations.TrailingZeroCount(value);
 
-        public static long ReverseBits64(long value) => (long)ReverseBits64((ulong)value);
+        [MethodImpl(MethodOptions.FastInline)]
+        public static long ReverseBits(long value) => unchecked((long)ReverseBits((ulong)value));
 
-        private static ulong ReverseBits64(ulong value)
+        [MethodImpl(MethodOptions.FastInline)]
+        private static ulong ReverseBits(ulong value)
         {
             value = ((value & 0xaaaaaaaaaaaaaaaa) >> 1 ) | ((value & 0x5555555555555555) << 1 );
             value = ((value & 0xcccccccccccccccc) >> 2 ) | ((value & 0x3333333333333333) << 2 );
@@ -98,7 +79,5 @@ namespace Ryujinx.Common
 
             return (value >> 32) | (value << 32);
         }
-
-        public static int HighestBitSetNibble(int value) => HbsNibbleLut[value];
     }
 }

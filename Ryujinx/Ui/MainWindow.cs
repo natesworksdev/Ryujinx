@@ -42,11 +42,15 @@ namespace Ryujinx.Ui
         private static bool _updatingGameTable;
         private static bool _gameLoaded;
         private static bool _ending;
+#if USE_DEBUGGING
         private static bool _debuggerOpened;
+#endif
 
         private static TreeView _treeView;
 
-        private static Ryujinx.Debugger.Debugger _debugger;
+#if USE_DEBUGGING
+        private static Debugger.Debugger _debugger;
+#endif
 
 #pragma warning disable CS0649
 #pragma warning disable IDE0044
@@ -296,9 +300,11 @@ namespace Ryujinx.Ui
                     _virtualFileSystem, ConfigurationState.Instance.System.Language);
 
                 _updatingGameTable = false;
-            });
-            applicationLibraryThread.Name = "GUI.ApplicationLibraryThread";
-            applicationLibraryThread.IsBackground = true;
+            })
+            {
+                Name = "GUI.ApplicationLibraryThread",
+                IsBackground = true
+            };
             applicationLibraryThread.Start();
         }
 
@@ -838,11 +844,11 @@ namespace Ryujinx.Ui
 
                     if (firmwareVersion == null)
                     {
-                        dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
-
-                        dialog.Text = "Firmware not found.";
-
-                        dialog.SecondaryText = $"A valid system firmware was not found in {filename}.";
+                        dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "")
+                        {
+                            Text = "Firmware not found.",
+                            SecondaryText = $"A valid system firmware was not found in {filename}."
+                        };
 
                         Logger.PrintError(LogClass.Application, $"A valid system firmware was not found in {filename}.");
 
@@ -864,25 +870,26 @@ namespace Ryujinx.Ui
 
                     dialogMessage += "Do you want to continue?";
 
-                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, false, "");
-
-                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString}";
-                    dialog.SecondaryText = dialogMessage;
+                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Question, ButtonsType.YesNo, false, "")
+                    {
+                        Text = $"Install Firmware {firmwareVersion.VersionString}",
+                        SecondaryText = dialogMessage
+                    };
 
                     int response = dialog.Run();
 
                     dialog.Dispose();
 
-                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.None, false, "");
-
-                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString}";
-
-                    dialog.SecondaryText = "Installing firmware...";
+                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.None, false, "")
+                    {
+                        Text = $"Install Firmware {firmwareVersion.VersionString}",
+                        SecondaryText = "Installing firmware..."
+                    };
 
                     if (response == (int)ResponseType.Yes)
                     {
                         Logger.PrintInfo(LogClass.Application, $"Installing firmware {firmwareVersion.VersionString}");
-                        
+
                         Thread thread = new Thread(() =>
                         {
                             GLib.Idle.Add(new GLib.IdleHandler(() =>
@@ -899,11 +906,11 @@ namespace Ryujinx.Ui
                                 {
                                     dialog.Dispose();
 
-                                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
-
-                                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString}";
-
-                                    dialog.SecondaryText = $"System version {firmwareVersion.VersionString} successfully installed.";
+                                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "")
+                                    {
+                                        Text = $"Install Firmware {firmwareVersion.VersionString}",
+                                        SecondaryText = $"System version {firmwareVersion.VersionString} successfully installed."
+                                    };
 
                                     Logger.PrintInfo(LogClass.Application, $"System version {firmwareVersion.VersionString} successfully installed.");
 
@@ -919,12 +926,12 @@ namespace Ryujinx.Ui
                                 {
                                     dialog.Dispose();
 
-                                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
-
-                                    dialog.Text = $"Install Firmware {firmwareVersion.VersionString} Failed.";
-
-                                    dialog.SecondaryText = $"An error occured while installing system version {firmwareVersion.VersionString}." +
-                                     " Please check logs for more info.";
+                                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "")
+                                    {
+                                        Text = $"Install Firmware {firmwareVersion.VersionString} Failed.",
+                                        SecondaryText = $"An error occured while installing system version {firmwareVersion.VersionString}." +
+                                            " Please check logs for more info."
+                                    };
 
                                     Logger.PrintError(LogClass.Application, ex.Message);
 
@@ -938,9 +945,10 @@ namespace Ryujinx.Ui
                             {
                                 RefreshFirmwareLabel();
                             }
-                        });
-
-                        thread.Name = "GUI.FirmwareInstallerThread";
+                        })
+                        {
+                            Name = "GUI.FirmwareInstallerThread"
+                        };
                         thread.Start();
                     }
                     else
@@ -955,11 +963,11 @@ namespace Ryujinx.Ui
                         dialog.Dispose();
                     }
 
-                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "");
-
-                    dialog.Text = "Parsing Firmware Failed.";
-
-                    dialog.SecondaryText = "An error occured while parsing firmware. Please check the logs for more info.";
+                    dialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Info, ButtonsType.Ok, false, "")
+                    {
+                        Text = "Parsing Firmware Failed.",
+                        SecondaryText = "An error occured while parsing firmware. Please check the logs for more info."
+                    };
 
                     Logger.PrintError(LogClass.Application, ex.Message);
 

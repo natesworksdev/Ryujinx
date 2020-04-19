@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                     {
                         int mask = _idMasks[index];
 
-                        int firstFreeBit = BitUtils.CountLeadingZeros32((mask + 1) & ~mask);
+                        int firstFreeBit = BitUtils.CountLeadingZeros((mask + 1) & ~mask);
 
                         if (firstFreeBit < 32)
                         {

@@ -1,22 +1,11 @@
 ﻿using MsgPack;
-using System;
 using System.Text;
 
 namespace Ryujinx.Common.Utilities
 {
     public static class MessagePackUtils
     {
-        public static string ToString(this MessagePackObject obj, bool pretty)
-        {
-            if (pretty)
-            {
-                return Format(obj);
-            }
-            else
-            {
-                return obj.ToString();
-            }
-        }
+        public static string ToString(this MessagePackObject obj, bool pretty) => pretty ? Format(obj) : obj.ToString();
 
         public static string Format(MessagePackObject obj)
         {
@@ -29,59 +18,59 @@ namespace Ryujinx.Common.Utilities
 
         private static void FormatMsgPackObj(MessagePackObject obj, IndentedStringBuilder builder)
         {
-            if (obj.IsMap || obj.IsDictionary)
+            var literal = obj.ToObject();
+
+            switch (literal)
             {
-                FormatMsgPackMap(obj, builder);
-            }
-            else if (obj.IsArray || obj.IsList)
-            {
-                FormatMsgPackArray(obj, builder);
-            }
-            else if (obj.IsNil)
-            {
-                builder.Append("null");
-            }
-            else
-            {
-                var literal = obj.ToObject();
+                case var _ when obj.IsMap || obj.IsDictionary:
+                    FormatMsgPackMap(obj, builder);
+                    break;
 
-                switch (literal)
-                {
-                    case string _:
-                        builder.AppendQuotedString(obj.AsStringUtf16());
-                        break;
-                    case byte[] byteArray:
-                        FormatByteArray(byteArray, builder);
-                        break;
-                    case MessagePackExtendedTypeObject extObject:
-                        builder.Append('{');
+                case var _ when obj.IsArray || obj.IsList:
+                    FormatMsgPackArray(obj, builder);
+                    break;
 
-                        // Indent
-                        builder.IncreaseIndent()
-                               .AppendLine();
+                case var _ when obj.IsNil:
+                    builder.Append("null");
+                    break;
 
-                        // Print TypeCode field
-                        builder.AppendQuotedString("TypeCode")
-                               .Append(": ")
-                               .Append(extObject.TypeCode)
-                               .AppendLine(",");
+                case string _:
+                    builder.AppendQuotedString(obj.AsStringUtf16());
+                    break;
 
-                        // Print Value field
-                        builder.AppendQuotedString("Value")
-                               .Append(": ");
+                case byte[] byteArray:
+                    FormatByteArray(byteArray, builder);
+                    break;
 
-                        FormatByteArrayAsString(extObject.GetBody(), builder, true);
+                case MessagePackExtendedTypeObject extObject:
+                    builder.Append('{');
 
-                        // Unindent
-                        builder.DecreaseIndent()
-                               .AppendLine();
+                    // Indent
+                    builder.IncreaseIndent()
+                            .AppendLine();
 
-                        builder.Append('}');
-                        break;
-                    default:
-                        builder.Append(literal);
-                        break;
-                }
+                    // Print TypeCode field
+                    builder.AppendQuotedString("TypeCode")
+                            .Append(": ")
+                            .Append(extObject.TypeCode)
+                            .AppendLine(",");
+
+                    // Print Value field
+                    builder.AppendQuotedString("Value")
+                            .Append(": ");
+
+                    FormatByteArrayAsString(extObject.GetBody(), builder, true);
+
+                    // Unindent
+                    builder.DecreaseIndent()
+                            .AppendLine();
+
+                    builder.Append('}');
+                    break;
+
+                default:
+                    builder.Append(literal);
+                    break;
             }
         }
 
@@ -172,7 +161,7 @@ namespace Ryujinx.Common.Utilities
             builder.Append(" ]");
         }
 
-        internal class IndentedStringBuilder
+        internal sealed class IndentedStringBuilder
         {
             const string DefaultIndent = "    ";
 
@@ -199,7 +188,7 @@ namespace Ryujinx.Common.Utilities
                 : this(new StringBuilder(length))
             { }
 
-            public int Length { get => _builder.Length; }
+            public int Length => _builder.Length;
 
             public IndentedStringBuilder IncreaseIndent()
             {
@@ -261,7 +250,7 @@ namespace Ryujinx.Common.Utilities
             {
                 _builder.Append(value);
 
-                this.AppendLine();
+                AppendLine();
 
                 return this;
             }

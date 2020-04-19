@@ -44,6 +44,7 @@ namespace Ryujinx.Common
         /// <summary>
         /// Gets the number of nanoseconds elapsed since the system started.
         /// </summary>
+        /// 
         public static long ElapsedNanoseconds => (long)(Stopwatch.GetTimestamp() * _ticksToNs);
 
         static PerformanceCounter()

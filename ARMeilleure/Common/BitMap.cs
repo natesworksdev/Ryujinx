@@ -23,7 +23,7 @@ namespace ARMeilleure.Common
         [MethodImpl(MethodOptions.FastInline)]
         public BitMap()
         {
-            _masks = new List<long>(0);
+            _masks = new List<long>(capacity: 0);
         }
 
         [MethodImpl(MethodOptions.FastInline)]
@@ -31,7 +31,7 @@ namespace ARMeilleure.Common
         {
             int count = (initialCapacity + IntMask) / IntSize;
 
-            _masks = new List<long>(count);
+            _masks = new List<long>(capacity: count);
 
             while (count-- > 0)
             {

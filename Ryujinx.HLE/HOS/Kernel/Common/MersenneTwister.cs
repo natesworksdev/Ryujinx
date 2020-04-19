@@ -42,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             range++;
 
             // This is log2(Range) plus one.
-            int nextRangeLog2 = 64 - BitUtils.CountLeadingZeros64(range);
+            int nextRangeLog2 = 64 - BitUtils.CountLeadingZeros(range);
 
             // If Range is already power of 2, subtract one to use log2(Range) directly.
             int rangeLog2 = nextRangeLog2 - BitUtils.IsPowerOfTwo(range).AsInt();

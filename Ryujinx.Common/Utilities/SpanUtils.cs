@@ -6,19 +6,19 @@ namespace Ryujinx.Common.Utilities
 {
     public static class SpanUtils
     {
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         private static Span<T> CreateSpan<T>(ref T reference, int length) where T : unmanaged
         {
             return MemoryMarshal.CreateSpan(ref reference, length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         public static Span<T> AsSpan<T>(ref T reference) where T : unmanaged
         {
             return CreateSpan(ref reference, 1);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         public static Span<TSpan> AsSpan<TStruct, TSpan>(ref TStruct reference)
             where TStruct : unmanaged
             where TSpan : unmanaged
@@ -27,25 +27,25 @@ namespace Ryujinx.Common.Utilities
                 Unsafe.SizeOf<TStruct>() / Unsafe.SizeOf<TSpan>());
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         public static Span<byte> AsByteSpan<T>(ref T reference) where T : unmanaged
         {
             return CreateSpan(ref Unsafe.As<T, byte>(ref reference), Unsafe.SizeOf<T>());
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         private static ReadOnlySpan<T> CreateReadOnlySpan<T>(ref T reference, int length) where T : unmanaged
         {
             return MemoryMarshal.CreateReadOnlySpan(ref reference, length);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         public static ReadOnlySpan<T> AsReadOnlySpan<T>(in T reference) where T : unmanaged
         {
             return CreateReadOnlySpan(ref Unsafe.AsRef(in reference), 1);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         public static ReadOnlySpan<TSpan> AsReadOnlySpan<TStruct, TSpan>(in TStruct reference)
             where TStruct : unmanaged
             where TSpan : unmanaged
@@ -56,7 +56,7 @@ namespace Ryujinx.Common.Utilities
             );
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        [MethodImpl(MethodOptions.FastInline)]
         public static ReadOnlySpan<byte> AsReadOnlyByteSpan<T>(in T reference) where T : unmanaged
         {
             return CreateReadOnlySpan(

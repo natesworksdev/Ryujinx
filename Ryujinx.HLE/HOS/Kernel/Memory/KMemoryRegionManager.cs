@@ -236,11 +236,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (backwards)
                     {
-                        index = (index * 64 + 63) - BitUtils.CountLeadingZeros64(mask);
+                        index = (index * 64 + 63) - BitUtils.CountLeadingZeros(mask);
                     }
                     else
                     {
-                        index = index * 64 + BitUtils.CountLeadingZeros64(BitUtils.ReverseBits64(mask));
+                        index = index * 64 + BitUtils.CountLeadingZeros(BitUtils.ReverseBits(mask));
                     }
                 }
 
@@ -289,11 +289,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (backwards)
                     {
-                        index = index * 64 + BitUtils.CountLeadingZeros64(BitUtils.ReverseBits64(mask));
+                        index = index * 64 + BitUtils.CountLeadingZeros(BitUtils.ReverseBits(mask));
                     }
                     else
                     {
-                        index = (index * 64 + 63) - BitUtils.CountLeadingZeros64(mask);
+                        index = (index * 64 + 63) - BitUtils.CountLeadingZeros(mask);
                     }
                 }
 

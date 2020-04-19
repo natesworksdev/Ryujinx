@@ -39,7 +39,7 @@ namespace Ryujinx.Common
             return result;
         }
 
-        public unsafe static void WriteStruct<T>(this BinaryWriter writer, T value)
+        public unsafe static void WriteStruct<T>(this BinaryWriter writer, in T value)
             where T : struct
         {
             long size = Marshal.SizeOf<T>();

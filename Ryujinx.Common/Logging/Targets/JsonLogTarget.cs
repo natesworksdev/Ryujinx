@@ -1,10 +1,9 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using Utf8Json;
 
 namespace Ryujinx.Common.Logging
 {
-    public class JsonLogTarget : ILogTarget
+    public sealed class JsonLogTarget : ILogTarget
     {
         private readonly Stream _stream;
         private readonly bool   _leaveOpen;

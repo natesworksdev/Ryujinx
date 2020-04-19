@@ -33,7 +33,6 @@ namespace Ryujinx.Debugger.UI
         private const int LinePadding        = 2;
         private const int ColumnSpacing      = 15;
         private const int FilterHeight       = 24;
-        private const int BottomBarHeight    = FilterHeight + LineHeight;
 
         // Sorting
         private List<KeyValuePair<ProfileConfig, TimingInfo>>      _unsortedProfileData;
@@ -55,7 +54,7 @@ namespace Ryujinx.Debugger.UI
         private long _captureTime;
 
         // Graph
-        private SKColor[] _timingFlagColors = new[]
+        private readonly SKColor[] _timingFlagColors =
         {
             new SKColor(150, 25, 25, 50), // FrameSwap   = 0
             new SKColor(25, 25, 150, 50), // SystemFrame = 1
@@ -82,6 +81,7 @@ namespace Ryujinx.Debugger.UI
         private SkRenderer _renderer;
 
         [GUI] ScrolledWindow _scrollview;
+#pragma warning disable IDE0044 // Add readonly modifier
         [GUI] CheckButton    _enableCheckbutton;
         [GUI] Scrollbar      _outputScrollbar;
         [GUI] Entry          _filterBox;
@@ -90,6 +90,7 @@ namespace Ryujinx.Debugger.UI
         [GUI] CheckButton    _showInactive;
         [GUI] Button         _stepButton;
         [GUI] CheckButton    _pauseCheckbutton;
+#pragma warning restore IDE0044 // Add readonly modifier
 
         public ProfilerWidget() : this(new Builder("Ryujinx.Debugger.UI.ProfilerWidget.glade")) { }
 
@@ -287,7 +288,7 @@ namespace Ryujinx.Debugger.UI
                                 _sortedProfileData = _sortedProfileData.Where((pair => filterRegex.IsMatch(pair.Key.Search))).ToList();
                             }
                         }
-                        catch (ArgumentException argException)
+                        catch (ArgumentException)
                         {
                             // Skip filtering for invalid regex
                         }
@@ -310,18 +311,6 @@ namespace Ryujinx.Debugger.UI
             float time = (float)timestamp / PerformanceCounter.TicksPerMillisecond;
 
             return (time < 1) ? $"{time * 1000:F3}us" : $"{time:F3}ms";
-        }
-
-        private void FilterBackspace()
-        {
-            if (_filterText.Length <= 1)
-            {
-                _filterText = "";
-            }
-            else
-            {
-                _filterText = _filterText.Remove(_filterText.Length - 1, 1);
-            }
         }
 
         private float GetLineY(float offset, float lineHeight, float padding, bool centre, int line)

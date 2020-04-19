@@ -17,7 +17,7 @@ namespace Ryujinx.Common.Logging
         Discard = 1
     }
 
-    public class AsyncLogTargetWrapper : ILogTarget
+    public sealed class AsyncLogTargetWrapper : ILogTarget
     {
         private readonly ILogTarget _target;
 
@@ -37,9 +37,10 @@ namespace Ryujinx.Common.Logging
         {
             _target          = target;
             _messageQueue    = new BlockingCollection<LogEventArgs>(queueLimit);
-            _overflowTimeout = overflowAction == AsyncLogTargetOverflowAction.Block ? -1 : 0;
+            _overflowTimeout = (overflowAction == AsyncLogTargetOverflowAction.Block) ? -1 : 0;
 
-            _messageThread = new Thread(() => {
+            _messageThread = new Thread(() =>
+            {
                 while (!_messageQueue.IsCompleted)
                 {
                     try
@@ -55,10 +56,11 @@ namespace Ryujinx.Common.Logging
                         // on the next iteration.
                     }
                 }
-            });
-
-            _messageThread.Name         = "Logger.MessageThread";
-            _messageThread.IsBackground = true;
+            })
+            {
+                Name = "Logger.MessageThread",
+                IsBackground = true
+            };
             _messageThread.Start();
         }
 
@@ -74,6 +76,7 @@ namespace Ryujinx.Common.Logging
         {
             _messageQueue.CompleteAdding();
             _messageThread.Join();
+            _messageQueue.Dispose();
         }
     }
 }

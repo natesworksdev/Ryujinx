@@ -8,10 +8,6 @@
             public static readonly ObjectPool<T> Instance = new ObjectPool<T>(() => new T(), 20);
         }
 
-        public static ObjectPool<T> Default<T>()
-            where T : class, new()
-        {
-            return DefaultPool<T>.Instance;
-        }
+        public static ObjectPool<T> Default<T>() where T : class, new() => DefaultPool<T>.Instance;
     }
 }

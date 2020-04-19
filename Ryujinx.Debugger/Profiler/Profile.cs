@@ -11,7 +11,9 @@ namespace Ryujinx.Debugger.Profiler
         public static float UpdateRate    => _settings.UpdateRate;
         public static long  HistoryLength => _settings.History;
 
+#if USE_DEBUGGING
         private static InternalProfile  _profileInstance;
+#endif
         private static ProfilerSettings _settings;
 
         [Conditional("USE_DEBUGGING")]
@@ -49,6 +51,7 @@ namespace Ryujinx.Debugger.Profiler
         [Conditional("USE_DEBUGGING")]
         public static void FinishProfiling()
         {
+#if USE_DEBUGGING
             if (!ProfilingEnabled())
                 return;
 
@@ -56,42 +59,51 @@ namespace Ryujinx.Debugger.Profiler
                 DumpProfile.ToFile(_settings.DumpLocation, _profileInstance);
 
             _profileInstance.Dispose();
+#endif
         }
 
         [Conditional("USE_DEBUGGING")]
         public static void FlagTime(TimingFlagType flagType)
         {
+#if USE_DEBUGGING
             if (!ProfilingEnabled())
                 return;
             _profileInstance.FlagTime(flagType);
+#endif
         }
 
         [Conditional("USE_DEBUGGING")]
         public static void RegisterFlagReceiver(Action<TimingFlag> receiver)
         {
+#if USE_DEBUGGING
             if (!ProfilingEnabled())
                 return;
             _profileInstance.RegisterFlagReceiver(receiver);
+#endif
         }
 
         [Conditional("USE_DEBUGGING")]
         public static void Begin(ProfileConfig config)
         {
+#if USE_DEBUGGING
             if (!ProfilingEnabled())
                 return;
             if (config.Level > _settings.MaxLevel)
                 return;
             _profileInstance.BeginProfile(config);
+#endif
         }
 
         [Conditional("USE_DEBUGGING")]
         public static void End(ProfileConfig config)
         {
+#if USE_DEBUGGING
             if (!ProfilingEnabled())
                 return;
             if (config.Level > _settings.MaxLevel)
                 return;
             _profileInstance.EndProfile(config);
+#endif
         }
 
         public static string GetSession()

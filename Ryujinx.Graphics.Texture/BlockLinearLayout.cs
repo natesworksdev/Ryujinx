@@ -43,15 +43,15 @@ namespace Ryujinx.Graphics.Texture
         {
             _texBpp = bpp;
 
-            _bppShift = BitUtils.CountTrailingZeros32(bpp);
+            _bppShift = BitUtils.CountTrailingZeros(bpp);
 
             _bhMask = gobBlocksInY - 1;
             _bdMask = gobBlocksInZ - 1;
 
-            _bhShift = BitUtils.CountTrailingZeros32(gobBlocksInY);
-            _bdShift = BitUtils.CountTrailingZeros32(gobBlocksInZ);
+            _bhShift = BitUtils.CountTrailingZeros(gobBlocksInY);
+            _bdShift = BitUtils.CountTrailingZeros(gobBlocksInZ);
 
-            _xShift = BitUtils.CountTrailingZeros32(GobSize * gobBlocksInY * gobBlocksInZ);
+            _xShift = BitUtils.CountTrailingZeros(GobSize * gobBlocksInY * gobBlocksInZ);
 
             RobAndSliceSizes rsSizes = GetRobAndSliceSizes(width, height, gobBlocksInY, gobBlocksInZ);
 

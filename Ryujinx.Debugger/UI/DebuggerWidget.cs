@@ -9,7 +9,9 @@ namespace Ryujinx.Debugger.UI
         public event EventHandler DebuggerEnabled;
         public event EventHandler DebuggerDisabled;
 
+#pragma warning disable IDE0044 // Add readonly modifier
         [GUI] Notebook _widgetNotebook;
+#pragma warning restore IDE0044 // Add readonly modifier
 
         public DebuggerWidget() : this(new Builder("Ryujinx.Debugger.UI.DebuggerWidget.glade")) { }
 

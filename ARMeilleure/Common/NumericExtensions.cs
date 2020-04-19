@@ -35,39 +35,56 @@ namespace ARMeilleure.Common
 
         #region Boolean Conversions
 
-        /// <summary>Converts a given value which is 0 or 1 into false or true, respectively.
-        ///    Behavior is undefined if the value is not 0 or 1.
+
+        /// <summary>
+        /// Converts a given value which is 0 or 1 into false or true, respectively.
+        /// Behavior is undefined if the value is not 0 or 1.
         /// </summary>
-        /// <returns>false or true, given 0 or 1, respectively.</returns>
+        /// <param name="value">Value that is 0 or 1</param>
+        /// <returns>false or true, given 0 or 1 respectively</returns>
         [MethodImpl(MethodOptions.FastInline)]
         internal static bool AsBool([Range(0, 1)] this byte value) => BoolMethods.AsBool(value);
 
-        /// <summary>Converts a given value which is 0 or 1 into false or true, respectively.
-        ///    Behavior is undefined if the value is not 0 or 1.
+        /// <summary>
+        /// Converts a given value which is 0 or 1 into false or true, respectively.
+        /// Behavior is undefined if the value is not 0 or 1.
         /// </summary>
-        /// <returns>false or true, given 0 or 1, respectively.</returns>
+        /// <param name="value">Value that is 0 or 1</param>
+        /// <returns>false or true, given 0 or 1 respectively</returns>
         [MethodImpl(MethodOptions.FastInline)]
         internal static bool AsBool([Range(0, 1)] this int value) => BoolMethods.AsBool(value);
 
-        /// <summary>Converts a given value which is 0 or 1 into false or true, respectively.
-        ///    Behavior is undefined if the value is not 0 or 1.
+        /// <summary>
+        /// Converts a given value which is 0 or 1 into false or true, respectively.
+        /// Behavior is undefined if the value is not 0 or 1.
         /// </summary>
-        /// <returns>false or true, given 0 or 1, respectively.</returns>
+        /// <param name="value">Value that is 0 or 1</param>
+        /// <returns>false or true, given 0 or 1 respectively</returns>
         [MethodImpl(MethodOptions.FastInline)]
         internal static bool AsBool([Range(0, 1)] this uint value) => BoolMethods.AsBool(value);
 
-        /// <summary>Converts a given value which is false or true into 0 or 1, respectively.</summary>
-        /// <returns>0 or 1, given false or true, respectively.</returns>
+
+        /// <summary>
+        /// Converts a given boolean value into 0 or 1, respective of the boolean's value.
+        /// </summary>
+        /// <param name="value">Boolean value to convert</param>
+        /// <returns>0 or 1, given false or true respectively</returns>
         [MethodImpl(MethodOptions.FastInline)]
         internal static byte AsByte(this bool value) => BoolMethods.AsByte(value);
 
-        /// <summary>Converts a given value which is false or true into 0 or 1, respectively.</summary>
-        /// <returns>0 or 1, given false or true, respectively.</returns>
+        /// <summary>
+        /// Converts a given boolean value into 0 or 1, respective of the boolean's value.
+        /// </summary>
+        /// <param name="value">Boolean value to convert</param>
+        /// <returns>0 or 1, given false or true respectively</returns>
         [MethodImpl(MethodOptions.FastInline)]
         internal static int AsInt(this bool value) => BoolMethods.AsByte(value);
 
-        /// <summary>Converts a given value which is false or true into 0 or 1, respectively.</summary>
-        /// <returns>0 or 1, given false or true, respectively.</returns>
+        /// <summary>
+        /// Converts a given boolean value into 0 or 1, respective of the boolean's value.
+        /// </summary>
+        /// <param name="value">Boolean value to convert</param>
+        /// <returns>0 or 1, given false or true respectively</returns>
         [MethodImpl(MethodOptions.FastInline)]
         internal static uint AsUInt(this bool value) => BoolMethods.AsByte(value);
 
