@@ -9,6 +9,7 @@ using LibHac.Ns;
 using LibHac.Spl;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -16,9 +17,11 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Mii;
+using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sm;
+using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
@@ -38,6 +41,7 @@ using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+using Ryujinx.HLE.HOS.Services.Nv;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -129,6 +133,8 @@ namespace Ryujinx.HLE.HOS
         public int GlobalAccessLogMode { get; set; }
 
         internal long HidBaseAddress { get; private set; }
+
+        internal NvHostSyncpt HostSyncpoint { get; private set; }
 
         public Horizon(Switch device, ContentManager contentManager)
         {
@@ -224,8 +230,24 @@ namespace Ryujinx.HLE.HOS
             // We assume the rtc is system time.
             TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
 
+            // Configure and setup internal offset
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+            
+            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
+
+            if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
+            {
+                internalOffset = internalOffset.AddSeconds(3600L);
+            }
+            else if (!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
+            {
+                internalOffset = internalOffset.AddSeconds(-3600L);
+            }
+
+            internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
+
             // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, TimeSpanType.Zero, TimeSpanType.Zero, false);
+            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
             TimeServiceManager.Instance.SetupStandardLocalSystemClock(null, new SystemClockContext(), systemTime.ToSeconds());
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
@@ -242,6 +264,8 @@ namespace Ryujinx.HLE.HOS
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
 
             DatabaseImpl.Instance.InitializeDatabase(device);
+
+            HostSyncpoint = new NvHostSyncpt(device);
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -852,6 +876,10 @@ namespace Ryujinx.HLE.HOS
                 {
                     Device.VsyncEvent.Set();
                 }
+
+                // Destroy nvservices channels as KThread could be waiting on some user events.
+                // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
+                INvDrvServices.Destroy();
 
                 // This is needed as the IPC Dummy KThread is also counted in the ThreadCounter.
                 ThreadCounter.Signal();
