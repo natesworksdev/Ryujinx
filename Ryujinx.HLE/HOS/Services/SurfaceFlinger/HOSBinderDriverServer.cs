@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private static object Lock = new object();
 
-        public static long RegisterBinderObject(IBinder binder)
+        public static int RegisterBinderObject(IBinder binder)
         {
             lock (Lock)
             {
@@ -22,6 +22,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 RegisteredBinderObjects.Add(LastBinderId, binder);
 
                 return LastBinderId;
+            }
+        }
+
+        public static void UnregisterBinderObject(int binderId)
+        {
+            lock (Lock)
+            {
+                RegisteredBinderObjects.Remove(binderId);
             }
         }
 

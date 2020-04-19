@@ -123,8 +123,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             IBinder producer = context.Device.System.SurfaceFlinger.OpenLayer(context.Process, layerId);
 
-            HOSBinderDriverServer.RegisterBinderObject(producer);
-
             Parcel parcel = new Parcel(0x28, 0x4);
 
             parcel.WriteObject(producer, "dispdrv\0");
@@ -161,8 +159,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             Display disp = _displays.GetData<Display>((int)displayId);
 
             IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(context.Process, out long layerId);
-
-            HOSBinderDriverServer.RegisterBinderObject(producer);
 
             Parcel parcel = new Parcel(0x28, 0x4);
 

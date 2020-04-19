@@ -38,6 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private class Layer
         {
+            public int                    ProducerBinderId;
             public IGraphicBufferProducer Producer;
             public BufferItemConsumer     Consumer;
             public KProcess               Owner;
@@ -139,9 +140,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 _layers.Add(layerId, new Layer
                 {
-                    Producer = producer,
-                    Consumer = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
-                    Owner    = process
+                    ProducerBinderId = HOSBinderDriverServer.RegisterBinderObject(producer),
+                    Producer         = producer,
+                    Consumer         = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
+                    Owner            = process
                 });
 
                 LastId = layerId;
@@ -152,6 +154,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (Lock)
             {
+                 Layer layer = GetLayerByIdLocked(layerId);
+
+                if (layer != null)
+                {
+                    HOSBinderDriverServer.UnregisterBinderObject(layer.ProducerBinderId);
+                }
+
                 return _layers.Remove(layerId);
             }
         }

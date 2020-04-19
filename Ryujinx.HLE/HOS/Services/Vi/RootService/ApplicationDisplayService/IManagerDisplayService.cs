@@ -19,9 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService.ApplicationDisplayService
             long layerFlags = context.RequestData.ReadInt64();
             long displayId  = context.RequestData.ReadInt64();
 
-            IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(context.Process, out long layerId);
-
-            HOSBinderDriverServer.RegisterBinderObject(producer);
+            context.Device.System.SurfaceFlinger.CreateLayer(context.Process, out long layerId);
 
             context.ResponseData.Write(layerId);
 
