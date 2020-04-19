@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.Exceptions
 {
-    public class InvalidStructLayoutException<T> : Exception 
+    public class InvalidStructLayoutException<T> : Exception where T : struct
     {
         static readonly Type _structType = typeof(T);
 

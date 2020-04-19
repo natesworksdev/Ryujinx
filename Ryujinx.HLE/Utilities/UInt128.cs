@@ -5,8 +5,8 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.Utilities
 {
-    [StructLayout(LayoutKind.Sequential)]
-    public struct UInt128 : IEquatable<UInt128>
+    [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 16)]
+    public readonly struct UInt128 : IEquatable<UInt128>
     {
         public readonly long Low;
         public readonly long High;
@@ -36,38 +36,38 @@ namespace Ryujinx.HLE.Utilities
             High = Convert.ToInt64(hex.Substring(0, 16), 16);
         }
 
-        public void Write(BinaryWriter binaryWriter)
+        public readonly void Write(BinaryWriter binaryWriter)
         {
             binaryWriter.Write(Low);
             binaryWriter.Write(High);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return High.ToString("x16") + Low.ToString("x16");
         }
 
-        public static bool operator ==(UInt128 x, UInt128 y)
+        public static bool operator ==(in UInt128 x, in UInt128 y)
         {
             return x.Equals(y);
         }
 
-        public static bool operator !=(UInt128 x, UInt128 y)
+        public static bool operator !=(in UInt128 x, in UInt128 y)
         {
             return !x.Equals(y);
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is UInt128 uint128 && Equals(uint128);
         }
 
-        public bool Equals(UInt128 cmpObj)
+        public readonly bool Equals(UInt128 cmpObj)
         {
             return Low == cmpObj.Low && High == cmpObj.High;
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return HashCode.Combine(Low, High);
         }

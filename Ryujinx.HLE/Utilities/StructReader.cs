@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.Utilities
 {
     class StructReader
     {
-        private MemoryManager _memory;
+        private readonly MemoryManager _memory;
 
         public long Position { get; private set; }
 

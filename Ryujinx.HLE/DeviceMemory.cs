@@ -11,7 +11,7 @@ namespace Ryujinx.HLE
 
         public IntPtr RamPointer { get; }
 
-        private unsafe byte* _ramPtr;
+        private unsafe readonly byte* _ramPtr;
 
         public unsafe DeviceMemory()
         {
@@ -47,27 +47,27 @@ namespace Ryujinx.HLE
 
         public unsafe ushort ReadUInt16(long position)
         {
-            return *((ushort*)(_ramPtr + position));
+            return *(ushort*)(_ramPtr + position);
         }
 
         public unsafe uint ReadUInt32(long position)
         {
-            return *((uint*)(_ramPtr + position));
+            return *(uint*)(_ramPtr + position);
         }
 
         public unsafe ulong ReadUInt64(long position)
         {
-            return *((ulong*)(_ramPtr + position));
+            return *(ulong*)(_ramPtr + position);
         }
 
-        public unsafe T ReadStruct<T>(long position)
+        public unsafe T ReadStruct<T>(long position) where T : struct
         {
             return Marshal.PtrToStructure<T>((IntPtr)(_ramPtr + position));
         }
 
-        public unsafe ref T GetStructRef<T>(long position)
+        public unsafe ref T GetStructRef<T>(long position) where T : struct
         {
-            return ref Unsafe.AsRef<T>((void*)(IntPtr)(_ramPtr + position));
+            return ref Unsafe.AsRef<T>((void*)(_ramPtr + position));
         }
 
         public void WriteSByte(long position, sbyte value)
@@ -97,20 +97,20 @@ namespace Ryujinx.HLE
 
         public unsafe void WriteUInt16(long position, ushort value)
         {
-            *((ushort*)(_ramPtr + position)) = value;
+            *(ushort*)(_ramPtr + position) = value;
         }
 
         public unsafe void WriteUInt32(long position, uint value)
         {
-            *((uint*)(_ramPtr + position)) = value;
+            *(uint*)(_ramPtr + position) = value;
         }
 
         public unsafe void WriteUInt64(long position, ulong value)
         {
-            *((ulong*)(_ramPtr + position)) = value;
+            *(ulong*)(_ramPtr + position) = value;
         }
 
-        public unsafe void WriteStruct<T>(long position, T value)
+        public unsafe void WriteStruct<T>(long position, in T value) where T : struct
         {
             Marshal.StructureToPtr(value, (IntPtr)(_ramPtr + position), false);
         }

@@ -1,13 +1,10 @@
-using Ryujinx.Common;
-using System;
-
 namespace Ryujinx.Graphics.Texture
 {
-    public struct Size
+    public readonly struct Size
     {
-        public int Width  { get; }
-        public int Height { get; }
-        public int Depth  { get; }
+        public readonly int Width  { get; }
+        public readonly int Height { get; }
+        public readonly int Depth  { get; }
 
         public Size(int width, int height, int depth)
         {

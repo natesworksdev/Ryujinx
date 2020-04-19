@@ -4,7 +4,7 @@ namespace ARMeilleure.Translation
 {
     class PriorityQueue<T>
     {
-        private ConcurrentStack<T>[] _queues;
+        private readonly ConcurrentStack<T>[] _queues;
 
         public PriorityQueue(int priorities)
         {
@@ -31,7 +31,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            value = default(T);
+            value = default;
 
             return false;
         }

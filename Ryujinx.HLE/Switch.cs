@@ -38,17 +38,9 @@ namespace Ryujinx.HLE
 
         public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, IRenderer renderer, IAalOutput audioOut)
         {
-            if (renderer == null)
-            {
-                throw new ArgumentNullException(nameof(renderer));
-            }
+            renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));
 
-            if (audioOut == null)
-            {
-                throw new ArgumentNullException(nameof(audioOut));
-            }
-
-            AudioOut = audioOut;
+            AudioOut = audioOut ?? throw new ArgumentNullException(nameof(audioOut));
 
             Memory = new DeviceMemory();
 

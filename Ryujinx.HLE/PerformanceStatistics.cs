@@ -33,7 +33,7 @@ namespace Ryujinx.HLE
 
             _framesRendered = new long[2];
 
-            _frameLock = new object[] { new object(), new object() };
+            _frameLock = new [] { new object(), new object() };
 
             _executionTime = new Stopwatch();
 

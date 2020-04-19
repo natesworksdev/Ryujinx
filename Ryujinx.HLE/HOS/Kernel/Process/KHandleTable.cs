@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public const int SelfThreadHandle  = (0x1ffff << 15) | 0;
         public const int SelfProcessHandle = (0x1ffff << 15) | 1;
 
-        private Horizon _system;
+        private readonly Horizon _system;
 
         private KHandleEntry[] _table;
 

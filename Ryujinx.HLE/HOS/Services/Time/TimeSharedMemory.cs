@@ -86,7 +86,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             WriteObjectToSharedMemory(NetworkSystemClockContextOffset, 4, context);
         }
 
-        private T ReadObjectFromSharedMemory<T>(long offset, long padding)
+        private T ReadObjectFromSharedMemory<T>(long offset, long padding) where T : struct
         {
             long indexOffset  = _timeSharedMemoryAddress + offset;
 
@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return result;
         }
 
-        private void WriteObjectToSharedMemory<T>(long offset, long padding, T value)
+        private void WriteObjectToSharedMemory<T>(long offset, long padding, in T value) where T : struct
         {
             long indexOffset  = _timeSharedMemoryAddress + offset;
             uint newIndex     = _device.Memory.ReadUInt32(indexOffset) + 1;

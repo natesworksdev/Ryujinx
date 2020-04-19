@@ -45,10 +45,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             return NvInternalResult.NotImplemented;
         }
 
-        protected delegate NvInternalResult IoctlProcessor<T>(ref T arguments);
-        protected delegate NvInternalResult IoctlProcessorSpan<T>(Span<T> arguments);
-        protected delegate NvInternalResult IoctlProcessorInline<T, T1>(ref T arguments, ref T1 inlineData);
-        protected delegate NvInternalResult IoctlProcessorInlineSpan<T, T1>(ref T arguments, Span<T1> inlineData);
+        protected delegate NvInternalResult IoctlProcessor<T>(ref T arguments) where T : struct;
+        protected delegate NvInternalResult IoctlProcessorSpan<T>(Span<T> arguments) where T : struct;
+        protected delegate NvInternalResult IoctlProcessorInline<T, T1>(ref T arguments, ref T1 inlineData) where T : struct where T1 : struct;
+        protected delegate NvInternalResult IoctlProcessorInlineSpan<T, T1>(ref T arguments, Span<T1> inlineData) where T : struct where T1 : struct;
 
         protected static NvInternalResult CallIoctlMethod<T>(IoctlProcessor<T> callback, Span<byte> arguments) where T : struct
         {

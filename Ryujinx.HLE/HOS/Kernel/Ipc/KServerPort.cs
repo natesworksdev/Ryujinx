@@ -5,10 +5,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 {
     class KServerPort : KSynchronizationObject
     {
-        private LinkedList<KServerSession>      _incomingConnections;
-        private LinkedList<KLightServerSession> _lightIncomingConnections;
+        private readonly LinkedList<KServerSession>      _incomingConnections;
+        private readonly LinkedList<KLightServerSession> _lightIncomingConnections;
 
-        private KPort _parent;
+        private readonly KPort _parent;
 
         public bool IsLight => _parent.IsLight;
 
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             AcceptIncomingConnection(_lightIncomingConnections, session);
         }
 
-        private void AcceptIncomingConnection<T>(LinkedList<T> list, T session)
+        private void AcceptIncomingConnection<T>(LinkedList<T> list, T session) where T : KAutoObject
         {
             System.CriticalSection.Enter();
 
@@ -54,9 +54,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return AcceptIncomingConnection(_lightIncomingConnections);
         }
 
-        private T AcceptIncomingConnection<T>(LinkedList<T> list)
+        private T AcceptIncomingConnection<T>(LinkedList<T> list) where T : KAutoObject
         {
-            T session = default(T);
+            T session = default;
 
             System.CriticalSection.Enter();
 

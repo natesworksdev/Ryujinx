@@ -89,36 +89,32 @@ namespace Ryujinx.HLE.Utilities
             long position = context.Request.SendBuff[index].Position;
             long size     = context.Request.SendBuff[index].Size;
 
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new MemoryStream();
+            while (size-- > 0)
             {
-                while (size-- > 0)
+                byte value = context.Memory.ReadByte(position++);
+
+                if (value == 0)
                 {
-                    byte value = context.Memory.ReadByte(position++);
-
-                    if (value == 0)
-                    {
-                        break;
-                    }
-
-                    ms.WriteByte(value);
+                    break;
                 }
 
-                return Encoding.UTF8.GetString(ms.ToArray());
+                ms.WriteByte(value);
             }
+
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
 
         public static unsafe int CompareCStr(char* s1, char* s2)
         {
-            int s1Index = 0;
-            int s2Index = 0;
+            int index = 0;
 
-            while (s1[s1Index] != 0 && s2[s2Index] != 0 && s1[s1Index] == s2[s2Index])
+            while (s1[index] != 0 && s1[index] == s2[index])
             {
-                s1Index += 1;
-                s2Index += 1;
+                index++;
             }
 
-            return s2[s2Index] - s1[s1Index];
+            return s2[index] - s1[index];
         }
 
         public static unsafe int LengthCstr(char* s)

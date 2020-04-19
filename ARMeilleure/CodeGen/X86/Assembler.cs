@@ -35,11 +35,11 @@ namespace ARMeilleure.CodeGen.X86
 
         private readonly struct InstructionInfo
         {
-            public int OpRMR     { get; }
-            public int OpRMImm8  { get; }
-            public int OpRMImm32 { get; }
-            public int OpRImm64  { get; }
-            public int OpRRM     { get; }
+            public readonly int OpRMR     { get; }
+            public readonly int OpRMImm8  { get; }
+            public readonly int OpRMImm32 { get; }
+            public readonly int OpRImm64  { get; }
+            public readonly int OpRRM     { get; }
 
             public InstructionFlags Flags { get; }
 

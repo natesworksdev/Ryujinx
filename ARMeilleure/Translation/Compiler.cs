@@ -9,7 +9,7 @@ namespace ARMeilleure.Translation
 {
     static class Compiler
     {
-        public static T Compile<T>(ControlFlowGraph cfg, OperandType[] argTypes, OperandType retType, CompilerOptions options)
+        public static T Compile<T>(ControlFlowGraph cfg, OperandType[] argTypes, OperandType retType, CompilerOptions options) where T : Delegate
         {
             CompiledFunction func = CompileAndGetCf(cfg, argTypes, retType, options);
 

@@ -42,7 +42,7 @@ namespace ARMeilleure.Memory
 
             fixed (byte* ptr = data)
             {
-                Marshal.StructureToPtr<T>(value, (IntPtr)ptr, false);
+                Marshal.StructureToPtr(value, (IntPtr)ptr, false);
             }
 
             memory.WriteBytes(position, data);
@@ -50,22 +50,20 @@ namespace ARMeilleure.Memory
 
         public static string ReadAsciiString(MemoryManager memory, long position, long maxSize = -1)
         {
-            using (MemoryStream ms = new MemoryStream())
+            using MemoryStream ms = new MemoryStream();
+            for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
             {
-                for (long offs = 0; offs < maxSize || maxSize == -1; offs++)
+                byte value = (byte)memory.ReadByte(position + offs);
+
+                if (value == 0)
                 {
-                    byte value = (byte)memory.ReadByte(position + offs);
-
-                    if (value == 0)
-                    {
-                        break;
-                    }
-
-                    ms.WriteByte(value);
+                    break;
                 }
 
-                return Encoding.ASCII.GetString(ms.ToArray());
+                ms.WriteByte(value);
             }
+
+            return Encoding.ASCII.GetString(ms.ToArray());
         }
     }
 }
