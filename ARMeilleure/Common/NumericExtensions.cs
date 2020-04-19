@@ -12,26 +12,26 @@ namespace ARMeilleure.Common
         // As per https://github.com/dotnet/runtime/issues/35159
         // The JIT, for whatever reason, generates significantly better code
         // if you call a separate helper method with the *same* code.
-        // This will hopefully be fixed at some point.
+        // This will hopefully be fixed at some point. This only applies for
+        // conversions *from* booleans, not *to* booleans.
+        //
+        // However, better code (without a load/store) is generated for conversion *to* boolean
+        // if you convert to a byte prior to casting.
         private static class BoolMethods
         {
             [MethodImpl(MethodOptions.FastInline)]
-            internal static unsafe bool AsBool([Range(0, 1)] byte value) => *(bool*)&value;
+            internal static bool AsBool([Range(0, 1)] byte value) => Unsafe.As<byte, bool>(ref value);
             [MethodImpl(MethodOptions.FastInline)]
-            internal static unsafe bool AsBool([Range(0, 1)] int value) => *(bool*)&value;
+            internal static bool AsBool([Range(0, 1)] int value) => Unsafe.As<byte, bool>(ref Unsafe.AsRef((byte)value));
             [MethodImpl(MethodOptions.FastInline)]
-            internal static unsafe bool AsBool([Range(0, 1)] uint value) => *(bool*)&value;
+            internal static bool AsBool([Range(0, 1)] uint value) => Unsafe.As<byte, bool>(ref Unsafe.AsRef((byte)value));
 
             [MethodImpl(MethodOptions.FastInline)]
-            internal static unsafe byte AsByte(bool value) => *(byte*)&value;
-            [MethodImpl(MethodOptions.FastInline)]
-            internal static unsafe int AsInt(bool value) => *(byte*)&value;
-            [MethodImpl(MethodOptions.FastInline)]
-            internal static unsafe uint AsUInt(bool value) => *(byte*)&value;
+            internal static byte AsByte(bool value) => Unsafe.As<bool, byte>(ref value);
         }
-        #endregion
+        #endregion Boolean Methods
 
-        #endregion
+        #endregion Private methods because the JIT is weird at optimizing
 
         #region Boolean Conversions
 
@@ -64,13 +64,13 @@ namespace ARMeilleure.Common
         /// <summary>Converts a given value which is false or true into 0 or 1, respectively.</summary>
         /// <returns>0 or 1, given false or true, respectively.</returns>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static int AsInt(this bool value) => BoolMethods.AsInt(value);
+        internal static int AsInt(this bool value) => BoolMethods.AsByte(value);
 
         /// <summary>Converts a given value which is false or true into 0 or 1, respectively.</summary>
         /// <returns>0 or 1, given false or true, respectively.</returns>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static uint AsUInt(this bool value) => BoolMethods.AsUInt(value);
+        internal static uint AsUInt(this bool value) => BoolMethods.AsByte(value);
 
-        #endregion
+        #endregion Boolean Conversions
     }
 }

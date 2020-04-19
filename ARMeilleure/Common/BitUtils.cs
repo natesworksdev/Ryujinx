@@ -36,10 +36,10 @@ namespace ARMeilleure.Common
         #region Rotations
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static int RotateRight(this int bits, [Range(0, 32)] int shift, [Range(0, 32)] int size = 32) => (int)RotateRight((uint)bits, shift, size);
+        internal static int RotateRight(this int bits, [Range(0, 31)] int shift, [Range(0, 32)] int size = 32) => (int)RotateRight((uint)bits, shift, size);
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static uint RotateRight(this uint bits, [Range(0, 32)] int shift, [Range(0, 32)] int size = 32)
+        internal static uint RotateRight(this uint bits, [Range(0, 31)] int shift, [Range(0, 32)] int size = 32)
         {
             return size == 32 ?
                 BitOperations.RotateRight(bits, shift) :
@@ -47,10 +47,10 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static long RotateRight(this long bits, [Range(0, 64)] int shift, [Range(0, 64)] int size = 64) => (long)RotateRight((ulong)bits, shift, size);
+        internal static long RotateRight(this long bits, [Range(0, 63)] int shift, [Range(0, 64)] int size = 64) => (long)RotateRight((ulong)bits, shift, size);
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static ulong RotateRight(this ulong bits, [Range(0, 64)] int shift, [Range(0, 64)] int size = 64)
+        internal static ulong RotateRight(this ulong bits, [Range(0, 63)] int shift, [Range(0, 64)] int size = 64)
         {
             return size == 64 ?
                 BitOperations.RotateRight(bits, shift) :
