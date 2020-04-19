@@ -376,7 +376,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _device.Statistics.RecordGameFrameTime();
         }
 
-        public void onBuffersReleased()
+        public void OnBuffersReleased()
         {
 
         }

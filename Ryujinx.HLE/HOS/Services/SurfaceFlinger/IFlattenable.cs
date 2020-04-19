@@ -6,7 +6,7 @@
 
         public uint GetFdCount();
 
-        public void Flattern(Parcel parcel);
+        public void Flatten(Parcel parcel);
 
         public void Unflatten(Parcel parcel);
     }

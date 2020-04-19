@@ -22,7 +22,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         public ResultCode GetRelayService(ServiceCtx context)
         {
             MakeObject(context, new HOSBinderDriverServer());
-            //MakeObject(context, new IHOSBinderDriverOld(context.Device.System));
 
             return ResultCode.Success;
         }
@@ -50,7 +49,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         public ResultCode GetIndirectDisplayTransactionService(ServiceCtx context)
         {
             MakeObject(context, new HOSBinderDriverServer());
-            //MakeObject(context, new IHOSBinderDriverOld(context.Device.System));
 
             return ResultCode.Success;
         }

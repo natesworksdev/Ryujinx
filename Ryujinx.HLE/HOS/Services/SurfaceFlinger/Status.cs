@@ -10,7 +10,6 @@
         BadValue         = -22,
         InvalidOperation = -37,
 
-
         // Producer flags
         BufferNeedsReallocation = 1,
         ReleaseAllBuffers       = 2,

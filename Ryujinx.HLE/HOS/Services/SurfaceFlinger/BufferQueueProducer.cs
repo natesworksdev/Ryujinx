@@ -23,10 +23,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             Core = core;
 
-            _stickyTransform         = 0;
-            _callbackTicket          = 0;
-            _nextCallbackTicket      = 0;
-            _currentCallbackTicket   = 0;
+            _stickyTransform       = 0;
+            _callbackTicket        = 0;
+            _nextCallbackTicket    = 0;
+            _currentCallbackTicket = 0;
         }
 
         public override Status RequestBuffer(int slot, out AndroidStrongPointer<GraphicBuffer> graphicBuffer)
@@ -98,7 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 listener = Core.ConsumerListener;
             }
 
-            listener?.onBuffersReleased();
+            listener?.OnBuffersReleased();
 
             return Status.Success;
         }
@@ -172,11 +172,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
                     else
                     {
-                        string formatedError = $"Preallocated buffer mismatch - slot {slot}\n" +
-                                               $"available: Width = {graphicBuffer.Width} Height = {graphicBuffer.Height} format = {graphicBuffer.Format} Usage = {graphicBuffer.Usage:x} " +
-                                               $"requested: Width = {width} Height = {height} format = {format} Usage = {usage:x}";
+                        string formattedError = $"Preallocated buffer mismatch - slot {slot}\n" +
+                                               $"available: Width = {graphicBuffer.Width} Height = {graphicBuffer.Height} Format = {graphicBuffer.Format} Usage = {graphicBuffer.Usage:x} " +
+                                               $"requested: Width = {width} Height = {height} Format = {format} Usage = {usage:x}";
 
-                        Logger.PrintError(LogClass.SurfaceFlinger, formatedError);
+                        Logger.PrintError(LogClass.SurfaceFlinger, formattedError);
 
                         slot  = BufferSlotArray.InvalidBufferSlot;
                         fence = AndroidFence.NoFence;
@@ -372,7 +372,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 item.GraphicBuffer.Set(Core.Slots[slot].GraphicBuffer);
                 item.GraphicBuffer.Object.IncrementNvMapHandleRefCount(Core.Owner);
-
 
                 _stickyTransform = input.StickyTransform;
 
@@ -615,7 +614,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                             Core.FreeAllBuffersLocked();
                             Core.SignalDequeueEvent();
                             Core.SignalWaitBufferFreeEvent();
-                            Core.SignalFrameAvailaibleEvent();
+                            Core.SignalFrameAvailableEvent();
 
                             cleared = true;
 
@@ -624,7 +623,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
                 }
 
-                // The dequeue event must not be signaled two time in case of clean up but for some reasons, it still signal the wait buffer free event two time...
+                // The dequeue event must not be signaled two times in case of clean up, but for some reason, it still signals the wait buffer free event two times...
                 if (!cleared)
                 {
                     Core.SignalDequeueEvent();

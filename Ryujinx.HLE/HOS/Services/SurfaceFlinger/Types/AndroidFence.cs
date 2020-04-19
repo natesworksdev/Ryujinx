@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return 0;
         }
 
-        public void Flattern(Parcel parcel)
+        public void Flatten(Parcel parcel)
         {
             parcel.WriteUnmanagedType(ref this);
         }

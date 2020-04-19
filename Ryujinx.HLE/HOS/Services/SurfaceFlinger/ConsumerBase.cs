@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         }
 
-        public virtual void onBuffersReleased()
+        public virtual void OnBuffersReleased()
         {
             lock (Lock)
             {

@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             public int                     SwapInterval;
             public AndroidFence            Fence;
 
-            public void Flattern(Parcel parcel)
+            public void Flatten(Parcel parcel)
             {
                 parcel.WriteUnmanagedType(ref this);
             }

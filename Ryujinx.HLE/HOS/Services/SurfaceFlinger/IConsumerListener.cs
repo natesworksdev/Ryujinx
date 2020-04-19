@@ -6,6 +6,6 @@
 
         void OnFrameReplaced(ref BufferItem item);
 
-        void onBuffersReleased();
+        void OnBuffersReleased();
     }
 }

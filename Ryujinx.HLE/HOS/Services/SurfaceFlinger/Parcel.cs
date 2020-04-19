@@ -38,7 +38,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             _rawData = new byte[BitUtils.AlignUp(headerSize + payloadSize + objectsSize, 4)];
 
-
             Header.PayloadSize   = payloadSize;
             Header.ObjectsSize   = objectsSize;
             Header.PayloadOffset = headerSize;
@@ -62,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 return "";
             }
 
-            ReadOnlySpan<byte> data = ReadInplace((size + 1) * 2);
+            ReadOnlySpan<byte> data = ReadInPlace((size + 1) * 2);
 
             // Return the unicode string without the last character (null terminator)
             return Encoding.Unicode.GetString(data.Slice(0, (size) * 2));
@@ -94,12 +93,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public T ReadUnmanagedType<T>() where T: unmanaged
         {
-            ReadOnlySpan<byte> data = ReadInplace(Unsafe.SizeOf<T>());
+            ReadOnlySpan<byte> data = ReadInPlace(Unsafe.SizeOf<T>());
 
             return MemoryMarshal.Cast<byte, T>(data)[0];
         }
 
-        public ReadOnlySpan<byte> ReadInplace(int size)
+        public ReadOnlySpan<byte> ReadInPlace(int size)
         {
             ReadOnlySpan<byte> result = Payload.Slice(_payloadPosition, size);
 
@@ -169,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             WriteInt64(value.GetFlattenedSize());
 
-            value.Flattern(this);
+            value.Flatten(this);
         }
 
         public void WriteStatus(Status status) => WriteUnmanagedType(ref status);

@@ -19,7 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return new Rect(Width, Height);
         }
 
-        public void Flattern(Parcel parcel)
+        public void Flatten(Parcel parcel)
         {
             parcel.WriteUnmanagedType(ref Header);
             parcel.WriteUnmanagedType(ref Buffer);
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (Header.IntsCount != 0x51)
             {
-                throw new NotImplementedException($"Unexpected Graphic Buffer ints count (expected 0x51, found 0x{Header.IntsCount:x}");
+                throw new NotImplementedException($"Unexpected Graphic Buffer ints count (expected 0x51, found 0x{Header.IntsCount:x})");
             }
 
             Buffer = parcel.ReadUnmanagedType<NvGraphicBuffer>();

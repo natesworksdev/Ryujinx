@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _waitBufferFreeEvent.WritableEvent.Signal();
         }
 
-        public void SignalFrameAvailaibleEvent()
+        public void SignalFrameAvailableEvent()
         {
             _frameAvailaibleEvent.WritableEvent.Signal();
         }
@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (needFrameAvailableSignal)
             {
-                SignalFrameAvailaibleEvent();
+                SignalFrameAvailableEvent();
             }
             else
             {
