@@ -19,8 +19,8 @@ namespace Ryujinx.Common.Logging
 
         static Logger()
         {
-            m_EnabledLevels  = new bool[(int)EnumUtils.GetMaxValue<LogLevel>()];
-            m_EnabledClasses = new bool[(int)EnumUtils.GetMaxValue<LogClass>()];
+            m_EnabledLevels  = new bool[(int)EnumUtils.GetMaxValue<LogLevel>() + 1];
+            m_EnabledClasses = new bool[(int)EnumUtils.GetMaxValue<LogClass>() + 1];
 
             m_EnabledLevels[(int)LogLevel.Stub]      = true;
             m_EnabledLevels[(int)LogLevel.Info]      = true;
