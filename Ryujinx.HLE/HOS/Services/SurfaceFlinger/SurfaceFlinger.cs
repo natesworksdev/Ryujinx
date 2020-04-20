@@ -231,7 +231,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 Layer layer = GetLayerByIdLocked(LastId);
 
-                Status acquireStatus = layer.Consumer.AcquireBuffer(out BufferItem item, 0, false);
+                Status acquireStatus = layer.Consumer.AcquireBuffer(out BufferItem item, 0);
 
                 if (acquireStatus == Status.Success)
                 {

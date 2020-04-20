@@ -1,4 +1,5 @@
-﻿using Ryujinx.Graphics.Gpu;
+﻿using Ryujinx.Common.Logging;
+using Ryujinx.Graphics.Gpu;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Runtime.CompilerServices;
@@ -40,15 +41,29 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void WaitForever(GpuContext gpuContext)
         {
-            Wait(gpuContext, Timeout.InfiniteTimeSpan);
+            bool hasTimeout = Wait(gpuContext, TimeSpan.FromMilliseconds(3000));
+
+            if (hasTimeout)
+            {
+                Logger.PrintError(LogClass.SurfaceFlinger, "Android fence didn't signal in 3000 ms");
+                Wait(gpuContext, Timeout.InfiniteTimeSpan);
+            }
+
         }
 
-        public void Wait(GpuContext gpuContext, TimeSpan timeout)
+        public bool Wait(GpuContext gpuContext, TimeSpan timeout)
         {
             for (int i = 0; i < FenceCount; i++)
             {
-                NvFences[i].Wait(gpuContext, timeout);
+                bool hasTimeout = NvFences[i].Wait(gpuContext, timeout);
+
+                if (hasTimeout)
+                {
+                    return true;
+                }
             }
+
+            return false;
         }
 
         public uint GetFlattenedSize()

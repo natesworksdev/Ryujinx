@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public Status AcquireBuffer(out BufferItem bufferItem, ulong expectedPresent, bool waitForFence)
+        public Status AcquireBuffer(out BufferItem bufferItem, ulong expectedPresent, bool waitForFence = false)
         {
             lock (Lock)
             {
