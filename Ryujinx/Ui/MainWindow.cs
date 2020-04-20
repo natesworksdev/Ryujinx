@@ -1,5 +1,7 @@
 using ARMeilleure.Translation.PTC;
 using Gtk;
+using LibHac.Common;
+using LibHac.Ns;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -8,6 +10,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -68,6 +71,7 @@ namespace Ryujinx.Ui
         [GUI] TreeView       _gameTable;
         [GUI] ScrolledWindow _gameTableWindow;
         [GUI] TreeSelection  _gameTableSelection;
+        [GUI] Label          _gpuName;
         [GUI] Label          _progressLabel;
         [GUI] Label          _firmwareVersionLabel;
         [GUI] LevelBar       _progressBar;
@@ -83,6 +87,12 @@ namespace Ryujinx.Ui
         private MainWindow(Builder builder) : base(builder.GetObject("_mainWin").Handle)
         {
             builder.Autoconnect(this);
+
+            int monitorWidth  = Display.PrimaryMonitor.Geometry.Width  * Display.PrimaryMonitor.ScaleFactor;
+            int monitorHeight = Display.PrimaryMonitor.Geometry.Height * Display.PrimaryMonitor.ScaleFactor;
+
+            this.DefaultWidth  = monitorWidth < 1280 ? monitorWidth : 1280;
+            this.DefaultHeight = monitorHeight < 760 ? monitorHeight : 760;
 
             this.DeleteEvent      += Window_Close;
             _fullScreen.Activated += FullScreen_Toggled;
@@ -152,7 +162,8 @@ namespace Ryujinx.Ui
                 typeof(string),
                 typeof(string),
                 typeof(string),
-                typeof(string));
+                typeof(string),
+                typeof(BlitStruct<ApplicationControlProperty>));
 
             _tableStore.SetSortFunc(5, TimePlayedSort);
             _tableStore.SetSortFunc(6, LastPlayedSort);
@@ -295,11 +306,48 @@ namespace Ryujinx.Ui
             }
             else
             {
+                if (ConfigurationState.Instance.Logger.EnableDebug.Value)
+                {
+                    MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    {
+                        Title         = "Ryujinx - Warning",
+                        Text          = "You have debug logging enabled, which is designed to be used by developers only.",
+                        SecondaryText = "For optimal performance, it's recommended to disable debug logging. Would you like to disable debug logging now?"
+                    };
+
+                    if (debugWarningDialog.Run() == (int)ResponseType.Yes)
+                    {
+                        ConfigurationState.Instance.Logger.EnableDebug.Value = false;
+                        SaveConfig();
+                    }
+
+                    debugWarningDialog.Dispose();
+                }
+
+                if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
+                {
+                    MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    {
+                        Title         = "Ryujinx - Warning",
+                        Text          = "You have shader dumping enabled, which is designed to be used by developers only.",
+                        SecondaryText = "For optimal performance, it's recommended to disable shader dumping. Would you like to disable shader dumping now?"
+                    };
+
+                    if (shadersDumpWarningDialog.Run() == (int)ResponseType.Yes)
+                    {
+                        ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = "";
+                        SaveConfig();
+                    }
+
+                    shadersDumpWarningDialog.Dispose();
+                }
+
                 Logger.RestartTime();
 
                 HLE.Switch device = InitializeSwitchInstance();
 
                 // TODO: Move this somewhere else + reloadable?
+                Graphics.Gpu.GraphicsConfig.MaxAnisotropy   = ConfigurationState.Instance.Graphics.MaxAnisotropy;
                 Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
@@ -355,7 +403,9 @@ namespace Ryujinx.Ui
                 else
                 {
                     Logger.PrintWarning(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
-                    End(device);
+                    device.Dispose();
+
+                    return;
                 }
 
                 _emulationContext = device;
@@ -393,7 +443,19 @@ namespace Ryujinx.Ui
 
         private void CreateGameWindow(HLE.Switch device)
         {
-            device.Hid.InitializePrimaryController(ConfigurationState.Instance.Hid.ControllerType);
+            ControllerType type = (Ryujinx.Configuration.Hid.ControllerType)ConfigurationState.Instance.Hid.ControllerType switch {
+                Ryujinx.Configuration.Hid.ControllerType.ProController => ControllerType.ProController,
+                Ryujinx.Configuration.Hid.ControllerType.Handheld => ControllerType.Handheld,
+                Ryujinx.Configuration.Hid.ControllerType.NpadPair => ControllerType.JoyconPair,
+                Ryujinx.Configuration.Hid.ControllerType.NpadLeft => ControllerType.JoyconLeft,
+                Ryujinx.Configuration.Hid.ControllerType.NpadRight => ControllerType.JoyconRight,
+                _ => ControllerType.Handheld
+            };
+            
+            device.Hid.Npads.AddControllers(new ControllerConfig {
+                Player = PlayerIndex.Player1,
+                Type = type
+            });
 
             _gLWidget = new GLRenderer(_emulationContext);
 
@@ -583,7 +645,8 @@ namespace Ryujinx.Ui
                     args.AppData.LastPlayed,
                     args.AppData.FileExtension,
                     args.AppData.FileSize,
-                    args.AppData.Path);
+                    args.AppData.Path,
+                    args.AppData.ControlHolder);
             });
         }
 
@@ -609,6 +672,7 @@ namespace Ryujinx.Ui
             {
                 _hostStatus.Text = args.HostStatus;
                 _gameStatus.Text = args.GameStatus;
+                _gpuName.Text    = args.GpuName;
 
                 if (args.VSyncEnabled)
                 {
@@ -655,7 +719,9 @@ namespace Ryujinx.Ui
 
             if (treeIter.UserData == IntPtr.Zero) return;
 
-            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, treeIter, _virtualFileSystem);
+            BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
+
+            GameTableContextMenu contextMenu = new GameTableContextMenu(_tableStore, controlData, treeIter, _virtualFileSystem);
             contextMenu.ShowAll();
             contextMenu.PopupAtPointer(null);
         }
@@ -930,7 +996,7 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            SwitchSettings settingsWin = new SwitchSettings();
+            SwitchSettings settingsWin = new SwitchSettings(_virtualFileSystem, _contentManager);
             settingsWin.Show();
         }
 

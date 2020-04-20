@@ -7,8 +7,8 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Services;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.SystemState;
-using Ryujinx.HLE.Input;
 using System;
 using System.Threading;
 
@@ -61,6 +61,7 @@ namespace Ryujinx.HLE
             Statistics = new PerformanceStatistics();
 
             Hid = new Hid(this, System.HidBaseAddress);
+            Hid.InitDevices();
 
             VsyncEvent = new AutoResetEvent(true);
         }
@@ -68,6 +69,8 @@ namespace Ryujinx.HLE
         public void Initialize()
         {
             System.State.SetLanguage((SystemLanguage)ConfigurationState.Instance.System.Language.Value);
+
+            System.State.SetRegion((SystemRegion)ConfigurationState.Instance.System.Region.Value);
 
             EnableDeviceVsync = ConfigurationState.Instance.Graphics.EnableVsync;
 

@@ -108,6 +108,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateShaderState(state);
             }
 
+            if (state.QueryModified(MethodOffset.RasterizeEnable))
+            {
+                UpdateRasterizerState(state);
+            }
+
             if (state.QueryModified(MethodOffset.RtColorState,
                                     MethodOffset.RtDepthStencilState,
                                     MethodOffset.RtControl,
@@ -115,6 +120,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                                     MethodOffset.RtDepthStencilEnable))
             {
                 UpdateRenderTargetState(state, useControl: true);
+            }
+
+            if (state.QueryModified(MethodOffset.ScissorState))
+            {
+                UpdateScissorState(state);
             }
 
             if (state.QueryModified(MethodOffset.DepthTestEnable,
@@ -204,6 +214,16 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             CommitBindings();
+        }
+
+        /// <summary>
+        /// Updates Rasterizer primitive discard state based on guest gpu state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        private void UpdateRasterizerState(GpuState state)
+        {
+            Boolean32 enable = state.Get<Boolean32>(MethodOffset.RasterizeEnable);
+            _context.Renderer.Pipeline.SetRasterizerDiscard(!enable);
         }
 
         /// <summary>
@@ -319,6 +339,27 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             // Colors are disabled by writing 0 to the format.
             return colorState.Format != 0 && colorState.WidthOrStride != 0;
+        }
+
+        /// <summary>
+        /// Updates host scissor test state based on current GPU state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        private void UpdateScissorState(GpuState state)
+        {
+            for (int index = 0; index < Constants.TotalViewports; index++)
+            {
+                ScissorState scissor = state.Get<ScissorState>(MethodOffset.ScissorState, index);
+
+                bool enable = scissor.Enable && (scissor.X1 != 0 || scissor.Y1 != 0 || scissor.X2 != 0xffff || scissor.Y2 != 0xffff);
+
+                _context.Renderer.Pipeline.SetScissorEnable(index, enable);
+
+                if (enable)
+                {
+                    _context.Renderer.Pipeline.SetScissor(index, scissor.X1, scissor.Y1, scissor.X2 - scissor.X1, scissor.Y2 - scissor.Y1);
+                }
+            }
         }
 
         /// <summary>
@@ -506,6 +547,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 vertexAttribs[index] = new VertexAttribDescriptor(
                     vertexAttrib.UnpackBufferIndex(),
                     vertexAttrib.UnpackOffset(),
+                    vertexAttrib.UnpackIsConstant(),
                     format);
             }
 

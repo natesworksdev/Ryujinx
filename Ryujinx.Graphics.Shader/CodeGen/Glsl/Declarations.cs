@@ -15,11 +15,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static void Declare(CodeGenContext context, StructuredProgramInfo info)
         {
-            context.AppendLine("#version 420 core");
+            context.AppendLine("#version 430 core");
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
             context.AppendLine("#extension GL_ARB_shader_ballot : enable");
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
-            context.AppendLine("#extension GL_ARB_shader_storage_buffer_object : enable");
 
             if (context.Config.Stage == ShaderStage.Compute)
             {
@@ -366,11 +365,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             foreach (int attr in info.IAttributes.OrderBy(x => x))
             {
-                string iq = info.InterpolationQualifiers[attr].ToGlslQualifier();
+                string iq = string.Empty;
 
-                if (iq != string.Empty)
+                if (context.Config.Stage == ShaderStage.Fragment)
                 {
-                    iq += " ";
+                    iq = context.Config.ImapTypes[attr].GetFirstUsedType() switch
+                    {
+                        PixelImap.Constant => "flat ",
+                        PixelImap.ScreenLinear => "noperspective ",
+                        _ => string.Empty
+                    };
                 }
 
                 context.AppendLine($"layout (location = {attr}) {iq}in vec4 {DefaultNames.IAttributePrefix}{attr}{suffix};");
@@ -401,9 +405,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             for (int attr = 0; attr < MaxAttributes; attr++)
             {
-                string iq = $"{DefineNames.OutQualifierPrefixName}{attr} ";
-
-                context.AppendLine($"layout (location = {attr}) {iq}out vec4 {DefaultNames.OAttributePrefix}{attr};");
+                context.AppendLine($"layout (location = {attr}) out vec4 {DefaultNames.OAttributePrefix}{attr};");
             }
 
             foreach (int attr in info.OAttributes.OrderBy(x => x).Where(x => x >= MaxAttributes))

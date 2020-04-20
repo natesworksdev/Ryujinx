@@ -95,9 +95,29 @@ namespace ARMeilleure.Instructions
             EmitFcvt_s_Gp(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1));
         }
 
+        public static void Fcvtas_S(ArmEmitterContext context)
+        {
+            EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1), signed: true, scalar: true);
+        }
+
+        public static void Fcvtas_V(ArmEmitterContext context)
+        {
+            EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1), signed: true, scalar: false);
+        }
+
         public static void Fcvtau_Gp(ArmEmitterContext context)
         {
             EmitFcvt_u_Gp(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1));
+        }
+
+        public static void Fcvtau_S(ArmEmitterContext context)
+        {
+            EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1), signed: false, scalar: true);
+        }
+
+        public static void Fcvtau_V(ArmEmitterContext context)
+        {
+            EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.AwayFromZero, op1), signed: false, scalar: false);
         }
 
         public static void Fcvtl_V(ArmEmitterContext context)
@@ -248,7 +268,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvtn(context, signed: true, scalar: true);
+                EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToEven, op1), signed: true, scalar: true);
             }
         }
 
@@ -260,7 +280,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvtn(context, signed: true, scalar: false);
+                EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToEven, op1), signed: true, scalar: false);
             }
         }
 
@@ -272,7 +292,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvtn(context, signed: false, scalar: true);
+                EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToEven, op1), signed: false, scalar: true);
             }
         }
 
@@ -284,7 +304,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvtn(context, signed: false, scalar: false);
+                EmitFcvt(context, (op1) => EmitRoundMathCall(context, MidpointRounding.ToEven, op1), signed: false, scalar: false);
             }
         }
 
@@ -578,7 +598,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitFcvtn(ArmEmitterContext context, bool signed, bool scalar)
+        private static void EmitFcvt(ArmEmitterContext context, Func1I emit, bool signed, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -597,7 +617,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = context.VectorExtract(type, n, index);
 
-                Operand e = EmitRoundMathCall(context, MidpointRounding.ToEven, ne);
+                Operand e = emit(ne);
 
                 if (sizeF == 0)
                 {

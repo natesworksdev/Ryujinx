@@ -54,7 +54,7 @@ namespace Ryujinx
 
                 ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(localConfigurationPath);
 
-                ConfigurationState.Instance.Load(configurationFileFormat);
+                ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
             }
             else if (File.Exists(globalConfigurationPath))
             {
@@ -62,7 +62,7 @@ namespace Ryujinx
 
                 ConfigurationFileFormat configurationFileFormat = ConfigurationFileFormat.Load(globalConfigurationPath);
 
-                ConfigurationState.Instance.Load(configurationFileFormat);
+                ConfigurationState.Instance.Load(configurationFileFormat, ConfigurationPath);
             }
             else
             {

@@ -1,10 +1,13 @@
 using Ryujinx.Graphics.Shader.Instructions;
 using System;
+using System.Reflection.Emit;
 
 namespace Ryujinx.Graphics.Shader.Decoders
 {
     static class OpCodeTable
     {
+        public delegate object OpActivator(InstEmitter emitter, ulong address, long opCode);
+
         private const int EncodingBits = 14;
 
         private class TableEntry
@@ -15,11 +18,31 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
             public int XBits { get; }
 
+            public OpActivator OpActivator { get; }
+
             public TableEntry(InstEmitter emitter, Type opCodeType, int xBits)
             {
-                Emitter    = emitter;
-                OpCodeType = opCodeType;
-                XBits      = xBits;
+                Emitter     = emitter;
+                OpCodeType  = opCodeType;
+                XBits       = xBits;
+                OpActivator = CacheOpActivator(opCodeType);
+            }
+
+            private static OpActivator CacheOpActivator(Type type)
+            {
+                Type[] argTypes = new Type[] { typeof(InstEmitter), typeof(ulong), typeof(long) };
+
+                DynamicMethod mthd = new DynamicMethod($"Make{type.Name}", type, argTypes);
+
+                ILGenerator generator = mthd.GetILGenerator();
+
+                generator.Emit(OpCodes.Ldarg_0);
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldarg_2);
+                generator.Emit(OpCodes.Newobj, type.GetConstructor(argTypes));
+                generator.Emit(OpCodes.Ret);
+
+                return (OpActivator)mthd.CreateDelegate(typeof(OpActivator));
             }
         }
 
@@ -48,6 +71,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("0100110001110x", InstEmit.Dadd,    typeof(OpCodeFArithCbuf));
             Set("0011100x01110x", InstEmit.Dadd,    typeof(OpCodeDArithImm));
             Set("0101110001110x", InstEmit.Dadd,    typeof(OpCodeFArithReg));
+            Set("1111000011110x", InstEmit.Depbar,  typeof(OpCode));
             Set("010010110111xx", InstEmit.Dfma,    typeof(OpCodeFArithCbuf));
             Set("0011011x0111xx", InstEmit.Dfma,    typeof(OpCodeDArithImm));
             Set("010100110111xx", InstEmit.Dfma,    typeof(OpCodeFArithRegCbuf));
@@ -66,6 +90,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("0011100x01011x", InstEmit.Fadd,    typeof(OpCodeFArithImm));
             Set("000010xxxxxxxx", InstEmit.Fadd,    typeof(OpCodeFArithImm32));
             Set("0101110001011x", InstEmit.Fadd,    typeof(OpCodeFArithReg));
+            Set("010010111010xx", InstEmit.Fcmp,    typeof(OpCodeFArithCbuf));
+            Set("0011011x1010xx", InstEmit.Fcmp,    typeof(OpCodeFArithImm));
+            Set("010110111010xx", InstEmit.Fcmp,    typeof(OpCodeFArithReg));
+            Set("010100111010xx", InstEmit.Fcmp,    typeof(OpCodeFArithRegCbuf));
             Set("010010011xxxxx", InstEmit.Ffma,    typeof(OpCodeFArithCbuf));
             Set("0011001x1xxxxx", InstEmit.Ffma,    typeof(OpCodeFArithImm));
             Set("000011xxxxxxxx", InstEmit.Ffma32i, typeof(OpCodeFArithImm32));
@@ -120,6 +148,10 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("010011001100xx", InstEmit.Iadd3,   typeof(OpCodeAluCbuf));
             Set("0011100x1100xx", InstEmit.Iadd3,   typeof(OpCodeAluImm));
             Set("010111001100xx", InstEmit.Iadd3,   typeof(OpCodeAluReg));
+            Set("010010110100xx", InstEmit.Icmp,    typeof(OpCodeAluCbuf));
+            Set("0011011x0100xx", InstEmit.Icmp,    typeof(OpCodeAluImm));
+            Set("010110110100xx", InstEmit.Icmp,    typeof(OpCodeAluReg));
+            Set("010100110100xx", InstEmit.Icmp,    typeof(OpCodeAluRegCbuf));
             Set("010010100xxxxx", InstEmit.Imad,    typeof(OpCodeAluCbuf));
             Set("0011010x0xxxxx", InstEmit.Imad,    typeof(OpCodeAluImm));
             Set("010110100xxxxx", InstEmit.Imad,    typeof(OpCodeAluReg));
@@ -157,6 +189,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("000000010000xx", InstEmit.Mov,     typeof(OpCodeAluImm32));
             Set("0101110010011x", InstEmit.Mov,     typeof(OpCodeAluReg));
             Set("0101000010000x", InstEmit.Mufu,    typeof(OpCodeFArith));
+            Set("0101000010110x", InstEmit.Nop,     typeof(OpCode));
             Set("1111101111100x", InstEmit.Out,     typeof(OpCode));
             Set("111000101010xx", InstEmit.Pbk,     typeof(OpCodePush));
             Set("0100110000001x", InstEmit.Popc,    typeof(OpCodeAluCbuf));
@@ -201,6 +234,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
             Set("1101111101001x", InstEmit.Txq,     typeof(OpCodeTex));
             Set("1101111101010x", InstEmit.TxqB,    typeof(OpCodeTex));
             Set("01011111xxxxxx", InstEmit.Vmad,    typeof(OpCodeVideo));
+            Set("0011101xxxxxxx", InstEmit.Vmnmx,   typeof(OpCodeVideo));
             Set("0101000011011x", InstEmit.Vote,    typeof(OpCodeVote));
             Set("0100111xxxxxxx", InstEmit.Xmad,    typeof(OpCodeAluCbuf));
             Set("0011011x00xxxx", InstEmit.Xmad,    typeof(OpCodeAluImm));
@@ -259,13 +293,13 @@ namespace Ryujinx.Graphics.Shader.Decoders
             }
         }
 
-        public static (InstEmitter emitter, Type opCodeType) GetEmitter(long opCode)
+        public static (InstEmitter emitter, OpActivator opActivator) GetEmitter(long opCode)
         {
             TableEntry entry = _opCodes[(ulong)opCode >> (64 - EncodingBits)];
 
             if (entry != null)
             {
-                return (entry.Emitter, entry.OpCodeType);
+                return (entry.Emitter, entry.OpActivator);
             }
 
             return (null, null);

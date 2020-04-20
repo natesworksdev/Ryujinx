@@ -10,6 +10,8 @@ namespace Ryujinx.Graphics.OpenGL
     {
         private Program _program;
 
+        private bool _rasterizerDiscard;
+
         private VertexArray _vertexArray;
         private Framebuffer _framebuffer;
 
@@ -19,21 +21,24 @@ namespace Ryujinx.Graphics.OpenGL
 
         private PrimitiveType _primitiveType;
 
-        private int  _stencilFrontMask;
+        private int _stencilFrontMask;
         private bool _depthMask;
         private bool _depthTest;
         private bool _hasDepthBuffer;
 
         private TextureView _unit0Texture;
 
-        private ClipOrigin    _clipOrigin;
+        private ClipOrigin _clipOrigin;
         private ClipDepthMode _clipDepthMode;
 
         private uint[] _componentMasks;
 
+        private bool _scissor0Enable = false;
+
         internal Pipeline()
         {
-            _clipOrigin    = ClipOrigin.LowerLeft;
+            _rasterizerDiscard = false;
+            _clipOrigin = ClipOrigin.LowerLeft;
             _clipDepthMode = ClipDepthMode.NegativeOneToOne;
         }
 
@@ -56,6 +61,8 @@ namespace Ryujinx.Graphics.OpenGL
             GL.ClearBuffer(ClearBuffer.Color, index, colors);
 
             RestoreComponentMask(index);
+
+            _framebuffer.SignalModified();
         }
 
         public void ClearRenderTargetDepthStencil(float depthValue, bool depthMask, int stencilValue, int stencilMask)
@@ -98,6 +105,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.DepthMask(_depthMask);
             }
+
+            _framebuffer.SignalModified();
         }
 
         public void DispatchCompute(int groupsX, int groupsY, int groupsZ)
@@ -137,6 +146,8 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 DrawImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
+
+            _framebuffer.SignalModified();
         }
 
         private void DrawQuadsImpl(
@@ -247,7 +258,7 @@ namespace Ryujinx.Graphics.OpenGL
             switch (_elementsType)
             {
                 case DrawElementsType.UnsignedShort: indexElemSize = 2; break;
-                case DrawElementsType.UnsignedInt:   indexElemSize = 4; break;
+                case DrawElementsType.UnsignedInt: indexElemSize = 4; break;
             }
 
             IntPtr indexBaseOffset = _indexBaseOffset + firstIndex * indexElemSize;
@@ -281,15 +292,17 @@ namespace Ryujinx.Graphics.OpenGL
                     firstVertex,
                     firstInstance);
             }
+
+            _framebuffer.SignalModified();
         }
 
         private void DrawQuadsIndexedImpl(
-            int    indexCount,
-            int    instanceCount,
+            int indexCount,
+            int instanceCount,
             IntPtr indexBaseOffset,
-            int    indexElemSize,
-            int    firstVertex,
-            int    firstInstance)
+            int indexElemSize,
+            int firstVertex,
+            int firstInstance)
         {
             int quadsCount = indexCount / 4;
 
@@ -363,12 +376,12 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private void DrawQuadStripIndexedImpl(
-            int    indexCount,
-            int    instanceCount,
+            int indexCount,
+            int instanceCount,
             IntPtr indexBaseOffset,
-            int    indexElemSize,
-            int    firstVertex,
-            int    firstInstance)
+            int indexElemSize,
+            int firstVertex,
+            int firstInstance)
         {
             // TODO: Instanced rendering.
             int quadsCount = (indexCount - 2) / 2;
@@ -404,11 +417,11 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         private void DrawIndexedImpl(
-            int    indexCount,
-            int    instanceCount,
+            int indexCount,
+            int instanceCount,
             IntPtr indexBaseOffset,
-            int    firstVertex,
-            int    firstInstance)
+            int firstVertex,
+            int firstInstance)
         {
             if (firstInstance == 0 && firstVertex == 0 && instanceCount == 1)
             {
@@ -632,6 +645,20 @@ namespace Ryujinx.Graphics.OpenGL
             _program.Bind();
         }
 
+        public void SetRasterizerDiscard(bool discard)
+        {
+            if (discard)
+            {
+                GL.Enable(EnableCap.RasterizerDiscard);
+            }
+            else
+            {
+                GL.Disable(EnableCap.RasterizerDiscard);
+            }
+
+            _rasterizerDiscard = discard;
+        }
+
         public void SetRenderTargetColorMasks(uint[] componentMasks)
         {
             _componentMasks = (uint[])componentMasks.Clone();
@@ -672,6 +699,28 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 ((Sampler)sampler).Bind(unit);
             }
+        }
+
+        public void SetScissorEnable(int index, bool enable)
+        {
+            if (enable)
+            {
+                GL.Enable(IndexedEnableCap.ScissorTest, index);
+            }
+            else
+            {
+                GL.Disable(IndexedEnableCap.ScissorTest, index);
+            }
+
+            if (index == 0)
+            {
+                _scissor0Enable = enable;
+            }
+        }
+
+        public void SetScissor(int index, int x, int y, int width, int height)
+        {
+            GL.ScissorIndexed(index, x, y, width, height);
         }
 
         public void SetStencilTest(StencilTestDescriptor stencilTest)
@@ -925,6 +974,22 @@ namespace Ryujinx.Graphics.OpenGL
                     (_componentMasks[index] & 2u) != 0,
                     (_componentMasks[index] & 4u) != 0,
                     (_componentMasks[index] & 8u) != 0);
+            }
+        }
+
+        public void RestoreScissor0Enable()
+        {
+            if (_scissor0Enable)
+            {
+                GL.Enable(IndexedEnableCap.ScissorTest, 0);
+            }
+        }
+
+        public void RestoreRasterizerDiscard()
+        {
+            if (_rasterizerDiscard)
+            {
+                GL.Enable(EnableCap.RasterizerDiscard);
             }
         }
 

@@ -2,11 +2,14 @@ using ARMeilleure.Instructions;
 using ARMeilleure.State;
 using System;
 using System.Collections.Generic;
+using System.Reflection.Emit;
 
 namespace ARMeilleure.Decoders
 {
     static class OpCodeTable
     {
+        public delegate object MakeOp(InstDescriptor inst, ulong address, int opCode);
+
         private const int FastLookupSize = 0x1000;
 
         private struct InstInfo
@@ -18,12 +21,32 @@ namespace ARMeilleure.Decoders
 
             public Type Type { get; }
 
+            public MakeOp MakeOp { get; }
+
             public InstInfo(int mask, int value, InstDescriptor inst, Type type)
             {
                 Mask  = mask;
                 Value = value;
                 Inst  = inst;
                 Type  = type;
+                MakeOp = CacheOpActivator(type);
+            }
+
+            private static MakeOp CacheOpActivator(Type type)
+            {
+                Type[] argTypes = new Type[] { typeof(InstDescriptor), typeof(ulong), typeof(int) };
+
+                DynamicMethod mthd = new DynamicMethod($"Make{type.Name}", type, argTypes);
+
+                ILGenerator generator = mthd.GetILGenerator();
+
+                generator.Emit(OpCodes.Ldarg_0);
+                generator.Emit(OpCodes.Ldarg_1);
+                generator.Emit(OpCodes.Ldarg_2);
+                generator.Emit(OpCodes.Newobj, type.GetConstructor(argTypes));
+                generator.Emit(OpCodes.Ret);
+
+                return (MakeOp)mthd.CreateDelegate(typeof(MakeOp));
             }
         }
 
@@ -275,7 +298,11 @@ namespace ARMeilleure.Decoders
             SetA64("000111100x1xxxxxxxxx11xxxxxxxxxx", InstName.Fcsel_S,         InstEmit.Fcsel_S,         typeof(OpCodeSimdFcond));
             SetA64("00011110xx10001xx10000xxxxxxxxxx", InstName.Fcvt_S,          InstEmit.Fcvt_S,          typeof(OpCodeSimd));
             SetA64("x00111100x100100000000xxxxxxxxxx", InstName.Fcvtas_Gp,       InstEmit.Fcvtas_Gp,       typeof(OpCodeSimdCvt));
+            SetA64("010111100x100001110010xxxxxxxxxx", InstName.Fcvtas_S,        InstEmit.Fcvtas_S,        typeof(OpCodeSimd));
+            SetA64("0>0011100<100001110010xxxxxxxxxx", InstName.Fcvtas_V,        InstEmit.Fcvtas_V,        typeof(OpCodeSimd));
             SetA64("x00111100x100101000000xxxxxxxxxx", InstName.Fcvtau_Gp,       InstEmit.Fcvtau_Gp,       typeof(OpCodeSimdCvt));
+            SetA64("011111100x100001110010xxxxxxxxxx", InstName.Fcvtau_S,        InstEmit.Fcvtau_S,        typeof(OpCodeSimd));
+            SetA64("0>1011100<100001110010xxxxxxxxxx", InstName.Fcvtau_V,        InstEmit.Fcvtau_V,        typeof(OpCodeSimd));
             SetA64("0x0011100x100001011110xxxxxxxxxx", InstName.Fcvtl_V,         InstEmit.Fcvtl_V,         typeof(OpCodeSimd));
             SetA64("x00111100x110000000000xxxxxxxxxx", InstName.Fcvtms_Gp,       InstEmit.Fcvtms_Gp,       typeof(OpCodeSimdCvt));
             SetA64("x00111100x110001000000xxxxxxxxxx", InstName.Fcvtmu_Gp,       InstEmit.Fcvtmu_Gp,       typeof(OpCodeSimdCvt));
@@ -1034,32 +1061,32 @@ namespace ARMeilleure.Decoders
             }
         }
 
-        public static (InstDescriptor inst, Type type) GetInstA32(int opCode)
+        public static (InstDescriptor inst, MakeOp makeOp) GetInstA32(int opCode)
         {
             return GetInstFromList(_instA32FastLookup[ToFastLookupIndex(opCode)], opCode);
         }
 
-        public static (InstDescriptor inst, Type type) GetInstT32(int opCode)
+        public static (InstDescriptor inst, MakeOp makeOp) GetInstT32(int opCode)
         {
             return GetInstFromList(_instT32FastLookup[ToFastLookupIndex(opCode)], opCode);
         }
 
-        public static (InstDescriptor inst, Type type) GetInstA64(int opCode)
+        public static (InstDescriptor inst, MakeOp makeOp) GetInstA64(int opCode)
         {
             return GetInstFromList(_instA64FastLookup[ToFastLookupIndex(opCode)], opCode);
         }
 
-        private static (InstDescriptor inst, Type type) GetInstFromList(InstInfo[] insts, int opCode)
+        private static (InstDescriptor inst, MakeOp makeOp) GetInstFromList(InstInfo[] insts, int opCode)
         {
             foreach (InstInfo info in insts)
             {
                 if ((opCode & info.Mask) == info.Value)
                 {
-                    return (info.Inst, info.Type);
+                    return (info.Inst, info.MakeOp);
                 }
             }
 
-            return (new InstDescriptor(InstName.Und, InstEmit.Und), typeof(OpCode));
+            return (new InstDescriptor(InstName.Und, InstEmit.Und), null);
         }
 
         private static int ToFastLookupIndex(int value)
