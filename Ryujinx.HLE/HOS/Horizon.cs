@@ -8,7 +8,9 @@ using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Spl;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
+using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -16,9 +18,11 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Mii;
+using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sm;
+using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
@@ -31,11 +35,14 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
+using Utf8Json;
+using Utf8Json.Resolvers;
 
 using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+using Ryujinx.HLE.HOS.Services.Nv;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -119,6 +126,8 @@ namespace Ryujinx.HLE.HOS
         public ulong  TitleId { get; private set; }
         public string TitleIdText => TitleId.ToString("x16");
 
+        public bool TitleIs64Bit { get; private set; }
+
         public bool EnablePtc { get; set; }
 
         public IntegrityCheckLevel FsIntegrityCheckLevel { get; set; }
@@ -126,6 +135,8 @@ namespace Ryujinx.HLE.HOS
         public int GlobalAccessLogMode { get; set; }
 
         internal long HidBaseAddress { get; private set; }
+
+        internal NvHostSyncpt HostSyncpoint { get; private set; }
 
         public Horizon(Switch device, ContentManager contentManager)
         {
@@ -221,8 +232,24 @@ namespace Ryujinx.HLE.HOS
             // We assume the rtc is system time.
             TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
 
+            // Configure and setup internal offset
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+            
+            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
+
+            if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
+            {
+                internalOffset = internalOffset.AddSeconds(3600L);
+            }
+            else if (!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
+            {
+                internalOffset = internalOffset.AddSeconds(-3600L);
+            }
+
+            internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
+
             // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, TimeSpanType.Zero, TimeSpanType.Zero, false);
+            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
             TimeServiceManager.Instance.SetupStandardLocalSystemClock(null, new SystemClockContext(), systemTime.ToSeconds());
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
@@ -239,6 +266,8 @@ namespace Ryujinx.HLE.HOS
             TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
 
             DatabaseImpl.Instance.InitializeDatabase(device);
+
+            HostSyncpoint = new NvHostSyncpt(device);
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -251,6 +280,11 @@ namespace Ryujinx.HLE.HOS
             LocalFileSystem codeFs = new LocalFileSystem(exeFsDir);
 
             LoadExeFs(codeFs, out _);
+
+            if (TitleId != 0)
+            {
+                EnsureSaveData(new TitleId(TitleId));
+            }
         }
 
         public void LoadXci(string xciFile)
@@ -461,6 +495,54 @@ namespace Ryujinx.HLE.HOS
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
+            if (File.Exists(Path.Combine(Device.FileSystem.GetBasePath(), "games", mainNca.Header.TitleId.ToString("x16"), "updates.json")))
+            {
+                using (Stream stream = File.OpenRead(Path.Combine(Device.FileSystem.GetBasePath(), "games", mainNca.Header.TitleId.ToString("x16"), "updates.json")))
+                {
+                    IJsonFormatterResolver resolver = CompositeResolver.Create(StandardResolver.AllowPrivateSnakeCase);
+                    string updatePath = JsonSerializer.Deserialize<TitleUpdateMetadata>(stream, resolver).Selected;
+
+                    if (File.Exists(updatePath))
+                    {
+                        FileStream file         = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
+                        PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+
+                        foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
+                        {
+                            Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
+
+                            if (result.IsSuccess())
+                            {
+                                Ticket ticket = new Ticket(ticketFile.AsStream());
+
+                                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                            }
+                        }
+
+                        foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                        {
+                            nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                            Nca nca = new Nca(KeySet, ncaFile.AsStorage());
+
+                            if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
+                            {
+                                break;
+                            }
+
+                            if (nca.Header.ContentType == NcaContentType.Program)
+                            {
+                                patchNca = nca;
+                            }
+                            else if (nca.Header.ContentType == NcaContentType.Control)
+                            {
+                                controlNca = nca;
+                            }
+                        }
+                    }
+                }
+            }
+
             if (patchNca == null)
             {
                 if (mainNca.CanOpenSection(NcaSectionType.Data))
@@ -517,6 +599,8 @@ namespace Ryujinx.HLE.HOS
             {
                 EnsureSaveData(new TitleId(TitleId));
             }
+
+            Logger.PrintInfo(LogClass.Loader, $"Application Loaded: {TitleName} v{DisplayVersion} [{TitleIdText}] [{(TitleIs64Bit ? "64-bit" : "32-bit")}]");
         }
 
         private void LoadExeFs(IFileSystem codeFs, out Npdm metaData)
@@ -555,7 +639,8 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            TitleId = metaData.Aci0.TitleId;
+            TitleId      = metaData.Aci0.TitleId;
+            TitleIs64Bit = metaData.Is64Bit;
 
             LoadNso("rtld");
             LoadNso("main");
@@ -661,8 +746,9 @@ namespace Ryujinx.HLE.HOS
 
             ContentManager.LoadEntries(Device);
 
-            TitleName = metaData.TitleName;
-            TitleId   = metaData.Aci0.TitleId;
+            TitleName    = metaData.TitleName;
+            TitleId      = metaData.Aci0.TitleId;
+            TitleIs64Bit = metaData.Is64Bit;
 
             ProgramLoader.LoadStaticObjects(this, metaData, new IExecutable[] { staticObject });
         }
@@ -701,14 +787,14 @@ namespace Ryujinx.HLE.HOS
 
             FileSystemClient fs = Device.FileSystem.FsClient;
 
-            Result rc = fs.EnsureApplicationCacheStorage(out _, titleId, ref ControlData.Value);
+            Result rc = fs.EnsureApplicationCacheStorage(out _, titleId, ref control);
 
             if (rc.IsFailure())
             {
                 Logger.PrintError(LogClass.Application, $"Error calling EnsureApplicationCacheStorage. Result code {rc.ToStringWithName()}");
             }
 
-            rc = EnsureApplicationSaveData(fs, out _, titleId, ref ControlData.Value, ref user);
+            rc = EnsureApplicationSaveData(fs, out _, titleId, ref control, ref user);
 
             if (rc.IsFailure())
             {
@@ -793,6 +879,10 @@ namespace Ryujinx.HLE.HOS
                 {
                     Device.VsyncEvent.Set();
                 }
+
+                // Destroy nvservices channels as KThread could be waiting on some user events.
+                // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
+                INvDrvServices.Destroy();
 
                 // This is needed as the IPC Dummy KThread is also counted in the ThreadCounter.
                 ThreadCounter.Signal();

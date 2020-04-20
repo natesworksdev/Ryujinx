@@ -159,6 +159,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<string> TimeZone { get; private set; }
 
             /// <summary>
+            /// System Time Offset in seconds
+            /// </summary>
+            public ReactiveObject<long> SystemTimeOffset { get; private set; }
+
+            /// <summary>
             /// Enables or disables Docked Mode
             /// </summary>
             public ReactiveObject<bool> EnableDockedMode { get; private set; }
@@ -193,6 +198,7 @@ namespace Ryujinx.Configuration
                 Language                  = new ReactiveObject<Language>();
                 Region                    = new ReactiveObject<Region>();
                 TimeZone                  = new ReactiveObject<string>();
+                SystemTimeOffset          = new ReactiveObject<long>();
                 EnableDockedMode          = new ReactiveObject<bool>();
                 EnableMulticoreScheduling = new ReactiveObject<bool>();
                 EnablePtc                 = new ReactiveObject<bool>();
@@ -328,6 +334,7 @@ namespace Ryujinx.Configuration
                 SystemLanguage            = System.Language,
                 SystemRegion              = System.Region,
                 SystemTimeZone            = System.TimeZone,
+                SystemTimeOffset          = System.SystemTimeOffset,
                 DockedMode                = System.EnableDockedMode,
                 EnableDiscordIntegration  = EnableDiscordIntegration,
                 EnableVsync               = Graphics.EnableVsync,
@@ -377,6 +384,7 @@ namespace Ryujinx.Configuration
             System.Language.Value                  = Language.AmericanEnglish;
             System.Region.Value                    = Region.USA;
             System.TimeZone.Value                  = "UTC";
+            System.SystemTimeOffset.Value          = 0;
             System.EnableDockedMode.Value          = false;
             EnableDiscordIntegration.Value         = true;
             Graphics.EnableVsync.Value             = true;
@@ -512,6 +520,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 5)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 5.");
+
+                configurationFileFormat.SystemTimeOffset = 0;
+
+                configurationFileUpdated = true;
+            }
+
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
@@ -526,6 +543,7 @@ namespace Ryujinx.Configuration
             System.Language.Value                  = configurationFileFormat.SystemLanguage;
             System.Region.Value                    = configurationFileFormat.SystemRegion;
             System.TimeZone.Value                  = configurationFileFormat.SystemTimeZone;
+            System.SystemTimeOffset.Value          = configurationFileFormat.SystemTimeOffset;
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
             EnableDiscordIntegration.Value         = configurationFileFormat.EnableDiscordIntegration;

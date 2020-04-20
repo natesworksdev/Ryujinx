@@ -19,7 +19,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 4;
+        public const int CurrentVersion = 5;
 
         public int Version { get; set; }
 
@@ -92,6 +92,11 @@ namespace Ryujinx.Configuration
         /// Change System TimeZone
         /// </summary>
         public string SystemTimeZone { get; set; }
+
+        /// <summary>
+        /// Change System Time Offset in seconds
+        /// </summary>
+        public long SystemTimeOffset { get; set; }
 
         /// <summary>
         /// Enables or disables Docked Mode
@@ -205,7 +210,7 @@ namespace Ryujinx.Configuration
             File.WriteAllText(path, Encoding.UTF8.GetString(data, 0, data.Length).PrettyPrintJson());
         }
 
-        private class ConfigurationEnumFormatter<T> : IJsonFormatter<T>
+        public class ConfigurationEnumFormatter<T> : IJsonFormatter<T>
             where T : struct
         {
             public void Serialize(ref JsonWriter writer, T value, IJsonFormatterResolver formatterResolver)
