@@ -13,7 +13,7 @@ namespace ARMeilleure.Diagnostics
 
         private int _indentLevel;
 
-        private readonly StringBuilder Builder;
+        private readonly StringBuilder _builder;
 
         private readonly Dictionary<Operand, string> _localNames;
         private readonly Dictionary<ulong, string> _symbolNames;
@@ -22,7 +22,7 @@ namespace ARMeilleure.Diagnostics
         {
             _indentLevel = indent;
 
-            Builder = new StringBuilder();
+            _builder = new StringBuilder();
 
             _localNames = new Dictionary<Operand, string>();
             _symbolNames = new Dictionary<ulong, string>();
@@ -30,11 +30,11 @@ namespace ARMeilleure.Diagnostics
 
         private void Indent()
         {
-            Builder.EnsureCapacity(Builder.Capacity + _indentLevel * Indentation.Length);
+            _builder.EnsureCapacity(_builder.Capacity + _indentLevel * Indentation.Length);
 
             for (int index = 0; index < _indentLevel; index++)
             {
-                Builder.Append(Indentation);
+                _builder.Append(Indentation);
             }
         }
 
@@ -50,7 +50,7 @@ namespace ARMeilleure.Diagnostics
 
         private void DumpBlockName(BasicBlock block)
         {
-            Builder.Append("block").Append(block.Index);
+            _builder.Append("block").Append(block.Index);
         }
 
         private void DumpBlockHeader(BasicBlock block)
@@ -59,30 +59,30 @@ namespace ARMeilleure.Diagnostics
 
             if (block.Next != null)
             {
-                Builder.Append(" (next ");
+                _builder.Append(" (next ");
                 DumpBlockName(block.Next);
-                Builder.Append(')');
+                _builder.Append(')');
             }
 
             if (block.Branch != null)
             {
-                Builder.Append(" (branch ");
+                _builder.Append(" (branch ");
                 DumpBlockName(block.Branch);
-                Builder.Append(')');
+                _builder.Append(')');
             }
 
-            Builder.Append(':');
+            _builder.Append(':');
         }
 
         private void DumpOperand(Operand operand)
         {
             if (operand == null)
             {
-                Builder.Append("<NULL>");
+                _builder.Append("<NULL>");
                 return;
             }
 
-            Builder.Append(GetTypeName(operand.Type)).Append(' ');
+            _builder.Append(GetTypeName(operand.Type)).Append(' ');
 
             switch (operand.Kind)
             {
@@ -94,7 +94,7 @@ namespace ARMeilleure.Diagnostics
                         _localNames.Add(operand, localName);
                     }
 
-                    Builder.Append(localName);
+                    _builder.Append(localName);
                     break;
 
                 case OperandKind.Register:
@@ -102,13 +102,13 @@ namespace ARMeilleure.Diagnostics
 
                     switch (reg.Type)
                     {
-                        case RegisterType.Flag:    Builder.Append('b'); break;
-                        case RegisterType.FpFlag:  Builder.Append('f'); break;
-                        case RegisterType.Integer: Builder.Append('r'); break;
-                        case RegisterType.Vector:  Builder.Append('v'); break;
+                        case RegisterType.Flag:    _builder.Append('b'); break;
+                        case RegisterType.FpFlag:  _builder.Append('f'); break;
+                        case RegisterType.Integer: _builder.Append('r'); break;
+                        case RegisterType.Vector:  _builder.Append('v'); break;
                     }
 
-                    Builder.Append(reg.Index);
+                    _builder.Append(reg.Index);
                     break;
 
                 case OperandKind.Constant:
@@ -119,40 +119,40 @@ namespace ARMeilleure.Diagnostics
                         _symbolNames.Add(operand.Value, symbolName);
                     }
 
-                    Builder.Append("0x").Append(operand.Value.ToString("X"));
+                    _builder.Append("0x").Append(operand.Value.ToString("X"));
                     break;
 
                 case OperandKind.Memory:
                     var memOp = (MemoryOperand)operand;
 
-                    Builder.Append('[');
+                    _builder.Append('[');
 
                     DumpOperand(memOp.BaseAddress);
 
                     if (memOp.Index != null)
                     {
-                        Builder.Append(" + ");
+                        _builder.Append(" + ");
 
                         DumpOperand(memOp.Index);
 
                         switch (memOp.Scale)
                         {
-                            case Multiplier.x2: Builder.Append("*2"); break;
-                            case Multiplier.x4: Builder.Append("*4"); break;
-                            case Multiplier.x8: Builder.Append("*8"); break;
+                            case Multiplier.x2: _builder.Append("*2"); break;
+                            case Multiplier.x4: _builder.Append("*4"); break;
+                            case Multiplier.x8: _builder.Append("*8"); break;
                         }
                     }
 
                     if (memOp.Displacement != 0)
                     {
-                        Builder.Append(" + 0x").Append(memOp.Displacement.ToString("X"));
+                        _builder.Append(" + 0x").Append(memOp.Displacement.ToString("X"));
                     }
 
-                    Builder.Append(']');
+                    _builder.Append(']');
                     break;
 
                 default:
-                    Builder.Append(operand.Type);
+                    _builder.Append(operand.Type);
                     break;
             }
         }
@@ -167,48 +167,48 @@ namespace ARMeilleure.Diagnostics
 
                     if (index < node.DestinationsCount - 1)
                     {
-                        Builder.Append(", ");
+                        _builder.Append(", ");
                     }
                 }
 
-                Builder.Append(" = ");
+                _builder.Append(" = ");
             }
 
             switch (node)
             {
                 case PhiNode phi:
-                    Builder.Append("Phi ");
+                    _builder.Append("Phi ");
 
                     for (int index = 0; index < phi.SourcesCount; index++)
                     {
-                        Builder.Append('(');
+                        _builder.Append('(');
 
                         DumpBlockName(phi.GetBlock(index));
 
-                        Builder.Append(": ");
+                        _builder.Append(": ");
 
                         DumpOperand(phi.GetSource(index));
 
-                        Builder.Append(')');
+                        _builder.Append(')');
 
                         if (index < phi.SourcesCount - 1)
                         {
-                            Builder.Append(", ");
+                            _builder.Append(", ");
                         }
                     }
                     break;
 
                 case Operation operation:
-                    Builder.Append(operation.Instruction);
+                    _builder.Append(operation.Instruction);
 
                     if (operation.Instruction == Instruction.Extended)
                     {
                         var intrinOp = (IntrinsicOperation)operation;
 
-                        Builder.Append('.').Append(intrinOp.Intrinsic);
+                        _builder.Append('.').Append(intrinOp.Intrinsic);
                     }
 
-                    Builder.Append(' ');
+                    _builder.Append(' ');
 
                     for (int index = 0; index < operation.SourcesCount; index++)
                     {
@@ -216,7 +216,7 @@ namespace ARMeilleure.Diagnostics
 
                         if (index < operation.SourcesCount - 1)
                         {
-                            Builder.Append(", ");
+                            _builder.Append(", ");
                         }
                     }
                     break;
@@ -224,15 +224,15 @@ namespace ARMeilleure.Diagnostics
 
             if (_symbolNames.Count == 1)
             {
-                Builder.Append(" ;; ").Append(_symbolNames.First().Value);
+                _builder.Append(" ;; ").Append(_symbolNames.First().Value);
             }
             else if (_symbolNames.Count > 1)
             {
-                Builder.Append(" ;;");
+                _builder.Append(" ;;");
 
                 foreach ((ulong value, string name) in _symbolNames)
                 {
-                    Builder.Append(" 0x").Append(value.ToString("X")).Append(" = ").Append(name);
+                    _builder.Append(" 0x").Append(value.ToString("X")).Append(" = ").Append(name);
                 }
             }
 
@@ -249,7 +249,7 @@ namespace ARMeilleure.Diagnostics
                 dumper.Indent();
                 dumper.DumpBlockHeader(block);
 
-                dumper.Builder.AppendLine();
+                dumper._builder.AppendLine();
 
                 dumper.IncreaseIndentation();
 
@@ -258,13 +258,13 @@ namespace ARMeilleure.Diagnostics
                     dumper.Indent();
                     dumper.DumpNode(node);
 
-                    dumper.Builder.AppendLine();
+                    dumper._builder.AppendLine();
                 }
 
                 dumper.DecreaseIndentation();
             }
 
-            return dumper.Builder.ToString();
+            return dumper._builder.ToString();
         }
 
         private static string GetTypeName(OperandType type)
