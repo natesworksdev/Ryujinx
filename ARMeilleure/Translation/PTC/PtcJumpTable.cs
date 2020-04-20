@@ -8,7 +8,7 @@ namespace ARMeilleure.Translation.PTC
     [Serializable]
     class PtcJumpTable
     {
-        private List<KeyValuePair<long, DirectHostAddress>> _jumpTable;
+        private List<KeyValuePair<long, DirectHostAddress>>   _jumpTable;
         private List<KeyValuePair<long, IndirectHostAddress>> _dynamicTable;
 
         private List<ulong> _targets;
@@ -58,14 +58,10 @@ namespace ARMeilleure.Translation.PTC
         {
             jumpTable.ExpandIfNeededJumpTable(TableEnd);
 
-            int entry = 0;
-
-            foreach (var item in _jumpTable)
+            for (int entry = 1; entry <= TableEnd; entry++)
             {
-                entry += 1;
-
-                long guestAddress = item.Key;
-                DirectHostAddress directHostAddress = item.Value;
+                long              guestAddress      = _jumpTable[entry].Key;
+                DirectHostAddress directHostAddress = _jumpTable[entry].Value;
 
                 long hostAddress;
 
@@ -109,14 +105,10 @@ namespace ARMeilleure.Translation.PTC
 
             jumpTable.ExpandIfNeededDynamicTable(DynTableEnd);
 
-            int entry = 0;
-
-            foreach (var item in _dynamicTable)
+            for (int entry = 1; entry <= DynTableEnd; entry++)
             {
-                entry += 1;
-
-                long guestAddress = item.Key;
-                IndirectHostAddress indirectHostAddress = item.Value;
+                long                guestAddress        = _dynamicTable[entry].Key;
+                IndirectHostAddress indirectHostAddress = _dynamicTable[entry].Value;
 
                 long hostAddress;
 

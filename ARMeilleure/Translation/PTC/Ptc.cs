@@ -480,8 +480,8 @@ namespace ARMeilleure.Translation.PTC
                 int translateCount = 0;
 
                 ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
+
                 Parallel.ForEach(PtcProfiler.ProfiledFuncsHighCq, parallelOptions, (item, state) =>
-                //foreach (var item in PtcProfiler.ProfiledFuncsHighCq)
                 {
                     if (!funcsHighCq.ContainsKey(item.Key))
                     {
@@ -499,10 +499,8 @@ namespace ARMeilleure.Translation.PTC
                     if (State == PtcState.Closing)
                     {
                         state.Stop();
-                        //break;
                     }
                 });
-                //}
 
                 if (translateCount != 0)
                 {

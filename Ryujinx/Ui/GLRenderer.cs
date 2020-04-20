@@ -194,8 +194,8 @@ namespace Ryujinx.Ui
                 string titleNameSection = string.IsNullOrWhiteSpace(_device.System.TitleName) ? string.Empty
                     : $" - {_device.System.TitleName}";
 
-                string titleVersionSection = string.IsNullOrWhiteSpace(_device.System.TitleVersionString) ? string.Empty
-                    : $" v{_device.System.TitleVersionString}";
+                string titleVersionSection = string.IsNullOrWhiteSpace(_device.System.DisplayVersion) ? string.Empty
+                    : $" v{_device.System.DisplayVersion}";
 
                 string titleIdSection = string.IsNullOrWhiteSpace(_device.System.TitleIdText) ? string.Empty
                     : $" ({_device.System.TitleIdText.ToUpper()})";
