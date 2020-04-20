@@ -2,6 +2,7 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -12,41 +13,43 @@ namespace ARMeilleure.Translation
     {
         private delegate long GuestFunction(IntPtr nativeContextPtr);
 
-        private static GuestFunction _directCallStub;
-        private static GuestFunction _directTailCallStub;
-        private static GuestFunction _indirectCallStub;
-        private static GuestFunction _indirectTailCallStub;
+        private static IntPtr _directCallStubPtr;
+        private static IntPtr _directTailCallStubPtr;
+        private static IntPtr _indirectCallStubPtr;
+        private static IntPtr _indirectTailCallStubPtr;
 
-        private static object _lock;
+        private static readonly object _locker = new object();
         private static bool _initialized;
-
-        static DirectCallStubs()
-        {
-            _lock = new object();
-        }
 
         public static void InitializeStubs()
         {
             if (_initialized) return;
-            lock (_lock)
+
+            lock (_locker)
             {
                 if (_initialized) return;
-                _directCallStub = GenerateDirectCallStub(false);
-                _directTailCallStub = GenerateDirectCallStub(true);
-                _indirectCallStub = GenerateIndirectCallStub(false);
-                _indirectTailCallStub = GenerateIndirectCallStub(true);
+
+                _directCallStubPtr       = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateDirectCallStub(false));
+                _directTailCallStubPtr   = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateDirectCallStub(true));
+                _indirectCallStubPtr     = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateIndirectCallStub(false));
+                _indirectTailCallStubPtr = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateIndirectCallStub(true));
+
                 _initialized = true;
             }
         }
 
         public static IntPtr DirectCallStub(bool tailCall)
         {
-            return Marshal.GetFunctionPointerForDelegate(tailCall ? _directTailCallStub : _directCallStub);
+            Debug.Assert(_initialized);
+
+            return tailCall ? _directTailCallStubPtr : _directCallStubPtr;
         }
 
         public static IntPtr IndirectCallStub(bool tailCall)
         {
-            return Marshal.GetFunctionPointerForDelegate(tailCall ? _indirectTailCallStub : _indirectCallStub);
+            Debug.Assert(_initialized);
+
+            return tailCall ? _indirectTailCallStubPtr : _indirectCallStubPtr;
         }
 
         private static void EmitCall(EmitterContext context, Operand address, bool tailCall)
@@ -80,20 +83,13 @@ namespace ARMeilleure.Translation
 
             ControlFlowGraph cfg = context.GetControlFlowGraph();
 
-            OperandType[] argTypes = new OperandType[]
-            {
-                OperandType.I64
-            };
+            OperandType[] argTypes = new OperandType[] { OperandType.I64 };
 
-            return Compiler.Compile<GuestFunction>(
-                cfg,
-                argTypes,
-                OperandType.I64,
-                CompilerOptions.HighCq);
+            return Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq);
         }
 
         /// <summary>
-        /// Generates a stub that is used to find function addresses and add them to an indirect table. 
+        /// Generates a stub that is used to find function addresses and add them to an indirect table.
         /// Used for indirect calls entries (already claimed) when their jump table does not have the host address yet.
         /// Takes a NativeContext like a translated guest function, and extracts the target indirect table entry from the NativeContext.
         /// If the function we find is highCq, the entry in the table is updated to point to that function rather than this stub.
@@ -116,16 +112,9 @@ namespace ARMeilleure.Translation
 
             ControlFlowGraph cfg = context.GetControlFlowGraph();
 
-            OperandType[] argTypes = new OperandType[]
-            {
-                OperandType.I64
-            };
+            OperandType[] argTypes = new OperandType[] { OperandType.I64 };
 
-            return Compiler.Compile<GuestFunction>(
-                cfg,
-                argTypes,
-                OperandType.I64,
-                CompilerOptions.HighCq);
+            return Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, CompilerOptions.HighCq);
         }
     }
 }

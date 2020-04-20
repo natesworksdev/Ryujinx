@@ -2,6 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.PTC;
 using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -233,7 +234,7 @@ namespace ARMeilleure.Instructions
                 Operand fallbackAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
 
                 EmitNativeCall(context, fallbackAddr, true);
-            } 
+            }
             else
             {
                 context.Return(address);
@@ -281,12 +282,12 @@ namespace ARMeilleure.Instructions
             };
 
             // Currently this uses a size of 1, as higher values inflate code size for no real benefit.
-            for (int i = 0; i < JumpTable.DynamicTableElems; i++) 
+            for (int i = 0; i < JumpTable.DynamicTableElems; i++)
             {
                 if (i == JumpTable.DynamicTableElems - 1)
                 {
                     emitTableEntry(fallbackLabel); // If this is the last entry, avoid emitting the additional label and add.
-                } 
+                }
                 else
                 {
                     Operand nextLabel = Label();
@@ -330,7 +331,18 @@ namespace ARMeilleure.Instructions
                 int entry = context.JumpTable.ReserveDynamicEntry(isJump);
 
                 int jumpOffset = entry * JumpTable.JumpTableStride * JumpTable.DynamicTableElems;
-                Operand dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64() + jumpOffset);
+
+                Operand dynTablePtr;
+
+                if (Ptc.State == PtcState.Disabled)
+                {
+                    dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64() + jumpOffset);
+                }
+                else
+                {
+                    dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64(), true, Ptc.DynamicPointerIndex);
+                    dynTablePtr = context.Add(dynTablePtr, Const((long)jumpOffset));
+                }
 
                 EmitDynamicTableCall(context, dynTablePtr, address, isJump);
             }
@@ -340,8 +352,17 @@ namespace ARMeilleure.Instructions
 
                 int jumpOffset = entry * JumpTable.JumpTableStride + 8; // Offset directly to the host address.
 
-                // TODO: Relocatable jump table ptr for AOT. Would prefer a solution to patch this constant into functions as they are loaded rather than calculate at runtime.
-                Operand tableEntryPtr = Const(context.JumpTable.JumpPointer.ToInt64() + jumpOffset);
+                Operand tableEntryPtr;
+
+                if (Ptc.State == PtcState.Disabled)
+                {
+                    tableEntryPtr = Const(context.JumpTable.JumpPointer.ToInt64() + jumpOffset);
+                }
+                else
+                {
+                    tableEntryPtr = Const(context.JumpTable.JumpPointer.ToInt64(), true, Ptc.JumpPointerIndex);
+                    tableEntryPtr = context.Add(tableEntryPtr, Const((long)jumpOffset));
+                }
 
                 Operand funcAddr = context.Load(OperandType.I64, tableEntryPtr);
 

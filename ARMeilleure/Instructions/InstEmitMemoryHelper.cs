@@ -290,7 +290,7 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblFallbackPath)
         {
-            Operand pte = PtcProfiler.Enabled
+            Operand pte = Ptc.State == PtcState.Disabled
                 ? Const(context.Memory.PageTable.ToInt64())
                 : Const(context.Memory.PageTable.ToInt64(), true, Ptc.PageTableIndex);
 

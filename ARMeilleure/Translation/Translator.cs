@@ -27,11 +27,11 @@ namespace ARMeilleure.Translation
         private readonly Dictionary<ulong, TranslatedFunction> _funcs;
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
 
-        private readonly JumpTable _jumpTable;
-
-        private readonly ConcurrentQueue<RejitRequest> _backgroundQueue;
+        private readonly ConcurrentStack<RejitRequest> _backgroundStack;
 
         private readonly AutoResetEvent _backgroundTranslatorEvent;
+
+        private readonly JumpTable _jumpTable;
 
         private volatile int _threadCount;
 
@@ -44,36 +44,35 @@ namespace ARMeilleure.Translation
             _funcs       = new Dictionary<ulong, TranslatedFunction>();
             _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
-            _jumpTable = JumpTable.Instance;
-
-            _backgroundQueue = new ConcurrentQueue<RejitRequest>();
+            _backgroundStack = new ConcurrentStack<RejitRequest>();
 
             _backgroundTranslatorEvent = new AutoResetEvent(false);
 
+            _jumpTable = new JumpTable();
+
+            JitCache.Initialize();
+
             DirectCallStubs.InitializeStubs();
 
-            if (Ptc.Enabled)
+            if (Ptc.State == PtcState.Enabled)
             {
-                Ptc.LoadTranslations(_funcsHighCq, memory.PageTable);
+                Ptc.LoadTranslations(_funcsHighCq, memory.PageTable, _jumpTable);
             }
         }
 
-        private void TranslateQueuedSubs()
+        private void TranslateStackedSubs()
         {
             while (_threadCount != 0)
             {
-                if (_backgroundQueue.TryDequeue(out RejitRequest request))
+                if (_backgroundStack.TryPop(out RejitRequest request))
                 {
-                    if (!_funcsHighCq.ContainsKey(request.Address))
-                    {
-                        TranslatedFunction func = Translate(_memory, _jumpTable, request.Address, request.Mode, highCq: true);
+                    TranslatedFunction func = Translate(_memory, _jumpTable, request.Address, request.Mode, highCq: true);
 
-                        bool isAddressUnique = _funcsHighCq.TryAdd(request.Address, func);
+                    bool isAddressUnique = _funcsHighCq.TryAdd(request.Address, func);
 
-                        Debug.Assert(isAddressUnique, $"The address 0x{request.Address:X16} is not unique.");
+                    Debug.Assert(isAddressUnique, $"The address 0x{request.Address:X16} is not unique.");
 
-                        _jumpTable.RegisterFunction(request.Address, func);
-                    }
+                    _jumpTable.RegisterFunction(request.Address, func);
                 }
                 else
                 {
@@ -88,12 +87,14 @@ namespace ARMeilleure.Translation
         {
             if (Interlocked.Increment(ref _threadCount) == 1)
             {
-                if (Ptc.Enabled)
+                if (Ptc.State == PtcState.Enabled)
                 {
-                    PtcProfiler.DoAndSaveTranslations(_funcsHighCq, _memory, _jumpTable);
-
-                    PtcProfiler.Start();
+                    Ptc.MakeAndSaveTranslations(_funcsHighCq, _memory, _jumpTable);
                 }
+
+                PtcProfiler.Start();
+
+                Ptc.Disable();
 
                 // Simple heuristic, should be user configurable in future. (1 for 4 core/ht or less, 2 for 6 core+ht etc).
                 // All threads are normal priority except from the last, which just fills as much of the last core as the os lets it with a low priority.
@@ -106,7 +107,7 @@ namespace ARMeilleure.Translation
                 {
                     bool last = i != 0 && i == unboundedThreadCount - 1;
 
-                    Thread backgroundTranslatorThread = new Thread(TranslateQueuedSubs)
+                    Thread backgroundTranslatorThread = new Thread(TranslateStackedSubs)
                     {
                         Name = "CPU.BackgroundTranslatorThread." + i,
                         Priority = last ? ThreadPriority.Lowest : ThreadPriority.Normal
@@ -159,7 +160,7 @@ namespace ARMeilleure.Translation
 
             TranslatedFunction func;
 
-            if (!isCallTarget || !_funcsHighCq.TryGetValue(address, out func))
+            if (!_funcsHighCq.TryGetValue(address, out func))
             {
                 lock (_locker)
                 {
@@ -183,7 +184,7 @@ namespace ARMeilleure.Translation
                     }
                     else if (callCount == MinCallsForRejit)
                     {
-                        _backgroundQueue.Enqueue(new RejitRequest(address, mode));
+                        _backgroundStack.Push(new RejitRequest(address, mode));
 
                         _backgroundTranslatorEvent.Set();
                     }
@@ -232,7 +233,7 @@ namespace ARMeilleure.Translation
 
             GuestFunction func;
 
-            if (PtcProfiler.Enabled)
+            if (Ptc.State == PtcState.Disabled)
             {
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options);
             }
@@ -249,7 +250,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            return new TranslatedFunction(func, rejit: !highCq);
+            return new TranslatedFunction(func, highCq);
         }
 
         private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)

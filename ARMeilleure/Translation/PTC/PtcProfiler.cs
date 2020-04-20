@@ -1,7 +1,5 @@
-using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -18,8 +16,6 @@ namespace ARMeilleure.Translation.PTC
 
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
 
-        private static Dictionary<ulong, ExecutionMode> _profiledFuncsHighCq;
-
         private static readonly BinaryFormatter _binaryFormatter;
 
         private static readonly System.Timers.Timer _timer;
@@ -30,12 +26,12 @@ namespace ARMeilleure.Translation.PTC
 
         private static bool _disposed;
 
-        public static bool Enabled { get; private set; }
+        internal static Dictionary<ulong, ExecutionMode> ProfiledFuncsHighCq { get; private set; }
+
+        internal static bool Enabled { get; private set; }
 
         static PtcProfiler()
         {
-            _profiledFuncsHighCq = new Dictionary<ulong, ExecutionMode>();
-
             _binaryFormatter = new BinaryFormatter();
 
             _timer = new System.Timers.Timer((double)SaveInterval * 1000d);
@@ -47,6 +43,8 @@ namespace ARMeilleure.Translation.PTC
 
             _disposed = false;
 
+            ProfiledFuncsHighCq = new Dictionary<ulong, ExecutionMode>();
+
             Enabled = false;
         }
 
@@ -54,7 +52,7 @@ namespace ARMeilleure.Translation.PTC
         {
             lock (_locker)
             {
-                bool isAddressUnique = _profiledFuncsHighCq.TryAdd(address, mode);
+                bool isAddressUnique = ProfiledFuncsHighCq.TryAdd(address, mode);
 
                 Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
             }
@@ -62,7 +60,7 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void ClearEntries()
         {
-            _profiledFuncsHighCq.Clear();
+            ProfiledFuncsHighCq.Clear();
         }
 
         internal static void Load()
@@ -100,11 +98,11 @@ namespace ARMeilleure.Translation.PTC
 
                         try
                         {
-                            _profiledFuncsHighCq = (Dictionary<ulong, ExecutionMode>)_binaryFormatter.Deserialize(stream);
+                            ProfiledFuncsHighCq = (Dictionary<ulong, ExecutionMode>)_binaryFormatter.Deserialize(stream);
                         }
                         catch
                         {
-                            _profiledFuncsHighCq = new Dictionary<ulong, ExecutionMode>();
+                            ProfiledFuncsHighCq = new Dictionary<ulong, ExecutionMode>();
                         }
                     }
                     catch
@@ -125,7 +123,7 @@ namespace ARMeilleure.Translation.PTC
             compressedStream.SetLength(0L);
         }
 
-        private static void Save(Object source, System.Timers.ElapsedEventArgs e)
+        private static void Save(object source, System.Timers.ElapsedEventArgs e)
         {
             _waitEvent.Reset();
 
@@ -138,7 +136,7 @@ namespace ARMeilleure.Translation.PTC
 
                 lock (_locker)
                 {
-                    _binaryFormatter.Serialize(stream, (object)_profiledFuncsHighCq);
+                    _binaryFormatter.Serialize(stream, (object)ProfiledFuncsHighCq);
                 }
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
@@ -169,85 +167,9 @@ namespace ARMeilleure.Translation.PTC
             _waitEvent.Set();
         }
 
-        internal static void DoAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, MemoryManager memory, JumpTable jumpTable)
-        {
-            if (_profiledFuncsHighCq.Count != 0)
-            {
-                int translateCount = 0; // TODO: bool ?
-
-                void Informer()
-                {
-                    const int refreshRate = 1; // Seconds.
-
-                    do
-                    {
-                        Console.WriteLine($"Informer: {funcsHighCq.Count} of {_profiledFuncsHighCq.Count} functions to translate."); // TODO: .
-
-                        Thread.Sleep(refreshRate * 1000);
-
-                        if (!Ptc.Enabled)
-                        {
-                            break;
-                        }
-                    }
-                    while (funcsHighCq.Count < _profiledFuncsHighCq.Count);
-                }
-
-                Thread informer = new Thread(Informer);
-
-                informer.IsBackground = true;
-                informer.Name = nameof(Informer);
-                informer.Priority = ThreadPriority.Lowest;
-
-                informer.Start();
-
-                Ptc.Start();
-
-                foreach (var item in _profiledFuncsHighCq)
-                //System.Threading.Tasks.Parallel.ForEach(_profiledFuncsHighCq, (item, state) =>
-                {
-                    if (!funcsHighCq.ContainsKey(item.Key))
-                    {
-                        TranslatedFunction func = Translator.Translate(memory, jumpTable, item.Key, item.Value, highCq: true);
-
-                        bool isAddressUnique = funcsHighCq.TryAdd(item.Key, func);
-
-                        Debug.Assert(isAddressUnique, $"The address 0x{item.Key:X16} is not unique.");
-
-                        jumpTable.RegisterFunction(item.Key, func); // TODO: .
-
-                        Interlocked.Increment(ref translateCount);
-                    }
-
-                    if (!Ptc.Enabled)
-                    {
-                        break;
-                        //state.Stop();
-                    }
-                //});
-                }
-
-                Ptc.Stop(onlyTimer: true);
-
-                Ptc.Wait();
-
-                if (translateCount != 0)
-                {
-                    Ptc.MergeAndSave(null, null);
-                }
-
-                Ptc.ClearMemoryStreams();
-            }
-        }
-
-        internal static void Wait()
-        {
-            _waitEvent.WaitOne();
-        }
-
         internal static void Start()
         {
-            if (Ptc.Enabled)
+            if (Ptc.State == PtcState.Enabled)
             {
                 Enabled = true;
 
@@ -263,6 +185,11 @@ namespace ARMeilleure.Translation.PTC
             {
                 _timer.Enabled = false;
             }
+        }
+
+        internal static void Wait()
+        {
+            _waitEvent.WaitOne();
         }
 
         public static void Dispose()

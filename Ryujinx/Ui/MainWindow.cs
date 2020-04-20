@@ -411,7 +411,7 @@ namespace Ryujinx.Ui
 
             _gLWidget.Start();
 
-            Ptc.Stop();
+            Ptc.Close();
             PtcProfiler.Stop();
 
             device.Dispose();

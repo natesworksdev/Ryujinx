@@ -82,7 +82,7 @@ namespace ARMeilleure.Translation
 
         public Operand Call(MethodInfo info, params Operand[] callArgs)
         {
-            if (PtcProfiler.Enabled)
+            if (Ptc.State == PtcState.Disabled)
             {
                 IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
 
