@@ -55,6 +55,8 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
             }
             else
             {
+                _unknownLowEnergy = "low_energy";
+                
                 if (BluetoothEventManager.InitializeBleEventHandle == 0)
                 {
                     BluetoothEventManager.InitializeBleEvent = new KEvent(context.Device.System);
