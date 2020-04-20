@@ -137,7 +137,7 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                 {
                     if (warnAboutTimeout)
                     {
-                        Logger.PrintError(LogClass.Gpu, $"Wait on syncpoint {id} for threshold {threshold} took more than {timeout.Milliseconds}ms, resuming execution...");
+                        Logger.PrintError(LogClass.Gpu, $"Wait on syncpoint {id} for threshold {threshold} took more than {timeout.TotalMilliseconds}ms, resuming execution...");
                     }
 
                     _syncpoints[id].UnregisterCallback(info);
