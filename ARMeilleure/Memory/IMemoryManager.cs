@@ -10,6 +10,7 @@ namespace ARMeilleure.Memory
 
         T Read<T>(ulong va) where T : unmanaged;
         void Write<T>(ulong va, T value) where T : unmanaged;
+        void Write(ulong va, ReadOnlySpan<byte> data);
 
         ref T GetRef<T>(ulong va) where T : unmanaged;
         ref T GetRefNoChecks<T>(ulong va) where T : unmanaged;

@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.HLE.Loaders.ExePatchers;
 using Ryujinx.HLE.Loaders.Npdm;
 
 namespace Ryujinx.HLE.HOS
@@ -124,6 +125,7 @@ namespace Ryujinx.HLE.HOS
             KernelContext context,
             Npdm          metaData,
             IExecutable[] nsos,
+            MemPatch[]    patches = null,
             byte[]        arguments = null)
         {
             ulong argsStart = 0;
@@ -230,7 +232,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.PrintInfo(LogClass.Loader, $"Loading image {index} at 0x{nsoBase[index]:x16}...");
 
-                result = LoadIntoMemory(process, nsos[index], nsoBase[index]);
+                result = LoadIntoMemory(process, nsos[index], nsoBase[index], patches?[index]);
 
                 if (result != KernelResult.Success)
                 {
@@ -256,7 +258,7 @@ namespace Ryujinx.HLE.HOS
             return true;
         }
 
-        private static KernelResult LoadIntoMemory(KProcess process, IExecutable image, ulong baseAddress)
+        private static KernelResult LoadIntoMemory(KProcess process, IExecutable image, ulong baseAddress, MemPatch patch = null)
         {
             ulong textStart = baseAddress + (ulong)image.TextOffset;
             ulong roStart   = baseAddress + (ulong)image.RoOffset;
@@ -275,6 +277,9 @@ namespace Ryujinx.HLE.HOS
             process.CpuMemory.Write(dataStart, image.Data);
 
             MemoryHelper.FillWithZeros(process.CpuMemory, (long)bssStart, image.BssSize);
+
+            // Patch executable images (offset 0x100 for exe header)
+            patch?.Apply(process.CpuMemory, baseAddress, (int)(bssStart - baseAddress) + image.BssSize, 0x100);
 
             KernelResult SetProcessMemoryPermission(ulong address, ulong size, MemoryPermission permission)
             {
