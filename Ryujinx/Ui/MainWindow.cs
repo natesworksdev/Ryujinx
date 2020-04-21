@@ -1,5 +1,4 @@
 using Gtk;
-using JsonPrettyPrinterPlus;
 using LibHac.Common;
 using LibHac.Ns;
 using Ryujinx.Audio;
@@ -12,15 +11,11 @@ using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Utf8Json;
-using Utf8Json.Resolvers;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -52,8 +47,7 @@ namespace Ryujinx.Ui
         private static Debugger.Debugger _debugger;
 #endif
 
-#pragma warning disable CS0649
-#pragma warning disable IDE0044
+#pragma warning disable CS0169, CS0649, IDE0044
 
         [GUI] Window         _mainWin;
         [GUI] MenuBar        _menuBar;
@@ -87,8 +81,7 @@ namespace Ryujinx.Ui
         [GUI] Label          _vSyncStatus;
         [GUI] Box            _listStatusBox;
 
-#pragma warning restore CS0649
-#pragma warning restore IDE0044
+#pragma warning restore CS0649, IDE0044, CS0169
 
         public MainWindow() : this(new Builder("Ryujinx.Ui.MainWindow.glade")) { }
 

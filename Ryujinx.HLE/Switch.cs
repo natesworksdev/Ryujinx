@@ -34,8 +34,6 @@ namespace Ryujinx.HLE
 
         public AutoResetEvent VsyncEvent { get; private set; }
 
-        public event EventHandler Finish;
-
         public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, IRenderer renderer, IAalOutput audioOut)
         {
             renderer = renderer ?? throw new ArgumentNullException(nameof(renderer));

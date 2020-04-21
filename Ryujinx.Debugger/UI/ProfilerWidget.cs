@@ -80,8 +80,8 @@ namespace Ryujinx.Debugger.UI
 
         private SkRenderer _renderer;
 
+#pragma warning disable IDE0044, CS0649
         [GUI] ScrolledWindow _scrollview;
-#pragma warning disable IDE0044 // Add readonly modifier
         [GUI] CheckButton    _enableCheckbutton;
         [GUI] Scrollbar      _outputScrollbar;
         [GUI] Entry          _filterBox;
@@ -90,7 +90,7 @@ namespace Ryujinx.Debugger.UI
         [GUI] CheckButton    _showInactive;
         [GUI] Button         _stepButton;
         [GUI] CheckButton    _pauseCheckbutton;
-#pragma warning restore IDE0044 // Add readonly modifier
+#pragma warning restore IDE0044, CS0649
 
         public ProfilerWidget() : this(new Builder("Ryujinx.Debugger.UI.ProfilerWidget.glade")) { }
 
