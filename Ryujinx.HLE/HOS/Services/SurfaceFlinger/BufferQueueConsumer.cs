@@ -189,6 +189,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 else if (Core.Slots[slot].NeedsCleanupOnRelease)
                 {
                     Core.Slots[slot].NeedsCleanupOnRelease = false;
+
                     return Status.StaleBufferSlot;
                 }
                 else

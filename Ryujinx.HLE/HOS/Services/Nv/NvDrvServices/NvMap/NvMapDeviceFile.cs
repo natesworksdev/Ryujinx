@@ -264,7 +264,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             NvMapHandle map = GetMapFromHandle(process, handle, false);
 
             if (map == null)
+            {
                 return false;
+            }
 
             if (map.DecrementRefCount() <= 0)
             {

@@ -82,8 +82,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             Slots[slotIndex].GraphicBuffer.Reset();
 
-            Slots[slotIndex].Fence            = AndroidFence.NoFence;
-            Slots[slotIndex].FrameNumber      = 0;
+            Slots[slotIndex].Fence       = AndroidFence.NoFence;
+            Slots[slotIndex].FrameNumber = 0;
         }
 
         public void Abandon()

@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             BufferQueueCore core = new BufferQueueCore(device, process);
 
-            producer  = new BufferQueueProducer(core);
+            producer = new BufferQueueProducer(core);
             consumer = new BufferQueueConsumer(core);
         }
     }

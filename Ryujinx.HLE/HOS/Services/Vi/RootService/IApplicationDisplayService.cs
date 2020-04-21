@@ -113,6 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // OpenLayer(nn::vi::DisplayName, u64, nn::applet::AppletResourceUserId, pid) -> (u64, buffer<bytes, 6>)
         public ResultCode OpenLayer(ServiceCtx context)
         {
+            // TODO: support multi display.
             byte[] displayName = context.RequestData.ReadBytes(0x40);
 
             long layerId   = context.RequestData.ReadInt64();
@@ -154,6 +155,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 
             long parcelPtr = context.Request.ReceiveBuff[0].Position;
 
+            // TODO: support multi display.
             Display disp = _displays.GetData<Display>((int)displayId);
 
             IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(context.Process, out long layerId);

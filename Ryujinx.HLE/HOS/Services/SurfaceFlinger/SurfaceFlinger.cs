@@ -53,9 +53,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public SurfaceFlinger(Switch device)
         {
-            _device          = device;
-            _layers          = new Dictionary<long, Layer>();
-            LastId           = 0;
+            _device = device;
+            _layers = new Dictionary<long, Layer>();
+            LastId  = 0;
 
             _composerThread = new Thread(HandleComposition)
             {
@@ -376,9 +376,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _device.Statistics.RecordGameFrameTime();
         }
 
-        public void OnBuffersReleased()
-        {
-
-        }
+        public void OnBuffersReleased() {}
     }
 }

@@ -13,9 +13,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private uint _stickyTransform;
 
-        private uint         _nextCallbackTicket;
-        private uint         _currentCallbackTicket;
-        private uint         _callbackTicket;
+        private uint _nextCallbackTicket;
+        private uint _currentCallbackTicket;
+        private uint _callbackTicket;
 
         private readonly object _callbackLock = new object();
 
@@ -142,6 +142,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     fence = AndroidFence.NoFence;
 
                     Logger.PrintError(LogClass.SurfaceFlinger, "No available buffer slots");
+
                     return Status.Busy;
                 }
 
@@ -173,8 +174,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     else
                     {
                         string formattedError = $"Preallocated buffer mismatch - slot {slot}\n" +
-                                               $"available: Width = {graphicBuffer.Width} Height = {graphicBuffer.Height} Format = {graphicBuffer.Format} Usage = {graphicBuffer.Usage:x} " +
-                                               $"requested: Width = {width} Height = {height} Format = {format} Usage = {usage:x}";
+                                                $"available: Width = {graphicBuffer.Width} Height = {graphicBuffer.Height} Format = {graphicBuffer.Format} Usage = {graphicBuffer.Usage:x} " +
+                                                $"requested: Width = {width} Height = {height} Format = {format} Usage = {usage:x}";
 
                         Logger.PrintError(LogClass.SurfaceFlinger, formattedError);
 
@@ -286,6 +287,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 if (slot == BufferSlotArray.InvalidBufferSlot)
                 {
                     Logger.PrintError(LogClass.SurfaceFlinger, "No available buffer slots");
+
                     return Status.Busy;
                 }
 
@@ -342,6 +344,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 if (!Core.Slots[slot].RequestBufferCalled)
                 {
                     Logger.PrintError(LogClass.SurfaceFlinger, $"Slot {slot} was queued without requesting a buffer");
+
                     return Status.BadValue;
                 }
 
@@ -519,7 +522,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     case NativeWindowApi.Media:
                     case NativeWindowApi.Camera:
                         Core.ProducerListener = listener;
-                        Core.ConnectedApi      = api;
+                        Core.ConnectedApi     = api;
 
                         output.Width             = (uint)Core.DefaultWidth;
                         output.Height            = (uint)Core.DefaultHeight;
@@ -723,6 +726,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     if (async || (Core.DequeueBufferCannotBlock && acquiredCount < Core.MaxAcquiredBufferCount))
                     {
                         Core.CheckSystemEventsLocked(maxBufferCount);
+
                         return Status.WouldBlock;
                     }
 
