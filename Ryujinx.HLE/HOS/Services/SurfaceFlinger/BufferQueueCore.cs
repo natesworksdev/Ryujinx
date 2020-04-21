@@ -30,21 +30,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public uint                  ConsumerUsageBits;
         public List<BufferItem>      Queue;
 
-        public readonly object DequeueEvent = new object();
-        public readonly object IsAllocatingEvent = new object();
         public readonly object Lock = new object();
 
         private KEvent _waitBufferFreeEvent;
         private KEvent _frameAvailaibleEvent;
 
-        public KProcess Owner { get; private set; }
+        public KProcess Owner { get; }
 
         public BufferQueueCore(Switch device, KProcess process)
         {
             Slots                    = new BufferSlotArray();
             IsAbandoned              = false;
             OverrideMaxBufferCount   = 0;
-            DequeueEvent             = new AutoResetEvent(false);
             DequeueBufferCannotBlock = false;
             UseAsyncBuffer           = false;
             DefaultWidth             = 1;
@@ -55,7 +52,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             TransformHint            = 0;
             DefaultBufferFormat      = PixelFormat.Rgba8888;
             IsAllocating             = false;
-            IsAllocatingEvent        = new AutoResetEvent(false);
             ProducerListener         = null;
             ConsumerListener         = null;
             ConsumerUsageBits        = 0;

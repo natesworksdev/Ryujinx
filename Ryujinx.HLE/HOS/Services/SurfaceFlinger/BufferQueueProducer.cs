@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     class BufferQueueProducer : IGraphicBufferProducer
     {
-        public BufferQueueCore Core { get; private set; }
+        public BufferQueueCore Core { get; }
 
         private uint _stickyTransform;
 
@@ -103,7 +103,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return Status.Success;
         }
 
-        public override Status DequeueBuffer(out int slot, out AndroidFence fence, bool async, uint width, uint height, PixelFormat format, uint usage)
+        public override Status DequeueBuffer(out int slot,
+                                             out AndroidFence fence,
+                                             bool async,
+                                             uint width,
+                                             uint height,
+                                             PixelFormat format,
+                                             uint usage)
         {
             if ((width == 0 && height != 0) || (height == 0 && width != 0))
             {
@@ -138,7 +144,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 if (slot == BufferSlotArray.InvalidBufferSlot)
                 {
-                    slot  = BufferSlotArray.InvalidBufferSlot;
                     fence = AndroidFence.NoFence;
 
                     Logger.PrintError(LogClass.SurfaceFlinger, "No available buffer slots");
@@ -480,7 +485,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     case NativeWindowAttribute.Format:
                         outValue = (int)Core.DefaultBufferFormat;
                         return Status.Success;
-                    case NativeWindowAttribute.MinUnQueuedBuffers:
+                    case NativeWindowAttribute.MinUnqueuedBuffers:
                         outValue = Core.GetMinUndequeuedBufferCountLocked(false);
                         return Status.Success;
                     case NativeWindowAttribute.ConsumerUsageBits:
@@ -571,7 +576,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 }
             }
 
-            producerListener?.onBufferReleased();
+            producerListener?.OnBufferReleased();
 
             return status;
         }
@@ -602,7 +607,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 if (!graphicBuffer.IsNull)
                 {
-                    // NOTE: Nintendo set the default width, height and format from the GraphicBuffer.. This is entirely wrong and should only be controlled by the consumer...
+                    // NOTE: Nintendo set the default width, height and format from the GraphicBuffer..
+                    //       This is entirely wrong and should only be controlled by the consumer...
                     Core.DefaultWidth        = graphicBuffer.Object.Width;
                     Core.DefaultHeight       = graphicBuffer.Object.Height;
                     Core.DefaultBufferFormat = graphicBuffer.Object.Format;
@@ -626,7 +632,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
                 }
 
-                // The dequeue event must not be signaled two times in case of clean up, but for some reason, it still signals the wait buffer free event two times...
+                // The dequeue event must not be signaled two times in case of clean up,
+                // but for some reason, it still signals the wait buffer free event two times...
                 if (!cleared)
                 {
                     Core.SignalDequeueEvent();

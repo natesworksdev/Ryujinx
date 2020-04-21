@@ -1,9 +1,12 @@
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     struct GraphicBuffer : IFlattenable
     {
         public GraphicBufferHeader Header;
@@ -59,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public uint GetFlattenedSize()
         {
-            return 0x16C;
+            return (uint)Unsafe.SizeOf<GraphicBuffer>();
         }
 
         public uint GetFdCount()

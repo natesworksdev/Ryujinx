@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x28)]
+    [StructLayout(LayoutKind.Sequential, Size = 0x28, Pack = 1)]
     struct GraphicBufferHeader
     {
         public int         Magic;

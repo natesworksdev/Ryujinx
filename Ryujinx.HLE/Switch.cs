@@ -58,7 +58,6 @@ namespace Ryujinx.HLE
 
             Hid = new Hid(this, System.HidBaseAddress);
             Hid.InitDevices();
-
         }
 
         public void Initialize()

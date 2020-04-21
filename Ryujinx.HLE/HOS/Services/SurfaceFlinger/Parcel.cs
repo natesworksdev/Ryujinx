@@ -64,19 +64,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             ReadOnlySpan<byte> data = ReadInPlace((size + 1) * 2);
 
             // Return the unicode string without the last character (null terminator)
-            return Encoding.Unicode.GetString(data.Slice(0, (size) * 2));
+            return Encoding.Unicode.GetString(data.Slice(0, size * 2));
         }
 
         public int ReadInt32() => ReadUnmanagedType<int>();
-
         public uint ReadUInt32() => ReadUnmanagedType<uint>();
-
         public bool ReadBoolean() => ReadUnmanagedType<uint>() != 0;
-
         public long ReadInt64() => ReadUnmanagedType<long>();
-
         public ulong ReadUInt64() => ReadUnmanagedType<ulong>();
-
 
         public T ReadFlattenable<T>() where T : unmanaged, IFlattenable
         {
@@ -172,15 +167,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         }
 
         public void WriteStatus(Status status) => WriteUnmanagedType(ref status);
-
         public void WriteBoolean(bool value) => WriteUnmanagedType(ref value);
-
         public void WriteInt32(int value) => WriteUnmanagedType(ref value);
-
         public void WriteUInt32(uint value) => WriteUnmanagedType(ref value);
-
         public void WriteInt64(long value) => WriteUnmanagedType(ref value);
-
         public void WriteUInt64(ulong value) => WriteUnmanagedType(ref value);
 
         public void WriteUnmanagedType<T>(ref T value) where T : unmanaged

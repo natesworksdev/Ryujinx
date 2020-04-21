@@ -66,16 +66,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return Left == cmpObj.Left && Top == cmpObj.Top && Right == cmpObj.Right && Bottom == cmpObj.Bottom;
         }
 
-        public override int GetHashCode()
-        {
-            HashCode hashCode = new HashCode();
-
-            hashCode.Add(Left);
-            hashCode.Add(Top);
-            hashCode.Add(Right);
-            hashCode.Add(Bottom);
-
-            return hashCode.ToHashCode();
-        }
+        public override int GetHashCode() => HashCode.Combine(Left, Top, Right, Bottom);
     }
 }

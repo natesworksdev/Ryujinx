@@ -44,7 +44,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             {
                 throw new InvalidOperationException();
             }
-
         }
 
         public virtual void OnBuffersReleased()

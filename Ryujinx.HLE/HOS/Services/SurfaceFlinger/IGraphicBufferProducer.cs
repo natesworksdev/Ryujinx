@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         enum TransactionCode : uint
         {
-            RequestBuffer  = 1,
+            RequestBuffer = 1,
             SetBufferCount,
             DequeueBuffer,
             DetachBuffer,
@@ -205,7 +205,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                     if (hasListener)
                     {
-                        throw new NotImplementedException($"Connect with a strong binder listener isn't implemented");
+                        throw new NotImplementedException("Connect with a strong binder listener isn't implemented");
                     }
 
                     api = inputParcel.ReadUnmanagedType<NativeWindowApi>();

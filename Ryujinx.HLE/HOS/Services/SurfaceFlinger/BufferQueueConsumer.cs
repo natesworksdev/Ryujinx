@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     class BufferQueueConsumer
     {
-        public BufferQueueCore Core { get; private set; }
+        public BufferQueueCore Core { get; }
 
         public BufferQueueConsumer(BufferQueueCore core)
         {
@@ -203,7 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Core.SignalDequeueEvent();
             }
 
-            listener?.onBufferReleased();
+            listener?.OnBufferReleased();
 
             return Status.Success;
         }

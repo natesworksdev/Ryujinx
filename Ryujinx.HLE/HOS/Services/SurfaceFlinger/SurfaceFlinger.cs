@@ -7,6 +7,7 @@ using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
@@ -23,7 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private Thread _composerThread;
 
-        private System.Diagnostics.Stopwatch _chrono;
+        private Stopwatch _chrono;
 
         private AndroidFence _vblankFence;
 
@@ -62,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Name = "SurfaceFlinger.Composer"
             };
 
-            _chrono = new System.Diagnostics.Stopwatch();
+            _chrono = new Stopwatch();
 
             _ticks = 0;
 
@@ -89,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _ticksPerFrame = System.Diagnostics.Stopwatch.Frequency / (TargetFps / _swapInterval);
+                _ticksPerFrame = Stopwatch.Frequency / (TargetFps / _swapInterval);
             }
         }
 
@@ -154,7 +155,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (Lock)
             {
-                 Layer layer = GetLayerByIdLocked(layerId);
+                Layer layer = GetLayerByIdLocked(layerId);
 
                 if (layer != null)
                 {
@@ -344,21 +345,15 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public static Format ConvertColorFormat(ColorFormat colorFormat)
         {
-            switch (colorFormat)
+            return colorFormat switch
             {
-                case ColorFormat.A8B8G8R8:
-                    return Format.R8G8B8A8Unorm;
-                case ColorFormat.X8B8G8R8:
-                    return Format.R8G8B8A8Unorm;
-                case ColorFormat.R5G6B5:
-                    return Format.B5G6R5Unorm;
-                case ColorFormat.A8R8G8B8:
-                    return Format.B8G8R8A8Unorm;
-                case ColorFormat.A4B4G4R4:
-                    return Format.R4G4B4A4Unorm;
-                default:
-                    throw new NotImplementedException($"Color Format \"{colorFormat}\" not implemented!");
-            }
+                ColorFormat.A8B8G8R8 => Format.R8G8B8A8Unorm,
+                ColorFormat.X8B8G8R8 => Format.R8G8B8A8Unorm,
+                ColorFormat.R5G6B5 => Format.B5G6R5Unorm,
+                ColorFormat.A8R8G8B8 => Format.B8G8R8A8Unorm,
+                ColorFormat.A4B4G4R4 => Format.R4G4B4A4Unorm,
+                _ => throw new NotImplementedException($"Color Format \"{colorFormat}\" not implemented!"),
+            };
         }
 
         public void Dispose()

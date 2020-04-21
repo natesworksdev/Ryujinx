@@ -19,15 +19,9 @@
 
         public BufferSlot this[int index]
         {
-            get
-            {
-                return _raw[index];
-            }
+            get => _raw[index];
 
-            set
-            {
-                _raw[index] = value;
-            }
+            set => _raw[index] = value;
         }
 
         public int Length => NumBufferSlots;

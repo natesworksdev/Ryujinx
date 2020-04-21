@@ -7,37 +7,37 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     class HOSBinderDriverServer : IHOSBinderDriver
     {
-        private static Dictionary<int, IBinder> RegisteredBinderObjects = new Dictionary<int, IBinder>();
+        private static Dictionary<int, IBinder> _registeredBinderObjects = new Dictionary<int, IBinder>();
 
-        private static int LastBinderId = 0;
+        private static int _lastBinderId = 0;
 
-        private static object Lock = new object();
+        private static object _lock = new object();
 
         public static int RegisterBinderObject(IBinder binder)
         {
-            lock (Lock)
+            lock (_lock)
             {
-                LastBinderId++;
+                _lastBinderId++;
 
-                RegisteredBinderObjects.Add(LastBinderId, binder);
+                _registeredBinderObjects.Add(_lastBinderId, binder);
 
-                return LastBinderId;
+                return _lastBinderId;
             }
         }
 
         public static void UnregisterBinderObject(int binderId)
         {
-            lock (Lock)
+            lock (_lock)
             {
-                RegisteredBinderObjects.Remove(binderId);
+                _registeredBinderObjects.Remove(binderId);
             }
         }
 
         public static int GetBinderId(IBinder binder)
         {
-            lock (Lock)
+            lock (_lock)
             {
-                foreach (KeyValuePair<int, IBinder> pair in RegisteredBinderObjects)
+                foreach (KeyValuePair<int, IBinder> pair in _registeredBinderObjects)
                 {
                     if (ReferenceEquals(binder, pair.Value))
                     {
@@ -51,9 +51,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private static IBinder GetBinderObjectById(int binderId)
         {
-            lock (Lock)
+            lock (_lock)
             {
-                if (RegisteredBinderObjects.TryGetValue(binderId, out IBinder binder))
+                if (_registeredBinderObjects.TryGetValue(binderId, out IBinder binder))
                 {
                     return binder;
                 }

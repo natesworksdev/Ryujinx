@@ -2,12 +2,12 @@
 {
     interface IFlattenable
     {
-        public uint GetFlattenedSize();
+        uint GetFlattenedSize();
 
-        public uint GetFdCount();
+        uint GetFdCount();
 
-        public void Flatten(Parcel parcel);
+        void Flatten(Parcel parcel);
 
-        public void Unflatten(Parcel parcel);
+        void Unflatten(Parcel parcel);
     }
 }
