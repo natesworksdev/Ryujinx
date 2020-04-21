@@ -899,7 +899,7 @@ namespace ARMeilleure.CodeGen.X86
                     }
                     else if (dest != null && dest.Kind == OperandKind.Register && info.OpRImm64 != BadOp)
                     {
-                        int? index = source.Index;
+                        int? index = source.PtcIndex;
 
                         int rexPrefix = GetRexPrefix(dest, source, type, rrm: false);
 

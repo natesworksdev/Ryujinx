@@ -32,12 +32,13 @@ namespace ARMeilleure.Translation.PTC
         public void Initialize(JumpTable jumpTable)
         {
             _targets.Clear();
-            _dependants.Clear();
 
             foreach (ulong guestAddress in jumpTable.Targets.Keys)
             {
                 _targets.Add(guestAddress);
             }
+
+            _dependants.Clear();
 
             foreach (var item in jumpTable.Dependants)
             {
@@ -58,10 +59,14 @@ namespace ARMeilleure.Translation.PTC
         {
             jumpTable.ExpandIfNeededJumpTable(TableEnd);
 
-            for (int entry = 1; entry <= TableEnd; entry++)
+            int entry = 0;
+
+            foreach (var item in _jumpTable)
             {
-                long              guestAddress      = _jumpTable[entry].Key;
-                DirectHostAddress directHostAddress = _jumpTable[entry].Value;
+                entry += 1;
+
+                long guestAddress = item.Key;
+                DirectHostAddress directHostAddress = item.Value;
 
                 long hostAddress;
 
@@ -105,10 +110,14 @@ namespace ARMeilleure.Translation.PTC
 
             jumpTable.ExpandIfNeededDynamicTable(DynTableEnd);
 
-            for (int entry = 1; entry <= DynTableEnd; entry++)
+            int entry = 0;
+
+            foreach (var item in _dynamicTable)
             {
-                long                guestAddress        = _dynamicTable[entry].Key;
-                IndirectHostAddress indirectHostAddress = _dynamicTable[entry].Value;
+                entry += 1;
+
+                long guestAddress = item.Key;
+                IndirectHostAddress indirectHostAddress = item.Value;
 
                 long hostAddress;
 
