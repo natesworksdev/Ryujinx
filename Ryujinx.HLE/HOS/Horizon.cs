@@ -43,6 +43,7 @@ using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.Common;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -287,8 +288,8 @@ namespace Ryujinx.HLE.HOS
             {
                 State.DockedMode = e.NewValue;
 
-                AppletState.EnqueueMessage(HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy.MessageInfo.OperationModeChanged);
-                AppletState.EnqueueMessage(HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy.MessageInfo.PerformanceModeChanged);
+                AppletState.EnqueueMessage(MessageInfo.OperationModeChanged);
+                AppletState.EnqueueMessage(MessageInfo.PerformanceModeChanged);
                 SignalDisplayResolutionChange();
             }
         }
