@@ -12,7 +12,7 @@ namespace ARMeilleure.Common
 
         [ThreadStatic]
         private static ThreadStaticPool<T> _instance;
-        internal static ThreadStaticPool<T> Instance
+        public static ThreadStaticPool<T> Instance
         {
             [MethodImpl(MethodOptions.FastInline)]
             get
@@ -32,7 +32,7 @@ namespace ARMeilleure.Common
             return _pools.GetOrAdd(groupId, x => new Stack<ThreadStaticPool<T>>());
         }
 
-        internal static void PreparePool(int groupId)
+        public static void PreparePool(int groupId)
         {
             // Prepare the pool for this thread, ideally using an existing one from the specified group.
             if (_instance == null)
@@ -45,7 +45,7 @@ namespace ARMeilleure.Common
             }
         }
 
-        internal static void ReturnPool(int groupId)
+        public static void ReturnPool(int groupId)
         {
             // Reset and return the pool for this thread to the specified group.
             Stack<ThreadStaticPool<T>> pools = GetPools(groupId);
@@ -61,7 +61,7 @@ namespace ARMeilleure.Common
         private int _poolUsed = -1;
         private int _poolSize;
 
-        internal ThreadStaticPool(int initialSize)
+        public ThreadStaticPool(int initialSize)
         {
             _pool = new T[initialSize];
 
@@ -74,7 +74,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal T Allocate()
+        public T Allocate()
         {
             int index = Interlocked.Increment(ref _poolUsed);
             if (index >= _poolSize)
@@ -100,7 +100,7 @@ namespace ARMeilleure.Common
             Interlocked.Exchange(ref _pool, newArray);
         }
 
-        internal void Clear()
+        public void Clear()
         {
             _poolUsed = -1;
         }

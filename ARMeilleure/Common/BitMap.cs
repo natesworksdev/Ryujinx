@@ -27,7 +27,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal BitMap(int initialCapacity)
+        public BitMap(int initialCapacity)
         {
             int count = (initialCapacity + IntMask) / IntSize;
 
@@ -40,7 +40,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal void Reset(int initialCapacity)
+        public void Reset(int initialCapacity)
         {
             int count = (initialCapacity + IntMask) / IntSize;
 
@@ -58,7 +58,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal bool Set(int bit)
+        public bool Set(int bit)
         {
             EnsureCapacity(bit + 1);
 
@@ -78,7 +78,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal void Clear(int bit)
+        public void Clear(int bit)
         {
             EnsureCapacity(bit + 1);
 
@@ -91,7 +91,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal bool IsSet(int bit)
+        public bool IsSet(int bit)
         {
             EnsureCapacity(bit + 1);
 
@@ -102,7 +102,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal bool Set(BitMap map)
+        public bool Set(BitMap map)
         {
             EnsureCapacity(map._masks.Count * IntSize);
 
@@ -124,7 +124,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal bool Clear(BitMap map)
+        public bool Clear(BitMap map)
         {
             EnsureCapacity(map._masks.Count * IntSize);
 

@@ -7,7 +7,7 @@ namespace ARMeilleure.Common
     {
         [MethodImpl(MethodOptions.FastInline)]
         [return: NotNull]
-        internal static BitMap Allocate(int initialCapacity)
+        public static BitMap Allocate(int initialCapacity)
         {
             BitMap result = ThreadStaticPool<BitMap>.Instance.Allocate();
             result.Reset(initialCapacity);
@@ -15,7 +15,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static void Release()
+        public static void Release()
         {
             ThreadStaticPool<BitMap>.Instance.Clear();
         }

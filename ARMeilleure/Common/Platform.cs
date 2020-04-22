@@ -5,7 +5,7 @@ namespace ARMeilleure.Common
 {
     static class Platform
     {
-        internal enum System
+        public enum System
         {
             Windows,
             Linux,
@@ -16,7 +16,7 @@ namespace ARMeilleure.Common
 
         // Aside from letting us use switch statements instead, both the IL output and the JIT output is _terrible_
         // if you call the RuntimeInformation methods.
-        internal static readonly System CurrentSystem = System.Unknown;
+        public static readonly System CurrentSystem = System.Unknown;
 
         static Platform()
         {
@@ -40,7 +40,7 @@ namespace ARMeilleure.Common
             throw new NotImplementedException("Current OS is not implemented");
         }
 
-        internal static bool IsWindows => CurrentSystem == System.Windows;
-        internal static bool IsLinux => CurrentSystem == System.Linux;
+        public static bool IsWindows => CurrentSystem == System.Windows;
+        public static bool IsLinux => CurrentSystem == System.Linux;
     }
 }

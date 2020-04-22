@@ -44,7 +44,7 @@ namespace ARMeilleure.Translation
             _lock = new object();
         }
 
-        public static IntPtr Map(CompiledFunction func)
+        public static IntPtr Map(in CompiledFunction func)
         {
             byte[] code = func.Code;
 

@@ -13,20 +13,20 @@ namespace ARMeilleure.Common
         /// <param name="value">The value to get the highest set bit from.</param>
         /// <returns>The index of the highest set bit.</returns>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static int HighestBitSet(this int value) =>
+        public static int HighestBitSet(this int value) =>
             31 - BitOperations.LeadingZeroCount((uint)value);
 
         /// <summary>Returns the highest set bit for a nibble (value range 0 to 15).</summary>
         /// <param name="value">The nibble to get the highest set bit from. Must be within the range 0 to 15 inclusive.</param>
         /// <returns>The index of the highest set bit.</returns>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static int HighestBitSetNibble([Range(0, 15)] int value) => HbsNibbleLut[value];
+        public static int HighestBitSetNibble([Range(0, 15)] int value) => HbsNibbleLut[value];
 
         /// <summary>Returns a 'long' with the given number of bits set to 1, LSB-justified.</summary>
         /// <param name="bits">The number of bits to be 1.</param>
         /// <returns>A value with the requested number of bits set to 1, LSB-justified</returns>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static long OneBits([Range(0, 64)] int bits) =>
+        public static long OneBits([Range(0, 64)] int bits) =>
             (bits != 64) ? ((1L << bits) - 1L) : (-1L);
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace ARMeilleure.Common
         /// <returns>The resultant value of the replicated bits.</returns>
         [MethodImpl(MethodOptions.FastInline)]
 
-        internal static long Replicate(long bits, [Range(0, 63)] int size)
+        public static long Replicate(long bits, [Range(0, 63)] int size)
         {
             long output = 0;
 
@@ -59,7 +59,7 @@ namespace ARMeilleure.Common
         /// <param name="size">The number of bits to replicate</param>
         /// <returns>The resultant value of the replicated bits.</returns>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static long ReplicatePow2(long bits, [Range(0, 63)] int size)
+        public static long ReplicatePow2(long bits, [Range(0, 63)] int size)
         {
             // Size is always a power of two, so we can just duplicate
             // output over itself as we build it.
@@ -82,17 +82,17 @@ namespace ARMeilleure.Common
 
         /// <summary>Returns if the given value is a power-of-two</summary>
         [MethodImpl(MethodOptions.FastInline)]
-        internal static bool IsPowerOfTwo(int value) =>
+        public static bool IsPowerOfTwo(int value) =>
             (value != 0) && (value & (value - 1)) == 0;
 
         #region Rotations
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static int RotateRight(this int bits, [Range(0, 31)] int shift, [Range(0, 32)] int size) =>
+        public static int RotateRight(this int bits, [Range(0, 31)] int shift, [Range(0, 32)] int size) =>
             (int)RotateRight((uint)bits, shift, size);
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static uint RotateRight(this uint bits, [Range(0, 31)] int shift, [Range(0, 32)] int size)
+        public static uint RotateRight(this uint bits, [Range(0, 31)] int shift, [Range(0, 32)] int size)
         {
             return (size == 32) ?
                 BitOperations.RotateRight(bits, shift) :
@@ -100,11 +100,11 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static long RotateRight(this long bits, [Range(0, 63)] int shift, [Range(0, 64)] int size) =>
+        public static long RotateRight(this long bits, [Range(0, 63)] int shift, [Range(0, 64)] int size) =>
             (long)RotateRight((ulong)bits, shift, size);
 
         [MethodImpl(MethodOptions.FastInline)]
-        internal static ulong RotateRight(this ulong bits, [Range(0, 63)] int shift, [Range(0, 64)] int size)
+        public static ulong RotateRight(this ulong bits, [Range(0, 63)] int shift, [Range(0, 64)] int size)
         {
             return (size == 64) ?
                 BitOperations.RotateRight(bits, shift) :

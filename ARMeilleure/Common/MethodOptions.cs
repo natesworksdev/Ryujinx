@@ -4,6 +4,6 @@ namespace ARMeilleure.Common
 {
     static class MethodOptions
     {
-        internal const MethodImplOptions FastInline = MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization;
+        public const MethodImplOptions FastInline = MethodImplOptions.AggressiveInlining | MethodImplOptions.AggressiveOptimization;
     }
 }

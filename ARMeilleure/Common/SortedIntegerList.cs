@@ -6,9 +6,9 @@ namespace ARMeilleure.Common
     {
         private readonly List<int> _items;
 
-        internal int Count => _items.Count;
+        public int Count => _items.Count;
 
-        internal int this[int index]
+        public int this[int index]
         {
             get
             {
@@ -20,12 +20,12 @@ namespace ARMeilleure.Common
             }
         }
 
-        internal SortedIntegerList()
+        public SortedIntegerList()
         {
             _items = new List<int>();
         }
 
-        internal bool Add(int value)
+        public bool Add(int value)
         {
             if (_items.Count == 0 || value > Last())
             {
@@ -45,13 +45,13 @@ namespace ARMeilleure.Common
             }
         }
 
-        internal int FindLessEqualIndex(int value)
+        public int FindLessEqualIndex(int value)
         {
             int index = _items.BinarySearch(value);
             return (index < 0) ? (-2 - index) : index;
         }
 
-        internal void RemoveRange(int index, int count)
+        public void RemoveRange(int index, int count)
         {
             if (count > 0)
             {
@@ -59,12 +59,12 @@ namespace ARMeilleure.Common
             }
         }
 
-        internal int Last()
+        public int Last()
         {
             return _items[Count - 1];
         }
 
-        internal List<int> GetList()
+        public List<int> GetList()
         {
             return _items;
         }
