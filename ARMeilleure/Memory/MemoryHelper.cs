@@ -22,7 +22,7 @@ namespace ARMeilleure.Memory
             }
         }
 
-        public unsafe static T Read<T>(MemoryManager memory, long position) where T : struct
+        public static unsafe T Read<T>(MemoryManager memory, long position) where T : struct
         {
             long size = Marshal.SizeOf<T>();
 
@@ -34,7 +34,7 @@ namespace ARMeilleure.Memory
             }
         }
 
-        public unsafe static void Write<T>(MemoryManager memory, long position, T value) where T : struct
+        public static unsafe void Write<T>(MemoryManager memory, long position, T value) where T : struct
         {
             long size = Marshal.SizeOf<T>();
 

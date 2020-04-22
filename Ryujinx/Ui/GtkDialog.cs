@@ -9,7 +9,7 @@ namespace Ryujinx.Ui
 
         internal static void CreateDialog(string title, string text, string secondaryText)
         {
-            MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, null)
+            using MessageDialog errorDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Error, ButtonsType.Ok, null)
             {
                 Title          = title,
                 Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
@@ -19,7 +19,6 @@ namespace Ryujinx.Ui
             };
             errorDialog.SetSizeRequest(100, 20);
             errorDialog.Run();
-            errorDialog.Dispose();
         }
 
         internal static void CreateWarningDialog(string text, string secondaryText)
@@ -41,7 +40,7 @@ namespace Ryujinx.Ui
 
             _isExitDialogOpen = true;
 
-            MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)
+            using MessageDialog messageDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Question, ButtonsType.OkCancel, null)
             {
                 Title = "Ryujinx - Exit",
                 Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
@@ -52,7 +51,6 @@ namespace Ryujinx.Ui
 
             messageDialog.SetSizeRequest(100, 20);
             ResponseType res = (ResponseType)messageDialog.Run();
-            messageDialog.Dispose();
             _isExitDialogOpen = false;
             
             if (res == ResponseType.Ok)

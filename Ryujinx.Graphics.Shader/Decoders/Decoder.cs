@@ -1,4 +1,3 @@
-using Ryujinx.Common.Extensions;
 using Ryujinx.Graphics.Shader.Instructions;
 using System;
 using System.Buffers.Binary;
@@ -134,7 +133,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 {
                     Block nBlock = blocks[nBlkIndex];
 
-                    blocks.Insert(nBlkIndex + (nBlock.Address < currBlock.Address).AsInt(), currBlock);
+                    blocks.Insert(nBlkIndex + ((nBlock.Address < currBlock.Address) ? 1 : 0), currBlock);
                 }
                 else
                 {

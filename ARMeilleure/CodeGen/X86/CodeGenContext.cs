@@ -4,6 +4,7 @@ using ARMeilleure.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Numerics;
 
 namespace ARMeilleure.CodeGen.X86
 {
@@ -95,9 +96,9 @@ namespace ARMeilleure.CodeGen.X86
             int intMask = CallingConvention.GetIntCalleeSavedRegisters() & allocResult.IntUsedRegisters;
             int vecMask = CallingConvention.GetVecCalleeSavedRegisters() & allocResult.VecUsedRegisters;
 
-            xmmSaveRegionSize = BitUtils.CountBits(vecMask) * 16;
+            xmmSaveRegionSize = BitOperations.PopCount((uint)vecMask) * 16;
 
-            int calleeSaveRegionSize = BitUtils.CountBits(intMask) * 8 + xmmSaveRegionSize + 8;
+            int calleeSaveRegionSize = BitOperations.PopCount((uint)intMask) * 8 + xmmSaveRegionSize + 8;
 
             int argsCount = maxCallArgs;
 

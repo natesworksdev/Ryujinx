@@ -6,13 +6,13 @@ using System.Threading;
 
 namespace ARMeilleure.Common
 {
-    sealed internal class ThreadStaticPool<T> where T : class, new()
+    sealed class ThreadStaticPool<T> where T : class, new()
     {
         private const int PoolSizeIncrement = 200;
 
         [ThreadStatic]
         private static ThreadStaticPool<T> _instance;
-        public static ThreadStaticPool<T> Instance
+        internal static ThreadStaticPool<T> Instance
         {
             [MethodImpl(MethodOptions.FastInline)]
             get
@@ -32,7 +32,7 @@ namespace ARMeilleure.Common
             return _pools.GetOrAdd(groupId, x => new Stack<ThreadStaticPool<T>>());
         }
 
-        public static void PreparePool(int groupId)
+        internal static void PreparePool(int groupId)
         {
             // Prepare the pool for this thread, ideally using an existing one from the specified group.
             if (_instance == null)
@@ -45,7 +45,7 @@ namespace ARMeilleure.Common
             }
         }
 
-        public static void ReturnPool(int groupId)
+        internal static void ReturnPool(int groupId)
         {
             // Reset and return the pool for this thread to the specified group.
             Stack<ThreadStaticPool<T>> pools = GetPools(groupId);
@@ -61,7 +61,7 @@ namespace ARMeilleure.Common
         private int _poolUsed = -1;
         private int _poolSize;
 
-        public ThreadStaticPool(int initialSize)
+        internal ThreadStaticPool(int initialSize)
         {
             _pool = new T[initialSize];
 
@@ -74,7 +74,7 @@ namespace ARMeilleure.Common
         }
 
         [MethodImpl(MethodOptions.FastInline)]
-        public T Allocate()
+        internal T Allocate()
         {
             int index = Interlocked.Increment(ref _poolUsed);
             if (index >= _poolSize)
@@ -100,7 +100,7 @@ namespace ARMeilleure.Common
             Interlocked.Exchange(ref _pool, newArray);
         }
 
-        public void Clear()
+        internal void Clear()
         {
             _poolUsed = -1;
         }

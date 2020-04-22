@@ -289,7 +289,7 @@ namespace ARMeilleure.Instructions
                 CmpCondition cmpOrdered = signalNaNs ? CmpCondition.OrderedS : CmpCondition.OrderedQ;
 
                 bool doubleSize = sizeF != 0;
-                int shift = (!doubleSize).AsInt() + 1;
+                int shift = doubleSize ? 1 : 2;
                 Operand m = GetVecA32(op.Vm >> shift);
                 Operand n = GetVecA32(op.Vd >> shift);
 

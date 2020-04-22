@@ -139,8 +139,8 @@ namespace ARMeilleure.Decoders
             }
 
             return new BitMask(
-                wMask: BitUtils.Replicate(wMask, size),
-                tMask: BitUtils.Replicate(tMask, size),
+                wMask: BitUtils.ReplicatePow2(wMask, size),
+                tMask: BitUtils.ReplicatePow2(tMask, size),
                 pos: immS,
                 shift: immR
             );

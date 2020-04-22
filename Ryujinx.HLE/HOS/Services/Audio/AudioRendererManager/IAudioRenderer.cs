@@ -368,7 +368,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             _audioOut.AppendBuffer(_track, tag, GetFinalBuffer(mixBuffer));
         }
 
-        private unsafe static short[] GetFinalBuffer(int[] buffer)
+        private static unsafe short[] GetFinalBuffer(int[] buffer)
         {
             short[] output = new short[buffer.Length];
 

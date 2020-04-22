@@ -32,7 +32,9 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Nsd.Manager
                     return ResultCode.Success;
                 }
 
+#pragma warning disable CS0162 // Unreachable code detected
                 return ResultCode.NullOutputObject;
+#pragma warning restore CS0162 // Unreachable code detected
             }
         }
 

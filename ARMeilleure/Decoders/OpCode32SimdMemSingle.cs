@@ -33,7 +33,7 @@ namespace ARMeilleure.Decoders
             } 
             else 
             {
-                Increment = (((IndexAlign >> Size) & 1) != 0).AsInt() + 1;
+                Increment = (((IndexAlign >> Size) & 1) == 0) ? 1 : 2;
                 Index = IndexAlign >> (1 + Size);
             }
 

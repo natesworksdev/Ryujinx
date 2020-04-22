@@ -6,7 +6,7 @@ namespace Ryujinx.Common
 {
     public static class BinaryReaderExtensions
     {
-        public unsafe static T ReadStruct<T>(this BinaryReader reader)
+        public static unsafe T ReadStruct<T>(this BinaryReader reader)
             where T : struct
         {
             int size = Marshal.SizeOf<T>();
@@ -19,7 +19,7 @@ namespace Ryujinx.Common
             }
         }
 
-        public unsafe static T[] ReadStructArray<T>(this BinaryReader reader, int count)
+        public static unsafe T[] ReadStructArray<T>(this BinaryReader reader, int count)
             where T : struct
         {
             int size = Marshal.SizeOf<T>();
@@ -39,7 +39,7 @@ namespace Ryujinx.Common
             return result;
         }
 
-        public unsafe static void WriteStruct<T>(this BinaryWriter writer, in T value)
+        public static unsafe void WriteStruct<T>(this BinaryWriter writer, in T value)
             where T : struct
         {
             long size = Marshal.SizeOf<T>();

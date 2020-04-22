@@ -311,7 +311,7 @@ namespace Ryujinx.Ui
             {
                 if (ConfigurationState.Instance.Logger.EnableDebug.Value)
                 {
-                    MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    using MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                     {
                         Title         = "Ryujinx - Warning",
                         Text          = "You have debug logging enabled, which is designed to be used by developers only.",
@@ -323,13 +323,11 @@ namespace Ryujinx.Ui
                         ConfigurationState.Instance.Logger.EnableDebug.Value = false;
                         SaveConfig();
                     }
-
-                    debugWarningDialog.Dispose();
                 }
 
                 if (!string.IsNullOrWhiteSpace(ConfigurationState.Instance.Graphics.ShadersDumpPath.Value))
                 {
-                    MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+                    using MessageDialog shadersDumpWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
                     {
                         Title         = "Ryujinx - Warning",
                         Text          = "You have shader dumping enabled, which is designed to be used by developers only.",
@@ -341,8 +339,6 @@ namespace Ryujinx.Ui
                         ConfigurationState.Instance.Graphics.ShadersDumpPath.Value = "";
                         SaveConfig();
                     }
-
-                    shadersDumpWarningDialog.Dispose();
                 }
 
                 Logger.RestartTime();
@@ -724,7 +720,7 @@ namespace Ryujinx.Ui
 
         private void Load_Application_File(object sender, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            using FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
             fileChooser.Filter = new FileFilter();
             fileChooser.Filter.AddPattern("*.nsp" );
@@ -738,20 +734,16 @@ namespace Ryujinx.Ui
             {
                 LoadApplication(fileChooser.Filename);
             }
-
-            fileChooser.Dispose();
         }
 
         private void Load_Application_Folder(object sender, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
+            using FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to open", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
                 LoadApplication(fileChooser.Filename);
             }
-
-            fileChooser.Dispose();
         }
 
         private void Open_Ryu_Folder(object sender, EventArgs args)

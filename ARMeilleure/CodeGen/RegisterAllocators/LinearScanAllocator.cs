@@ -999,7 +999,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private static int GetRegisterId(Register register)
         {
-            return (register.Index << 1) | (register.Type == RegisterType.Vector).AsInt();
+            return (register.Index << 1) | ((register.Type == RegisterType.Vector) ? 1 : 0);
         }
 
         private static BasicBlock FirstSuccessor(BasicBlock block)

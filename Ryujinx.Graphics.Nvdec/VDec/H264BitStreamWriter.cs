@@ -1,4 +1,3 @@
-using Ryujinx.Common.Extensions;
 using System.IO;
 
 namespace Ryujinx.Graphics.VDec
@@ -31,7 +30,7 @@ namespace Ryujinx.Graphics.VDec
 
         private void WriteExpGolombCodedInt(int value)
         {
-            int sign = (value > 0).AsInt();
+            int sign = (value <= 0) ? 0 : 1;
 
             if (value < 0)
             {

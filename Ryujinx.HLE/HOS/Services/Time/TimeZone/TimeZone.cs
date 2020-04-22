@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.Common.Extensions;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.IO;
@@ -621,7 +620,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                             }
                             else if (janOffset != 0)
                             {
-                                outRules.DefaultType = isReversed.AsInt();
+                                outRules.DefaultType = isReversed ? 1 : 0;
                             }
 
                             outRules.Ats[timeCount] = janFirst;
@@ -632,7 +631,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                             }
                             else if (janOffset != 0)
                             {
-                                outRules.DefaultType = (!isReversed).AsInt();
+                                outRules.DefaultType = isReversed ? 0 : 1;
                             }
                         }
 

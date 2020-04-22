@@ -1,5 +1,4 @@
 using ARMeilleure.Memory;
-using Ryujinx.Common.Extensions;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
@@ -75,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private int _shallBeTerminated;
 
-        public bool ShallBeTerminated { get => _shallBeTerminated != 0; set => _shallBeTerminated = value.AsInt(); }
+        public bool ShallBeTerminated => _shallBeTerminated != 0;
 
         public bool SyncCancelled { get; set; }
         public bool WaitingSync   { get; set; }
@@ -1178,13 +1177,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (Owner != null)
             {
-                Owner.ResourceLimit?.Release(LimitableResource.Thread, 1, (!released).AsInt());
+                Owner.ResourceLimit?.Release(LimitableResource.Thread, 1, released ? 0 : 1);
 
                 Owner.DecrementReferenceCount();
             }
             else
             {
-                System.ResourceLimit.Release(LimitableResource.Thread, 1, (!released).AsInt());
+                System.ResourceLimit.Release(LimitableResource.Thread, 1, released ? 0 : 1);
             }
         }
 

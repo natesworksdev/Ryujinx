@@ -414,14 +414,12 @@ namespace Ryujinx.Ui
 
         private void BrowseDir_Pressed(object sender, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
+            using FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
                 _gameDirsBoxStore.AppendValues(fileChooser.Filename);
             }
-
-            fileChooser.Dispose();
 
             _browseDir.SetStateFlags(0, true);
         }
@@ -445,7 +443,7 @@ namespace Ryujinx.Ui
 
         private void BrowseThemeDir_Pressed(object sender, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept);
+            using FileChooserDialog fileChooser = new FileChooserDialog("Choose the theme to load", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept);
 
             fileChooser.Filter = new FileFilter();
             fileChooser.Filter.AddPattern("*.css");
@@ -454,8 +452,6 @@ namespace Ryujinx.Ui
             {
                 _custThemePath.Buffer.Text = fileChooser.Filename;
             }
-
-            fileChooser.Dispose();
 
             _browseThemePath.SetStateFlags(0, true);
         }

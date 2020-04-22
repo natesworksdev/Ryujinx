@@ -48,12 +48,12 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static void PrepareOperationPool(bool highCq)
         {
-            ThreadStaticPool<Operation>.PreparePool(highCq.AsInt());
+            ThreadStaticPool<Operation>.PreparePool(highCq ? 1 : 0);
         }
 
         public static void ResetOperationPool(bool highCq)
         {
-            ThreadStaticPool<Operation>.ReturnPool(highCq.AsInt());
+            ThreadStaticPool<Operation>.ReturnPool(highCq ? 1 : 0);
         }
     }
 }

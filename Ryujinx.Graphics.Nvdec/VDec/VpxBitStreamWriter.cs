@@ -1,4 +1,3 @@
-using Ryujinx.Common.Extensions;
 using System.IO;
 
 namespace Ryujinx.Graphics.VDec
@@ -21,7 +20,7 @@ namespace Ryujinx.Graphics.VDec
                 value = -value;
             }
 
-            WriteBits((value << 1) | sign.AsInt(), valueSize + 1);
+            WriteBits((value << 1) | (sign ? 1 : 0), valueSize + 1);
         }
 
         public void WriteDeltaQ(int value)

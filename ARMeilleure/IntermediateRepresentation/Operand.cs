@@ -37,6 +37,11 @@ namespace ARMeilleure.IntermediateRepresentation
             return this;
         }
 
+        public Operand With(bool value)
+        {
+            return With(OperandKind.Constant, OperandType.I32, value ? 1U : 0U);
+        }
+
         public Operand With(int value)
         {
             return With(OperandKind.Constant, OperandType.I32, (uint)value);

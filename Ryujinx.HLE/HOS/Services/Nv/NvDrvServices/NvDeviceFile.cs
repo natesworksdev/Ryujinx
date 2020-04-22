@@ -47,8 +47,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         protected delegate NvInternalResult IoctlProcessor<T>(ref T arguments) where T : struct;
         protected delegate NvInternalResult IoctlProcessorSpan<T>(Span<T> arguments) where T : struct;
-        protected delegate NvInternalResult IoctlProcessorInline<T, T1>(ref T arguments, ref T1 inlineData) where T : struct where T1 : struct;
-        protected delegate NvInternalResult IoctlProcessorInlineSpan<T, T1>(ref T arguments, Span<T1> inlineData) where T : struct where T1 : struct;
+        protected delegate NvInternalResult IoctlProcessorInline<T, T1>(ref T arguments, ref T1 inlineData)
+            where T : struct
+            where T1 : struct;
+        protected delegate NvInternalResult IoctlProcessorInlineSpan<T, T1>(ref T arguments, Span<T1> inlineData)
+            where T : struct
+            where T1 : struct;
 
         protected static NvInternalResult CallIoctlMethod<T>(IoctlProcessor<T> callback, Span<byte> arguments) where T : struct
         {
@@ -57,7 +61,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             return callback(ref MemoryMarshal.Cast<byte, T>(arguments)[0]);
         }
 
-        protected static NvInternalResult CallIoctlMethod<T, T1>(IoctlProcessorInline<T, T1> callback, Span<byte> arguments, Span<byte> inlineBuffer) where T : struct where T1 : struct
+        protected static NvInternalResult CallIoctlMethod<T, T1>(IoctlProcessorInline<T, T1> callback, Span<byte> arguments, Span<byte> inlineBuffer)
+            where T : struct
+            where T1 : struct
         {
             Debug.Assert(arguments.Length == Unsafe.SizeOf<T>());
             Debug.Assert(inlineBuffer.Length == Unsafe.SizeOf<T1>());
@@ -70,7 +76,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             return callback(MemoryMarshal.Cast<byte, T>(arguments));
         }
 
-        protected static NvInternalResult CallIoctlMethod<T, T1>(IoctlProcessorInlineSpan<T, T1> callback, Span<byte> arguments, Span<byte> inlineBuffer) where T : struct where T1 : struct
+        protected static NvInternalResult CallIoctlMethod<T, T1>(IoctlProcessorInlineSpan<T, T1> callback, Span<byte> arguments, Span<byte> inlineBuffer)
+            where T : struct
+            where T1 : struct
         {
             Debug.Assert(arguments.Length == Unsafe.SizeOf<T>());
 

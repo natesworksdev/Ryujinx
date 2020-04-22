@@ -1,4 +1,5 @@
 using ARMeilleure.Common;
+using System.Numerics;
 
 namespace ARMeilleure.Decoders
 {
@@ -13,7 +14,7 @@ namespace ARMeilleure.Decoders
             int value = (opCode >> 0) & 0xff;
             int shift = (opCode >> 8) & 0xf;
 
-            Immediate = BitUtils.RotateRight(value, shift * 2);
+            Immediate = (int)BitOperations.RotateRight((uint)value, shift * 2);
 
             IsRotated = shift != 0;
         }

@@ -1,3 +1,4 @@
+using ARMeilleure.Common;
 using System;
 using System.Runtime.InteropServices;
 
@@ -151,9 +152,9 @@ namespace ARMeilleure.CodeGen.X86
 
         public static CallConvName GetCurrentCallConv()
         {
-            return RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-                ? CallConvName.Windows
-                : CallConvName.SystemV;
+            return (Platform.IsWindows) ?
+                CallConvName.Windows :
+                CallConvName.SystemV;
         }
     }
 }

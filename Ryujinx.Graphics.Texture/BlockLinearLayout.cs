@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 
 using static Ryujinx.Graphics.Texture.BlockLinearConstants;
@@ -43,15 +44,15 @@ namespace Ryujinx.Graphics.Texture
         {
             _texBpp = bpp;
 
-            _bppShift = BitUtils.CountTrailingZeros(bpp);
+            _bppShift = BitOperations.LeadingZeroCount((uint)bpp);
 
             _bhMask = gobBlocksInY - 1;
             _bdMask = gobBlocksInZ - 1;
 
-            _bhShift = BitUtils.CountTrailingZeros(gobBlocksInY);
-            _bdShift = BitUtils.CountTrailingZeros(gobBlocksInZ);
+            _bhShift = BitOperations.LeadingZeroCount((uint)gobBlocksInY);
+            _bdShift = BitOperations.LeadingZeroCount((uint)gobBlocksInZ);
 
-            _xShift = BitUtils.CountTrailingZeros(GobSize * gobBlocksInY * gobBlocksInZ);
+            _xShift = BitOperations.TrailingZeroCount(GobSize * gobBlocksInY * gobBlocksInZ);
 
             RobAndSliceSizes rsSizes = GetRobAndSliceSizes(width, height, gobBlocksInY, gobBlocksInZ);
 

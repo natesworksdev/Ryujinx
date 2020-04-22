@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace ARMeilleure.Common
 {
-    internal static class BitMapPool
+    static class BitMapPool
     {
         [MethodImpl(MethodOptions.FastInline)]
         [return: NotNull]

@@ -172,13 +172,22 @@ namespace Ryujinx.Ui
 
         private void ExtractSection(NcaSectionType ncaSectionType)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to extract into", null, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Extract", ResponseType.Accept);
-            fileChooser.SetPosition(WindowPosition.Center);
+            int response;
+            string destination;
 
-            int    response    = fileChooser.Run();
-            string destination = fileChooser.Filename;
-            
-            fileChooser.Dispose();
+            using (FileChooserDialog fileChooser = new FileChooserDialog(
+                "Choose the folder to extract into",
+                null,
+                FileChooserAction.SelectFolder,
+                "Cancel", ResponseType.Cancel,
+                "Extract", ResponseType.Accept)
+            )
+            {
+                fileChooser.SetPosition(WindowPosition.Center);
+
+                response = fileChooser.Run();
+                destination = fileChooser.Filename;
+            }
 
             if (response == (int)ResponseType.Accept)
             {
@@ -190,12 +199,12 @@ namespace Ryujinx.Ui
                     {
                         _dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Cancel, null)
                         {
-                            Title          = "Ryujinx - NCA Section Extractor",
-                            Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
-                            SecondaryText  = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(sourceFile)}...",
+                            Title = "Ryujinx - NCA Section Extractor",
+                            Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                            SecondaryText = $"Extracting {ncaSectionType} section from {System.IO.Path.GetFileName(sourceFile)}...",
                             WindowPosition = WindowPosition.Center
                         };
-                        
+
                         int dialogResponse = _dialog.Run();
                         if (dialogResponse == (int)ResponseType.Cancel || dialogResponse == (int)ResponseType.DeleteEvent)
                         {
@@ -206,10 +215,10 @@ namespace Ryujinx.Ui
 
                     using (FileStream file = new FileStream(sourceFile, FileMode.Open, FileAccess.Read))
                     {
-                        Nca mainNca  = null;
+                        Nca mainNca = null;
                         Nca patchNca = null;
 
-                        if ((System.IO.Path.GetExtension(sourceFile).ToLower() == ".nsp")  ||
+                        if ((System.IO.Path.GetExtension(sourceFile).ToLower() == ".nsp") ||
                             (System.IO.Path.GetExtension(sourceFile).ToLower() == ".pfs0") ||
                             (System.IO.Path.GetExtension(sourceFile).ToLower() == ".xci"))
                         {
@@ -300,9 +309,9 @@ namespace Ryujinx.Ui
 
                                     MessageDialog dialog = new MessageDialog(null, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
                                     {
-                                        Title          = "Ryujinx - NCA Section Extractor",
-                                        Icon           = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
-                                        SecondaryText  = "Extraction has completed successfully.",
+                                        Title = "Ryujinx - NCA Section Extractor",
+                                        Icon = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png"),
+                                        SecondaryText = "Extraction has completed successfully.",
                                         WindowPosition = WindowPosition.Center
                                     };
 
@@ -315,10 +324,11 @@ namespace Ryujinx.Ui
                         fsClient.Unmount(source.ToU8Span());
                         fsClient.Unmount(output.ToU8Span());
                     }
-                });
-
-                extractorThread.Name         = "GUI.NcaSectionExtractorThread";
-                extractorThread.IsBackground = true;
+                })
+                {
+                    Name = "GUI.NcaSectionExtractorThread",
+                    IsBackground = true
+                };
                 extractorThread.Start();
             }
         }

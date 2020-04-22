@@ -379,7 +379,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
-            int shift = (!doubleSize).AsInt() + 1;
+            int shift = doubleSize ? 1 : 2;
             Operand n = GetVecA32(op.Vm >> shift);
             n = EmitSwapScalar(context, n, op.Vm, doubleSize);
 

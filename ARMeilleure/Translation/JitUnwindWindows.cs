@@ -52,9 +52,9 @@ namespace ARMeilleure.Translation
 
         private static int _sizeOfRuntimeFunction;
 
-        private unsafe static RuntimeFunction* _runtimeFunction;
+        private static unsafe RuntimeFunction* _runtimeFunction;
 
-        private unsafe static UnwindInfo* _unwindInfo;
+        private static unsafe UnwindInfo* _unwindInfo;
 
         public static void InstallFunctionTableHandler(IntPtr codeCachePointer, uint codeCacheLength)
         {

@@ -1,4 +1,3 @@
-using Ryujinx.Common.Extensions;
 using System.IO;
 
 namespace Ryujinx.Graphics.VDec
@@ -127,7 +126,7 @@ namespace Ryujinx.Graphics.VDec
                     writer.WriteUe(0);
                 }
 
-                int picHeightInMbs = _picHeightInMapUnits / ((!_frameMbsOnlyFlag).AsInt() + 1);
+                int picHeightInMbs = _picHeightInMapUnits / (_frameMbsOnlyFlag ? 1 : 2);
 
                 writer.WriteUe(16);
                 writer.WriteBit(false);

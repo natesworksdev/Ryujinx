@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
@@ -225,7 +226,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 for (int level = 0; level < block.MaxLevel; level++)
                 {
-                    long mask = block.Masks[level][index];
+                    ulong mask = (ulong)block.Masks[level][index];
 
                     if (mask == 0)
                     {
@@ -236,11 +237,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (backwards)
                     {
-                        index = (index * 64 + 63) - BitUtils.CountLeadingZeros(mask);
+                        index = (index * 64 + 63) - BitOperations.LeadingZeroCount(mask);
                     }
                     else
                     {
-                        index = index * 64 + BitUtils.CountLeadingZeros(BitUtils.ReverseBits(mask));
+                        index = index * 64 + BitOperations.LeadingZeroCount(BitUtils.ReverseBits(mask));
                     }
                 }
 
@@ -278,7 +279,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 for (int level = 0; level < block.MaxLevel; level++)
                 {
-                    long mask = block.Masks[level][index];
+                    ulong mask = (ulong)block.Masks[level][index];
 
                     if (mask == 0)
                     {
@@ -289,11 +290,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     if (backwards)
                     {
-                        index = index * 64 + BitUtils.CountLeadingZeros(BitUtils.ReverseBits(mask));
+                        index = index * 64 + BitOperations.LeadingZeroCount(BitUtils.ReverseBits(mask));
                     }
                     else
                     {
-                        index = (index * 64 + 63) - BitUtils.CountLeadingZeros(mask);
+                        index = (index * 64 + 63) - BitOperations.LeadingZeroCount(mask);
                     }
                 }
 

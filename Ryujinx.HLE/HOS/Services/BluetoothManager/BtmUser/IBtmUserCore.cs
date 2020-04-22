@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Extensions;
-using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -43,7 +42,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleScanEventHandle);
 
-            context.ResponseData.Write((result == KernelResult.Success).AsInt());
+            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
             return ResultCode.Success;
         }
@@ -69,7 +68,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleConnectionEventHandle);
 
-            context.ResponseData.Write((result == KernelResult.Success).AsInt());
+            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
             return ResultCode.Success;
         }
@@ -95,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleServiceDiscoveryEventHandle);
 
-            context.ResponseData.Write((result == KernelResult.Success).AsInt());
+            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
             return ResultCode.Success;
         }
@@ -121,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleMtuConfigEventHandle);
 
-            context.ResponseData.Write((result == KernelResult.Success).AsInt());
+            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
             return ResultCode.Success;
         }

@@ -57,19 +57,10 @@ namespace Ryujinx.Common
         public static bool IsPowerOfTwo(long value) => (value != 0L) && unchecked(value & (value - 1L)) == 0L;
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static int CountLeadingZeros(int value) => BitOperations.LeadingZeroCount(unchecked((uint)value));
-
-        [MethodImpl(MethodOptions.FastInline)]
-        public static int CountLeadingZeros(long value) => BitOperations.LeadingZeroCount(unchecked((ulong)value));
-
-        [MethodImpl(MethodOptions.FastInline)]
-        public static int CountTrailingZeros(int value) => BitOperations.TrailingZeroCount(value);
-
-        [MethodImpl(MethodOptions.FastInline)]
         public static long ReverseBits(long value) => unchecked((long)ReverseBits((ulong)value));
 
         [MethodImpl(MethodOptions.FastInline)]
-        private static ulong ReverseBits(ulong value)
+        public static ulong ReverseBits(ulong value)
         {
             value = ((value & 0xaaaaaaaaaaaaaaaa) >> 1 ) | ((value & 0x5555555555555555) << 1 );
             value = ((value & 0xcccccccccccccccc) >> 2 ) | ((value & 0x3333333333333333) << 2 );

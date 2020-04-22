@@ -1,5 +1,5 @@
 using Ryujinx.Common;
-using Ryujinx.Common.Extensions;
+using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Common
 {
@@ -42,10 +42,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             range++;
 
             // This is log2(Range) plus one.
-            int nextRangeLog2 = 64 - BitUtils.CountLeadingZeros(range);
+            int nextRangeLog2 = 64 - BitOperations.LeadingZeroCount((ulong)range);
 
             // If Range is already power of 2, subtract one to use log2(Range) directly.
-            int rangeLog2 = nextRangeLog2 - BitUtils.IsPowerOfTwo(range).AsInt();
+            int rangeLog2 = nextRangeLog2 - (BitUtils.IsPowerOfTwo(range) ? 1 : 0);
 
             int parts       = rangeLog2 > 32 ? 2 : 1;
             int bitsPerPart = rangeLog2 / parts;

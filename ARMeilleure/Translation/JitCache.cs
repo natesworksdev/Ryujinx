@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen;
+using ARMeilleure.Common;
 using ARMeilleure.Memory;
 using System;
 using System.Collections.Generic;
@@ -29,7 +30,7 @@ namespace ARMeilleure.Translation
         {
             _jitRegion = new ReservedRegion(CacheSize);
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            if (Platform.IsWindows)
             {
                 _jitRegion.ExpandIfNeeded(PageSize);
                 JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);

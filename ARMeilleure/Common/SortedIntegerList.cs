@@ -2,7 +2,7 @@
 
 namespace ARMeilleure.Common
 {
-    internal class SortedIntegerList
+    class SortedIntegerList
     {
         private readonly List<int> _items;
 

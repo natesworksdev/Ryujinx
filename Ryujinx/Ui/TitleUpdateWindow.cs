@@ -137,7 +137,7 @@ namespace Ryujinx.Ui
 
         private void AddButton_Clicked(object sender, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Select update files", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept)
+            using FileChooserDialog fileChooser = new FileChooserDialog("Select update files", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept)
             {
                 SelectMultiple = true,
                 Filter         = new FileFilter()
@@ -152,8 +152,6 @@ namespace Ryujinx.Ui
                     AddUpdate(path);
                 }
             }
-
-            fileChooser.Dispose();
         }
 
         private void RemoveButton_Clicked(object sender, EventArgs args)

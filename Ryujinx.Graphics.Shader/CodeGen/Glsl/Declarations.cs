@@ -1,5 +1,4 @@
 using Ryujinx.Common;
-using Ryujinx.Common.Extensions;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
@@ -258,7 +257,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             // may have incomplete sampler type information. In those cases,
             // we prefer instead the more accurate information from the
             // TextureSample instruction, if both are available.
-            foreach (AstTextureOperation texOp in info.Samplers.OrderBy(x => x.Handle * 2 + (x.Inst != Instruction.TextureSample).AsInt()))
+            foreach (AstTextureOperation texOp in info.Samplers.OrderBy(x => x.Handle * 2 + ((x.Inst == Instruction.TextureSample) ? 0 : 1)))
             {
                 string indexExpr = NumberFormatter.FormatInt(texOp.ArraySize);
 

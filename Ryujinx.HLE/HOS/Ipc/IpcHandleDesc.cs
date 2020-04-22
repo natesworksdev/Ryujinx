@@ -1,4 +1,3 @@
-using Ryujinx.Common.Extensions;
 using System;
 using System.IO;
 
@@ -60,34 +59,31 @@ namespace Ryujinx.HLE.HOS.Ipc
 
         public byte[] GetBytes()
         {
-            using (MemoryStream ms = new MemoryStream())
+            using BinaryWriter writer = new BinaryWriter(new MemoryStream());
+
+            int word = HasPId ? 1 : 0;
+
+            word |= (ToCopy.Length & 0xf) << 1;
+            word |= (ToMove.Length & 0xf) << 5;
+
+            writer.Write(word);
+
+            if (HasPId)
             {
-                BinaryWriter writer = new BinaryWriter(ms);
-
-                int word = HasPId.AsInt();
-
-                word |= (ToCopy.Length & 0xf) << 1;
-                word |= (ToMove.Length & 0xf) << 5;
-
-                writer.Write(word);
-
-                if (HasPId)
-                {
-                    writer.Write(PId);
-                }
-
-                foreach (int handle in ToCopy)
-                {
-                    writer.Write(handle);
-                }
-
-                foreach (int handle in ToMove)
-                {
-                    writer.Write(handle);
-                }
-
-                return ms.ToArray();
+                writer.Write(PId);
             }
+
+            foreach (int handle in ToCopy)
+            {
+                writer.Write(handle);
+            }
+
+            foreach (int handle in ToMove)
+            {
+                writer.Write(handle);
+            }
+
+            return ((MemoryStream)writer.BaseStream).ToArray();
         }
     }
 }

@@ -771,7 +771,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
-            int shift = (!doubleSize).AsInt() + 1;
+            int shift = doubleSize ? 1 : 2;
             Operand m = GetVecA32(op.Vm >> shift);
             Operand d = GetVecA32(op.Vd >> shift);
 
@@ -799,7 +799,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
-            int shift = (!doubleSize).AsInt() + 1;
+            int shift = doubleSize ? 1 : 2;
             Operand n = GetVecA32(op.Vn >> shift);
             Operand m = GetVecA32(op.Vm >> shift);
             Operand d = GetVecA32(op.Vd >> shift);
@@ -829,7 +829,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
-            int shift = (!doubleSize).AsInt() + 1;
+            int shift = doubleSize ? 1 : 2;
             Operand n = GetVecA32(op.Vn >> shift);
             Operand m = GetVecA32(op.Vm >> shift);
             Operand d = GetVecA32(op.Vd >> shift);
@@ -852,7 +852,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) != 0;
-            int shift = (!doubleSize).AsInt() + 1;
+            int shift = doubleSize ? 1 : 2;
             Intrinsic inst1 = doubleSize ? inst64pt1 : inst32pt1;
             Intrinsic inst2 = doubleSize ? inst64pt2 : inst32pt2;
 

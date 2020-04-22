@@ -17,7 +17,7 @@ namespace ARMeilleure.Decoders
             Rn = (opCode >> 16) & 0xf;
             Size = (opCode >> 8) & 0x3;
 
-            Immediate <<= (Size != 1).AsInt() + 1;
+            Immediate <<= (Size == 1) ? 1 : 2;
 
             bool u = (opCode & (1 << 23)) != 0;
             Add = u;
