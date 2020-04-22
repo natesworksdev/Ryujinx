@@ -100,7 +100,8 @@ namespace Ryujinx.Graphics.Texture
                 depth,
                 blockHeight,
                 gobBlocksInY,
-                gobBlocksInZ);
+                gobBlocksInZ,
+                gobBlocksInTileX);
 
             if (!is3D)
             {
@@ -136,27 +137,37 @@ namespace Ryujinx.Graphics.Texture
             int depth,
             int blockHeight,
             int gobBlocksInY,
-            int gobBlocksInZ)
+            int gobBlocksInZ,
+            int gobBlocksInTileX)
         {
-            height = BitUtils.DivRoundUp(height, blockHeight);
-
-            while (height <= (gobBlocksInY >> 1) * GobHeight && gobBlocksInY != 1)
+            if (gobBlocksInTileX < 2)
             {
-                gobBlocksInY >>= 1;
+                height = BitUtils.DivRoundUp(height, blockHeight);
+
+                while (height <= (gobBlocksInY >> 1) * GobHeight && gobBlocksInY != 1)
+                {
+                    gobBlocksInY >>= 1;
+                }
+
+                while (depth <= (gobBlocksInZ >> 1) && gobBlocksInZ != 1)
+                {
+                    gobBlocksInZ >>= 1;
+                }
+
+                int blockOfGobsSize = gobBlocksInY * gobBlocksInZ * GobSize;
+
+                int sizeInBlockOfGobs = size / blockOfGobsSize;
+
+                if (size != sizeInBlockOfGobs * blockOfGobsSize)
+                {
+                    size = (sizeInBlockOfGobs + 1) * blockOfGobsSize;
+                }
             }
-
-            while (depth <= (gobBlocksInZ >> 1) && gobBlocksInZ != 1)
+            else
             {
-                gobBlocksInZ >>= 1;
-            }
+                int alignment = (gobBlocksInTileX * GobSize) * gobBlocksInY * gobBlocksInZ;
 
-            int blockOfGobsSize = gobBlocksInY * gobBlocksInZ * GobSize;
-
-            int sizeInBlockOfGobs = size / blockOfGobsSize;
-
-            if (size != sizeInBlockOfGobs * blockOfGobsSize)
-            {
-                size = (sizeInBlockOfGobs + 1) * blockOfGobsSize;
+                size = BitUtils.AlignUp(size, alignment);
             }
 
             return size;
