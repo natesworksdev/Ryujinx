@@ -1,12 +1,12 @@
 namespace ARMeilleure.CodeGen.Unwinding
 {
-    struct UnwindInfo
+    readonly struct UnwindInfo
     {
-        public UnwindPushEntry[] PushEntries { get; }
+        public readonly UnwindPushEntry[] PushEntries { get; }
 
-        public int PrologueSize { get; }
+        public readonly int PrologueSize { get; }
 
-        public int FixedAllocSize { get; }
+        public readonly int FixedAllocSize { get; }
 
         public UnwindInfo(UnwindPushEntry[] pushEntries, int prologueSize, int fixedAllocSize)
         {

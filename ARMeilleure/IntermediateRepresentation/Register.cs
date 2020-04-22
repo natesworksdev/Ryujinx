@@ -2,11 +2,11 @@ using System;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    struct Register : IEquatable<Register>
+    readonly struct Register : IEquatable<Register>
     {
-        public int Index { get; }
+        public readonly int Index { get; }
 
-        public RegisterType Type { get; }
+        public readonly RegisterType Type { get; }
 
         public Register(int index, RegisterType type)
         {
@@ -14,7 +14,7 @@ namespace ARMeilleure.IntermediateRepresentation
             Type  = type;
         }
 
-        public override int GetHashCode()
+        public override readonly int GetHashCode()
         {
             return (ushort)Index | ((int)Type << 16);
         }
@@ -29,12 +29,12 @@ namespace ARMeilleure.IntermediateRepresentation
             return !x.Equals(y);
         }
 
-        public override bool Equals(object obj)
+        public override readonly bool Equals(object obj)
         {
             return obj is Register reg && Equals(reg);
         }
 
-        public bool Equals(Register other)
+        public readonly bool Equals(Register other)
         {
             return other.Index == Index &&
                    other.Type  == Type;

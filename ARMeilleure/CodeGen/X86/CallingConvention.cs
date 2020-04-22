@@ -1,6 +1,5 @@
 using ARMeilleure.Common;
 using System;
-using System.Runtime.InteropServices;
 
 namespace ARMeilleure.CodeGen.X86
 {

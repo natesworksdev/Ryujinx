@@ -1,5 +1,4 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
-using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;

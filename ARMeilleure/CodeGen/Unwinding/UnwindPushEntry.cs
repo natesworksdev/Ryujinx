@@ -2,13 +2,13 @@ using ARMeilleure.IntermediateRepresentation;
 
 namespace ARMeilleure.CodeGen.Unwinding
 {
-    struct UnwindPushEntry
+    readonly struct UnwindPushEntry
     {
-        public int Index { get; }
+        public readonly int Index { get; }
 
-        public RegisterType Type { get; }
+        public readonly RegisterType Type { get; }
 
-        public int StreamEndOffset { get; }
+        public readonly int StreamEndOffset { get; }
 
         public UnwindPushEntry(int index, RegisterType type, int streamEndOffset)
         {

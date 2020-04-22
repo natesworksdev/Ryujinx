@@ -1,4 +1,3 @@
-using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using System;
 

@@ -2,14 +2,14 @@ using ARMeilleure.CodeGen.Unwinding;
 
 namespace ARMeilleure.Translation
 {
-    struct JitCacheEntry
+    readonly struct JitCacheEntry
     {
-        public int Offset { get; }
-        public int Size   { get; }
+        public readonly int Offset { get; }
+        public readonly int Size   { get; }
 
-        public UnwindInfo UnwindInfo { get; }
+        public readonly UnwindInfo UnwindInfo { get; }
 
-        public JitCacheEntry(int offset, int size, UnwindInfo unwindInfo)
+        public JitCacheEntry(int offset, int size, in UnwindInfo unwindInfo)
         {
             Offset     = offset;
             Size       = size;

@@ -2,12 +2,12 @@ using ARMeilleure.Instructions;
 
 namespace ARMeilleure.Decoders
 {
-    struct InstDescriptor
+    readonly struct InstDescriptor
     {
         public static InstDescriptor Undefined => new InstDescriptor(InstName.Und, InstEmit.Und);
 
-        public InstName    Name    { get; }
-        public InstEmitter Emitter { get; }
+        public readonly InstName    Name    { get; }
+        public readonly InstEmitter Emitter { get; }
 
         public InstDescriptor(InstName name, InstEmitter emitter)
         {

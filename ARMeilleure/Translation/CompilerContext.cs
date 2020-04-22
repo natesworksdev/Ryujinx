@@ -2,14 +2,14 @@ using ARMeilleure.IntermediateRepresentation;
 
 namespace ARMeilleure.Translation
 {
-    struct CompilerContext
+    readonly struct CompilerContext
     {
-        public ControlFlowGraph Cfg { get; }
+        public readonly ControlFlowGraph Cfg { get; }
 
-        public OperandType[] FuncArgTypes   { get; }
-        public OperandType   FuncReturnType { get; }
+        public readonly OperandType[] FuncArgTypes   { get; }
+        public readonly OperandType FuncReturnType { get; }
 
-        public CompilerOptions Options { get; }
+        public readonly CompilerOptions Options { get; }
 
         public CompilerContext(
             ControlFlowGraph cfg,

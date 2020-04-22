@@ -1,5 +1,4 @@
 using ARMeilleure.CodeGen.RegisterAllocators;
-using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;

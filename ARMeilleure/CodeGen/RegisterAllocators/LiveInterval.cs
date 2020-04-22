@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {

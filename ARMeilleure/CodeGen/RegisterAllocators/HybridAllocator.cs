@@ -14,12 +14,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private const int RegistersCount = 16;
         private const int MaxIROperands  = 4;
 
-        private struct BlockInfo
+        private readonly struct BlockInfo
         {
-            public bool HasCall { get; }
+            public readonly bool HasCall { get; }
 
-            public int IntFixedRegisters { get; }
-            public int VecFixedRegisters { get; }
+            public readonly int IntFixedRegisters { get; }
+            public readonly int VecFixedRegisters { get; }
 
             public BlockInfo(bool hasCall, int intFixedRegisters, int vecFixedRegisters)
             {

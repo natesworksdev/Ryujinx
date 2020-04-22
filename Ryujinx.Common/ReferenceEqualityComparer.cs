@@ -3,11 +3,11 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Common
 {
-    public struct ReferenceEqualityComparer<T> : IEqualityComparer<T>
+    public readonly struct ReferenceEqualityComparer<T> : IEqualityComparer<T>
         where T : class
     {
-        public bool Equals(T x, T y) => x == y;
+        public readonly bool Equals(T x, T y) => x == y;
 
-        public int GetHashCode([DisallowNull] T obj) => obj.GetHashCode();
+        public readonly int GetHashCode([DisallowNull] T obj) => obj.GetHashCode();
     }
 }

@@ -2,10 +2,10 @@ using System;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    struct LiveRange : IComparable<LiveRange>
+    readonly struct LiveRange : IComparable<LiveRange>
     {
-        public int Start { get; }
-        public int End   { get; }
+        public readonly int Start { get; }
+        public readonly int End   { get; }
 
         public LiveRange(int start, int end)
         {
@@ -13,7 +13,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             End   = end;
         }
 
-        public int CompareTo(LiveRange other)
+        public readonly int CompareTo(LiveRange other)
         {
             if (Start < other.End && other.Start < End)
             {
@@ -23,7 +23,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             return Start.CompareTo(other.Start);
         }
 
-        public override string ToString()
+        public override readonly string ToString()
         {
             return $"[{Start}, {End}[";
         }

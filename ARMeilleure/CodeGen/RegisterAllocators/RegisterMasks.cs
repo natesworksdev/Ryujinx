@@ -3,14 +3,14 @@ using System;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
-    struct RegisterMasks
+    readonly struct RegisterMasks
     {
-        public int IntAvailableRegisters   { get; }
-        public int VecAvailableRegisters   { get; }
-        public int IntCallerSavedRegisters { get; }
-        public int VecCallerSavedRegisters { get; }
-        public int IntCalleeSavedRegisters { get; }
-        public int VecCalleeSavedRegisters { get; }
+        public readonly int IntAvailableRegisters   { get; }
+        public readonly int VecAvailableRegisters   { get; }
+        public readonly int IntCallerSavedRegisters { get; }
+        public readonly int VecCallerSavedRegisters { get; }
+        public readonly int IntCalleeSavedRegisters { get; }
+        public readonly int VecCalleeSavedRegisters { get; }
 
         public RegisterMasks(
             int intAvailableRegisters,
@@ -28,7 +28,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             VecCalleeSavedRegisters = vecCalleeSavedRegisters;
         }
 
-        public int GetAvailableRegisters(RegisterType type)
+        public readonly int GetAvailableRegisters(RegisterType type)
         {
             if (type == RegisterType.Integer)
             {
