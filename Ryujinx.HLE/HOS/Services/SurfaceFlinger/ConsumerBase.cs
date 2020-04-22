@@ -161,7 +161,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         protected virtual bool StillTracking(int slotIndex, ref AndroidStrongPointer<GraphicBuffer> graphicBuffer)
         {
-            if (slotIndex < 0 || slotIndex > Slots.Length)
+            if (slotIndex < 0 || slotIndex >= Slots.Length)
             {
                 return false;
             }

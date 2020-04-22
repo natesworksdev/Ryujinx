@@ -32,9 +32,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             Header = parcel.ReadUnmanagedType<GraphicBufferHeader>();
 
-            if (Header.IntsCount != 0x51)
+            int expectedSize = Unsafe.SizeOf<NvGraphicBuffer>() / 4;
+
+            if (Header.IntsCount != expectedSize)
             {
-                throw new NotImplementedException($"Unexpected Graphic Buffer ints count (expected 0x51, found 0x{Header.IntsCount:x})");
+                throw new NotImplementedException($"Unexpected Graphic Buffer ints count (expected 0x{expectedSize:x}, found 0x{Header.IntsCount:x})");
             }
 
             Buffer = parcel.ReadUnmanagedType<NvGraphicBuffer>();
@@ -44,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             NvMapDeviceFile.IncrementMapRefCount(process, Buffer.NvMapId);
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < Buffer.Surfaces.Length; i++)
             {
                 NvMapDeviceFile.IncrementMapRefCount(process, Buffer.Surfaces[i].NvMapHandle);
             }
@@ -54,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             NvMapDeviceFile.DecrementMapRefCount(process, Buffer.NvMapId);
 
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < Buffer.Surfaces.Length; i++)
             {
                 NvMapDeviceFile.DecrementMapRefCount(process, Buffer.Surfaces[i].NvMapHandle);
             }

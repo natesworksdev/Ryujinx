@@ -8,12 +8,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private GpuContext _gpuContext;
 
         public BufferItemConsumer(Switch device,
-                                  BufferQueueConsumer consumer,
-                                  uint consumerUsage,
-                                  int bufferCount,
-                                  bool controlledByApp,
-                                  IConsumerListener listener = null
-                                 ) : base(consumer, controlledByApp, listener)
+            BufferQueueConsumer consumer,
+            uint consumerUsage,
+            int bufferCount,
+            bool controlledByApp,
+            IConsumerListener listener = null) : base(consumer, controlledByApp, listener)
         {
             _gpuContext = device.Gpu;
 

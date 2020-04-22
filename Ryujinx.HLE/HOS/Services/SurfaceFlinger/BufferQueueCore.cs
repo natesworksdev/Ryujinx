@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public readonly object Lock = new object();
 
         private KEvent _waitBufferFreeEvent;
-        private KEvent _frameAvailaibleEvent;
+        private KEvent _frameAvailableEvent;
 
         public KProcess Owner { get; }
 
@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             // TODO: CreateGraphicBufferAlloc?
 
             _waitBufferFreeEvent  = new KEvent(device.System);
-            _frameAvailaibleEvent = new KEvent(device.System);
+            _frameAvailableEvent = new KEvent(device.System);
 
             Owner = process;
         }
@@ -134,10 +134,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void SignalFrameAvailableEvent()
         {
-            _frameAvailaibleEvent.WritableEvent.Signal();
+            _frameAvailableEvent.WritableEvent.Signal();
         }
 
-        // TODO: Find an accurate way to handle a regular condvar here as this will wake up unwanted threads in some edges cases.
+        // TODO: Find an accurate way to handle a regular condvar here as this will wake up unwanted threads in some edge cases.
         public void SignalDequeueEvent()
         {
             Monitor.PulseAll(Lock);
@@ -234,7 +234,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _frameAvailaibleEvent.WritableEvent.Clear();
+                _frameAvailableEvent.WritableEvent.Clear();
             }
         }
 

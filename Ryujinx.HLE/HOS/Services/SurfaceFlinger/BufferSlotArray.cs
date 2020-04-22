@@ -20,7 +20,6 @@
         public BufferSlot this[int index]
         {
             get => _raw[index];
-
             set => _raw[index] = value;
         }
 
