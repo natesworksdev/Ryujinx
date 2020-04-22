@@ -114,7 +114,7 @@ namespace ARMeilleure.Diagnostics
                 case OperandKind.Constant:
                     string symbolName = Symbols.Get(operand.Value);
 
-                    if (symbolName != null)
+                    if (symbolName != null && !_symbolNames.ContainsKey(operand.Value))
                     {
                         _symbolNames.Add(operand.Value, symbolName);
                     }
