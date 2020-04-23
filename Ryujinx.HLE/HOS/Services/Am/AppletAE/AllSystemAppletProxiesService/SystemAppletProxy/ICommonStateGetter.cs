@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
     {
         private CpuBoostMode _cpuBoostMode = CpuBoostMode.Disabled;
 
-        public ICommonStateGetter(Horizon system) {}
+        public ICommonStateGetter() { }
 
         [Command(0)]
         // GetEventHandle() -> handle<copy>
