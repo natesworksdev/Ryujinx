@@ -177,12 +177,9 @@ namespace Ryujinx.HLE.FileSystem
 
             string fullPath = Path.Combine(GetBasePath(), path);
 
-            if (isDirectory)
+            if (isDirectory && !Directory.Exists(fullPath))
             {
-                if (!Directory.Exists(fullPath))
-                {
-                    Directory.CreateDirectory(fullPath);
-                }
+                Directory.CreateDirectory(fullPath);
             }
 
             return fullPath;
@@ -283,7 +280,7 @@ namespace Ryujinx.HLE.FileSystem
         {
             if (_isInitialized)
             {
-                throw new InvalidOperationException($"VirtualFileSystem can only be instanciated once!");
+                throw new InvalidOperationException($"VirtualFileSystem can only be instantiated once!");
             }
 
             _isInitialized = true;

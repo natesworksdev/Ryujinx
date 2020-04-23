@@ -141,11 +141,13 @@ namespace Ryujinx.HLE
 
         protected virtual void Dispose(bool disposing)
         {
-            if (disposing)
+            if (!disposing)
             {
-                System.Dispose();
-                AudioOut.Dispose();
+                return;
             }
+     
+            System.Dispose();
+            AudioOut.Dispose();
         }
     }
 }

@@ -2,13 +2,13 @@
 
 namespace Ryujinx.HLE.FileSystem
 {
-    struct SaveInfo
+    readonly struct SaveInfo
     {
-        public ulong        TitleId      { get; private set; }
-        public long         SaveId       { get; private set; }
-        public SaveDataType SaveDataType { get; private set; }
-        public SaveSpaceId  SaveSpaceId  { get; private set; }
-        public UserId       UserId       { get; private set; }
+        public readonly ulong TitleId;
+        public readonly long SaveId;
+        public readonly SaveDataType SaveDataType;
+        public readonly SaveSpaceId SaveSpaceId;
+        public readonly UserId UserId;
 
         public SaveInfo(
             ulong        titleId,

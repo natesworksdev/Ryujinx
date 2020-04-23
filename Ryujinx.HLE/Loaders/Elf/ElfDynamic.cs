@@ -1,10 +1,10 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    struct ElfDynamic
+    readonly struct ElfDynamic
     {
-        public ElfDynamicTag Tag { get; private set; }
+        public readonly ElfDynamicTag Tag;
 
-        public long Value { get; private set; }
+        public readonly long Value;
 
         public ElfDynamic(ElfDynamicTag tag, long value)
         {

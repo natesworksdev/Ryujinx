@@ -23,7 +23,7 @@ namespace ARMeilleure.Common
         [MethodImpl(MethodOptions.FastInline)]
         public BitMap()
         {
-            _masks = new List<long>(capacity: 0);
+            _masks = new List<long>();
         }
 
         [MethodImpl(MethodOptions.FastInline)]

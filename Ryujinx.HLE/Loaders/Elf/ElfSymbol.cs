@@ -1,24 +1,24 @@
 namespace Ryujinx.HLE.Loaders.Elf
 {
-    struct ElfSymbol
+    readonly struct ElfSymbol
     {
-        public string Name { get; private set; }
+        public readonly string Name;
 
-        public ElfSymbolType       Type       { get; private set; }
-        public ElfSymbolBinding    Binding    { get; private set; }
-        public ElfSymbolVisibility Visibility { get; private set; }
+        public readonly ElfSymbolType Type;
+        public readonly ElfSymbolBinding Binding;
+        public readonly ElfSymbolVisibility Visibility;
 
-        public bool IsFuncOrObject =>
+        public readonly bool IsFuncOrObject =>
             Type == ElfSymbolType.SttFunc ||
             Type == ElfSymbolType.SttObject;
 
-        public bool IsGlobalOrWeak =>
+        public readonly bool IsGlobalOrWeak =>
             Binding == ElfSymbolBinding.StbGlobal ||
             Binding == ElfSymbolBinding.StbWeak;
 
-        public int  ShIdx { get; private set; }
-        public ulong Value { get; private set; }
-        public ulong Size  { get; private set; }
+        public readonly int ShIdx;
+        public readonly ulong Value;
+        public readonly ulong Size;
 
         public ElfSymbol(
             string name,

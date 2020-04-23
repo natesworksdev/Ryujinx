@@ -10,7 +10,6 @@ namespace ARMeilleure.Common
             Windows,
             Linux,
             OSX,
-            FreeBSD,
             Unknown
         }
 
@@ -22,7 +21,6 @@ namespace ARMeilleure.Common
         {
             var platforms = new[]
             {
-                // (OSPlatform.FreeBSD, Platform.FreeBSD),
                 (OSPlatform.Linux, System.Linux),
                 (OSPlatform.OSX, System.OSX),
                 (OSPlatform.Windows, System.Windows)
@@ -37,7 +35,7 @@ namespace ARMeilleure.Common
                 }
             }
 
-            throw new NotImplementedException("Current OS is not implemented");
+            throw new NotImplementedException("The current OS is not supported.");
         }
 
         public static bool IsWindows => CurrentSystem == System.Windows;

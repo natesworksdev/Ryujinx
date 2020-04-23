@@ -11,19 +11,19 @@ namespace Ryujinx.HLE
         private const int FrameTypeSystem = 0;
         private const int FrameTypeGame   = 1;
 
-        private double[] _averageFrameRate;
-        private double[] _accumulatedFrameTime;
-        private double[] _previousFrameTime;
+        private static readonly double _ticksToSeconds = 1.0 / Stopwatch.Frequency;
 
-        private long[] _framesRendered;
+        private readonly double[] _averageFrameRate;
+        private readonly double[] _accumulatedFrameTime;
+        private readonly double[] _previousFrameTime;
 
-        private object[] _frameLock;
+        private readonly long[] _framesRendered;
 
-        private double _ticksToSeconds;
+        private readonly object[] _frameLock;
 
-        private Stopwatch _executionTime;
+        private readonly Stopwatch _executionTime;
 
-        private Timer _resetTimer;
+        private readonly Timer _resetTimer;
 
         public PerformanceStatistics()
         {
@@ -46,8 +46,6 @@ namespace Ryujinx.HLE
             _resetTimer.AutoReset = true;
 
             _resetTimer.Start();
-
-            _ticksToSeconds = 1.0 / Stopwatch.Frequency;
         }
 
         private void ResetTimerElapsed(object sender, ElapsedEventArgs e)

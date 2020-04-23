@@ -425,9 +425,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                         return KernelResult.InvalidCombination;
                     }
 
-                        value = _system.Scheduler.GetCurrentProcess().Debug ? 1 : 0;
+                    value = _system.Scheduler.GetCurrentProcess().Debug ? 1 : 0;
 
-                        break;
+                    break;
                 }
 
                 case 9:

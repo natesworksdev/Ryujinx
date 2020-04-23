@@ -1,4 +1,3 @@
-using System.Numerics;
 using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Common
@@ -6,23 +5,23 @@ namespace Ryujinx.Common
     public static class BitUtils
     {
         [MethodImpl(MethodOptions.FastInline)]
-        public static int AlignUp(int value, int size) => unchecked((value + (size - 1)) & -size);
+        public static int AlignUp(int value, int size) => (value + (size - 1)) & -size;
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static ulong AlignUp(ulong value, int size) => unchecked((ulong)AlignUp((long)value, size));
+        public static ulong AlignUp(ulong value, int size) => (ulong)AlignUp((long)value, size);
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static long AlignUp(long value, int size) => unchecked((value + (size - 1)) & -(long)size);
+        public static long AlignUp(long value, int size) => (value + (size - 1)) & -(long)size;
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static int AlignDown(int value, int size) => unchecked(value & -size);
+        public static int AlignDown(int value, int size) => value & -size;
 
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static ulong AlignDown(ulong value, int size) => unchecked((ulong)AlignDown((long)value, size));
+        public static ulong AlignDown(ulong value, int size) => (ulong)AlignDown((long)value, size);
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static long AlignDown(long value, int size) => unchecked(value & -(long)size);
+        public static long AlignDown(long value, int size) => value & -(long)size;
 
         [MethodImpl(MethodOptions.FastInline)]
         public static int DivRoundUp(int value, int dividend) => (value + dividend - 1) / dividend;
@@ -51,13 +50,13 @@ namespace Ryujinx.Common
         public static int Pow2RoundDown(int value) => IsPowerOfTwo(value) ? value : Pow2RoundUp(value) >> 1;
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static bool IsPowerOfTwo(int value) => (value != 0) && unchecked(value & (value - 1)) == 0;
+        public static bool IsPowerOfTwo(int value) => (value != 0) && ((value & (value - 1)) == 0);
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static bool IsPowerOfTwo(long value) => (value != 0L) && unchecked(value & (value - 1L)) == 0L;
+        public static bool IsPowerOfTwo(long value) => (value != 0L) && ((value & (value - 1L)) == 0L);
 
         [MethodImpl(MethodOptions.FastInline)]
-        public static long ReverseBits(long value) => unchecked((long)ReverseBits((ulong)value));
+        public static long ReverseBits(long value) => (long)ReverseBits((ulong)value);
 
         [MethodImpl(MethodOptions.FastInline)]
         public static ulong ReverseBits(ulong value)

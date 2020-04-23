@@ -16,15 +16,15 @@ namespace ARMeilleure.Translation
 
         private const int CacheSize = 2047 * 1024 * 1024;
 
-        private static ReservedRegion _jitRegion;
+        private static readonly ReservedRegion _jitRegion;
 
         private static IntPtr _basePointer => _jitRegion.Pointer;
 
         private static int _offset;
 
-        private static List<JitCacheEntry> _cacheEntries;
+        private static readonly List<JitCacheEntry> _cacheEntries;
 
-        private static object _lock;
+        private static readonly object _lock;
 
         static JitCache()
         {
@@ -57,6 +57,8 @@ namespace ARMeilleure.Translation
                 Marshal.Copy(code, 0, funcPtr, code.Length);
 
                 ReprotectRange(funcOffset, code.Length);
+
+                MemoryManagement.FlushInstructionCache(funcPtr, (ulong)code.Length);
 
                 Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
 
@@ -133,7 +135,7 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            entry = default(JitCacheEntry);
+            entry = default;
 
             return false;
         }

@@ -44,13 +44,13 @@ namespace Ryujinx.Graphics.Texture
         {
             _texBpp = bpp;
 
-            _bppShift = BitOperations.LeadingZeroCount((uint)bpp);
+            _bppShift = BitOperations.TrailingZeroCount((uint)bpp);
 
             _bhMask = gobBlocksInY - 1;
             _bdMask = gobBlocksInZ - 1;
 
-            _bhShift = BitOperations.LeadingZeroCount((uint)gobBlocksInY);
-            _bdShift = BitOperations.LeadingZeroCount((uint)gobBlocksInZ);
+            _bhShift = BitOperations.TrailingZeroCount((uint)gobBlocksInY);
+            _bdShift = BitOperations.TrailingZeroCount((uint)gobBlocksInZ);
 
             _xShift = BitOperations.TrailingZeroCount(GobSize * gobBlocksInY * gobBlocksInZ);
 

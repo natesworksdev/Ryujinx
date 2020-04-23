@@ -80,7 +80,9 @@ namespace ARMeilleure.Common
             return output;
         }
 
-        /// <summary>Returns if the given value is a power-of-two</summary>
+        /// <summary>Returns if the given value is a power-of-two.</summary>
+        /// <param name="value">The value to check if it is a power-of-two.</param>
+        /// <returns>True if the value is a power-of-two, otherwise false.</returns>
         [MethodImpl(MethodOptions.FastInline)]
         public static bool IsPowerOfTwo(int value) =>
             (value != 0) && (value & (value - 1)) == 0;
