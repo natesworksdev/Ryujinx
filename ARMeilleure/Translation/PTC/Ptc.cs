@@ -457,27 +457,33 @@ namespace ARMeilleure.Translation.PTC
         {
             if (PtcProfiler.ProfiledFuncsHighCq.Count != 0)
             {
-                void PtcInformer(object state)
+                int translateCount = 0;
+
+                void PtcLogger(object state) // TODO: .
                 {
                     const int refreshRate = 1; // Seconds.
 
-                    do
+                    int funcsHighCqCount         = funcsHighCq.Count;
+                    int ProfiledFuncsHighCqCount = PtcProfiler.ProfiledFuncsHighCq.Count;
+
+                    void WriteLog() => Console.WriteLine($"{nameof(PtcLogger)}: {funcsHighCqCount + translateCount} of {ProfiledFuncsHighCqCount} functions to translate.");
+
+                    while (funcsHighCqCount + translateCount < ProfiledFuncsHighCqCount)
                     {
-                        Console.WriteLine($"{nameof(PtcInformer)}: {funcsHighCq.Count} of {PtcProfiler.ProfiledFuncsHighCq.Count} functions to translate."); // TODO: .
-
-                        Thread.Sleep(refreshRate * 1000);
-
-                        if (State == PtcState.Closing)
+                        if (State != PtcState.Enabled)
                         {
                             break;
                         }
+
+                        WriteLog();
+
+                        Thread.Sleep(refreshRate * 1000);
                     }
-                    while (funcsHighCq.Count < PtcProfiler.ProfiledFuncsHighCq.Count);
+
+                    WriteLog();
                 }
 
-                ThreadPool.QueueUserWorkItem(PtcInformer);
-
-                int translateCount = 0;
+                ThreadPool.QueueUserWorkItem(PtcLogger);
 
                 ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
 
@@ -496,7 +502,7 @@ namespace ARMeilleure.Translation.PTC
                         Interlocked.Increment(ref translateCount);
                     }
 
-                    if (State == PtcState.Closing)
+                    if (State != PtcState.Enabled)
                     {
                         state.Stop();
                     }
