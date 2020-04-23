@@ -7,6 +7,7 @@ using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Spl;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -16,7 +17,9 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.Services.Mii;
+using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
@@ -41,9 +44,6 @@ using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
-using Ryujinx.HLE.HOS.Services.Nv;
-using Ryujinx.Common;
-using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 
 namespace Ryujinx.HLE.HOS
 {
