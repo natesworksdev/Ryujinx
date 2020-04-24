@@ -82,8 +82,10 @@ namespace Ryujinx.Graphics.Gpu
             }
         }
 
+#pragma warning disable IDE0044, IDE0051, CS0169
         private int _currMacroPosition;
         private int _currMacroBindIndex;
+#pragma warning restore IDE0044, IDE0051, CS0169
 
         private ShadowRamControl _shadowCtrl;
 

@@ -313,10 +313,8 @@ namespace Ryujinx.HLE.HOS
 
         public void LoadKip(string kipFile)
         {
-            using (IStorage fs = new LocalStorage(kipFile, FileAccess.Read))
-            {
-                ProgramLoader.LoadKernelInitalProcess(this, new KipExecutable(fs));
-            }
+            using IStorage fs = new LocalStorage(kipFile, FileAccess.Read);
+            ProgramLoader.LoadKernelInitalProcess(this, new KipExecutable(fs));
         }
 
         private (Nca Main, Nca patch, Nca Control) GetXciGameData(Xci xci)

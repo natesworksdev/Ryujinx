@@ -338,9 +338,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult GetThreadId32([R(1)] int handle, [R(1)] out uint threadUidLow, [R(2)] out uint threadUidHigh)
         {
-            long threadUid;
-
-            KernelResult result = GetThreadId(handle, out threadUid);
+            KernelResult result = GetThreadId(handle, out long threadUid);
 
             threadUidLow  = (uint)(threadUid >> 32);
             threadUidHigh = (uint)(threadUid & uint.MaxValue);

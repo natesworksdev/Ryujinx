@@ -9,10 +9,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
     {
         private const int HasListenersMask = 0x40000000;
 
-        private Horizon _system;
+        private readonly Horizon _system;
 
-        public List<KThread> CondVarThreads;
-        public List<KThread> ArbiterThreads;
+        public readonly List<KThread> CondVarThreads;
+        public readonly List<KThread> ArbiterThreads;
 
         public KAddressArbiter(Horizon system)
         {
@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             _system.CriticalSection.Leave();
 
-            return (KernelResult)currentThread.ObjSyncResult;
+            return currentThread.ObjSyncResult;
         }
 
         public KernelResult ArbitrateUnlock(ulong mutexAddress)
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             _system.CriticalSection.Leave();
 
-            return (KernelResult)currentThread.ObjSyncResult;
+            return currentThread.ObjSyncResult;
         }
 
         private (KernelResult, KThread) MutexUnlock(KThread currentThread, ulong mutexAddress)
@@ -349,7 +349,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 _system.CriticalSection.Leave();
 
-                return (KernelResult)currentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
 
             _system.CriticalSection.Leave();
@@ -431,7 +431,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 _system.CriticalSection.Leave();
 
-                return (KernelResult)currentThread.ObjSyncResult;
+                return currentThread.ObjSyncResult;
             }
 
             _system.CriticalSection.Leave();

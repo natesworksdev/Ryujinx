@@ -10,12 +10,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        private struct HleIpcMessage
+        private readonly struct HleIpcMessage
         {
-            public KThread        Thread     { get; private set; }
-            public KClientSession Session    { get; private set; }
-            public IpcMessage     Message    { get; private set; }
-            public long           MessagePtr { get; private set; }
+            public readonly KThread Thread;
+            public readonly KClientSession Session;
+            public readonly IpcMessage Message;
+            public readonly long MessagePtr;
 
             public HleIpcMessage(
                 KThread        thread,
@@ -213,12 +213,12 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             KResourceLimit resourceLimit = currentProcess.ResourceLimit;
 
-            KernelResult result = KernelResult.Success;
-
             if (resourceLimit != null && !resourceLimit.Reserve(LimitableResource.Session, 1))
             {
                 return KernelResult.ResLimitExceeded;
             }
+
+            KernelResult result;
 
             if (isLight)
             {

@@ -1,5 +1,4 @@
 using ARMeilleure.Memory;
-using LibHac;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;

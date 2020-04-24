@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KReadableEvent : KSynchronizationObject
     {
-        private KEvent _parent;
+        private readonly KEvent _parent;
 
         private bool _signaled;
 

@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
     {
         public static void InitializeResourceLimit(KResourceLimit resourceLimit)
         {
-            void EnsureSuccess(KernelResult result)
+            static void EnsureSuccess(KernelResult result)
             {
                 if (result != KernelResult.Success)
                 {
@@ -126,12 +126,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 
         private static long GetRamSize(int kernelMemoryCfg)
         {
-            switch ((kernelMemoryCfg >> 16) & 3)
+            return ((kernelMemoryCfg >> 16) & 3) switch
             {
-                case 1:  return 0x180000000;
-                case 2:  return 0x200000000;
-                default: return 0x100000000;
-            }
+                1 => 0x180000000,
+                2 => 0x200000000,
+                _ => 0x100000000,
+            };
         }
     }
 }

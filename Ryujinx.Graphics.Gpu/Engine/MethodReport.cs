@@ -12,7 +12,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private const int NsToTicksFractionNumerator   = 384;
         private const int NsToTicksFractionDenominator = 625;
 
+#pragma warning disable IDE0044, IDE0051, CS0169
         private ulong _runningCounter;
+#pragma warning restore IDE0044, IDE0051, CS0169
 
         private readonly CounterCache _counterCache = new CounterCache();
 

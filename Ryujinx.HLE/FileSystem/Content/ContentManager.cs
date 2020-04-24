@@ -4,11 +4,13 @@ using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
+using Ryujinx.Common.Extensions;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -20,22 +22,24 @@ namespace Ryujinx.HLE.FileSystem.Content
         private const ulong SystemVersionTitleId = 0x0100000000000809;
         private const ulong SystemUpdateTitleId  = 0x0100000000000816;
 
-        private Dictionary<StorageId, LinkedList<LocationEntry>> _locationEntries;
+        private ReadOnlyDictionary<StorageId, LinkedList<LocationEntry>> _locationEntries;
 
-        private Dictionary<string, long>   _sharedFontTitleDictionary;
-        private Dictionary<long, string>   _systemTitlesNameDictionary;
-        private Dictionary<string, string> _sharedFontFilenameDictionary;
+        private readonly ReadOnlyDictionary<string, long>   _sharedFontTitleDictionary;
+        private readonly ReadOnlyDictionary<long, string>   _systemTitlesNameDictionary;
+        private readonly ReadOnlyDictionary<string, string> _sharedFontFilenameDictionary;
 
+        // This is a SortedDictionary as one of the methods below searches for an element by value,
+        // and Dictionary does not provide that mechanism directly.
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;
 
-        private VirtualFileSystem _virtualFileSystem;
+        private readonly VirtualFileSystem _virtualFileSystem;
 
         private readonly object _lock = new object();
 
         public ContentManager(VirtualFileSystem virtualFileSystem)
         {
             _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
-            _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
+            _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>().AsReadOnly();
 
             _sharedFontTitleDictionary = new Dictionary<string, long>
             {
@@ -45,9 +49,9 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { "FontKorean",                    0x0100000000000812 },
                 { "FontChineseTraditional",        0x0100000000000813 },
                 { "FontNintendoExtended",          0x0100000000000810 }
-            };
+            }.AsReadOnly();
 
-            _systemTitlesNameDictionary = new Dictionary<long, string>()
+            _systemTitlesNameDictionary = new Dictionary<long, string>
             {
                 { 0x010000000000080E, "TimeZoneBinary"         },
                 { 0x0100000000000810, "FontNintendoExtension"  },
@@ -55,7 +59,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { 0x0100000000000812, "FontKorean"             },
                 { 0x0100000000000813, "FontChineseTraditional" },
                 { 0x0100000000000814, "FontChineseSimple"      },
-            };
+            }.AsReadOnly();
 
             _sharedFontFilenameDictionary = new Dictionary<string, string>
             {
@@ -65,7 +69,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 { "FontKorean",                    "nintendo_udsg-r_ko_003.bfttf" },
                 { "FontChineseTraditional",        "nintendo_udjxh-db_zh-tw_003.bfttf" },
                 { "FontNintendoExtended",          "nintendo_ext_003.bfttf" }
-            };
+            }.AsReadOnly();
 
             _virtualFileSystem = virtualFileSystem;
         }
@@ -75,7 +79,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             lock (_lock)
             {
                 _contentDictionary = new SortedDictionary<(ulong, NcaContentType), string>();
-                _locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
+                var locationEntries   = new Dictionary<StorageId, LinkedList<LocationEntry>>();
 
                 foreach (StorageId storageId in Enum.GetValues(typeof(StorageId)))
                 {
@@ -98,73 +102,68 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                     LinkedList<LocationEntry> locationList = new LinkedList<LocationEntry>();
 
-                    void AddEntry(LocationEntry entry)
-                    {
-                        locationList.AddLast(entry);
-                    }
-
                     foreach (string directoryPath in Directory.EnumerateDirectories(registeredDirectory))
                     {
-                        if (Directory.GetFiles(directoryPath).Length > 0)
+                        if (Directory.GetFiles(directoryPath).Length <= 0)
                         {
-                            string ncaName = new DirectoryInfo(directoryPath).Name.Replace(".nca", string.Empty);
-
-                            using (FileStream ncaFile = File.OpenRead(Directory.GetFiles(directoryPath)[0]))
-                            {
-                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
-
-                                string switchPath = contentPathString + ":/" + ncaFile.Name.Replace(contentDirectory, string.Empty).TrimStart(Path.DirectorySeparatorChar);
-
-                                // Change path format to switch's
-                                switchPath = switchPath.Replace('\\', '/');
-
-                                LocationEntry entry = new LocationEntry(switchPath,
-                                                                        0,
-                                                                        (long)nca.Header.TitleId,
-                                                                        nca.Header.ContentType);
-
-                                AddEntry(entry);
-
-                                _contentDictionary.Add((nca.Header.TitleId, nca.Header.ContentType), ncaName);
-                            }
+                            continue;
                         }
+
+                        string ncaName = new DirectoryInfo(directoryPath).Name.Replace(".nca", string.Empty);
+
+                        using var ncaFile = File.OpenRead(Directory.GetFiles(directoryPath)[0]);
+                        Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+
+                        string switchPath = contentPathString + ":/" + ncaFile.Name.Replace(contentDirectory, string.Empty).TrimStart(Path.DirectorySeparatorChar);
+
+                        // Change path format to switch's
+                        switchPath = switchPath.Replace('\\', '/');
+
+                        LocationEntry entry = new LocationEntry(switchPath,
+                                                                0,
+                                                                (long)nca.Header.TitleId,
+                                                                nca.Header.ContentType);
+
+                        locationList.AddLast(entry);
+
+                        _contentDictionary.Add((nca.Header.TitleId, nca.Header.ContentType), ncaName);
                     }
 
                     foreach (string filePath in Directory.EnumerateFiles(contentDirectory))
                     {
-                        if (Path.GetExtension(filePath) == ".nca")
+                        if (Path.GetExtension(filePath) != ".nca")
                         {
-                            string ncaName = Path.GetFileNameWithoutExtension(filePath);
-
-                            using (FileStream ncaFile = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-                            {
-                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
-
-                                string switchPath = contentPathString + ":/" + filePath.Replace(contentDirectory, string.Empty).TrimStart(Path.DirectorySeparatorChar);
-
-                                // Change path format to switch's
-                                switchPath = switchPath.Replace('\\', '/');
-
-                                LocationEntry entry = new LocationEntry(switchPath,
-                                                                        0,
-                                                                        (long)nca.Header.TitleId,
-                                                                        nca.Header.ContentType);
-
-                                AddEntry(entry);
-
-                                _contentDictionary.Add((nca.Header.TitleId, nca.Header.ContentType), ncaName);
-                            }
+                            continue;
                         }
+
+                        string ncaName = Path.GetFileNameWithoutExtension(filePath);
+
+                        using var ncaFile = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                        Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+
+                        string switchPath = contentPathString + ":/" + filePath.Replace(contentDirectory, string.Empty).TrimStart(Path.DirectorySeparatorChar);
+
+                        // Change path format to switch's
+                        switchPath = switchPath.Replace('\\', '/');
+
+                        LocationEntry entry = new LocationEntry(switchPath,
+                                                                0,
+                                                                (long)nca.Header.TitleId,
+                                                                nca.Header.ContentType);
+
+                        locationList.AddLast(entry);
+
+                        _contentDictionary.Add((nca.Header.TitleId, nca.Header.ContentType), ncaName);
                     }
 
-                    if (_locationEntries.ContainsKey(storageId) && _locationEntries[storageId]?.Count == 0)
+                    if (locationEntries.ContainsKey(storageId) && locationEntries[storageId]?.Count == 0)
                     {
-                        _locationEntries.Remove(storageId);
+                        locationEntries.Remove(storageId);
                     }
 
-                    if (!_locationEntries.ContainsKey(storageId))
+                    if (!locationEntries.ContainsKey(storageId))
                     {
-                        _locationEntries.Add(storageId, locationList);
+                        locationEntries.Add(storageId, locationList);
                     }
                 }
 
@@ -173,6 +172,8 @@ namespace Ryujinx.HLE.FileSystem.Content
                     TimeManager.Instance.InitializeTimeZone(device);
                     device.System.Font.Initialize(this);
                 }
+
+                _locationEntries = locationEntries.AsReadOnly();
             }
         }
 
@@ -190,14 +191,13 @@ namespace Ryujinx.HLE.FileSystem.Content
             {
                 LinkedList<LocationEntry> locationList      = _locationEntries[storageId];
                 LinkedListNode<LocationEntry> locationEntry = locationList.First;
-
                 while (locationEntry != null)
                 {
                     LinkedListNode<LocationEntry> nextLocationEntry = locationEntry.Next;
 
                     if (locationEntry.Value.Flag == flag)
                     {
-                        locationList.Remove(locationEntry.Value);
+                        locationList.Remove(locationEntry);
                     }
 
                     locationEntry = nextLocationEntry;
@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                 if (_contentDictionary.ContainsValue(ncaId))
                 {
                     var content = _contentDictionary.FirstOrDefault(x => x.Value == ncaId);
-                    long titleId = (long)content.Key.Item1;
+                    long titleId = (long)content.Key.titleId;
 
                     NcaContentType contentType = content.Key.type;
                     StorageId storage = GetInstalledStorage(titleId, contentType, storageId);
@@ -228,9 +228,9 @@ namespace Ryujinx.HLE.FileSystem.Content
         {
             lock (_lock)
             {
-                if (_contentDictionary.ContainsKey(((ulong)titleId, contentType)))
+                if (_contentDictionary.TryGetValue(((ulong)titleId, contentType), out var value))
                 {
-                    return new UInt128(_contentDictionary[((ulong)titleId, contentType)]);
+                    return new UInt128(value);
                 }
             }
 
@@ -243,8 +243,9 @@ namespace Ryujinx.HLE.FileSystem.Content
             {
                 LocationEntry locationEntry = GetLocation(titleId, contentType, storageId);
 
-                return locationEntry.ContentPath != null ?
-                    LocationHelper.GetStorageId(locationEntry.ContentPath) : StorageId.None;
+                return (locationEntry.ContentPath != null) ?
+                    LocationHelper.GetStorageId(locationEntry.ContentPath) :
+                    StorageId.None;
             }
         }
 
@@ -291,13 +292,11 @@ namespace Ryujinx.HLE.FileSystem.Content
             {
                 if (File.Exists(installedPath))
                 {
-                    using (FileStream file = new FileStream(installedPath, FileMode.Open, FileAccess.Read))
-                    {
-                        Nca nca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
-                        bool contentCheck = nca.Header.ContentType == contentType;
+                    using var file = new FileStream(installedPath, FileMode.Open, FileAccess.Read);
+                    var nca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
+                    bool contentCheck = nca.Header.ContentType == contentType;
 
-                        return contentCheck;
-                    }
+                    return contentCheck;
                 }
             }
 
@@ -306,42 +305,38 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private void AddLocationEntry(LocationEntry entry, StorageId storageId)
         {
-            LinkedList<LocationEntry> locationList = null;
 
-            if (_locationEntries.ContainsKey(storageId))
+            _locationEntries.TryGetValue(storageId, out LinkedList<LocationEntry> locationList);
+
+            if (locationList == null)
             {
-                locationList = _locationEntries[storageId];
+                return;
             }
 
-            if (locationList != null)
+            var node = locationList.Find(entry);
+            if (node != null)
             {
-                if (locationList.Contains(entry))
-                {
-                    locationList.Remove(entry);
-                }
-
-                locationList.AddLast(entry);
+                locationList.Remove(node);
             }
+
+            locationList.AddLast(node);
         }
 
         private void RemoveLocationEntry(long titleId, NcaContentType contentType, StorageId storageId)
         {
-            LinkedList<LocationEntry> locationList = null;
+            _locationEntries.TryGetValue(storageId, out LinkedList<LocationEntry> locationList);
 
-            if (_locationEntries.ContainsKey(storageId))
+            if (locationList == null)
             {
-                locationList = _locationEntries[storageId];
+                return;
             }
 
-            if (locationList != null)
-            {
-                LocationEntry entry =
-                    locationList.ToList().Find(x => x.TitleId == titleId && x.ContentType == contentType);
+            LocationEntry entry =
+                locationList.ToList().Find(x => x.TitleId == titleId && x.ContentType == contentType);
 
-                if (entry.ContentPath != null)
-                {
-                    locationList.Remove(entry);
-                }
+            if (entry.ContentPath != null)
+            {
+                locationList.Remove(entry);
             }
         }
 
@@ -374,10 +369,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             string registeredDirectory = Path.Combine(contentDirectory, "registered");
             string temporaryDirectory  = Path.Combine(contentDirectory, "temp");
 
-            if (Directory.Exists(temporaryDirectory))
-            {
-                Directory.Delete(temporaryDirectory, true);
-            }
+            Common.Utilities.DirectoryUtils.Delete(temporaryDirectory, recursive: true);
 
             if (Directory.Exists(firmwareSource))
             {
@@ -392,36 +384,32 @@ namespace Ryujinx.HLE.FileSystem.Content
                 throw new FileNotFoundException("Firmware file does not exist.");
             }
 
-            FileInfo info = new FileInfo(firmwareSource);
-
-            using (FileStream file = File.OpenRead(firmwareSource))
+            switch (Path.GetExtension(firmwareSource))
             {
-                switch (info.Extension)
-                {
-                    case ".zip":
-                        using (ZipArchive archive = ZipFile.OpenRead(firmwareSource))
-                        {
-                            InstallFromZip(archive, temporaryDirectory);
-                        }
-                        break;
-                    case ".xci":
-                        Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
+                case ".zip":
+                    using (ZipArchive archive = ZipFile.OpenRead(firmwareSource))
+                    {
+                        InstallFromZip(archive, temporaryDirectory);
+                    }
+                    break;
+                case ".xci":
+                    {
+                        using FileStream file = File.OpenRead(firmwareSource);
+                        var xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
                         InstallFromCart(xci, temporaryDirectory);
                         break;
-                    default:
-                        throw new InvalidFirmwarePackageException("Input file is not a valid firmware package");
-                }
-
-                FinishInstallation(temporaryDirectory, registeredDirectory);
+                    }
+                default:
+                    throw new InvalidFirmwarePackageException("Input file is not a valid firmware package");
             }
+
+            FinishInstallation(temporaryDirectory, registeredDirectory);
         }
 
         private void FinishInstallation(string temporaryDirectory, string registeredDirectory)
         {
-            if (Directory.Exists(registeredDirectory))
-            {
-                new DirectoryInfo(registeredDirectory).Delete(true);
-            }
+            // TODO : We probably want this to be an atomic operation of delete/move.
+            Common.Utilities.DirectoryUtils.Delete(registeredDirectory, recursive: true);
 
             Directory.Move(temporaryDirectory, registeredDirectory);
 
@@ -430,31 +418,31 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private void InstallFromDirectory(string firmwareDirectory, string temporaryDirectory)
         {
-            InstallFromPartition(new LocalFileSystem(firmwareDirectory), temporaryDirectory);
+            using var fileSystem = new LocalFileSystem(firmwareDirectory);
+            InstallFromPartition(fileSystem, temporaryDirectory);
         }
 
         private void InstallFromPartition(IFileSystem filesystem, string temporaryDirectory)
         {
             foreach (var entry in filesystem.EnumerateEntries("/", "*.nca"))
             {
-                Nca nca = new Nca(_virtualFileSystem.KeySet, OpenPossibleFragmentedFile(filesystem, entry.FullPath, OpenMode.Read).AsStorage());
+                using var file = OpenPossibleFragmentedFile(filesystem, entry.FullPath, OpenMode.Read);
+                var nca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
 
-                SaveNca(nca, entry.Name.Remove(entry.Name.IndexOf('.')), temporaryDirectory);
+                SaveNca(nca, entry.Name.RemoveFirst('.'), temporaryDirectory);
             }
         }
 
         private void InstallFromCart(Xci gameCard, string temporaryDirectory)
         {
-            if (gameCard.HasPartition(XciPartitionType.Update))
-            {
-                XciPartition partition = gameCard.OpenPartition(XciPartitionType.Update);
-
-                InstallFromPartition(partition, temporaryDirectory);
-            }
-            else
+            if (!gameCard.HasPartition(XciPartitionType.Update))
             {
                 throw new Exception("Update not found in xci file.");
             }
+
+            using var partition = gameCard.OpenPartition(XciPartitionType.Update);
+
+            InstallFromPartition(partition, temporaryDirectory);
         }
 
         private void InstallFromZip(ZipArchive archive, string temporaryDirectory)
@@ -463,28 +451,30 @@ namespace Ryujinx.HLE.FileSystem.Content
             {
                 foreach (var entry in archive.Entries)
                 {
-                    if (entry.FullName.EndsWith(".nca") || entry.FullName.EndsWith(".nca/00"))
+                    if (!entry.FullName.EndsWith(".nca") && !entry.FullName.EndsWith(".nca/00"))
                     {
-                        // Clean up the name and get the NcaId
+                        continue;
+                    }
 
-                        string[] pathComponents = entry.FullName.Replace(".cnmt", "").Split('/');
+                    // Clean up the name and get the NcaId
 
-                        string ncaId = pathComponents[pathComponents.Length - 1];
+                    string[] pathComponents = entry.FullName.Replace(".cnmt", "").Split('/');
 
-                        // If this is a fragmented nca, we need to get the previous element.GetZip
-                        if (ncaId.Equals("00"))
-                        {
-                            ncaId = pathComponents[pathComponents.Length - 2];
-                        }
+                    string ncaId = pathComponents[pathComponents.Length - 1];
 
-                        if (ncaId.Contains(".nca"))
-                        {
-                            string newPath = Path.Combine(temporaryDirectory, ncaId);
+                    // If this is a fragmented nca, we need to get the previous element.GetZip
+                    if (ncaId.Equals("00"))
+                    {
+                        ncaId = pathComponents[pathComponents.Length - 2];
+                    }
 
-                            Directory.CreateDirectory(newPath);
+                    if (ncaId.Contains(".nca"))
+                    {
+                        string newPath = Path.Combine(temporaryDirectory, ncaId);
 
-                            entry.ExtractToFile(Path.Combine(newPath, "00"));
-                        }
+                        Directory.CreateDirectory(newPath);
+
+                        entry.ExtractToFile(Path.Combine(newPath, "00"));
                     }
                 }
             }
@@ -496,43 +486,37 @@ namespace Ryujinx.HLE.FileSystem.Content
 
             Directory.CreateDirectory(newPath);
 
-            using (FileStream file = File.Create(Path.Combine(newPath, "00")))
-            {
-                nca.BaseStorage.AsStream().CopyTo(file);
-            }
+            using FileStream file = File.Create(Path.Combine(newPath, "00"));
+            nca.BaseStorage.AsStream().CopyTo(file);
         }
 
         private IFile OpenPossibleFragmentedFile(IFileSystem filesystem, string path, OpenMode mode)
         {
-            IFile file;
+            var path00 = $"{path}/00";
+            if (filesystem.FileExists(path00))
+            {
+                path = path00;
+            }
 
-            if (filesystem.FileExists($"{path}/00"))
-            {
-                filesystem.OpenFile(out file, $"{path}/00".ToU8Span(), mode);
-            }
-            else
-            {
-                filesystem.OpenFile(out file, path.ToU8Span(), mode);
-            }
+            filesystem.OpenFile(out IFile file, path.ToU8Span(), mode);
 
             return file;
         }
 
-        private Stream GetZipStream(ZipArchiveEntry entry)
+        private MemoryStream GetZipStream(ZipArchiveEntry entry)
         {
-            MemoryStream dest = new MemoryStream();
+            using Stream src = entry.Open();
 
-            Stream src = entry.Open();
+            var dest = new MemoryStream();
 
             src.CopyTo(dest);
-            src.Dispose();
 
             return dest;
         }
 
         public SystemVersion VerifyFirmwarePackage(string firmwarePackage)
         {
-            Dictionary<ulong, List<(NcaContentType type, string path)>> updateNcas = new Dictionary<ulong, List<(NcaContentType, string)>>();
+            var updateNcas = new Dictionary<ulong, List<(NcaContentType type, string path)>>();
 
             if (Directory.Exists(firmwarePackage))
             {
@@ -544,11 +528,9 @@ namespace Ryujinx.HLE.FileSystem.Content
                 throw new FileNotFoundException("Firmware file does not exist.");
             }
 
-            FileInfo info = new FileInfo(firmwarePackage);
-
             using (FileStream file = File.OpenRead(firmwarePackage))
             {
-                switch (info.Extension)
+                switch (Path.GetExtension(firmwarePackage))
                 {
                     case ".zip":
                         using (ZipArchive archive = ZipFile.OpenRead(firmwarePackage))
@@ -556,17 +538,17 @@ namespace Ryujinx.HLE.FileSystem.Content
                             return VerifyAndGetVersionZip(archive);
                         }
                     case ".xci":
-                        Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
-
-                        if (xci.HasPartition(XciPartitionType.Update))
                         {
-                            XciPartition partition = xci.OpenPartition(XciPartitionType.Update);
+                            Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
+
+                            if (!xci.HasPartition(XciPartitionType.Update))
+                            {
+                                throw new InvalidFirmwarePackageException("Update not found in xci file.");
+                            }
+
+                            using var partition = xci.OpenPartition(XciPartitionType.Update);
 
                             return VerifyAndGetVersion(partition);
-                        }
-                        else
-                        {
-                            throw new InvalidFirmwarePackageException("Update not found in xci file.");
                         }
                     default:
                         break;
@@ -586,156 +568,145 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                 foreach (var entry in archive.Entries)
                 {
-                    if (entry.FullName.EndsWith(".nca") || entry.FullName.EndsWith(".nca/00"))
+                    if (!entry.FullName.EndsWith(".nca") && !entry.FullName.EndsWith(".nca/00"))
                     {
-                        using (Stream ncaStream = GetZipStream(entry))
+                        continue;
+                    }
+
+                    using var ncaStream = GetZipStream(entry);
+                    using IStorage storage = ncaStream.AsStorage();
+
+                    Nca nca = new Nca(_virtualFileSystem.KeySet, storage);
+
+                    if (!updateNcas.TryGetValue(nca.Header.TitleId, out var ncaList))
+                    {
+                        ncaList = new List<(NcaContentType, string)>();
+                        updateNcas.Add(nca.Header.TitleId, ncaList);
+                    }
+                    ncaList.Add((nca.Header.ContentType, entry.FullName));
+                }
+
+                if (!updateNcas.ContainsKey(SystemUpdateTitleId))
+                {
+                    throw new FileNotFoundException("System update title was not found in the firmware package.");
+                }
+
+                var ncaEntry = updateNcas[SystemUpdateTitleId];
+
+                string metaPath = ncaEntry.Find(x => x.type == NcaContentType.Meta).path;
+
+                CnmtContentMetaEntry[] metaEntries = null;
+
+                var fileEntry = archive.GetEntry(metaPath);
+
+                using (var ncaStream = GetZipStream(fileEntry))
+                {
+                    Nca metaNca = new Nca(_virtualFileSystem.KeySet, ncaStream.AsStorage());
+
+                    using IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+
+                    string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
+
+                    if (fs.OpenFile(out IFile metaFile, cnmtPath.ToU8Span(), OpenMode.Read).IsSuccess())
+                    {
+                        var meta = new Cnmt(metaFile.AsStream());
+
+                        if (meta.Type == ContentMetaType.SystemUpdate)
                         {
-                            IStorage storage = ncaStream.AsStorage();
+                            metaEntries = meta.MetaEntries;
 
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, storage);
-
-                            if (updateNcas.ContainsKey(nca.Header.TitleId))
-                            {
-                                updateNcas[nca.Header.TitleId].Add((nca.Header.ContentType, entry.FullName));
-                            }
-                            else
-                            {
-                                updateNcas.Add(nca.Header.TitleId, new List<(NcaContentType, string)>());
-                                updateNcas[nca.Header.TitleId].Add((nca.Header.ContentType, entry.FullName));
-                            }
-                        }
+                            updateNcas.Remove(SystemUpdateTitleId);
+                        };
                     }
                 }
 
-                if (updateNcas.ContainsKey(SystemUpdateTitleId))
+                if (metaEntries == null)
                 {
-                    var ncaEntry = updateNcas[SystemUpdateTitleId];
+                    throw new FileNotFoundException("System update title was not found in the firmware package.");
+                }
 
-                    string metaPath = ncaEntry.Find(x => x.type == NcaContentType.Meta).path;
+                if (updateNcas.ContainsKey(SystemVersionTitleId))
+                {
+                    string versionEntry = updateNcas[SystemVersionTitleId].Find(x => x.type != NcaContentType.Meta).path;
 
-                    CnmtContentMetaEntry[] metaEntries = null;
+                    using var ncaStream = GetZipStream(archive.GetEntry(versionEntry));
+                    Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStream.AsStorage());
 
-                    var fileEntry = archive.GetEntry(metaPath);
+                    using var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
 
-                    using (Stream ncaStream = GetZipStream(fileEntry))
+                    if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
                     {
-                        Nca metaNca = new Nca(_virtualFileSystem.KeySet, ncaStream.AsStorage());
+                        systemVersion = new SystemVersion(systemVersionFile.AsStream());
+                    }
+                }
 
-                        IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                foreach (CnmtContentMetaEntry metaEntry in metaEntries)
+                {
+                    if (!updateNcas.TryGetValue(metaEntry.TitleId, out ncaEntry))
+                    {
+                        continue;
+                    }
 
-                        string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
+                    metaPath = ncaEntry.Find(x => x.type == NcaContentType.Meta).path;
 
-                        if (fs.OpenFile(out IFile metaFile, cnmtPath.ToU8Span(), OpenMode.Read).IsSuccess())
+                    string contentPath = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
+
+                    // Nintendo in 9.0.0, removed PPC and only kept the meta nca of it.
+                    // This is a perfect valid case, so we should just ignore the missing content nca and continue.
+                    if (contentPath == null)
+                    {
+                        updateNcas.Remove(metaEntry.TitleId);
+
+                        continue;
+                    }
+
+                    ZipArchiveEntry metaZipEntry    = archive.GetEntry(metaPath);
+                    ZipArchiveEntry contentZipEntry = archive.GetEntry(contentPath);
+
+                    using Stream metaNcaStream = GetZipStream(metaZipEntry);
+                    using Stream contentNcaStream = GetZipStream(contentZipEntry);
+                    Nca metaNca = new Nca(_virtualFileSystem.KeySet, metaNcaStream.AsStorage());
+
+                    using IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+
+                    string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
+
+                    if (fs.OpenFile(out IFile metaFile, cnmtPath.ToU8Span(), OpenMode.Read).IsSuccess())
+                    {
+                        using IStorage contentStorage = contentNcaStream.AsStorage();
+                        if (contentStorage.GetSize(out long size).IsSuccess())
                         {
                             var meta = new Cnmt(metaFile.AsStream());
 
-                            if (meta.Type == ContentMetaType.SystemUpdate)
-                            {
-                                metaEntries = meta.MetaEntries;
+                            Span<byte> content = new Span<byte>(new byte[size]);
 
-                                updateNcas.Remove(SystemUpdateTitleId);
-                            };
-                        }
-                    }
+                            contentStorage.Read(0, content);
 
-                    if (metaEntries == null)
-                    {
-                        throw new FileNotFoundException("System update title was not found in the firmware package.");
-                    }
+                            Span<byte> hash = new Span<byte>(new byte[32]);
 
-                    if (updateNcas.ContainsKey(SystemVersionTitleId))
-                    {
-                        string versionEntry = updateNcas[SystemVersionTitleId].Find(x => x.type != NcaContentType.Meta).path;
+                            LibHac.Crypto.Sha256.GenerateSha256Hash(content, hash);
 
-                        using (Stream ncaStream = GetZipStream(archive.GetEntry(versionEntry)))
-                        {
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStream.AsStorage());
-
-                            var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
-
-                            if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
-                            {
-                                systemVersion = new SystemVersion(systemVersionFile.AsStream());
-                            }
-                        }
-                    }
-
-                    foreach (CnmtContentMetaEntry metaEntry in metaEntries)
-                    {
-                        if (updateNcas.TryGetValue(metaEntry.TitleId, out ncaEntry))
-                        {
-                            metaPath = ncaEntry.Find(x => x.type == NcaContentType.Meta).path;
-
-                            string contentPath = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
-
-                            // Nintendo in 9.0.0, removed PPC and only kept the meta nca of it.
-                            // This is a perfect valid case, so we should just ignore the missing content nca and continue.
-                            if (contentPath == null)
+                            if (Util.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
                             {
                                 updateNcas.Remove(metaEntry.TitleId);
-
-                                continue;
-                            }
-
-                            ZipArchiveEntry metaZipEntry    = archive.GetEntry(metaPath);
-                            ZipArchiveEntry contentZipEntry = archive.GetEntry(contentPath);
-
-                            using (Stream metaNcaStream = GetZipStream(metaZipEntry))
-                            {
-                                using (Stream contentNcaStream = GetZipStream(contentZipEntry))
-                                {
-                                    Nca metaNca = new Nca(_virtualFileSystem.KeySet, metaNcaStream.AsStorage());
-
-                                    IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
-
-                                    string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
-
-                                    if (fs.OpenFile(out IFile metaFile, cnmtPath.ToU8Span(), OpenMode.Read).IsSuccess())
-                                    {
-                                        var meta = new Cnmt(metaFile.AsStream());
-
-                                        IStorage contentStorage = contentNcaStream.AsStorage();
-                                        if (contentStorage.GetSize(out long size).IsSuccess())
-                                        {
-                                            byte[] contentData = new byte[size];
-
-                                            Span<byte> content = new Span<byte>(contentData);
-
-                                            contentStorage.Read(0, content);
-
-                                            Span<byte> hash = new Span<byte>(new byte[32]);
-
-                                            LibHac.Crypto.Sha256.GenerateSha256Hash(content, hash);
-
-                                            if (LibHac.Util.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
-                                            {
-                                                updateNcas.Remove(metaEntry.TitleId);
-                                            }
-                                        }
-                                    }
-                                }
                             }
                         }
-                    }
-
-                    if (updateNcas.Count > 0)
-                    {
-                        string extraNcas = string.Empty;
-
-                        foreach (var entry in updateNcas)
-                        {
-                            foreach (var nca in entry.Value)
-                            {
-                                extraNcas += nca.path + Environment.NewLine;
-                            }
-                        }
-
-                        throw new InvalidFirmwarePackageException($"Firmware package contains unrelated archives. Please remove these paths: {Environment.NewLine}{extraNcas}");
                     }
                 }
-                else
+
+                if (updateNcas.Count > 0)
                 {
-                    throw new FileNotFoundException("System update title was not found in the firmware package.");
+                    string extraNcas = string.Empty;
+
+                    foreach (var entry in updateNcas)
+                    {
+                        foreach (var nca in entry.Value)
+                        {
+                            extraNcas += nca.path + Environment.NewLine;
+                        }
+                    }
+
+                    throw new InvalidFirmwarePackageException($"Firmware package contains unrelated archives. Please remove these paths: {Environment.NewLine}{extraNcas}");
                 }
 
                 return systemVersion;
@@ -751,13 +722,13 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                 foreach (var entry in filesystem.EnumerateEntries("/", "*.nca"))
                 {
-                    IStorage ncaStorage = OpenPossibleFragmentedFile(filesystem, entry.FullPath, OpenMode.Read).AsStorage();
+                    using IStorage ncaStorage = OpenPossibleFragmentedFile(filesystem, entry.FullPath, OpenMode.Read).AsStorage();
 
                     Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
 
                     if (nca.Header.TitleId == SystemUpdateTitleId && nca.Header.ContentType == NcaContentType.Meta)
                     {
-                        IFileSystem fs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                        using IFileSystem fs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
 
                         string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
 
@@ -775,7 +746,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                     }
                     else if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
                     {
-                        var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                        using var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
 
                         if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
                         {
@@ -792,8 +763,6 @@ namespace Ryujinx.HLE.FileSystem.Content
                         updateNcas.Add(nca.Header.TitleId, new List<(NcaContentType, string)>());
                         updateNcas[nca.Header.TitleId].Add((nca.Header.ContentType, entry.FullPath));
                     }
-
-                    ncaStorage.Dispose();
                 }
 
                 if (metaEntries == null)
@@ -803,49 +772,50 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                 foreach (CnmtContentMetaEntry metaEntry in metaEntries)
                 {
-                    if (updateNcas.TryGetValue(metaEntry.TitleId, out var ncaEntry))
+                    if (!updateNcas.TryGetValue(metaEntry.TitleId, out var ncaEntry))
                     {
-                        var    metaNcaEntry = ncaEntry.Find(x => x.type == NcaContentType.Meta);
-                        string contentPath  = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
+                        continue;
+                    }
 
-                        // Nintendo in 9.0.0, removed PPC and only kept the meta nca of it.
-                        // This is a perfect valid case, so we should just ignore the missing content nca and continue.
-                        if (contentPath == null)
-                        {
-                            updateNcas.Remove(metaEntry.TitleId);
+                    string contentPath  = ncaEntry.Find(x => x.type != NcaContentType.Meta).path;
 
-                            continue;
-                        }
+                    // Nintendo in 9.0.0, removed PPC and only kept the meta nca of it.
+                    // This is a perfect valid case, so we should just ignore the missing content nca and continue.
+                    if (contentPath == null)
+                    {
+                        updateNcas.Remove(metaEntry.TitleId);
 
-                        IStorage metaStorage = OpenPossibleFragmentedFile(filesystem, metaNcaEntry.path, OpenMode.Read).AsStorage();
-                        IStorage contentStorage = OpenPossibleFragmentedFile(filesystem, contentPath, OpenMode.Read).AsStorage();
+                        continue;
+                    }
 
-                        Nca metaNca = new Nca(_virtualFileSystem.KeySet, metaStorage);
+                    var metaNcaEntry = ncaEntry.Find(x => x.type == NcaContentType.Meta);
 
-                        IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+                    using IStorage metaStorage = OpenPossibleFragmentedFile(filesystem, metaNcaEntry.path, OpenMode.Read).AsStorage();
+                    using IStorage contentStorage = OpenPossibleFragmentedFile(filesystem, contentPath, OpenMode.Read).AsStorage();
 
-                        string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
+                    Nca metaNca = new Nca(_virtualFileSystem.KeySet, metaStorage);
 
-                        if (fs.OpenFile(out IFile metaFile, cnmtPath.ToU8Span(), OpenMode.Read).IsSuccess())
+                    using IFileSystem fs = metaNca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+
+                    string cnmtPath = fs.EnumerateEntries("/", "*.cnmt").Single().FullPath;
+
+                    if (fs.OpenFile(out IFile metaFile, cnmtPath.ToU8Span(), OpenMode.Read).IsSuccess())
+                    {
+                        if (contentStorage.GetSize(out long size).IsSuccess())
                         {
                             var meta = new Cnmt(metaFile.AsStream());
 
-                            if (contentStorage.GetSize(out long size).IsSuccess())
+                            Span<byte> content = new Span<byte>(new byte[size]);
+
+                            contentStorage.Read(0, content);
+
+                            Span<byte> hash = new Span<byte>(new byte[32]);
+
+                            LibHac.Crypto.Sha256.GenerateSha256Hash(content, hash);
+
+                            if (Util.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
                             {
-                                byte[] contentData = new byte[size];
-
-                                Span<byte> content = new Span<byte>(contentData);
-
-                                contentStorage.Read(0, content);
-
-                                Span<byte> hash = new Span<byte>(new byte[32]);
-
-                                LibHac.Crypto.Sha256.GenerateSha256Hash(content, hash);
-
-                                if (LibHac.Util.ArraysEqual(hash.ToArray(), meta.ContentEntries[0].Hash))
-                                {
-                                    updateNcas.Remove(metaEntry.TitleId);
-                                }
+                                updateNcas.Remove(metaEntry.TitleId);
                             }
                         }
                     }
@@ -884,24 +854,23 @@ namespace Ryujinx.HLE.FileSystem.Content
 
                 foreach (var entry in locationEnties)
                 {
-                    if (entry.ContentType == NcaContentType.Data)
+                    if (entry.ContentType != NcaContentType.Data)
                     {
-                        var path = _virtualFileSystem.SwitchPathToSystemPath(entry.ContentPath);
+                        continue;
+                    }
 
-                        using (FileStream fileStream = File.OpenRead(path))
+                    var path = _virtualFileSystem.SwitchPathToSystemPath(entry.ContentPath);
+
+                    using FileStream fileStream = File.OpenRead(path);
+                    Nca nca = new Nca(_virtualFileSystem.KeySet, fileStream.AsStorage());
+
+                    if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
+                    {
+                        using var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
+
+                        if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
                         {
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, fileStream.AsStorage());
-
-                            if (nca.Header.TitleId == SystemVersionTitleId && nca.Header.ContentType == NcaContentType.Data)
-                            {
-                                var romfs = nca.OpenFileSystem(NcaSectionType.Data, integrityCheckLevel);
-
-                                if (romfs.OpenFile(out IFile systemVersionFile, "/file".ToU8Span(), OpenMode.Read).IsSuccess())
-                                {
-                                    return new SystemVersion(systemVersionFile.AsStream());
-                                }
-                            }
-
+                            return new SystemVersion(systemVersionFile.AsStream());
                         }
                     }
                 }

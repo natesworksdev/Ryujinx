@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.FileSystem
 
                 using (LocalStorage systemSaveData = new LocalStorage(savePath, FileAccess.Read, FileMode.Open))
                 {
-                    IFileSystem saveFs = new LibHac.FsSystem.Save.SaveDataFileSystem(context.Device.System.KeySet, systemSaveData, IntegrityCheckLevel.None, false);
+                    using IFileSystem saveFs = new LibHac.FsSystem.Save.SaveDataFileSystem(context.Device.System.KeySet, systemSaveData, IntegrityCheckLevel.None, false);
 
                     saveFs.CopyDirectory(outputFolder, "/", "/");
                 }
@@ -33,10 +33,7 @@ namespace Ryujinx.HLE.FileSystem
             }
             else
             {
-                if (!Directory.Exists(savePath))
-                {
-                    Directory.CreateDirectory(savePath);
-                }
+                Directory.CreateDirectory(savePath);
             }
 
             return new LocalFileSystem(savePath);

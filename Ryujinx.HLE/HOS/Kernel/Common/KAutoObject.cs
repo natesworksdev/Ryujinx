@@ -4,7 +4,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
 {
     class KAutoObject
     {
-        protected Horizon System;
+        protected readonly Horizon System;
 
         private int _referenceCount;
 

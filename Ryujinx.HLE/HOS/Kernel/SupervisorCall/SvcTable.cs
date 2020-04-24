@@ -3,7 +3,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 

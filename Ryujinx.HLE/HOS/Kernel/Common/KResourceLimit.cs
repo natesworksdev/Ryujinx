@@ -8,13 +8,13 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
     {
         private const int Time10SecondsMs = 10000;
 
-        private long[] _current;
-        private long[] _limit;
-        private long[] _available;
+        private readonly long[] _current;
+        private readonly long[] _limit;
+        private readonly long[] _available;
 
-        private object _lockObj;
+        private readonly object _lockObj;
 
-        private LinkedList<KThread> _waitingThreads;
+        private readonly LinkedList<KThread> _waitingThreads;
 
         private int _waitingThreadsCount;
 

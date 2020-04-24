@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public ulong PageAddr { get; private set; }
 
-        private bool[] _isSlotFree;
+        private readonly bool[] _isSlotFree;
 
         public KTlsPageInfo(ulong pageAddress)
         {

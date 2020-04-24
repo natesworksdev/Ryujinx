@@ -9,15 +9,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
     /// </summary>
     class ShaderDumper
     {
+        private const int FirstIndex = 1;
+
         private string _runtimeDir;
         private string _dumpPath;
-        private int    _dumpIndex;
 
-        public int CurrentDumpIndex => _dumpIndex;
+        public int CurrentDumpIndex { get; private set; }
 
         public ShaderDumper()
         {
-            _dumpIndex = 1;
+            CurrentDumpIndex = FirstIndex;
         }
 
         /// <summary>
@@ -39,38 +40,33 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return;
             }
 
-            string fileName = "Shader" + _dumpIndex.ToString("d4") + ".bin";
+            string fileName = $"Shader{CurrentDumpIndex:d4}.bin";
 
-            fullPath = Path.Combine(FullDir(), fileName);
-            codePath = Path.Combine(CodeDir(), fileName);
+            fullPath = Path.Combine(FullDir, fileName);
+            codePath = Path.Combine(CodeDir, fileName);
 
-            _dumpIndex++;
+            CurrentDumpIndex++;
 
             code = Translator.ExtractCode(code, compute, out int headerSize);
 
-            using (MemoryStream stream = new MemoryStream(code.ToArray()))
+            using var fullWriter = new BinaryWriter(File.Create(fullPath));
+            using var codeWriter = new BinaryWriter(File.Create(codePath));
+
+            byte[] temp;
+            using (var codeReader = new BinaryReader(new MemoryStream(code.ToArray())))
             {
-                BinaryReader codeReader = new BinaryReader(stream);
+                fullWriter.Write(codeReader.ReadBytes(headerSize));
 
-                using (FileStream fullFile = File.Create(fullPath))
-                using (FileStream codeFile = File.Create(codePath))
-                {
-                    BinaryWriter fullWriter = new BinaryWriter(fullFile);
-                    BinaryWriter codeWriter = new BinaryWriter(codeFile);
+                temp = codeReader.ReadBytes(code.Length - headerSize);
+            }
 
-                    fullWriter.Write(codeReader.ReadBytes(headerSize));
+            fullWriter.Write(temp);
+            codeWriter.Write(temp);
 
-                    byte[] temp = codeReader.ReadBytes(code.Length - headerSize);
-
-                    fullWriter.Write(temp);
-                    codeWriter.Write(temp);
-
-                    // Align to meet nvdisasm requirements.
-                    while (codeFile.Length % 0x20 != 0)
-                    {
-                        codeWriter.Write(0);
-                    }
-                }
+            // Align to meet nvdisasm requirements.
+            while (codeWriter.BaseStream.Length % 0x20 != 0)
+            {
+                codeWriter.Write(0);
             }
         }
 
@@ -78,19 +74,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// Returns the output directory for shader code with header.
         /// </summary>
         /// <returns>Directory path</returns>
-        private string FullDir()
-        {
-            return CreateAndReturn(Path.Combine(DumpDir(), "Full"));
-        }
+        private string FullDir => CreateAndReturn(Path.Combine(DumpDir(), "Full"));
 
         /// <summary>
         /// Returns the output directory for shader code without header.
         /// </summary>
         /// <returns>Directory path</returns>
-        private string CodeDir()
-        {
-            return CreateAndReturn(Path.Combine(DumpDir(), "Code"));
-        }
+        private string CodeDir => CreateAndReturn(Path.Combine(DumpDir(), "Code"));
 
         /// <summary>
         /// Returns the full output directory for the current shader dump.
@@ -100,11 +90,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
         {
             if (string.IsNullOrEmpty(_runtimeDir))
             {
-                int index = 1;
+                int index = FirstIndex;
 
                 do
                 {
-                    _runtimeDir = Path.Combine(_dumpPath, "Dumps" + index.ToString("d2"));
+                    _runtimeDir = Path.Combine(_dumpPath, $"Dumps{index:d2}");
 
                     index++;
                 }

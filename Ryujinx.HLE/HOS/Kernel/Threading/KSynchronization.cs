@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KSynchronization
     {
-        private Horizon _system;
+        private readonly Horizon _system;
 
         public KSynchronization(Horizon system)
         {
@@ -112,9 +112,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (syncObj.IsSignaled())
             {
-                LinkedListNode<KThread> node = syncObj.WaitingThreads.First;
-
-                while (node != null)
+                for (var node = syncObj.WaitingThreads.First; node != null; node = node.Next)
                 {
                     KThread thread = node.Value;
 
@@ -125,8 +123,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                         thread.Reschedule(ThreadSchedState.Running);
                     }
-
-                    node = node.Next;
                 }
             }
 

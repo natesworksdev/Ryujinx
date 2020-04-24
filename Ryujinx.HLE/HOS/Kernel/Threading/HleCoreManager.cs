@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
         }
 
-        private ConcurrentDictionary<Thread, PausableThread> _threads;
+        private readonly ConcurrentDictionary<Thread, PausableThread> _threads;
 
         public HleCoreManager()
         {

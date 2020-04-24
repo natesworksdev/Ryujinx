@@ -35,10 +35,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 {
                     int selectedCount = 0;
 
-                    for (int core = 0; core < CpuCoresCount; core++)
+                    foreach (var coreContext in CoreContexts)
                     {
-                        KCoreContext coreContext = CoreContexts[core];
-
                         if (coreContext.ContextSwitchNeeded && (coreContext.CurrentThread?.IsCurrentHostThread() ?? false))
                         {
                             coreContext.ContextSwitch();
@@ -85,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                     // Advance current core and try picking a thread,
                     // keep advancing if it is null.
-                    for (int core = 0; core < 4; core++)
+                    for (int core = 0; core < CpuCoresCount; core++)
                     {
                         _currentCore = (_currentCore + 1) % CpuCoresCount;
 
@@ -131,6 +129,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                 PreemptThreads();
 
+                // TODO : There's no guarantee that Thread.Sleep will actually sleep this long.
+                // It could return immediately.
                 Thread.Sleep(RoundRobinTimeQuantumMs);
             }
         }

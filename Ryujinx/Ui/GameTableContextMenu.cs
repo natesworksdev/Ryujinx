@@ -145,11 +145,8 @@ namespace Ryujinx.Ui
         {
             string saveRootPath = System.IO.Path.Combine(_virtualFileSystem.GetNandPath(), $"user/save/{saveDataId:x16}");
 
-            if (!Directory.Exists(saveRootPath))
-            {
-                // Inconsistent state. Create the directory
-                Directory.CreateDirectory(saveRootPath);
-            }
+            // Create the directory
+            Directory.CreateDirectory(saveRootPath);
 
             string committedPath = System.IO.Path.Combine(saveRootPath, "0");
             string workingPath   = System.IO.Path.Combine(saveRootPath, "1");
@@ -162,10 +159,7 @@ namespace Ryujinx.Ui
 
             // If the working directory exists and the committed directory doesn't,
             // the working directory will be loaded the next time the savedata is mounted
-            if (!Directory.Exists(workingPath))
-            {
-                Directory.CreateDirectory(workingPath);
-            }
+            Directory.CreateDirectory(workingPath);
 
             return workingPath;
         }

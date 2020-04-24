@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.FileSystem
 
             string fullPath = Path.Combine(GetBasePath(), path);
 
-            if (isDirectory && !Directory.Exists(fullPath))
+            if (isDirectory)
             {
                 Directory.CreateDirectory(fullPath);
             }
@@ -185,10 +185,7 @@ namespace Ryujinx.HLE.FileSystem
             return fullPath;
         }
 
-        public DriveInfo GetDrive()
-        {
-            return new DriveInfo(Path.GetPathRoot(GetBasePath()));
-        }
+        public DriveInfo GetDrive() => new DriveInfo(Path.GetPathRoot(GetBasePath()));
 
         public string GetBasePath()
         {

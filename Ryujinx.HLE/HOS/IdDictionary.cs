@@ -45,9 +45,9 @@ namespace Ryujinx.HLE.HOS
 
         public T GetData<T>(int id)
         {
-            if (_objs.TryGetValue(id, out object data) && data is T)
+            if (_objs.TryGetValue(id, out object data) && data is T tData)
             {
-                return (T)data;
+                return tData;
             }
 
             return default;
@@ -63,13 +63,9 @@ namespace Ryujinx.HLE.HOS
             return null;
         }
 
-        public ICollection<object> Clear()
+        public void Clear()
         {
-            ICollection<object> values = _objs.Values;
-
             _objs.Clear();
-
-            return values;
         }
     }
 }

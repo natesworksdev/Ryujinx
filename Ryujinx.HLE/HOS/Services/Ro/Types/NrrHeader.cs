@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Ro
 {
-    [StructLayout(LayoutKind.Explicit, Size = 0x350)]
+    [StructLayout(LayoutKind.Explicit, Size = 0x350, Pack = 1)]
     unsafe struct NrrHeader
     {
         [FieldOffset(0)]

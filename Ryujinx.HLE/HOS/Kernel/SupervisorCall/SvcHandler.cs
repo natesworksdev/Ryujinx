@@ -7,9 +7,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     partial class SvcHandler
     {
-        private Switch   _device;
-        private KProcess _process;
-        private Horizon  _system;
+        private readonly Switch   _device;
+        private readonly KProcess _process;
+        private readonly Horizon  _system;
 
         public SvcHandler(Switch device, KProcess process)
         {
@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             ExecutionContext context = (ExecutionContext)sender;
 
-            Action<SvcHandler, ExecutionContext> svcFunc = context.IsAarch32 ? SvcTable.SvcTable32[e.Id] : SvcTable.SvcTable64[e.Id];
+            var svcFunc = context.IsAarch32 ? SvcTable.SvcTable32[e.Id] : SvcTable.SvcTable64[e.Id];
 
             if (svcFunc == null)
             {

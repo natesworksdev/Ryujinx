@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             }
         }
 
-        private List<WaitingObject> _waitingObjects;
+        private readonly List<WaitingObject> _waitingObjects;
 
         private AutoResetEvent _waitEvent;
 

@@ -1,11 +1,10 @@
-using ARMeilleure;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KCriticalSection
     {
-        private Horizon _system;
+        private readonly Horizon _system;
 
         public object LockObj { get; private set; }
 
@@ -47,29 +46,29 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 {
                     lock (_system.Scheduler.CoreContexts)
                     {
-                        for (int core = 0; core < KScheduler.CpuCoresCount; core++)
+                        foreach (var coreContext in _system.Scheduler.CoreContexts)
                         {
-                            KCoreContext coreContext = _system.Scheduler.CoreContexts[core];
-
-                            if (coreContext.ContextSwitchNeeded)
+                            if (!coreContext.ContextSwitchNeeded)
                             {
-                                KThread currentThread = coreContext.CurrentThread;
+                                continue;
+                            }
 
-                                if (currentThread == null)
-                                {
-                                    // Nothing is running, we can perform the context switch immediately.
-                                    coreContext.ContextSwitch();
-                                }
-                                else if (currentThread.IsCurrentHostThread())
-                                {
-                                    // Thread running on the current core, context switch will block.
-                                    doContextSwitch = true;
-                                }
-                                else
-                                {
-                                    // Thread running on another core, request a interrupt.
-                                    currentThread.Context.RequestInterrupt();
-                                }
+                            KThread currentThread = coreContext.CurrentThread;
+
+                            if (currentThread == null)
+                            {
+                                // Nothing is running, we can perform the context switch immediately.
+                                coreContext.ContextSwitch();
+                            }
+                            else if (currentThread.IsCurrentHostThread())
+                            {
+                                // Thread running on the current core, context switch will block.
+                                doContextSwitch = true;
+                            }
+                            else
+                            {
+                                // Thread running on another core, request a interrupt.
+                                currentThread.Context.RequestInterrupt();
                             }
                         }
                     }

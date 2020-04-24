@@ -52,9 +52,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             system.CriticalSection.Enter();
 
-            LinkedListNode<KThread> node = threadList.First;
-
-            for (; node != null; node = threadList.First)
+            for (var node = threadList.First; node != null; node = threadList.First)
             {
                 KThread thread = node.Value;
 

@@ -13,9 +13,8 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult SetHeapSize32([R(1)] uint size, [R(1)] out uint position)
         {
-            ulong temporaryPosition;
 
-            KernelResult result = SetHeapSize(size, out temporaryPosition);
+            KernelResult result = SetHeapSize(size, out ulong temporaryPosition);
 
             position = (uint)temporaryPosition;
 

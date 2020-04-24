@@ -1,14 +1,15 @@
 using System.Collections.Generic;
+using System.Numerics;
 
 namespace Ryujinx.HLE.HOS.Kernel.Threading
 {
     class KSchedulingData
     {
-        private LinkedList<KThread>[][] _scheduledThreadsPerPrioPerCore;
-        private LinkedList<KThread>[][] _suggestedThreadsPerPrioPerCore;
+        private readonly LinkedList<KThread>[][] _scheduledThreadsPerPrioPerCore;
+        private readonly LinkedList<KThread>[][] _suggestedThreadsPerPrioPerCore;
 
-        private long[] _scheduledPrioritiesPerCore;
-        private long[] _suggestedPrioritiesPerCore;
+        private readonly long[] _scheduledPrioritiesPerCore;
+        private readonly long[] _suggestedPrioritiesPerCore;
 
         public KSchedulingData()
         {
@@ -45,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         {
             long prioMask = prios[core];
 
-            int prio = CountTrailingZeros(prioMask);
+            int prio = BitOperations.TrailingZeroCount((ulong)prioMask);
 
             prioMask &= ~(1L << prio);
 
@@ -53,36 +54,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             {
                 LinkedList<KThread> list = listPerPrioPerCore[prio][core];
 
-                LinkedListNode<KThread> node = list.First;
-
-                while (node != null)
+                for (var node = list.First; node != null; node = node.Next)
                 {
                     yield return node.Value;
-
-                    node = node.Next;
                 }
 
-                prio = CountTrailingZeros(prioMask);
+                prio = BitOperations.TrailingZeroCount((ulong)prioMask);
 
                 prioMask &= ~(1L << prio);
             }
-        }
-
-        private int CountTrailingZeros(long value)
-        {
-            int count = 0;
-
-            while (((value >> count) & 0xf) == 0 && count < 64)
-            {
-                count += 4;
-            }
-
-            while (((value >> count) & 1) == 0 && count < 64)
-            {
-                count++;
-            }
-
-            return count;
         }
 
         public void TransferToCore(int prio, int dstCore, KThread thread)
