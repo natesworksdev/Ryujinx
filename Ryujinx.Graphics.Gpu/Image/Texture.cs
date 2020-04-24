@@ -366,36 +366,33 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>Converted data</returns>
         private ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data)
         {
-            if (Info.Target != Target.TextureBuffer)
+            if (Info.IsLinear)
             {
-                if (Info.IsLinear)
-                {
-                    data = LayoutConverter.ConvertLinearStridedToLinear(
-                        Info.Width,
-                        Info.Height,
-                        Info.FormatInfo.BlockWidth,
-                        Info.FormatInfo.BlockHeight,
-                        Info.Stride,
-                        Info.FormatInfo.BytesPerPixel,
-                        data);
-                }
-                else
-                {
-                    data = LayoutConverter.ConvertBlockLinearToLinear(
-                        Info.Width,
-                        Info.Height,
-                        _depth,
-                        Info.Levels,
-                        _layers,
-                        Info.FormatInfo.BlockWidth,
-                        Info.FormatInfo.BlockHeight,
-                        Info.FormatInfo.BytesPerPixel,
-                        Info.GobBlocksInY,
-                        Info.GobBlocksInZ,
-                        Info.GobBlocksInTileX,
-                        _sizeInfo,
-                        data);
-                }
+                data = LayoutConverter.ConvertLinearStridedToLinear(
+                    Info.Width,
+                    Info.Height,
+                    Info.FormatInfo.BlockWidth,
+                    Info.FormatInfo.BlockHeight,
+                    Info.Stride,
+                    Info.FormatInfo.BytesPerPixel,
+                    data);
+            }
+            else
+            {
+                data = LayoutConverter.ConvertBlockLinearToLinear(
+                    Info.Width,
+                    Info.Height,
+                    _depth,
+                    Info.Levels,
+                    _layers,
+                    Info.FormatInfo.BlockWidth,
+                    Info.FormatInfo.BlockHeight,
+                    Info.FormatInfo.BytesPerPixel,
+                    Info.GobBlocksInY,
+                    Info.GobBlocksInZ,
+                    Info.GobBlocksInTileX,
+                    _sizeInfo,
+                    data);
             }
 
             if (!_context.Capabilities.SupportsAstcCompression && Info.FormatInfo.Format.IsAstc())

@@ -15,17 +15,17 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void CopyTo(ITexture destination, Extents2D srcRegion, Extents2D dstRegion, bool linearFilter)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public byte[] GetData()
@@ -47,13 +47,13 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
+            _buffer = (Buffer)buffer.Buffer;
+            _bufferOffset = buffer.Offset;
+            _bufferSize = buffer.Size;
+
             Bind(0);
 
             SizedInternalFormat format = (SizedInternalFormat)FormatTable.GetFormatInfo(Info.Format).PixelInternalFormat;
-
-            _bufferOffset = buffer.Offset;
-            _bufferSize = buffer.Size;
-            _buffer = (Buffer)buffer.Buffer;
 
             GL.TexBufferRange(TextureBufferTarget.TextureBuffer, format, _buffer.Handle, (IntPtr)buffer.Offset, buffer.Size);
         }
