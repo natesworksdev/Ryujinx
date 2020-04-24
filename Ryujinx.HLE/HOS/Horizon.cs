@@ -8,6 +8,7 @@ using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
 using LibHac.Ns;
 using LibHac.Spl;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
@@ -17,7 +18,9 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.Services.Mii;
+using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
@@ -42,7 +45,6 @@ using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
-using Ryujinx.HLE.HOS.Services.Nv;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -66,6 +68,8 @@ namespace Ryujinx.HLE.HOS
         internal long PrivilegedProcessHighestId { get; set; } = 8;
 
         internal Switch Device { get; private set; }
+
+        internal SurfaceFlinger SurfaceFlinger { get; private set; }
 
         public SystemStateMgr State { get; private set; }
 
@@ -113,9 +117,13 @@ namespace Ryujinx.HLE.HOS
 
         internal KEvent VsyncEvent { get; private set; }
 
+        internal KEvent DisplayResolutionChangeEvent { get; private set; }
+
         public Keyset KeySet => Device.FileSystem.KeySet;
 
+#pragma warning disable CS0649
         private bool _hasStarted;
+#pragma warning restore CS0649
         private bool _isDisposed;
 
         public BlitStruct<ApplicationControlProperty> ControlData { get; set; }
@@ -222,6 +230,8 @@ namespace Ryujinx.HLE.HOS
 
             VsyncEvent = new KEvent(this);
 
+            DisplayResolutionChangeEvent = new KEvent(this);
+
             ContentManager = contentManager;
 
             // TODO: use set:sys (and get external clock source id from settings)
@@ -268,6 +278,22 @@ namespace Ryujinx.HLE.HOS
             DatabaseImpl.Instance.InitializeDatabase(device);
 
             HostSyncpoint = new NvHostSyncpt(device);
+
+            SurfaceFlinger = new SurfaceFlinger(device);
+
+            ConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
+        }
+
+        private void OnDockedModeChange(object sender, ReactiveEventArgs<bool> e)
+        {
+            if (e.NewValue != State.DockedMode)
+            {
+                State.DockedMode = e.NewValue;
+
+                AppletState.EnqueueMessage(MessageInfo.OperationModeChanged);
+                AppletState.EnqueueMessage(MessageInfo.PerformanceModeChanged);
+                SignalDisplayResolutionChange();
+            }
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -804,6 +830,11 @@ namespace Ryujinx.HLE.HOS
             return rc;
         }
 
+        public void SignalDisplayResolutionChange()
+        {
+            DisplayResolutionChangeEvent.ReadableEvent.Signal();
+        }
+
         public void SignalVsync()
         {
             VsyncEvent.ReadableEvent.Signal();
@@ -849,7 +880,11 @@ namespace Ryujinx.HLE.HOS
         {
             if (!_isDisposed && disposing)
             {
+                ConfigurationState.Instance.System.EnableDockedMode.Event -= OnDockedModeChange;
+
                 _isDisposed = true;
+
+                SurfaceFlinger.Dispose();
 
                 KProcess terminationProcess = new KProcess(this);
 
@@ -873,12 +908,6 @@ namespace Ryujinx.HLE.HOS
                 });
 
                 terminationThread.Start();
-
-                // Signal the vsync event to avoid issues of KThread waiting on it.
-                if (Device.EnableDeviceVsync)
-                {
-                    Device.VsyncEvent.Set();
-                }
 
                 // Destroy nvservices channels as KThread could be waiting on some user events.
                 // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.
