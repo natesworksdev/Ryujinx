@@ -43,13 +43,13 @@ namespace Ryujinx.Tests.Cpu
         public void Setup()
         {
             _currAddress = 0x1000;
-            _size = 0x1000;
+            _size        = 0x1000;
 
             _entryPoint = _currAddress;
 
             _ramPointer = Marshal.AllocHGlobal(new IntPtr(_size * 2));
             _memory = new MemoryManager(_ramPointer, addressSpaceBits: 16, useFlatPageTable: true);
-            _memory.Map((long)_currAddress, 0, _size*2);
+            _memory.Map((long)_currAddress, 0, _size * 2);
 
             _context = new ExecutionContext();
             _context.IsAarch32 = true;
@@ -68,9 +68,11 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
+            _memory.Dispose();
+            _context.Dispose();
             Marshal.FreeHGlobal(_ramPointer);
-            _memory = null;
-            _context = null;
+            _memory     = null;
+            _context    = null;
             _translator = null;
             _unicornEmu = null;
         }

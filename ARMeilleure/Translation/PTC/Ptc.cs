@@ -49,6 +49,8 @@ namespace ARMeilleure.Translation.PTC
 
         private static bool _disposed;
 
+        private static int _translateCount;
+
         internal static PtcJumpTable PtcJumpTable { get; private set; }
 
         internal static string TitleIdText { get; private set; }
@@ -457,33 +459,9 @@ namespace ARMeilleure.Translation.PTC
         {
             if (PtcProfiler.ProfiledFuncsHighCq.Count != 0)
             {
-                int translateCount = 0;
+                _translateCount = 0;
 
-                void PtcLogger(object state) // TODO: .
-                {
-                    const int refreshRate = 1; // Seconds.
-
-                    int funcsHighCqCount         = funcsHighCq.Count;
-                    int ProfiledFuncsHighCqCount = PtcProfiler.ProfiledFuncsHighCq.Count;
-
-                    void WriteLog() => Console.WriteLine($"{nameof(PtcLogger)}: {funcsHighCqCount + translateCount} of {ProfiledFuncsHighCqCount} functions to translate.");
-
-                    while (funcsHighCqCount + translateCount < ProfiledFuncsHighCqCount)
-                    {
-                        if (State != PtcState.Enabled)
-                        {
-                            break;
-                        }
-
-                        WriteLog();
-
-                        Thread.Sleep(refreshRate * 1000);
-                    }
-
-                    WriteLog();
-                }
-
-                ThreadPool.QueueUserWorkItem(PtcLogger);
+                ThreadPool.QueueUserWorkItem(PtcLogger, (funcsHighCq.Count, PtcProfiler.ProfiledFuncsHighCq.Count));
 
                 ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
 
@@ -499,7 +477,7 @@ namespace ARMeilleure.Translation.PTC
 
                         jumpTable.RegisterFunction(item.Key, func);
 
-                        Interlocked.Increment(ref translateCount);
+                        Interlocked.Increment(ref _translateCount);
                     }
 
                     if (State != PtcState.Enabled)
@@ -508,7 +486,7 @@ namespace ARMeilleure.Translation.PTC
                     }
                 });
 
-                if (translateCount != 0)
+                if (_translateCount != 0)
                 {
                     PtcJumpTable.Initialize(jumpTable);
 
@@ -518,6 +496,30 @@ namespace ARMeilleure.Translation.PTC
                     ThreadPool.QueueUserWorkItem(Save);
                 }
             }
+        }
+
+        private static void PtcLogger(object state)
+        {
+            const int refreshRate = 1; // Seconds.
+
+            int funcsHighCqCount         = (((int, int))state).Item1;
+            int ProfiledFuncsHighCqCount = (((int, int))state).Item2;
+
+            void WriteLog() => Console.WriteLine($"{nameof(PtcLogger)}: {funcsHighCqCount + _translateCount} of {ProfiledFuncsHighCqCount} functions to translate."); // TODO: .
+
+            while (funcsHighCqCount + _translateCount < ProfiledFuncsHighCqCount)
+            {
+                if (State != PtcState.Enabled)
+                {
+                    break;
+                }
+
+                WriteLog();
+
+                Thread.Sleep(refreshRate * 1000);
+            }
+
+            WriteLog();
         }
 
         internal static void WriteInfoCodeReloc(long address, PtcInfo ptcInfo)

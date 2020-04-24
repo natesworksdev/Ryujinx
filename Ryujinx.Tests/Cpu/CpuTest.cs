@@ -67,6 +67,8 @@ namespace Ryujinx.Tests.Cpu
         [TearDown]
         public void Teardown()
         {
+            _memory.Dispose();
+            _context.Dispose();
             Marshal.FreeHGlobal(_ramPointer);
             _memory     = null;
             _context    = null;
