@@ -295,7 +295,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SynchronizeMemory()
         {
-            if (_sequenceNumber == _context.SequenceNumber && _hasData)
+            // Texture buffers are not handled here, instead they are invalidated (if modified)
+            // when the texture is bound. This is handled by the buffer manager.
+            if ((_sequenceNumber == _context.SequenceNumber && _hasData) || Info.Target == Target.TextureBuffer)
             {
                 return;
             }
@@ -364,33 +366,36 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>Converted data</returns>
         private ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data)
         {
-            if (Info.IsLinear)
+            if (Info.Target != Target.TextureBuffer)
             {
-                data = LayoutConverter.ConvertLinearStridedToLinear(
-                    Info.Width,
-                    Info.Height,
-                    Info.FormatInfo.BlockWidth,
-                    Info.FormatInfo.BlockHeight,
-                    Info.Stride,
-                    Info.FormatInfo.BytesPerPixel,
-                    data);
-            }
-            else
-            {
-                data = LayoutConverter.ConvertBlockLinearToLinear(
-                    Info.Width,
-                    Info.Height,
-                    _depth,
-                    Info.Levels,
-                    _layers,
-                    Info.FormatInfo.BlockWidth,
-                    Info.FormatInfo.BlockHeight,
-                    Info.FormatInfo.BytesPerPixel,
-                    Info.GobBlocksInY,
-                    Info.GobBlocksInZ,
-                    Info.GobBlocksInTileX,
-                    _sizeInfo,
-                    data);
+                if (Info.IsLinear)
+                {
+                    data = LayoutConverter.ConvertLinearStridedToLinear(
+                        Info.Width,
+                        Info.Height,
+                        Info.FormatInfo.BlockWidth,
+                        Info.FormatInfo.BlockHeight,
+                        Info.Stride,
+                        Info.FormatInfo.BytesPerPixel,
+                        data);
+                }
+                else
+                {
+                    data = LayoutConverter.ConvertBlockLinearToLinear(
+                        Info.Width,
+                        Info.Height,
+                        _depth,
+                        Info.Levels,
+                        _layers,
+                        Info.FormatInfo.BlockWidth,
+                        Info.FormatInfo.BlockHeight,
+                        Info.FormatInfo.BytesPerPixel,
+                        Info.GobBlocksInY,
+                        Info.GobBlocksInZ,
+                        Info.GobBlocksInTileX,
+                        _sizeInfo,
+                        data);
+                }
             }
 
             if (!_context.Capabilities.SupportsAstcCompression && Info.FormatInfo.Format.IsAstc())
