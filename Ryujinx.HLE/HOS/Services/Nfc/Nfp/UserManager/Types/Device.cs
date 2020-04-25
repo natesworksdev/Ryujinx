@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.Common.Hid;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
@@ -14,6 +15,6 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
         public DeviceState State = DeviceState.Unavailable;
 
         public PlayerIndex Handle;
-        public NpadIdType NpadIdType;
+        public NpadIdType  NpadIdType;
     }
 }

@@ -1,3 +1,4 @@
+using Ryujinx.Common.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;

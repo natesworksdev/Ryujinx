@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using Ryujinx.Common.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
