@@ -39,17 +39,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 do
                 {
-                    Masks[MaxLevel - 1][tempIdx++] = 0;
+                    Masks[MaxLevel - 1][tempIdx] = 0;
 
-                    for (int level = MaxLevel - 2; level >= 0; level--, index /= 64)
-                    {
-                        Masks[level][index / 64] &= ~(1L << (index & 63));
-
-                        if (Masks[level][index / 64] != 0)
-                        {
-                            break;
-                        }
-                    }
+                    ClearMaskBit(MaxLevel - 2, tempIdx++);
 
                     remaining -= 64;
                 }
@@ -70,21 +62,26 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (value == 0)
                 {
-                    for (int level = MaxLevel - 2; level >= 0; level--, index /= 64)
-                    {
-                        Masks[level][index / 64] &= ~(1L << (index & 63));
-
-                        if (Masks[level][index / 64] != 0)
-                        {
-                            break;
-                        }
-                    }
+                    ClearMaskBit(MaxLevel - 2, index);
                 }
             }
 
             FreeCount -= (ulong)count;
 
             return true;
+        }
+
+        public void ClearMaskBit(int startLevel, int index)
+        {
+            for (int level = startLevel; level >= 0; level--, index /= 64)
+            {
+                Masks[level][index / 64] &= ~(1L << (index & 63));
+
+                if (Masks[level][index / 64] != 0)
+                {
+                    break;
+                }
+            }
         }
     }
 }
