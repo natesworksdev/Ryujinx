@@ -1,6 +1,7 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
 using System;
 
@@ -1010,6 +1011,52 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.Enable(EnableCap.RasterizerDiscard);
             }
+        }
+
+        public bool TryHostConditionalRendering(object value, object compare, bool isEqual)
+        {
+            if (value is CounterQueueEvent != compare is CounterQueueEvent)
+            {
+                // Compare an event and a constant value.
+                CounterQueueEvent evt;
+                ulong constant;
+                if (value is CounterQueueEvent)
+                {
+                    evt = (CounterQueueEvent)value;
+                    constant = (ulong)compare;
+                }
+                else
+                {
+                    evt = (CounterQueueEvent)compare;
+                    constant = (ulong)value;
+                }
+
+                // Easy host conditional rendering when the check matches what GL can do:
+                //  - Event is of type samples passed.
+                //  - Result is not a combination of multiple queries.
+                //  - Comparing against 0.
+                //  - Event has not already been flushed.
+
+                if (evt.Disposed)
+                {
+                    // If the event has been flushed, then just use the values on the CPU.
+                    // The query object may already be repurposed for another draw (eg. begin + end).
+                    return false; 
+                }
+
+                if (constant == 0 && evt.Type == QueryTarget.SamplesPassed && evt.ClearCounter)
+                {
+                    GL.BeginConditionalRender(evt.Query, isEqual ? ConditionalRenderType.QueryNoWaitInverted : ConditionalRenderType.QueryNoWait);
+                    return true;
+                }
+            }
+
+            return false; // The GPU will flush the queries to CPU and evaluate the condition there instead.
+        }
+
+        public void EndHostConditionalRendering()
+        {
+            GL.EndConditionalRender();
         }
 
         public void Dispose()

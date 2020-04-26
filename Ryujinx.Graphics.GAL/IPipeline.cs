@@ -73,5 +73,8 @@ namespace Ryujinx.Graphics.GAL
 
         void TextureBarrier();
         void TextureBarrierTiled();
+
+        bool TryHostConditionalRendering(object value, object compare, bool isEqual);
+        void EndHostConditionalRendering();
     }
 }

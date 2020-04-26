@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.GAL
 
         Capabilities GetCapabilities();
 
-        ulong GetCounter(CounterType type);
+        ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler);
 
         void Initialize();
 
