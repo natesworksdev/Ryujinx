@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.Memory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation
@@ -47,6 +48,8 @@ namespace ARMeilleure.Translation
 
             lock (_lock)
             {
+                Debug.Assert(_initialized);
+
                 int funcOffset = Allocate(code.Length);
 
                 IntPtr funcPtr = _jitRegion.Pointer + funcOffset;

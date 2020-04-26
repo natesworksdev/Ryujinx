@@ -17,7 +17,7 @@ namespace ARMeilleure.State
                                       RegisterConsts.FlagsCount   * FlagSize +
                                       RegisterConsts.FpFlagsCount * FlagSize + ExtraSize;
 
-        private IJitMemoryBlock _block;
+        private readonly IJitMemoryBlock _block;
 
         public IntPtr BasePtr => _block.Pointer;
 
