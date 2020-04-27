@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Logging;
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -56,12 +57,8 @@ namespace Ryujinx.Graphics.OpenGL.Queries
         public bool TryGetResult(out long result)
         {
             result = Marshal.ReadInt64(_bufferMap);
-            if (result == DefaultValue)
-            {
-                return false;
-            }
 
-            return true;
+            return result != DefaultValue;
         }
 
         public long AwaitResult()
@@ -79,7 +76,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
             if (iterations >= MaxQueryRetries)
             {
-                Common.Logging.Logger.PrintError(Common.Logging.LogClass.Gpu, $"Error: Query result timed out! Took more than {MaxQueryRetries}ms.");
+                Logger.PrintError(LogClass.Gpu, $"Error: Query result timed out. Took more than {MaxQueryRetries} tries.");
             }
 
             return data;

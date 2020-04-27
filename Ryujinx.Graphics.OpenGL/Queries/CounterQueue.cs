@@ -82,7 +82,6 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 }
                 else
                 {
-                    Common.Logging.Logger.PrintWarning(Common.Logging.LogClass.Gpu, $"Increasing query pool size: {++totalQuery}");
                     return new BufferedQuery(GetTarget(Type));
                 }
             }
