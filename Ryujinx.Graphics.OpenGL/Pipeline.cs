@@ -1013,23 +1013,12 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public bool TryHostConditionalRendering(object value, object compare, bool isEqual)
+        public bool TryHostConditionalRendering(ICounterEvent value, ulong compare, bool isEqual)
         {
-            if (value is CounterQueueEvent != compare is CounterQueueEvent)
+            if (value is CounterQueueEvent)
             {
                 // Compare an event and a constant value.
-                CounterQueueEvent evt;
-                ulong constant;
-                if (value is CounterQueueEvent)
-                {
-                    evt = (CounterQueueEvent)value;
-                    constant = (ulong)compare;
-                }
-                else
-                {
-                    evt = (CounterQueueEvent)compare;
-                    constant = (ulong)value;
-                }
+                CounterQueueEvent evt = (CounterQueueEvent)value;
 
                 // Easy host conditional rendering when the check matches what GL can do:
                 //  - Event is of type samples passed.
@@ -1044,7 +1033,7 @@ namespace Ryujinx.Graphics.OpenGL
                     return false; 
                 }
 
-                if (constant == 0 && evt.Type == QueryTarget.SamplesPassed && evt.ClearCounter)
+                if (compare == 0 && evt.Type == QueryTarget.SamplesPassed && evt.ClearCounter)
                 {
                     GL.BeginConditionalRender(evt.Query, isEqual ? ConditionalRenderType.QueryNoWaitInverted : ConditionalRenderType.QueryNoWait);
                     return true;
@@ -1052,6 +1041,11 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             return false; // The GPU will flush the queries to CPU and evaluate the condition there instead.
+        }
+
+        public bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual)
+        {
+            return false; // We don't currently have a way to compare two counters for conditional rendering.
         }
 
         public void EndHostConditionalRendering()

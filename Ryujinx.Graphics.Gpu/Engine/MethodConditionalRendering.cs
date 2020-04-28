@@ -77,15 +77,28 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             ICounterEvent evt = FindEvent(gpuVa);
             ICounterEvent evt2 = FindEvent(gpuVa + 16);
+
             if (evt == null && evt2 == null)
             {
                 return ConditionalRenderEnabled.False;
             }
 
-            if (_context.Renderer.Pipeline.TryHostConditionalRendering(
-                evt ?? (object)_context.MemoryAccessor.ReadUInt64(gpuVa),
-                evt2 ?? (object)_context.MemoryAccessor.ReadUInt64(gpuVa + 16),
-                isEqual))
+            bool useHost;
+
+            if (evt != null && evt2 == null)
+            {
+                useHost = _context.Renderer.Pipeline.TryHostConditionalRendering(evt, _context.MemoryAccessor.ReadUInt64(gpuVa + 16), isEqual);
+            }
+            else if (evt == null && evt2 != null)
+            {
+                useHost = _context.Renderer.Pipeline.TryHostConditionalRendering(evt2, _context.MemoryAccessor.ReadUInt64(gpuVa), isEqual);
+            }
+            else
+            {
+                useHost = _context.Renderer.Pipeline.TryHostConditionalRendering(evt, evt2, isEqual);
+            }
+
+            if (useHost)
             {
                 return ConditionalRenderEnabled.Host;
             }
