@@ -6,6 +6,8 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Ts
     [Service("ts")]
     class IMeasurementServer : IpcService
     {
+        private const uint DefaultTemperature = 42000u;
+
         public IMeasurementServer(ServiceCtx context) { }
 
         [Command(3)]
@@ -16,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Ts
 
             Logger.PrintStub(LogClass.ServicePtm, new { location });
 
-            context.ResponseData.Write(42000u);
+            context.ResponseData.Write(DefaultTemperature);
 
             return ResultCode.Success;
         }
