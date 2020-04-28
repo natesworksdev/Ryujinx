@@ -107,7 +107,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             //       This allows to keep GPU and CPU in sync when we are slow.
             if (_failingCount == 2)
             {
-                Logger.PrintWarning(LogClass.ServiceNv, $"GPU processing thread is too slow, waiting on CPU...");
+                Logger.PrintWarning(LogClass.ServiceNv, "GPU processing thread is too slow, waiting on CPU...");
 
                 bool timedOut = Fence.Wait(gpuContext, Timeout.InfiniteTimeSpan);
 
