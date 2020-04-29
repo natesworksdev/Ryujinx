@@ -22,6 +22,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         private Queue<BufferedQuery> _queryPool;
         private AutoResetEvent _queuedEvent = new AutoResetEvent(false);
+        private AutoResetEvent _wakeSignal = new AutoResetEvent(false);
 
         private Thread _consumerThread;
 
@@ -62,12 +63,11 @@ namespace Ryujinx.Graphics.OpenGL.Queries
                 }
                 else
                 {
-                    evt.TryConsume(ref _accumulatedCounter, true);
+                    evt.TryConsume(ref _accumulatedCounter, true, _wakeSignal);
                 }
             }
         }
 
-        int totalQuery = QueryPoolInitialSize;
         internal BufferedQuery GetQueryObject()
         {
             // Creating/disposing query objects on a context we're sharing with will cause issues.
@@ -137,13 +137,20 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
         public void Flush(bool blocking)
         {
+            if (!blocking)
+            {
+                // Just wake the consumer thread - it will update the queries.
+                _wakeSignal.Set();
+                return;
+            }
+
             lock (_lock)
             {
                 // Tell the queue to process all events.
                 while (_events.Count > 0)
                 {
                     CounterQueueEvent flush = _events.Peek();
-                    if (!flush.TryConsume(ref _accumulatedCounter, blocking))
+                    if (!flush.TryConsume(ref _accumulatedCounter, true))
                     {
                         return; // If not blocking, then return when we encounter an event that is not ready yet.
                     }

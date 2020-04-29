@@ -68,6 +68,11 @@ namespace Ryujinx.Graphics.OpenGL
                 HwCapabilities.MaxSupportedAnisotropy);
         }
 
+        public void UpdateCounters()
+        {
+            _counters.Update();
+        }
+
         public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler)
         {
             return _counters.QueueReport(type, resultHandler);

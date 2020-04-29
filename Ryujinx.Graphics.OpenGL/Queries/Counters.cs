@@ -33,6 +33,14 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _counterQueues[(int)type].QueueReset();
         }
 
+        public void Update()
+        {
+            foreach (var queue in _counterQueues)
+            {
+                queue.Flush(false);
+            }
+        }
+
         public void Flush(CounterType type)
         {
             _counterQueues[(int)type].Flush(true);

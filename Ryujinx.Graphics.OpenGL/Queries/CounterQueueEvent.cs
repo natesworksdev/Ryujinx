@@ -1,6 +1,7 @@
 ﻿using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL.Queries
 {
@@ -41,7 +42,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             _counter.End();
         }
 
-        internal bool TryConsume(ref ulong result, bool block)
+        internal bool TryConsume(ref ulong result, bool block, AutoResetEvent wakeSignal = null)
         {
             lock (_lock)
             {
@@ -59,7 +60,7 @@ namespace Ryujinx.Graphics.OpenGL.Queries
 
                 if (block)
                 {
-                    queryResult = _counter.AwaitResult();
+                    queryResult = _counter.AwaitResult(wakeSignal);
                 }
                 else
                 {

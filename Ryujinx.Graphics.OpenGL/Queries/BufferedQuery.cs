@@ -61,22 +61,33 @@ namespace Ryujinx.Graphics.OpenGL.Queries
             return result != DefaultValue;
         }
 
-        public long AwaitResult()
+        public long AwaitResult(AutoResetEvent wakeSignal = null)
         {
             long data = DefaultValue;
-            int iterations = 0;
-            while (data == DefaultValue && iterations++ < MaxQueryRetries)
+
+            if (wakeSignal == null)
             {
-                data = Marshal.ReadInt64(_bufferMap);
-                if (data == DefaultValue)
+                while (data == DefaultValue)
                 {
-                    Thread.Sleep(1);
+                    data = Marshal.ReadInt64(_bufferMap);
                 }
             }
-
-            if (iterations >= MaxQueryRetries)
+            else
             {
-                Logger.PrintError(LogClass.Gpu, $"Error: Query result timed out. Took more than {MaxQueryRetries} tries.");
+                int iterations = 0;
+                while (data == DefaultValue && iterations++ < MaxQueryRetries)
+                {
+                    data = Marshal.ReadInt64(_bufferMap);
+                    if (data == DefaultValue)
+                    {
+                        wakeSignal.WaitOne(1);
+                    }
+                }
+
+                if (iterations >= MaxQueryRetries)
+                {
+                    Logger.PrintError(LogClass.Gpu, $"Error: Query result timed out. Took more than {MaxQueryRetries} tries.");
+                }
             }
 
             return data;
