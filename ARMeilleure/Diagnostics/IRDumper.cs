@@ -159,19 +159,18 @@ namespace ARMeilleure.Diagnostics
 
         private void DumpNode(Node node)
         {
-            if (node.DestinationsCount > 0)
+            for (int index = 0; index < node.DestinationsCount; index++)
             {
-                for (int index = 0; index < node.DestinationsCount; index++)
+                DumpOperand(node.GetDestination(index));
+
+                if (index == node.DestinationsCount - 1)
                 {
-                    DumpOperand(node.GetDestination(index));
-
-                    if (index < node.DestinationsCount - 1)
-                    {
-                        _builder.Append(", ");
-                    }
+                    _builder.Append(" = ");
                 }
-
-                _builder.Append(" = ");
+                else
+                {
+                    _builder.Append(", ");
+                }
             }
 
             switch (node)
