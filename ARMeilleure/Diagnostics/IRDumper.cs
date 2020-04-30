@@ -7,7 +7,7 @@ using System.Text;
 
 namespace ARMeilleure.Diagnostics
 {
-    struct IRDumper
+    class IRDumper
     {
         private const string Indentation = " ";
 
@@ -242,7 +242,7 @@ namespace ARMeilleure.Diagnostics
 
         public static string GetDump(ControlFlowGraph cfg)
         {
-            IRDumper dumper = new IRDumper(1);
+            var dumper = new IRDumper(1);
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
