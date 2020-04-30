@@ -269,17 +269,16 @@ namespace ARMeilleure.Diagnostics
 
         private static string GetTypeName(OperandType type)
         {
-            switch (type)
+            return type switch
             {
-                case OperandType.FP32: return "f32";
-                case OperandType.FP64: return "f64";
-                case OperandType.I32:  return "i32";
-                case OperandType.I64:  return "i64";
-                case OperandType.None: return "none";
-                case OperandType.V128: return "v128";
-            }
-
-            throw new ArgumentException($"Invalid operand type \"{type}\".");
+                OperandType.None => "none",
+                OperandType.I32 => "i32",
+                OperandType.I64 => "i64",
+                OperandType.FP32 => "f32",
+                OperandType.FP64 => "f64",
+                OperandType.V128 => "v128",
+                _ => throw new ArgumentException($"Invalid operand type \"{type}\"."),
+            };
         }
     }
 }
