@@ -708,7 +708,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private void UpdateFaceState(GpuState state)
         {
             var face = state.Get<FaceState>(MethodOffset.FaceState);
-            var triangleRastFlip = (state.Get<int>(MethodOffset.YControl) & (1 << 4)) != 0;
+            var triangleRastFlip = (state.Get<YControl>(MethodOffset.YControl) & YControl.TriangleRastFlip) != 0;
 
             if (triangleRastFlip)
             {
