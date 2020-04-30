@@ -21,6 +21,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
         private NvFence _previousFailingFence;
         private uint    _failingCount;
 
+        /// <summary>
+        /// Max failing count until waiting on CPU.
+        /// FIXME: This seems enough for most of the cases, reduce if needed.
+        /// </summary>
+        private const uint FailingCountMax = 2;
+
         public NvHostEvent(NvHostSyncpt syncpointManager, uint eventId, Horizon system)
         {
             Fence.Id = 0;
@@ -105,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             //       This is done by trying to wait and signal multiple times until aborting after you are past the timeout.
             //       As such, if it fails too many time, we enforce a wait on the CPU side indefinitely.
             //       This allows to keep GPU and CPU in sync when we are slow.
-            if (_failingCount == 2)
+            if (_failingCount == FailingCountMax)
             {
                 Logger.PrintWarning(LogClass.ServiceNv, "GPU processing thread is too slow, waiting on CPU...");
 
