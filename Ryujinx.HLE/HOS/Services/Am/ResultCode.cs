@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
         NotAvailable           = (2   << ErrorCodeShift) | ModuleId,
         NoMessages             = (3   << ErrorCodeShift) | ModuleId,
         AppletLaunchFailed     = (35  << ErrorCodeShift) | ModuleId,
-        TitleIDNotFound        = (37  << ErrorCodeShift) | ModuleId,
+        TitleIdNotFound        = (37  << ErrorCodeShift) | ModuleId,
         ObjectInvalid          = (500 << ErrorCodeShift) | ModuleId,
         IStorageInUse          = (502 << ErrorCodeShift) | ModuleId,
         OutOfBounds            = (503 << ErrorCodeShift) | ModuleId,
