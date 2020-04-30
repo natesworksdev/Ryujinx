@@ -178,7 +178,7 @@ namespace Ryujinx.Memory
 
             if (ptr == IntPtr.Zero)
             {
-                ThrowObjectDisposedException();
+                ThrowObjectDisposed();
             }
 
             int size = Unsafe.SizeOf<T>();
@@ -187,7 +187,7 @@ namespace Ryujinx.Memory
 
             if (endOffset > Size || endOffset < offset)
             {
-                ThrowArgumentOutOfRangeException();
+                ThrowArgumentOutOfRange();
             }
 
             return ref Unsafe.AsRef<T>((void*)PtrAddr(ptr, offset));
@@ -211,14 +211,14 @@ namespace Ryujinx.Memory
 
             if (ptr == IntPtr.Zero)
             {
-                ThrowObjectDisposedException();
+                ThrowObjectDisposed();
             }
 
             ulong endOffset = offset + size;
 
             if (endOffset > Size || endOffset < offset)
             {
-                ThrowArgumentOutOfRangeException();
+                ThrowArgumentOutOfRange();
             }
 
             return PtrAddr(ptr, offset);
@@ -270,7 +270,7 @@ namespace Ryujinx.Memory
             }
         }
 
-        private void ThrowObjectDisposedException() => throw new ObjectDisposedException(nameof(MemoryBlock));
-        private void ThrowArgumentOutOfRangeException() => throw new ArgumentOutOfRangeException();
+        private void ThrowObjectDisposed() => throw new ObjectDisposedException(nameof(MemoryBlock));
+        private void ThrowArgumentOutOfRange() => throw new ArgumentOutOfRangeException();
     }
 }
