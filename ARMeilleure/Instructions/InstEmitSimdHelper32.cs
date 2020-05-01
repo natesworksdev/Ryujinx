@@ -280,6 +280,35 @@ namespace ARMeilleure.Instructions
 
             context.Copy(GetVecA32(op.Qd), res);
         }
+        
+        public static void EmitVectorImmBinaryQdQmOpZx32(ArmEmitterContext context, Func2I emit)
+        {
+            EmitVectorImmBinaryQdQmOpI32(context, emit, false);
+        }
+		
+        public static void EmitVectorImmBinaryQdQmOpSx32(ArmEmitterContext context, Func2I emit)
+        {
+            EmitVectorImmBinaryQdQmOpI32(context, emit, true);
+        }
+        
+        public static void EmitVectorImmBinaryQdQmOpI32(ArmEmitterContext context, Func2I emit, bool signed)
+        {
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
+            
+            Operand res = GetVecA32(op.Qd);
+            
+            int elems = op.GetBytesCount() >> op.Size;
+            
+            for (int index = 0; index < elems; index++)
+            {
+                Operand de = EmitVectorExtract32(context, op.Qd, op.Id + index, op.Size, signed);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size, signed);
+                
+                res = EmitVectorInsert(context, res, emit(de, me), op.Id + index, op.Size);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
 
         public static void EmitVectorTernaryLongOpI32(ArmEmitterContext context, Func3I emit, bool signed)
         {

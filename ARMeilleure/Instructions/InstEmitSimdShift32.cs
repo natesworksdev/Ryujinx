@@ -128,6 +128,30 @@ namespace ARMeilleure.Instructions
 
             EmitVectorUnaryNarrowOp32(context, (op1) => context.ShiftRightUI(op1, Const(shift)));
         }
+        
+        public static void Vsra(ArmEmitterContext context)
+        {
+            OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
+            int shift = GetImmShr(op);
+            int maxShift = (8 << op.Size) - 1;
+
+            if (op.U)
+            {
+                EmitVectorImmBinaryQdQmOpZx32(context, (op1, op2) =>
+                {
+                    if (shift > maxShift)
+                    {
+                        return Const(op2.Type, 0);
+                    }
+
+                    return context.Add(op1, context.ShiftRightUI(op2, Const(shift)));
+                });
+            }
+            else
+            {
+                EmitVectorImmBinaryQdQmOpSx32(context, (op1, op2) => context.Add(op1, context.ShiftRightSI(op2, Const(Math.Min(maxShift, shift)))));
+            }
+        }
 
         private static Operand EmitShlRegOp(ArmEmitterContext context, Operand op, Operand shiftLsB, int size, bool unsigned)
         {
