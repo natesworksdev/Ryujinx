@@ -9,7 +9,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 {
     class ICommonStateGetter : IpcService
     {
-        private CpuBoostMode _cpuBoostMode = CpuBoostMode.Disabled;
+        private CpuBoostMode _cpuBoostMode  = CpuBoostMode.Disabled;
+        private bool         _vrModeEnabled = false;
 
         public ICommonStateGetter() { }
 
@@ -93,9 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // IsVrModeEnabled() -> b8
         public ResultCode IsVrModeEnabled(ServiceCtx context)
         {
-            context.ResponseData.Write(false);
-
-            Logger.PrintStub(LogClass.ServiceAm);
+            context.ResponseData.Write(_vrModeEnabled);
 
             return ResultCode.Success;
         }
