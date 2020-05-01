@@ -330,7 +330,7 @@ namespace Ryujinx.Cpu
 
                     long pteValue = pte;
 
-                    // If if the PTE value is 0, that means that the page is unmapped.
+                    // If the PTE value is 0, that means that the page is unmapped.
                     // We behave as if the page was not modified, since modifying a page
                     // that is not even mapped is impossible.
                     if ((pteValue & tag) == tag || pteValue == 0)
