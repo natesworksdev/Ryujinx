@@ -69,14 +69,14 @@ namespace ARMeilleure.Translation
             _dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
         }
 
-        public void Initialize(PtcJumpTable ptcJumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq)
+        public void Initialize(PtcJumpTable ptcJumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
             _tableEnd    = ptcJumpTable.TableEnd;
             _dynTableEnd = ptcJumpTable.DynTableEnd;
 
             foreach (ulong guestAddress in ptcJumpTable.Targets)
             {
-                if (funcsHighCq.TryGetValue(guestAddress, out TranslatedFunction func))
+                if (funcs.TryGetValue(guestAddress, out TranslatedFunction func))
                 {
                     _targets.TryAdd(guestAddress, func);
                 }

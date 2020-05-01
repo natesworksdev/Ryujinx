@@ -6,8 +6,6 @@ using ARMeilleure.Memory;
 using ARMeilleure.State;
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -22,10 +20,7 @@ namespace ARMeilleure.Translation
 
         private readonly MemoryManager _memory;
 
-        private readonly object _locker;
-
-        private readonly Dictionary<ulong, TranslatedFunction> _funcs;
-        private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcsHighCq;
+        private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
 
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
 
@@ -39,10 +34,7 @@ namespace ARMeilleure.Translation
         {
             _memory = memory;
 
-            _locker = new object();
-
-            _funcs       = new Dictionary<ulong, TranslatedFunction>();
-            _funcsHighCq = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
 
             _backgroundStack = new ConcurrentStack<RejitRequest>();
 
@@ -56,7 +48,7 @@ namespace ARMeilleure.Translation
 
             if (Ptc.State == PtcState.Enabled)
             {
-                Ptc.LoadTranslations(_funcsHighCq, memory.PageTable, _jumpTable);
+                Ptc.LoadTranslations(_funcs, memory.PageTable, _jumpTable);
             }
         }
 
@@ -68,9 +60,7 @@ namespace ARMeilleure.Translation
                 {
                     TranslatedFunction func = Translate(_memory, _jumpTable, request.Address, request.Mode, highCq: true);
 
-                    bool isAddressUnique = _funcsHighCq.TryAdd(request.Address, func);
-
-                    Debug.Assert(isAddressUnique, $"The address 0x{request.Address:X16} is not unique.");
+                    _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) => func);
 
                     _jumpTable.RegisterFunction(request.Address, func);
                 }
@@ -89,7 +79,7 @@ namespace ARMeilleure.Translation
             {
                 if (Ptc.State == PtcState.Enabled)
                 {
-                    Ptc.MakeAndSaveTranslations(_funcsHighCq, _memory, _jumpTable);
+                    Ptc.MakeAndSaveTranslations(_funcs, _memory, _jumpTable);
                 }
 
                 PtcProfiler.Start();
@@ -150,44 +140,33 @@ namespace ARMeilleure.Translation
 
         internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
         {
-            const int MinCallsForRejit = 100;
-
             // TODO: Investigate how we should handle code at unaligned addresses.
             // Currently, those low bits are used to store special flags.
             bool isCallTarget = (address & CallFlag) != 0;
 
             address &= ~CallFlag;
 
-            TranslatedFunction func;
-
-            if (!_funcsHighCq.TryGetValue(address, out func))
+            if (!_funcs.TryGetValue(address, out TranslatedFunction func))
             {
-                lock (_locker)
+                func = Translate(_memory, _jumpTable, address, mode, highCq: false);
+
+                _funcs.TryAdd(address, func);
+
+                if (PtcProfiler.Enabled)
                 {
-                    if (!_funcs.TryGetValue(address, out func))
-                    {
-                        func = Translate(_memory, _jumpTable, address, mode, highCq: false);
-
-                        bool isAddressUnique = _funcs.TryAdd(address, func);
-
-                        Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
-                    }
+                    PtcProfiler.AddEntry(address, mode, highCq: false);
                 }
+            }
 
-                if (isCallTarget)
+            if (isCallTarget && func.ShouldRejit())
+            {
+                _backgroundStack.Push(new RejitRequest(address, mode));
+
+                _backgroundTranslatorEvent.Set();
+
+                if (PtcProfiler.Enabled)
                 {
-                    int callCount = func.GetCallCount();
-
-                    if (PtcProfiler.Enabled && callCount == 1)
-                    {
-                        PtcProfiler.AddEntry(address, mode);
-                    }
-                    else if (callCount == MinCallsForRejit)
-                    {
-                        _backgroundStack.Push(new RejitRequest(address, mode));
-
-                        _backgroundTranslatorEvent.Set();
-                    }
+                    PtcProfiler.UpdateEntry(address, mode, highCq: true);
                 }
             }
 
@@ -196,8 +175,6 @@ namespace ARMeilleure.Translation
 
         internal static TranslatedFunction Translate(MemoryManager memory, JumpTable jumpTable, ulong address, ExecutionMode mode, bool highCq)
         {
-            const bool AlwaysTranslateFunctions = true; // If false, only translates a single block for lowCq.
-
             ArmEmitterContext context = new ArmEmitterContext(memory, jumpTable, (long)address, highCq, Aarch32Mode.User);
 
             OperandHelper.PrepareOperandPool(highCq);
@@ -205,9 +182,7 @@ namespace ARMeilleure.Translation
 
             Logger.StartPass(PassName.Decoding);
 
-            Block[] blocks = AlwaysTranslateFunctions
-                ? Decoder.DecodeFunction  (memory, address, mode, highCq)
-                : Decoder.DecodeBasicBlock(memory, address, mode);
+            Block[] blocks = Decoder.DecodeFunction(memory, address, mode, highCq);
 
             Logger.EndPass(PassName.Decoding);
 
@@ -246,10 +221,7 @@ namespace ARMeilleure.Translation
                 {
                     func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
 
-                    if ((int)ptcInfo.CodeStream.Length >= Ptc.MinCodeLengthToSave)
-                    {
-                        Ptc.WriteInfoCodeReloc((long)address, ptcInfo);
-                    }
+                    Ptc.WriteInfoCodeReloc((long)address, highCq, ptcInfo);
                 }
             }
 

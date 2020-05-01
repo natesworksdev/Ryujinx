@@ -25,8 +25,6 @@ namespace ARMeilleure.Translation.PTC
         private const string TitleIdTextDefault = "0000000000000000";
         private const string DisplayVersionDefault = "0";
 
-        internal const int MinCodeLengthToSave = 0; // Bytes.
-
         internal const int PageTableIndex = -1; // Must be a negative value.
         internal const int JumpPointerIndex = -2; // Must be a negative value.
         internal const int DynamicPointerIndex = -3; // Must be a negative value.
@@ -43,13 +41,16 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly ManualResetEvent _waitEvent;
 
+        private static readonly AutoResetEvent _loggerEvent;
+
         private static readonly string _basePath;
 
         private static readonly object _locker;
 
         private static bool _disposed;
 
-        private static int _translateCount;
+        private static volatile int _translateCount;
+        private static volatile int _rejitCount;
 
         internal static PtcJumpTable PtcJumpTable { get; private set; }
 
@@ -71,6 +72,8 @@ namespace ARMeilleure.Translation.PTC
             _binaryFormatter = new BinaryFormatter();
 
             _waitEvent = new ManualResetEvent(true);
+
+            _loggerEvent = new AutoResetEvent(false);
 
             _basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), BaseDir);
 
@@ -192,7 +195,7 @@ namespace ARMeilleure.Translation.PTC
                             return;
                         }
 
-                        if (header.InfosLen % InfoEntry.Size != 0)
+                        if (header.InfosLen % InfoEntry.Stride != 0)
                         {
                             InvalidateCompressedStream(compressedStream);
 
@@ -286,7 +289,7 @@ namespace ARMeilleure.Translation.PTC
                 _codesStream.WriteTo(stream);
                 _relocsStream.WriteTo(stream);
 
-                _binaryFormatter.Serialize(stream, (object)PtcJumpTable);
+                _binaryFormatter.Serialize(stream, PtcJumpTable);
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
                 byte[] hash = md5.ComputeHash(stream);
@@ -331,8 +334,10 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, IntPtr pageTable, JumpTable jumpTable)
+        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IntPtr pageTable, JumpTable jumpTable)
         {
+            Debug.Assert(funcs.Count == 0);
+
             if ((int)_infosStream.Length != 0 &&
                 (int)_codesStream.Length != 0 &&
                 (int)_relocsStream.Length != 0)
@@ -345,7 +350,7 @@ namespace ARMeilleure.Translation.PTC
                 using (BinaryReader codesReader = new BinaryReader(_codesStream, EncodingCache.UTF8NoBOM, true))
                 using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
                 {
-                    for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Size; i++) // infosEntriesCount
+                    for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Stride; i++) // infosEntriesCount
                     {
                         InfoEntry infoEntry = ReadInfo(infosReader);
 
@@ -356,9 +361,7 @@ namespace ARMeilleure.Translation.PTC
                             PatchCode(code, GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount), pageTable, jumpTable);
                         }
 
-                        bool isAddressUnique = funcsHighCq.TryAdd((ulong)infoEntry.Address, FastTranslate(code));
-
-                        Debug.Assert(isAddressUnique, $"The address 0x{(ulong)infoEntry.Address:X16} is not unique.");
+                        funcs.TryAdd((ulong)infoEntry.Address, FastTranslate(code, infoEntry.HighCq));
                     }
                 }
 
@@ -369,9 +372,9 @@ namespace ARMeilleure.Translation.PTC
                     throw new Exception("Could not reach the end of one or more memory streams.");
                 }
 
-                jumpTable.Initialize(PtcJumpTable, funcsHighCq);
+                jumpTable.Initialize(PtcJumpTable, funcs);
 
-                PtcJumpTable.WriteJumpTable(jumpTable, funcsHighCq);
+                PtcJumpTable.WriteJumpTable(jumpTable, funcs);
                 PtcJumpTable.WriteDynamicTable(jumpTable);
             }
         }
@@ -381,6 +384,7 @@ namespace ARMeilleure.Translation.PTC
             InfoEntry infoEntry = new InfoEntry();
 
             infoEntry.Address = infosReader.ReadInt64();
+            infoEntry.HighCq = infosReader.ReadBoolean();
             infoEntry.CodeLen = infosReader.ReadInt32();
             infoEntry.RelocEntriesCount = infosReader.ReadInt32();
 
@@ -442,7 +446,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static TranslatedFunction FastTranslate(byte[] code)
+        private static TranslatedFunction FastTranslate(byte[] code, bool highCq)
         {
             CompiledFunction cFunc = new CompiledFunction(code);
 
@@ -450,34 +454,45 @@ namespace ARMeilleure.Translation.PTC
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc, highCq: true);
+            TranslatedFunction tFunc = new TranslatedFunction(gFunc, highCq);
 
             return tFunc;
         }
 
-        internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq, MemoryManager memory, JumpTable jumpTable)
+        internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, MemoryManager memory, JumpTable jumpTable)
         {
-            if (PtcProfiler.ProfiledFuncsHighCq.Count != 0)
+            if (PtcProfiler.ProfiledFuncs.Count != 0)
             {
                 _translateCount = 0;
+                _rejitCount = 0;
 
-                ThreadPool.QueueUserWorkItem(PtcLogger, (funcsHighCq.Count, PtcProfiler.ProfiledFuncsHighCq.Count));
+                ThreadPool.QueueUserWorkItem(Logger, (funcs.Count, PtcProfiler.ProfiledFuncs.Count));
 
                 ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
 
-                Parallel.ForEach(PtcProfiler.ProfiledFuncsHighCq, parallelOptions, (item, state) =>
+                Parallel.ForEach(PtcProfiler.ProfiledFuncs, parallelOptions, (item, state) =>
                 {
-                    if (!funcsHighCq.ContainsKey(item.Key))
+                    ulong itemKey = item.Key;
+
+                    if (!funcs.ContainsKey(itemKey))
                     {
-                        TranslatedFunction func = Translator.Translate(memory, jumpTable, item.Key, item.Value, highCq: true);
+                        TranslatedFunction func = Translator.Translate(memory, jumpTable, itemKey, item.Value.mode, item.Value.highCq);
 
-                        bool isAddressUnique = funcsHighCq.TryAdd(item.Key, func);
+                        funcs.TryAdd(itemKey, func);
 
-                        Debug.Assert(isAddressUnique, $"The address 0x{item.Key:X16} is not unique.");
-
-                        jumpTable.RegisterFunction(item.Key, func);
+                        if (func.HighCq) jumpTable.RegisterFunction(itemKey, func);
 
                         Interlocked.Increment(ref _translateCount);
+                    }
+                    else if (item.Value.highCq && !funcs[itemKey].HighCq)
+                    {
+                        TranslatedFunction func = Translator.Translate(memory, jumpTable, itemKey, item.Value.mode, highCq: true);
+
+                        funcs[itemKey] = func;
+
+                        jumpTable.RegisterFunction(itemKey, func);
+
+                        Interlocked.Increment(ref _rejitCount);
                     }
 
                     if (State != PtcState.Enabled)
@@ -486,7 +501,9 @@ namespace ARMeilleure.Translation.PTC
                     }
                 });
 
-                if (_translateCount != 0)
+                _loggerEvent.Set();
+
+                if (_translateCount != 0 || _rejitCount != 0)
                 {
                     PtcJumpTable.Initialize(jumpTable);
 
@@ -498,36 +515,33 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void PtcLogger(object state)
+        private static void Logger(object state)
         {
             const int refreshRate = 1; // Seconds.
 
-            int funcsHighCqCount         = (((int, int))state).Item1;
-            int ProfiledFuncsHighCqCount = (((int, int))state).Item2;
+            (int funcsCount, int ProfiledFuncsCount) = ((int, int))state;
 
-            void WriteLog() => Console.WriteLine($"{nameof(PtcLogger)}: {funcsHighCqCount + _translateCount} of {ProfiledFuncsHighCqCount} functions to translate."); // TODO: .
-
-            while (funcsHighCqCount + _translateCount < ProfiledFuncsHighCqCount)
+            void WriteLog()
             {
-                if (State != PtcState.Enabled)
-                {
-                    break;
-                }
-
-                WriteLog();
-
-                Thread.Sleep(refreshRate * 1000);
+                Console.WriteLine($"{nameof(Logger)}: {funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate; {_rejitCount} functions rejited.");
             }
+
+            do
+            {
+                WriteLog();
+            }
+            while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
             WriteLog();
         }
 
-        internal static void WriteInfoCodeReloc(long address, PtcInfo ptcInfo)
+        internal static void WriteInfoCodeReloc(long address, bool highCq, PtcInfo ptcInfo)
         {
             lock (_locker)
             {
                 // WriteInfo.
                 _infosWriter.Write((long)address); // InfoEntry.Address
+                _infosWriter.Write((bool)highCq); // InfoEntry.HighCq
                 _infosWriter.Write((int)ptcInfo.CodeStream.Length); // InfoEntry.CodeLen
                 _infosWriter.Write((int)ptcInfo.RelocEntriesCount); // InfoEntry.RelocEntriesCount
 
@@ -572,9 +586,10 @@ namespace ARMeilleure.Translation.PTC
 
         private struct InfoEntry
         {
-            public const int Size = 16; // Bytes.
+            public const int Stride = 17; // Bytes.
 
             public long Address;
+            public bool HighCq;
             public int CodeLen;
             public int RelocEntriesCount;
         }

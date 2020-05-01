@@ -256,10 +256,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (_ptcInfo != null)
                 {
-                    if ((int)codeStream.Length >= Ptc.MinCodeLengthToSave)
-                    {
-                        _ptcInfo.WriteCode(codeStream);
-                    }
+                    _ptcInfo.WriteCode(codeStream);
                 }
 
                 return codeStream.ToArray();

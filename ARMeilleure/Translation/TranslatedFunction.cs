@@ -6,6 +6,8 @@ namespace ARMeilleure.Translation
 {
     sealed class TranslatedFunction
     {
+        private const int MinCallsForRejit = 100;
+
         private readonly GuestFunction _func; // Ensure that this delegate will not be garbage collected.
 
         private int _callCount = 0;
@@ -26,9 +28,9 @@ namespace ARMeilleure.Translation
             return _func(context.NativeContextPtr);
         }
 
-        public int GetCallCount()
+        public bool ShouldRejit()
         {
-            return Interlocked.Increment(ref _callCount);
+            return !HighCq && Interlocked.Increment(ref _callCount) == MinCallsForRejit;
         }
     }
 }

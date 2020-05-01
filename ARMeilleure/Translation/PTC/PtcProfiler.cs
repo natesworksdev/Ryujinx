@@ -26,7 +26,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static bool _disposed;
 
-        internal static Dictionary<ulong, ExecutionMode> ProfiledFuncsHighCq { get; private set; }
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> ProfiledFuncs { get; private set; }
 
         internal static bool Enabled { get; private set; }
 
@@ -43,24 +43,34 @@ namespace ARMeilleure.Translation.PTC
 
             _disposed = false;
 
-            ProfiledFuncsHighCq = new Dictionary<ulong, ExecutionMode>();
+            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
 
             Enabled = false;
         }
 
-        internal static void AddEntry(ulong address, ExecutionMode mode)
+        internal static void AddEntry(ulong address, ExecutionMode mode, bool highCq)
         {
             lock (_locker)
             {
-                bool isAddressUnique = ProfiledFuncsHighCq.TryAdd(address, mode);
+                Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
 
-                Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
+                ProfiledFuncs.TryAdd(address, (mode, highCq));
+            }
+        }
+
+        internal static void UpdateEntry(ulong address, ExecutionMode mode, bool highCq)
+        {
+            lock (_locker)
+            {
+                Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
+
+                ProfiledFuncs[address] = (mode, highCq);
             }
         }
 
         internal static void ClearEntries()
         {
-            ProfiledFuncsHighCq.Clear();
+            ProfiledFuncs.Clear();
         }
 
         internal static void Load()
@@ -98,11 +108,11 @@ namespace ARMeilleure.Translation.PTC
 
                         try
                         {
-                            ProfiledFuncsHighCq = (Dictionary<ulong, ExecutionMode>)_binaryFormatter.Deserialize(stream);
+                            ProfiledFuncs = (Dictionary<ulong, (ExecutionMode, bool)>)_binaryFormatter.Deserialize(stream);
                         }
                         catch
                         {
-                            ProfiledFuncsHighCq = new Dictionary<ulong, ExecutionMode>();
+                            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
                         }
                     }
                     catch
@@ -136,7 +146,7 @@ namespace ARMeilleure.Translation.PTC
 
                 lock (_locker)
                 {
-                    _binaryFormatter.Serialize(stream, (object)ProfiledFuncsHighCq);
+                    _binaryFormatter.Serialize(stream, ProfiledFuncs);
                 }
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);

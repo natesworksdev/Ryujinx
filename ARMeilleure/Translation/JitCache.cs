@@ -49,12 +49,12 @@ namespace ARMeilleure.Translation
 
         public static IntPtr Map(CompiledFunction func)
         {
-            Debug.Assert(_initialized);
-
             byte[] code = func.Code;
 
             lock (_locker)
             {
+                Debug.Assert(_initialized);
+
                 int funcOffset = Allocate(code.Length);
 
                 IntPtr funcPtr = _jitRegion.Pointer + funcOffset;

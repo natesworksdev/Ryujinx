@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation.PTC
             _dependants.Clear();
         }
 
-        public void WriteJumpTable(JumpTable jumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcsHighCq)
+        public void WriteJumpTable(JumpTable jumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
             jumpTable.ExpandIfNeededJumpTable(TableEnd);
 
@@ -80,7 +80,7 @@ namespace ARMeilleure.Translation.PTC
                 }
                 else if (directHostAddress == DirectHostAddress.Host)
                 {
-                    if (funcsHighCq.TryGetValue((ulong)guestAddress, out TranslatedFunction func))
+                    if (funcs.TryGetValue((ulong)guestAddress, out TranslatedFunction func))
                     {
                         hostAddress = func.FuncPtr.ToInt64();
                     }
