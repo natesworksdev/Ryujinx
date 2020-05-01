@@ -1,5 +1,6 @@
 using ARMeilleure.Translation.PTC;
 using Gtk;
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Debugger.Profiler;
@@ -16,7 +17,7 @@ namespace Ryujinx
         public static string Version { get; private set; }
 
         public static string ConfigurationPath { get; set; }
-		
+
         static void Main(string[] args)
         {
             Toolkit.Init(new ToolkitOptions
@@ -42,6 +43,12 @@ namespace Ryujinx
 
             // Initialize Discord integration
             DiscordIntegrationModule.Initialize();
+
+            Logger.PrintInfo(LogClass.Application, $"Ryujinx Version: {Version}");
+
+            Logger.PrintInfo(LogClass.Application, $"Operating System: {SystemInfo.OsDescription}");
+            Logger.PrintInfo(LogClass.Application, $"CPU: {SystemInfo.CpuName}");
+            Logger.PrintInfo(LogClass.Application, $"Total RAM: {SystemInfo.RamSize}");
 
             string localConfigurationPath  = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
             string globalBasePath          = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx");

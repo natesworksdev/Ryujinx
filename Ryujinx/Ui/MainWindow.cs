@@ -42,8 +42,6 @@ namespace Ryujinx.Ui
         private static bool _debuggerOpened;
 #pragma warning restore CS0169
 
-        private static TreeView _treeView;
-
 #pragma warning disable CS0169
         private static Ryujinx.Debugger.Debugger _debugger;
 #pragma warning restore CS0169
@@ -128,8 +126,6 @@ namespace Ryujinx.Ui
             // Make sure that everything is loaded.
             _virtualFileSystem.Reload();
 
-            _treeView = _gameTable;
-
             ApplyTheme();
 
             _mainWin.Icon            = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.assets.Icon.png");
@@ -171,6 +167,9 @@ namespace Ryujinx.Ui
             _tableStore.SetSortFunc(6, LastPlayedSort);
             _tableStore.SetSortFunc(8, FileSizeSort);
             _tableStore.SetSortColumnId(0, SortType.Descending);
+
+            _gameTable.EnableSearch = true;
+            _gameTable.SearchColumn = 2;
 
             UpdateColumns();
             UpdateGameTable();
