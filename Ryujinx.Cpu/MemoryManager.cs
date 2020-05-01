@@ -330,7 +330,10 @@ namespace Ryujinx.Cpu
 
                     long pteValue = pte;
 
-                    if ((pteValue & tag) == tag)
+                    // If if the PTE value is 0, that means that the page is unmapped.
+                    // We behave as if the page was not modified, since modifying a page
+                    // that is not even mapped is impossible.
+                    if ((pteValue & tag) == tag || pteValue == 0)
                     {
                         if (rgSize != 0)
                         {
@@ -399,10 +402,19 @@ namespace Ryujinx.Cpu
         /// <summary>
         /// Performs address translation of the address inside a CPU mapped memory range.
         /// </summary>
+        /// <remarks>
+        /// If the address is invalid or unmapped, -1 will be returned.
+        /// </remarks>
         /// <param name="va">Virtual address to be translated</param>
         /// <returns>The physical address</returns>
         public ulong GetPhysicalAddress(ulong va)
         {
+            // We return -1L if the virtual address is invalid or unmapped.
+            if (!ValidateAddress(va) || !IsMapped(va))
+            {
+                return ulong.MaxValue;
+            }
+
             return GetPhysicalAddressInternal(va);
         }
 
