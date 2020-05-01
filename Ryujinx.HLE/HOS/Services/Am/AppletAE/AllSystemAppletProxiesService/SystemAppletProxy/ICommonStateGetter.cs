@@ -89,6 +89,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [Command(50)] // 3.0.0+
+        // IsVrModeEnabled() -> b8
+        public ResultCode IsVrModeEnabled(ServiceCtx context)
+        {
+            context.ResponseData.Write(false);
+
+            Logger.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.Success;
+        }
+
         [Command(60)] // 3.0.0+
         // GetDefaultDisplayResolution() -> (u32, u32)
         public ResultCode GetDefaultDisplayResolution(ServiceCtx context)
