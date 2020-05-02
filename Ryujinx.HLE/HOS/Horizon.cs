@@ -1,5 +1,6 @@
 using LibHac;
 using LibHac.Account;
+using LibHac.Bcat;
 using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsSystem;
@@ -18,6 +19,7 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
+using Ryujinx.HLE.HOS.Services.Arp;
 using Ryujinx.HLE.HOS.Services.Mii;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
@@ -37,11 +39,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Utf8Json;
-using Utf8Json.Resolvers;
 
 using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
 using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
+using JsonHelper         = Ryujinx.Common.Utilities.JsonHelper;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 
@@ -143,6 +144,9 @@ namespace Ryujinx.HLE.HOS
         internal long HidBaseAddress { get; private set; }
 
         internal NvHostSyncpt HostSyncpoint { get; private set; }
+
+        internal LibHac.Horizon LibHacHorizonServer { get; private set; }
+        internal HorizonClient LibHacHorizonClient { get; private set; }
 
         public Horizon(Switch device, ContentManager contentManager)
         {
@@ -280,6 +284,22 @@ namespace Ryujinx.HLE.HOS
             SurfaceFlinger = new SurfaceFlinger(device);
 
             ConfigurationState.Instance.System.EnableDockedMode.Event += OnDockedModeChange;
+
+            InitLibHacHorizon();
+        }
+
+        private void InitLibHacHorizon()
+        {
+            LibHac.Horizon horizon = new LibHac.Horizon(null, Device.FileSystem.FsServer);
+
+            horizon.CreateHorizonClient(out HorizonClient ryujinxClient).ThrowIfFailure();
+            horizon.CreateHorizonClient(out HorizonClient bcatClient).ThrowIfFailure();
+
+            ryujinxClient.Sm.RegisterService(new LibHacIReader(this), "arp:r").ThrowIfFailure();
+            new BcatServer(bcatClient);
+
+            LibHacHorizonServer = horizon;
+            LibHacHorizonClient = ryujinxClient;
         }
 
         private void OnDockedModeChange(object sender, ReactiveEventArgs<bool> e)
@@ -519,49 +539,47 @@ namespace Ryujinx.HLE.HOS
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
-            if (File.Exists(Path.Combine(Device.FileSystem.GetBasePath(), "games", mainNca.Header.TitleId.ToString("x16"), "updates.json")))
+            string titleUpdateMetadataPath = System.IO.Path.Combine(Device.FileSystem.GetBasePath(), "games", mainNca.Header.TitleId.ToString("x16"), "updates.json");
+
+            if (File.Exists(titleUpdateMetadataPath))
             {
-                using (Stream stream = File.OpenRead(Path.Combine(Device.FileSystem.GetBasePath(), "games", mainNca.Header.TitleId.ToString("x16"), "updates.json")))
+                string updatePath = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(titleUpdateMetadataPath).Selected;
+
+                if (File.Exists(updatePath))
                 {
-                    IJsonFormatterResolver resolver = CompositeResolver.Create(StandardResolver.AllowPrivateSnakeCase);
-                    string updatePath = JsonSerializer.Deserialize<TitleUpdateMetadata>(stream, resolver).Selected;
+                    FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
+                    PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
-                    if (File.Exists(updatePath))
+                    foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
                     {
-                        FileStream file         = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
-                        PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+                        Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
 
-                        foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
+                        if (result.IsSuccess())
                         {
-                            Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
+                            Ticket ticket = new Ticket(ticketFile.AsStream());
 
-                            if (result.IsSuccess())
-                            {
-                                Ticket ticket = new Ticket(ticketFile.AsStream());
+                            KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
+                        }
+                    }
 
-                                KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(KeySet)));
-                            }
+                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                    {
+                        nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                        Nca nca = new Nca(KeySet, ncaFile.AsStorage());
+
+                        if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
+                        {
+                            break;
                         }
 
-                        foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                        if (nca.Header.ContentType == NcaContentType.Program)
                         {
-                            nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                            Nca nca = new Nca(KeySet, ncaFile.AsStorage());
-
-                            if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
-                            {
-                                break;
-                            }
-
-                            if (nca.Header.ContentType == NcaContentType.Program)
-                            {
-                                patchNca = nca;
-                            }
-                            else if (nca.Header.ContentType == NcaContentType.Control)
-                            {
-                                controlNca = nca;
-                            }
+                            patchNca = nca;
+                        }
+                        else if (nca.Header.ContentType == NcaContentType.Control)
+                        {
+                            controlNca = nca;
                         }
                     }
                 }
