@@ -112,6 +112,12 @@ namespace Ryujinx.Graphics.Gpu.Synchronization
                 throw new ArgumentOutOfRangeException(nameof(id));
             }
 
+            // TODO: Remove this when GPU channel scheduling will be implemented.
+            if (timeout == Timeout.InfiniteTimeSpan)
+            {
+                timeout = TimeSpan.FromSeconds(1);
+            }
+
             using (ManualResetEvent waitEvent = new ManualResetEvent(false))
             {
                 var info = _syncpoints[id].RegisterCallback(threshold, () => waitEvent.Set());
