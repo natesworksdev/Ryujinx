@@ -305,7 +305,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             {
                 Layer = layer,
                 Item  = item,
-                Fence = _vblankFence
+                Fence = AndroidFence.NoFence
             };
 
             _device.Gpu.Window.EnqueueFrameThreadSafe(
