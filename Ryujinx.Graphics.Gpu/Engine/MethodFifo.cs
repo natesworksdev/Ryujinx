@@ -66,7 +66,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             if (operation == FenceActionOperation.Acquire)
             {
-                _context.Synchronization.WaitOnSyncpoint(syncpointId, threshold, Timeout.InfiniteTimeSpan);
+                _context.Synchronization.WaitOnSyncpoint(syncpointId, threshold, TimeSpan.FromSeconds(1));
             }
             else if (operation == FenceActionOperation.Increment)
             {
