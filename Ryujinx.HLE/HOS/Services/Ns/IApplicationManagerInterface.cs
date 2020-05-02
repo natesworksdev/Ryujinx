@@ -10,7 +10,7 @@
         public ResultCode GetApplicationControlData(ServiceCtx context)
         {
             byte  source  = (byte)context.RequestData.ReadInt64();
-            ulong titleId = (byte)context.RequestData.ReadUInt64();
+            ulong titleId = context.RequestData.ReadUInt64();
 
             long position = context.Request.ReceiveBuff[0].Position;
 

@@ -52,6 +52,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             BufferManager  = new BufferManager(context);
             TextureManager = new TextureManager(context);
+
+            context.MemoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
         }
 
         /// <summary>
@@ -227,6 +229,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             if (state.QueryModified(MethodOffset.BlendIndependent,
+                                    MethodOffset.BlendConstant,
                                     MethodOffset.BlendStateCommon,
                                     MethodOffset.BlendEnableCommon,
                                     MethodOffset.BlendEnable,
@@ -256,7 +259,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             UpdateStorageBuffers();
 
-            BufferManager.CommitBindings();
+            BufferManager.CommitGraphicsBindings();
             TextureManager.CommitGraphicsBindings();
         }
 
@@ -391,8 +394,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private void UpdateDepthClampState(GpuState state)
         {
             ViewVolumeClipControl clip = state.Get<ViewVolumeClipControl>(MethodOffset.ViewVolumeClipControl);
-            _context.Renderer.Pipeline.SetDepthClamp((clip & ViewVolumeClipControl.DepthClampNear) != 0,
-                                                     (clip & ViewVolumeClipControl.DepthClampFar) != 0);
+            _context.Renderer.Pipeline.SetDepthClamp((clip & ViewVolumeClipControl.DepthClampDisabled) == 0);
         }
 
         /// <summary>
@@ -747,8 +749,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private void UpdateBlendState(GpuState state)
         {
             bool blendIndependent = state.Get<Boolean32>(MethodOffset.BlendIndependent);
+            ColorF blendConstant = state.Get<ColorF>(MethodOffset.BlendConstant);
 
-            for (int index = 0; index < 8; index++)
+            for (int index = 0; index < Constants.TotalRenderTargets; index++)
             {
                 BlendDescriptor descriptor;
 
@@ -759,6 +762,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     descriptor = new BlendDescriptor(
                         enable,
+                        blendConstant,
                         blend.ColorOp,
                         blend.ColorSrcFactor,
                         blend.ColorDstFactor,
@@ -773,6 +777,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     descriptor = new BlendDescriptor(
                         enable,
+                        blendConstant,
                         blend.ColorOp,
                         blend.ColorSrcFactor,
                         blend.ColorDstFactor,

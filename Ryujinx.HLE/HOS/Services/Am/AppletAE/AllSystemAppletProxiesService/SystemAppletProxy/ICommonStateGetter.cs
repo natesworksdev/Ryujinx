@@ -9,14 +9,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 {
     class ICommonStateGetter : IpcService
     {
-        private KEvent _displayResolutionChangeEvent;
+        private CpuBoostMode _cpuBoostMode  = CpuBoostMode.Disabled;
+        private bool         _vrModeEnabled = false;
 
-        private CpuBoostMode _cpuBoostMode = CpuBoostMode.Disabled;
-
-        public ICommonStateGetter(Horizon system)
-        {
-            _displayResolutionChangeEvent = new KEvent(system);
-        }
+        public ICommonStateGetter() { }
 
         [Command(0)]
         // GetEventHandle() -> handle<copy>
@@ -94,6 +90,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [Command(50)] // 3.0.0+
+        // IsVrModeEnabled() -> b8
+        public ResultCode IsVrModeEnabled(ServiceCtx context)
+        {
+            context.ResponseData.Write(_vrModeEnabled);
+
+            return ResultCode.Success;
+        }
+
         [Command(60)] // 3.0.0+
         // GetDefaultDisplayResolution() -> (u32, u32)
         public ResultCode GetDefaultDisplayResolution(ServiceCtx context)
@@ -108,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetDefaultDisplayResolutionChangeEvent() -> handle<copy>
         public ResultCode GetDefaultDisplayResolutionChangeEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_displayResolutionChangeEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(context.Device.System.DisplayResolutionChangeEvent.ReadableEvent, out int handle) != KernelResult.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
