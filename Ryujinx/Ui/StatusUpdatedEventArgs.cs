@@ -8,13 +8,15 @@ namespace Ryujinx.Ui
         public string HostStatus;
         public string GameStatus;
         public string GpuName;
+        public string DockedMode;
 
-        public StatusUpdatedEventArgs(bool vSyncEnabled, string hostStatus, string gameStatus, string gpuName)
+        public StatusUpdatedEventArgs(bool vSyncEnabled, string hostStatus, string gameStatus, string gpuName, string dockedMode)
         {
             VSyncEnabled = vSyncEnabled;
             HostStatus   = hostStatus;
             GameStatus   = gameStatus;
             GpuName      = gpuName;
+            DockedMode   = dockedMode;
         }
     }
 }
