@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Hid;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager

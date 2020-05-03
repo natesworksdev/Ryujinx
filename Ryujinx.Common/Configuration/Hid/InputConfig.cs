@@ -1,5 +1,3 @@
-using Ryujinx.Common.Hid;
-
 namespace Ryujinx.Common.Configuration.Hid
 {
     public class InputConfig

@@ -384,9 +384,9 @@ namespace Ryujinx.Ui
             foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
                 ControllerKeys   currentButton = 0;
-                JoystickPosition leftJoystick = new JoystickPosition();
+                JoystickPosition leftJoystick  = new JoystickPosition();
                 JoystickPosition rightJoystick = new JoystickPosition();
-                KeyboardInput?   hidKeyboard = null;
+                KeyboardInput?   hidKeyboard   = null;
 
                 int leftJoystickDx  = 0;
                 int leftJoystickDy  = 0;
@@ -475,7 +475,7 @@ namespace Ryujinx.Ui
 
                 gamepadInputs.Add(new GamepadInput
                 {
-                    PlayerId = inputConfig.PlayerIndex,
+                    PlayerId = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex,
                     Buttons  = currentButton,
                     LStick   = leftJoystick,
                     RStick   = rightJoystick

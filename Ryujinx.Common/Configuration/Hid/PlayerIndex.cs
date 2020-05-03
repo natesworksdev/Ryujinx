@@ -1,6 +1,6 @@
-namespace Ryujinx.Common.Hid
+namespace Ryujinx.Common.Configuration.Hid
 {
-    public enum PlayerIndex : int
+    public enum PlayerIndex : int // This enum was duplicated from Ryujinx.HLE.HOS.Services.Hid.PlayerIndex and should be kept identical
     {
         Player1  = 0,
         Player2  = 1,

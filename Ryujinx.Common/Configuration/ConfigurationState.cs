@@ -1,6 +1,5 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.Hid;
 using Ryujinx.Configuration.System;
@@ -483,7 +482,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-            
+
             if (configurationFileFormat.Version < 4)
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 4.");

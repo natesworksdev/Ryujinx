@@ -1,5 +1,4 @@
 using System;
-using Ryujinx.Common.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 

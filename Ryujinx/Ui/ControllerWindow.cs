@@ -6,7 +6,6 @@ using System.Reflection;
 using System.Threading;
 using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
-using Ryujinx.Common.Hid;
 using Ryujinx.Common.Utilities;
 using Ryujinx.HLE.FileSystem;
 
@@ -421,7 +420,7 @@ namespace Ryujinx.Ui
                     {
                         ToggleVsync = Key.Tab //TODO: Make this an option in the GUI
                     }
-                };;
+                };
             }
             
             if (_inputDevice.ActiveId.StartsWith("controller"))
@@ -497,7 +496,8 @@ namespace Ryujinx.Ui
                 };
             }
 
-            GtkDialog.CreateErrorDialog("Some fields entered where invalid and therefore your config was not saved.");
+            if (!_inputDevice.ActiveId.StartsWith("disabled"))
+                GtkDialog.CreateErrorDialog("Some fields entered where invalid and therefore your config was not saved.");
 
             return null;
         }
@@ -887,9 +887,11 @@ namespace Ryujinx.Ui
 
         private void SaveToggle_Activated(object sender, EventArgs args)
         {
-            if (_inputConfig == null)
+            InputConfig inputConfig = GetValues();
+
+            if (_inputConfig == null && inputConfig != null)
             {
-                ConfigurationState.Instance.Hid.InputConfig.Value.Add(GetValues());
+                ConfigurationState.Instance.Hid.InputConfig.Value.Add(inputConfig);
             }
             else
             {
@@ -897,11 +899,11 @@ namespace Ryujinx.Ui
                 {
                     ConfigurationState.Instance.Hid.InputConfig.Value.Remove(_inputConfig);
                 }
-                else
+                else if (inputConfig != null)
                 {
                     int index = ConfigurationState.Instance.Hid.InputConfig.Value.IndexOf(_inputConfig);        
-            
-                    ConfigurationState.Instance.Hid.InputConfig.Value[index] = GetValues();
+
+                    ConfigurationState.Instance.Hid.InputConfig.Value[index] = inputConfig;
                 }
             }
 

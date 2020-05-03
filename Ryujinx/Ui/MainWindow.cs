@@ -445,8 +445,8 @@ namespace Ryujinx.Ui
             device.Hid.Npads.AddControllers(ConfigurationState.Instance.Hid.InputConfig.Value.Select(inputConfig => 
                 new HLE.HOS.Services.Hid.ControllerConfig
                 {
-                    Player = inputConfig.PlayerIndex, 
-                    Type   = inputConfig.ControllerType
+                    Player = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex, 
+                    Type   = (HLE.HOS.Services.Hid.ControllerType)inputConfig.ControllerType
                 }
             ).ToArray());
 

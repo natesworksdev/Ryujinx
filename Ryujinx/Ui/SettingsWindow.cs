@@ -1,5 +1,4 @@
 using Gtk;
-using Ryujinx.Common.Hid;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
@@ -10,7 +9,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-
+using Ryujinx.Common.Configuration.Hid;
 using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui

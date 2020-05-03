@@ -1,5 +1,3 @@
-using Ryujinx.Common.Hid;
-
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     struct NpadStateHeader
