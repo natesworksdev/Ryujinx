@@ -15,7 +15,7 @@
         InvalidPath                                   = (6   << ErrorCodeShift) | ModuleId,
         AlreadyRegistered                             = (7   << ErrorCodeShift) | ModuleId,
         TitleNotFound                                 = (8   << ErrorCodeShift) | ModuleId,
-        ACI0TitleIdNotMatcinghRangeInACID             = (9   << ErrorCodeShift) | ModuleId,
+        ACI0TitleIdNotMatchingRangeInACID             = (9   << ErrorCodeShift) | ModuleId,
         InvalidVersionInNPDM                          = (10  << ErrorCodeShift) | ModuleId,
         InsufficientAddressSpace                      = (51  << ErrorCodeShift) | ModuleId,
         InsufficientNRO                               = (52  << ErrorCodeShift) | ModuleId,
