@@ -1,6 +1,7 @@
 namespace Ryujinx.Common.Configuration.Hid
 {
-    public enum PlayerIndex : int // This enum was duplicated from Ryujinx.HLE.HOS.Services.Hid.PlayerIndex and should be kept identical
+    // This enum was duplicated from Ryujinx.HLE.HOS.Services.Hid.PlayerIndex and should be kept identical
+    public enum PlayerIndex : int
     {
         Player1  = 0,
         Player2  = 1,
@@ -12,6 +13,6 @@ namespace Ryujinx.Common.Configuration.Hid
         Player8  = 7,
         Handheld = 8,
         Unknown  = 9,
-        Auto     = 10    // Shouldn't be used directly
+        Auto     = 10 // Shouldn't be used directly
     }
 }

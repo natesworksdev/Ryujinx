@@ -497,7 +497,9 @@ namespace Ryujinx.Ui
             }
 
             if (!_inputDevice.ActiveId.StartsWith("disabled"))
+            {
                 GtkDialog.CreateErrorDialog("Some fields entered where invalid and therefore your config was not saved.");
+            }
 
             return null;
         }

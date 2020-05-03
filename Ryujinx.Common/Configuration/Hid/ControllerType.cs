@@ -3,7 +3,8 @@ using System;
 namespace Ryujinx.Common.Configuration.Hid
 {
     [Flags]
-    public enum ControllerType : int // This enum was duplicated from Ryujinx.HLE.HOS.Services.Hid.PlayerIndex and should be kept identical
+    // This enum was duplicated from Ryujinx.HLE.HOS.Services.Hid.PlayerIndex and should be kept identical
+    public enum ControllerType : int
     {
         None,
         ProController  = 1 << 0,

@@ -9,6 +9,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Diagnostics;
 using System.IO;
@@ -445,8 +446,8 @@ namespace Ryujinx.Ui
             device.Hid.Npads.AddControllers(ConfigurationState.Instance.Hid.InputConfig.Value.Select(inputConfig => 
                 new HLE.HOS.Services.Hid.ControllerConfig
                 {
-                    Player = (HLE.HOS.Services.Hid.PlayerIndex)inputConfig.PlayerIndex, 
-                    Type   = (HLE.HOS.Services.Hid.ControllerType)inputConfig.ControllerType
+                    Player = (PlayerIndex)inputConfig.PlayerIndex, 
+                    Type   = (ControllerType)inputConfig.ControllerType
                 }
             ).ToArray());
 
