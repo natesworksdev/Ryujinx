@@ -1,17 +1,14 @@
-﻿using Gdk;
+﻿using ARMeilleure.Translation.PTC;
+using Gdk;
 using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
-using OpenTK.Platform;
 using Ryujinx.Configuration;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Services.Hid;
-using Ryujinx.Ui;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace Ryujinx.Ui
@@ -401,6 +398,14 @@ namespace Ryujinx.Ui
                 Gtk.Application.Invoke(delegate
                 {
                     HandleScreenState(keyboard);
+
+                    if (keyboard.IsKeyDown(OpenTK.Input.Key.Delete))
+                    {
+                        if (!ParentWindow.State.HasFlag(Gdk.WindowState.Fullscreen))
+                        {
+                            Ptc.Continue();
+                        }
+                    }
                 });
 
                 // Normal Input

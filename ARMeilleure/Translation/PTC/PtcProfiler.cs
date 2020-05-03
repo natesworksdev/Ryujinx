@@ -179,7 +179,8 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void Start()
         {
-            if (Ptc.State == PtcState.Enabled)
+            if (Ptc.State == PtcState.Enabled ||
+                Ptc.State == PtcState.Continuing)
             {
                 Enabled = true;
 

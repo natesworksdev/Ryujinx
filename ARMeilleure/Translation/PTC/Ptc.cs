@@ -521,18 +521,18 @@ namespace ARMeilleure.Translation.PTC
 
             (int funcsCount, int ProfiledFuncsCount) = ((int, int))state;
 
-            void WriteLog()
+            void PrintInfo() // TODO: Use Ryujinx.Common.Logging.
             {
                 Console.WriteLine($"{nameof(Logger)}: {funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate; {_rejitCount} functions rejited.");
             }
 
             do
             {
-                WriteLog();
+                PrintInfo();
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
-            WriteLog();
+            PrintInfo();
         }
 
         internal static void WriteInfoCodeReloc(long address, bool highCq, PtcInfo ptcInfo)
@@ -599,9 +599,18 @@ namespace ARMeilleure.Translation.PTC
             State = PtcState.Enabled;
         }
 
-        public static void Close()
+        public static void Continue()
         {
             if (State == PtcState.Enabled)
+            {
+                State = PtcState.Continuing;
+            }
+        }
+
+        public static void Close()
+        {
+            if (State == PtcState.Enabled ||
+                State == PtcState.Continuing)
             {
                 State = PtcState.Closing;
             }
