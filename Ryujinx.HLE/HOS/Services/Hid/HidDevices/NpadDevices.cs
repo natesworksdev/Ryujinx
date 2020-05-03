@@ -252,7 +252,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         }
 
         private void SetGamepadState(PlayerIndex player, ControllerKeys buttons,
-                    JoystickPosition leftJoystick, JoystickPosition rightJoystick)
+            JoystickPosition leftJoystick, JoystickPosition rightJoystick)
         {
             if (player == PlayerIndex.Auto)
             {

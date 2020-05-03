@@ -16,9 +16,9 @@ namespace Ryujinx.Ui
 {
     public class ControllerWindow : Window
     {
-        private PlayerIndex _playerIndex;
-        private InputConfig _inputConfig;
-        private bool _isWaitingForInput;
+        private PlayerIndex       _playerIndex;
+        private InputConfig       _inputConfig;
+        private bool              _isWaitingForInput;
         private VirtualFileSystem _virtualFileSystem;
 
 #pragma warning disable CS0649, IDE0044
@@ -127,6 +127,7 @@ namespace Ryujinx.Ui
             // Setup current values
             UpdateInputDeviceList();
             SetAvailableOptions();
+
             ClearValues();
             if (_inputDevice.ActiveId != null) SetCurrentValues();
         }
@@ -554,7 +555,7 @@ namespace Ryujinx.Ui
             for (int i = 0; i != joystickCapabilities.HatCount; i++)
             {
                 JoystickHatState hatState = joystickState.GetHat((JoystickHat)i);
-                string pos = null;
+                string           pos      = null;
 
                 if (hatState.IsUp)    pos = "Up";
                 if (hatState.IsDown)  pos = "Down";
@@ -707,7 +708,7 @@ namespace Ryujinx.Ui
             if (_inputDevice.ActiveId == "disabled" || _profile.ActiveId == null) return;
 
             InputConfig config = null;
-            int pos = _profile.Active;
+            int         pos    = _profile.Active;
 
             if (_profile.ActiveId == "default")
             {
@@ -854,9 +855,13 @@ namespace Ryujinx.Ui
                 string jsonString;
 
                 if (inputConfig is KeyboardConfig keyboardConfig)
+                {
                     jsonString = JsonHelper.Serialize(keyboardConfig, true);
+                }
                 else
+                {
                     jsonString = JsonHelper.Serialize(inputConfig as ControllerConfig, true);
+                }
 
                 File.WriteAllText(path, jsonString);
             }
