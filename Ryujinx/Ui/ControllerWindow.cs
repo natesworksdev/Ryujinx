@@ -9,6 +9,7 @@ using System.IO;
 using System.Reflection;
 using System.Text.Json;
 using System.Threading;
+
 using GUI = Gtk.Builder.ObjectAttribute;
 using Key = Ryujinx.Configuration.Hid.Key;
 
