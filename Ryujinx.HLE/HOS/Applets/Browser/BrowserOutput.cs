@@ -23,13 +23,13 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
 
         public BrowserOutput(BrowserOutputType type, ulong value)
         {
-            Type = type;
+            Type  = type;
             Value = BitConverter.GetBytes(value);
         }
 
         public BrowserOutput(BrowserOutputType type, bool value)
         {
-            Type = type;
+            Type  = type;
             Value = BitConverter.GetBytes(value);
         }
 

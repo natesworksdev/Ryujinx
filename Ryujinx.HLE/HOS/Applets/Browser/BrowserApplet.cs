@@ -13,20 +13,14 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
     {
         public event EventHandler AppletStateChanged;
 
-        private Horizon _system;
-
         private AppletSession _normalSession;
         private AppletSession _interactiveSession;
 
-        private AppletId _appletId;
         private CommonArguments _commonArguments;
         private List<BrowserArgument> _arguments;
         private ShimKind _shimKind;
 
-        public BrowserApplet(Horizon system)
-        {
-            _system = system;
-        }
+        public BrowserApplet(Horizon system) {}
 
         public ResultCode GetResult()
         {
@@ -45,7 +39,6 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
             ReadOnlySpan<byte> webArguments = _normalSession.Pop();
 
             (_shimKind, _arguments) = BrowserArgument.ParseArguments(webArguments);
-
 
             Logger.PrintStub(LogClass.ServiceAm, $"Web Arguments: {_arguments.Count}");
 
@@ -72,7 +65,6 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
                 _normalSession.Push(BuildResponseOld(result));
             }
 
-
             AppletStateChanged?.Invoke(this, null);
 
             return ResultCode.Success;
@@ -90,7 +82,6 @@ namespace Ryujinx.HLE.HOS.Applets.Browser
         }
         private byte[] BuildResponseNew(List<BrowserOutput> outputArguments)
         {
-
             using (MemoryStream stream = new MemoryStream())
             using (BinaryWriter writer = new BinaryWriter(stream))
             {

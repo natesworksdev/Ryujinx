@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    unsafe struct WebCommonReturnValue
+    public unsafe struct WebCommonReturnValue
     {
         public WebExitReason ExitReason;
         public uint          Padding;

@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    enum ShimKind : uint
+    public enum ShimKind : uint
     {
         Shop = 1,
         Login,

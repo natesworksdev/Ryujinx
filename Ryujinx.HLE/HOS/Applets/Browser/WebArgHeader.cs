@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    struct WebArgHeader
+    public struct WebArgHeader
     {
         public ushort   Count;
         public ushort   Padding;

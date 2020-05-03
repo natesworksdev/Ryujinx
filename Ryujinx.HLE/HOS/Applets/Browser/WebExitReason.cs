@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Applets.Browser
 {
-    enum WebExitReason : uint
+    public enum WebExitReason : uint
     {
         ExitButton,
         BackButton,
