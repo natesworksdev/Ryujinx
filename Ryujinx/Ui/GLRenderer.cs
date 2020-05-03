@@ -374,10 +374,10 @@ namespace Ryujinx.Ui
 
             if (IsFocused)
             {
-                KeyboardState keyboard = OpenTK.Input.Keyboard.GetState();
-
                 Gtk.Application.Invoke(delegate
                 {
+                    KeyboardState keyboard = OpenTK.Input.Keyboard.GetState();
+
                     HandleScreenState(keyboard);
 
                     if (keyboard.IsKeyDown(OpenTK.Input.Key.Delete))
