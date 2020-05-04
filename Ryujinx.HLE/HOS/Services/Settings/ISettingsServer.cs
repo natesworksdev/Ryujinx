@@ -439,7 +439,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         }
 
         [Command(7)] // 4.0.0+
-        // GetKeyCodeMap() -> (?)
+        // GetKeyCodeMap() -> buffer<nn::kpr::KeyCodeMap, 0x16>
         public ResultCode GetKeyCodeMap(ServiceCtx context)
         {
             if (context.Request.ReceiveBuff[0].Size != 0x1000)
