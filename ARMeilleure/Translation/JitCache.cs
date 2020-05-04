@@ -23,7 +23,7 @@ namespace ARMeilleure.Translation
         private static readonly object _locker = new object();
         private static bool _initialized;
 
-        public static void Initialize()
+        public static void Initialize(IJitMemoryAllocator allocator)
         {
             if (_initialized) return;
 
@@ -31,13 +31,13 @@ namespace ARMeilleure.Translation
             {
                 if (_initialized) return;
 
-                _jitRegion = new ReservedRegion(CacheSize);
+                _jitRegion = new ReservedRegion(allocator, CacheSize);
 
                 /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     _jitRegion.ExpandIfNeeded((ulong)PageSize);
 
-                    JitUnwindWindows.InstallFunctionTableHandler(_basePointer, CacheSize);
+                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize);
 
                     // The first page is used for the table based SEH structs.
                     _offset = PageSize;
@@ -83,18 +83,14 @@ namespace ARMeilleure.Translation
 
             if (fullPagesSize != 0)
             {
-                IntPtr funcPtr = _jitRegion.Pointer + pageStart;
-
-                MemoryManagement.Reprotect(funcPtr, (ulong)fullPagesSize, MemoryProtection.ReadAndExecute);
+                _jitRegion.Block.MapAsRx((ulong)pageStart, (ulong)fullPagesSize);
             }
 
             int remaining = endOffs - pageEnd;
 
             if (remaining != 0)
             {
-                IntPtr funcPtr = _jitRegion.Pointer + pageEnd;
-
-                MemoryManagement.Reprotect(funcPtr, (ulong)remaining, MemoryProtection.ReadWriteExecute);
+                _jitRegion.Block.MapAsRwx((ulong)pageEnd, (ulong)remaining);
             }
         }
 

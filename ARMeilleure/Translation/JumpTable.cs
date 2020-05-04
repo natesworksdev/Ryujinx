@@ -1,5 +1,4 @@
 ﻿using ARMeilleure.Memory;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,6 +8,8 @@ using System.Threading;
 
 namespace ARMeilleure.Translation
 {
+    using PTC;
+
     class JumpTable
     {
         // The jump table is a block of (guestAddress, hostAddress) function mappings.
@@ -60,10 +61,10 @@ namespace ARMeilleure.Translation
         public ConcurrentDictionary<ulong, TranslatedFunction> Targets => _targets;
         public ConcurrentDictionary<ulong, LinkedList<int>> Dependants => _dependants;
 
-        public JumpTable()
+        public JumpTable(IJitMemoryAllocator allocator)
         {
-            _jumpRegion    = new ReservedRegion(JumpTableByteSize);
-            _dynamicRegion = new ReservedRegion(DynamicTableByteSize);
+            _jumpRegion    = new ReservedRegion(allocator, JumpTableByteSize);
+            _dynamicRegion = new ReservedRegion(allocator, DynamicTableByteSize);
 
             _targets    = new ConcurrentDictionary<ulong, TranslatedFunction>();
             _dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
@@ -176,7 +177,7 @@ namespace ARMeilleure.Translation
 
         public void ExpandIfNeededDynamicTable(int entries)
         {
-            Debug.Assert(entries >= 1);
+            Debug.Assert(entries > 0);
 
             if (entries < DynamicTableSize)
             {

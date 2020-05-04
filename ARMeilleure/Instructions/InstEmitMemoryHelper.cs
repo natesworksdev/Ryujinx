@@ -1,6 +1,5 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.Memory;
 using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
 using System;
@@ -13,6 +12,9 @@ namespace ARMeilleure.Instructions
 {
     static class InstEmitMemoryHelper
     {
+        private const int PageBits = 12;
+        private const int PageMask = (1 << PageBits) - 1;
+
         private enum Extension
         {
             Zx,
@@ -281,30 +283,34 @@ namespace ARMeilleure.Instructions
 
         private static Operand EmitAddressCheck(ArmEmitterContext context, Operand address, int size)
         {
-            long addressCheckMask = ~(context.Memory.AddressSpaceSize - 1);
+            ulong addressCheckMask = ~((1UL << context.Memory.AddressSpaceBits) - 1);
 
             addressCheckMask |= (1u << size) - 1;
 
-            return context.BitwiseAnd(address, Const(address.Type, addressCheckMask));
+            return context.BitwiseAnd(address, Const(address.Type, (long)addressCheckMask));
         }
 
-        private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblFallbackPath)
+        private static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblSlowPath)
         {
-            Operand pte = Ptc.State == PtcState.Disabled
-                ? Const(context.Memory.PageTable.ToInt64())
-                : Const(context.Memory.PageTable.ToInt64(), true, Ptc.PageTableIndex);
+            int ptLevelBits = context.Memory.AddressSpaceBits - 12; // 12 = Number of page bits.
+            int ptLevelSize = 1 << ptLevelBits;
+            int ptLevelMask = ptLevelSize - 1;
 
-            int bit = MemoryManager.PageBits;
+            Operand pte = Ptc.State == PtcState.Disabled
+                ? Const(context.Memory.PageTablePointer.ToInt64())
+                : Const(context.Memory.PageTablePointer.ToInt64(), true, Ptc.PageTablePointerIndex);
+
+            int bit = PageBits;
 
             do
             {
                 Operand addrPart = context.ShiftRightUI(address, Const(bit));
 
-                bit += context.Memory.PtLevelBits;
+                bit += ptLevelBits;
 
                 if (bit < context.Memory.AddressSpaceBits)
                 {
-                    addrPart = context.BitwiseAnd(addrPart, Const(addrPart.Type, context.Memory.PtLevelMask));
+                    addrPart = context.BitwiseAnd(addrPart, Const(addrPart.Type, ptLevelMask));
                 }
 
                 Operand pteOffset = context.ShiftLeft(addrPart, Const(3));
@@ -320,20 +326,16 @@ namespace ARMeilleure.Instructions
             }
             while (bit < context.Memory.AddressSpaceBits);
 
-            Operand hasFlagSet = context.BitwiseAnd(pte, Const((long)MemoryManager.PteFlagsMask));
+            context.BranchIfTrue(lblSlowPath, context.ICompareLess(pte, Const(0L)));
 
-            context.BranchIfTrue(lblFallbackPath, hasFlagSet);
-
-            Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, MemoryManager.PageMask));
+            Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, PageMask));
 
             if (pageOffset.Type == OperandType.I32)
             {
                 pageOffset = context.ZeroExtend32(OperandType.I64, pageOffset);
             }
 
-            Operand physAddr = context.Add(pte, pageOffset);
-
-            return physAddr;
+            return context.Add(pte, pageOffset);
         }
 
         private static void EmitReadIntFallback(ArmEmitterContext context, Operand address, int rt, int size)

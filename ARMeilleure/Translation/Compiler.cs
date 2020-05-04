@@ -18,14 +18,14 @@ namespace ARMeilleure.Translation
             CompilerOptions  options,
             PtcInfo          ptcInfo = null)
         {
-            CompiledFunction func = CompileAndGetCf(cfg, argTypes, retType, options, ptcInfo);
+            CompiledFunction func = Compile(cfg, argTypes, retType, options, ptcInfo);
 
             IntPtr codePtr = JitCache.Map(func);
 
             return Marshal.GetDelegateForFunctionPointer<T>(codePtr);
         }
 
-        public static CompiledFunction CompileAndGetCf(
+        public static CompiledFunction Compile(
             ControlFlowGraph cfg,
             OperandType[]    argTypes,
             OperandType      retType,
