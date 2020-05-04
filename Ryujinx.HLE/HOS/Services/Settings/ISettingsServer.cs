@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             context.Memory.Write((ulong)context.Request.ReceiveBuff[0].Position, keyCodeMap);
 
-            if (version == 2 && context.Device.System.State.DesiredKeyboardLayout == (long)KeyboardLayout.Default)
+            if (version == 1 && context.Device.System.State.DesiredKeyboardLayout == (long)KeyboardLayout.Default)
             {
                 context.Memory.Write((ulong)context.Request.ReceiveBuff[0].Position, (byte)0x01);
             }
