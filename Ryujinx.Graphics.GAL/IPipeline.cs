@@ -66,6 +66,8 @@ namespace Ryujinx.Graphics.GAL
 
         void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer);
 
+        void SetUserClipDistance(int index, bool enableClip);
+
         void SetVertexAttribs(VertexAttribDescriptor[] vertexAttribs);
         void SetVertexBuffers(VertexBufferDescriptor[] vertexBuffers);
 
@@ -73,5 +75,9 @@ namespace Ryujinx.Graphics.GAL
 
         void TextureBarrier();
         void TextureBarrierTiled();
+
+        bool TryHostConditionalRendering(ICounterEvent value, ulong compare, bool isEqual);
+        bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual);
+        void EndHostConditionalRendering();
     }
 }

@@ -1,3 +1,4 @@
+using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using System;
@@ -86,9 +87,11 @@ namespace ARMeilleure.Translation
             {
                 IntPtr funcPtr = Delegates.GetDelegateFuncPtr(info);
 
-                OperandType retType = GetOperandType(info.ReturnType);
+                OperandType returnType = GetOperandType(info.ReturnType);
 
-                return Call(Const(funcPtr.ToInt64()), retType, callArgs);
+                Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
+
+                return Call(Const(funcPtr.ToInt64()), returnType, callArgs);
             }
             else
             {
@@ -96,9 +99,11 @@ namespace ARMeilleure.Translation
 
                 IntPtr funcPtr = Delegates.GetDelegateFuncPtrByIndex(index);
 
-                OperandType retType = GetOperandType(info.ReturnType);
+                OperandType returnType = GetOperandType(info.ReturnType);
 
-                return Call(Const(funcPtr.ToInt64(), true, index), retType, callArgs);
+                Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
+
+                return Call(Const(funcPtr.ToInt64(), true, index), returnType, callArgs);
             }
         }
 
