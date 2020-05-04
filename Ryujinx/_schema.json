@@ -484,7 +484,7 @@
       "type": "boolean",
       "title": "Enable Persistent Translation Cache",
       "description": "Enables or disables translation cache persistency",
-      "default": true,
+      "default": false,
       "examples": [
         true,
         false

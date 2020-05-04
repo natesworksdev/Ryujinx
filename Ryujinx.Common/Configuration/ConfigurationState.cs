@@ -1,4 +1,4 @@
-using Ryujinx.Common;
+﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.Hid;
@@ -392,7 +392,7 @@ namespace Ryujinx.Configuration
             EnableDiscordIntegration.Value         = true;
             Graphics.EnableVsync.Value             = true;
             System.EnableMulticoreScheduling.Value = true;
-            System.EnablePtc.Value                 = true;
+            System.EnablePtc.Value                 = false;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.IgnoreMissingServices.Value     = false;
