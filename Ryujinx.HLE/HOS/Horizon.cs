@@ -14,6 +14,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -37,15 +38,13 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-using TimeServiceManager = Ryujinx.HLE.HOS.Services.Time.TimeManager;
-using NsoExecutable      = Ryujinx.HLE.Loaders.Executables.NsoExecutable;
-using JsonHelper         = Ryujinx.Common.Utilities.JsonHelper;
-
 using static LibHac.Fs.ApplicationSaveDataManagement;
-using Ryujinx.HLE.HOS.Kernel;
 
 namespace Ryujinx.HLE.HOS
 {
+    using TimeServiceManager = Services.Time.TimeManager;
+    using JsonHelper         = Common.Utilities.JsonHelper;
+
     public class Horizon : IDisposable
     {
         internal const int HidSize  = 0x40000;
