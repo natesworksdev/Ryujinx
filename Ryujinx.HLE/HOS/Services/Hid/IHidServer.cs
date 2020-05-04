@@ -110,6 +110,16 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
+        [Command(32)]
+        // SendKeyboardLockKeyEvent(?) -> ?
+        public ResultCode SendKeyboardLockKeyEvent(ServiceCtx context)
+        {
+            long appletResourceUserId = context.RequestData.ReadInt64();
+            Logger.PrintStub(LogClass.ServiceHid, new { appletResourceUserId });
+
+            return ResultCode.Success;
+        }
+
         [Command(40)]
         // AcquireXpadIdEventHandle(ulong XpadId) -> nn::sf::NativeHandle
         public ResultCode AcquireXpadIdEventHandle(ServiceCtx context)
