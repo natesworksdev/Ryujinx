@@ -112,5 +112,22 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             return GetEnumerator();
         }
+
+        public override string GetDumpRepr(int indentationLevel=0)
+        {
+            string dump = "";
+
+            dump += "".PadLeft(4 * indentationLevel);
+            dump += Enum.GetName(typeof(AstBlockType), Type) + "\n";
+
+            // TODO: Condition
+
+            foreach (IAstNode node in _nodes)
+            {
+                dump += node.GetDumpRepr(indentationLevel+1);
+            }
+
+            return dump;
+        }
     }
 }

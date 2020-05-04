@@ -1,3 +1,4 @@
+using System;
 using static Ryujinx.Graphics.Shader.StructuredIr.AstHelper;
 
 namespace Ryujinx.Graphics.Shader.StructuredIr
@@ -30,6 +31,18 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Source      = source;
 
             AddDef(destination, this);
+        }
+
+        public override string GetDumpRepr(int indentationLevel)
+        {
+            string dump = "";
+
+            dump += "".PadLeft(4 * indentationLevel);
+            dump += "AstAssignment\n";
+            dump += Destination.GetDumpRepr(indentationLevel + 1);
+            dump += _source.GetDumpRepr(indentationLevel + 1);
+
+            return dump;
         }
     }
 }

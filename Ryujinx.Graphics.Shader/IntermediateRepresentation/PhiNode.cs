@@ -90,5 +90,26 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 
             _sources[index].Operand = source;
         }
+
+        public string GetDumpRepr()
+        {
+            string dump = "";
+
+            dump += "".PadLeft(4);
+            dump += "Phi:\n";
+            dump += _dest.GetDumpRepr();
+
+            dump += "".PadLeft(8);
+            dump += "----\n";
+
+            foreach (PhiSource source in _sources)
+            {
+                dump += "".PadLeft(8);
+                dump += $"Block 0x{source.Block.GetHashCode():x}\n";
+                dump += source.Operand.GetDumpRepr();
+            }
+
+            return dump;
+        }
     }
 }

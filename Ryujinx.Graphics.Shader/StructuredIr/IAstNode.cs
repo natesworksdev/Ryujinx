@@ -7,5 +7,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         AstBlock Parent { get; set; }
 
         LinkedListNode<IAstNode> LLNode { get; set; }
+
+        string GetDumpRepr(int indentationLevel);
     }
 }

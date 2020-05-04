@@ -297,17 +297,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             ReadOnlySpan<byte> code = _context.MemoryAccessor.GetSpan(gpuVa, MaxProgramSize);
 
-            program = Translator.Translate(code, callbacks, DefaultFlags | TranslationFlags.Compute);
+            program = Translator.Translate(code, callbacks, DefaultFlags | TranslationFlags.Compute, _dumper);
 
             int[] codeCached = MemoryMarshal.Cast<byte, int>(code.Slice(0, program.Size)).ToArray();
-
-            _dumper.Dump(code, compute: true, out string fullPath, out string codePath);
-
-            if (fullPath != null && codePath != null)
-            {
-                program.Prepend("// " + codePath);
-                program.Prepend("// " + fullPath);
-            }
 
             return new CachedShader(program, codeCached);
         }
@@ -358,37 +350,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 ReadOnlySpan<byte> codeA = _context.MemoryAccessor.GetSpan(gpuVaA, MaxProgramSize);
                 ReadOnlySpan<byte> codeB = _context.MemoryAccessor.GetSpan(gpuVa,  MaxProgramSize);
 
-                program = Translator.Translate(codeA, codeB, callbacks, DefaultFlags);
+                program = Translator.Translate(codeA, codeB, callbacks, DefaultFlags, _dumper);
 
                 // TODO: We should also take "codeA" into account.
                 codeCached = MemoryMarshal.Cast<byte, int>(codeB.Slice(0, program.Size)).ToArray();
-
-                _dumper.Dump(codeA, compute: false, out string fullPathA, out string codePathA);
-                _dumper.Dump(codeB, compute: false, out string fullPathB, out string codePathB);
-
-                if (fullPathA != null && fullPathB != null && codePathA != null && codePathB != null)
-                {
-                    program.Prepend("// " + codePathB);
-                    program.Prepend("// " + fullPathB);
-                    program.Prepend("// " + codePathA);
-                    program.Prepend("// " + fullPathA);
-                }
             }
             else
             {
                 ReadOnlySpan<byte> code = _context.MemoryAccessor.GetSpan(gpuVa, MaxProgramSize);
 
-                program = Translator.Translate(code, callbacks, DefaultFlags);
+                program = Translator.Translate(code, callbacks, DefaultFlags, _dumper);
 
                 codeCached = MemoryMarshal.Cast<byte, int>(code.Slice(0, program.Size)).ToArray();
-
-                _dumper.Dump(code, compute: false, out string fullPath, out string codePath);
-
-                if (fullPath != null && codePath != null)
-                {
-                    program.Prepend("// " + codePath);
-                    program.Prepend("// " + fullPath);
-                }
             }
 
             ulong address = _context.MemoryManager.Translate(gpuVa);

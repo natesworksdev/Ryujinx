@@ -57,5 +57,19 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         {
             return Operations.Last?.Value;
         }
+
+        public string GetDumpRepr()
+        {
+            string dump = "";
+
+            dump += $"BasicBlock (0x{GetHashCode():x})\n";
+
+            foreach (INode node in Operations)
+            {
+                dump += node.GetDumpRepr();
+            }
+
+            return dump;
+        }
     }
 }

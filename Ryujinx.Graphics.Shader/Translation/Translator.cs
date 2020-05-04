@@ -5,6 +5,8 @@ using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation.Optimizations;
 using System;
 using System.Collections.Generic;
+using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 
@@ -38,24 +40,39 @@ namespace Ryujinx.Graphics.Shader.Translation
             return code.Slice(0, headerSize + (int)endAddress);
         }
 
-        public static ShaderProgram Translate(ReadOnlySpan<byte> code, TranslatorCallbacks callbacks, TranslationFlags flags)
+        public static ShaderProgram Translate(ReadOnlySpan<byte> code, TranslatorCallbacks callbacks, TranslationFlags flags, ShaderDumper dumper)
         {
             Operation[] ops = DecodeShader(code, callbacks, flags, out ShaderConfig config, out int size);
 
-            return Translate(ops, config, size);
+            if (dumper != null)
+            {
+                dumper.BeginTranslation();
+                dumper.DumpStage0(code, flags.HasFlag(TranslationFlags.Compute), 0);
+            }
+
+            return Translate(ops, config, size, dumper);
         }
 
-        public static ShaderProgram Translate(ReadOnlySpan<byte> vpACode, ReadOnlySpan<byte> vpBCode, TranslatorCallbacks callbacks, TranslationFlags flags)
+        public static ShaderProgram Translate(ReadOnlySpan<byte> vpACode, ReadOnlySpan<byte> vpBCode, TranslatorCallbacks callbacks, TranslationFlags flags, ShaderDumper dumper)
         {
             Operation[] vpAOps = DecodeShader(vpACode, callbacks, flags, out _, out _);
             Operation[] vpBOps = DecodeShader(vpBCode, callbacks, flags, out ShaderConfig config, out int sizeB);
 
-            return Translate(Combine(vpAOps, vpBOps), config, sizeB);
+            if (dumper != null)
+            {
+                dumper.BeginTranslation();
+                dumper.DumpStage0(vpACode, flags.HasFlag(TranslationFlags.Compute), 1);
+                dumper.DumpStage0(vpBCode, flags.HasFlag(TranslationFlags.Compute), 2);
+            }
+
+            return Translate(Combine(vpAOps, vpBOps), config, sizeB, dumper);
         }
 
-        private static ShaderProgram Translate(Operation[] ops, ShaderConfig config, int size)
+        private static ShaderProgram Translate(Operation[] ops, ShaderConfig config, int size, ShaderDumper dumper)
         {
             BasicBlock[] blocks = ControlFlowGraph.MakeCfg(ops);
+
+            dumper?.Dump("Stage1_0_Cfg", DumpBasicBlocks(blocks));
 
             if (blocks.Length > 0)
             {
@@ -65,12 +82,20 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                 Ssa.Rename(blocks);
 
+                dumper?.Dump("Stage1_1_Ssa", DumpBasicBlocks(blocks));
+
                 Optimizer.RunPass(blocks, config);
 
+                dumper?.Dump("Stage1_2_Optimzed", DumpBasicBlocks(blocks));
+
                 Lowering.RunPass(blocks, config);
+
+                dumper?.Dump("Stage1_3_Lowered", DumpBasicBlocks(blocks));
             }
 
             StructuredProgramInfo sInfo = StructuredProgram.MakeStructuredProgram(blocks, config);
+
+            dumper?.Dump("Stage2_StructuredIr", sInfo.MainBlock.GetDumpRepr(0));
 
             GlslProgram program = GlslGenerator.Generate(sInfo, config);
 
@@ -82,6 +107,8 @@ namespace Ryujinx.Graphics.Shader.Translation
                 sInfo.UsesInstanceId);
 
             string glslCode = program.Code;
+
+            dumper?.Dump("Stage2_Glsl", glslCode);
 
             return new ShaderProgram(spInfo, config.Stage, glslCode, size);
         }
@@ -299,6 +326,18 @@ namespace Ryujinx.Graphics.Shader.Translation
                    operand.Type == OperandType.Attribute &&
                    operand.Value >= AttributeConsts.UserAttributeBase &&
                    operand.Value <  AttributeConsts.UserAttributeEnd;
+        }
+
+        private static string DumpBasicBlocks(BasicBlock[] blocks)
+        {
+            string dump = "";
+
+            foreach (BasicBlock bb in blocks)
+            {
+                dump += bb.GetDumpRepr();
+            }
+
+            return dump;
         }
     }
 }

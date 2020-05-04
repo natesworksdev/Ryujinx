@@ -1,3 +1,5 @@
+using System;
+
 namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
 {
     class Operation : INode
@@ -101,6 +103,36 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             }
 
             _sources = new Operand[] { source };
+        }
+
+        public string GetDumpRepr()
+        {
+            string dump = "";
+
+            dump += "".PadLeft(4);
+
+            Instruction tmp = (Instruction)((long)Inst & 0xffff);
+            dump += "Operation " + Enum.GetName(typeof(Instruction), tmp) + "\n";
+
+            if (Dest != null)
+            {
+                dump += Dest.GetDumpRepr();
+            }
+            else
+            {
+                dump += "".PadLeft(8);
+                dump += "(null)\n";
+            }
+
+            dump += "".PadLeft(8);
+            dump += "----\n";
+
+            foreach (Operand source in _sources)
+            {
+                dump += source.GetDumpRepr();
+            }
+
+            return dump;
         }
     }
 }

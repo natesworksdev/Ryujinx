@@ -75,5 +75,15 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         {
             return BitConverter.Int32BitsToSingle(Value);
         }
+
+        public string GetDumpRepr()
+        {
+            string dump = "";
+
+            dump += "".PadLeft(8);
+            dump += "Operand: " + Enum.GetName(typeof(OperandType), Type) + $" 0x{Value:x}\n";
+
+            return dump;
+        }
     }
 }

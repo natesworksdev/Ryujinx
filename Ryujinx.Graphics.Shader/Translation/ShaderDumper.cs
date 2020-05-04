@@ -1,23 +1,31 @@
 using Ryujinx.Graphics.Shader.Translation;
+using Ryujinx.Graphics.Shader.StructuredIr;
+using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System;
 using System.IO;
 
-namespace Ryujinx.Graphics.Gpu.Shader
+namespace Ryujinx.Graphics.Shader.Translation
 {
     /// <summary>
     /// Shader dumper, writes binary shader code to disk.
     /// </summary>
-    class ShaderDumper
+    public class ShaderDumper
     {
+        public static string ShadersDumpPath = null;
+
         private string _runtimeDir;
-        private string _dumpPath;
         private int    _dumpIndex;
 
         public int CurrentDumpIndex => _dumpIndex;
 
         public ShaderDumper()
         {
-            _dumpIndex = 1;
+            _dumpIndex = 0;
+        }
+
+        public void BeginTranslation()
+        {
+            _dumpIndex++;
         }
 
         /// <summary>
@@ -25,26 +33,16 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// </summary>
         /// <param name="code">Code to be dumped</param>
         /// <param name="compute">True for compute shader code, false for graphics shader code</param>
-        /// <param name="fullPath">Output path for the shader code with header included</param>
-        /// <param name="codePath">Output path for the shader code without header</param>
-        public void Dump(ReadOnlySpan<byte> code, bool compute, out string fullPath, out string codePath)
+        /// <param name="combineIndex">0 if not a combined shader, 1 or 2 if combined.</param>
+        public void DumpStage0(ReadOnlySpan<byte> code, bool compute, int combineIndex)
         {
-            _dumpPath = GraphicsConfig.ShadersDumpPath;
-
-            if (string.IsNullOrWhiteSpace(_dumpPath))
+            if (!IsEnabled())
             {
-                fullPath = null;
-                codePath = null;
-
                 return;
             }
 
-            string fileName = "Shader" + _dumpIndex.ToString("d4") + ".bin";
-
-            fullPath = Path.Combine(FullDir(), fileName);
-            codePath = Path.Combine(CodeDir(), fileName);
-
-            _dumpIndex++;
+            string fullPath = GetPath("Stage0_BinaryFull", ".bin");
+            string codePath = GetPath("Stage0_BinaryCode", ".bin");
 
             code = Translator.ExtractCode(code, compute, out int headerSize);
 
@@ -74,22 +72,40 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
         }
 
-        /// <summary>
-        /// Returns the output directory for shader code with header.
-        /// </summary>
-        /// <returns>Directory path</returns>
-        private string FullDir()
+        public void Dump(string stageName, string dump)
         {
-            return CreateAndReturn(Path.Combine(DumpDir(), "Full"));
+            if (!IsEnabled())
+            {
+                return;
+            }
+
+            string path = GetPath(stageName, ".txt");
+
+            using (FileStream file = File.Create(path))
+            using (StreamWriter writer = new StreamWriter(file))
+            {
+                writer.Write(dump);
+            }
         }
 
-        /// <summary>
-        /// Returns the output directory for shader code without header.
+        private bool IsEnabled()
+        {
+            return !string.IsNullOrWhiteSpace(ShadersDumpPath);
+        }
+
+        /// <Summary>
+        /// Returns the output file path for a shader stage.
         /// </summary>
         /// <returns>Directory path</returns>
-        private string CodeDir()
+        private string GetPath(string dumpType, string fileExt, string extraInfo = "")
         {
-            return CreateAndReturn(Path.Combine(DumpDir(), "Code"));
+            string dir = Path.Combine(DumpDir(), dumpType);
+
+            Directory.CreateDirectory(dir);
+
+            string fileName = "Shader" + _dumpIndex.ToString("d4") + extraInfo + fileExt;
+
+            return Path.Combine(dir, fileName);
         }
 
         /// <summary>
@@ -104,7 +120,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                 do
                 {
-                    _runtimeDir = Path.Combine(_dumpPath, "Dumps" + index.ToString("d2"));
+                    _runtimeDir = Path.Combine(ShadersDumpPath, "Dumps" + index.ToString("d2"));
 
                     index++;
                 }
@@ -114,18 +130,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
 
             return _runtimeDir;
-        }
-
-        /// <summary>
-        /// Creates a new specified directory if needed.
-        /// </summary>
-        /// <param name="dir">The directory to create</param>
-        /// <returns>The same directory passed to the method</returns>
-        private static string CreateAndReturn(string dir)
-        {
-            Directory.CreateDirectory(dir);
-
-            return dir;
         }
     }
 }

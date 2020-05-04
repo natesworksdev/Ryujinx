@@ -9,5 +9,7 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
         Operand GetSource(int index);
 
         void SetSource(int index, Operand operand);
+
+        string GetDumpRepr();
     }
 }

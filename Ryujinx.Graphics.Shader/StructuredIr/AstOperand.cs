@@ -1,3 +1,4 @@
+using System;
 using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 
@@ -44,6 +45,18 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         {
             Type  = type;
             Value = value;
+        }
+
+        public override string GetDumpRepr(int indentationLevel)
+        {
+            string dump = "";
+
+            dump += "".PadLeft(4 * indentationLevel);
+            dump += "AstOperand: ";
+            dump += Enum.GetName(typeof(OperandType), Type);
+            dump += $"{Value:x}\n";
+
+            return dump;
         }
     }
 }

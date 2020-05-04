@@ -348,7 +348,7 @@ namespace Ryujinx.Ui
 
                 // TODO: Move this somewhere else + reloadable?
                 Graphics.Gpu.GraphicsConfig.MaxAnisotropy   = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-                Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+                Graphics.Shader.Translation.ShaderDumper.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
 
                 if (Directory.Exists(path))
                 {
