@@ -17,7 +17,6 @@ namespace Ryujinx.Ui
             HostStatus   = hostStatus;
             GameStatus   = gameStatus;
             GpuName      = gpuName;
-            
         }
     }
 }
