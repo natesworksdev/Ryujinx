@@ -25,7 +25,7 @@ namespace ARMeilleure.Translation.PTC
         private const string TitleIdTextDefault = "0000000000000000";
         private const string DisplayVersionDefault = "0";
 
-        internal const int PageTableIndex = -1; // Must be a negative value.
+        internal const int PageTablePointerIndex = -1; // Must be a negative value.
         internal const int JumpPointerIndex = -2; // Must be a negative value.
         internal const int DynamicPointerIndex = -3; // Must be a negative value.
 
@@ -421,7 +421,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 ulong imm;
 
-                if (relocEntry.Index == PageTableIndex)
+                if (relocEntry.Index == PageTablePointerIndex)
                 {
                     imm = (ulong)pageTable.ToInt64();
                 }
@@ -459,7 +459,7 @@ namespace ARMeilleure.Translation.PTC
             return tFunc;
         }
 
-        internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, MemoryManager memory, JumpTable jumpTable)
+        internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable)
         {
             if (PtcProfiler.ProfiledFuncs.Count != 0)
             {
