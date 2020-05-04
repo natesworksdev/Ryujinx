@@ -326,10 +326,7 @@ namespace Ryujinx.Ui
                     _device.ProcessFrame();
                 }
 
-                string dockedMode = "Unknown";
-
-                if (ConfigurationState.Instance.System.EnableDockedMode == true)  dockedMode = "Docked";
-                if (ConfigurationState.Instance.System.EnableDockedMode == false) dockedMode = "Handheld";
+                string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
 
                 if (_ticks >= _ticksPerFrame)
                 {
@@ -338,11 +335,11 @@ namespace Ryujinx.Ui
                     _device.Statistics.RecordSystemFrameTime();
 
                     StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
-                        _device.EnableDeviceVsync, 
-                        $"Host: {_device.Statistics.GetSystemFrameRate():00.00} FPS", 
+                        _device.EnableDeviceVsync,
+                        dockedMode,
+                        $"Host: {_device.Statistics.GetSystemFrameRate():00.00} FPS",
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
-                        $"GPU:  {_renderer.GpuVendor}",
-                        dockedMode));
+                        $"GPU:  {_renderer.GpuVendor}"));
 
                     _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                 }

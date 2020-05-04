@@ -494,7 +494,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="_hostStatus">
+                      <object class="GtkLabel" id="_dockedMode">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
@@ -519,7 +519,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="_gameStatus">
+                      <object class="GtkLabel" id="_hostStatus">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
@@ -544,7 +544,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="_gpuName">
+                      <object class="GtkLabel" id="_gameStatus">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
@@ -557,7 +557,7 @@
                         <property name="position">6</property>
                       </packing>
                     </child>
-                  <child>
+                    <child>
                       <object class="GtkSeparator">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
@@ -569,7 +569,7 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLabel" id="_dockedMode">
+                      <object class="GtkLabel" id="_gpuName">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
