@@ -39,6 +39,7 @@ namespace Ryujinx.Ui
 #pragma warning disable IDE0044
         [GUI] MenuItem _openModDir;
         [GUI] MenuItem _openSaveDeviceDir;
+        [GUI] MenuItem _openSaveUserDir;
         [GUI] MenuItem _openSaveBcatDir;
         [GUI] MenuItem _manageTitleUpdates;
         [GUI] MenuItem _extractRomFs;
@@ -55,6 +56,7 @@ namespace Ryujinx.Ui
             builder.Autoconnect(this);
 
             _openModDir.Activated += OpenModDir_Clicked;
+            _gameTableStore = gameTableStore;
             _rowIter           = rowIter;
             _virtualFileSystem = virtualFileSystem;
             _controlData       = controlData;

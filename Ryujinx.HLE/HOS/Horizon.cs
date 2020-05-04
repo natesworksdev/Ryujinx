@@ -38,7 +38,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using NxStaticObject = Ryujinx.HLE.Loaders.Executables.NxStaticObject;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 
@@ -118,7 +117,6 @@ namespace Ryujinx.HLE.HOS
 
             State = new SystemStateMgr();
 
-            _kipId = InitialKipId;
             // Note: This is not really correct, but with HLE of services, the only memory
             // region used that is used is Application, so we can use the other ones for anything.
             KMemoryRegionManager region = KernelContext.MemoryRegions[(int)MemoryRegion.NvServices];
@@ -140,7 +138,7 @@ namespace Ryujinx.HLE.HOS
             iirsPageList.AddRange(iirsPa, IirsSize / KMemoryManager.PageSize);
             timePageList.AddRange(timePa, TimeSize / KMemoryManager.PageSize);
 
-            HidSharedMem = new KSharedMemory(this, hidPageList, 0, 0, MemoryPermission.Read);
+            HidSharedMem = new KSharedMemory(KernelContext, hidPageList, 0, 0, MemoryPermission.Read);
             FontSharedMem = new KSharedMemory(KernelContext, fontPageList, 0, 0, MemoryPermission.Read);
             IirsSharedMem = new KSharedMemory(KernelContext, iirsPageList, 0, 0, MemoryPermission.Read);
 
@@ -555,7 +553,6 @@ namespace Ryujinx.HLE.HOS
                 Device.FileSystem.SetRomFs(layeredStorage.AsStream(FileAccess.Read));
             }
 
-            TitleIs64Bit = metaData.Is64Bit;
             LoadExeFs(codeFs);
 
             if (controlNca != null)
@@ -591,7 +588,7 @@ namespace Ryujinx.HLE.HOS
             LocalFileSystem modRootFs = new LocalFileSystem(lfsPath);
 
             DirectoryEntry dirEntry = default;
-            modRootFs.OpenDirectory(out IDirectory directory, "/", OpenDirectoryMode.Directory).ThrowIfFailure();
+            modRootFs.OpenDirectory(out IDirectory directory, "/".ToU8Span(), OpenDirectoryMode.Directory).ThrowIfFailure();
 
             while (true)
             {
@@ -604,7 +601,7 @@ namespace Ryujinx.HLE.HOS
                 string modRomFsPath = $"/{modName}/romfs";
 
                 // Check if the mod has a romfs directory
-                rc = modRootFs.GetEntryType(out DirectoryEntryType type, modRomFsPath);
+                rc = modRootFs.GetEntryType(out DirectoryEntryType type, modRomFsPath.ToU8Span());
                 if (rc.IsFailure() || type != DirectoryEntryType.Directory) continue;
 
                 Logger.PrintInfo(LogClass.Loader, $"Loading romfs mod \"{modName}\".");
@@ -635,6 +632,7 @@ namespace Ryujinx.HLE.HOS
         private void LoadExeFs(IFileSystem codeFs)
         {
             Npdm metaData = OpenNpdm(codeFs);
+            TitleIs64Bit = metaData.Is64Bit;
 
             List<IExecutable> staticObjects = new List<IExecutable>();
 
@@ -672,7 +670,7 @@ namespace Ryujinx.HLE.HOS
 
         private Npdm OpenNpdm(IFileSystem codeFs)
         {
-            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm", OpenMode.Read);
+            Result result = codeFs.OpenFile(out IFile npdmFile, "/main.npdm".ToU8Span(), OpenMode.Read);
             using (npdmFile)
             {
                 if (ResultFs.PathNotFound.Includes(result))
