@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         }
 
         [Command(32)]
-        // SendKeyboardLockKeyEvent(?) -> ?
+        // SendKeyboardLockKeyEvent(nn::applet::AppletResourceUserId, pid) -> handle<copy>
         public ResultCode SendKeyboardLockKeyEvent(ServiceCtx context)
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
