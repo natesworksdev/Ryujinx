@@ -3,6 +3,10 @@ using System;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
+    /// <summary>
+    /// Represents a program composed of one or more shader stages (for graphics shaders),
+    /// or a single shader (for compute shaders).
+    /// </summary>
     class ShaderBundle : IDisposable
     {
         /// <summary>

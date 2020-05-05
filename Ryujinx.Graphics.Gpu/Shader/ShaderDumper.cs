@@ -11,8 +11,15 @@ namespace Ryujinx.Graphics.Gpu.Shader
         private string _runtimeDir;
         private string _dumpPath;
 
+        /// <summary>
+        /// Current index of the shader dump binary file.
+        /// This is incremented after each save, in order to give unique names to the files.
+        /// </summary>
         public int CurrentDumpIndex { get; private set; }
 
+        /// <summary>
+        /// Creates a new instance of the shader dumper.
+        /// </summary>
         public ShaderDumper()
         {
             CurrentDumpIndex = 1;
