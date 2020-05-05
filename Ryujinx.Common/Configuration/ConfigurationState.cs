@@ -330,7 +330,7 @@ namespace Ryujinx.Configuration
                 LoggingFilteredClasses    = Logger.FilteredClasses,
                 EnableFileLog             = Logger.EnableFileLog,
                 SystemLanguage            = System.Language,
-                RegionCode                = System.Region,
+                SystemRegion              = System.Region,
                 SystemTimeZone            = System.TimeZone,
                 SystemTimeOffset          = System.SystemTimeOffset,
                 DockedMode                = System.EnableDockedMode,
@@ -469,7 +469,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 2.");
 
-                configurationFileFormat.RegionCode = Region.USA;
+                configurationFileFormat.SystemRegion = Region.USA;
 
                 configurationFileUpdated = true;
             }
@@ -592,7 +592,7 @@ namespace Ryujinx.Configuration
             Logger.FilteredClasses.Value           = configurationFileFormat.LoggingFilteredClasses;
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
             System.Language.Value                  = configurationFileFormat.SystemLanguage;
-            System.Region.Value                    = configurationFileFormat.RegionCode;
+            System.Region.Value                    = configurationFileFormat.SystemRegion;
             System.TimeZone.Value                  = configurationFileFormat.SystemTimeZone;
             System.SystemTimeOffset.Value          = configurationFileFormat.SystemTimeOffset;
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;

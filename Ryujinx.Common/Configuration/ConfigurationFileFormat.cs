@@ -80,7 +80,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Change System Region
         /// </summary>
-        public Region RegionCode { get; set; }
+        public Region SystemRegion { get; set; }
 
         /// <summary>
         /// Change System TimeZone
