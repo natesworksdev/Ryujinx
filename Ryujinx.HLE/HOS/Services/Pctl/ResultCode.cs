@@ -9,6 +9,6 @@
 
         FreeCommunicationDisabled = (101 << ErrorCodeShift) | ModuleId,
         InvalidPid                = (131 << ErrorCodeShift) | ModuleId,
-        InvalidUnknownFlag        = (133 << ErrorCodeShift) | ModuleId
+        PermissionDenied          = (133 << ErrorCodeShift) | ModuleId
     }
 }

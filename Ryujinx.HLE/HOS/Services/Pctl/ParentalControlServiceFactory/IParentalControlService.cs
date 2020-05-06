@@ -6,14 +6,14 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
 {
     class IParentalControlService : IpcService
     {
-        private int   _unknownFlag;
+        private int   _permissionFlag;
         private ulong _titleId;
         private bool  _freeCommunicationEnabled;
         private int[] _ratingAge;
 
-        public IParentalControlService(ServiceCtx context, bool withInitialize, int unknownFlag)
+        public IParentalControlService(ServiceCtx context, bool withInitialize, int permissionFlag)
         {
-            _unknownFlag = unknownFlag;
+            _permissionFlag = permissionFlag;
 
             if (withInitialize)
             {
@@ -25,16 +25,16 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         // Initialize()
         public ResultCode Initialize(ServiceCtx context)
         {
-            if ((_unknownFlag & 0x8001) == 0)
+            if ((_permissionFlag & 0x8001) == 0)
             {
-                return ResultCode.InvalidUnknownFlag;
+                return ResultCode.PermissionDenied;
             }
 
             ResultCode resultCode = ResultCode.InvalidPid;
 
             if (context.Process.Pid != 0)
             {
-                if ((_unknownFlag & 0x40) == 0)
+                if ((_permissionFlag & 0x40) == 0)
                 {
                     ulong titleId = ApplicationLaunchProperty.GetByPid(context).TitleId;
 
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 {
                     // TODO: Service store some private fields in another static object.
 
-                    if ((_unknownFlag & 0x8040) == 0)
+                    if ((_permissionFlag & 0x8040) == 0)
                     {
                         // TODO: Service store TitleId and FreeCommunicationEnabled in another static object.
                         //       When it's done it signal an event in this static object.

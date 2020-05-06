@@ -8,11 +8,11 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
     [Service("pctl:s", 0x838E)]
     class IParentalControlServiceFactory : IpcService
     {
-        private int _unknownFlag;
+        private int _permissionFlag;
 
-        public IParentalControlServiceFactory(ServiceCtx context, int unknownFlag)
+        public IParentalControlServiceFactory(ServiceCtx context, int permissionFlag)
         {
-            _unknownFlag = unknownFlag;
+            _permissionFlag = permissionFlag;
         }
 
         [Command(0)]
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
         public ResultCode CreateService(ServiceCtx context)
         {
             // TODO: Should pass the pid.
-            MakeObject(context, new IParentalControlService(context, true, _unknownFlag));
+            MakeObject(context, new IParentalControlService(context, true, _permissionFlag));
 
             return ResultCode.Success;
         }
@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl
         public ResultCode CreateServiceWithoutInitialize(ServiceCtx context)
         {
             // TODO: Should pass the pid.
-            MakeObject(context, new IParentalControlService(context, false, _unknownFlag));
+            MakeObject(context, new IParentalControlService(context, false, _permissionFlag));
 
             return ResultCode.Success;
         }
