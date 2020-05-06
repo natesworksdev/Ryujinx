@@ -236,6 +236,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableKeyboard { get; private set; }
 
             /// <summary>
+            /// Hotkey Keyboard Bindings
+            /// </summary>
+            public ReactiveObject<KeyboardHotkeys> Hotkeys { get; private set; }
+
+            /// <summary>
             /// Input device configuration.
             /// NOTE: This ReactiveObject won't issue an event when the List has elements added or removed.
             /// TODO: Implement a ReactiveList class.
@@ -245,6 +250,7 @@ namespace Ryujinx.Configuration
             public HidSection()
             {
                 EnableKeyboard = new ReactiveObject<bool>();
+                Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
                 InputConfig    = new ReactiveObject<List<InputConfig>>();
             }
         }
@@ -387,6 +393,7 @@ namespace Ryujinx.Configuration
                 EnableCustomTheme         = Ui.EnableCustomTheme,
                 CustomThemePath           = Ui.CustomThemePath,
                 EnableKeyboard            = Hid.EnableKeyboard,
+                Hotkeys                   = Hid.Hotkeys,
                 KeyboardConfig            = keyboardConfigList,
                 ControllerConfig          = controllerConfigList
             };
@@ -435,7 +442,11 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = false;
             Ui.CustomThemePath.Value               = "";
             Hid.EnableKeyboard.Value               = false;
-
+            
+            Hid.Hotkeys.Value     = new KeyboardHotkeys
+            {
+                ToggleVsync = Key.Tab
+            };
             Hid.InputConfig.Value = new List<InputConfig>
             {
                 new KeyboardConfig
@@ -476,10 +487,6 @@ namespace Ryujinx.Configuration
                         ButtonZr    = Key.O,
                         ButtonSl    = Key.PageUp,
                         ButtonSr    = Key.PageDown
-                    },
-                    Hotkeys        = new KeyboardHotkeys
-                    {
-                        ToggleVsync = Key.Tab
                     }
                 }
             };
@@ -578,10 +585,6 @@ namespace Ryujinx.Configuration
                             ButtonZr    = Key.O,
                             ButtonSl    = Key.Unbound,
                             ButtonSr    = Key.Unbound
-                        },
-                        Hotkeys        = new KeyboardHotkeys
-                        {
-                            ToggleVsync = Key.Tab
                         }
                     }
                 };
@@ -620,6 +623,11 @@ namespace Ryujinx.Configuration
                 {
                     SortColumnId  = 0,
                     SortAscending = false
+                };
+
+                configurationFileFormat.Hotkeys = new KeyboardHotkeys
+                {
+                    ToggleVsync = Key.Tab
                 };
 
                 configurationFileUpdated = true;
@@ -675,6 +683,7 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
+            Hid.Hotkeys.Value                      = configurationFileFormat.Hotkeys;
             Hid.InputConfig.Value                  = inputConfig;
 
             if (configurationFileUpdated)

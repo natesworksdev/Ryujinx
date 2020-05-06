@@ -43,6 +43,9 @@
   "enable_custom_theme": false,
   "custom_theme_path": "",
   "enable_keyboard": false,
+  "hotkeys": {
+    "toggle_vsync": "Tab"
+  },
   "keyboard_config": [
     {
       "index": 0,
@@ -79,9 +82,6 @@
         "button_zr": "O",
         "button_sl": "Unbound",
         "button_sr": "Unbound"
-      },
-      "hotkeys": {
-        "toggle_vsync": "Tab"
       }
     }
   ],

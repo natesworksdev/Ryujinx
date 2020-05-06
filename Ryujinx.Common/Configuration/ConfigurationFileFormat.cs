@@ -163,6 +163,11 @@ namespace Ryujinx.Configuration
         public bool EnableKeyboard { get; set; }
 
         /// <summary>
+        /// Hotkey Keyboard Bindings
+        /// </summary>
+        public KeyboardHotkeys Hotkeys { get; set; }
+
+        /// <summary>
         /// Keyboard control bindings
         /// </summary>
         public List<KeyboardConfig> KeyboardConfig { get; set; }
