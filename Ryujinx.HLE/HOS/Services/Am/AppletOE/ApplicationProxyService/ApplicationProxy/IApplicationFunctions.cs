@@ -23,11 +23,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
     {
         private KEvent _gpuErrorDetectedSystemEvent;
         private KEvent _friendInvitationStorageChannelEvent;
+        private KEvent _notificationStorageChannelEvent;
 
         public IApplicationFunctions(Horizon system)
         {
             _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
             _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
+            _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
         }
 
         [Command(1)]
@@ -314,6 +316,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             }
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(friendInvitationStorageChannelEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [Command(150)] // 9.0.0+
+        // GetNotificationStorageChannelEvent() -> handle<copy>
+        public ResultCode GetNotificationStorageChannelEvent(ServiceCtx context)
+        {
+            if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out int notificationStorageChannelEventHandle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(notificationStorageChannelEventHandle);
 
             return ResultCode.Success;
         }
