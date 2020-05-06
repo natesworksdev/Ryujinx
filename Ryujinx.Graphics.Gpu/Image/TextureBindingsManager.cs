@@ -1,8 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
-using System;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -11,6 +9,9 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TextureBindingsManager
     {
+        private const int HandleHigh = 16;
+        private const int HandleMask = (1 << HandleHigh) - 1;
+
         private GpuContext _context;
 
         private bool _isCompute;
@@ -114,7 +115,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             _samplerPool = new SamplerPool(_context, address, maximumId);
-
             _samplerIndex = samplerIndex;
         }
 
@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         address = bufferManager.GetGraphicsUniformBufferAddress(stageIndex, binding.CbufSlot);
                     }
 
-                    packedId = MemoryMarshal.Cast<byte, int>(_context.PhysicalMemory.GetSpan(address + (ulong)binding.CbufOffset * 4, 4))[0];
+                    packedId = _context.PhysicalMemory.Read<int>(address + (ulong)binding.CbufOffset * 4);
                 }
                 else
                 {
@@ -324,9 +324,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 address = bufferManager.GetGraphicsUniformBufferAddress(stageIndex, textureBufferIndex);
             }
 
-            address += (uint)wordOffset * 4;
+            int handle = _context.PhysicalMemory.Read<int>(address + (ulong)(wordOffset & HandleMask) * 4);
 
-            return BitConverter.ToInt32(_context.PhysicalMemory.GetSpan(address, 4));
+            if (wordOffset >> HandleHigh != 0)
+            {
+                handle |= _context.PhysicalMemory.Read<int>(address + (ulong)(wordOffset >> HandleHigh) * 4);
+            }
+
+            return handle;
         }
 
         /// <summary>
