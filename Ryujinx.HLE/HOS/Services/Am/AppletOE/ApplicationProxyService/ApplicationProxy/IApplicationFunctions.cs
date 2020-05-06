@@ -22,10 +22,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
     class IApplicationFunctions : IpcService
     {
         private KEvent _gpuErrorDetectedSystemEvent;
+        private KEvent _friendInvitationStorageChannelEvent;
 
         public IApplicationFunctions(Horizon system)
         {
-            _gpuErrorDetectedSystemEvent = new KEvent(system.KernelContext);
+            _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
+            _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
         }
 
         [Command(1)]
@@ -298,6 +300,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // NOTE: This is used by "sdk" NSO during applet-application initialization. 
             //       A seperate thread is setup where event-waiting is handled. 
             //       When the Event is signaled, official sw will assert.
+
+            return ResultCode.Success;
+        }
+
+        [Command(140)] // 9.0.0+
+        // GetFriendInvitationStorageChannelEvent() -> handle<copy>
+        public ResultCode GetFriendInvitationStorageChannelEvent(ServiceCtx context)
+        {
+            if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out int gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
+            {
+                throw new InvalidOperationException("Out of handles!");
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(gpuErrorDetectedSystemEventHandle);
 
             return ResultCode.Success;
         }
