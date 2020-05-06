@@ -14,7 +14,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private PtcInfo _ptcInfo;
 
-        //public int StreamOffset => (int)_stream.Length;
+        public int StreamOffset => (int)_stream.Length;
 
         public AllocationResult AllocResult { get; }
 

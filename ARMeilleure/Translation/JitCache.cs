@@ -1,7 +1,7 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.Memory;
 using System;
-//using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
@@ -18,7 +18,7 @@ namespace ARMeilleure.Translation
         private static ReservedRegion _jitRegion;
         private static int _offset;
 
-        //private static readonly List<JitCacheEntry> _cacheEntries = new List<JitCacheEntry>();
+        private static readonly List<JitCacheEntry> _cacheEntries = new List<JitCacheEntry>();
 
         private static readonly object _locker = new object();
         private static bool _initialized;
@@ -33,7 +33,7 @@ namespace ARMeilleure.Translation
 
                 _jitRegion = new ReservedRegion(allocator, CacheSize);
 
-                /*if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
                     _jitRegion.ExpandIfNeeded((ulong)PageSize);
 
@@ -41,7 +41,7 @@ namespace ARMeilleure.Translation
 
                     // The first page is used for the table based SEH structs.
                     _offset = PageSize;
-                }*/
+                }
 
                 _initialized = true;
             }
@@ -63,7 +63,7 @@ namespace ARMeilleure.Translation
 
                 ReprotectRange(funcOffset, code.Length);
 
-                //Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
+                Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
 
                 return funcPtr;
             }
@@ -112,12 +112,12 @@ namespace ARMeilleure.Translation
             return allocOffset;
         }
 
-        /*private static void Add(JitCacheEntry entry)
+        private static void Add(JitCacheEntry entry)
         {
             _cacheEntries.Add(entry);
-        }*/
+        }
 
-        /*public static bool TryFind(int offset, out JitCacheEntry entry)
+        public static bool TryFind(int offset, out JitCacheEntry entry)
         {
             lock (_locker)
             {
@@ -137,6 +137,6 @@ namespace ARMeilleure.Translation
             entry = default;
 
             return false;
-        }*/
+        }
     }
 }

@@ -1,4 +1,5 @@
 using ARMeilleure.CodeGen;
+using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Memory;
 using System;
 using System.Buffers.Binary;
@@ -334,7 +335,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IntPtr pageTable, JumpTable jumpTable)
+        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IntPtr pageTablePointer, JumpTable jumpTable)
         {
             Debug.Assert(funcs.Count == 0);
 
@@ -358,10 +359,12 @@ namespace ARMeilleure.Translation.PTC
 
                         if (infoEntry.RelocEntriesCount != 0)
                         {
-                            PatchCode(code, GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount), pageTable, jumpTable);
+                            PatchCode(code, GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount), pageTablePointer, jumpTable);
                         }
 
-                        funcs.TryAdd((ulong)infoEntry.Address, FastTranslate(code, infoEntry.HighCq));
+                        TranslatedFunction func = FastTranslate(code, new UnwindInfo(), infoEntry.HighCq); // TODO: Add stack unwinding stuffs support.
+
+                        funcs.AddOrUpdate((ulong)infoEntry.Address, func, (key, oldFunc) => func.HighCq && !oldFunc.HighCq ? func : oldFunc);
                     }
                 }
 
@@ -415,7 +418,7 @@ namespace ARMeilleure.Translation.PTC
             return relocEntries;
         }
 
-        private static void PatchCode(Span<byte> code, RelocEntry[] relocEntries, IntPtr pageTable, JumpTable jumpTable)
+        private static void PatchCode(Span<byte> code, RelocEntry[] relocEntries, IntPtr pageTablePointer, JumpTable jumpTable)
         {
             foreach (RelocEntry relocEntry in relocEntries)
             {
@@ -423,7 +426,7 @@ namespace ARMeilleure.Translation.PTC
 
                 if (relocEntry.Index == PageTablePointerIndex)
                 {
-                    imm = (ulong)pageTable.ToInt64();
+                    imm = (ulong)pageTablePointer.ToInt64();
                 }
                 else if (relocEntry.Index == JumpPointerIndex)
                 {
@@ -446,9 +449,9 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static TranslatedFunction FastTranslate(byte[] code, bool highCq)
+        private static TranslatedFunction FastTranslate(byte[] code, UnwindInfo unwindInfo, bool highCq)
         {
-            CompiledFunction cFunc = new CompiledFunction(code);
+            CompiledFunction cFunc = new CompiledFunction(code, unwindInfo);
 
             IntPtr codePtr = JitCache.Map(cFunc);
 
@@ -468,7 +471,7 @@ namespace ARMeilleure.Translation.PTC
 
                 ThreadPool.QueueUserWorkItem(Logger, (funcs.Count, PtcProfiler.ProfiledFuncs.Count));
 
-                ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount / 2 };
+                ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
 
                 Parallel.ForEach(PtcProfiler.ProfiledFuncs, parallelOptions, (item, state) =>
                 {
@@ -523,7 +526,9 @@ namespace ARMeilleure.Translation.PTC
 
             void PrintInfo() // TODO: Use Ryujinx.Common.Logging.
             {
-                Console.WriteLine($"{nameof(Logger)}: {funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate; {_rejitCount} functions rejited.");
+                string message = $"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited";
+
+                Console.WriteLine($"{'|', 14} Ptc.Logger: {message}");
             }
 
             do
