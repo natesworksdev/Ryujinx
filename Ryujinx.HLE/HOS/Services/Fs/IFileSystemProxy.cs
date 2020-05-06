@@ -374,15 +374,29 @@ namespace Ryujinx.HLE.HOS.Services.Fs
 
             NcaContentType contentType = NcaContentType.Data;
 
-            StorageId installedStorage =
-                context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
+            StorageId installedStorage = context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
 
             if (installedStorage == StorageId.None)
             {
                 contentType = NcaContentType.PublicData;
 
-                installedStorage =
-                    context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
+                installedStorage = context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
+            }
+
+            // For nca embedded in XCI
+            if (installedStorage == StorageId.GameCard)
+            {
+                string contentPath = context.Device.System.ContentManager.GetInstalledContentPath(titleId, storageId, contentType);
+
+                if (!string.IsNullOrWhiteSpace(contentPath))
+                {
+                    var nca = context.Device.System.ContentManager.GetGameCardNca(contentPath);
+
+                    var dataStorage = nca.OpenStorage(NcaSectionType.Data, context.Device.System.FsIntegrityCheckLevel);
+                    MakeObject(context, new FileSystemProxy.IStorage(dataStorage));
+
+                    return ResultCode.Success;
+                }
             }
 
             if (installedStorage != StorageId.None)
