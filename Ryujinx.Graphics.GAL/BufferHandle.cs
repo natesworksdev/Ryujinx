@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.GAL
 {
+    [StructLayout(LayoutKind.Sequential, Size = 8)]
     public struct BufferHandle : IEquatable<BufferHandle>
     {
         private readonly ulong _value;
