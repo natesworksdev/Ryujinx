@@ -326,6 +326,12 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int handle = _context.PhysicalMemory.Read<int>(address + (ulong)(wordOffset & HandleMask) * 4);
 
+            // The "wordOffset" (which is really the immediate value used on texture instructions on the shader)
+            // is a 13-bit value. However, in order to also support separate samplers and textures (which uses
+            // bindless textures on the shader), we extend it with another value on the higher 16 bits with
+            // another offset for the sampler.
+            // The shader translator has code to detect separate texture and sampler uses with a bindless texture,
+            // turn that into a regular texture access and produce those special handles with values on the higher 16 bits.
             if (wordOffset >> HandleHigh != 0)
             {
                 handle |= _context.PhysicalMemory.Read<int>(address + (ulong)(wordOffset >> HandleHigh) * 4);
