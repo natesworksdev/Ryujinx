@@ -2,6 +2,7 @@ using Ryujinx.Graphics.Shader.IntermediateRepresentation;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+
 using static Ryujinx.Graphics.Shader.IntermediateRepresentation.OperandHelper;
 using static Ryujinx.Graphics.Shader.Translation.GlobalMemory;
 
