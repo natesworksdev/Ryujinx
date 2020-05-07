@@ -1,6 +1,5 @@
 using Ryujinx.Common.Logging;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -15,14 +14,15 @@ namespace Ryujinx.HLE.Loaders.ExePatchers
 
         public IPSwitchPatcher(StreamReader reader)
         {
-            string header = reader.ReadLine().Trim();
+            string header = reader.ReadLine();
             if (header == null || !header.StartsWith(BidHeader))
             {
+                Logger.PrintError(LogClass.Loader, "IPSwitch:    Malformed PCHTXT file. Skipping...");
                 return;
             }
 
             _reader = reader;
-            BuildId = header.Substring(BidHeader.Length);
+            BuildId = header.Substring(BidHeader.Length).TrimEnd();
         }
 
         private enum Token
@@ -125,6 +125,19 @@ namespace Ryujinx.HLE.Loaders.ExePatchers
             return bytes;
         }
 
+        // Auto base discovery
+        private static bool ParseInt(string str, out int value)
+        {
+            if (str[0] == '0' && (str[1] == 'x' || str[1] == 'X'))
+            {
+                return Int32.TryParse(str.Substring(2), System.Globalization.NumberStyles.HexNumber, null, out value);
+            }
+            else
+            {
+                return Int32.TryParse(str, System.Globalization.NumberStyles.Integer, null, out value);
+            }
+        }
+
         private MemPatch Parse()
         {
             if (_reader == null)
@@ -154,7 +167,7 @@ namespace Ryujinx.HLE.Loaders.ExePatchers
                 {
                     continue;
                 }
-                else if (line.StartsWith("#"))
+                else if (line.StartsWith('#'))
                 {
                     Print(line);
                 }
@@ -180,17 +193,20 @@ namespace Ryujinx.HLE.Loaders.ExePatchers
                         continue;
                     }
 
-                    if (tokens[1] == "offset_shift" && tokens.Length == 3 &&
-                        Int32.TryParse(tokens[2], System.Globalization.NumberStyles.HexNumber, null, out int shift))
+                    if (tokens[1] == "offset_shift")
                     {
-                        offset_shift = shift;
+                        if (tokens.Length != 3 || !ParseInt(tokens[2], out offset_shift))
+                        {
+                            ParseWarn();
+                            continue;
+                        }
                     }
                     else if (tokens[1] == "print_values")
                     {
                         printValues = true;
                     }
                 }
-                else if (line.StartsWith("@"))
+                else if (line.StartsWith('@'))
                 {
                     // Ignore
                 }
