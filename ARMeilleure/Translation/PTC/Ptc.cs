@@ -1,5 +1,6 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
+using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using System;
 using System.Buffers.Binary;
@@ -35,6 +36,7 @@ namespace ARMeilleure.Translation.PTC
         private static readonly MemoryStream _infosStream;
         private static readonly MemoryStream _codesStream;
         private static readonly MemoryStream _relocsStream;
+        private static readonly MemoryStream _unwindInfosStream;
 
         private static readonly BinaryWriter _infosWriter;
 
@@ -67,6 +69,7 @@ namespace ARMeilleure.Translation.PTC
             _infosStream = new MemoryStream();
             _codesStream = new MemoryStream();
             _relocsStream = new MemoryStream();
+            _unwindInfosStream = new MemoryStream();
 
             _infosWriter = new BinaryWriter(_infosStream, EncodingCache.UTF8NoBOM, true);
 
@@ -138,6 +141,7 @@ namespace ARMeilleure.Translation.PTC
             _infosStream.SetLength(0L);
             _codesStream.SetLength(0L);
             _relocsStream.SetLength(0L);
+            _unwindInfosStream.SetLength(0L);
         }
 
         private static void Load()
@@ -206,10 +210,12 @@ namespace ARMeilleure.Translation.PTC
                         byte[] infosBuf = new byte[header.InfosLen];
                         byte[] codesBuf = new byte[header.CodesLen];
                         byte[] relocsBuf = new byte[header.RelocsLen];
+                        byte[] unwindInfosBuf = new byte[header.UnwindInfosLen];
 
                         stream.Read(infosBuf, 0, header.InfosLen);
                         stream.Read(codesBuf, 0, header.CodesLen);
                         stream.Read(relocsBuf, 0, header.RelocsLen);
+                        stream.Read(unwindInfosBuf, 0, header.UnwindInfosLen);
 
                         try
                         {
@@ -229,6 +235,7 @@ namespace ARMeilleure.Translation.PTC
                             _infosStream.Write(infosBuf, 0, header.InfosLen);
                             _codesStream.Write(codesBuf, 0, header.CodesLen);
                             _relocsStream.Write(relocsBuf, 0, header.RelocsLen);
+                            _unwindInfosStream.Write(unwindInfosBuf, 0, header.UnwindInfosLen);
                         }
                         catch
                         {
@@ -263,6 +270,7 @@ namespace ARMeilleure.Translation.PTC
                 header.InfosLen = headerReader.ReadInt32();
                 header.CodesLen = headerReader.ReadInt32();
                 header.RelocsLen = headerReader.ReadInt32();
+                header.UnwindInfosLen = headerReader.ReadInt32();
 
                 return header;
             }
@@ -289,6 +297,7 @@ namespace ARMeilleure.Translation.PTC
                 _infosStream.WriteTo(stream);
                 _codesStream.WriteTo(stream);
                 _relocsStream.WriteTo(stream);
+                _unwindInfosStream.WriteTo(stream);
 
                 _binaryFormatter.Serialize(stream, PtcJumpTable);
 
@@ -332,6 +341,7 @@ namespace ARMeilleure.Translation.PTC
                 headerWriter.Write((int)_infosStream.Length); // Header.InfosLen
                 headerWriter.Write((int)_codesStream.Length); // Header.CodesLen
                 headerWriter.Write((int)_relocsStream.Length); // Header.RelocsLen
+                headerWriter.Write((int)_unwindInfosStream.Length); // Header.UnwindInfosLen
             }
         }
 
@@ -341,15 +351,18 @@ namespace ARMeilleure.Translation.PTC
 
             if ((int)_infosStream.Length != 0 &&
                 (int)_codesStream.Length != 0 &&
-                (int)_relocsStream.Length != 0)
+                (int)_relocsStream.Length != 0 &&
+                (int)_unwindInfosStream.Length != 0)
             {
                 _infosStream.Seek(0L, SeekOrigin.Begin);
                 _codesStream.Seek(0L, SeekOrigin.Begin);
                 _relocsStream.Seek(0L, SeekOrigin.Begin);
+                _unwindInfosStream.Seek(0L, SeekOrigin.Begin);
 
                 using (BinaryReader infosReader = new BinaryReader(_infosStream, EncodingCache.UTF8NoBOM, true))
                 using (BinaryReader codesReader = new BinaryReader(_codesStream, EncodingCache.UTF8NoBOM, true))
                 using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
+                using (BinaryReader unwindInfosReader = new BinaryReader(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
                 {
                     for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Stride; i++) // infosEntriesCount
                     {
@@ -359,10 +372,14 @@ namespace ARMeilleure.Translation.PTC
 
                         if (infoEntry.RelocEntriesCount != 0)
                         {
-                            PatchCode(code, GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount), pageTablePointer, jumpTable);
+                            RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
+
+                            PatchCode(code, relocEntries, pageTablePointer, jumpTable);
                         }
 
-                        TranslatedFunction func = FastTranslate(code, new UnwindInfo(), infoEntry.HighCq); // TODO: Add stack unwinding stuffs support.
+                        UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
+
+                        TranslatedFunction func = FastTranslate(code, unwindInfo, infoEntry.HighCq);
 
                         funcs.AddOrUpdate((ulong)infoEntry.Address, func, (key, oldFunc) => func.HighCq && !oldFunc.HighCq ? func : oldFunc);
                     }
@@ -370,7 +387,8 @@ namespace ARMeilleure.Translation.PTC
 
                 if (_infosStream.Position < _infosStream.Length ||
                     _codesStream.Position < _codesStream.Length ||
-                    _relocsStream.Position < _relocsStream.Length)
+                    _relocsStream.Position < _relocsStream.Length ||
+                    _unwindInfosStream.Position < _unwindInfosStream.Length)
                 {
                     throw new Exception("Could not reach the end of one or more memory streams.");
                 }
@@ -449,6 +467,27 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
+        private static UnwindInfo ReadUnwindInfo(BinaryReader unwindInfosReader)
+        {
+            int pushEntriesLength = unwindInfosReader.ReadInt32();
+
+            UnwindPushEntry[] pushEntries = new UnwindPushEntry[pushEntriesLength];
+
+            for (int i = 0; i < pushEntriesLength; i++)
+            {
+                int index = unwindInfosReader.ReadInt32();
+                int type = unwindInfosReader.ReadInt32();
+                int streamEndOffset = unwindInfosReader.ReadInt32();
+
+                pushEntries[i] = new UnwindPushEntry(index, (RegisterType)type, streamEndOffset);
+            }
+
+            int prologueSize = unwindInfosReader.ReadInt32();
+            int fixedAllocSize = unwindInfosReader.ReadInt32();
+
+            return new UnwindInfo(pushEntries, prologueSize, fixedAllocSize);
+        }
+
         private static TranslatedFunction FastTranslate(byte[] code, UnwindInfo unwindInfo, bool highCq)
         {
             CompiledFunction cFunc = new CompiledFunction(code, unwindInfo);
@@ -471,9 +510,9 @@ namespace ARMeilleure.Translation.PTC
 
                 ThreadPool.QueueUserWorkItem(Logger, (funcs.Count, PtcProfiler.ProfiledFuncs.Count));
 
-                ParallelOptions parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount };
+                int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
 
-                Parallel.ForEach(PtcProfiler.ProfiledFuncs, parallelOptions, (item, state) =>
+                Parallel.ForEach(PtcProfiler.ProfiledFuncs, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
                 {
                     ulong itemKey = item.Key;
 
@@ -555,6 +594,9 @@ namespace ARMeilleure.Translation.PTC
 
                 // WriteReloc.
                 ptcInfo.RelocStream.WriteTo(_relocsStream);
+
+                // WriteUnwindInfo.
+                ptcInfo.UnwindInfoStream.WriteTo(_unwindInfosStream);
             }
         }
 
@@ -587,6 +629,7 @@ namespace ARMeilleure.Translation.PTC
             public int InfosLen;
             public int CodesLen;
             public int RelocsLen;
+            public int UnwindInfosLen;
         }
 
         private struct InfoEntry
@@ -645,6 +688,7 @@ namespace ARMeilleure.Translation.PTC
                 _infosStream.Dispose();
                 _codesStream.Dispose();
                 _relocsStream.Dispose();
+                _unwindInfosStream.Dispose();
             }
         }
     }

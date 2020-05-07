@@ -164,6 +164,11 @@ namespace ARMeilleure.CodeGen.X86
 
                 UnwindInfo unwindInfo = WritePrologue(context);
 
+                if (ptcInfo != null)
+                {
+                    ptcInfo.WriteUnwindInfo(unwindInfo);
+                }
+
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
                     context.EnterBlock(block);

@@ -1,3 +1,4 @@
+using ARMeilleure.CodeGen.Unwinding;
 using System;
 using System.IO;
 
@@ -6,18 +7,22 @@ namespace ARMeilleure.Translation.PTC
     sealed class PtcInfo : IDisposable
     {
         private readonly BinaryWriter _relocWriter;
+        private readonly BinaryWriter _unwindInfoWriter;
 
-        public MemoryStream CodeStream  { get; }
-        public MemoryStream RelocStream { get; }
+        public MemoryStream CodeStream       { get; }
+        public MemoryStream RelocStream      { get; }
+        public MemoryStream UnwindInfoStream { get; }
 
         public int RelocEntriesCount { get; private set; }
 
         public PtcInfo()
         {
-            CodeStream  = new MemoryStream();
-            RelocStream = new MemoryStream();
+            CodeStream       = new MemoryStream();
+            RelocStream      = new MemoryStream();
+            UnwindInfoStream = new MemoryStream();
 
-            _relocWriter = new BinaryWriter(RelocStream, EncodingCache.UTF8NoBOM, true);
+            _relocWriter      = new BinaryWriter(RelocStream,      EncodingCache.UTF8NoBOM, true);
+            _unwindInfoWriter = new BinaryWriter(UnwindInfoStream, EncodingCache.UTF8NoBOM, true);
 
             RelocEntriesCount = 0;
         }
@@ -35,12 +40,29 @@ namespace ARMeilleure.Translation.PTC
             RelocEntriesCount++;
         }
 
+        public void WriteUnwindInfo(UnwindInfo unwindInfo)
+        {
+            _unwindInfoWriter.Write((int)unwindInfo.PushEntries.Length);
+
+            foreach (UnwindPushEntry unwindPushEntry in unwindInfo.PushEntries)
+            {
+                _unwindInfoWriter.Write((int)unwindPushEntry.Index);
+                _unwindInfoWriter.Write((int)unwindPushEntry.Type);
+                _unwindInfoWriter.Write((int)unwindPushEntry.StreamEndOffset);
+            }
+
+            _unwindInfoWriter.Write((int)unwindInfo.PrologueSize);
+            _unwindInfoWriter.Write((int)unwindInfo.FixedAllocSize);
+        }
+
         public void Dispose()
         {
             _relocWriter.Dispose();
+            _unwindInfoWriter.Dispose();
 
-            CodeStream. Dispose();
+            CodeStream.Dispose();
             RelocStream.Dispose();
+            UnwindInfoStream.Dispose();
         }
     }
 }
