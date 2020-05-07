@@ -26,6 +26,6 @@
 
         InvalidOperationOnSpecialMii  = (202 << ErrorCodeShift) | ModuleId,
         PermissionDenied              = (203 << ErrorCodeShift) | ModuleId,
-        TestModeNotEnabled            = (204 << ErrorCodeShift) | ModuleId,
+        TestModeNotEnabled            = (204 << ErrorCodeShift) | ModuleId
     }
 }
