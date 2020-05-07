@@ -23,7 +23,6 @@
         InvalidCreateId               = (106 << ErrorCodeShift) | ModuleId,
         InvalidCoreData               = (108 << ErrorCodeShift) | ModuleId,
         InvalidStoreData              = (109 << ErrorCodeShift) | ModuleId,
-
         InvalidOperationOnSpecialMii  = (202 << ErrorCodeShift) | ModuleId,
         PermissionDenied              = (203 << ErrorCodeShift) | ModuleId,
         TestModeNotEnabled            = (204 << ErrorCodeShift) | ModuleId
