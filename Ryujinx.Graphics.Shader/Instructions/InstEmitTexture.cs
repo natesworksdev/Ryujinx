@@ -755,6 +755,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
             if (op.IsBindless)
             {
                 sourcesList.Add(Ra());
+
+                flags |= TextureFlags.Bindless;
             }
 
             SamplerType type = ConvertSamplerType(op.Dimensions);
