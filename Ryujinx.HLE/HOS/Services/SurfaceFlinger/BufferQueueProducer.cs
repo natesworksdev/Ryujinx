@@ -383,7 +383,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 item.Fence                     = input.Fence;
                 item.IsDroppable               = Core.DequeueBufferCannotBlock || input.Async != 0;
 
-
                 item.GraphicBuffer.Set(Core.Slots[slot].GraphicBuffer);
                 item.GraphicBuffer.Object.IncrementNvMapHandleRefCount(Core.Owner);
 
