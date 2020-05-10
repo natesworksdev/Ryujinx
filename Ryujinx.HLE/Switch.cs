@@ -80,14 +80,14 @@ namespace Ryujinx.HLE
                 System.EnableMultiCoreScheduling();
             }
 
-            System.FsIntegrityCheckLevel = GetIntigrityCheckLevel();
+            System.FsIntegrityCheckLevel = GetIntegrityCheckLevel();
 
             System.GlobalAccessLogMode = ConfigurationState.Instance.System.FsGlobalAccessLogMode;
 
             ServiceConfiguration.IgnoreMissingServices = ConfigurationState.Instance.System.IgnoreMissingServices;
         }
 
-        public static IntegrityCheckLevel GetIntigrityCheckLevel()
+        public static IntegrityCheckLevel GetIntegrityCheckLevel()
         {
             return ConfigurationState.Instance.System.EnableFsIntegrityChecks
                 ? IntegrityCheckLevel.ErrorOnInvalid

@@ -283,7 +283,7 @@ namespace Ryujinx.HLE.FileSystem
         {
             if (_isInitialized)
             {
-                throw new InvalidOperationException($"VirtualFileSystem can only be instanciated once!");
+                throw new InvalidOperationException($"VirtualFileSystem can only be instantiated once!");
             }
 
             _isInitialized = true;

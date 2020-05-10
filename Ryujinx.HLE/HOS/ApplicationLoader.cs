@@ -259,7 +259,7 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(nsp, out _);
         }
 
-        public void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
+        private void LoadNca(Nca mainNca, Nca patchNca, Nca controlNca)
         {
             if (mainNca.Header.ContentType != NcaContentType.Program)
             {
@@ -359,7 +359,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             LoadExeFs(codeFs, out Npdm metaData);
-            
+
             TitleId      = metaData.Aci0.TitleId;
             TitleIs64Bit = metaData.Is64Bit;
 
@@ -408,8 +408,8 @@ namespace Ryujinx.HLE.HOS
 
                     Logger.PrintInfo(LogClass.Loader, $"Loading {file.Name}...");
 
-                    codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();          
-                         
+                    codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
                     NsoExecutable staticObject = new NsoExecutable(nsoFile.AsStorage());
 
                     staticObjects.Add(staticObject);
