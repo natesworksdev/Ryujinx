@@ -1,16 +1,8 @@
 using LibHac;
-using LibHac.Account;
 using LibHac.Bcat;
-using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
-using LibHac.Ncm;
-using LibHac.Ns;
-using LibHac.Spl;
 using Ryujinx.Common;
-using Ryujinx.Common.Configuration;
-using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Font;
@@ -30,20 +22,14 @@ using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
-using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.HLE.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
-using static LibHac.Fs.ApplicationSaveDataManagement;
 
 namespace Ryujinx.HLE.HOS
 {
     using TimeServiceManager = Services.Time.TimeManager;
-    using JsonHelper         = Common.Utilities.JsonHelper;
 
     public class Horizon : IDisposable
     {
