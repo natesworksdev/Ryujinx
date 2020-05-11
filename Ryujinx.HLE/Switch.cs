@@ -27,7 +27,7 @@ namespace Ryujinx.HLE
 
         public Horizon System { get; private set; }
 
-        public ApplicationLoader Application {get; private set;}
+        public ApplicationLoader Application { get; }
 
         public PerformanceStatistics Statistics { get; private set; }
 
