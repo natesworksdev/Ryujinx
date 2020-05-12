@@ -1,10 +1,10 @@
 using LibHac;
 using LibHac.Common;
 using LibHac.Fs;
-using LibHac.FsService.Creators;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
+using LibHac.Spl;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Services.Time;
@@ -199,6 +199,8 @@ namespace Ryujinx.HLE.FileSystem.Content
         // fs must contain AOC nca files in its root
         public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId)
         {
+            _virtualFileSystem.ImportTickets(fs);
+
             foreach (var ncaPath in fs.EnumerateEntries("*.cnmt.nca", SearchOptions.Default))
             {
                 fs.OpenFile(out IFile ncaFile, ncaPath.FullPath.ToU8Span(), OpenMode.Read);
@@ -231,7 +233,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         {
                             Logger.PrintInfo(LogClass.Application, $"Found AddOnContent with TitleId {cnmt.TitleId:X16}");
                         }
-                    }   
+                    }
                 }
             }
         }
