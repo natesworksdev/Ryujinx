@@ -148,6 +148,12 @@ namespace Ryujinx.HLE.HOS
 
             _contentManager.AddAocData(securePartition, xciFile, mainNca.Header.TitleId);
 
+            // Check all nsp's in the base directory for AOC
+            foreach(var fn in new FileInfo(xciFile).Directory.EnumerateFiles("*.nsp"))
+            {
+                _contentManager.AddAocData(new PartitionFileSystem(fn.OpenRead().AsStorage()), fn.FullName, mainNca.Header.TitleId);
+            }
+
             LoadNca(mainNca, patchNca, controlNca);
         }
 
@@ -182,6 +188,13 @@ namespace Ryujinx.HLE.HOS
             if (mainNca != null)
             {
                 _contentManager.AddAocData(pfs, nspPath, mainNca.Header.TitleId);
+
+                // Check all nsp's in the base directory for AOC
+                foreach(var fn in new FileInfo(nspPath).Directory.EnumerateFiles("*.nsp"))
+                {
+                    if(fn.FullName == nspPath) continue;
+                    _contentManager.AddAocData(new PartitionFileSystem(fn.OpenRead().AsStorage()), fn.FullName, mainNca.Header.TitleId);
+                }
 
                 LoadNca(mainNca, patchNca, controlNca);
 
