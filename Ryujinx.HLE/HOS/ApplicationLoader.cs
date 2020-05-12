@@ -75,17 +75,7 @@ namespace Ryujinx.HLE.HOS
             Nca patchNca = null;
             Nca controlNca = null;
 
-            foreach (DirectoryEntryEx ticketEntry in pfs.EnumerateEntries("/", "*.tik"))
-            {
-                Result result = pfs.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
-
-                if (result.IsSuccess())
-                {
-                    Ticket ticket = new Ticket(ticketFile.AsStream());
-
-                    _fileSystem.KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(_fileSystem.KeySet)));
-                }
-            }
+            _fileSystem.ImportTickets(pfs);
 
             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
             {
@@ -228,17 +218,7 @@ namespace Ryujinx.HLE.HOS
                     FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
                     PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
-                    foreach (DirectoryEntryEx ticketEntry in nsp.EnumerateEntries("/", "*.tik"))
-                    {
-                        Result result = nsp.OpenFile(out IFile ticketFile, ticketEntry.FullPath.ToU8Span(), OpenMode.Read);
-
-                        if (result.IsSuccess())
-                        {
-                            Ticket ticket = new Ticket(ticketFile.AsStream());
-
-                            _fileSystem.KeySet.ExternalKeySet.Add(new RightsId(ticket.RightsId), new AccessKey(ticket.GetTitleKey(_fileSystem.KeySet)));
-                        }
-                    }
+                    _fileSystem.ImportTickets(nsp);
 
                     foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
                     {
