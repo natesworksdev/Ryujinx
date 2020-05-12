@@ -372,6 +372,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             byte[] padding = context.RequestData.ReadBytes(7);
             long titleId = context.RequestData.ReadInt64();
 
+            // We do a mitm here to find if the request is for an AOC.
+            // This is because AOC can be distributed over multiple containers in the emulator.
+            if (context.Device.System.ContentManager.GetAocDataStorage((ulong)titleId, out LibHac.Fs.IStorage aocStorage))
+            {
+                Logger.PrintInfo(LogClass.Loader, $"Opened AddOnContent Data TitleID={titleId:X16}");
+                MakeObject(context, new FileSystemProxy.IStorage(aocStorage));
+                return ResultCode.Success;
+            }
+
             NcaContentType contentType = NcaContentType.Data;
 
             StorageId installedStorage = context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
@@ -381,22 +390,6 @@ namespace Ryujinx.HLE.HOS.Services.Fs
                 contentType = NcaContentType.PublicData;
 
                 installedStorage = context.Device.System.ContentManager.GetInstalledStorage(titleId, contentType, storageId);
-            }
-
-            // For nca embedded in XCI
-            if (installedStorage == StorageId.GameCard)
-            {
-                string contentPath = context.Device.System.ContentManager.GetInstalledContentPath(titleId, storageId, contentType);
-
-                if (!string.IsNullOrWhiteSpace(contentPath))
-                {
-                    var nca = context.Device.System.ContentManager.GetGameCardNca(contentPath);
-
-                    var dataStorage = nca.OpenStorage(NcaSectionType.Data, context.Device.System.FsIntegrityCheckLevel);
-                    MakeObject(context, new FileSystemProxy.IStorage(dataStorage));
-
-                    return ResultCode.Success;
-                }
             }
 
             if (installedStorage != StorageId.None)

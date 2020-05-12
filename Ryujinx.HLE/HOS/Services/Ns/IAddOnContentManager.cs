@@ -2,7 +2,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
-
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
@@ -10,7 +9,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns
     [Service("aoc:u")]
     class IAddOnContentManager : IpcService
     {
-
         KEvent _addOnContentListChangedEvent;
 
         public IAddOnContentManager(ServiceCtx context)
@@ -95,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
             context.ResponseData.Write(aocBaseId);
 
-            Logger.PrintDebug(LogClass.ServiceNs, $"pid={pid} aocBaseId=0{aocBaseId:x}");
+            Logger.PrintDebug(LogClass.ServiceNs, $"pid={pid} aocBaseId={aocBaseId:X16}");
 
             // ResultCode will be error code of GetApplicationLaunchProperty if it fails
             return ResultCode.Success;
@@ -153,9 +151,9 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         // [10.0.0+] GetAddOnContentLostErrorCode() -> u64
         public static ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
         {
-            // Seems to read from static addr=&(0x7d0a4 << 32)?
-            // ((ulonglong)*addr & 0x1ff) + 2000 | (ulonglong)(*addr >> 9 & 0x1fff) << 0x20
-            context.ResponseData.Write(0);
+            // Seems to calculate ((value & 0x1ff)) + 2000 on 0x7d0a4
+            // which gives 0x874 (2000+164). 164 being Module ID of `EC (Shop)`
+            context.ResponseData.Write(2164L);
 
             Logger.PrintStub(LogClass.ServiceNs);
 

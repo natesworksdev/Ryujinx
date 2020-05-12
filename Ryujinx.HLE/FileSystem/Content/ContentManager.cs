@@ -5,6 +5,7 @@ using LibHac.FsService.Creators;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.Utilities;
@@ -29,7 +30,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;
 
-        private SortedList<ulong, string> _aocData { get; }
+        private SortedList<ulong, (string ContainerPath, string NcaPath)> _aocData { get; }
 
         private VirtualFileSystem _virtualFileSystem;
 
@@ -72,7 +73,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
             _virtualFileSystem = virtualFileSystem;
 
-            _aocData = new SortedList<ulong, string>();
+            _aocData = new SortedList<ulong, (string ContainerPath, string NcaPath)>();
         }
 
         public void LoadEntries(Switch device = null)
@@ -173,15 +174,6 @@ namespace Ryujinx.HLE.FileSystem.Content
                     }
                 }
 
-                // AddOnContent locations
-                LinkedList<LocationEntry> aocList = new LinkedList<LocationEntry>();
-                foreach (var (titleId, contentPath) in _aocData)
-                {
-                    LocationEntry location = new LocationEntry(contentPath, 0, (long)titleId, NcaContentType.PublicData);
-                    aocList.AddLast(location);
-                }
-                _locationEntries.Add(StorageId.None, aocList);
-
                 if (device != null)
                 {
                     TimeManager.Instance.InitializeTimeZone(device);
@@ -190,12 +182,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             }
         }
 
-        public void SetGameCard(IStorage xciStorage)
-        {
-            _virtualFileSystem.GameCard.InsertGameCard(xciStorage);
-        }
-
-        public void AddAocData(IFileSystem fs, ulong titleId, string contentPath)
+        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId)
         {
             foreach (var ncaPath in fs.EnumerateEntries("*.cnmt.nca", SearchOptions.Default))
             {
@@ -205,7 +192,8 @@ namespace Ryujinx.HLE.FileSystem.Content
                     var nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
                     if (nca.Header.ContentType != NcaContentType.Meta)
                     {
-                        continue; // Warning?
+                        Logger.PrintWarning(LogClass.Application, $"{ncaPath} is not a valid metadata file");
+                        continue;
                     }
 
                     using var pfs0 = nca.OpenFileSystem(0, Switch.GetIntegrityCheckLevel());
@@ -214,43 +202,58 @@ namespace Ryujinx.HLE.FileSystem.Content
                     {
                         var cnmt = new Cnmt(cnmtFile.AsStream());
 
-                        if (cnmt.Type != ContentMetaType.AddOnContent || (cnmt.TitleId & 0xFFFFFFFFFFFFE000) != titleId)
+                        if (cnmt.Type != ContentMetaType.AddOnContent || (cnmt.TitleId & 0xFFFFFFFFFFFFE000) != aocBaseId)
                         {
                             continue;
                         }
 
-                        // TODO: Confirm if AOC can have multiple ContentEntries
                         string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
-                        _aocData[cnmt.TitleId] = $"{contentPath}:/{ncaId}.nca";
-                    }
+                        if (!_aocData.TryAdd(cnmt.TitleId, (containerPath, $"{ncaId}.nca")))
+                        {
+                            Logger.PrintWarning(LogClass.Application, $"Detected multiple AddOnContent with same TitleId {cnmt.TitleId:X16}");
+                        }
+                        else
+                        {
+                            Logger.PrintInfo(LogClass.Application, $"Found AddOnContent with TitleId {cnmt.TitleId:X16}");
+                        }
+                    }   
                 }
             }
         }
 
         public int GetAocCount() => _aocData.Count;
 
-        public List<ulong> GetAocTitleIds() => _aocData.Keys.ToList();
+        public IList<ulong> GetAocTitleIds() => _aocData.Keys;
 
-        public Nca GetGameCardNca(string contentPath)
+        public bool GetAocDataStorage(ulong aocTitleId, out IStorage aocStorage)
         {
-            if (!contentPath.StartsWith(ContentPath.GamecardContents))
+            aocStorage = null;
+            if (_aocData.TryGetValue(aocTitleId, out var paths))
             {
-                return null;
+                var file = new FileStream(paths.ContainerPath, FileMode.Open, FileAccess.Read);
+                PartitionFileSystem pfs;
+                IFile ncaFile;
+                switch (Path.GetExtension(paths.ContainerPath))
+                {
+                    case ".xci":
+                        pfs = new Xci(_virtualFileSystem.KeySet, file.AsStorage()).OpenPartition(XciPartitionType.Secure);
+                        pfs.OpenFile(out ncaFile, paths.NcaPath.ToU8Span(), OpenMode.Read);
+                        break;
+                    case ".nsp":
+                        pfs = new PartitionFileSystem(file.AsStorage());
+                        pfs.OpenFile(out ncaFile, paths.NcaPath.ToU8Span(), OpenMode.Read);
+                        break;
+                    case ".nca" when Path.GetFileName(paths.ContainerPath) == paths.NcaPath:
+                        ncaFile = file.AsIFile(OpenMode.Read);
+                        break;
+                    default:
+                        return false; // Print error?
+                }
+                aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage()).OpenStorage(NcaSectionType.Data, Switch.GetIntegrityCheckLevel());
+                return true;
             }
 
-            string ncaPath = contentPath.Split(':')[1].Substring(1);
-
-            new EmulatedGameCardStorageCreator(_virtualFileSystem.GameCard)
-                .CreateSecure(_virtualFileSystem.GameCard.GetGameCardHandle(), out IStorage secureStorage)
-                .ThrowIfFailure();
-
-            XciPartition securePartition = new XciPartition(secureStorage);
-            
-            securePartition.OpenFile(out LibHac.Fs.IFile ncaFile, ncaPath.ToU8Span(), OpenMode.Read);
-
-            var nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
-
-            return nca;
+            return false;
         }
 
         public void ClearEntry(long titleId, NcaContentType contentType, StorageId storageId)
@@ -360,12 +363,6 @@ namespace Ryujinx.HLE.FileSystem.Content
             if (locationEntry.ContentPath == null)
             {
                 return false;
-            }
-
-            if (locationEntry.ContentPath.StartsWith(ContentPath.GamecardContents))
-            {
-                return _virtualFileSystem.GameCard.IsGameCardInserted() && 
-                       GetGameCardNca(locationEntry.ContentPath).Header.ContentType == contentType;
             }
             
             string installedPath = _virtualFileSystem.SwitchPathToSystemPath(locationEntry.ContentPath);
