@@ -30,7 +30,21 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         private SortedDictionary<(ulong titleId, NcaContentType type), string> _contentDictionary;
 
-        private SortedList<ulong, (string ContainerPath, string NcaPath)> _aocData { get; }
+        private struct AocItem
+        {
+            public readonly string ContainerPath;
+            public readonly string NcaPath;
+            public bool Enabled;
+
+            public AocItem(string containerPath, string ncaPath, bool enabled)
+            {
+                ContainerPath = containerPath;
+                NcaPath = ncaPath;
+                Enabled = enabled;
+            }
+        }
+
+        private SortedList<ulong, AocItem> _aocData { get; }
 
         private VirtualFileSystem _virtualFileSystem;
 
@@ -73,7 +87,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
             _virtualFileSystem = virtualFileSystem;
 
-            _aocData = new SortedList<ulong, (string ContainerPath, string NcaPath)>();
+            _aocData = new SortedList<ulong, AocItem>();
         }
 
         public void LoadEntries(Switch device = null)
@@ -182,6 +196,7 @@ namespace Ryujinx.HLE.FileSystem.Content
             }
         }
 
+        // fs must contain AOC nca files in its root
         public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId)
         {
             foreach (var ncaPath in fs.EnumerateEntries("*.cnmt.nca", SearchOptions.Default))
@@ -208,9 +223,9 @@ namespace Ryujinx.HLE.FileSystem.Content
                         }
 
                         string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
-                        if (!_aocData.TryAdd(cnmt.TitleId, (containerPath, $"{ncaId}.nca")))
+                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", true)))
                         {
-                            Logger.PrintWarning(LogClass.Application, $"Detected multiple AddOnContent with same TitleId {cnmt.TitleId:X16}");
+                            Logger.PrintWarning(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {cnmt.TitleId:X16}");
                         }
                         else
                         {
@@ -221,30 +236,27 @@ namespace Ryujinx.HLE.FileSystem.Content
             }
         }
 
-        public int GetAocCount() => _aocData.Count;
+        public int GetAocCount() => _aocData.Where(e => e.Value.Enabled).Count();
 
-        public IList<ulong> GetAocTitleIds() => _aocData.Keys;
+        public IList<ulong> GetAocTitleIds() => _aocData.Where(e => e.Value.Enabled).Select(e => e.Key).ToList();
 
         public bool GetAocDataStorage(ulong aocTitleId, out IStorage aocStorage)
         {
             aocStorage = null;
-            if (_aocData.TryGetValue(aocTitleId, out var paths))
+            if (_aocData.TryGetValue(aocTitleId, out AocItem aoc) && aoc.Enabled)
             {
-                var file = new FileStream(paths.ContainerPath, FileMode.Open, FileAccess.Read);
+                var file = new FileStream(aoc.ContainerPath, FileMode.Open, FileAccess.Read);
                 PartitionFileSystem pfs;
                 IFile ncaFile;
-                switch (Path.GetExtension(paths.ContainerPath))
+                switch (Path.GetExtension(aoc.ContainerPath))
                 {
                     case ".xci":
                         pfs = new Xci(_virtualFileSystem.KeySet, file.AsStorage()).OpenPartition(XciPartitionType.Secure);
-                        pfs.OpenFile(out ncaFile, paths.NcaPath.ToU8Span(), OpenMode.Read);
+                        pfs.OpenFile(out ncaFile, aoc.NcaPath.ToU8Span(), OpenMode.Read);
                         break;
                     case ".nsp":
                         pfs = new PartitionFileSystem(file.AsStorage());
-                        pfs.OpenFile(out ncaFile, paths.NcaPath.ToU8Span(), OpenMode.Read);
-                        break;
-                    case ".nca" when Path.GetFileName(paths.ContainerPath) == paths.NcaPath:
-                        ncaFile = file.AsIFile(OpenMode.Read);
+                        pfs.OpenFile(out ncaFile, aoc.NcaPath.ToU8Span(), OpenMode.Read);
                         break;
                     default:
                         return false; // Print error?
