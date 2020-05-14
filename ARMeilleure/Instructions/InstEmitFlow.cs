@@ -105,11 +105,11 @@ namespace ARMeilleure.Instructions
             {
                 Operand lblFallthrough = Label();
 
-                // The condition is inverted such that the fallthrough block emitted below the taken block. Sometimes
-                // CurrBlock.Branch will be null but not CurrBlock.Next, and this arrangement allows us to emit the
-                // fallthrough block without any Label book keeping.
+                // The condition is inverted such that the CurrBlock.Next block is emitted below the CurrBlock.Branch
+                // block. Sometimes CurrBlock.Branch will be null but not CurrBlock.Next, and this arrangement allows 
+                // us to emit the CurrBlock.Next block without any Label book keeping.
                 // 
-                // Usually happens when the TailCallRemover kicks in.
+                // Usually happens when the TailCallRemover kicked in.
                 EmitCondBranch(context, lblFallthrough, cond.Invert());
 
                 EmitTailContinue(context, Const(op.Immediate));
