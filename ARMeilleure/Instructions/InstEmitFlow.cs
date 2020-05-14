@@ -103,15 +103,23 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                Operand lblTaken = Label();
+                Operand lblFallthrough = Label();
 
-                EmitCondBranch(context, lblTaken, cond);
-
-                EmitTailContinue(context, Const(op.Address + 4));
-
-                context.MarkLabel(lblTaken);
+                // The condition is inverted such that the fallthrough block emitted below the taken block. Sometimes
+                // CurrBlock.Branch will be null but not CurrBlock.Next, and this arrangement allows us to emit the
+                // fallthrough block without any Label book keeping.
+                // 
+                // Usually happens when the TailCallRemover kicks in.
+                EmitCondBranch(context, lblFallthrough, cond.Invert());
 
                 EmitTailContinue(context, Const(op.Immediate));
+
+                context.MarkLabel(lblFallthrough);
+
+                if (context.CurrBlock.Next == null)
+                {
+                    EmitTailContinue(context, Const(op.Address + 4));
+                }
             }
         }
 
@@ -139,22 +147,26 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                Operand lblTaken = Label();
+                Operand lblFallthrough = Label();
 
+                // See EmitBranch(ArmEmitterContext context, Condition cond) for why the condition is inverted.
                 if (onNotZero)
                 {
-                    context.BranchIfTrue(lblTaken, value);
+                    context.BranchIfFalse(lblFallthrough, value);
                 }
                 else
                 {
-                    context.BranchIfFalse(lblTaken, value);
+                    context.BranchIfTrue(lblFallthrough, value);
                 }
 
-                EmitTailContinue(context, Const(op.Address + 4));
-
-                context.MarkLabel(lblTaken);
-
                 EmitTailContinue(context, Const(op.Immediate));
+
+                context.MarkLabel(lblFallthrough);
+
+                if (context.CurrBlock.Next == null)
+                {
+                    EmitTailContinue(context, Const(op.Address + 4));
+                }
             }
         }
     }
