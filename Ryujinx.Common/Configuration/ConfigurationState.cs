@@ -446,7 +446,8 @@ namespace Ryujinx.Configuration
                     },
                     Hotkeys        = new KeyboardHotkeys
                     {
-                        ToggleVsync = Key.Tab
+                        ToggleVsync  = Key.Tab,
+                        ToggleDocked = Key.F1
                     }
                 }
             };
@@ -548,7 +549,8 @@ namespace Ryujinx.Configuration
                         },
                         Hotkeys        = new KeyboardHotkeys
                         {
-                            ToggleVsync = Key.Tab
+                            ToggleVsync  = Key.Tab,
+                            ToggleDocked = Key.F1
                         }
                     }
                 };

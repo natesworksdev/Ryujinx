@@ -8,7 +8,8 @@ namespace Ryujinx.Ui
     [Flags]
     public enum HotkeyButtons
     {
-        ToggleVSync = 1 << 0,
+        ToggleVSync  = 1 << 0,
+        ToggleDocked = 2 << 0,
     }
 
     public class KeyboardController
@@ -97,7 +98,8 @@ namespace Ryujinx.Ui
 
             HotkeyButtons buttons = 0;
 
-            if (keyboard[(Key)_config.Hotkeys.ToggleVsync]) buttons |= HotkeyButtons.ToggleVSync;
+            if (keyboard[(Key)_config.Hotkeys.ToggleVsync])  buttons |= HotkeyButtons.ToggleVSync;
+            if (keyboard[(Key)_config.Hotkeys.ToggleDocked]) buttons |= HotkeyButtons.ToggleDocked;
 
             return buttons;
         }

@@ -326,7 +326,7 @@ namespace Ryujinx.Ui
                     _device.ProcessFrame();
                 }
 
-                string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
+                string dockedMode = _device.System.State.DockedMode ? "Docked" : "Handheld";
 
                 if (_ticks >= _ticksPerFrame)
                 {
@@ -446,6 +446,12 @@ namespace Ryujinx.Ui
                             !_prevHotkeyButtons.HasFlag(HotkeyButtons.ToggleVSync))
                         {
                             _device.EnableDeviceVsync = !_device.EnableDeviceVsync;
+                        }
+
+                        if (currentHotkeyButtons.HasFlag(HotkeyButtons.ToggleDocked) &&
+                            !_prevHotkeyButtons.HasFlag(HotkeyButtons.ToggleDocked))
+                        {
+                            _device.System.State.DockedMode = !_device.System.State.DockedMode;
                         }
 
                         _prevHotkeyButtons = currentHotkeyButtons;

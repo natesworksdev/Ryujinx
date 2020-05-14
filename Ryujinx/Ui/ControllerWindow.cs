@@ -422,7 +422,8 @@ namespace Ryujinx.Ui
                     },
                     Hotkeys        = new KeyboardHotkeys
                     {
-                        ToggleVsync = Key.Tab //TODO: Make this an option in the GUI
+                        ToggleVsync  = Key.Tab, //TODO: Make this an option in the GUI
+                        ToggleDocked = Key.F1
                     }
                 };
             }
@@ -757,7 +758,8 @@ namespace Ryujinx.Ui
                         },
                         Hotkeys        = new KeyboardHotkeys
                         {
-                            ToggleVsync = Key.Tab
+                            ToggleVsync  = Key.Tab,
+                            ToggleDocked = Key.F1
                         }
                     };
                 }
