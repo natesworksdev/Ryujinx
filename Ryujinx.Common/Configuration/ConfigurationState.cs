@@ -549,7 +549,7 @@ namespace Ryujinx.Configuration
                         },
                         Hotkeys        = new KeyboardHotkeys
                         {
-                            ToggleVsync  = Key.Tab
+                            ToggleVsync = Key.Tab
                         }
                     }
                 };
@@ -576,7 +576,7 @@ namespace Ryujinx.Configuration
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 8.");
 
                 configurationFileFormat.ControllerConfig = new List<ControllerConfig>();
-                configurationFileFormat.KeyboardConfig = new List<KeyboardConfig>{
+                configurationFileFormat.KeyboardConfig   = new List<KeyboardConfig>{
                     new KeyboardConfig
                     {
                         Index          = 0,
