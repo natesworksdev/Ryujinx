@@ -30,9 +30,12 @@ namespace Ryujinx.HLE.FileSystem
         public EmulatedGameCard GameCard { get; private set; }
         public EmulatedSdCard   SdCard   { get; private set; }
 
+        public ModLoader ModLoader {get; private set;}
+
         private VirtualFileSystem()
         {
             Reload();
+            ModLoader = new ModLoader(); // Should only be created once
         }
 
         public Stream RomFs { get; private set; }
