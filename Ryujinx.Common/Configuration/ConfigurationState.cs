@@ -549,7 +549,7 @@ namespace Ryujinx.Configuration
                         },
                         Hotkeys        = new KeyboardHotkeys
                         {
-                            ToggleVsync = Key.Tab
+                            ToggleVsync  = Key.Tab
                         }
                     }
                 };
@@ -569,62 +569,6 @@ namespace Ryujinx.Configuration
                         configurationFileFormat.KeyboardConfig[i].Index++;
                     }
                 }
-            }
-
-            if (configurationFileFormat.Version < 8)
-            {
-                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 8.");
-
-                configurationFileFormat.ControllerConfig = new List<ControllerConfig>();
-                configurationFileFormat.KeyboardConfig   = new List<KeyboardConfig>{
-                    new KeyboardConfig
-                    {
-                        Index          = 0,
-                        ControllerType = ControllerType.JoyconPair,
-                        PlayerIndex    = PlayerIndex.Player1,
-                        LeftJoycon     = new NpadKeyboardLeft
-                        {
-                            StickUp     = Key.W,
-                            StickDown   = Key.S,
-                            StickLeft   = Key.A,
-                            StickRight  = Key.D,
-                            StickButton = Key.F,
-                            DPadUp      = Key.Up,
-                            DPadDown    = Key.Down,
-                            DPadLeft    = Key.Left,
-                            DPadRight   = Key.Right,
-                            ButtonMinus = Key.Minus,
-                            ButtonL     = Key.E,
-                            ButtonZl    = Key.Q,
-                            ButtonSl    = Key.Unbound,
-                            ButtonSr    = Key.Unbound
-                        },
-                        RightJoycon    = new NpadKeyboardRight
-                        {
-                            StickUp     = Key.I,
-                            StickDown   = Key.K,
-                            StickLeft   = Key.J,
-                            StickRight  = Key.L,
-                            StickButton = Key.H,
-                            ButtonA     = Key.Z,
-                            ButtonB     = Key.X,
-                            ButtonX     = Key.C,
-                            ButtonY     = Key.V,
-                            ButtonPlus  = Key.Plus,
-                            ButtonR     = Key.U,
-                            ButtonZr    = Key.O,
-                            ButtonSl    = Key.Unbound,
-                            ButtonSr    = Key.Unbound
-                        },
-                        Hotkeys        = new KeyboardHotkeys
-                        {
-                            ToggleVsync  = Key.Tab,
-                            ToggleDocked = Key.F1
-                        }
-                    }
-                };
-
-                configurationFileUpdated = true;
             }
 
             List<InputConfig> inputConfig = new List<InputConfig>();
