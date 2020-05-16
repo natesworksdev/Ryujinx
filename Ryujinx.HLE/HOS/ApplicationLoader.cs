@@ -157,11 +157,11 @@ namespace Ryujinx.HLE.HOS
             LoadNca(mainNca, patchNca, controlNca);
         }
 
-        public void LoadNsp(string nspPath)
+        public void LoadNsp(string nspFile)
         {
-            FileStream nspFile = new FileStream(nspPath, FileMode.Open, FileAccess.Read);
+            FileStream file = new FileStream(nspFile, FileMode.Open, FileAccess.Read);
 
-            PartitionFileSystem pfs = new PartitionFileSystem(nspFile.AsStorage());
+            PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
             Nca mainNca = null;
             Nca patchNca = null;
@@ -169,7 +169,7 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                (mainNca, patchNca, controlNca) = GetGameData(pfs);
+                (mainNca, patchNca, controlNca) = GetGameData(nsp);
             }
             catch (Exception e)
             {
@@ -187,12 +187,12 @@ namespace Ryujinx.HLE.HOS
 
             if (mainNca != null)
             {
-                _contentManager.AddAocData(pfs, nspPath, mainNca.Header.TitleId);
+                _contentManager.AddAocData(nsp, nspFile, mainNca.Header.TitleId);
 
                 // Check all nsp's in the base directory for AOC
-                foreach(var fn in new FileInfo(nspPath).Directory.EnumerateFiles("*.nsp"))
+                foreach(var fn in new FileInfo(nspFile).Directory.EnumerateFiles("*.nsp"))
                 {
-                    if(fn.FullName == nspPath) continue;
+                    if(fn.FullName == nspFile) continue;
                     _contentManager.AddAocData(new PartitionFileSystem(fn.OpenRead().AsStorage()), fn.FullName, mainNca.Header.TitleId);
                 }
 
@@ -202,7 +202,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             // This is not a normal NSP, it's actually a ExeFS as a NSP
-            LoadExeFs(pfs, out _);
+            LoadExeFs(nsp, out _);
         }
 
         public void LoadNca(string ncaFile)
