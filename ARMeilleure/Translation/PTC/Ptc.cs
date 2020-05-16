@@ -1,6 +1,5 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
-using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using System;
 using System.Buffers.Binary;
@@ -93,6 +92,9 @@ namespace ARMeilleure.Translation.PTC
             CachePath = string.Empty;
 
             Disable();
+
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            AppDomain.CurrentDomain.ProcessExit += CurrentDomain_ProcessExit;
         }
 
         public static void Initialize(string titleIdText, string displayVersion, bool enabled)
@@ -475,17 +477,17 @@ namespace ARMeilleure.Translation.PTC
 
             for (int i = 0; i < pushEntriesLength; i++)
             {
-                int index = unwindInfosReader.ReadInt32();
-                int type = unwindInfosReader.ReadInt32();
-                int streamEndOffset = unwindInfosReader.ReadInt32();
+                int pseudoOp = unwindInfosReader.ReadInt32();
+                int prologOffset = unwindInfosReader.ReadInt32();
+                int regIndex = unwindInfosReader.ReadInt32();
+                int stackOffsetOrAllocSize = unwindInfosReader.ReadInt32();
 
-                pushEntries[i] = new UnwindPushEntry(index, (RegisterType)type, streamEndOffset);
+                pushEntries[i] = new UnwindPushEntry((UnwindPseudoOp)pseudoOp, prologOffset, regIndex, stackOffsetOrAllocSize);
             }
 
             int prologueSize = unwindInfosReader.ReadInt32();
-            int fixedAllocSize = unwindInfosReader.ReadInt32();
 
-            return new UnwindInfo(pushEntries, prologueSize, fixedAllocSize);
+            return new UnwindInfo(pushEntries, prologueSize);
         }
 
         private static TranslatedFunction FastTranslate(byte[] code, UnwindInfo unwindInfo, bool highCq)
@@ -563,20 +565,18 @@ namespace ARMeilleure.Translation.PTC
 
             (int funcsCount, int ProfiledFuncsCount) = ((int, int))state;
 
-            void PrintInfo() // TODO: Use Ryujinx.Common.Logging.
-            {
-                string message = $"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited";
-
-                Console.WriteLine($"{'|', 14} Ptc.Logger: {message}");
-            }
-
             do
             {
-                PrintInfo();
+                PrintInfo($"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited");
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
-            PrintInfo();
+            PrintInfo($"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited");
+        }
+
+        private static void PrintInfo(string message) // TODO: Use Ryujinx.Common.Logging.
+        {
+            Console.WriteLine($"{'|', 14} Ptc.Logger: {message}");
         }
 
         internal static void WriteInfoCodeReloc(long address, bool highCq, PtcInfo ptcInfo)
@@ -680,6 +680,9 @@ namespace ARMeilleure.Translation.PTC
             {
                 _disposed = true;
 
+                AppDomain.CurrentDomain.UnhandledException -= CurrentDomain_UnhandledException;
+                AppDomain.CurrentDomain.ProcessExit -= CurrentDomain_ProcessExit;
+
                 Wait();
                 _waitEvent.Dispose();
 
@@ -690,6 +693,24 @@ namespace ARMeilleure.Translation.PTC
                 _relocsStream.Dispose();
                 _unwindInfosStream.Dispose();
             }
+        }
+
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            Close();
+            PtcProfiler.Stop();
+
+            if (e.IsTerminating)
+            {
+                Dispose();
+                PtcProfiler.Dispose();
+            }
+        }
+
+        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        {
+            Dispose();
+            PtcProfiler.Dispose();
         }
     }
 }

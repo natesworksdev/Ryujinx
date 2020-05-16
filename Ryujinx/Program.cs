@@ -111,12 +111,15 @@ namespace Ryujinx
 
             Logger.PrintError(LogClass.Application, $"Unhandled exception caught: {exception}");
 
+            Ptc.Close();
+            PtcProfiler.Stop();
+
             if (e.IsTerminating)
             {
-                Ptc.Close();
-                PtcProfiler.Stop();
-
                 Logger.Shutdown();
+
+                Ptc.Dispose();
+                PtcProfiler.Dispose();
             }
         }
     }

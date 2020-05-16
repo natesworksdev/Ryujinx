@@ -10,6 +10,8 @@ namespace ARMeilleure.CodeGen.X86
 {
     class CodeGenContext
     {
+        private const int ReservedBytesForJump = 1;
+
         private Stream _stream;
 
         private PtcInfo _ptcInfo;
@@ -39,9 +41,9 @@ namespace ARMeilleure.CodeGen.X86
 
             public long RelativeOffset { get; set; }
 
-            public int InstSize { get; }
+            public int InstSize { get; set; }
 
-            public Jump(BasicBlock target, long jumpPosition)
+            public Jump(BasicBlock target, long jumpPosition, int instSize = 0)
             {
                 IsConditional = false;
                 Condition     = 0;
@@ -50,10 +52,10 @@ namespace ARMeilleure.CodeGen.X86
 
                 RelativeOffset = 0;
 
-                InstSize = 5;
+                InstSize = instSize;
             }
 
-            public Jump(X86Condition condition, BasicBlock target, long jumpPosition)
+            public Jump(X86Condition condition, BasicBlock target, long jumpPosition, int instSize = 0)
             {
                 IsConditional = true;
                 Condition     = condition;
@@ -62,7 +64,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 RelativeOffset = 0;
 
-                InstSize = 6;
+                InstSize = instSize;
             }
         }
 
@@ -139,27 +141,41 @@ namespace ARMeilleure.CodeGen.X86
 
         public void JumpTo(BasicBlock target)
         {
-            Jump jump = new Jump(target, _stream.Position);
+            if (_ptcInfo == null)
+            {
+                _jumps.Add(new Jump(target, _stream.Position));
 
-            _jumps.Add(jump);
+                WritePadding(ReservedBytesForJump);
+            }
+            else
+            {
+                _jumps.Add(new Jump(target, _stream.Position, 5));
 
-            WritePadding(jump.InstSize);
+                WritePadding(5);
+            }
         }
 
         public void JumpTo(X86Condition condition, BasicBlock target)
         {
-            Jump jump = new Jump(condition, target, _stream.Position);
+            if (_ptcInfo == null)
+            {
+                _jumps.Add(new Jump(condition, target, _stream.Position));
 
-            _jumps.Add(jump);
+                WritePadding(ReservedBytesForJump);
+            }
+            else
+            {
+                _jumps.Add(new Jump(condition, target, _stream.Position, 6));
 
-            WritePadding(jump.InstSize);
+                WritePadding(6);
+            }
         }
 
         public void JumpToNear(X86Condition condition)
         {
             _jNearCondition = condition;
             _jNearPosition  = _stream.Position;
-            _jNearLength    = Assembler.GetJccLength(0);
+            _jNearLength    = Assembler.GetJccLength(0, _ptcInfo);
 
             _stream.Seek(_jNearLength, SeekOrigin.Current);
         }
@@ -172,7 +188,7 @@ namespace ARMeilleure.CodeGen.X86
 
             long offset = currentPosition - (_jNearPosition + _jNearLength);
 
-            Debug.Assert(_jNearLength == Assembler.GetJccLength(offset), "Relative offset doesn't fit on near jump.");
+            Debug.Assert(_jNearLength == Assembler.GetJccLength(offset, _ptcInfo), "Relative offset doesn't fit on near jump.");
 
             Assembler.Jcc(_jNearCondition, offset);
 
@@ -204,7 +220,65 @@ namespace ARMeilleure.CodeGen.X86
 
                     long offset = jumpTarget - jump.JumpPosition;
 
-                    offset -= jump.InstSize;
+                    if (_ptcInfo == null)
+                    {
+                        if (offset < 0)
+                        {
+                            for (int index2 = index - 1; index2 >= 0; index2--)
+                            {
+                                Jump jump2 = _jumps[index2];
+
+                                if (jump2.JumpPosition < jumpTarget)
+                                {
+                                    break;
+                                }
+
+                                offset -= jump2.InstSize - ReservedBytesForJump;
+                            }
+                        }
+                        else
+                        {
+                            for (int index2 = index + 1; index2 < _jumps.Count; index2++)
+                            {
+                                Jump jump2 = _jumps[index2];
+
+                                if (jump2.JumpPosition >= jumpTarget)
+                                {
+                                    break;
+                                }
+
+                                offset += jump2.InstSize - ReservedBytesForJump;
+                            }
+
+                            offset -= ReservedBytesForJump;
+                        }
+
+                        if (jump.IsConditional)
+                        {
+                            jump.InstSize = Assembler.GetJccLength(offset);
+                        }
+                        else
+                        {
+                            jump.InstSize = Assembler.GetJmpLength(offset);
+                        }
+
+                        // The jump is relative to the next instruction, not the current one.
+                        // Since we didn't know the next instruction address when calculating
+                        // the offset (as the size of the current jump instruction was not know),
+                        // we now need to compensate the offset with the jump instruction size.
+                        // It's also worth to note that:
+                        // - This is only needed for backward jumps.
+                        // - The GetJmpLength and GetJccLength also compensates the offset
+                        // internally when computing the jump instruction size.
+                        if (offset < 0)
+                        {
+                            offset -= jump.InstSize;
+                        }
+                    }
+                    else
+                    {
+                        offset -= jump.InstSize;
+                    }
 
                     if (jump.RelativeOffset != offset)
                     {
@@ -218,12 +292,12 @@ namespace ARMeilleure.CodeGen.X86
             }
             while (modified);
 
-            // Write the code into a new stream.
+            // Write the code, ignoring the dummy bytes after jumps, into a new stream.
             _stream.Seek(0, SeekOrigin.Begin);
 
             using (MemoryStream codeStream = new MemoryStream())
             {
-                Assembler assembler = new Assembler(codeStream);
+                Assembler assembler = new Assembler(codeStream, _ptcInfo);
 
                 byte[] buffer;
 
@@ -234,7 +308,7 @@ namespace ARMeilleure.CodeGen.X86
                     buffer = new byte[jump.JumpPosition - _stream.Position];
 
                     _stream.Read(buffer, 0, buffer.Length);
-                    _stream.Seek(jump.InstSize, SeekOrigin.Current);
+                    _stream.Seek(_ptcInfo == null ? ReservedBytesForJump : jump.InstSize, SeekOrigin.Current);
 
                     codeStream.Write(buffer);
 

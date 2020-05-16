@@ -277,7 +277,8 @@ namespace ARMeilleure.CodeGen.X86
 
         public Assembler(Stream stream, PtcInfo ptcInfo = null)
         {
-            _stream  = stream;
+            _stream = stream;
+
             _ptcInfo = ptcInfo;
         }
 
@@ -459,7 +460,13 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Jcc(X86Condition condition, long offset)
         {
-            if (ConstFitsOnS32(offset))
+            if (_ptcInfo == null && ConstFitsOnS8(offset))
+            {
+                WriteByte((byte)(0x70 | (int)condition));
+
+                WriteByte((byte)offset);
+            }
+            else if (ConstFitsOnS32(offset))
             {
                 WriteByte(0x0f);
                 WriteByte((byte)(0x80 | (int)condition));
@@ -474,7 +481,13 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Jmp(long offset)
         {
-            if (ConstFitsOnS32(offset))
+            if (_ptcInfo == null && ConstFitsOnS8(offset))
+            {
+                WriteByte(0xeb);
+
+                WriteByte((byte)offset);
+            }
+            else if (ConstFitsOnS32(offset))
             {
                 WriteByte(0xe9);
 
@@ -1307,9 +1320,13 @@ namespace ARMeilleure.CodeGen.X86
             return ConstFitsOnS32(value);
         }
 
-        public static int GetJccLength(long offset)
+        public static int GetJccLength(long offset, PtcInfo ptcInfo = null)
         {
-            if (ConstFitsOnS32(offset < 0 ? offset - 6 : offset))
+            if (ptcInfo == null && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
+            {
+                return 2;
+            }
+            else if (ConstFitsOnS32(offset < 0 ? offset - 6 : offset))
             {
                 return 6;
             }
@@ -1319,9 +1336,13 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        public static int GetJmpLength(long offset)
+        public static int GetJmpLength(long offset, PtcInfo ptcInfo = null)
         {
-            if (ConstFitsOnS32(offset < 0 ? offset - 5 : offset))
+            if (ptcInfo == null && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
+            {
+                return 2;
+            }
+            else if (ConstFitsOnS32(offset < 0 ? offset - 5 : offset))
             {
                 return 5;
             }

@@ -46,13 +46,13 @@ namespace ARMeilleure.Translation.PTC
 
             foreach (UnwindPushEntry unwindPushEntry in unwindInfo.PushEntries)
             {
-                _unwindInfoWriter.Write((int)unwindPushEntry.Index);
-                _unwindInfoWriter.Write((int)unwindPushEntry.Type);
-                _unwindInfoWriter.Write((int)unwindPushEntry.StreamEndOffset);
+                _unwindInfoWriter.Write((int)unwindPushEntry.PseudoOp);
+                _unwindInfoWriter.Write((int)unwindPushEntry.PrologOffset);
+                _unwindInfoWriter.Write((int)unwindPushEntry.RegIndex);
+                _unwindInfoWriter.Write((int)unwindPushEntry.StackOffsetOrAllocSize);
             }
 
-            _unwindInfoWriter.Write((int)unwindInfo.PrologueSize);
-            _unwindInfoWriter.Write((int)unwindInfo.FixedAllocSize);
+            _unwindInfoWriter.Write((int)unwindInfo.PrologSize);
         }
 
         public void Dispose()
