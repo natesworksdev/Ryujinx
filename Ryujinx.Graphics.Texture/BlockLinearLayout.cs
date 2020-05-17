@@ -33,6 +33,10 @@ namespace Ryujinx.Graphics.Texture
         private int _robSize;
         private int _sliceSize;
 
+        // Variables for built in iteration.
+        private int _yPart;
+        private int _zPart;
+
         public BlockLinearLayout(
             int width,
             int height,
@@ -96,6 +100,51 @@ namespace Ryujinx.Graphics.Texture
             offset += ((x & 0x0f) >> 0) << 0;
 
             return offset;
+        }
+
+        // Functions for built in iteration.
+        // Components of the offset can be updated separately, and combined to save some time.
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetY(int y)
+        {
+            int yh = y / GobHeight;
+            int offset = (yh >> _bhShift) * _robSize;
+
+            offset += (yh & _bhMask) * GobSize;
+
+            offset += ((y & 0x07) >> 1) << 6;
+            offset += ((y & 0x01) >> 0) << 4;
+
+            _yPart = offset;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public void SetZ(int z)
+        {
+            int offset = (z >> _bdShift) * _sliceSize;
+
+            offset += ((z & _bdMask) * GobSize) << _bhShift;
+
+            _zPart = offset;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetOffsetWithLineOffset(int x)
+        {
+            int offset = (x / GobStride) << _xShift;
+
+            offset += ((x & 0x3f) >> 5) << 8;
+            offset += ((x & 0x1f) >> 4) << 5;
+            offset += (x & 0x0f);
+
+            return offset + _yPart + _zPart;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetOffset(int x)
+        {
+            return GetOffsetWithLineOffset(x << _bppShift);
         }
     }
 }

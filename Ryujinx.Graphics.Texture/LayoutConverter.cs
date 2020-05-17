@@ -1,12 +1,20 @@
 using Ryujinx.Common;
 using System;
-
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using static Ryujinx.Graphics.Texture.BlockLinearConstants;
 
 namespace Ryujinx.Graphics.Texture
 {
     public static class LayoutConverter
     {
+        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
+        private struct Bpp12Pixel
+        {
+            private ulong _elem1;
+            private uint _elem2;
+        }
+
         private const int HostStrideAlignment = 4;
 
         public static Span<byte> ConvertBlockLinearToLinear(
@@ -41,14 +49,14 @@ namespace Ryujinx.Graphics.Texture
             int mipGobBlocksInY = gobBlocksInY;
             int mipGobBlocksInZ = gobBlocksInZ;
 
-            int gobWidth  = (GobStride / bytesPerPixel) * gobBlocksInTileX;
+            int gobWidth = (GobStride / bytesPerPixel) * gobBlocksInTileX;
             int gobHeight = gobBlocksInY * GobHeight;
 
             for (int level = 0; level < levels; level++)
             {
-                int w = Math.Max(1, width  >> level);
+                int w = Math.Max(1, width >> level);
                 int h = Math.Max(1, height >> level);
-                int d = Math.Max(1, depth  >> level);
+                int d = Math.Max(1, depth >> level);
 
                 w = BitUtils.DivRoundUp(w, blockWidth);
                 h = BitUtils.DivRoundUp(h, blockHeight);
@@ -86,36 +94,66 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInZ,
                     bytesPerPixel);
 
-                for (int layer = 0; layer < layers; layer++)
+                unsafe void Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
                 {
-                    int inBaseOffset = layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level);
-
-                    for (int z = 0; z < d; z++)
-                    for (int y = 0; y < h; y++)
+                    fixed (byte* outputBPtr = output, dataBPtr = data)
                     {
-                        for (int x = 0; x < strideTrunc; x += 16)
+                        for (int layer = 0; layer < layers; layer++)
                         {
-                            int offset = inBaseOffset + layoutConverter.GetOffsetWithLineOffset(x, y, z);
+                            int inBaseOffset = layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level);
 
-                            Span<byte> dest = output.Slice(outOffs + x, 16);
+                            for (int z = 0; z < d; z++)
+                            {
+                                layoutConverter.SetZ(z);
+                                for (int y = 0; y < h; y++)
+                                {
+                                    layoutConverter.SetY(y);
+                                    for (int x = 0; x < strideTrunc; x += 16)
+                                    {
+                                        int offset = inBaseOffset + layoutConverter.GetOffsetWithLineOffset(x);
 
-                            data.Slice(offset, 16).CopyTo(dest);
+                                        *(Vector128<byte>*)(outputBPtr + outOffs + x) = *(Vector128<byte>*)(dataBPtr + offset);
+                                    }
+
+                                    for (int x = xStart; x < w; x++)
+                                    {
+                                        int offset = inBaseOffset + layoutConverter.GetOffset(x);
+
+                                        ((T*)(outputBPtr + outOffs))[x] = *(T*)(dataBPtr + offset);
+                                    }
+
+                                    outOffs += stride;
+                                }
+                            }
                         }
-
-                        for (int x = xStart; x < w; x++)
-                        {
-                            int offset = inBaseOffset + layoutConverter.GetOffset(x, y, z);
-
-                            Span<byte> dest = output.Slice(outOffs + x * bytesPerPixel, bytesPerPixel);
-
-                            data.Slice(offset, bytesPerPixel).CopyTo(dest);
-                        }
-
-                        outOffs += stride;
                     }
                 }
-            }
 
+                switch (bytesPerPixel)
+                {
+                    case 1:
+                        Convert<byte>(output, data);
+                        break;
+                    case 2:
+                        Convert<ushort>(output, data);
+                        break;
+                    case 4:
+                        Convert<uint>(output, data);
+                        break;
+                    case 8:
+                        Convert<ulong>(output, data);
+                        break;
+                    case 12:
+                        Convert<Bpp12Pixel>(output, data);
+                        break;
+                    case 16:
+                        Convert<Vector128<byte>>(output, data);
+                        break;
+
+                    default:
+                        throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.");
+                }
+            }
             return output;
         }
 
@@ -137,18 +175,47 @@ namespace Ryujinx.Graphics.Texture
 
             int outOffs = 0;
 
-            for (int y = 0; y < h; y++)
+            unsafe void Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
             {
-                for (int x = 0; x < w; x++)
+                fixed (byte* outputBPtr = output, dataBPtr = data)
                 {
-                    int offset = y * stride + x * bytesPerPixel;
+                    for (int y = 0; y < h; y++)
+                    {
+                        for (int x = 0; x < w; x++)
+                        {
+                            int offset = y * stride + x * bytesPerPixel;
 
-                    Span<byte> dest = output.Slice(outOffs + x * bytesPerPixel, bytesPerPixel);
+                            ((T*)(outputBPtr + outOffs))[x] = *(T*)(dataBPtr + offset);
+                        }
 
-                    data.Slice(offset, bytesPerPixel).CopyTo(dest);
+                        outOffs += outStride;
+                    }
                 }
+            }
 
-                outOffs += outStride;
+            switch (bytesPerPixel)
+            {
+                case 1:
+                    Convert<byte>(output, data);
+                    break;
+                case 2:
+                    Convert<ushort>(output, data);
+                    break;
+                case 4:
+                    Convert<uint>(output, data);
+                    break;
+                case 8:
+                    Convert<ulong>(output, data);
+                    break;
+                case 12:
+                    Convert<Bpp12Pixel>(output, data);
+                    break;
+                case 16:
+                    Convert<Vector128<byte>>(output, data);
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.");
             }
 
             return output;
@@ -217,24 +284,58 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInZ,
                     bytesPerPixel);
 
-                for (int layer = 0; layer < layers; layer++)
+                unsafe void Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
                 {
-                    int outBaseOffset = layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level);
-
-                    for (int z = 0; z < d; z++)
-                    for (int y = 0; y < h; y++)
+                    fixed (byte* outputBPtr = output, dataBPtr = data)
                     {
-                        for (int x = 0; x < w; x++)
+                        T* outputPtr = (T*)outputBPtr, dataPtr = (T*)dataBPtr;
+                        for (int layer = 0; layer < layers; layer++)
                         {
-                            int offset = outBaseOffset + layoutConverter.GetOffset(x, y, z);
+                            int outBaseOffset = layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level);
 
-                            Span<byte> dest = output.Slice(offset, bytesPerPixel);
+                            for (int z = 0; z < d; z++)
+                            {
+                                layoutConverter.SetZ(z);
+                                for (int y = 0; y < h; y++)
+                                {
+                                    layoutConverter.SetY(y);
+                                    for (int x = 0; x < w; x++)
+                                    {
+                                        int offset = outBaseOffset + layoutConverter.GetOffset(x);
 
-                            data.Slice(inOffs + x * bytesPerPixel, bytesPerPixel).CopyTo(dest);
+                                        *(T*)(outputBPtr + offset) = ((T*)(dataBPtr + inOffs))[x];
+                                    }
+
+                                    inOffs += stride;
+                                }
+                            }
                         }
-
-                        inOffs += stride;
                     }
+                }
+
+                switch (bytesPerPixel)
+                {
+                    case 1:
+                        Convert<byte>(output, data);
+                        break;
+                    case 2:
+                        Convert<ushort>(output, data);
+                        break;
+                    case 4:
+                        Convert<uint>(output, data);
+                        break;
+                    case 8:
+                        Convert<ulong>(output, data);
+                        break;
+                    case 12:
+                        Convert<Bpp12Pixel>(output, data);
+                        break;
+                    case 16:
+                        Convert<Vector128<byte>>(output, data);
+                        break;
+
+                    default:
+                        throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.");
                 }
             }
 
@@ -259,18 +360,47 @@ namespace Ryujinx.Graphics.Texture
 
             int inOffs = 0;
 
-            for (int y = 0; y < h; y++)
+            unsafe void Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
             {
-                for (int x = 0; x < w; x++)
+                fixed (byte* outputBPtr = output, dataBPtr = data)
                 {
-                    int offset = y * stride + x * bytesPerPixel;
+                    for (int y = 0; y < h; y++)
+                    {
+                        for (int x = 0; x < w; x++)
+                        {
+                            int offset = y * stride + x * bytesPerPixel;
 
-                    Span<byte> dest = output.Slice(offset, bytesPerPixel);
+                            *(T*)(outputBPtr + offset) = ((T*)(dataBPtr + inOffs))[x];
+                        }
 
-                    data.Slice(inOffs + x * bytesPerPixel, bytesPerPixel).CopyTo(dest);
+                        inOffs += inStride;
+                    }
                 }
+            }
 
-                inOffs += inStride;
+            switch (bytesPerPixel)
+            {
+                case 1:
+                    Convert<byte>(output, data);
+                    break;
+                case 2:
+                    Convert<ushort>(output, data);
+                    break;
+                case 4:
+                    Convert<uint>(output, data);
+                    break;
+                case 8:
+                    Convert<ulong>(output, data);
+                    break;
+                case 12:
+                    Convert<Bpp12Pixel>(output, data);
+                    break;
+                case 16:
+                    Convert<Vector128<byte>>(output, data);
+                    break;
+
+                default:
+                    throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.");
             }
 
             return output;

@@ -84,6 +84,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private int _sequenceNumber;
 
+        private bool _noSync;
+
         /// <summary>
         /// Constructs a new instance of the cached GPU texture.
         /// </summary>
@@ -301,7 +303,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             // Texture buffers are not handled here, instead they are invalidated (if modified)
             // when the texture is bound. This is handled by the buffer manager.
-            if ((_sequenceNumber == _context.SequenceNumber && _hasData) || Info.Target == Target.TextureBuffer)
+            if ((_sequenceNumber == _context.SequenceNumber && _hasData) || _noSync)
             {
                 return;
             }
@@ -999,6 +1001,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _depth  = info.GetDepth();
             _layers = info.GetLayers();
+            _noSync = Info.Target == Target.TextureBuffer;
         }
 
         /// <summary>
