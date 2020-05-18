@@ -4,7 +4,6 @@ using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ncm;
-using LibHac.Spl;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Services.Time;
@@ -197,7 +196,7 @@ namespace Ryujinx.HLE.FileSystem.Content
         }
 
         // fs must contain AOC nca files in its root
-        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId)
+        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId, bool enabled = true)
         {
             _virtualFileSystem.ImportTickets(fs);
 
@@ -228,7 +227,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         }
 
                         string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
-                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", true)))
+                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", enabled)))
                         {
                             Logger.PrintWarning(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {cnmt.TitleId:X16}");
                         }
