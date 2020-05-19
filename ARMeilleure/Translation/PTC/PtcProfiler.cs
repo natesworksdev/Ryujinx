@@ -30,6 +30,9 @@ namespace ARMeilleure.Translation.PTC
 
         internal static bool Enabled { get; private set; }
 
+        public static ulong CodeStart { internal get; set; }
+        public static int   CodeSize  { internal get; set; }
+
         static PtcProfiler()
         {
             _binaryFormatter = new BinaryFormatter();
@@ -54,7 +57,10 @@ namespace ARMeilleure.Translation.PTC
             {
                 Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
 
-                ProfiledFuncs.TryAdd(address, (mode, highCq));
+                if (address >= CodeStart && address < CodeStart + (ulong)CodeSize)
+                {
+                    ProfiledFuncs.TryAdd(address, (mode, highCq));
+                }
             }
         }
 
@@ -64,7 +70,10 @@ namespace ARMeilleure.Translation.PTC
             {
                 Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
 
-                ProfiledFuncs[address] = (mode, highCq);
+                if (address >= CodeStart && address < CodeStart + (ulong)CodeSize)
+                {
+                    ProfiledFuncs[address] = (mode, highCq);
+                }
             }
         }
 

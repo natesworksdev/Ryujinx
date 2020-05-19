@@ -510,13 +510,15 @@ namespace ARMeilleure.Translation.PTC
                 _translateCount = 0;
                 _rejitCount = 0;
 
-                ThreadPool.QueueUserWorkItem(Logger, (funcs.Count, PtcProfiler.ProfiledFuncs.Count));
+                ThreadPool.QueueUserWorkItem(TranslationLogger, (funcs.Count, PtcProfiler.ProfiledFuncs.Count));
 
                 int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
 
                 Parallel.ForEach(PtcProfiler.ProfiledFuncs, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
                 {
                     ulong itemKey = item.Key;
+
+                    Debug.Assert(itemKey >= PtcProfiler.CodeStart && itemKey < PtcProfiler.CodeStart + (ulong)PtcProfiler.CodeSize);
 
                     if (!funcs.ContainsKey(itemKey))
                     {
@@ -559,7 +561,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void Logger(object state)
+        private static void TranslationLogger(object state)
         {
             const int refreshRate = 1; // Seconds.
 
@@ -576,7 +578,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static void PrintInfo(string message) // TODO: Use Ryujinx.Common.Logging.
         {
-            Console.WriteLine($"{'|', 14} Ptc.Logger: {message}");
+            Console.WriteLine($"{'|', 14} Ptc {nameof(TranslationLogger)}: {message}");
         }
 
         internal static void WriteInfoCodeReloc(long address, bool highCq, PtcInfo ptcInfo)

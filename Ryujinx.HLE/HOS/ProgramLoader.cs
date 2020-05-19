@@ -1,3 +1,4 @@
+using ARMeilleure.Translation.PTC;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
@@ -10,7 +11,7 @@ using Ryujinx.HLE.Loaders.Npdm;
 
 namespace Ryujinx.HLE.HOS
 {
-    class ProgramLoader
+    static class ProgramLoader
     {
         private const bool AslrEnabled = true;
 
@@ -168,6 +169,9 @@ namespace Ryujinx.HLE.HOS
                     codeSize += argsSize;
                 }
             }
+
+            PtcProfiler.CodeStart = codeStart;
+            PtcProfiler.CodeSize  = codeSize;
 
             int codePagesCount = codeSize / KMemoryManager.PageSize;
 
