@@ -48,7 +48,7 @@
 
 - `enable_ptc` *(bool)*
 
-  Enable or disable translation cache persistency
+  Enable or disable profiled translation cache persistency
 
 - `enable_fs_integrity_checks` *(bool)*
 

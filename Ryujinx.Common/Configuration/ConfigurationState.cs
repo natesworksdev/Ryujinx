@@ -173,7 +173,7 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableMulticoreScheduling { get; private set; }
 
             /// <summary>
-            /// Enables or disables translation cache persistency
+            /// Enables or disables profiled translation cache persistency
             /// </summary>
             public ReactiveObject<bool> EnablePtc { get; private set; }
 
