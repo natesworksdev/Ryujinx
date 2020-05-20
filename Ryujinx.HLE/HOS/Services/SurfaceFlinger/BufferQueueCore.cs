@@ -72,9 +72,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             Owner = process;
 
-            BufferHistory          = new BufferInfo[BufferHistoryArraySize];
-            EnableExternalEvent    = true;
-            MaxBufferCountCached   = 0;
+            BufferHistory        = new BufferInfo[BufferHistoryArraySize];
+            EnableExternalEvent  = true;
+            MaxBufferCountCached = 0;
         }
 
         public int GetMinUndequeuedBufferCountLocked(bool async)
