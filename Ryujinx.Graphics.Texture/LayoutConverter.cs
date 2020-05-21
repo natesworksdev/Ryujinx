@@ -1,6 +1,5 @@
 using Ryujinx.Common;
 using System;
-using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using static Ryujinx.Graphics.Texture.BlockLinearConstants;
 
@@ -8,13 +7,6 @@ namespace Ryujinx.Graphics.Texture
 {
     public static class LayoutConverter
     {
-        [StructLayout(LayoutKind.Sequential, Pack = 1, Size = 12)]
-        private struct Bpp12Pixel
-        {
-            private ulong _elem1;
-            private uint _elem2;
-        }
-
         private const int HostStrideAlignment = 4;
 
         public static Span<byte> ConvertBlockLinearToLinear(
@@ -288,7 +280,6 @@ namespace Ryujinx.Graphics.Texture
                 {
                     fixed (byte* outputBPtr = output, dataBPtr = data)
                     {
-                        T* outputPtr = (T*)outputBPtr, dataPtr = (T*)dataBPtr;
                         for (int layer = 0; layer < layers; layer++)
                         {
                             int outBaseOffset = layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level);

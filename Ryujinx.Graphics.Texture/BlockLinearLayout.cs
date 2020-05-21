@@ -102,6 +102,23 @@ namespace Ryujinx.Graphics.Texture
             return offset;
         }
 
+        public (int offset, int size) GetRectangleRange(int x, int y, int width, int height)
+        {
+            // Justification:
+            // The offset is a combination of separate x and y parts.
+            // Both components increase with input and never overlap bits.
+            // Therefore for each component, the minimum input value is the lowest that component can go. Opposite goes for maximum.
+
+            int start = GetOffset(x, y, 0);
+            int end = GetOffset(x + width, y + height, 0);
+            return (start, (end - start) + _texBpp);
+        }
+
+        public bool LayoutMatches(BlockLinearLayout other)
+        {
+            return _robSize == other._robSize && _sliceSize == other._sliceSize && _texBpp == other._texBpp && _bhMask == other._bhMask && _bdMask == other._bdMask;
+        }
+
         // Functions for built in iteration.
         // Components of the offset can be updated separately, and combined to save some time.
 
