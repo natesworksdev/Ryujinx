@@ -718,7 +718,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static void TmmlB(EmitterContext context)
         {
-            EmitTextureMipMapLevel(context, false);
+            EmitTextureMipMapLevel(context, true);
         }
 
         public static void Tmml(EmitterContext context)
@@ -809,7 +809,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     Operand dest = GetDest();
 
-                    // Components z and w aren't standard, we return 0 in this case and add a comment
+                    // Components z and w aren't standard, we return 0 in this case and add a comment.
                     if (compIndex >= 2)
                     {
                         context.Add(new CommentNode("Unsupported component z or w found"));
