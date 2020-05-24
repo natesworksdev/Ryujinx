@@ -76,6 +76,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     {
                         fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
                         {
+                            byte* dstBase = dstPtr - dstBaseOffset; // Layout offset is relative to the base, so we need to subtract the span's offset.
+                            byte* srcBase = srcPtr - srcBaseOffset;
+
                             for (int y = 0; y < cbp.YCount; y++)
                             {
                                 srcCalculator.SetY(src.RegionY + y);
@@ -83,10 +86,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                                 for (int x = 0; x < cbp.XCount; x++)
                                 {
-                                    int srcOffset = srcBaseOffset + srcCalculator.GetOffset(src.RegionX + x);
-                                    int dstOffset = dstBaseOffset + dstCalculator.GetOffset(dst.RegionX + x);
+                                    int srcOffset = srcCalculator.GetOffset(src.RegionX + x);
+                                    int dstOffset = dstCalculator.GetOffset(dst.RegionX + x);
 
-                                    *(T*)(dstPtr + dstOffset) = *(T*)(srcPtr + srcOffset);
+                                    *(T*)(dstBase + dstOffset) = *(T*)(srcBase + srcOffset);
                                 }
                             }
                         }
