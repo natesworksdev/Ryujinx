@@ -297,7 +297,7 @@ namespace Ryujinx.Graphics.Texture
                                         *(Vector128<byte>*)offset4 = value4;
                                     }
 
-                                    for (int x = 0; x < strideTrunc; x += 16, inPtr += 16)
+                                    for (int x = strideTrunc64; x < strideTrunc; x += 16, inPtr += 16)
                                     {
                                         byte* offset = outBaseOffset + layoutConverter.GetOffsetWithLineOffset16(x);
 
