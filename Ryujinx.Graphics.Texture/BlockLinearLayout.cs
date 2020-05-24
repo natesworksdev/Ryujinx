@@ -35,6 +35,7 @@ namespace Ryujinx.Graphics.Texture
 
         // Variables for built in iteration.
         private int _yPart;
+        private int _yzPart;
         private int _zPart;
 
         public BlockLinearLayout(
@@ -105,13 +106,14 @@ namespace Ryujinx.Graphics.Texture
         public (int offset, int size) GetRectangleRange(int x, int y, int width, int height)
         {
             // Justification:
-            // The offset is a combination of separate x and y parts.
+            // The 2D offset is a combination of separate x and y parts.
             // Both components increase with input and never overlap bits.
-            // Therefore for each component, the minimum input value is the lowest that component can go. Opposite goes for maximum.
+            // Therefore for each component, the minimum input value is the lowest that component can go.
+            // Minimum total value is minimum X component + minimum Y component. Similar goes for maximum.
 
             int start = GetOffset(x, y, 0);
-            int end = GetOffset(x + width, y + height, 0);
-            return (start, (end - start) + _texBpp);
+            int end = GetOffset(x + width - 1, y + height - 1, 0) + _texBpp; // Cover the last pixel.
+            return (start, end - start);
         }
 
         public bool LayoutMatches(BlockLinearLayout other)
@@ -134,6 +136,7 @@ namespace Ryujinx.Graphics.Texture
             offset += ((y & 0x01) >> 0) << 4;
 
             _yPart = offset;
+            _yzPart = offset + _zPart;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -144,24 +147,45 @@ namespace Ryujinx.Graphics.Texture
             offset += ((z & _bdMask) * GobSize) << _bhShift;
 
             _zPart = offset;
+            _yzPart = offset + _yPart;
+        }
+
+        /// <summary>
+        /// Optimized conversion for line offset in bytes to an absolute offset. Input x must be divisible by 16.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetOffsetWithLineOffset16(int x)
+        {
+            int offset = (x / GobStride) << _xShift;
+
+            offset += ((x & 0x3f) >> 5) << 8;
+            offset += ((x & 0x1f) >> 4) << 5;
+
+            return offset + _yzPart;
+        }
+
+        /// <summary>
+        /// Optimized conversion for line offset in bytes to an absolute offset. Input x must be divisible by 64.
+        /// </summary>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public int GetOffsetWithLineOffset64(int x)
+        {
+            int offset = (x / GobStride) << _xShift;
+
+            return offset + _yzPart;
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetOffsetWithLineOffset(int x)
+        public int GetOffset(int x)
         {
+            x <<= _bppShift;
             int offset = (x / GobStride) << _xShift;
 
             offset += ((x & 0x3f) >> 5) << 8;
             offset += ((x & 0x1f) >> 4) << 5;
             offset += (x & 0x0f);
 
-            return offset + _yPart + _zPart;
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetOffset(int x)
-        {
-            return GetOffsetWithLineOffset(x << _bppShift);
+            return offset + _yzPart;
         }
     }
 }

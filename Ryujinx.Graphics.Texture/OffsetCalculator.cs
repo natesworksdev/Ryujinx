@@ -84,24 +84,11 @@ namespace Ryujinx.Graphics.Texture
             }
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int GetOffsetWithLineOffset(int x)
-        {
-            if (_isLinear)
-            {
-                return x + _yPart;
-            }
-            else
-            {
-                return _layoutConverter.GetOffsetWithLineOffset(x);
-            }
-        }
-
         public (int offset, int size) GetRectangleRange(int x, int y, int width, int height)
         {
             if (_isLinear)
             {
-                return (y * _stride + x, height * _stride);
+                return (y * _stride + x * _bytesPerPixel, height * _stride);
             }
             else
             {

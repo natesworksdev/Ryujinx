@@ -73,7 +73,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 }
                 else 
                 {
-                    unsafe int Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
+                    unsafe bool Convert<T>(Span<byte> dstSpan, ReadOnlySpan<byte> srcSpan) where T : unmanaged
                     {
                         fixed (byte* dstPtr = dstSpan, srcPtr = srcSpan)
                         {
@@ -91,10 +91,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
                                 }
                             }
                         }
-                        return 1;
+                        return true;
                     }
 
-                    int _ = srcBpp switch
+                    bool _ = srcBpp switch
                     {
                         1 => Convert<byte>(dstSpan, srcSpan),
                         2 => Convert<ushort>(dstSpan, srcSpan),
