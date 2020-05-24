@@ -7,7 +7,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
 {
     partial class Methods
     {
-
         /// <summary>
         /// Performs a buffer to buffer, or buffer to texture copy.
         /// </summary>
