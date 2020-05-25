@@ -422,16 +422,23 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             _context.Renderer.Pipeline.SetDepthMode(depthMode);
 
-            int yControl = state.Get<int>(MethodOffset.YControl);
+            YControl yControl = state.Get<YControl>(MethodOffset.YControl);
 
-            bool   flipY  = (yControl & 0b00001) != 0;
-            Origin origin = (yControl & 0b10000) != 0 ? Origin.LowerLeft : Origin.UpperLeft;
-
+            bool   flipY  = yControl.HasFlag(YControl.NegateY);
+            Origin origin = yControl.HasFlag(YControl.TriangleRastFlip) ? Origin.LowerLeft : Origin.UpperLeft;
+            
             _context.Renderer.Pipeline.SetOrigin(origin);
 
-            float yFlip = flipY ? -1 : 1;
+            // The triangle rast flip flag only affects rasterization, the viewport is not flipped.
+            // Setting the origin mode to upper left on the host, however, not onlyy affects rasterization,
+            // but also flips the viewport.
+            // We negate the effects of flipping the viewport by flipping it again using the viewport swizzle.
+            if (origin == Origin.UpperLeft)
+            {
+                flipY = !flipY;
+            }
 
-            Viewport[] viewports = new Viewport[Constants.TotalViewports];
+            Span<Viewport> viewports = stackalloc Viewport[Constants.TotalViewports];
 
             for (int index = 0; index < Constants.TotalViewports; index++)
             {
@@ -441,17 +448,42 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 float x = transform.TranslateX - MathF.Abs(transform.ScaleX);
                 float y = transform.TranslateY - MathF.Abs(transform.ScaleY);
 
-                float width  = transform.ScaleX * 2;
-                float height = transform.ScaleY * 2 * yFlip;
+                float width  = MathF.Abs(transform.ScaleX) * 2;
+                float height = MathF.Abs(transform.ScaleY) * 2;
 
                 RectangleF region = new RectangleF(x, y, width, height);
 
+                ViewportSwizzle swizzleX = transform.UnpackSwizzleX();
+                ViewportSwizzle swizzleY = transform.UnpackSwizzleY();
+                ViewportSwizzle swizzleZ = transform.UnpackSwizzleZ();
+                ViewportSwizzle swizzleW = transform.UnpackSwizzleW();
+
+                if (transform.ScaleX < 0)
+                {
+                    swizzleX ^= ViewportSwizzle.NegativeFlag;
+                }
+
+                if (flipY)
+                {
+                    swizzleY ^= ViewportSwizzle.NegativeFlag;
+                }
+
+                if (transform.ScaleY < 0)
+                {
+                    swizzleY ^= ViewportSwizzle.NegativeFlag;
+                }
+
+                if (transform.ScaleZ < 0)
+                {
+                    swizzleZ ^= ViewportSwizzle.NegativeFlag;
+                }
+
                 viewports[index] = new Viewport(
                     region,
-                    transform.UnpackSwizzleX(),
-                    transform.UnpackSwizzleY(),
-                    transform.UnpackSwizzleZ(),
-                    transform.UnpackSwizzleW(),
+                    swizzleX,
+                    swizzleY,
+                    swizzleZ,
+                    swizzleW,
                     extents.DepthNear,
                     extents.DepthFar);
             }

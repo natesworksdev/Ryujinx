@@ -874,29 +874,15 @@ namespace Ryujinx.Graphics.OpenGL
                 viewportArray[viewportElemIndex + 0] = viewport.Region.X;
                 viewportArray[viewportElemIndex + 1] = viewport.Region.Y;
 
-                // If we already set the clip origin to upper left, then all
-                // viewports are already going to be flipped, so we set flip Y
-                // to true in this case to compensate.
-                bool flipY = _clipOrigin == ClipOrigin.UpperLeft;
-
-                if (viewport.Region.Height < 0)
+                if (HwCapabilities.SupportsViewportSwizzle)
                 {
-                    flipY = !flipY;
+                    GL.NV.ViewportSwizzle(
+                        index,
+                        viewport.SwizzleX.Convert(),
+                        viewport.SwizzleY.Convert(),
+                        viewport.SwizzleZ.Convert(),
+                        viewport.SwizzleW.Convert());
                 }
-
-                ViewportSwizzle swizzleY = viewport.SwizzleY;
-
-                if (flipY)
-                {
-                    swizzleY ^= ViewportSwizzle.NegativeFlag;
-                }
-
-                GL.NV.ViewportSwizzle(
-                    index,
-                    viewport.SwizzleX.Convert(),
-                    swizzleY.Convert(),
-                    viewport.SwizzleZ.Convert(),
-                    viewport.SwizzleW.Convert());
 
                 viewportArray[viewportElemIndex + 2] = MathF.Abs(viewport.Region.Width);
                 viewportArray[viewportElemIndex + 3] = MathF.Abs(viewport.Region.Height);
