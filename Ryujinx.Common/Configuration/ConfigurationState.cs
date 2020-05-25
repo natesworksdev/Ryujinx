@@ -447,6 +447,7 @@ namespace Ryujinx.Configuration
             {
                 ToggleVsync = Key.Tab
             };
+
             Hid.InputConfig.Value = new List<InputConfig>
             {
                 new KeyboardConfig

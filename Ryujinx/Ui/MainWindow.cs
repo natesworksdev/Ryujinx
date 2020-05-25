@@ -747,6 +747,7 @@ namespace Ryujinx.Ui
 
             ConfigurationState.Instance.Ui.ColumnSort.SortColumnId.Value  = column.SortColumnId;
             ConfigurationState.Instance.Ui.ColumnSort.SortAscending.Value = column.SortOrder == SortType.Ascending;
+
             SaveConfig();
         }
 

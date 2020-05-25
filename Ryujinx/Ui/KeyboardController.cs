@@ -97,7 +97,9 @@ namespace Ryujinx.Ui
             HotkeyButtons buttons = 0;
 
             if (keyboard[(Key)ConfigurationState.Instance.Hid.Hotkeys.Value.ToggleVsync])
+            {
                 buttons |= HotkeyButtons.ToggleVSync;
+            }
 
             return buttons;
         }
