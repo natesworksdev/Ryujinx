@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using System;
+using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using static Ryujinx.Graphics.Texture.BlockLinearConstants;
 
@@ -9,7 +10,7 @@ namespace Ryujinx.Graphics.Texture
     {
         private const int HostStrideAlignment = 4;
 
-        public static Span<byte> ConvertBlockLinearToLinear(
+        private static unsafe Span<byte> ConvertBlockLinearToLinear<T>(
             int width,
             int height,
             int depth,
@@ -17,13 +18,14 @@ namespace Ryujinx.Graphics.Texture
             int layers,
             int blockWidth,
             int blockHeight,
-            int bytesPerPixel,
             int gobBlocksInY,
             int gobBlocksInZ,
             int gobBlocksInTileX,
             SizeInfo sizeInfo,
-            ReadOnlySpan<byte> data)
+            ReadOnlySpan<byte> data) where T : unmanaged
         {
+            int bytesPerPixel = Unsafe.SizeOf<T>();
+
             int outSize = GetTextureSize(
                 width,
                 height,
@@ -89,75 +91,87 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInZ,
                     bytesPerPixel);
 
-                unsafe bool Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
+                fixed (byte* outputPtr = output, dataPtr = data)
                 {
-                    fixed (byte* outputPtr = output, dataPtr = data)
+                    byte* outPtr = outputPtr + outOffs;
+                    for (int layer = 0; layer < layers; layer++)
                     {
-                        byte* outPtr = outputPtr + outOffs;
-                        for (int layer = 0; layer < layers; layer++)
+                        byte* inBaseOffset = dataPtr + (layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level));
+
+                        for (int z = 0; z < d; z++)
                         {
-                            byte* inBaseOffset = dataPtr + (layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level));
-
-                            for (int z = 0; z < d; z++)
+                            layoutConverter.SetZ(z);
+                            for (int y = 0; y < h; y++)
                             {
-                                layoutConverter.SetZ(z);
-                                for (int y = 0; y < h; y++)
+                                layoutConverter.SetY(y);
+
+                                for (int x = 0; x < strideTrunc64; x += 64, outPtr += 64)
                                 {
-                                    layoutConverter.SetY(y);
+                                    byte* offset = inBaseOffset + layoutConverter.GetOffsetWithLineOffset64(x);
+                                    byte* offset2 = offset + 0x20;
+                                    byte* offset3 = offset + 0x100;
+                                    byte* offset4 = offset + 0x120;
 
-                                    for (int x = 0; x < strideTrunc64; x += 64, outPtr += 64)
-                                    {
-                                        byte* offset = inBaseOffset + layoutConverter.GetOffsetWithLineOffset64(x);
-                                        byte* offset2 = offset + 0x20;
-                                        byte* offset3 = offset + 0x100;
-                                        byte* offset4 = offset + 0x120;
+                                    Vector128<byte> value = *(Vector128<byte>*)offset;
+                                    Vector128<byte> value2 = *(Vector128<byte>*)offset2;
+                                    Vector128<byte> value3 = *(Vector128<byte>*)offset3;
+                                    Vector128<byte> value4 = *(Vector128<byte>*)offset4;
 
-                                        Vector128<byte> value = *(Vector128<byte>*)offset;
-                                        Vector128<byte> value2 = *(Vector128<byte>*)offset2;
-                                        Vector128<byte> value3 = *(Vector128<byte>*)offset3;
-                                        Vector128<byte> value4 = *(Vector128<byte>*)offset4;
-
-                                        *(Vector128<byte>*)outPtr = value;
-                                        *(Vector128<byte>*)(outPtr + 16) = value2;
-                                        *(Vector128<byte>*)(outPtr + 32) = value3;
-                                        *(Vector128<byte>*)(outPtr + 48) = value4;
-                                    }
-
-                                    for (int x = strideTrunc64; x < strideTrunc; x += 16, outPtr += 16)
-                                    {
-                                        byte* offset = inBaseOffset + layoutConverter.GetOffsetWithLineOffset16(x);
-
-                                        *(Vector128<byte>*)outPtr = *(Vector128<byte>*)offset;
-                                    }
-
-                                    for (int x = xStart; x < w; x++, outPtr += bytesPerPixel)
-                                    {
-                                        byte* offset = inBaseOffset + layoutConverter.GetOffset(x);
-
-                                        *(T*)outPtr = *(T*)offset;
-                                    }
-
-                                    outPtr += outStrideGap;
+                                    *(Vector128<byte>*)outPtr = value;
+                                    *(Vector128<byte>*)(outPtr + 16) = value2;
+                                    *(Vector128<byte>*)(outPtr + 32) = value3;
+                                    *(Vector128<byte>*)(outPtr + 48) = value4;
                                 }
+
+                                for (int x = strideTrunc64; x < strideTrunc; x += 16, outPtr += 16)
+                                {
+                                    byte* offset = inBaseOffset + layoutConverter.GetOffsetWithLineOffset16(x);
+
+                                    *(Vector128<byte>*)outPtr = *(Vector128<byte>*)offset;
+                                }
+
+                                for (int x = xStart; x < w; x++, outPtr += bytesPerPixel)
+                                {
+                                    byte* offset = inBaseOffset + layoutConverter.GetOffset(x);
+
+                                    *(T*)outPtr = *(T*)offset;
+                                }
+
+                                outPtr += outStrideGap;
                             }
                         }
-                        outOffs += stride * h * d * layers;
                     }
-                    return true;
+                    outOffs += stride * h * d * layers;
                 }
-
-                bool _ = bytesPerPixel switch
-                {
-                    1 => Convert<byte>(output, data),
-                    2 => Convert<ushort>(output, data),
-                    4 => Convert<uint>(output, data),
-                    8 => Convert<ulong>(output, data),
-                    12 => Convert<Bpp12Pixel>(output, data),
-                    16 => Convert<Vector128<byte>>(output, data),
-                    _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
-                };
             }
             return output;
+        }
+
+        public static Span<byte> ConvertBlockLinearToLinear(
+            int width,
+            int height,
+            int depth,
+            int levels,
+            int layers,
+            int blockWidth,
+            int blockHeight,
+            int bytesPerPixel,
+            int gobBlocksInY,
+            int gobBlocksInZ,
+            int gobBlocksInTileX,
+            SizeInfo sizeInfo,
+            ReadOnlySpan<byte> data)
+        {
+            return bytesPerPixel switch
+            {
+                1 => ConvertBlockLinearToLinear<byte>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                2 => ConvertBlockLinearToLinear<ushort>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                4 => ConvertBlockLinearToLinear<uint>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                8 => ConvertBlockLinearToLinear<ulong>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                12 => ConvertBlockLinearToLinear<Bpp12Pixel>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                16 => ConvertBlockLinearToLinear<Vector128<byte>>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
+            };
         }
 
         public static Span<byte> ConvertLinearStridedToLinear(
@@ -191,7 +205,7 @@ namespace Ryujinx.Graphics.Texture
             return output;
         }
 
-        public static Span<byte> ConvertLinearToBlockLinear(
+        private static unsafe Span<byte> ConvertLinearToBlockLinear<T>(
             int width,
             int height,
             int depth,
@@ -199,13 +213,14 @@ namespace Ryujinx.Graphics.Texture
             int layers,
             int blockWidth,
             int blockHeight,
-            int bytesPerPixel,
             int gobBlocksInY,
             int gobBlocksInZ,
             int gobBlocksInTileX,
             SizeInfo sizeInfo,
-            ReadOnlySpan<byte> data)
+            ReadOnlySpan<byte> data) where T : unmanaged
         {
+            int bytesPerPixel = Unsafe.SizeOf<T>();
+
             Span<byte> output = new byte[sizeInfo.TotalSize];
 
             int inOffs = 0;
@@ -261,76 +276,88 @@ namespace Ryujinx.Graphics.Texture
                     mipGobBlocksInZ,
                     bytesPerPixel);
 
-                unsafe bool Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
+                fixed (byte* outputPtr = output, dataPtr = data)
                 {
-                    fixed (byte* outputPtr = output, dataPtr = data)
+                    byte* inPtr = dataPtr + inOffs;
+                    for (int layer = 0; layer < layers; layer++)
                     {
-                        byte* inPtr = dataPtr + inOffs;
-                        for (int layer = 0; layer < layers; layer++)
+                        byte* outBaseOffset = outputPtr + (layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level));
+
+                        for (int z = 0; z < d; z++)
                         {
-                            byte* outBaseOffset = outputPtr + (layer * sizeInfo.LayerSize + sizeInfo.GetMipOffset(level));
-
-                            for (int z = 0; z < d; z++)
+                            layoutConverter.SetZ(z);
+                            for (int y = 0; y < h; y++)
                             {
-                                layoutConverter.SetZ(z);
-                                for (int y = 0; y < h; y++)
+                                layoutConverter.SetY(y);
+
+                                for (int x = 0; x < strideTrunc64; x += 64, inPtr += 64)
                                 {
-                                    layoutConverter.SetY(y);
+                                    byte* offset = outBaseOffset + layoutConverter.GetOffsetWithLineOffset64(x);
+                                    byte* offset2 = offset + 0x20;
+                                    byte* offset3 = offset + 0x100;
+                                    byte* offset4 = offset + 0x120;
 
-                                    for (int x = 0; x < strideTrunc64; x += 64, inPtr += 64)
-                                    {
-                                        byte* offset = outBaseOffset + layoutConverter.GetOffsetWithLineOffset64(x);
-                                        byte* offset2 = offset + 0x20;
-                                        byte* offset3 = offset + 0x100;
-                                        byte* offset4 = offset + 0x120;
+                                    Vector128<byte> value = *(Vector128<byte>*)inPtr;
+                                    Vector128<byte> value2 = *(Vector128<byte>*)(inPtr + 16);
+                                    Vector128<byte> value3 = *(Vector128<byte>*)(inPtr + 32);
+                                    Vector128<byte> value4 = *(Vector128<byte>*)(inPtr + 48);
 
-                                        Vector128<byte> value = *(Vector128<byte>*)inPtr;
-                                        Vector128<byte> value2 = *(Vector128<byte>*)(inPtr + 16);
-                                        Vector128<byte> value3 = *(Vector128<byte>*)(inPtr + 32);
-                                        Vector128<byte> value4 = *(Vector128<byte>*)(inPtr + 48);
-
-                                        *(Vector128<byte>*)offset = value;
-                                        *(Vector128<byte>*)offset2 = value2;
-                                        *(Vector128<byte>*)offset3 = value3;
-                                        *(Vector128<byte>*)offset4 = value4;
-                                    }
-
-                                    for (int x = strideTrunc64; x < strideTrunc; x += 16, inPtr += 16)
-                                    {
-                                        byte* offset = outBaseOffset + layoutConverter.GetOffsetWithLineOffset16(x);
-
-                                        *(Vector128<byte>*)offset = *(Vector128<byte>*)inPtr;
-                                    }
-
-                                    for (int x = xStart; x < w; x++, inPtr += bytesPerPixel)
-                                    {
-                                        byte* offset = outBaseOffset + layoutConverter.GetOffset(x);
-
-                                        *(T*)offset = *(T*)inPtr;
-                                    }
-
-                                    inPtr += inStrideGap;
+                                    *(Vector128<byte>*)offset = value;
+                                    *(Vector128<byte>*)offset2 = value2;
+                                    *(Vector128<byte>*)offset3 = value3;
+                                    *(Vector128<byte>*)offset4 = value4;
                                 }
+
+                                for (int x = strideTrunc64; x < strideTrunc; x += 16, inPtr += 16)
+                                {
+                                    byte* offset = outBaseOffset + layoutConverter.GetOffsetWithLineOffset16(x);
+
+                                    *(Vector128<byte>*)offset = *(Vector128<byte>*)inPtr;
+                                }
+
+                                for (int x = xStart; x < w; x++, inPtr += bytesPerPixel)
+                                {
+                                    byte* offset = outBaseOffset + layoutConverter.GetOffset(x);
+
+                                    *(T*)offset = *(T*)inPtr;
+                                }
+
+                                inPtr += inStrideGap;
                             }
                         }
-                        inOffs += stride * h * d * layers;
                     }
-                    return true;
+                    inOffs += stride * h * d * layers;
                 }
-
-                bool _ = bytesPerPixel switch
-                {
-                    1 => Convert<byte>(output, data),
-                    2 => Convert<ushort>(output, data),
-                    4 => Convert<uint>(output, data),
-                    8 => Convert<ulong>(output, data),
-                    12 => Convert<Bpp12Pixel>(output, data),
-                    16 => Convert<Vector128<byte>>(output, data),
-                    _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
-                };
             }
 
             return output;
+        }
+
+        public static Span<byte> ConvertLinearToBlockLinear(
+            int width,
+            int height,
+            int depth,
+            int levels,
+            int layers,
+            int blockWidth,
+            int blockHeight,
+            int bytesPerPixel,
+            int gobBlocksInY,
+            int gobBlocksInZ,
+            int gobBlocksInTileX,
+            SizeInfo sizeInfo,
+            ReadOnlySpan<byte> data)
+        {
+            return bytesPerPixel switch
+            {
+                1 => ConvertLinearToBlockLinear<byte>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                2 => ConvertLinearToBlockLinear<ushort>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                4 => ConvertLinearToBlockLinear<uint>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                8 => ConvertLinearToBlockLinear<ulong>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                12 => ConvertLinearToBlockLinear<Bpp12Pixel>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                16 => ConvertLinearToBlockLinear<Vector128<byte>>(width, height, depth, levels, layers, blockWidth, blockHeight, gobBlocksInY, gobBlocksInZ, gobBlocksInTileX, sizeInfo, data),
+                _ => throw new NotSupportedException($"Unable to convert ${bytesPerPixel} bpp pixel format.")
+            };
         }
 
         public static Span<byte> ConvertLinearToLinearStrided(
