@@ -53,9 +53,9 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void AddEntry(ulong address, ExecutionMode mode, bool highCq)
         {
-            lock (_locker)
+            if (IsAddressInStaticCodeRange(address))
             {
-                if (IsAddressInStaticCodeRange(address))
+                lock (_locker)
                 {
                     Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
 
@@ -66,9 +66,9 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void UpdateEntry(ulong address, ExecutionMode mode, bool highCq)
         {
-            lock (_locker)
+            if (IsAddressInStaticCodeRange(address))
             {
-                if (IsAddressInStaticCodeRange(address))
+                lock (_locker)
                 {
                     Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
 
