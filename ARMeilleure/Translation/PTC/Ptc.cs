@@ -516,27 +516,27 @@ namespace ARMeilleure.Translation.PTC
 
                 Parallel.ForEach(PtcProfiler.ProfiledFuncs, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
                 {
-                    ulong itemKey = item.Key;
+                    ulong address = item.Key;
 
-                    Debug.Assert(itemKey >= PtcProfiler.CodeStart && itemKey < PtcProfiler.CodeStart + (ulong)PtcProfiler.CodeSize);
+                    Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
 
-                    if (!funcs.ContainsKey(itemKey))
+                    if (!funcs.ContainsKey(address))
                     {
-                        TranslatedFunction func = Translator.Translate(memory, jumpTable, itemKey, item.Value.mode, item.Value.highCq);
+                        TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.Value.mode, item.Value.highCq);
 
-                        funcs.TryAdd(itemKey, func);
+                        funcs.TryAdd(address, func);
 
-                        if (func.HighCq) jumpTable.RegisterFunction(itemKey, func);
+                        if (func.HighCq) jumpTable.RegisterFunction(address, func);
 
                         Interlocked.Increment(ref _translateCount);
                     }
-                    else if (item.Value.highCq && !funcs[itemKey].HighCq)
+                    else if (item.Value.highCq && !funcs[address].HighCq)
                     {
-                        TranslatedFunction func = Translator.Translate(memory, jumpTable, itemKey, item.Value.mode, highCq: true);
+                        TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.Value.mode, highCq: true);
 
-                        funcs[itemKey] = func;
+                        funcs[address] = func;
 
-                        jumpTable.RegisterFunction(itemKey, func);
+                        jumpTable.RegisterFunction(address, func);
 
                         Interlocked.Increment(ref _rejitCount);
                     }

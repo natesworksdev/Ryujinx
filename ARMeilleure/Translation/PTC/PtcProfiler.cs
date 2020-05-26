@@ -30,8 +30,8 @@ namespace ARMeilleure.Translation.PTC
 
         internal static bool Enabled { get; private set; }
 
-        public static ulong CodeStart { internal get; set; }
-        public static int   CodeSize  { internal get; set; }
+        public static ulong StaticCodeStart { internal get; set; }
+        public static int   StaticCodeSize  { internal get; set; }
 
         static PtcProfiler()
         {
@@ -55,10 +55,10 @@ namespace ARMeilleure.Translation.PTC
         {
             lock (_locker)
             {
-                Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
-
-                if (address >= CodeStart && address < CodeStart + (ulong)CodeSize)
+                if (IsAddressInStaticCodeRange(address))
                 {
+                    Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
+
                     ProfiledFuncs.TryAdd(address, (mode, highCq));
                 }
             }
@@ -68,13 +68,18 @@ namespace ARMeilleure.Translation.PTC
         {
             lock (_locker)
             {
-                Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
-
-                if (address >= CodeStart && address < CodeStart + (ulong)CodeSize)
+                if (IsAddressInStaticCodeRange(address))
                 {
+                    Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
+
                     ProfiledFuncs[address] = (mode, highCq);
                 }
             }
+        }
+
+        internal static bool IsAddressInStaticCodeRange(ulong address)
+        {
+            return address >= StaticCodeStart && address < StaticCodeStart + (ulong)StaticCodeSize;
         }
 
         internal static void ClearEntries()

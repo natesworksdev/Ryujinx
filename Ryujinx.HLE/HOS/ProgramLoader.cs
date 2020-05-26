@@ -170,8 +170,8 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-            PtcProfiler.CodeStart = codeStart;
-            PtcProfiler.CodeSize  = codeSize;
+            PtcProfiler.StaticCodeStart = codeStart;
+            PtcProfiler.StaticCodeSize  = codeSize;
 
             int codePagesCount = codeSize / KMemoryManager.PageSize;
 
