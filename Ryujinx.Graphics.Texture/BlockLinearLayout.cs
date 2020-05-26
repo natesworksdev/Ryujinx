@@ -118,7 +118,11 @@ namespace Ryujinx.Graphics.Texture
 
         public bool LayoutMatches(BlockLinearLayout other)
         {
-            return _robSize == other._robSize && _sliceSize == other._sliceSize && _texBpp == other._texBpp && _bhMask == other._bhMask && _bdMask == other._bdMask;
+            return _robSize == other._robSize &&
+                   _sliceSize == other._sliceSize &&
+                   _texBpp == other._texBpp &&
+                   _bhMask == other._bhMask &&
+                   _bdMask == other._bdMask;
         }
 
         // Functions for built in iteration.

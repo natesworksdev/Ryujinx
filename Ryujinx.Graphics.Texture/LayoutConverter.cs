@@ -64,7 +64,6 @@ namespace Ryujinx.Graphics.Texture
                 }
 
                 int strideTrunc = BitUtils.AlignDown(w * bytesPerPixel, 16);
-
                 int strideTrunc64 = BitUtils.AlignDown(w * bytesPerPixel, 64);
 
                 int xStart = strideTrunc / bytesPerPixel;
@@ -237,7 +236,6 @@ namespace Ryujinx.Graphics.Texture
                 }
 
                 int strideTrunc = BitUtils.AlignDown(w * bytesPerPixel, 16);
-
                 int strideTrunc64 = BitUtils.AlignDown(w * bytesPerPixel, 64);
 
                 int xStart = strideTrunc / bytesPerPixel;

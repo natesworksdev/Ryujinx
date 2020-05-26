@@ -100,7 +100,11 @@ namespace Ryujinx.Graphics.Texture
         {
             if (_isLinear)
             {
-                return other._isLinear && _width == other._width && _height == other._height && _stride == other._stride && _bytesPerPixel == other._bytesPerPixel;
+                return other._isLinear &&
+                       _width == other._width &&
+                       _height == other._height &&
+                       _stride == other._stride &&
+                       _bytesPerPixel == other._bytesPerPixel;
             }
             else
             {
