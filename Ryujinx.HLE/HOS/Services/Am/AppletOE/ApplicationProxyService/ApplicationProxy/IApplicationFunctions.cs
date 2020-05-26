@@ -102,9 +102,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             if (((1 << (int)context.Device.System.State.DesiredTitleLanguage) & supportedLanguages) == 0)
             {
                 // Find first supported language from TitleLanguage. TODO: In the future, a GUI could enable user-specified search priority
-                int setIndex = 1;
+                int setIndex = 0;
 
-                while ((supportedLanguages & 1) != 0) // This call isn't perf critical, so no need for bit hacks
+                while ((supportedLanguages & 1) == 0) // This call isn't perf critical, so no need for bit hacks
                 {
                     supportedLanguages >>= 1; setIndex++;
                 }
