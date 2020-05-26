@@ -1,5 +1,6 @@
 using OpenTK.Graphics.OpenGL;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.OpenGL.Image;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL
@@ -19,9 +20,10 @@ namespace Ryujinx.Graphics.OpenGL
             _colors = new TextureView[8];
         }
 
-        public void Bind()
+        public int Bind()
         {
             GL.BindFramebuffer(FramebufferTarget.Framebuffer, Handle);
+            return Handle;
         }
 
         public void AttachColor(int index, TextureView color)
