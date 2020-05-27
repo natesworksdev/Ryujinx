@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
             long certificateDataSize     = context.Request.SendBuff[0].Size;
             ulong certificateId = 1;
 
-            context.ResponseData.Write(response);
+            context.ResponseData.Write(certificateId);
 
             Logger.PrintStub(LogClass.ServiceSsl, new { certificateFormat, unknown });
 
