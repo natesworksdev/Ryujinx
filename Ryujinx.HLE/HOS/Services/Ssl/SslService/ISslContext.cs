@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         [Command(4)]
         public ResultCode ImportServerPki(ServiceCtx context)
         {
-            var CertificateFormat = context.RequestData.ReadInt32();
+            int certificateFormat = context.RequestData.ReadInt32();
             var unknown = context.RequestData.ReadBytes(5);
             UInt64 response = 1;
 
