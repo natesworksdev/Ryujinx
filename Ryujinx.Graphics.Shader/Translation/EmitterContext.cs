@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             {
                 // Here we attempt to implement viewport swizzle on the vertex shader.
                 // Perform permutation and negation of the output gl_Position components.
-                // Note that per-viewport swizzling can't be supported using thhis approach.
+                // Note that per-viewport swizzling can't be supported using this approach.
                 int swizzleX = Config.GpuAccessor.QueryViewportSwizzle(0);
                 int swizzleY = Config.GpuAccessor.QueryViewportSwizzle(1);
                 int swizzleZ = Config.GpuAccessor.QueryViewportSwizzle(2);
