@@ -530,7 +530,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorAcrossVectorOpF(context, (op1, op2) =>
             {
-                return context.Call(new _F32_F32_F32(SoftFloat32.FPMaxNum), op1, op2);
+                return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMaxNum)), op1, op2);
             });
         }
 
@@ -613,7 +613,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorAcrossVectorOpF(context, (op1, op2) =>
             {
-                return context.Call(new _F32_F32_F32(SoftFloat32.FPMinNum), op1, op2);
+                return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMinNum)), op1, op2);
             });
         }
 
