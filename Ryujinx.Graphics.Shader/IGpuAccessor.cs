@@ -54,7 +54,7 @@
             return 16;
         }
 
-        public bool QuerySupportsImageLoadStoreFormatted()
+        public bool QuerySupportsImageLoadFormatted()
         {
             return true;
         }

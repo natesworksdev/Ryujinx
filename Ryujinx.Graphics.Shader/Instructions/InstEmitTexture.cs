@@ -1217,9 +1217,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static TextureFormat GetTextureFormat(EmitterContext context, int handle)
         {
-            // If the formatted load store extension is supported, we don't need to
+            // When the formatted load extension is supported, we don't need to
             // specify a format, we can just declare it without a format and the GPU will handle it.
-            if (context.Config.GpuAccessor.QuerySupportsImageLoadStoreFormatted())
+            if (context.Config.GpuAccessor.QuerySupportsImageLoadFormatted())
             {
                 return TextureFormat.Unknown;
             }
