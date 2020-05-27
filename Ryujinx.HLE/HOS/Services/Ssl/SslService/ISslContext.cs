@@ -11,12 +11,12 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         public ResultCode ImportServerPki(ServiceCtx context)
         {
             var CertificateFormat = context.RequestData.ReadInt32();
-            var orOther = context.RequestData.ReadBytes(5);
+            var unknown = context.RequestData.ReadBytes(5);
             UInt64 nice = 1;
 
             context.ResponseData.Write(nice);
 
-            Logger.PrintStub(LogClass.ServiceSsl, new { CertificateFormat, orOther });
+            Logger.PrintStub(LogClass.ServiceSsl, new { CertificateFormat, unknown });
 
             return ResultCode.Success;
         }
