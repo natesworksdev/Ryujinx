@@ -11,7 +11,8 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         public ResultCode ImportServerPki(ServiceCtx context)
         {
             int certificateFormat = context.RequestData.ReadInt32();
-            var unknown = context.RequestData.ReadBytes(5);
+            long certificateDataPosition = context.Request.SendBuff[0].Position;
+            long certificateDataSize     = context.Request.SendBuff[0].Size;
             UInt64 response = 1;
 
             context.ResponseData.Write(response);
