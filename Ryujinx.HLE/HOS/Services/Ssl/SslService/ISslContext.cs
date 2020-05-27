@@ -8,6 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         public ISslContext(ServiceCtx context ) { }
         
         [Command(4)]
+        // ImportServerPki(nn::ssl::sf::CertificateFormat certificateFormat, buffer<bytes, 5> certificate) -> u64 certificateId
         public ResultCode ImportServerPki(ServiceCtx context)
         {
             int certificateFormat = context.RequestData.ReadInt32();
