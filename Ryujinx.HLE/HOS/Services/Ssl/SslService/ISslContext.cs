@@ -12,9 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         {
             var CertificateFormat = context.RequestData.ReadInt32();
             var unknown = context.RequestData.ReadBytes(5);
-            UInt64 nice = 1;
+            UInt64 response = 1;
 
-            context.ResponseData.Write(nice);
+            context.ResponseData.Write(response);
 
             Logger.PrintStub(LogClass.ServiceSsl, new { CertificateFormat, unknown });
 
