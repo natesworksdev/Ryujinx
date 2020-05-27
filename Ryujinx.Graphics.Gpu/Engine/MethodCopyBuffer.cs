@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 (int dstBaseOffset, int dstSize) = dstCalculator.GetRectangleRange(dst.RegionX, dst.RegionY, cbp.XCount, cbp.YCount);
 
                 ReadOnlySpan<byte> srcSpan = _context.PhysicalMemory.GetSpan(srcBaseAddress + (ulong)srcBaseOffset, srcSize);
-                Span<byte> dstSpan = new Span<byte>(_context.PhysicalMemory.GetSpan(dstBaseAddress + (ulong)dstBaseOffset, dstSize).ToArray());
+                Span<byte> dstSpan = _context.PhysicalMemory.GetSpan(dstBaseAddress + (ulong)dstBaseOffset, dstSize).ToArray();
 
                 bool completeSource = src.RegionX == 0 && src.RegionY == 0 && src.Width == cbp.XCount && src.Height == cbp.YCount;
                 bool completeDest = dst.RegionX == 0 && dst.RegionY == 0 && dst.Width == cbp.XCount && dst.Height == cbp.YCount;
