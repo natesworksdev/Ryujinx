@@ -16,8 +16,6 @@
         Russian,
         Korean,
         Taiwanese,
-        Chinese,
-        
-        MaxLength
+        Chinese
     }
 }
