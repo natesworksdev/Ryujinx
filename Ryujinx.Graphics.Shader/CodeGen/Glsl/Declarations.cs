@@ -19,6 +19,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
             context.AppendLine("#extension GL_ARB_shader_ballot : enable");
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
+            context.AppendLine("#extension GL_EXT_shader_image_load_formatted : enable");
 
             if (context.Config.Stage == ShaderStage.Compute)
             {
@@ -323,6 +324,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 if (!images.TryAdd(imageName, texOp))
                 {
+                    // Ensure that all texture operations share the same format.
+                    // This avoid errors like mismatched formats.
+                    texOp.Format = images[imageName].Format;
+
                     continue;
                 }
 
