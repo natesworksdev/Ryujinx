@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 
 namespace Ryujinx.Graphics.VDec
@@ -53,7 +54,7 @@ namespace Ryujinx.Graphics.VDec
             WriteBits((int)value, size - 1);
         }
 
-        private static readonly byte[] ClzNibbleTbl = { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
+        private static ReadOnlySpan<byte> ClzNibbleTbl => new byte[] { 4, 3, 2, 2, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0 };
 
         private static int CountLeadingZeros(int value)
         {
