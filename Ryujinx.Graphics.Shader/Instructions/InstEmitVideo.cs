@@ -12,7 +12,40 @@ namespace Ryujinx.Graphics.Shader.Instructions
         public static void Vmad(EmitterContext context)
         {
             // TODO: Implement properly.
-            context.Copy(GetDest(context), GetSrcC(context));
+            OpCodeVideo op = (OpCodeVideo)context.CurrOp;
+
+            Operand result;
+            Operand A = GetSrcA(context);
+            Operand B = GetSrcB(context);
+            Operand C = GetSrcC(context);
+
+            bool signedFinal = isSigned(op.RaType) || isSigned(op.RbType);
+
+            int shr = op.RawOpCode.Extract(51, 2);
+
+            result = context.IMultiply(A, B);
+            result = context.IAdd(result, C);
+
+            if (shr == 1)
+            {
+                result = signedFinal
+                    ? context.ShiftRightS32(result, Const(7))
+                    : context.ShiftRightU32(result, Const(7));
+            }
+            else if (shr == 2)
+            {
+                result = signedFinal
+                    ? context.ShiftRightS32(result, Const(15))
+                    : context.ShiftRightU32(result, Const(15));
+            }
+
+
+            context.Copy(GetDest(context), result);
+        }
+
+        public static bool isSigned(VideoType v)
+        {
+            return v == VideoType.S16 || v == VideoType.S32 || v == VideoType.S8;
         }
 
         public static void Vmnmx(EmitterContext context)

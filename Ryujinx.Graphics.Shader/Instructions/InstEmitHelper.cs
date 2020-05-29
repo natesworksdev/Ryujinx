@@ -112,6 +112,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                     case IOpCodeRegCbuf op:
                         return Register(op.Rc);
+
+                    case OpCodeVideo op:
+                        return Register(op.Rb);
                 }
             }
 
