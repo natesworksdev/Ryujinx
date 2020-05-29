@@ -1,0 +1,49 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <LangVersion>8.0</LangVersion>
+    <RuntimeIdentifiers>win-x64;osx-x64;linux-x64</RuntimeIdentifiers>
+    <OutputType>Exe</OutputType>
+    <IsPackable>false</IsPackable>
+
+    <TargetOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Windows)))' == 'true'">windows</TargetOS>
+    <TargetOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::OSX)))' == 'true'">osx</TargetOS>
+    <TargetOS Condition="'$([System.Runtime.InteropServices.RuntimeInformation]::IsOSPlatform($([System.Runtime.InteropServices.OSPlatform]::Linux)))' == 'true'">linux</TargetOS>
+    <Configurations>Debug;Release;Profile Debug;Profile Release</Configurations>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Release|AnyCPU'">
+    <DefineConstants>TRACE;USE_DEBUGGING</DefineConstants>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Profile Debug|AnyCPU'">
+    <DefineConstants>TRACE;USE_DEBUGGING</DefineConstants>
+    <Optimize>false</Optimize>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.16.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ryujinx.Cpu\Ryujinx.Cpu.csproj" />
+    <ProjectReference Include="..\Ryujinx.Memory\Ryujinx.Memory.csproj" />
+    <ProjectReference Include="..\Ryujinx.Tests.Unicorn\Ryujinx.Tests.Unicorn.csproj" />
+    <ProjectReference Include="..\ARMeilleure\ARMeilleure.csproj" />
+  </ItemGroup>
+
+  <Target Name="CopyUnicorn" AfterTargets="Build">
+    <Copy SourceFiles="..\Ryujinx.Tests.Unicorn\libs\$(TargetOS)\unicorn.dll" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
+    <Copy SourceFiles="..\Ryujinx.Tests.Unicorn\libs\$(TargetOS)\libunicorn.dylib" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
+    <Copy SourceFiles="..\Ryujinx.Tests.Unicorn\libs\$(TargetOS)\libunicorn.so" DestinationFolder="$(OutputPath)" ContinueOnError="true" />
+  </Target>
+
+</Project>
