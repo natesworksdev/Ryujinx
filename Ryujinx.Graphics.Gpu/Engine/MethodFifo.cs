@@ -12,13 +12,13 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="argument">Method call argument</param>
         public void Semaphore(GpuState state, int argument)
         {
-            SemaphoreOperation op = (SemaphoreOperation)(argument & 3);
+            FifoSemaphoreOperation op = (FifoSemaphoreOperation)(argument & 3);
 
             var semaphore = state.Get<SemaphoreState>(MethodOffset.Semaphore);
 
             int value = semaphore.Payload;
 
-            if (op == SemaphoreOperation.Release)
+            if (op == FifoSemaphoreOperation.Counter)
             {
                 // TODO: There's much more that should be done here.
                 // NVN only supports the "Accumulate" mode, so we
