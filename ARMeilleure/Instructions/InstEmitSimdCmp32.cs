@@ -181,17 +181,17 @@ namespace ARMeilleure.Instructions
             Operand one = Const(1);
             if (zero)
             {
-                EmitVectorUnaryOpF32(context, (n) =>
+                EmitVectorUnaryOpF32(context, (m) =>
                 {
-                    OperandType type = n.Type;
+                    OperandType type = m.Type;
 
                     if (type == OperandType.FP64)
                     {
-                        return context.Call(typeof(SoftFloat64).GetMethod(name), n, ConstF(0.0d), one);
+                        return context.Call(typeof(SoftFloat64).GetMethod(name), m, ConstF(0.0d), one);
                     }
                     else
                     {
-                        return context.Call(typeof(SoftFloat32).GetMethod(name), n, ConstF(0.0f), one);
+                        return context.Call(typeof(SoftFloat32).GetMethod(name), m, ConstF(0.0f), one);
                     }
                 });
             }

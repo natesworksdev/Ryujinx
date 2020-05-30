@@ -50,25 +50,22 @@ namespace ARMeilleure.Translation
         private int _tableEnd    = 0;
         private int _dynTableEnd = 0;
 
-        private readonly ConcurrentDictionary<ulong, TranslatedFunction> _targets;
-        private readonly ConcurrentDictionary<ulong, LinkedList<int>>    _dependants; // TODO: Attach to TranslatedFunction or a wrapper class.
-
         public IntPtr JumpPointer    => _jumpRegion.Pointer;
         public IntPtr DynamicPointer => _dynamicRegion.Pointer;
 
         public int TableEnd    => _tableEnd;
         public int DynTableEnd => _dynTableEnd;
 
-        public ConcurrentDictionary<ulong, TranslatedFunction> Targets => _targets;
-        public ConcurrentDictionary<ulong, LinkedList<int>> Dependants => _dependants;
+        public ConcurrentDictionary<ulong, TranslatedFunction> Targets    { get; }
+        public ConcurrentDictionary<ulong, LinkedList<int>>    Dependants { get; } // TODO: Attach to TranslatedFunction or a wrapper class.
 
         public JumpTable(IJitMemoryAllocator allocator)
         {
             _jumpRegion    = new ReservedRegion(allocator, JumpTableByteSize);
             _dynamicRegion = new ReservedRegion(allocator, DynamicTableByteSize);
 
-            _targets    = new ConcurrentDictionary<ulong, TranslatedFunction>();
-            _dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
+            Targets    = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            Dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
 
             Symbols.Add((ulong)_jumpRegion.Pointer.ToInt64(), JumpTableByteSize, JumpTableStride, "JMP_TABLE");
             Symbols.Add((ulong)_dynamicRegion.Pointer.ToInt64(), DynamicTableByteSize, DynamicTableStride, "DYN_TABLE");
@@ -83,7 +80,7 @@ namespace ARMeilleure.Translation
             {
                 if (funcs.TryGetValue(guestAddress, out TranslatedFunction func))
                 {
-                    _targets.TryAdd(guestAddress, func);
+                    Targets.TryAdd(guestAddress, func);
                 }
                 else
                 {
@@ -93,18 +90,18 @@ namespace ARMeilleure.Translation
 
             foreach (var item in ptcJumpTable.Dependants)
             {
-                _dependants.TryAdd(item.Key, new LinkedList<int>(item.Value));
+                Dependants.TryAdd(item.Key, new LinkedList<int>(item.Value));
             }
         }
 
         public void RegisterFunction(ulong address, TranslatedFunction func)
         {
             address &= ~3UL;
-            _targets.AddOrUpdate(address, func, (key, oldFunc) => func);
+            Targets.AddOrUpdate(address, func, (key, oldFunc) => func);
             long funcPtr = func.FuncPtr.ToInt64();
 
             // Update all jump table entries that target this address.
-            if (_dependants.TryGetValue(address, out LinkedList<int> myDependants))
+            if (Dependants.TryGetValue(address, out LinkedList<int> myDependants))
             {
                 lock (myDependants)
                 {
@@ -127,13 +124,13 @@ namespace ARMeilleure.Translation
             // Is the address we have already registered? If so, put the function address in the jump table.
             // If not, it will point to the direct call stub.
             long value = DirectCallStubs.DirectCallStub(isJump).ToInt64();
-            if (_targets.TryGetValue((ulong)address, out TranslatedFunction func))
+            if (Targets.TryGetValue((ulong)address, out TranslatedFunction func))
             {
                 value = func.FuncPtr.ToInt64();
             }
 
             // Make sure changes to the function at the target address update this jump table entry.
-            LinkedList<int> targetDependants = _dependants.GetOrAdd((ulong)address, (addr) => new LinkedList<int>());
+            LinkedList<int> targetDependants = Dependants.GetOrAdd((ulong)address, (addr) => new LinkedList<int>());
             lock (targetDependants)
             {
                 targetDependants.AddLast(entry);

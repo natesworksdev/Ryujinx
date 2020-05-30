@@ -18,14 +18,14 @@ namespace ARMeilleure.Translation
         private static IntPtr _indirectCallStubPtr;
         private static IntPtr _indirectTailCallStubPtr;
 
-        private static readonly object _locker = new object();
+        private static readonly object _lock = new object();
         private static bool _initialized;
 
         public static void InitializeStubs()
         {
             if (_initialized) return;
 
-            lock (_locker)
+            lock (_lock)
             {
                 if (_initialized) return;
 

@@ -66,6 +66,7 @@ namespace ARMeilleure.CodeGen.X86
         private Stream _stream;
 
         private PtcInfo _ptcInfo;
+        private bool    _ptcDisabled;
 
         static Assembler()
         {
@@ -279,7 +280,8 @@ namespace ARMeilleure.CodeGen.X86
         {
             _stream = stream;
 
-            _ptcInfo = ptcInfo;
+            _ptcInfo     = ptcInfo;
+            _ptcDisabled = ptcInfo == null;
         }
 
         public void Add(Operand dest, Operand source, OperandType type)
@@ -460,7 +462,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Jcc(X86Condition condition, long offset)
         {
-            if (_ptcInfo == null && ConstFitsOnS8(offset))
+            if (_ptcDisabled && ConstFitsOnS8(offset))
             {
                 WriteByte((byte)(0x70 | (int)condition));
 
@@ -481,7 +483,7 @@ namespace ARMeilleure.CodeGen.X86
 
         public void Jmp(long offset)
         {
-            if (_ptcInfo == null && ConstFitsOnS8(offset))
+            if (_ptcDisabled && ConstFitsOnS8(offset))
             {
                 WriteByte(0xeb);
 
@@ -1320,9 +1322,9 @@ namespace ARMeilleure.CodeGen.X86
             return ConstFitsOnS32(value);
         }
 
-        public static int GetJccLength(long offset, PtcInfo ptcInfo = null)
+        public static int GetJccLength(long offset, bool ptcDisabled = true)
         {
-            if (ptcInfo == null && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
+            if (ptcDisabled && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
             {
                 return 2;
             }
@@ -1336,9 +1338,9 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        public static int GetJmpLength(long offset, PtcInfo ptcInfo = null)
+        public static int GetJmpLength(long offset, bool ptcDisabled = true)
         {
-            if (ptcInfo == null && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
+            if (ptcDisabled && ConstFitsOnS8(offset < 0 ? offset - 2 : offset))
             {
                 return 2;
             }

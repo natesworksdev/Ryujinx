@@ -22,7 +22,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly ManualResetEvent _waitEvent;
 
-        private static readonly object _locker;
+        private static readonly object _lock;
 
         private static bool _disposed;
 
@@ -42,7 +42,7 @@ namespace ARMeilleure.Translation.PTC
 
             _waitEvent = new ManualResetEvent(true);
 
-            _locker = new object();
+            _lock = new object();
 
             _disposed = false;
 
@@ -55,7 +55,7 @@ namespace ARMeilleure.Translation.PTC
         {
             if (IsAddressInStaticCodeRange(address))
             {
-                lock (_locker)
+                lock (_lock)
                 {
                     Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
 
@@ -68,7 +68,7 @@ namespace ARMeilleure.Translation.PTC
         {
             if (IsAddressInStaticCodeRange(address))
             {
-                lock (_locker)
+                lock (_lock)
                 {
                     Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
 
@@ -158,7 +158,7 @@ namespace ARMeilleure.Translation.PTC
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
 
-                lock (_locker)
+                lock (_lock)
                 {
                     _binaryFormatter.Serialize(stream, ProfiledFuncs);
                 }

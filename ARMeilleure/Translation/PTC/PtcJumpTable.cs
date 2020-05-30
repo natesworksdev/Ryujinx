@@ -8,11 +8,11 @@ namespace ARMeilleure.Translation.PTC
     [Serializable]
     class PtcJumpTable
     {
-        private List<KeyValuePair<long, DirectHostAddress>>   _jumpTable;
-        private List<KeyValuePair<long, IndirectHostAddress>> _dynamicTable;
+        private readonly List<KeyValuePair<long, DirectHostAddress>>   _jumpTable;
+        private readonly List<KeyValuePair<long, IndirectHostAddress>> _dynamicTable;
 
-        private List<ulong> _targets;
-        private Dictionary<ulong, LinkedList<int>> _dependants;
+        private readonly List<ulong> _targets;
+        private readonly Dictionary<ulong, LinkedList<int>> _dependants;
 
         public int TableEnd    => _jumpTable.Count;
         public int DynTableEnd => _dynamicTable.Count;

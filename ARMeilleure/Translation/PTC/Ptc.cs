@@ -1,6 +1,7 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Memory;
+using Ryujinx.Common.Logging;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Concurrent;
@@ -47,7 +48,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly string _basePath;
 
-        private static readonly object _locker;
+        private static readonly object _lock;
 
         private static bool _disposed;
 
@@ -80,7 +81,7 @@ namespace ARMeilleure.Translation.PTC
 
             _basePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), BaseDir);
 
-            _locker = new object();
+            _lock = new object();
 
             _disposed = false;
 
@@ -119,22 +120,32 @@ namespace ARMeilleure.Translation.PTC
                 return;
             }
 
+            Logger.PrintInfo(LogClass.Ptc, $"Initializing Profiled Persistent Translation Cache (enabled: {enabled}).");
+
             TitleIdText = titleIdText;
             DisplayVersion = !String.IsNullOrEmpty(displayVersion) ? displayVersion : DisplayVersionDefault;
 
-            string workPath = Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
-
-            if (enabled && !Directory.Exists(workPath)) Directory.CreateDirectory(workPath);
-
-            CachePath = Path.Combine(workPath, DisplayVersion);
-
-            if (enabled) Enable(); else Disable();
-
             if (enabled)
             {
-                Load();
+                string workPath = Path.Combine(_basePath, "games", TitleIdText, "cache", "cpu");
 
+                if (!Directory.Exists(workPath))
+                {
+                    Directory.CreateDirectory(workPath);
+                }
+
+                CachePath = Path.Combine(workPath, DisplayVersion);
+
+                Enable();
+
+                Load();
                 PtcProfiler.Load();
+            }
+            else
+            {
+                CachePath = string.Empty;
+
+                Disable();
             }
         }
 
@@ -366,7 +377,9 @@ namespace ARMeilleure.Translation.PTC
                 using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
                 using (BinaryReader unwindInfosReader = new BinaryReader(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
                 {
-                    for (int i = 0; i < (int)_infosStream.Length / InfoEntry.Stride; i++) // infosEntriesCount
+                    int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
+
+                    for (int i = 0; i < infosEntriesCount; i++)
                     {
                         InfoEntry infoEntry = ReadInfo(infosReader);
 
@@ -526,7 +539,10 @@ namespace ARMeilleure.Translation.PTC
 
                         funcs.TryAdd(address, func);
 
-                        if (func.HighCq) jumpTable.RegisterFunction(address, func);
+                        if (func.HighCq)
+                        {
+                            jumpTable.RegisterFunction(address, func);
+                        }
 
                         Interlocked.Increment(ref _translateCount);
                     }
@@ -569,21 +585,16 @@ namespace ARMeilleure.Translation.PTC
 
             do
             {
-                PrintInfo($"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited");
+                Logger.PrintInfo(LogClass.Ptc, $"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited");
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
-            PrintInfo($"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited");
-        }
-
-        private static void PrintInfo(string message) // TODO: Use Ryujinx.Common.Logging.
-        {
-            Console.WriteLine($"{'|', 14} Ptc {nameof(TranslationLogger)}: {message}");
+            Logger.PrintInfo(LogClass.Ptc, $"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions to translate - {_rejitCount} functions rejited");
         }
 
         internal static void WriteInfoCodeReloc(long address, bool highCq, PtcInfo ptcInfo)
         {
-            lock (_locker)
+            lock (_lock)
             {
                 // WriteInfo.
                 _infosWriter.Write((long)address); // InfoEntry.Address

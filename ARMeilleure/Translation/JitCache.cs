@@ -20,14 +20,14 @@ namespace ARMeilleure.Translation
 
         private static readonly List<JitCacheEntry> _cacheEntries = new List<JitCacheEntry>();
 
-        private static readonly object _locker = new object();
+        private static readonly object _lock = new object();
         private static bool _initialized;
 
         public static void Initialize(IJitMemoryAllocator allocator)
         {
             if (_initialized) return;
 
-            lock (_locker)
+            lock (_lock)
             {
                 if (_initialized) return;
 
@@ -51,7 +51,7 @@ namespace ARMeilleure.Translation
         {
             byte[] code = func.Code;
 
-            lock (_locker)
+            lock (_lock)
             {
                 Debug.Assert(_initialized);
 
@@ -119,7 +119,7 @@ namespace ARMeilleure.Translation
 
         public static bool TryFind(int offset, out JitCacheEntry entry)
         {
-            lock (_locker)
+            lock (_lock)
             {
                 foreach (JitCacheEntry cacheEntry in _cacheEntries)
                 {
