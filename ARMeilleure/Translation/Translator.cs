@@ -64,6 +64,11 @@ namespace ARMeilleure.Translation
                     _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) => func);
 
                     _jumpTable.RegisterFunction(request.Address, func);
+
+                    if (PtcProfiler.Enabled)
+                    {
+                        PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
+                    }
                 }
                 else
                 {
@@ -164,11 +169,6 @@ namespace ARMeilleure.Translation
                 _backgroundStack.Push(new RejitRequest(address, mode));
 
                 _backgroundTranslatorEvent.Set();
-
-                if (PtcProfiler.Enabled)
-                {
-                    PtcProfiler.UpdateEntry(address, mode, highCq: true);
-                }
             }
 
             return func;
