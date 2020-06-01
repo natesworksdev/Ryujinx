@@ -17,7 +17,7 @@ namespace Ryujinx.Common.Logging
                 sb.Clear();
 
                 sb.AppendFormat(@"{0:hh\:mm\:ss\.fff}", args.Time);
-                sb.Append(" | ");
+                sb.Append($" |{args.Level.ToString()[0]}| ");
 
                 if (args.ThreadName != null)
                 {
