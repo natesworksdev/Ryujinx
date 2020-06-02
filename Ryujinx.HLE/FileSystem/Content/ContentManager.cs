@@ -210,11 +210,14 @@ namespace Ryujinx.HLE.FileSystem.Content
                     if (nca.Header.ContentType != NcaContentType.Meta)
                     {
                         Logger.PrintWarning(LogClass.Application, $"{ncaPath} is not a valid metadata file");
+
                         continue;
                     }
 
                     using var pfs0 = nca.OpenFileSystem(0, Switch.GetIntegrityCheckLevel());
+
                     pfs0.OpenFile(out IFile cnmtFile, pfs0.EnumerateEntries().Single().FullPath.ToU8Span(), OpenMode.Read);
+
                     using (cnmtFile)
                     {
                         var cnmt = new Cnmt(cnmtFile.AsStream());
@@ -245,11 +248,13 @@ namespace Ryujinx.HLE.FileSystem.Content
         public bool GetAocDataStorage(ulong aocTitleId, out IStorage aocStorage)
         {
             aocStorage = null;
+
             if (_aocData.TryGetValue(aocTitleId, out AocItem aoc) && aoc.Enabled)
             {
                 var file = new FileStream(aoc.ContainerPath, FileMode.Open, FileAccess.Read);
                 PartitionFileSystem pfs;
                 IFile ncaFile;
+
                 switch (Path.GetExtension(aoc.ContainerPath))
                 {
                     case ".xci":
@@ -263,7 +268,9 @@ namespace Ryujinx.HLE.FileSystem.Content
                     default:
                         return false; // Print error?
                 }
+
                 aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage()).OpenStorage(NcaSectionType.Data, Switch.GetIntegrityCheckLevel());
+                
                 return true;
             }
 

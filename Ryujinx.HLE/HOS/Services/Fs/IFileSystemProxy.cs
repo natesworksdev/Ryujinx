@@ -377,7 +377,9 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             if (context.Device.System.ContentManager.GetAocDataStorage((ulong)titleId, out LibHac.Fs.IStorage aocStorage))
             {
                 Logger.PrintInfo(LogClass.Loader, $"Opened AddOnContent Data TitleID={titleId:X16}");
+
                 MakeObject(context, new FileSystemProxy.IStorage(aocStorage));
+                
                 return ResultCode.Success;
             }
 

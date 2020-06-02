@@ -18,24 +18,24 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [Command(2)]
         // CountAddOnContent(pid) -> u32
-        public static ResultCode CountAddOnContent(ServiceCtx context)
+        public ResultCode CountAddOnContent(ServiceCtx context)
         {
-            ulong pid = context.RequestData.ReadUInt64();
+            long pid = context.Process.Pid;
 
             // Official code checks ApplicationControlProperty.RuntimeAddOnContentInstall 
             // if true calls ns:am ListAvailableAddOnContent again to get updated count
 
             byte runtimeAddOnContentInstall = context.Device.Application.ControlData.Value.RuntimeAddOnContentInstall;
-            if(runtimeAddOnContentInstall != 0)
+            if (runtimeAddOnContentInstall != 0)
             {
-                Logger.PrintWarning(LogClass.ServiceNs, $"RuntimeAddOnContentInstall is true. Some DLC may be missing");;
+                Logger.PrintWarning(LogClass.ServiceNs, $"RuntimeAddOnContentInstall is true. Some DLC may be missing");
             }
 
             uint aocCount = CountAddOnContentImpl(context);
 
             context.ResponseData.Write(aocCount);
 
-            Logger.PrintDebug(LogClass.ServiceNs, $"pid={pid} count={aocCount} RuntimeInstall={runtimeAddOnContentInstall}");
+            Logger.PrintStub(LogClass.ServiceNs, new { aocCount, runtimeAddOnContentInstall });
 
             return ResultCode.Success;
         }
@@ -47,11 +47,11 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [Command(3)]
         // ListAddOnContent(u32, u32, pid) -> (u32, buffer<u32>)
-        public static ResultCode ListAddOnContent(ServiceCtx context)
+        public ResultCode ListAddOnContent(ServiceCtx context)
         {
             uint startIndex = context.RequestData.ReadUInt32();
             uint bufferSize = context.RequestData.ReadUInt32();
-            ulong pid = context.RequestData.ReadUInt64();
+            long pid = context.Process.Pid;
 
             var aocTitleIds = context.Device.System.ContentManager.GetAocTitleIds();
 
@@ -60,6 +60,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             if (aocCount <= startIndex)
             {
                 context.ResponseData.Write((uint)0);
+
                 return ResultCode.Success;
             }
 
@@ -76,16 +77,16 @@ namespace Ryujinx.HLE.HOS.Services.Ns
                 context.Memory.Write(bufAddr + (ulong)i * 4, (int)(aocTitleIds[i + (int)startIndex] - aocBaseId));
             }
 
-            Logger.PrintDebug(LogClass.ServiceNs, $"pid={pid} bufferSize={bufferSize} start={startIndex} aocCount={aocCount}");
+            Logger.PrintStub(LogClass.ServiceNs, new { bufferSize, startIndex, aocCount });
 
             return ResultCode.Success;
         }
 
         [Command(5)]
         // GetAddOnContentBaseId(pid) -> u64
-        public static ResultCode GetAddonContentBaseId(ServiceCtx context)
+        public ResultCode GetAddonContentBaseId(ServiceCtx context)
         {
-            ulong pid = context.RequestData.ReadUInt64();
+            long pid = context.Process.Pid;
 
             // Official code calls arp:r GetApplicationControlProperty to get AddOnContentBaseId
             // If the call fails, calls arp:r GetApplicationLaunchProperty to get App TitleId
@@ -93,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
             context.ResponseData.Write(aocBaseId);
 
-            Logger.PrintDebug(LogClass.ServiceNs, $"pid={pid} aocBaseId={aocBaseId:X16}");
+            Logger.PrintStub(LogClass.ServiceNs, $"aocBaseId={aocBaseId:X16}");
 
             // ResultCode will be error code of GetApplicationLaunchProperty if it fails
             return ResultCode.Success;
@@ -113,17 +114,17 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [Command(7)]
         // PrepareAddOnContent(u32, pid)
-        public static ResultCode PrepareAddOnContent(ServiceCtx context)
+        public ResultCode PrepareAddOnContent(ServiceCtx context)
         {
             uint aocIndex = context.RequestData.ReadUInt32();
-            ulong pid = context.RequestData.ReadUInt64();
+            long pid = context.Process.Pid;
 
             // Official Code calls a bunch of functions from arp:r for aocBaseId
             // and ns:am RegisterContentsExternalKey?, GetOwnedApplicationContentMetaStatus? etc...
 
             // Ideally, this should probably initialize the AocData values for the specified index
 
-            Logger.PrintStub(LogClass.ServiceNs, $"pid={pid} aocIndex={aocIndex}");
+            Logger.PrintStub(LogClass.ServiceNs, new { aocIndex });
 
             return ResultCode.Success;
         }
@@ -147,9 +148,9 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         }
 
 
-        [Command(9)]
-        // [10.0.0+] GetAddOnContentLostErrorCode() -> u64
-        public static ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
+        [Command(9)] // [10.0.0+] 
+        // GetAddOnContentLostErrorCode() -> u64
+        public ResultCode GetAddOnContentLostErrorCode(ServiceCtx context)
         {
             // Seems to calculate ((value & 0x1ff)) + 2000 on 0x7d0a4
             // which gives 0x874 (2000+164). 164 being Module ID of `EC (Shop)`
@@ -162,7 +163,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [Command(100)]
         // CreateEcPurchasedEventManager() -> object<nn::ec::IPurchaseEventManager>
-        public static ResultCode CreateEcPurchasedEventManager(ServiceCtx context)
+        public ResultCode CreateEcPurchasedEventManager(ServiceCtx context)
         {
             MakeObject(context, new IPurchaseEventManager());
 
@@ -173,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
         [Command(101)]
         // CreatePermanentEcPurchasedEventManager() -> object<nn::ec::IPurchaseEventManager>
-        public static ResultCode CreatePermanentEcPurchasedEventManager(ServiceCtx context)
+        public ResultCode CreatePermanentEcPurchasedEventManager(ServiceCtx context)
         {
             // Very similar to CreateEcPurchasedEventManager but with some extra code
 
