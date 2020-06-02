@@ -11,10 +11,10 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
         // ImportServerPki(nn::ssl::sf::CertificateFormat certificateFormat, buffer<bytes, 5> certificate) -> u64 certificateId
         public ResultCode ImportServerPki(ServiceCtx context)
         {
-            int         certificateFormat         = context.RequestData.ReadInt32();
-            long        certificateDataPosition   = context.Request.SendBuff[0].Position;
-            long        certificateDataSize       = context.Request.SendBuff[0].Size;
-            ulong       certificateId             = 1;
+            int   certificateFormat       = context.RequestData.ReadInt32();
+            long  certificateDataPosition = context.Request.SendBuff[0].Position;
+            long  certificateDataSize     = context.Request.SendBuff[0].Size;
+            ulong certificateId           = 1;
 
             context.ResponseData.Write(certificateId);
 
