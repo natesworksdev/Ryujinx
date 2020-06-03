@@ -128,6 +128,11 @@ namespace Ryujinx.Configuration
         public bool IgnoreMissingServices { get; set; }
 
         /// <summary>
+        /// Enable or disable ignoring missing services
+        /// </summary>
+        public bool ForceSWASTC { get; set; }
+
+        /// <summary>
         /// Used to toggle columns in the GUI
         /// </summary>
         public GuiColumns GuiColumns { get; set; }
