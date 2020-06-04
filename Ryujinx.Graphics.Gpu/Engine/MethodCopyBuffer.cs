@@ -108,7 +108,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     };
                 }
 
-                _context.PhysicalMemory.Write(dstBaseAddress, dstSpan);
+                _context.PhysicalMemory.Write(dstBaseAddress + (ulong)dstBaseOffset, dstSpan);
             }
             else
             {

@@ -88,7 +88,9 @@ namespace Ryujinx.Graphics.Texture
         {
             if (_isLinear)
             {
-                return (y * _stride + x * _bytesPerPixel, height * _stride);
+                int start = y * _stride + x * _bytesPerPixel;
+                int end = (y + height - 1) * _stride + (x + width) * _bytesPerPixel;
+                return (start, end - start);
             }
             else
             {
