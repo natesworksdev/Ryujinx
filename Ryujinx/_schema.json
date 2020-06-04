@@ -514,6 +514,17 @@
         false
       ]
     },
+    "force_swastc": {
+      "$id": "#/properties/force_swastc",
+      "type": "boolean",
+      "title": "Force ASTC Software Decode",
+      "description": "Enable or disable ASTC Software Decoder",
+      "default": false,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "game_dirs": {
       "$id": "#/properties/game_dirs",
       "type": "array",

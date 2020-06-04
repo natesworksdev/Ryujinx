@@ -128,7 +128,7 @@ namespace Ryujinx.Configuration
         public bool IgnoreMissingServices { get; set; }
 
         /// <summary>
-        /// Enable or disable ignoring missing services
+        /// Forces Ryujinx to use the Software ASTC Decoder
         /// </summary>
         public bool ForceSWASTC { get; set; }
 

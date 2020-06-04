@@ -20,14 +20,7 @@ namespace Ryujinx.Graphics.GAL
             float maximumSupportedAnisotropy,
             int   storageBufferOffsetAlignment)
         {
-            if(Ryujinx.Configuration.ConfigurationState.Instance.System.ForceSWASTC)
-            {
-                SupportsAstcCompression = false;
-            }
-            else
-            {
-                SupportsAstcCompression = supportsAstcCompression;
-            }
+            SupportsAstcCompression          = !Ryujinx.Configuration.ConfigurationState.Instance.System.ForceSWASTC && supportsAstcCompression;
             SupportsImageLoadFormatted       = supportsImageLoadFormatted;
             SupportsNonConstantTextureOffset = supportsNonConstantTextureOffset;
             SupportsViewportSwizzle          = supportsViewportSwizzle;

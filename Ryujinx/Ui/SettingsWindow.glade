@@ -1563,12 +1563,12 @@
                                 <property name="margin_right">10</property>
                                 <property name="orientation">vertical</property>
                                 <child>
-                                  <object class="GtkCheckButton" id="_astcforcedecodeToggle">
+                                  <object class="GtkCheckButton" id="_astcForceDecodeToggle">
                                     <property name="label" translatable="yes">Force ASTC Software Decode</property>
                                     <property name="visible">True</property>
                                     <property name="can_focus">True</property>
                                     <property name="receives_default">False</property>
-                                    <property name="tooltip_text" translatable="yes">Enable or Disbale ASTC Software Decoder</property>
+                                    <property name="tooltip_text" translatable="yes">Enable or disable the ASTC Software Decoder</property>
                                     <property name="halign">start</property>
                                     <property name="margin_top">5</property>
                                     <property name="margin_bottom">5</property>

@@ -188,7 +188,7 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
 
             /// <summary>
-            /// Enable or disable ignoring missing services
+            /// Forces Ryujinx to use the Software ASTC Decoder
             /// </summary>
             public ReactiveObject<bool> ForceSWASTC { get; private set; }
 

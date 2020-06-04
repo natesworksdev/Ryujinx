@@ -37,7 +37,7 @@ namespace Ryujinx.Ui
         [GUI] CheckButton  _multiSchedToggle;
         [GUI] CheckButton  _fsicToggle;
         [GUI] CheckButton  _ignoreToggle;
-        [GUI] CheckButton _astcforcedecodeToggle;
+        [GUI] CheckButton _astcForceDecodeToggle;
         [GUI] CheckButton  _directKeyboardAccess;
         [GUI] ComboBoxText _systemLanguageSelect;
         [GUI] ComboBoxText _systemRegionSelect;
@@ -164,7 +164,7 @@ namespace Ryujinx.Ui
             }
             if (ConfigurationState.Instance.System.ForceSWASTC)
             {
-                _astcforcedecodeToggle.Click();
+                _astcForceDecodeToggle.Click();
             }
 
             if (ConfigurationState.Instance.Hid.EnableKeyboard)
@@ -388,7 +388,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.System.EnableMulticoreScheduling.Value = _multiSchedToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
-            ConfigurationState.Instance.System.ForceSWASTC.Value               = _astcforcedecodeToggle.Active;
+            ConfigurationState.Instance.System.ForceSWASTC.Value               = _astcForceDecodeToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
