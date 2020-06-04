@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         public byte Type; // 7.0.0+
 
         [FieldOffset(0x33D)]
-        public fixed byte Reserved_2[0x3];
+        public fixed byte Reserved2[0x3];
 
         [FieldOffset(0x340)]
         public uint HashOffset;
@@ -39,6 +39,6 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         public uint HashCount;
 
         [FieldOffset(0x348)]
-        public ulong Reserved_3;
+        public ulong Reserved3;
     }
 }
