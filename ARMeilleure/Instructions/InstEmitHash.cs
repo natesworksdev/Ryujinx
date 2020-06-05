@@ -1,3 +1,5 @@
+// https://www.intel.com/content/dam/www/public/us/en/documents/white-papers/fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
+
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
@@ -16,10 +18,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized(context, false, 8);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U8(SoftFallback.Crc32b));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U8(SoftFallback.Crc32b));
+            }
         }
 
         public static void Crc32h(ArmEmitterContext context)
@@ -27,10 +30,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized(context, false, 16);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U16(SoftFallback.Crc32h));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U16(SoftFallback.Crc32h));
+            }
         }
 
         public static void Crc32w(ArmEmitterContext context)
@@ -38,10 +42,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized(context, false, 32);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U32(SoftFallback.Crc32w));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U32(SoftFallback.Crc32w));
+            }
         }
 
         public static void Crc32x(ArmEmitterContext context)
@@ -49,10 +54,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized64(context, false);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U64(SoftFallback.Crc32x));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U64(SoftFallback.Crc32x));
+            }
         }
 
         public static void Crc32cb(ArmEmitterContext context)
@@ -60,10 +66,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized(context, true, 8);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U8(SoftFallback.Crc32cb));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U8(SoftFallback.Crc32cb));
+            }
         }
 
         public static void Crc32ch(ArmEmitterContext context)
@@ -71,10 +78,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized(context, true, 16);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U16(SoftFallback.Crc32ch));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U16(SoftFallback.Crc32ch));
+            }
         }
 
         public static void Crc32cw(ArmEmitterContext context)
@@ -82,10 +90,11 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized(context, true, 32);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U32(SoftFallback.Crc32cw));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U32(SoftFallback.Crc32cw));
+            }
         }
 
         public static void Crc32cx(ArmEmitterContext context)
@@ -93,15 +102,19 @@ namespace ARMeilleure.Instructions
             if (Optimizations.UsePclmulqdq)
             {
                 EmitCrc32Optimized64(context, true);
-                return;
             }
-
-            EmitCrc32Call(context, new _U32_U32_U64(SoftFallback.Crc32cx));
+            else
+            {
+                EmitCrc32Call(context, new _U32_U32_U64(SoftFallback.Crc32cx));
+            }
         }
 
         private static void EmitCrc32Optimized(ArmEmitterContext context, bool castagnoli, int bitsize)
         {
             OpCodeAluBinary op = (OpCodeAluBinary)context.CurrOp;
+
+            long mu = castagnoli ? 0x0DEA713F1 : 0x1F7011641; // mu' = floor(x^64/P(x))'
+            long polynomial = castagnoli ? 0x105EC76F0 : 0x1DB710641; // P'(x) << 1
 
             Operand crc = GetIntOrZR(context, op.Rn);
             Operand data = GetIntOrZR(context, op.Rm);
@@ -110,21 +123,15 @@ namespace ARMeilleure.Instructions
 
             switch (bitsize)
             {
-            case 8:
-                data = context.VectorInsert8(context.VectorZero(), data, 0);
-                break;
-            case 16:
-                data = context.VectorInsert16(context.VectorZero(), data, 0);
-                break;
-            case 32:
-                data = context.VectorInsert(context.VectorZero(), data, 0);
-                break;
+                case 8: data = context.VectorInsert8(context.VectorZero(), data, 0); break;
+                case 16: data = context.VectorInsert16(context.VectorZero(), data, 0); break;
+                case 32: data = context.VectorInsert(context.VectorZero(), data, 0); break;
             }
 
             Operand tmp = context.AddIntrinsic(Intrinsic.X86Pxor, crc, data);
             tmp = context.AddIntrinsic(Intrinsic.X86Psllq, tmp, Const(64 - bitsize));
-            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, castagnoli ? 0x0DEA713F1 : 0x1F7011641), Const(0));
-            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, castagnoli ? 0x105EC76F0 : 0x1DB710641), Const(0));
+            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, mu), Const(0));
+            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, polynomial), Const(0));
 
             if (bitsize < 32)
             {
@@ -139,6 +146,9 @@ namespace ARMeilleure.Instructions
         {
             OpCodeAluBinary op = (OpCodeAluBinary)context.CurrOp;
 
+            long mu = castagnoli ? 0x0DEA713F1 : 0x1F7011641; // mu' = floor(x^64/P(x))'
+            long polynomial = castagnoli ? 0x105EC76F0 : 0x1DB710641; // P'(x) << 1
+
             Operand crc = GetIntOrZR(context, op.Rn);
             Operand data = GetIntOrZR(context, op.Rm);
 
@@ -148,14 +158,14 @@ namespace ARMeilleure.Instructions
             Operand tmp = context.AddIntrinsic(Intrinsic.X86Pxor, crc, data);
             Operand res = context.AddIntrinsic(Intrinsic.X86Pslldq, tmp, Const(4));
 
-            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, res, X86GetScalar(context, castagnoli ? 0x0DEA713F1 : 0x1F7011641), Const(0));
-            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, castagnoli ? 0x105EC76F0 : 0x1DB710641), Const(0));
+            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, res, X86GetScalar(context, mu), Const(0));
+            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, polynomial), Const(0));
 
             tmp = context.AddIntrinsic(Intrinsic.X86Pxor, tmp, res);
             tmp = context.AddIntrinsic(Intrinsic.X86Psllq, tmp, Const(32));
 
-            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, castagnoli ? 0x0DEA713F1 : 0x1F7011641), Const(1));
-            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, castagnoli ? 0x105EC76F0 : 0x1DB710641), Const(0));
+            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, mu), Const(1));
+            tmp = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, tmp, X86GetScalar(context, polynomial), Const(0));
 
             SetIntOrZR(context, op.Rd, context.VectorExtract(OperandType.I32, tmp, 2));
         }
