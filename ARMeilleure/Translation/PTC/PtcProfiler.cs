@@ -12,7 +12,7 @@ namespace ARMeilleure.Translation.PTC
 {
     public static class PtcProfiler
     {
-        private const int SaveInterval = 15; // Seconds.
+        private const int SaveInterval = 30; // Seconds.
 
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
 
@@ -38,7 +38,7 @@ namespace ARMeilleure.Translation.PTC
             _binaryFormatter = new BinaryFormatter();
 
             _timer = new System.Timers.Timer((double)SaveInterval * 1000d);
-            _timer.Elapsed += Save;
+            _timer.Elapsed += PreSave;
 
             _waitEvent = new ManualResetEvent(true);
 
@@ -87,53 +87,71 @@ namespace ARMeilleure.Translation.PTC
             ProfiledFuncs.Clear();
         }
 
-        internal static void Load()
+        internal static void PreLoad()
         {
-            FileInfo fileInfo = new FileInfo(String.Concat(Ptc.CachePath, ".info"));
+            string fileNameActual = String.Concat(Ptc.CachePathActual, ".info");
+            string fileNameBackup = String.Concat(Ptc.CachePathBackup, ".info");
 
-            if (fileInfo.Exists && fileInfo.Length != 0L)
+            FileInfo fileInfoActual = new FileInfo(fileNameActual);
+            FileInfo fileInfoBackup = new FileInfo(fileNameBackup);
+
+            if (fileInfoActual.Exists && fileInfoActual.Length != 0L)
             {
-                using (FileStream compressedStream = new FileStream(String.Concat(Ptc.CachePath, ".info"), FileMode.Open))
-                using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
-                using (MemoryStream stream = new MemoryStream())
-                using (MD5 md5 = MD5.Create())
+                if (!Load(fileNameActual))
                 {
-                    try
+                    if (fileInfoBackup.Exists && fileInfoBackup.Length != 0L)
                     {
-                        int hashSize = md5.HashSize / 8;
-
-                        deflateStream.CopyTo(stream);
-
-                        stream.Seek(0L, SeekOrigin.Begin);
-
-                        byte[] currentHash = new byte[hashSize];
-                        stream.Read(currentHash, 0, hashSize);
-
-                        byte[] expectedHash = md5.ComputeHash(stream);
-
-                        if (!CompareHash(currentHash, expectedHash))
-                        {
-                            InvalidateCompressedStream(compressedStream);
-
-                            return;
-                        }
-
-                        stream.Seek((long)hashSize, SeekOrigin.Begin);
-
-                        try
-                        {
-                            ProfiledFuncs = (Dictionary<ulong, (ExecutionMode, bool)>)_binaryFormatter.Deserialize(stream);
-                        }
-                        catch
-                        {
-                            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
-                        }
-                    }
-                    catch
-                    {
-                        InvalidateCompressedStream(compressedStream);
+                        Load(fileNameBackup);
                     }
                 }
+            }
+            else if (fileInfoBackup.Exists && fileInfoBackup.Length != 0L)
+            {
+                Load(fileNameBackup);
+            }
+        }
+
+        private static bool Load(string fileName)
+        {
+            using (FileStream compressedStream = new FileStream(fileName, FileMode.Open))
+            using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
+            using (MemoryStream stream = new MemoryStream())
+            using (MD5 md5 = MD5.Create())
+            {
+                int hashSize = md5.HashSize / 8;
+
+                deflateStream.CopyTo(stream);
+
+                stream.Seek(0L, SeekOrigin.Begin);
+
+                byte[] currentHash = new byte[hashSize];
+                stream.Read(currentHash, 0, hashSize);
+
+                byte[] expectedHash = md5.ComputeHash(stream);
+
+                if (!CompareHash(currentHash, expectedHash))
+                {
+                    InvalidateCompressedStream(compressedStream);
+
+                    return false;
+                }
+
+                stream.Seek((long)hashSize, SeekOrigin.Begin);
+
+                try
+                {
+                    ProfiledFuncs = (Dictionary<ulong, (ExecutionMode, bool)>)_binaryFormatter.Deserialize(stream);
+                }
+                catch
+                {
+                    ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
+
+                    InvalidateCompressedStream(compressedStream);
+
+                    return false;
+                }
+
+                return true;
             }
         }
 
@@ -147,10 +165,27 @@ namespace ARMeilleure.Translation.PTC
             compressedStream.SetLength(0L);
         }
 
-        private static void Save(object source, System.Timers.ElapsedEventArgs e)
+        private static void PreSave(object source, System.Timers.ElapsedEventArgs e)
         {
             _waitEvent.Reset();
 
+            string fileNameActual = String.Concat(Ptc.CachePathActual, ".info");
+            string fileNameBackup = String.Concat(Ptc.CachePathBackup, ".info");
+
+            FileInfo fileInfoActual = new FileInfo(fileNameActual);
+
+            if (fileInfoActual.Exists && fileInfoActual.Length != 0L)
+            {
+                File.Copy(fileNameActual, fileNameBackup, true);
+            }
+
+            Save(fileNameActual);
+
+            _waitEvent.Set();
+        }
+
+        private static void Save(string fileName)
+        {
             using (MemoryStream stream = new MemoryStream())
             using (MD5 md5 = MD5.Create())
             {
@@ -169,7 +204,7 @@ namespace ARMeilleure.Translation.PTC
                 stream.Seek(0L, SeekOrigin.Begin);
                 stream.Write(hash, 0, hashSize);
 
-                using (FileStream compressedStream = new FileStream(String.Concat(Ptc.CachePath, ".info"), FileMode.OpenOrCreate))
+                using (FileStream compressedStream = new FileStream(fileName, FileMode.OpenOrCreate))
                 using (DeflateStream deflateStream = new DeflateStream(compressedStream, SaveCompressionLevel, true))
                 {
                     try
@@ -187,8 +222,6 @@ namespace ARMeilleure.Translation.PTC
                     }
                 }
             }
-
-            _waitEvent.Set();
         }
 
         internal static void Start()
@@ -223,7 +256,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 _disposed = true;
 
-                _timer.Elapsed -= Save;
+                _timer.Elapsed -= PreSave;
                 _timer.Dispose();
 
                 Wait();
