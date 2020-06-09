@@ -923,7 +923,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Logger.PrintStub(LogClass.ServiceHid, new {
+            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
                 appletResourceUserId,
                 vibrationDeviceHandle,
                 _vibrationValue.AmplitudeLow,
@@ -1006,7 +1006,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             // TODO: Read all handles and values from buffer.
 
-            Logger.PrintStub(LogClass.ServiceHid, new {
+            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
                 appletResourceUserId,
                 VibrationDeviceHandleBufferLength = vibrationDeviceHandleBuffer.Length,
                 VibrationValueBufferLength = vibrationValueBuffer.Length
