@@ -56,7 +56,6 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStub(LogClass logClass, string message = "", [CallerMemberName] string caller = "")
             {
-                // if (_level != LogLevel.Stub) throw new InvalidOperationException("PrintStub must be called Stub log level");
                 if (m_EnabledClasses[(int)logClass])
                 {
                     Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message)));
@@ -66,17 +65,15 @@ namespace Ryujinx.Common.Logging
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStub(LogClass logClass, object data, [CallerMemberName] string caller = "")
             {
-                // if (_level != LogLevel.Stub) throw new InvalidOperationException("PrintStub must be called Stub log level");
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. "), data));
+                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed."), data));
                 }
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void PrintStub(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
             {
-                // if (_level != LogLevel.Stub) throw new InvalidOperationException("PrintStub must be called Stub log level");
                 if (m_EnabledClasses[(int)logClass])
                 {
                     Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
