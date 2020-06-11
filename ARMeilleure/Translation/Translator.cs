@@ -191,9 +191,19 @@ namespace ARMeilleure.Translation
 
             EmitSynchronization(context);
 
-            if (blocks[0].Address != address)
+            for (int i = 0; i < blocks.Length; i++)
             {
-                context.Branch(context.GetLabel(address));
+                Block block = blocks[i];
+
+                if (block != null)
+                {
+                    if (block.Address != address)
+                    {
+                        context.Branch(context.GetLabel(address));
+                    }
+
+                    break;
+                }
             }
 
             ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
@@ -238,53 +248,65 @@ namespace ARMeilleure.Translation
             {
                 Block block = blocks[blkIndex];
 
+                if (block == null)
+                {
+                    continue;
+                }
+
                 context.CurrBlock = block;
 
                 context.MarkLabel(context.GetLabel(block.Address));
 
-                for (int opcIndex = 0; opcIndex < block.OpCodes.Count; opcIndex++)
+                if (block.Exit)
                 {
-                    OpCode opCode = block.OpCodes[opcIndex];
-
-                    context.CurrOp = opCode;
-
-                    bool isLastOp = opcIndex == block.OpCodes.Count - 1;
-
-                    if (isLastOp && block.Branch != null && block.Branch.Address <= block.Address)
+                    InstEmitFlowHelper.EmitTailContinue(context, Const(block.Address), block.TailCall);
+                }
+                else
+                {
+                    for (int opcIndex = 0; opcIndex < block.OpCodes.Count; opcIndex++)
                     {
-                        EmitSynchronization(context);
-                    }
+                        OpCode opCode = block.OpCodes[opcIndex];
 
-                    Operand lblPredicateSkip = null;
+                        context.CurrOp = opCode;
 
-                    if (opCode is OpCode32 op && op.Cond < Condition.Al)
-                    {
-                        lblPredicateSkip = Label();
+                        bool isLastOp = opcIndex == block.OpCodes.Count - 1;
 
-                        InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, op.Cond.Invert());
-                    }
-
-                    if (opCode.Instruction.Emitter != null)
-                    {
-                        opCode.Instruction.Emitter(context);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Invalid instruction \"{opCode.Instruction.Name}\".");
-                    }
-
-                    if (lblPredicateSkip != null)
-                    {
-                        context.MarkLabel(lblPredicateSkip);
-
-                        // If this is the last op on the block, and there's no "next" block
-                        // after this one, then we have to return right now, with the address
-                        // of the next instruction to be executed (in the case that the condition
-                        // is false, and the branch was not taken, as all basic blocks should end
-                        // with some kind of branch).
-                        if (isLastOp && block.Next == null)
+                        if (isLastOp && block.Branch != null && block.Branch.Address <= block.Address)
                         {
-                            InstEmitFlowHelper.EmitTailContinue(context, Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
+                            EmitSynchronization(context);
+                        }
+
+                        Operand lblPredicateSkip = null;
+
+                        if (opCode is OpCode32 op && op.Cond < Condition.Al)
+                        {
+                            lblPredicateSkip = Label();
+
+                            InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, op.Cond.Invert());
+                        }
+
+                        if (opCode.Instruction.Emitter != null)
+                        {
+                            opCode.Instruction.Emitter(context);
+                        }
+                        else
+                        {
+                            throw new InvalidOperationException($"Invalid instruction \"{opCode.Instruction.Name}\".");
+                        }
+
+                        if (lblPredicateSkip != null)
+                        {
+                            context.MarkLabel(lblPredicateSkip);
+
+                            // If this is the last op on the block, and there's no "next" block
+                            // after this one, then we have to return right now, with the address
+                            // of the next instruction to be executed (in the case that the condition
+                            // is false, and the branch was not taken, as all basic blocks should end
+                            // with some kind of branch).
+                            if (isLastOp && block.Next == null)
+                            {
+                                InstEmitFlowHelper.EmitTailContinue(context, Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
+                            }
                         }
                     }
                 }
