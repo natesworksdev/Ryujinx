@@ -17,17 +17,7 @@ namespace ARMeilleure.Decoders
         // For lower code quality translation, we set a lower limit since we're blocking execution.
         private const int MaxInstsPerFunctionLowCq = 500;
 
-        public static Block[] DecodeBasicBlock(IMemoryManager memory, ulong address, ExecutionMode mode)
-        {
-            return Decode(memory, address, mode, highCq: false, singleBlock: true);
-        }
-
-        public static Block[] DecodeFunction(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq)
-        {
-            return Decode(memory, address, mode, highCq, singleBlock: false);
-        }
-
-        private static Block[] Decode(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq, bool singleBlock)
+        public static Block[] Decode(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq, bool singleBlock)
         {
             List<Block> blocks = new List<Block>();
 
