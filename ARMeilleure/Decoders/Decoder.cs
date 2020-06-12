@@ -19,14 +19,15 @@ namespace ARMeilleure.Decoders
 
         public static Block[] DecodeBasicBlock(IMemoryManager memory, ulong address, ExecutionMode mode)
         {
-            Block block = new Block(address);
-
-            FillBlock(memory, mode, block, ulong.MaxValue);
-
-            return new Block[] { block };
+            return Decode(memory, address, mode, highCq: false, singleBlock: true);
         }
 
         public static Block[] DecodeFunction(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq)
+        {
+            return Decode(memory, address, mode, highCq, singleBlock: false);
+        }
+
+        private static Block[] Decode(IMemoryManager memory, ulong address, ExecutionMode mode, bool highCq, bool singleBlock)
         {
             List<Block> blocks = new List<Block>();
 
@@ -44,7 +45,7 @@ namespace ARMeilleure.Decoders
                 {
                     block = new Block(blkAddress);
 
-                    if (opsCount > instructionLimit || !memory.IsMapped(blkAddress))
+                    if ((singleBlock && visited.Count >= 1) || opsCount > instructionLimit || !memory.IsMapped(blkAddress))
                     {
                         block.Exit = true;
                         block.EndAddress = blkAddress;
@@ -141,7 +142,10 @@ namespace ARMeilleure.Decoders
                 }
             }
 
-            TailCallRemover.RunPass(address, blocks);
+            if (!singleBlock)
+            {
+                TailCallRemover.RunPass(address, blocks);
+            }
 
             return blocks.ToArray();
         }
