@@ -271,7 +271,7 @@ namespace ARMeilleure.Translation
 
                         bool isLastOp = opcIndex == block.OpCodes.Count - 1;
 
-                        if (isLastOp && block.Branch != null && block.Branch.Address <= block.Address)
+                        if (isLastOp && block.Branch != null && !block.Branch.Exit && block.Branch.Address <= block.Address)
                         {
                             EmitSynchronization(context);
                         }
