@@ -26,7 +26,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static bool _disposed;
 
-        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> ProfiledFuncs { get; private set; }
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> ProfiledFuncs { get; private set; } //! Not to be modified.
 
         internal static bool Enabled { get; private set; }
 
