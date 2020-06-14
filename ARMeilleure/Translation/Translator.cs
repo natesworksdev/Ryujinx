@@ -297,16 +297,6 @@ namespace ARMeilleure.Translation
                         if (lblPredicateSkip != null)
                         {
                             context.MarkLabel(lblPredicateSkip);
-
-                            // If this is the last op on the block, and there's no "next" block
-                            // after this one, then we have to return right now, with the address
-                            // of the next instruction to be executed (in the case that the condition
-                            // is false, and the branch was not taken, as all basic blocks should end
-                            // with some kind of branch).
-                            if (isLastOp && block.Next == null)
-                            {
-                                InstEmitFlowHelper.EmitTailContinue(context, Const(opCode.Address + (ulong)opCode.OpCodeSizeInBytes));
-                            }
                         }
                     }
                 }
