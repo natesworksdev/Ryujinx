@@ -25,16 +25,17 @@ To run this emulator, we recommend that your PC have at least 8GB of RAM; less t
 If you use a pre-built version, you can use the graphical interface to run your games and homebrew: simply add the directory containing your homebrew or games in the Options > Settings > General tab > Game Directories menu item.
 
 If you build it yourself you will need to:
-Step one: Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
-Step two (Variant one):
+**Step one:** Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
+
+**Step two (Variant one):**
 
 After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. Or you can download the ZIP tarball.) You can Git Clone the repo by using the GitBash, or you may use the second variant.
 
-Step two (Variant two):
+**Step two (Variant two):**
 
 Download the ZIP Tarball. Then extract it to a directory of your choice.
 
-Step three:
+**Step three:**
 
 Build the App using a Command prompt in the ROOT directory. You can quickly access it by Holding shift in explorer (in the Ryujinx directory) then right clicking, and typing the following command
 Run `dotnet build -c Release -r win10-x64` inside the Ryujinx project folder to build Ryujinx binaries.
@@ -69,7 +70,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
  - **Audio**
 
-   Everything for audio is partially supported. We currently use a C# wrapper for [libsoundio](http://libsound.io/), and we support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) too as a fallback. Our current Opus implementation is incomplete and negatively affects many games.
+   Everything for audio is partially supported. We currently use a C# wrapper for [libsoundio](http://libsound.io/), and we support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) too as a fallback. Our current Opus implementation is incomplete.
 
 - **CPU**
 
@@ -81,11 +82,13 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 - **Input**
 
-   We currently have support for keyboard, mouse, touch input, JoyCon input support emulated through the keyboard, and Xinput-compatible controllers too. You can set up everything inside the configuration menu.
+   We currently have support for keyboard, mouse, touch input, JoyCon input support emulated through the keyboard, and most controllers. Controller support varies by operating system, as outlined below.  
+   Windows: Xinput-compatible controllers are supported natively; other controllers can be supported with the help of Xinput wrappers such as x360ce.  
+   Linux: most modern controllers are supported. In either case, you can set up everything inside the input configuration menu.
 
 - **Configuration**
 
-   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`.
+   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user's appdata\roaming\ryujinx folder.
 
    For more information [you can go here](CONFIG.md) *(Outdated)*.
 
