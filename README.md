@@ -12,7 +12,7 @@
 <p align="center">
     <i>An experimental Switch emulator written in C#</i><br />
     <br />
-    <img src="https://i.imgur.com/JDLmXJ6.png">
+    <img src="https://raw.githubusercontent.com/Ryujinx/Ryujinx-Website/master/static/public/shell_fullsize.png">
 </p>
 
 <h5 align="center">
