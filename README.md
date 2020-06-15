@@ -10,32 +10,42 @@
 </h1>
 
 <p align="center">
-    <i>An Experimental Switch emulator written in C#</i><br />
+    <i>An experimental Switch emulator written in C#</i><br />
     <br />
     <img src="https://i.imgur.com/JDLmXJ6.png">
 </p>
 
 <h5 align="center">
-    A lot of games boot, but only some are playable. See the compatiblity list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
+    As of June 2020, Ryujinx goes past menus and in-game on over 1,000 commercial titles. Of those, roughly half are considered playable. See the compatiblity list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
 </h5>
 
 ## Usage
 
-To run this emulator, you need the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
-
-If you use a pre-built version, you can use the graphical interface to run your games and homebrew.
+To run this emulator, we recommend that your PC have at least 8GB of RAM; less than this amount can result in unpredictable behavior and may cause crashes or unacceptable performance.
+If you use a pre-built version, you can use the graphical interface to run your games and homebrew: simply add the directory containing your homebrew or games in the Options > Settings > General tab > Game Directories menu item.
 
 If you build it yourself you will need to:
-Run `dotnet run -c Release -- path\to\homebrew.nro` inside the Ryujinx project folder to run homebrew apps.
-Run `dotnet run -c Release -- path\to\game.nsp/xci` to run official games.
+Step One: Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
+Step two (Variant one):
+
+After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. Or you can download the ZIP tarball.) You can Git Clone the repo by using the GitBash, or you may use the second variant.
+
+Step two (Variant two):
+
+Download the ZIP Tarball. Then extract it to a directory of your choice.
+
+Step three:
+
+Build the App using a Command prompt in the ROOT directory. You can quickly access it by Holding shift in explorer (in the Ryujinx directory) then right clicking, and typing the following command
+Run `dotnet build -c Release -r win10-x64` inside the Ryujinx project folder to build Ryujinx binaries.
 
 Every file related to Ryujinx is stored in the `Ryujinx` folder. Located in `C:\Users\USERNAME\AppData\Roaming\` for Windows, `/home/USERNAME/.config` for Linux or `/Users/USERNAME/Library/Application Support/` for macOS. It can also be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
 ## Latest build
 
-These builds are compiled automatically for each commit on the master branch, **and may be unstable or completely broken.**
+These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, even though they are official these builds **may be unstable or completely broken.**
 
-The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/#/Build).
+The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
 ## Requirements
 
@@ -43,9 +53,9 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
    Everything on the Switch is encrypted, so if you want to run anything other than homebrew, you have to dump encryption keys from your console. To get more information please take a look at our [Keys Documentation](KEYS.md).
 
- - **System Titles**
-
-   Some of our System Module implementations, like `time`, require [System Data Archives](https://switchbrew.org/wiki/Title_list#System_Data_Archives). You can install them by mounting your nand partition using [HacDiskMount](https://switchtools.sshnuke.net/) and copying the content to `Ryujinx/bis/system`.
+ - **Firmware***
+    
+    You need an official Switch firmware dumped from either your Switch or from a cartridge XCI you have dumped. Install it from the Tools > Install Firmware menu item.
 
  - **Executables**
 
@@ -59,7 +69,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
  - **Audio**
 
-   Everything for audio is partially supported. We currently use a C# wrapper for [libsoundio](http://libsound.io/), and we support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) too as a fallback. Our current Opus implementation is pretty incomplete.
+   Everything for audio is partially supported. We currently use a C# wrapper for [libsoundio](http://libsound.io/), and we support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) too as a fallback. Our current Opus implementation is incomplete and negatively affects many games.
 
 - **CPU**
 
@@ -67,15 +77,15 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 - **GPU**
 
-  The GPU emulator emulates the Switch's Maxwell GPU using the OpenGL API (version 4.2 minimum) through a custom build of OpenTK.
+  The GPU emulator emulates the Switch's Maxwell GPU using the OpenGL API (version 4.4 minimum) through a custom build of OpenTK.
 
 - **Input**
 
-   We currently have support for keyboard, mouse, touch input, JoyCon input support emulated through the keyboard, and some controllers too. You can set up everything inside the configuration menu.
+   We currently have support for keyboard, mouse, touch input, JoyCon input support emulated through the keyboard, and Xinput-compatible controllers too. You can set up everything inside the configuration menu.
 
 - **Configuration**
 
-   The emulator has settings for dumping shaders, enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`.
+   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`.
 
    For more information [you can go here](CONFIG.md) *(Outdated)*.
 
@@ -87,9 +97,9 @@ Don't hesitate to open a new issue if a game isn't already on there.
 
 ## Help
 
-If you have homebrew that currently doesn't work within the emulator, you can contact us through our Discord with the .NRO/.NSO and source code, if possible. We'll take note of whatever is causing the app/game to not work, on the watch list and fix it at a later date.
+If you have homebrew or a particular game marked playable or in-game in our compatibility list that doesn't work within the emulator, you can contact us through our Discord. We'll take note of whatever is causing the app/game to not work, put it on the watch list and fix it at a later date.
 
-If you need help with setting up Ryujinx, you can ask questions in the support channel of our Discord server.
+If you need help with setting up Ryujinx, you can ask questions in the #support channel of our Discord server.
 
 ## Contact
 
