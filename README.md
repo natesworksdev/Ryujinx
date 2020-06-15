@@ -25,7 +25,7 @@ To run this emulator, we recommend that your PC have at least 8GB of RAM; less t
 If you use a pre-built version, you can use the graphical interface to run your games and homebrew: simply add the directory containing your homebrew or games in the Options > Settings > General tab > Game Directories menu item.
 
 If you build it yourself you will need to:
-Step One: Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
+Step one: Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
 Step two (Variant one):
 
 After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. Or you can download the ZIP tarball.) You can Git Clone the repo by using the GitBash, or you may use the second variant.
@@ -55,7 +55,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
  - **Firmware***
     
-    You need an official Switch firmware dumped from either your Switch or from a cartridge XCI you have dumped. Install it from the Tools > Install Firmware menu item.
+    You need an official Switch firmware by either dumping directly from your Switch or dumping your cartridge game to an XCI file. Install the firmware, after you've installed your keys, from the Tools > Install Firmware menu item.
 
  - **Executables**
 
