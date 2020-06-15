@@ -44,7 +44,7 @@ Every file related to Ryujinx is stored in the `Ryujinx` folder. Located in `C:\
 
 ## Latest build
 
-These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, even though they are official these builds **may be unstable or completely broken.**
+These builds are compiled automatically for each commit on the master branch. While we strive to ensure optimal stability and performance prior to pushing an update, our automated builds **may be unstable or completely broken.**
 
 The latest automatic build for Windows, macOS, and Linux can be found on the [Official Website](https://ryujinx.org/download).
 
