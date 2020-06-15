@@ -84,7 +84,8 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
    We currently have support for keyboard, mouse, touch input, JoyCon input support emulated through the keyboard, and most controllers. Controller support varies by operating system, as outlined below.  
    Windows: Xinput-compatible controllers are supported natively; other controllers can be supported with the help of Xinput wrappers such as x360ce.  
-   Linux: most modern controllers are supported. In either case, you can set up everything inside the input configuration menu.
+   Linux: most modern controllers are supported.  
+   In either case, you can set up everything inside the input configuration menu.
 
 - **Configuration**
 
