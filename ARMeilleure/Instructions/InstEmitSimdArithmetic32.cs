@@ -817,7 +817,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPAddFpscr, SoftFloat64.FPAddFpscr, op1, op2));
+                EmitVectorPairwiseOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, nameof(SoftFloat32.FPAddFpscr), op1, op2));
             }
         }
 
@@ -843,7 +843,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMaxFpscr, SoftFloat64.FPMaxFpscr, op1, op2));
+                EmitVectorPairwiseOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, nameof(SoftFloat64.FPMaxFpscr), op1, op2));
             }
         }
 
@@ -873,7 +873,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, SoftFloat32.FPMinFpscr, SoftFloat64.FPMinFpscr, op1, op2));
+                EmitVectorPairwiseOpF32(context, (op1, op2) => EmitSoftFloatCallDefaultFpscr(context, nameof(SoftFloat32.FPMinFpscr), op1, op2));
             }
         }
 
