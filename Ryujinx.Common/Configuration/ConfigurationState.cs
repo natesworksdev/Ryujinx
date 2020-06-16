@@ -578,6 +578,15 @@ namespace Ryujinx.Configuration
                 }
             }
 
+            if (configurationFileFormat.Version < 8)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 8.");
+
+                configurationFileFormat.EnablePtc = false;
+
+                configurationFileUpdated = true;
+            }
+
             List<InputConfig> inputConfig = new List<InputConfig>();
             foreach (ControllerConfig controllerConfig in configurationFileFormat.ControllerConfig)
             {
