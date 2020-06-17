@@ -35,6 +35,7 @@ namespace Ryujinx.Ui
         [GUI] CheckButton  _discordToggle;
         [GUI] CheckButton  _vSyncToggle;
         [GUI] CheckButton  _multiSchedToggle;
+        [GUI] CheckButton  _ptcToggle;
         [GUI] CheckButton  _fsicToggle;
         [GUI] CheckButton  _ignoreToggle;
         [GUI] CheckButton _astcForceDecodeToggle;
@@ -151,6 +152,11 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.System.EnableMulticoreScheduling)
             {
                 _multiSchedToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.System.EnablePtc)
+            {
+                _ptcToggle.Click();
             }
 
             if (ConfigurationState.Instance.System.EnableFsIntegrityChecks)
@@ -386,6 +392,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
             ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
             ConfigurationState.Instance.System.EnableMulticoreScheduling.Value = _multiSchedToggle.Active;
+            ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.System.ForceSWASTC.Value               = _astcForceDecodeToggle.Active;
