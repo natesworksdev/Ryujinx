@@ -132,6 +132,11 @@ namespace ARMeilleure.Decoders
                 }
             }
 
+            if (blocks.Count == 0)
+            {
+                throw new InvalidOperationException($"Decoded 0 blocks. Entry point = 0x{address:X}.");
+            }
+
             if (!singleBlock)
             {
                 TailCallRemover.RunPass(address, blocks);
