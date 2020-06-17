@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -19,7 +18,6 @@ namespace ARMeilleure.Instructions
             if (op.Coproc != 15)
             {
                 InstEmit.Und(context);
-
                 return;
             }
 
@@ -28,8 +26,7 @@ namespace ARMeilleure.Instructions
                 throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
             }
 
-            MethodInfo info;
-
+            Delegate dlg;
             switch (op.CRn)
             {
                 case 13: // Process and Thread Info.
@@ -37,16 +34,13 @@ namespace ARMeilleure.Instructions
                     {
                         throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
                     }
-
                     switch (op.Opc2)
                     {
                         case 2:
-                            info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetTpidrEl032)); break;
-
+                            dlg = new _Void_U32(NativeInterface.SetTpidrEl032); break;
                         default:
                             throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
                     }
-
                     break;
 
                 case 7:
@@ -57,20 +51,18 @@ namespace ARMeilleure.Instructions
                             {
                                 case 5: // Data Memory Barrier Register.
                                     return; // No-op.
-
                                 default:
                                     throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
                             }
-
                         default:
                             throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
                     }
 
-                default:
+                default: 
                     throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
-            context.Call(info, GetIntA32(context, op.Rt));
+            context.Call(dlg, GetIntA32(context, op.Rt));
         }
 
         public static void Mrc(ArmEmitterContext context)
@@ -80,7 +72,6 @@ namespace ARMeilleure.Instructions
             if (op.Coproc != 15)
             {
                 InstEmit.Und(context);
-
                 return;
             }
 
@@ -89,8 +80,7 @@ namespace ARMeilleure.Instructions
                 throw new NotImplementedException($"Unknown MRC Opc1 0x{op.Opc1:X16} at 0x{op.Address:X16}.");
             }
 
-            MethodInfo info;
-
+            Delegate dlg;
             switch (op.CRn)
             {
                 case 13: // Process and Thread Info.
@@ -98,35 +88,30 @@ namespace ARMeilleure.Instructions
                     {
                         throw new NotImplementedException($"Unknown MRC CRm 0x{op.CRm:X16} at 0x{op.Address:X16}.");
                     }
-
                     switch (op.Opc2)
                     {
                         case 2:
-                            info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidrEl032)); break;
-
+                            dlg = new _U32(NativeInterface.GetTpidrEl032); break;
                         case 3:
-                            info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetTpidr32)); break;
-
+                            dlg = new _U32(NativeInterface.GetTpidr32); break;
                         default:
                             throw new NotImplementedException($"Unknown MRC Opc2 0x{op.Opc2:X16} at 0x{op.Address:X16}.");
                     }
-
                     break;
-
-                default:
+                default: 
                     throw new NotImplementedException($"Unknown MRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
             if (op.Rt == RegisterAlias.Aarch32Pc)
             {
                 // Special behavior: copy NZCV flags into APSR.
-                EmitSetNzcv(context, context.Call(info));
-
+                EmitSetNzcv(context, context.Call(dlg));
+                
                 return;
             }
             else
             {
-                SetIntA32(context, op.Rt, context.Call(info));
+                SetIntA32(context, op.Rt, context.Call(dlg));
             }
         }
 
@@ -137,33 +122,28 @@ namespace ARMeilleure.Instructions
             if (op.Coproc != 15)
             {
                 InstEmit.Und(context);
-
                 return;
             }
 
-            int opc = op.MrrcOp;
+            var opc = op.MrrcOp;
 
-            MethodInfo info;
-
+            Delegate dlg;
             switch (op.CRm)
             {
                 case 14: // Timer.
                     switch (opc)
                     {
                         case 0:
-                            info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetCntpctEl0)); break;
-
+                            dlg = new _U64(NativeInterface.GetCntpctEl0); break;
                         default:
                             throw new NotImplementedException($"Unknown MRRC Opc1 0x{opc:X16} at 0x{op.Address:X16}.");
                     }
-
                     break;
-
-                default:
+                default: 
                     throw new NotImplementedException($"Unknown MRRC 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
-            Operand result = context.Call(info);
+            Operand result = context.Call(dlg);
 
             SetIntA32(context, op.Rt, context.ConvertI64ToI32(result));
             SetIntA32(context, op.CRn, context.ConvertI64ToI32(context.ShiftRightUI(result, Const(32))));
@@ -182,18 +162,16 @@ namespace ARMeilleure.Instructions
                 SetFlag(context, PState.CFlag, GetFpFlag(FPState.CFlag));
                 SetFlag(context, PState.ZFlag, GetFpFlag(FPState.ZFlag));
                 SetFlag(context, PState.NFlag, GetFpFlag(FPState.NFlag));
-
                 return;
             }
 
-            MethodInfo info;
-
+            Delegate dlg;
             switch (op.Sreg)
             {
                 case 0b0000: // FPSID
                     throw new NotImplementedException("Supervisor Only");
                 case 0b0001: // FPSCR
-                    info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpscr)); break;
+                    dlg = new _U32(NativeInterface.GetFpscr); break;
                 case 0b0101: // MVFR2
                     throw new NotImplementedException("MVFR2");
                 case 0b0110: // MVFR1
@@ -202,25 +180,24 @@ namespace ARMeilleure.Instructions
                     throw new NotImplementedException("MVFR0");
                 case 0b1000: // FPEXC
                     throw new NotImplementedException("Supervisor Only");
-                default:
+                default: 
                     throw new NotImplementedException($"Unknown VMRS 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
-            SetIntA32(context, op.Rt, context.Call(info));
+            SetIntA32(context, op.Rt, context.Call(dlg));
         }
 
         public static void Vmsr(ArmEmitterContext context)
         {
             OpCode32SimdSpecial op = (OpCode32SimdSpecial)context.CurrOp;
 
-            MethodInfo info;
-
+            Delegate dlg;
             switch (op.Sreg)
             {
                 case 0b0000: // FPSID
                     throw new NotImplementedException("Supervisor Only");
                 case 0b0001: // FPSCR
-                    info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.SetFpscr)); break;
+                    dlg = new _Void_U32(NativeInterface.SetFpscr); break;
                 case 0b0101: // MVFR2
                     throw new NotImplementedException("MVFR2");
                 case 0b0110: // MVFR1
@@ -229,11 +206,11 @@ namespace ARMeilleure.Instructions
                     throw new NotImplementedException("MVFR0");
                 case 0b1000: // FPEXC
                     throw new NotImplementedException("Supervisor Only");
-                default:
+                default: 
                     throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
 
-            context.Call(info, GetIntA32(context, op.Rt));
+            context.Call(dlg, GetIntA32(context, op.Rt));
         }
 
         private static void EmitSetNzcv(ArmEmitterContext context, Operand t)

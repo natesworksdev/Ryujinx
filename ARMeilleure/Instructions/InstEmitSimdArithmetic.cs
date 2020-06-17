@@ -6,7 +6,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
-using System.Diagnostics;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -107,7 +106,7 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Operand de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingSigns)), ne, Const(eSize));
+                Operand de = context.Call(new _U64_U64_S32(SoftFallback.CountLeadingSigns), ne, Const(eSize));
 
                 res = EmitVectorInsert(context, res, de, index, op.Size);
             }
@@ -129,7 +128,16 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
 
-                Operand de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingZeros)), ne, Const(eSize));
+                Operand de;
+
+                if (eSize == 64)
+                {
+                    de = context.CountLeadingZeros(ne);
+                }
+                else
+                {
+                    de = context.Call(new _U64_U64_S32(SoftFallback.CountLeadingZeros), ne, Const(eSize));
+                }
 
                 res = EmitVectorInsert(context, res, de, index, op.Size);
             }
@@ -157,7 +165,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountSetBits8)), ne);
+                    de = context.Call(new _U64_U64(SoftFallback.CountSetBits8), ne);
                 }
 
                 res = EmitVectorInsert(context, res, de, index, 0);
@@ -195,9 +203,9 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    Operand res = EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub), op1, op2);
+                    Operand res = EmitSoftFloatCall(context, SoftFloat32.FPSub, SoftFloat64.FPSub, op1, op2);
 
-                    return EmitUnaryMathCall(context, nameof(Math.Abs), res);
+                    return EmitUnaryMathCall(context, MathF.Abs, Math.Abs, res);
                 });
             }
         }
@@ -236,9 +244,9 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    Operand res = EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub), op1, op2);
+                    Operand res = EmitSoftFloatCall(context, SoftFloat32.FPSub, SoftFloat64.FPSub, op1, op2);
 
-                    return EmitUnaryMathCall(context, nameof(Math.Abs), res);
+                    return EmitUnaryMathCall(context, MathF.Abs, Math.Abs, res);
                 });
             }
         }
@@ -266,7 +274,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Abs), op1);
+                    return EmitUnaryMathCall(context, MathF.Abs, Math.Abs, op1);
                 });
             }
         }
@@ -301,7 +309,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Abs), op1);
+                    return EmitUnaryMathCall(context, MathF.Abs, Math.Abs, op1);
                 });
             }
         }
@@ -320,7 +328,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPAdd, SoftFloat64.FPAdd, op1, op2);
                 });
             }
         }
@@ -339,7 +347,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPAdd, SoftFloat64.FPAdd, op1, op2);
                 });
             }
         }
@@ -372,7 +380,7 @@ namespace ARMeilleure.Instructions
                 Operand ne0 = context.VectorExtract(type, GetVec(op.Rn), 0);
                 Operand ne1 = context.VectorExtract(type, GetVec(op.Rn), 1);
 
-                Operand res = EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), ne0, ne1);
+                Operand res = EmitSoftFloatCall(context, SoftFloat32.FPAdd, SoftFloat64.FPAdd, ne0, ne1);
 
                 context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
             }
@@ -388,7 +396,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPAdd, SoftFloat64.FPAdd, op1, op2);
                 });
             }
         }
@@ -407,7 +415,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPDiv), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPDiv, SoftFloat64.FPDiv, op1, op2);
                 });
             }
         }
@@ -426,7 +434,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPDiv), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPDiv, SoftFloat64.FPDiv, op1, op2);
                 });
             }
         }
@@ -461,7 +469,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarTernaryRaOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMulAdd, SoftFloat64.FPMulAdd, op1, op2, op3);
                 });
             }
         }
@@ -476,7 +484,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMax, SoftFloat64.FPMax, op1, op2);
                 });
             }
         }
@@ -491,7 +499,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMax, SoftFloat64.FPMax, op1, op2);
                 });
             }
         }
@@ -506,7 +514,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMaxNum), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMaxNum, SoftFloat64.FPMaxNum, op1, op2);
                 });
             }
         }
@@ -521,7 +529,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMaxNum), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMaxNum, SoftFloat64.FPMaxNum, op1, op2);
                 });
             }
         }
@@ -530,7 +538,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorAcrossVectorOpF(context, (op1, op2) =>
             {
-                return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMaxNum)), op1, op2);
+                return context.Call(new _F32_F32_F32(SoftFloat32.FPMaxNum), op1, op2);
             });
         }
 
@@ -544,7 +552,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMax), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMax, SoftFloat64.FPMax, op1, op2);
                 });
             }
         }
@@ -559,7 +567,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMin, SoftFloat64.FPMin, op1, op2);
                 });
             }
         }
@@ -574,7 +582,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMin, SoftFloat64.FPMin, op1, op2);
                 });
             }
         }
@@ -589,7 +597,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMinNum, SoftFloat64.FPMinNum, op1, op2);
                 });
             }
         }
@@ -604,7 +612,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMinNum, SoftFloat64.FPMinNum, op1, op2);
                 });
             }
         }
@@ -613,7 +621,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorAcrossVectorOpF(context, (op1, op2) =>
             {
-                return context.Call(typeof(SoftFloat32).GetMethod(nameof(SoftFloat32.FPMinNum)), op1, op2);
+                return context.Call(new _F32_F32_F32(SoftFloat32.FPMinNum), op1, op2);
             });
         }
 
@@ -627,7 +635,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMin), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMin, SoftFloat64.FPMin, op1, op2);
                 });
             }
         }
@@ -678,7 +686,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMulAdd, SoftFloat64.FPMulAdd, op1, op2, op3);
                 });
             }
         }
@@ -727,7 +735,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpByElemF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMulAdd, SoftFloat64.FPMulAdd, op1, op2, op3);
                 });
             }
         }
@@ -778,7 +786,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulSub), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMulSub, SoftFloat64.FPMulSub, op1, op2, op3);
                 });
             }
         }
@@ -827,7 +835,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpByElemF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulSub), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMulSub, SoftFloat64.FPMulSub, op1, op2, op3);
                 });
             }
         }
@@ -862,7 +870,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarTernaryRaOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulSub), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMulSub, SoftFloat64.FPMulSub, op1, op2, op3);
                 });
             }
         }
@@ -881,7 +889,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2);
                 });
             }
         }
@@ -905,7 +913,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2);
                 });
             }
         }
@@ -955,7 +963,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpByElemF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPMul, SoftFloat64.FPMul, op1, op2);
                 });
             }
         }
@@ -964,7 +972,7 @@ namespace ARMeilleure.Instructions
         {
             EmitScalarBinaryOpF(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX), op1, op2);
+                return EmitSoftFloatCall(context, SoftFloat32.FPMulX, SoftFloat64.FPMulX, op1, op2);
             });
         }
 
@@ -972,7 +980,7 @@ namespace ARMeilleure.Instructions
         {
             EmitScalarBinaryOpByElemF(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX), op1, op2);
+                return EmitSoftFloatCall(context, SoftFloat32.FPMulX, SoftFloat64.FPMulX, op1, op2);
             });
         }
 
@@ -980,7 +988,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorBinaryOpF(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX), op1, op2);
+                return EmitSoftFloatCall(context, SoftFloat32.FPMulX, SoftFloat64.FPMulX, op1, op2);
             });
         }
 
@@ -988,7 +996,7 @@ namespace ARMeilleure.Instructions
         {
             EmitVectorBinaryOpByElemF(context, (op1, op2) =>
             {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulX), op1, op2);
+                return EmitSoftFloatCall(context, SoftFloat32.FPMulX, SoftFloat64.FPMulX, op1, op2);
             });
         }
 
@@ -1095,7 +1103,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarTernaryRaOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPNegMulAdd), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPNegMulAdd, SoftFloat64.FPNegMulAdd, op1, op2, op3);
                 });
             }
         }
@@ -1138,7 +1146,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarTernaryRaOpF(context, (op1, op2, op3) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPNegMulSub), op1, op2, op3);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPNegMulSub, SoftFloat64.FPNegMulSub, op1, op2, op3);
                 });
             }
         }
@@ -1162,7 +1170,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate), op1);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRecipEstimate, SoftFloat64.FPRecipEstimate, op1);
                 });
             }
         }
@@ -1181,7 +1189,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipEstimate), op1);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRecipEstimate, SoftFloat64.FPRecipEstimate, op1);
                 });
             }
         }
@@ -1219,7 +1227,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipStepFused), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRecipStepFused, SoftFloat64.FPRecipStepFused, op1, op2);
                 });
             }
         }
@@ -1262,7 +1270,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecipStepFused), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRecipStepFused, SoftFloat64.FPRecipStepFused, op1, op2);
                 });
             }
         }
@@ -1271,7 +1279,7 @@ namespace ARMeilleure.Instructions
         {
             EmitScalarUnaryOpF(context, (op1) =>
             {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRecpX), op1);
+                return EmitSoftFloatCall(context, SoftFloat32.FPRecpX, SoftFloat64.FPRecpX, op1);
             });
         }
 
@@ -1299,11 +1307,11 @@ namespace ARMeilleure.Instructions
             {
                 if (op.Size == 0)
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
+                    return context.Call(new _F32_F32(SoftFallback.RoundF), op1);
                 }
                 else /* if (op.Size == 1) */
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
+                    return context.Call(new _F64_F64(SoftFallback.Round), op1);
                 }
             });
         }
@@ -1318,11 +1326,11 @@ namespace ARMeilleure.Instructions
             {
                 if (sizeF == 0)
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
+                    return context.Call(new _F32_F32(SoftFallback.RoundF), op1);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
+                    return context.Call(new _F64_F64(SoftFallback.Round), op1);
                 }
             });
         }
@@ -1337,7 +1345,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Floor), op1);
+                    return EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1);
                 });
             }
         }
@@ -1352,7 +1360,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Floor), op1);
+                    return EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1);
                 });
             }
         }
@@ -1397,7 +1405,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Ceiling), op1);
+                    return EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1);
                 });
             }
         }
@@ -1412,7 +1420,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Ceiling), op1);
+                    return EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1);
                 });
             }
         }
@@ -1425,11 +1433,11 @@ namespace ARMeilleure.Instructions
             {
                 if (op.Size == 0)
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
+                    return context.Call(new _F32_F32(SoftFallback.RoundF), op1);
                 }
                 else /* if (op.Size == 1) */
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
+                    return context.Call(new _F64_F64(SoftFallback.Round), op1);
                 }
             });
         }
@@ -1444,11 +1452,11 @@ namespace ARMeilleure.Instructions
             {
                 if (sizeF == 0)
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF)), op1);
+                    return context.Call(new _F32_F32(SoftFallback.RoundF), op1);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round)), op1);
+                    return context.Call(new _F64_F64(SoftFallback.Round), op1);
                 }
             });
         }
@@ -1463,7 +1471,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Truncate), op1);
+                    return EmitUnaryMathCall(context, MathF.Truncate, Math.Truncate, op1);
                 });
             }
         }
@@ -1478,7 +1486,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitUnaryMathCall(context, nameof(Math.Truncate), op1);
+                    return EmitUnaryMathCall(context, MathF.Truncate, Math.Truncate, op1);
                 });
             }
         }
@@ -1497,7 +1505,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate), op1);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtEstimate, SoftFloat64.FPRSqrtEstimate, op1);
                 });
             }
         }
@@ -1516,7 +1524,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtEstimate), op1);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtEstimate, SoftFloat64.FPRSqrtEstimate, op1);
                 });
             }
         }
@@ -1558,7 +1566,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtStepFused), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtStepFused, SoftFloat64.FPRSqrtStepFused, op1, op2);
                 });
             }
         }
@@ -1605,7 +1613,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRSqrtStepFused), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPRSqrtStepFused, SoftFloat64.FPRSqrtStepFused, op1, op2);
                 });
             }
         }
@@ -1620,7 +1628,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF(context, (op1) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPSqrt), op1);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPSqrt, SoftFloat64.FPSqrt, op1);
                 });
             }
         }
@@ -1635,7 +1643,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorUnaryOpF(context, (op1) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPSqrt), op1);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPSqrt, SoftFloat64.FPSqrt, op1);
                 });
             }
         }
@@ -1654,7 +1662,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPSub, SoftFloat64.FPSub, op1, op2);
                 });
             }
         }
@@ -1673,7 +1681,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
                 {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub), op1, op2);
+                    return EmitSoftFloatCall(context, SoftFloat32.FPSub, SoftFloat64.FPSub, op1, op2);
                 });
             }
         }
@@ -1682,7 +1690,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41VectorMul_AddSub(context, AddSub.Add);
+                EmitSse41Mul_AddSub(context, AddSub.Add);
             }
             else
             {
@@ -1705,7 +1713,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41VectorMul_AddSub(context, AddSub.Subtract);
+                EmitSse41Mul_AddSub(context, AddSub.Subtract);
             }
             else
             {
@@ -1728,7 +1736,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41VectorMul_AddSub(context, AddSub.None);
+                EmitSse41Mul_AddSub(context, AddSub.None);
             }
             else
             {
@@ -1797,14 +1805,14 @@ namespace ARMeilleure.Instructions
 
         public static void Sabd_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse41)
+            if (Optimizations.UseSse2)
             {
                 OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                EmitSse41VectorSabdOp(context, op, n, m, isLong: false);
+                EmitSse41Sabd(context, op, n, m, isLong: false);
             }
             else
             {
@@ -1837,7 +1845,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                EmitSse41VectorSabdOp(context, op, n, m, isLong: true);
+                EmitSse41Sabd(context, op, n, m, isLong: true);
             }
             else
             {
@@ -2019,7 +2027,9 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorBinaryOpSx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: true));
+                Delegate dlg = new _S64_S64_S64(Math.Max);
+
+                EmitVectorBinaryOpSx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
@@ -2031,13 +2041,17 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpSx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: true));
+                Delegate dlg = new _S64_S64_S64(Math.Max);
+
+                EmitVectorPairwiseOpSx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
         public static void Smaxv_V(ArmEmitterContext context)
         {
-            EmitVectorAcrossVectorOpSx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: true));
+            Delegate dlg = new _S64_S64_S64(Math.Max);
+
+            EmitVectorAcrossVectorOpSx(context, (op1, op2) => context.Call(dlg, op1, op2));
         }
 
         public static void Smin_V(ArmEmitterContext context)
@@ -2062,7 +2076,9 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorBinaryOpSx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: true));
+                Delegate dlg = new _S64_S64_S64(Math.Min);
+
+                EmitVectorBinaryOpSx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
@@ -2074,13 +2090,17 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpSx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: true));
+                Delegate dlg = new _S64_S64_S64(Math.Min);
+
+                EmitVectorPairwiseOpSx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
         public static void Sminv_V(ArmEmitterContext context)
         {
-            EmitVectorAcrossVectorOpSx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: true));
+            Delegate dlg = new _S64_S64_S64(Math.Min);
+
+            EmitVectorAcrossVectorOpSx(context, (op1, op2) => context.Call(dlg, op1, op2));
         }
 
         public static void Smlal_V(ArmEmitterContext context)
@@ -2438,7 +2458,7 @@ namespace ARMeilleure.Instructions
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
-                EmitSse41VectorUabdOp(context, op, n, m, isLong: false);
+                EmitSse41Uabd(context, op, n, m, isLong: false);
             }
             else
             {
@@ -2471,7 +2491,7 @@ namespace ARMeilleure.Instructions
                 n = context.AddIntrinsic(movInst, n);
                 m = context.AddIntrinsic(movInst, m);
 
-                EmitSse41VectorUabdOp(context, op, n, m, isLong: true);
+                EmitSse41Uabd(context, op, n, m, isLong: true);
             }
             else
             {
@@ -2646,7 +2666,9 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorBinaryOpZx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: false));
+                Delegate dlg = new _U64_U64_U64(Math.Max);
+
+                EmitVectorBinaryOpZx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
@@ -2658,13 +2680,17 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpZx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: false));
+                Delegate dlg = new _U64_U64_U64(Math.Max);
+
+                EmitVectorPairwiseOpZx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
         public static void Umaxv_V(ArmEmitterContext context)
         {
-            EmitVectorAcrossVectorOpZx(context, (op1, op2) => EmitMax64Op(context, op1, op2, signed: false));
+            Delegate dlg = new _U64_U64_U64(Math.Max);
+
+            EmitVectorAcrossVectorOpZx(context, (op1, op2) => context.Call(dlg, op1, op2));
         }
 
         public static void Umin_V(ArmEmitterContext context)
@@ -2689,7 +2715,9 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorBinaryOpZx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: false));
+                Delegate dlg = new _U64_U64_U64(Math.Min);
+
+                EmitVectorBinaryOpZx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
@@ -2701,13 +2729,17 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitVectorPairwiseOpZx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: false));
+                Delegate dlg = new _U64_U64_U64(Math.Min);
+
+                EmitVectorPairwiseOpZx(context, (op1, op2) => context.Call(dlg, op1, op2));
             }
         }
 
         public static void Uminv_V(ArmEmitterContext context)
         {
-            EmitVectorAcrossVectorOpZx(context, (op1, op2) => EmitMin64Op(context, op1, op2, signed: false));
+            Delegate dlg = new _U64_U64_U64(Math.Min);
+
+            EmitVectorAcrossVectorOpZx(context, (op1, op2) => context.Call(dlg, op1, op2));
         }
 
         public static void Umlal_V(ArmEmitterContext context)
@@ -3049,29 +3081,7 @@ namespace ARMeilleure.Instructions
             context.Copy(d, res);
         }
 
-        private static Operand EmitMax64Op(ArmEmitterContext context, Operand op1, Operand op2, bool signed)
-        {
-            Debug.Assert(op1.Type == OperandType.I64 && op2.Type == OperandType.I64);
-
-            Operand cmp = signed
-                ? context.ICompareGreaterOrEqual  (op1, op2)
-                : context.ICompareGreaterOrEqualUI(op1, op2);
-
-            return context.ConditionalSelect(cmp, op1, op2);
-        }
-
-        private static Operand EmitMin64Op(ArmEmitterContext context, Operand op1, Operand op2, bool signed)
-        {
-            Debug.Assert(op1.Type == OperandType.I64 && op2.Type == OperandType.I64);
-
-            Operand cmp = signed
-                ? context.ICompareLessOrEqual  (op1, op2)
-                : context.ICompareLessOrEqualUI(op1, op2);
-
-            return context.ConditionalSelect(cmp, op1, op2);
-        }
-
-        private static void EmitScalarRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
+        public static void EmitScalarRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -3093,7 +3103,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitVectorRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
+        public static void EmitVectorRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -3210,14 +3220,14 @@ namespace ARMeilleure.Instructions
             Subtract
         }
 
-        private static void EmitSse41VectorMul_AddSub(ArmEmitterContext context, AddSub addSub)
+        private static void EmitSse41Mul_AddSub(ArmEmitterContext context, AddSub addSub)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
             Operand n = GetVec(op.Rn);
             Operand m = GetVec(op.Rm);
 
-            Operand res;
+            Operand res = null;
 
             if (op.Size == 0)
             {
@@ -3247,15 +3257,23 @@ namespace ARMeilleure.Instructions
 
             if (addSub == AddSub.Add)
             {
-                Intrinsic addInst = X86PaddInstruction[op.Size];
-
-                res = context.AddIntrinsic(addInst, d, res);
+                switch (op.Size)
+                {
+                    case 0: res = context.AddIntrinsic(Intrinsic.X86Paddb, d, res); break;
+                    case 1: res = context.AddIntrinsic(Intrinsic.X86Paddw, d, res); break;
+                    case 2: res = context.AddIntrinsic(Intrinsic.X86Paddd, d, res); break;
+                    case 3: res = context.AddIntrinsic(Intrinsic.X86Paddq, d, res); break;
+                }
             }
             else if (addSub == AddSub.Subtract)
             {
-                Intrinsic subInst = X86PsubInstruction[op.Size];
-
-                res = context.AddIntrinsic(subInst, d, res);
+                switch (op.Size)
+                {
+                    case 0: res = context.AddIntrinsic(Intrinsic.X86Psubb, d, res); break;
+                    case 1: res = context.AddIntrinsic(Intrinsic.X86Psubw, d, res); break;
+                    case 2: res = context.AddIntrinsic(Intrinsic.X86Psubd, d, res); break;
+                    case 3: res = context.AddIntrinsic(Intrinsic.X86Psubq, d, res); break;
+                }
             }
 
             if (op.RegisterSize == RegisterSize.Simd64)
@@ -3266,7 +3284,7 @@ namespace ARMeilleure.Instructions
             context.Copy(d, res);
         }
 
-        private static void EmitSse41VectorSabdOp(
+        private static void EmitSse41Sabd(
             ArmEmitterContext context,
             OpCodeSimdReg op,
             Operand n,
@@ -3299,7 +3317,7 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        private static void EmitSse41VectorUabdOp(
+        private static void EmitSse41Uabd(
             ArmEmitterContext context,
             OpCodeSimdReg op,
             Operand n,

@@ -1,9 +1,7 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using ARMeilleure.Translation.PTC;
 using System;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -146,10 +144,21 @@ namespace ARMeilleure.Instructions
 
             switch (size)
             {
-                case 0: value = context.Load8 (physAddr);                  break;
-                case 1: value = context.Load16(physAddr);                  break;
-                case 2: value = context.Load  (OperandType.I32, physAddr); break;
-                case 3: value = context.Load  (OperandType.I64, physAddr); break;
+                case 0:
+                    value = context.Load8(physAddr);
+                    break;
+
+                case 1:
+                    value = context.Load16(physAddr);
+                    break;
+
+                case 2:
+                    value = context.Load(OperandType.I32, physAddr);
+                    break;
+
+                case 3:
+                    value = context.Load(OperandType.I64, physAddr);
+                    break;
             }
 
             SetInt(context, rt, value);
@@ -187,11 +196,25 @@ namespace ARMeilleure.Instructions
 
             switch (size)
             {
-                case 0: value = context.VectorInsert8 (vector, context.Load8(physAddr), elem);                 break;
-                case 1: value = context.VectorInsert16(vector, context.Load16(physAddr), elem);                break;
-                case 2: value = context.VectorInsert  (vector, context.Load(OperandType.I32, physAddr), elem); break;
-                case 3: value = context.VectorInsert  (vector, context.Load(OperandType.I64, physAddr), elem); break;
-                case 4: value = context.Load          (OperandType.V128, physAddr);                            break;
+                case 0:
+                    value = context.VectorInsert8(vector, context.Load8(physAddr), elem);
+                    break;
+
+                case 1:
+                    value = context.VectorInsert16(vector, context.Load16(physAddr), elem);
+                    break;
+
+                case 2:
+                    value = context.VectorInsert(vector, context.Load(OperandType.I32, physAddr), elem);
+                    break;
+
+                case 3:
+                    value = context.VectorInsert(vector, context.Load(OperandType.I64, physAddr), elem);
+                    break;
+
+                case 4:
+                    value = context.Load(OperandType.V128, physAddr);
+                    break;
             }
 
             context.Copy(GetVec(rt), value);
@@ -271,11 +294,25 @@ namespace ARMeilleure.Instructions
 
             switch (size)
             {
-                case 0: context.Store8 (physAddr, context.VectorExtract8(value, elem));                  break;
-                case 1: context.Store16(physAddr, context.VectorExtract16(value, elem));                 break;
-                case 2: context.Store  (physAddr, context.VectorExtract(OperandType.FP32, value, elem)); break;
-                case 3: context.Store  (physAddr, context.VectorExtract(OperandType.FP64, value, elem)); break;
-                case 4: context.Store  (physAddr, value);                                                break;
+                case 0:
+                    context.Store8(physAddr, context.VectorExtract8(value, elem));
+                    break;
+
+                case 1:
+                    context.Store16(physAddr, context.VectorExtract16(value, elem));
+                    break;
+
+                case 2:
+                    context.Store(physAddr, context.VectorExtract(OperandType.FP32, value, elem));
+                    break;
+
+                case 3:
+                    context.Store(physAddr, context.VectorExtract(OperandType.FP64, value, elem));
+                    break;
+
+                case 4:
+                    context.Store(physAddr, value);
+                    break;
             }
 
             context.MarkLabel(lblEnd);
@@ -296,9 +333,7 @@ namespace ARMeilleure.Instructions
             int ptLevelSize = 1 << ptLevelBits;
             int ptLevelMask = ptLevelSize - 1;
 
-            Operand pte = Ptc.State == PtcState.Disabled
-                ? Const(context.Memory.PageTablePointer.ToInt64())
-                : Const(context.Memory.PageTablePointer.ToInt64(), true, Ptc.PageTablePointerIndex);
+            Operand pte = Const(context.Memory.PageTablePointer.ToInt64());
 
             int bit = PageBits;
 
@@ -340,17 +375,17 @@ namespace ARMeilleure.Instructions
 
         private static void EmitReadIntFallback(ArmEmitterContext context, Operand address, int rt, int size)
         {
-            MethodInfo info = null;
+            Delegate fallbackMethodDlg = null;
 
             switch (size)
             {
-                case 0: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadByte));   break;
-                case 1: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt16)); break;
-                case 2: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt32)); break;
-                case 3: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt64)); break;
+                case 0: fallbackMethodDlg = new _U8_U64 (NativeInterface.ReadByte);   break;
+                case 1: fallbackMethodDlg = new _U16_U64(NativeInterface.ReadUInt16); break;
+                case 2: fallbackMethodDlg = new _U32_U64(NativeInterface.ReadUInt32); break;
+                case 3: fallbackMethodDlg = new _U64_U64(NativeInterface.ReadUInt64); break;
             }
 
-            SetInt(context, rt, context.Call(info, address));
+            SetInt(context, rt, context.Call(fallbackMethodDlg, address));
         }
 
         private static void EmitReadVectorFallback(
@@ -361,18 +396,18 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            MethodInfo info = null;
+            Delegate fallbackMethodDlg = null;
 
             switch (size)
             {
-                case 0: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadByte));      break;
-                case 1: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt16));    break;
-                case 2: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt32));    break;
-                case 3: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadUInt64));    break;
-                case 4: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.ReadVector128)); break;
+                case 0: fallbackMethodDlg = new _U8_U64  (NativeInterface.ReadByte);      break;
+                case 1: fallbackMethodDlg = new _U16_U64 (NativeInterface.ReadUInt16);    break;
+                case 2: fallbackMethodDlg = new _U32_U64 (NativeInterface.ReadUInt32);    break;
+                case 3: fallbackMethodDlg = new _U64_U64 (NativeInterface.ReadUInt64);    break;
+                case 4: fallbackMethodDlg = new _V128_U64(NativeInterface.ReadVector128); break;
             }
 
-            Operand value = context.Call(info, address);
+            Operand value = context.Call(fallbackMethodDlg, address);
 
             switch (size)
             {
@@ -387,14 +422,14 @@ namespace ARMeilleure.Instructions
 
         private static void EmitWriteIntFallback(ArmEmitterContext context, Operand address, int rt, int size)
         {
-            MethodInfo info = null;
+            Delegate fallbackMethodDlg = null;
 
             switch (size)
             {
-                case 0: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteByte));   break;
-                case 1: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt16)); break;
-                case 2: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt32)); break;
-                case 3: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt64)); break;
+                case 0: fallbackMethodDlg = new _Void_U64_U8 (NativeInterface.WriteByte);   break;
+                case 1: fallbackMethodDlg = new _Void_U64_U16(NativeInterface.WriteUInt16); break;
+                case 2: fallbackMethodDlg = new _Void_U64_U32(NativeInterface.WriteUInt32); break;
+                case 3: fallbackMethodDlg = new _Void_U64_U64(NativeInterface.WriteUInt64); break;
             }
 
             Operand value = GetInt(context, rt);
@@ -404,7 +439,7 @@ namespace ARMeilleure.Instructions
                 value = context.ConvertI64ToI32(value);
             }
 
-            context.Call(info, address, value);
+            context.Call(fallbackMethodDlg, address, value);
         }
 
         private static void EmitWriteVectorFallback(
@@ -414,15 +449,15 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            MethodInfo info = null;
+            Delegate fallbackMethodDlg = null;
 
             switch (size)
             {
-                case 0: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteByte));      break;
-                case 1: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt16));    break;
-                case 2: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt32));    break;
-                case 3: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteUInt64));    break;
-                case 4: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteVector128)); break;
+                case 0: fallbackMethodDlg = new _Void_U64_U8  (NativeInterface.WriteByte);      break;
+                case 1: fallbackMethodDlg = new _Void_U64_U16 (NativeInterface.WriteUInt16);    break;
+                case 2: fallbackMethodDlg = new _Void_U64_U32 (NativeInterface.WriteUInt32);    break;
+                case 3: fallbackMethodDlg = new _Void_U64_U64 (NativeInterface.WriteUInt64);    break;
+                case 4: fallbackMethodDlg = new _Void_U64_V128(NativeInterface.WriteVector128); break;
             }
 
             Operand value = null;
@@ -431,10 +466,21 @@ namespace ARMeilleure.Instructions
             {
                 switch (size)
                 {
-                    case 0: value = context.VectorExtract8 (GetVec(rt), elem);                  break;
-                    case 1: value = context.VectorExtract16(GetVec(rt), elem);                  break;
-                    case 2: value = context.VectorExtract  (OperandType.I32, GetVec(rt), elem); break;
-                    case 3: value = context.VectorExtract  (OperandType.I64, GetVec(rt), elem); break;
+                    case 0:
+                        value = context.VectorExtract8(GetVec(rt), elem);
+                        break;
+
+                    case 1:
+                        value = context.VectorExtract16(GetVec(rt), elem);
+                        break;
+
+                    case 2:
+                        value = context.VectorExtract(OperandType.I32, GetVec(rt), elem);
+                        break;
+
+                    case 3:
+                        value = context.VectorExtract(OperandType.I64, GetVec(rt), elem);
+                        break;
                 }
             }
             else
@@ -442,7 +488,7 @@ namespace ARMeilleure.Instructions
                 value = GetVec(rt);
             }
 
-            context.Call(info, address, value);
+            context.Call(fallbackMethodDlg, address, value);
         }
 
         private static Operand GetInt(ArmEmitterContext context, int rt)

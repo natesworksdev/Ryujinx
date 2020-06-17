@@ -5,7 +5,6 @@ using ARMeilleure.Common;
 using ARMeilleure.Diagnostics;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -101,7 +100,7 @@ namespace ARMeilleure.CodeGen.X86
             _instTable[(int)inst] = func;
         }
 
-        public static CompiledFunction Generate(CompilerContext cctx, PtcInfo ptcInfo = null)
+        public static CompiledFunction Generate(CompilerContext cctx)
         {
             ControlFlowGraph cfg = cctx.Cfg;
 
@@ -159,11 +158,9 @@ namespace ARMeilleure.CodeGen.X86
 
             using (MemoryStream stream = new MemoryStream())
             {
-                CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count, ptcInfo);
+                CodeGenContext context = new CodeGenContext(stream, allocResult, maxCallArgs, cfg.Blocks.Count);
 
                 UnwindInfo unwindInfo = WritePrologue(context);
-
-                ptcInfo?.WriteUnwindInfo(unwindInfo);
 
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {

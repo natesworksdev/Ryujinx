@@ -16,14 +16,13 @@ namespace ARMeilleure.Instructions
             Operand n = GetVec(op.Rn);
 
             Operand res;
-
             if (Optimizations.UseAesni)
             {
                 res = context.AddIntrinsic(Intrinsic.X86Aesdeclast, context.AddIntrinsic(Intrinsic.X86Xorpd, d, n), context.VectorZero());
             }
             else
             {
-                res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Decrypt)), d, n);
+                res = context.Call(new _V128_V128_V128(SoftFallback.Decrypt), d, n);
             }
 
             context.Copy(d, res);
@@ -37,14 +36,13 @@ namespace ARMeilleure.Instructions
             Operand n = GetVec(op.Rn);
 
             Operand res;
-
             if (Optimizations.UseAesni)
             {
                 res = context.AddIntrinsic(Intrinsic.X86Aesenclast, context.AddIntrinsic(Intrinsic.X86Xorpd, d, n), context.VectorZero());
             }
             else
             {
-                res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.Encrypt)), d, n);
+                res = context.Call(new _V128_V128_V128(SoftFallback.Encrypt), d, n);
             }
 
             context.Copy(d, res);
@@ -57,14 +55,13 @@ namespace ARMeilleure.Instructions
             Operand n = GetVec(op.Rn);
 
             Operand res;
-
             if (Optimizations.UseAesni)
             {
                 res = context.AddIntrinsic(Intrinsic.X86Aesimc, n);
             }
             else
             {
-                res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.InverseMixColumns)), n);
+                res = context.Call(new _V128_V128(SoftFallback.InverseMixColumns), n);
             }
 
             context.Copy(GetVec(op.Rd), res);
@@ -77,7 +74,6 @@ namespace ARMeilleure.Instructions
             Operand n = GetVec(op.Rn);
 
             Operand res;
-
             if (Optimizations.UseAesni)
             {
                 Operand roundKey = context.VectorZero();
@@ -90,7 +86,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.MixColumns)), n);
+                res = context.Call(new _V128_V128(SoftFallback.MixColumns), n);
             }
 
             context.Copy(GetVec(op.Rd), res);
