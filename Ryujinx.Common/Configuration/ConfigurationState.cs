@@ -1,4 +1,4 @@
-using Ryujinx.Common;
+﻿using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.Hid;
@@ -173,6 +173,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableMulticoreScheduling { get; private set; }
 
             /// <summary>
+            /// Enables or disables profiled translation cache persistency
+            /// </summary>
+            public ReactiveObject<bool> EnablePtc { get; private set; }
+
+            /// <summary>
             /// Enables integrity checks on Game content files
             /// </summary>
             public ReactiveObject<bool> EnableFsIntegrityChecks { get; private set; }
@@ -200,6 +205,7 @@ namespace Ryujinx.Configuration
                 SystemTimeOffset          = new ReactiveObject<long>();
                 EnableDockedMode          = new ReactiveObject<bool>();
                 EnableMulticoreScheduling = new ReactiveObject<bool>();
+                EnablePtc                 = new ReactiveObject<bool>();
                 EnableFsIntegrityChecks   = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode     = new ReactiveObject<int>();
                 IgnoreMissingServices     = new ReactiveObject<bool>();
@@ -343,6 +349,7 @@ namespace Ryujinx.Configuration
                 EnableDiscordIntegration  = EnableDiscordIntegration,
                 EnableVsync               = Graphics.EnableVsync,
                 EnableMulticoreScheduling = System.EnableMulticoreScheduling,
+                EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
@@ -392,6 +399,7 @@ namespace Ryujinx.Configuration
             EnableDiscordIntegration.Value         = true;
             Graphics.EnableVsync.Value             = true;
             System.EnableMulticoreScheduling.Value = true;
+            System.EnablePtc.Value                 = false;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.IgnoreMissingServices.Value     = false;
@@ -578,6 +586,15 @@ namespace Ryujinx.Configuration
                 }
             }
 
+            if (configurationFileFormat.Version < 8)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 8.");
+
+                configurationFileFormat.EnablePtc = false;
+
+                configurationFileUpdated = true;
+            }
+
             List<InputConfig> inputConfig = new List<InputConfig>();
             foreach (ControllerConfig controllerConfig in configurationFileFormat.ControllerConfig)
             {
@@ -608,6 +625,7 @@ namespace Ryujinx.Configuration
             EnableDiscordIntegration.Value         = configurationFileFormat.EnableDiscordIntegration;
             Graphics.EnableVsync.Value             = configurationFileFormat.EnableVsync;
             System.EnableMulticoreScheduling.Value = configurationFileFormat.EnableMulticoreScheduling;
+            System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
