@@ -1,4 +1,3 @@
-﻿using ARMeilleure.Translation.PTC;
 using Gdk;
 using OpenTK;
 using OpenTK.Graphics;
@@ -184,8 +183,8 @@ namespace Ryujinx.Ui
                 string titleNameSection = string.IsNullOrWhiteSpace(_device.Application.TitleName) ? string.Empty
                     : $" - {_device.Application.TitleName}";
 
-                string titleVersionSection = string.IsNullOrWhiteSpace(_device.Application.DisplayVersion) ? string.Empty
-                    : $" v{_device.Application.DisplayVersion}";
+                string titleVersionSection = string.IsNullOrWhiteSpace(_device.Application.TitleVersionString) ? string.Empty
+                    : $" v{_device.Application.TitleVersionString}";
 
                 string titleIdSection = string.IsNullOrWhiteSpace(_device.Application.TitleIdText) ? string.Empty
                     : $" ({_device.Application.TitleIdText.ToUpper()})";
@@ -379,17 +378,7 @@ namespace Ryujinx.Ui
             {
                 Gtk.Application.Invoke(delegate
                 {
-                    KeyboardState keyboard = OpenTK.Input.Keyboard.GetState();
-
-                    HandleScreenState(keyboard);
-
-                    if (keyboard.IsKeyDown(OpenTK.Input.Key.Delete))
-                    {
-                        if (!ParentWindow.State.HasFlag(Gdk.WindowState.Fullscreen))
-                        {
-                            Ptc.Continue();
-                        }
-                    }
+                    HandleScreenState(OpenTK.Input.Keyboard.GetState());
                 });
             }
 

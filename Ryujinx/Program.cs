@@ -1,4 +1,3 @@
-using ARMeilleure.Translation.PTC;
 using Gtk;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInfo;
@@ -111,15 +110,9 @@ namespace Ryujinx
 
             Logger.PrintError(LogClass.Application, $"Unhandled exception caught: {exception}");
 
-            Ptc.Close();
-            PtcProfiler.Stop();
-
             if (e.IsTerminating)
             {
                 Logger.Shutdown();
-
-                Ptc.Dispose();
-                PtcProfiler.Dispose();
             }
         }
     }

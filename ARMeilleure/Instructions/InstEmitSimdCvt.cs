@@ -4,7 +4,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -62,7 +61,9 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = context.VectorExtract(OperandType.FP32, GetVec(op.Rn), 0);
 
-                Operand res = context.Call(typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert)), ne);
+                Delegate dlg = new _U16_F32(SoftFloat32_16.FPConvert);
+
+                Operand res = context.Call(dlg, ne);
 
                 res = context.ZeroExtend16(OperandType.I64, res);
 
@@ -72,7 +73,9 @@ namespace ARMeilleure.Instructions
             {
                 Operand ne = EmitVectorExtractZx(context, op.Rn, 0, 1);
 
-                Operand res = context.Call(typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert)), ne);
+                Delegate dlg = new _F32_U16(SoftFloat16_32.FPConvert);
+
+                Operand res = context.Call(dlg, ne);
 
                 context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
             }
@@ -158,7 +161,9 @@ namespace ARMeilleure.Instructions
                     {
                         Operand ne = EmitVectorExtractZx(context, op.Rn, part + index, 1);
 
-                        Operand e = context.Call(typeof(SoftFloat16_32).GetMethod(nameof(SoftFloat16_32.FPConvert)), ne);
+                        Delegate dlg = new _F32_U16(SoftFloat16_32.FPConvert);
+
+                        Operand e = context.Call(dlg, ne);
 
                         res = context.VectorInsert(res, e, index);
                     }
@@ -184,7 +189,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1));
+                EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1));
             }
         }
 
@@ -196,7 +201,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Floor), op1));
+                EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Floor, Math.Floor, op1));
             }
         }
 
@@ -242,7 +247,9 @@ namespace ARMeilleure.Instructions
 
                     if (sizeF == 0)
                     {
-                        Operand e = context.Call(typeof(SoftFloat32_16).GetMethod(nameof(SoftFloat32_16.FPConvert)), ne);
+                        Delegate dlg = new _U16_F32(SoftFloat32_16.FPConvert);
+
+                        Operand e = context.Call(dlg, ne);
 
                         e = context.ZeroExtend16(OperandType.I64, e);
 
@@ -264,7 +271,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtsOpF(context, FPRoundingMode.ToNearest, scalar: true);
+                EmitSse41Fcvts(context, FPRoundingMode.ToNearest, scalar: true);
             }
             else
             {
@@ -276,7 +283,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtsOpF(context, FPRoundingMode.ToNearest, scalar: false);
+                EmitSse41Fcvts(context, FPRoundingMode.ToNearest, scalar: false);
             }
             else
             {
@@ -288,7 +295,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtuOpF(context, FPRoundingMode.ToNearest, scalar: true);
+                EmitSse41Fcvtu(context, FPRoundingMode.ToNearest, scalar: true);
             }
             else
             {
@@ -300,7 +307,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtuOpF(context, FPRoundingMode.ToNearest, scalar: false);
+                EmitSse41Fcvtu(context, FPRoundingMode.ToNearest, scalar: false);
             }
             else
             {
@@ -316,7 +323,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Ceiling), op1));
+                EmitFcvt_s_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1));
             }
         }
 
@@ -328,7 +335,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Ceiling), op1));
+                EmitFcvt_u_Gp(context, (op1) => EmitUnaryMathCall(context, MathF.Ceiling, Math.Ceiling, op1));
             }
         }
 
@@ -360,7 +367,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtsOpF(context, FPRoundingMode.TowardsZero, scalar: true);
+                EmitSse41Fcvts(context, FPRoundingMode.TowardsZero, scalar: true);
             }
             else
             {
@@ -372,7 +379,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtsOpF(context, FPRoundingMode.TowardsZero, scalar: false);
+                EmitSse41Fcvts(context, FPRoundingMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -384,7 +391,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtsOpF(context, FPRoundingMode.TowardsZero, scalar: false);
+                EmitSse41Fcvts(context, FPRoundingMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -420,7 +427,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtuOpF(context, FPRoundingMode.TowardsZero, scalar: true);
+                EmitSse41Fcvtu(context, FPRoundingMode.TowardsZero, scalar: true);
             }
             else
             {
@@ -432,7 +439,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtuOpF(context, FPRoundingMode.TowardsZero, scalar: false);
+                EmitSse41Fcvtu(context, FPRoundingMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -444,7 +451,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse41)
             {
-                EmitSse41FcvtuOpF(context, FPRoundingMode.TowardsZero, scalar: false);
+                EmitSse41Fcvtu(context, FPRoundingMode.TowardsZero, scalar: false);
             }
             else
             {
@@ -490,7 +497,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2ScvtfOp(context, scalar: true);
+                EmitSse2Scvtf(context, scalar: true);
             }
             else
             {
@@ -510,7 +517,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2ScvtfOp(context, scalar: false);
+                EmitSse2Scvtf(context, scalar: false);
             }
             else
             {
@@ -522,7 +529,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2ScvtfOp(context, scalar: false);
+                EmitSse2Scvtf(context, scalar: false);
             }
             else
             {
@@ -558,7 +565,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2UcvtfOp(context, scalar: true);
+                EmitSse2Ucvtf(context, scalar: true);
             }
             else
             {
@@ -578,7 +585,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2UcvtfOp(context, scalar: false);
+                EmitSse2Ucvtf(context, scalar: false);
             }
             else
             {
@@ -590,7 +597,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2UcvtfOp(context, scalar: false);
+                EmitSse2Ucvtf(context, scalar: false);
             }
             else
             {
@@ -621,21 +628,21 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32));
+                    Delegate dlg = signed
+                        ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
+                        : (Delegate)new _U32_F32(SoftFallback.SatF32ToU32);
 
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64));
+                    Delegate dlg = signed
+                        ? (Delegate)new _S64_F64(SoftFallback.SatF64ToS64)
+                        : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
 
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -669,21 +676,21 @@ namespace ARMeilleure.Instructions
 
                 if (sizeF == 0)
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32));
+                    Delegate dlg = signed
+                        ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
+                        : (Delegate)new _U32_F32(SoftFallback.SatF32ToU32);
 
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
 
                     e = context.ZeroExtend32(OperandType.I64, e);
                 }
                 else /* if (sizeF == 1) */
                 {
-                    MethodInfo info = signed
-                        ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64))
-                        : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64));
+                    Delegate dlg = signed
+                        ? (Delegate)new _S64_F64(SoftFallback.SatF64ToS64)
+                        : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
 
-                    e = context.Call(info, e);
+                    e = context.Call(dlg, e);
                 }
 
                 res = EmitVectorInsert(context, res, e, index, sizeI);
@@ -802,22 +809,22 @@ namespace ARMeilleure.Instructions
 
             value = EmitF2iFBitsMul(context, value, fBits);
 
-            MethodInfo info;
-
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS32));
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _S32_F32(SoftFallback.SatF32ToS32)
+                    : (Delegate)new _S32_F64(SoftFallback.SatF64ToS32);
+
+                return context.Call(dlg, value);
             }
             else
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToS64))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToS64));
-            }
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _S64_F32(SoftFallback.SatF32ToS64)
+                    : (Delegate)new _S64_F64(SoftFallback.SatF64ToS64);
 
-            return context.Call(info, value);
+                return context.Call(dlg, value);
+            }
         }
 
         private static Operand EmitScalarFcvtu(ArmEmitterContext context, Operand value, int fBits)
@@ -826,22 +833,22 @@ namespace ARMeilleure.Instructions
 
             value = EmitF2iFBitsMul(context, value, fBits);
 
-            MethodInfo info;
-
             if (context.CurrOp.RegisterSize == RegisterSize.Int32)
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU32))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU32));
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _U32_F32(SoftFallback.SatF32ToU32)
+                    : (Delegate)new _U32_F64(SoftFallback.SatF64ToU32);
+
+                return context.Call(dlg, value);
             }
             else
             {
-                info = value.Type == OperandType.FP32
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF32ToU64))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SatF64ToU64));
-            }
+                Delegate dlg = value.Type == OperandType.FP32
+                    ? (Delegate)new _U64_F32(SoftFallback.SatF32ToU64)
+                    : (Delegate)new _U64_F64(SoftFallback.SatF64ToU64);
 
-            return context.Call(info, value);
+                return context.Call(dlg, value);
+            }
         }
 
         private static Operand EmitF2iFBitsMul(ArmEmitterContext context, Operand value, int fBits)
@@ -918,7 +925,7 @@ namespace ARMeilleure.Instructions
             return res;
         }
 
-        private static void EmitSse2ScvtfOp(ArmEmitterContext context, bool scalar)
+        private static void EmitSse2Scvtf(ArmEmitterContext context, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -983,7 +990,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSse2UcvtfOp(ArmEmitterContext context, bool scalar)
+        private static void EmitSse2Ucvtf(ArmEmitterContext context, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -1072,7 +1079,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSse41FcvtsOpF(ArmEmitterContext context, FPRoundingMode roundMode, bool scalar)
+        private static void EmitSse41Fcvts(ArmEmitterContext context, FPRoundingMode roundMode, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
@@ -1163,7 +1170,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static void EmitSse41FcvtuOpF(ArmEmitterContext context, FPRoundingMode roundMode, bool scalar)
+        private static void EmitSse41Fcvtu(ArmEmitterContext context, FPRoundingMode roundMode, bool scalar)
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 

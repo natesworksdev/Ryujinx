@@ -1,8 +1,8 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 using System.Collections.Generic;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
@@ -284,26 +284,13 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdFmov op = (OpCodeSimdFmov)context.CurrOp;
 
-            if (Optimizations.UseSse2)
+            if (op.Size == 0)
             {
-                if (op.Size == 0)
-                {
-                    context.Copy(GetVec(op.Rd), X86GetScalar(context, (int)op.Immediate));
-                }
-                else
-                {
-                    context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
-                }
+                context.Copy(GetVec(op.Rd), X86GetScalar(context, (int)op.Immediate));
             }
             else
             {
-                Operand e = Const(op.Immediate);
-
-                Operand res = context.VectorZero();
-
-                res = EmitVectorInsert(context, res, e, 0, op.Size + 2);
-
-                context.Copy(GetVec(op.Rd), res);
+                context.Copy(GetVec(op.Rd), X86GetScalar(context, op.Immediate));
             }
         }
 
@@ -363,7 +350,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2VectorMoviMvniOp(context, not: false);
+                EmitSse2MoviMvni(context, not: false);
             }
             else
             {
@@ -375,7 +362,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitSse2VectorMoviMvniOp(context, not: true);
+                EmitSse2MoviMvni(context, not: true);
             }
             else
             {
@@ -489,7 +476,7 @@ namespace ARMeilleure.Instructions
             EmitVectorZip(context, part: 1);
         }
 
-        private static void EmitSse2VectorMoviMvniOp(ArmEmitterContext context, bool not)
+        private static void EmitSse2MoviMvni(ArmEmitterContext context, bool not)
         {
             OpCodeSimdImm op = (OpCodeSimdImm)context.CurrOp;
 
@@ -606,30 +593,32 @@ namespace ARMeilleure.Instructions
                     args.Add(GetVec((op.Rn + index) & 0x1F));
                 }
 
-                MethodInfo info = null;
+                Delegate dlg = null;
 
-                if (isTbl)
+                switch (op.Size)
                 {
-                    switch (op.Size)
-                    {
-                        case 1: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl1)); break;
-                        case 2: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl2)); break;
-                        case 3: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl3)); break;
-                        case 4: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbl4)); break;
-                    }
-                }
-                else
-                {
-                    switch (op.Size)
-                    {
-                        case 1: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx1)); break;
-                        case 2: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx2)); break;
-                        case 3: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx3)); break;
-                        case 4: info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Tbx4)); break;
-                    }
+                    case 1: dlg = isTbl
+                        ? (Delegate)new _V128_V128_S32_V128     (SoftFallback.Tbl1)
+                        : (Delegate)new _V128_V128_V128_S32_V128(SoftFallback.Tbx1);
+                        break;
+
+                    case 2: dlg = isTbl
+                        ? (Delegate)new _V128_V128_S32_V128_V128     (SoftFallback.Tbl2)
+                        : (Delegate)new _V128_V128_V128_S32_V128_V128(SoftFallback.Tbx2);
+                        break;
+
+                    case 3: dlg = isTbl
+                        ? (Delegate)new _V128_V128_S32_V128_V128_V128     (SoftFallback.Tbl3)
+                        : (Delegate)new _V128_V128_V128_S32_V128_V128_V128(SoftFallback.Tbx3);
+                        break;
+
+                    case 4: dlg = isTbl
+                        ? (Delegate)new _V128_V128_S32_V128_V128_V128_V128     (SoftFallback.Tbl4)
+                        : (Delegate)new _V128_V128_V128_S32_V128_V128_V128_V128(SoftFallback.Tbx4);
+                        break;
                 }
 
-                context.Copy(d, context.Call(info, args.ToArray()));
+                context.Copy(d, context.Call(dlg, args.ToArray()));
             }
         }
 

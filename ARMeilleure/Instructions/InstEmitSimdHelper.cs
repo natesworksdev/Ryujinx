@@ -4,7 +4,6 @@ using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
-using System.Reflection;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -311,39 +310,68 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static Operand EmitUnaryMathCall(ArmEmitterContext context, string name, Operand n)
+        public static Operand EmitUnaryMathCall(ArmEmitterContext context, _F32_F32 f32, _F64_F64 f64, Operand n)
         {
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
 
-            MethodInfo info = (op.Size & 1) == 0
-                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float) })
-                : typeof(Math). GetMethod(name, new Type[] { typeof(double) });
-
-            return context.Call(info, n);
+            return (op.Size & 1) == 0 ? context.Call(f32, n) : context.Call(f64, n);
         }
 
         public static Operand EmitRoundMathCall(ArmEmitterContext context, MidpointRounding roundMode, Operand n)
         {
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
 
-            string name = nameof(Math.Round);
+            Delegate dlg;
 
-            MethodInfo info = (op.Size & 1) == 0
-                ? typeof(MathF).GetMethod(name, new Type[] { typeof(float),  typeof(MidpointRounding) })
-                : typeof(Math). GetMethod(name, new Type[] { typeof(double), typeof(MidpointRounding) });
+            if ((op.Size & 1) == 0)
+            {
+                dlg = new _F32_F32_MidpointRounding(MathF.Round);
+            }
+            else /* if ((op.Size & 1) == 1) */
+            {
+                dlg = new _F64_F64_MidpointRounding(Math.Round);
+            }
 
-            return context.Call(info, n, Const((int)roundMode));
+            return context.Call(dlg, n, Const((int)roundMode));
         }
 
-        public static Operand EmitSoftFloatCall(ArmEmitterContext context, string name, params Operand[] callArgs)
+        public static Operand EmitSoftFloatCall(
+            ArmEmitterContext context,
+            _F32_F32 f32,
+            _F64_F64 f64,
+            params Operand[] callArgs)
         {
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
 
-            MethodInfo info = (op.Size & 1) == 0
-                ? typeof(SoftFloat32).GetMethod(name)
-                : typeof(SoftFloat64).GetMethod(name);
+            Delegate dlg = (op.Size & 1) == 0 ? (Delegate)f32 : (Delegate)f64;
 
-            return context.Call(info, callArgs);
+            return context.Call(dlg, callArgs);
+        }
+
+        public static Operand EmitSoftFloatCall(
+            ArmEmitterContext context,
+            _F32_F32_F32 f32,
+            _F64_F64_F64 f64,
+            params Operand[] callArgs)
+        {
+            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+
+            Delegate dlg = (op.Size & 1) == 0 ? (Delegate)f32 : (Delegate)f64;
+
+            return context.Call(dlg, callArgs);
+        }
+
+        public static Operand EmitSoftFloatCall(
+            ArmEmitterContext context,
+            _F32_F32_F32_F32 f32,
+            _F64_F64_F64_F64 f64,
+            params Operand[] callArgs)
+        {
+            IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
+
+            Delegate dlg = (op.Size & 1) == 0 ? (Delegate)f32 : (Delegate)f64;
+
+            return context.Call(dlg, callArgs);
         }
 
         public static void EmitScalarBinaryOpByElemF(ArmEmitterContext context, Func2I emit)
@@ -1397,22 +1425,22 @@ namespace ARMeilleure.Instructions
                 throw new ArgumentOutOfRangeException(nameof(sizeDst));
             }
 
-            MethodInfo info;
+            Delegate dlg;
 
             if (signedSrc)
             {
-                info = signedDst
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedSrcSignedDstSatQ))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.SignedSrcUnsignedDstSatQ));
+                dlg = signedDst
+                    ? (Delegate)new _S64_S64_S32(SoftFallback.SignedSrcSignedDstSatQ)
+                    : (Delegate)new _U64_S64_S32(SoftFallback.SignedSrcUnsignedDstSatQ);
             }
             else
             {
-                info = signedDst
-                    ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedSrcSignedDstSatQ))
-                    : typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnsignedSrcUnsignedDstSatQ));
+                dlg = signedDst
+                    ? (Delegate)new _S64_U64_S32(SoftFallback.UnsignedSrcSignedDstSatQ)
+                    : (Delegate)new _U64_U64_S32(SoftFallback.UnsignedSrcUnsignedDstSatQ);
             }
 
-            return context.Call(info, op, Const(sizeDst));
+            return context.Call(dlg, op, Const(sizeDst));
         }
 
         // TSrc (64bit) == TDst (64bit); signed.
@@ -1420,7 +1448,7 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(((OpCodeSimd)context.CurrOp).Size == 3, "Invalid element size.");
 
-            return context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.UnarySignedSatQAbsOrNeg)), op);
+            return context.Call(new _S64_S64(SoftFallback.UnarySignedSatQAbsOrNeg), op);
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1428,11 +1456,11 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(((OpCodeSimd)context.CurrOp).Size == 3, "Invalid element size.");
 
-            MethodInfo info = signed
-                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQAdd))
-                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinaryUnsignedSatQAdd));
+            Delegate dlg = signed
+                ? (Delegate)new _S64_S64_S64(SoftFallback.BinarySignedSatQAdd)
+                : (Delegate)new _U64_U64_U64(SoftFallback.BinaryUnsignedSatQAdd);
 
-            return context.Call(info, op1, op2);
+            return context.Call(dlg, op1, op2);
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1440,11 +1468,11 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(((OpCodeSimd)context.CurrOp).Size == 3, "Invalid element size.");
 
-            MethodInfo info = signed
-                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQSub))
-                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinaryUnsignedSatQSub));
+            Delegate dlg = signed
+                ? (Delegate)new _S64_S64_S64(SoftFallback.BinarySignedSatQSub)
+                : (Delegate)new _U64_U64_U64(SoftFallback.BinaryUnsignedSatQSub);
 
-            return context.Call(info, op1, op2);
+            return context.Call(dlg, op1, op2);
         }
 
         // TSrcs (64bit) == TDst (64bit); signed, unsigned.
@@ -1452,11 +1480,11 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(((OpCodeSimd)context.CurrOp).Size == 3, "Invalid element size.");
 
-            MethodInfo info = signed
-                ? typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinarySignedSatQAcc))
-                : typeof(SoftFallback).GetMethod(nameof(SoftFallback.BinaryUnsignedSatQAcc));
+            Delegate dlg = signed
+                ? (Delegate)new _S64_U64_S64(SoftFallback.BinarySignedSatQAcc)
+                : (Delegate)new _U64_S64_U64(SoftFallback.BinaryUnsignedSatQAcc);
 
-            return context.Call(info, op1, op2);
+            return context.Call(dlg, op1, op2);
         }
 
         public static Operand EmitFloatAbs(ArmEmitterContext context, Operand value, bool single, bool vector)
@@ -1465,7 +1493,7 @@ namespace ARMeilleure.Instructions
             if (single)
             {
                 mask = vector ? X86GetAllElements(context, -0f) : X86GetScalar(context, -0f);
-            }
+            } 
             else
             {
                 mask = vector ? X86GetAllElements(context, -0d) : X86GetScalar(context, -0d);

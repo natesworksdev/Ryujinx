@@ -10,21 +10,21 @@ namespace ARMeilleure.Instructions
     {
         public static void Svc(ArmEmitterContext context)
         {
-            EmitExceptionCall(context, nameof(NativeInterface.SupervisorCall));
+            EmitExceptionCall(context, NativeInterface.SupervisorCall);
         }
 
         public static void Trap(ArmEmitterContext context)
         {
-            EmitExceptionCall(context, nameof(NativeInterface.Break));
+            EmitExceptionCall(context, NativeInterface.Break);
         }
 
-        private static void EmitExceptionCall(ArmEmitterContext context, string name)
+        private static void EmitExceptionCall(ArmEmitterContext context, _Void_U64_S32 func)
         {
             OpCode32Exception op = (OpCode32Exception)context.CurrOp;
 
             context.StoreToContext();
 
-            context.Call(typeof(NativeInterface).GetMethod(name), Const(op.Address), Const(op.Id));
+            context.Call(func, Const(op.Address), Const(op.Id));
 
             context.LoadFromContext();
 
