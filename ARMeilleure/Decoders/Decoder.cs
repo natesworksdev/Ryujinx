@@ -139,7 +139,7 @@ namespace ARMeilleure.Decoders
 
             if (!singleBlock)
             {
-                TailCallRemover.RunPass(address, blocks);
+                return TailCallRemover.RunPass(address, blocks);
             }
 
             return blocks.ToArray();

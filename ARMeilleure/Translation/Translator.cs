@@ -191,19 +191,9 @@ namespace ARMeilleure.Translation
 
             EmitSynchronization(context);
 
-            for (int i = 0; i < blocks.Length; i++)
+            if (blocks[0].Address != address)
             {
-                Block block = blocks[i];
-
-                if (block != null)
-                {
-                    if (block.Address != address)
-                    {
-                        context.Branch(context.GetLabel(address));
-                    }
-
-                    break;
-                }
+                context.Branch(context.GetLabel(address));
             }
 
             ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
@@ -247,11 +237,6 @@ namespace ARMeilleure.Translation
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 Block block = blocks[blkIndex];
-
-                if (block == null)
-                {
-                    continue;
-                }
 
                 context.CurrBlock = block;
 

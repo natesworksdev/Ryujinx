@@ -5,7 +5,7 @@ namespace ARMeilleure.Decoders.Optimizations
 {
     static class TailCallRemover
     {
-        public static void RunPass(ulong entryAddress, List<Block> blocks)
+        public static Block[] RunPass(ulong entryAddress, List<Block> blocks)
         {
             // Detect tail calls:
             // - Assume this function spans the space covered by contiguous code blocks surrounding the entry address.
@@ -55,20 +55,9 @@ namespace ARMeilleure.Decoders.Optimizations
 
             if (startBlockIndex == 0 && endBlockIndex == blocks.Count - 1)
             {
-                return; // Nothing to do here.
+                return blocks.ToArray(); // Nothing to do here.
             }
-
-            static void RemoveDeadBlocks(List<Block> blocks, int start, int end)
-            {
-                for (int i = start; i <= end; i++)
-                {
-                    if (!blocks[i].Exit)
-                    {
-                        blocks[i] = null;
-                    }
-                }
-            }
-
+            
             // Mark branches outside of contiguous region as exit blocks.
             for (int i = startBlockIndex; i <= endBlockIndex; i++)
             {
@@ -81,9 +70,20 @@ namespace ARMeilleure.Decoders.Optimizations
                 }
             }
 
-            // Finally, delete all blocks outside the contiguous range.
-            RemoveDeadBlocks(blocks, 0, startBlockIndex - 1);
-            RemoveDeadBlocks(blocks, endBlockIndex + 1, blocks.Count - 1);
+           var newBlocks = new List<Block>(blocks.Count);
+
+            // Finally, rebuild decoded block list, ignoring blocks outside the contiguous range.
+            for (int i = 0; i < blocks.Count; i++)
+            {
+                Block block = blocks[i];
+
+                if (block.Exit || (i >= startBlockIndex && i <= endBlockIndex))
+                {
+                    newBlocks.Add(block);
+                }
+            }
+
+            return newBlocks.ToArray();
         }
     }
 }
