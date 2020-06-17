@@ -704,6 +704,7 @@ namespace ARMeilleure.Decoders
             SetA32("<<<<0011111x0000xxxxxxxxxxxxxxxx", InstName.Mvn,     InstEmit32.Mvn,     typeof(OpCode32AluImm));
             SetA32("<<<<0001111x0000xxxxxxxxxxx0xxxx", InstName.Mvn,     InstEmit32.Mvn,     typeof(OpCode32AluRsImm));
             SetA32("<<<<0001111x0000xxxxxxxx0xx1xxxx", InstName.Mvn,     InstEmit32.Mvn,     typeof(OpCode32AluRsReg));
+            SetA32("<<<<0011001000001111000000000000", InstName.Nop,     InstEmit32.Nop,     typeof(OpCode32));
             SetA32("<<<<0011100xxxxxxxxxxxxxxxxxxxxx", InstName.Orr,     InstEmit32.Orr,     typeof(OpCode32AluImm));
             SetA32("<<<<0001100xxxxxxxxxxxxxxxx0xxxx", InstName.Orr,     InstEmit32.Orr,     typeof(OpCode32AluRsImm));
             SetA32("<<<<0001100xxxxxxxxxxxxx0xx1xxxx", InstName.Orr,     InstEmit32.Orr,     typeof(OpCode32AluRsReg));
