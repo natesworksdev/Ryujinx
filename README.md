@@ -71,7 +71,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
  - **Audio**
 
-   Audio is partially supported. We support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) and use a C# wrapper for [libsoundio](http://libsound.io/) as a fallback. Our current Opus implementation is incomplete.
+   Audio is partially supported. We use C# wrappers for [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed), the main audio backend, and [libsoundio](http://libsound.io/) as the fallback. Our current Opus implementation is incomplete.
 
 - **CPU**
 
