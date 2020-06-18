@@ -91,7 +91,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 - **Configuration**
 
-   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI..
+   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
    For more information [you can go here](CONFIG.md) *(Outdated)*.
 
