@@ -55,8 +55,8 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
    Everything on the Switch is encrypted, so if you want to run anything other than homebrew, you have to dump encryption keys from your console. To get more information please take a look at our [Keys Documentation](KEYS.md).
 
- - **Firmware**
-    
+ - **Firmware**  
+ 
     You need an official Switch firmware by either dumping directly from your Switch, or dumping your game cartridge to an XCI file; you may install firmware in Ryujinx directly from an XCI file as long as it has not been trimmed. Install the firmware, after you've installed your keys, from the Tools > Install Firmware menu item.
 
  - **Executables**
