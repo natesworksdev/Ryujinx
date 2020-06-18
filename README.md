@@ -27,7 +27,7 @@ If you use a pre-built version, you can use the graphical interface to run your 
 If you build it yourself you will need to:
 **Step one:** Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
 
-**Step two (choose one):**
+**Step two (choose one):**  
 **(Variant one)**
 
 After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. You can Git Clone the repo by using Git Bash or Git CMD.
