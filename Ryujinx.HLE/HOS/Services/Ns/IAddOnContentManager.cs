@@ -184,6 +184,5 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 
             return ResultCode.Success;
         }
-
     }
 }
