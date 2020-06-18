@@ -27,20 +27,21 @@ If you use a pre-built version, you can use the graphical interface to run your 
 If you build it yourself you will need to:
 **Step one:** Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
 
-**Step two (Variant one):**
+**Step two (choose one):**
+**(Variant one)**
 
-After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. Or you can download the ZIP tarball.) You can Git Clone the repo by using the GitBash, or you may use the second variant.
+After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. You can Git Clone the repo by using Git Bash or Git CMD.
 
-**Step two (Variant two):**
+**(Variant two):**
 
 Download the ZIP Tarball. Then extract it to a directory of your choice.
 
 **Step three:**
 
-Build the App using a Command prompt in the ROOT directory. You can quickly access it by Holding shift in explorer (in the Ryujinx directory) then right clicking, and typing the following command
+Build the App using a Command prompt in the project directory. You can quickly access it by holding shift in explorer (in the Ryujinx directory) then right clicking, and typing the following command:  
 Run `dotnet build -c Release -r win10-x64` inside the Ryujinx project folder to build Ryujinx binaries.
 
-Every file related to Ryujinx is stored in the `Ryujinx` folder. Located in `C:\Users\USERNAME\AppData\Roaming\` for Windows, `/home/USERNAME/.config` for Linux or `/Users/USERNAME/Library/Application Support/` for macOS. It can also be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
+Every file related to Ryujinx is stored in the `Ryujinx` folder. This folder is located in the user folder, which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
 ## Latest build
 
@@ -56,7 +57,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
  - **Firmware**
     
-    You need an official Switch firmware by either dumping directly from your Switch or dumping your cartridge game to an XCI file. Install the firmware, after you've installed your keys, from the Tools > Install Firmware menu item.
+    You need an official Switch firmware by either dumping directly from your Switch, or dumping your game cartridge to an XCI file; you may install firmware in Ryujinx directly from an XCI file as long as it has not been trimmed. Install the firmware, after you've installed your keys, from the Tools > Install Firmware menu item.
 
  - **Executables**
 
@@ -70,11 +71,11 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
  - **Audio**
 
-   Everything for audio is partially supported. We currently use a C# wrapper for [libsoundio](http://libsound.io/), and we support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) too as a fallback. Our current Opus implementation is incomplete.
+   Audio is partially supported. We support [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed) and use a C# wrapper for [libsoundio](http://libsound.io/) as a fallback. Our current Opus implementation is incomplete.
 
 - **CPU**
 
-  The CPU emulator, ARMeilleure, emulates an ARMv8 CPU, and currently only has support for the new 64-bit ARMv8 instructions (with a few instructions still missing). It translates the ARM code to a custom IR, performs a few optimizations, and turns that into x86 code. To handle that, we use our own JIT called ARMeilleure, which uses the custom IR and compiles the code to x86.  
+  The CPU emulator, ARMeilleure, emulates an ARMv8 CPU and currently has support for most 64-bit ARMv8 and some of the ARMv7 (and older) instructions, including partial 32-bit support. It translates the ARM code to a custom IR, performs a few optimizations, and turns that into x86 code. To handle that, we use our own JIT called ARMeilleure, which uses a custom IR and compiles the code to x86.  
   Ryujinx also features an optional Profiled Persistent Translation Cache, which essentially caches translated functions so that they do not need to be translated every time the game loads. The net result is a significant reduction in load times (the amount of time between launching a game and arriving at the title screen) for nearly every game. NOTE: this feature is disabled by default and must be enabled in the Options menu > System tab. You must launch the game at least twice to the title screen or beyond before performance improvements are unlocked on the third launch! These improvements are permanent and do not require any extra launches going forward.
 
 - **GPU**
@@ -90,7 +91,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 - **Configuration**
 
-   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user's appdata\roaming\ryujinx folder.
+   The emulator has settings for enabling or disabling some logging, remapping controllers, and more. You can configure all of them through the graphical interface or manually through the config file, `Config.json`, found in the user folder which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI..
 
    For more information [you can go here](CONFIG.md) *(Outdated)*.
 
