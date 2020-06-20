@@ -42,8 +42,6 @@ namespace Ryujinx.Ui
             _virtualFileSystem = virtualFileSystem;
             _controlData       = controlData;
 
-            string ext = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
-
             MenuItem openSaveUserDir = new MenuItem("Open User Save Directory")
             {
                 Sensitive   = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize > 0,
@@ -72,21 +70,24 @@ namespace Ryujinx.Ui
                 TooltipText = "Open the DLC management window"
             };
 
+            string ext    = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
+            bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci";
+
             MenuItem extractRomFs = new MenuItem("Extract RomFS Section")
             {
-                Sensitive   = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci",
+                Sensitive   = hasNca,
                 TooltipText = "Exctact the RomFs section present in the main NCA"
             };
 
             MenuItem extractExeFs = new MenuItem("Extract ExeFS Section")
             {
-                Sensitive   = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci",
+                Sensitive   = hasNca,
                 TooltipText = "Exctact the ExeFs section present in the main NCA"
             };
 
             MenuItem extractLogo = new MenuItem("Extract Logo Section")
             {
-                Sensitive   = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci",
+                Sensitive   = hasNca,
                 TooltipText = "Exctact the Logo section present in the main NCA"
             };
 
