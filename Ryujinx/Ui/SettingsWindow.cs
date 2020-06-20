@@ -298,7 +298,18 @@ namespace Ryujinx.Ui
                 {
                     foreach (string directory in fileChooser.Filenames)
                     {
-                        _gameDirsBoxStore.AppendValues(directory);
+                        bool directoryAdded = false;
+                        
+                        _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
+                        for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
+                        {
+                            if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
+                                directoryAdded = true;
+                            _gameDirsBoxStore.IterNext(ref treeIter);
+                        }
+
+                        if (!directoryAdded)
+                            _gameDirsBoxStore.AppendValues(directory);
                     }
                 }
 
