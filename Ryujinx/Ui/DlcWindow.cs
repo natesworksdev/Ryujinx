@@ -19,10 +19,10 @@ namespace Ryujinx.Ui
 {
     public class DlcWindow : Window
     {
-        private readonly VirtualFileSystem _virtualFileSystem;
-        private readonly string            _titleId;
-        private readonly string            _dlcJsonPath;
-        private readonly List<DlcMetadata> _dlcMetadataList;
+        private readonly VirtualFileSystem  _virtualFileSystem;
+        private readonly string             _titleId;
+        private readonly string             _dlcJsonPath;
+        private readonly List<DlcContainer> _dlcContainerList;
 
 #pragma warning disable CS0649, IDE0044
         [GUI] Label         _baseTitleInfoLabel;
@@ -43,95 +43,80 @@ namespace Ryujinx.Ui
 
             try
             {
-                _dlcMetadataList = JsonHelper.DeserializeFromFile<List<DlcMetadata>>(_dlcJsonPath);
+                _dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(_dlcJsonPath);
             }
             catch
             {
-                _dlcMetadataList = new List<DlcMetadata>();
+                _dlcContainerList = new List<DlcContainer>();
             }
-
-            _dlcTreeView.Model = new ListStore(
+            
+            _dlcTreeView.Model = new TreeStore(
                 typeof(bool),
+                typeof(string),
                 typeof(string));
 
             CellRendererToggle enableToggle = new CellRendererToggle();
             enableToggle.Toggled += (sender, args) =>
             {
                 _dlcTreeView.Model.GetIter(out TreeIter treeIter, new TreePath(args.Path));
-                _dlcTreeView.Model.SetValue(treeIter, 0, !(bool)_dlcTreeView.Model.GetValue(treeIter, 0));
+                bool newValue = !(bool)_dlcTreeView.Model.GetValue(treeIter, 0);
+                _dlcTreeView.Model.SetValue(treeIter, 0, newValue);
+
+                if (_dlcTreeView.Model.IterChildren(out TreeIter childIter, treeIter))
+                {
+                    do
+                    {
+                        _dlcTreeView.Model.SetValue(childIter, 0, newValue);
+                    }
+                    while (_dlcTreeView.Model.IterNext(ref childIter));
+                }
             };
 
             _dlcTreeView.AppendColumn("Enabled", enableToggle,           "active", 0);
-            _dlcTreeView.AppendColumn("Path",    new CellRendererText(), "text",   1);
+            _dlcTreeView.AppendColumn("TitleId", new CellRendererText(), "text",   1);
+            _dlcTreeView.AppendColumn("Path",    new CellRendererText(), "text",   2);
 
-            foreach (DlcMetadata dlcMetadata in _dlcMetadataList)
+            foreach (DlcContainer dlcContainer in _dlcContainerList)
             {
-                AddDlc(dlcMetadata, false);
+                TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
+
+                using FileStream containerFile = File.OpenRead(dlcContainer.Path);
+                PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
+                _virtualFileSystem.ImportTickets(pfs);
+
+                foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
+                {
+                    pfs.OpenFile(out IFile ncaFile, dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                    Nca nca = TryCreateNca(ncaFile.AsStorage(), dlcContainer.Path);
+                    
+                    if (nca != null)
+                    {
+                        ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter, dlcNca.Enabled, nca.Header.TitleId.ToString("X16"), dlcNca.Path);
+                    }
+                }
             }
         }
 
-        private void AddDlc(DlcMetadata dlcMetadata, bool showErrorDialog = true)
+        private Nca TryCreateNca(IStorage ncaStorage, string containerPath)
         {
-            if (!File.Exists(dlcMetadata.Path))
+            try
             {
-                return;
+                return new Nca(_virtualFileSystem.KeySet, ncaStorage);
+            }
+            catch (InvalidDataException exception)
+            {
+                Logger.PrintError(LogClass.Application, $"{exception.Message}. Errored File: {containerPath}");
+
+                GtkDialog.CreateInfoDialog("Ryujinx - Error", "Add DLC Failed!", "The NCA header content type check has failed. This is usually because the header key is incorrect or missing.");
+            }
+            catch (MissingKeyException exception)
+            {
+                Logger.PrintError(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}. Errored File: {containerPath}");
+
+                GtkDialog.CreateInfoDialog("Ryujinx - Error", "Add DLC Failed!", $"Your key set is missing a key with the name: {exception.Name}");
             }
 
-            using (FileStream file = new FileStream(dlcMetadata.Path, FileMode.Open, FileAccess.Read))
-            {
-                PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
-                bool containsDlc = false;
-
-                _virtualFileSystem.ImportTickets(nsp);
-
-                foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
-                {
-                    nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                    try
-                    {
-                        Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
-
-                        if (nca.Header.ContentType == NcaContentType.PublicData)
-                        {
-                            if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000).ToString("x16") != _titleId)
-                            {
-                                break;
-                            }
-
-                            ((ListStore)_dlcTreeView.Model).AppendValues(dlcMetadata.Enabled, dlcMetadata.Path);
-                            containsDlc = true;
-                        }
-                    }
-                    catch (InvalidDataException exception)
-                    {
-                        Logger.PrintError(LogClass.Application, $"{exception.Message}. Errored File: {dlcMetadata.Path}");
-
-                        if (showErrorDialog)
-                        {
-                            GtkDialog.CreateInfoDialog("Ryujinx - Error", "Add DLC Failed!", "The NCA header content type check has failed. This is usually because the header key is incorrect or missing.");
-                        }
-
-                        break;
-                    }
-                    catch (MissingKeyException exception)
-                    {
-                        Logger.PrintError(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}. Errored File: {dlcMetadata.Path}");
-
-                        if (showErrorDialog)
-                        {
-                            GtkDialog.CreateInfoDialog("Ryujinx - Error", "Add DLC Failed!", $"Your key set is missing a key with the name: {exception.Name}");
-                        }
-
-                        break;
-                    }
-                }
-
-                if (!containsDlc && showErrorDialog)
-                {
-                    GtkDialog.CreateErrorDialog("The specified file does not contain a DLC for the selected title!");
-                }
-            }
+            return null;
         }
 
         private void AddButton_Clicked(object sender, EventArgs args)
@@ -146,13 +131,49 @@ namespace Ryujinx.Ui
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
-                foreach (string path in fileChooser.Filenames)
+                foreach (string containerPath in fileChooser.Filenames)
                 {
-                    AddDlc(new DlcMetadata
+                    if (!File.Exists(containerPath))
                     {
-                        Path    = path,
-                        Enabled = true
-                    });
+                        return;
+                    }
+
+                    using (FileStream containerFile = File.OpenRead(containerPath))
+                    {
+                        PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
+                        bool containsDlc = false;
+
+                        _virtualFileSystem.ImportTickets(pfs);
+
+                        TreeIter? parentIter = null;
+
+                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                        {
+                            pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                            Nca nca = TryCreateNca(ncaFile.AsStorage(), containerPath);
+
+                            if (nca == null) continue;
+
+                            if (nca.Header.ContentType == NcaContentType.PublicData)
+                            {
+                                if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000).ToString("x16") != _titleId)
+                                {
+                                    break;
+                                }
+
+                                parentIter ??= ((TreeStore)_dlcTreeView.Model).AppendValues(true, "", containerPath);
+
+                                ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter.Value, true, nca.Header.TitleId.ToString("X16"), fileEntry.FullPath);
+                                containsDlc = true;
+                            }
+                        }
+
+                        if (!containsDlc)
+                        {
+                            GtkDialog.CreateErrorDialog("The specified file does not contain a DLC for the selected title!");
+                        }
+                    }
                 }
             }
 
@@ -163,30 +184,53 @@ namespace Ryujinx.Ui
         {
             if (_dlcTreeSelection.GetSelected(out ITreeModel treeModel, out TreeIter treeIter))
             {
-                ((ListStore)treeModel).Remove(ref treeIter);
+                if (_dlcTreeView.Model.IterParent(out TreeIter parentIter, treeIter) && _dlcTreeView.Model.IterNChildren(parentIter) <= 1)
+                {
+                    ((TreeStore)treeModel).Remove(ref parentIter);
+                }
+                else
+                {
+                    ((TreeStore)treeModel).Remove(ref treeIter);
+                }
             }
         }
 
         private void SaveButton_Clicked(object sender, EventArgs args)
         {
-            _dlcMetadataList.Clear();
+            _dlcContainerList.Clear();
 
-            if (_dlcTreeView.Model.GetIterFirst(out TreeIter treeIter))
+            if (_dlcTreeView.Model.GetIterFirst(out TreeIter parentIter))
             {
                 do
                 {
-                    _dlcMetadataList.Add(new DlcMetadata
+                    if (_dlcTreeView.Model.IterChildren(out TreeIter childIter, parentIter))
                     {
-                        Path    = _dlcTreeView.Model.GetValue(treeIter, 1).ToString(),
-                        Enabled = (bool)_dlcTreeView.Model.GetValue(treeIter, 0)
-                    });
+                        DlcContainer dlcContainer = new DlcContainer
+                        {
+                            Path       = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
+                            DlcNcaList = new List<DlcNca>()
+                        };
+
+                        do
+                        {
+                            dlcContainer.DlcNcaList.Add(new DlcNca
+                            {
+                                Enabled = (bool)_dlcTreeView.Model.GetValue(childIter, 0),
+                                TitleId = Convert.ToUInt64(_dlcTreeView.Model.GetValue(childIter, 1).ToString(), 16),
+                                Path    = (string)_dlcTreeView.Model.GetValue(childIter, 2)
+                            });
+                        }
+                        while (_dlcTreeView.Model.IterNext(ref childIter));
+
+                        _dlcContainerList.Add(dlcContainer);
+                    }
                 }
-                while (_dlcTreeView.Model.IterNext(ref treeIter));
+                while (_dlcTreeView.Model.IterNext(ref parentIter));
             }
 
             using (FileStream dlcJsonStream = File.Create(_dlcJsonPath, 4096, FileOptions.WriteThrough))
             {
-                dlcJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_dlcMetadataList, true)));
+                dlcJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_dlcContainerList, true)));
             }
 
             Dispose();

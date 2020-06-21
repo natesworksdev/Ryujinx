@@ -257,15 +257,13 @@ namespace Ryujinx.HLE.HOS
 
             if (File.Exists(titleAocMetadataPath))
             {
-                List<DlcMetadata> dlcMetadataList = JsonHelper.DeserializeFromFile<List<DlcMetadata>>(titleAocMetadataPath);
+                List<DlcContainer> dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(titleAocMetadataPath);
 
-                foreach (DlcMetadata dlcMetadata in dlcMetadataList)
+                foreach (DlcContainer dlcContainer in dlcContainerList)
                 {
-                    using (FileStream fileStream = new FileStream(dlcMetadata.Path, FileMode.Open, FileAccess.Read))
-                    using (IStorage storage = fileStream.AsStorage())
-                    using (PartitionFileSystem nsp = new PartitionFileSystem(storage))
+                    foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
                     {
-                        _contentManager.AddAocData(nsp, dlcMetadata.Path, mainNca.Header.TitleId, dlcMetadata.Enabled);
+                        _contentManager.AddAocItem(dlcNca.TitleId, dlcContainer.Path, dlcNca.Path, dlcNca.Enabled);
                     }
                 }
             }

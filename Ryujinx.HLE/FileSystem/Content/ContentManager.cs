@@ -196,7 +196,7 @@ namespace Ryujinx.HLE.FileSystem.Content
         }
 
         // fs must contain AOC nca files in its root
-        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId, bool enabled = true)
+        public void AddAocData(IFileSystem fs, string containerPath, ulong aocBaseId)
         {
             _virtualFileSystem.ImportTickets(fs);
 
@@ -227,7 +227,7 @@ namespace Ryujinx.HLE.FileSystem.Content
                         }
 
                         string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
-                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", enabled)))
+                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", true)))
                         {
                             Logger.PrintWarning(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {cnmt.TitleId:X16}");
                         }
@@ -237,6 +237,18 @@ namespace Ryujinx.HLE.FileSystem.Content
                         }
                     }
                 }
+            }
+        }
+
+        public void AddAocItem(ulong titleId, string containerPath, string ncaPath, bool enabled)
+        {
+            if (!_aocData.TryAdd(titleId, new AocItem(containerPath, ncaPath, enabled)))
+            {
+                Logger.PrintWarning(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {titleId:X16}");
+            }
+            else
+            {
+                Logger.PrintInfo(LogClass.Application, $"Found AddOnContent with TitleId {titleId:X16}");
             }
         }
 
