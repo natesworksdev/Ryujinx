@@ -300,12 +300,16 @@ namespace Ryujinx.Ui
                     {
                         bool directoryAdded = false;
                         
-                        _gameDirsBoxStore.GetIterFirst(out TreeIter treeIter);
-                        for (int i = 0; i < _gameDirsBoxStore.IterNChildren(); i++)
+                        if (_gameDirsBoxStore.GetIterFirst(out TreeIter treeIter))
                         {
-                            if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
-                                directoryAdded = true;
-                            _gameDirsBoxStore.IterNext(ref treeIter);
+                            do
+                            {
+                                if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
+                                {
+                                    directoryAdded = true;
+                                    break;
+                                }
+                            } while(_gameDirsBoxStore.IterNext(ref treeIter));
                         }
 
                         if (!directoryAdded)
