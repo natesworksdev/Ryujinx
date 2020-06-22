@@ -413,17 +413,20 @@ namespace Ryujinx.HLE.HOS
             }
 
             // ExeFs file replacements
-            _fileSystem.ModLoader.ApplyExefsReplacements(TitleId, nsos);
+            bool modified = _fileSystem.ModLoader.ApplyExefsReplacements(TitleId, nsos);
 
             var programs = nsos.ToArray();
 
-
-            _fileSystem.ModLoader.ApplyNsoPatches(TitleId, programs);
+            modified |= _fileSystem.ModLoader.ApplyNsoPatches(TitleId, programs);
 
             _contentManager.LoadEntries(_device);
 
+            if(EnablePtc && modified)
+            {
+                Logger.PrintWarning(LogClass.Ptc, $"Detected exefs modifications. PPTC disabled.");
+            }
 
-            Ptc.Initialize(TitleIdText, DisplayVersion, EnablePtc);
+            Ptc.Initialize(TitleIdText, DisplayVersion, EnablePtc && !modified);
 
             ProgramLoader.LoadNsos(_device.System.KernelContext, metaData, executables: programs);
         }

@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
                 int patchSize = buf[0] << 8 | buf[1];
 
-                if (patchSize == 0)                     // RLE/Fill mode
+                if (patchSize == 0) // RLE/Fill mode
                 {
                     if (ReadNext(2))
                     {
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
                     patches.AddFill((uint)patchOffset, fillLength, buf[0]);
                 }
-                else                                    // Copy mode
+                else // Copy mode
                 {
                     var patch = reader.ReadBytes(patchSize);
 

@@ -64,8 +64,10 @@ namespace Ryujinx.HLE.Loaders.Mods
         /// <param name="memory">The span of bytes to patch</param>
         /// <param name="maxSize">The maximum size of the slice of patchable memory</param>
         /// <param name="protectedOffset">A secondary offset used in special cases (NSO header)</param>
-        public void Patch(Span<byte> memory, int protectedOffset = 0)
+        /// <returns>Successful patches count</returns>
+        public int Patch(Span<byte> memory, int protectedOffset = 0)
         {
+            int count = 0;
             foreach (var (offset, patch) in _patches.OrderBy(item => item.Key))
             {
                 int patchOffset = (int)offset;
@@ -86,7 +88,11 @@ namespace Ryujinx.HLE.Loaders.Mods
                 Logger.PrintInfo(LogClass.Loader, $"Patching address offset {patchOffset:x} <= {BitConverter.ToString(patch).Replace('-', ' ')} len={patchSize}");
 
                 patch.AsSpan().Slice(0, patchSize).CopyTo(memory.Slice(patchOffset, patchSize));
+
+                count++;
             }
+
+            return count;
         }
     }
 }

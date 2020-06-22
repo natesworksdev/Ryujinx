@@ -47,16 +47,17 @@ namespace Ryujinx.HLE.HOS
                 if (type == ModType.TitleMod && titleId == ulong.MaxValue)
                 {
                     Logger.PrintWarning(LogClass.Application, $"Orphaned {type} without TitleId '{dir.Name}'");
+
                     return null;
                 }
 
                 Mod m = new Mod(dir, type, titleId, enabled);
-
                 bool check = type == ModType.TitleMod ? m.Exefs.Exists || m.Romfs.Exists || m.RomfsFile.Exists : m.Exefs.Exists;
 
                 if (!check)
                 {
                     Logger.PrintWarning(LogClass.Application, $"Invalid/Empty {type} '{m.Dir.Name}'");
+
                     return null;
                 }
 
@@ -213,6 +214,7 @@ namespace Ryujinx.HLE.HOS
             if (count == 0)
             {
                 Logger.PrintInfo(LogClass.Loader, "Using base RomFS");
+
                 return baseStorage;
             }
 
@@ -278,11 +280,12 @@ namespace Ryujinx.HLE.HOS
             return modCount;
         }
 
-        internal void ApplyExefsReplacements(ulong titleId, List<NsoExecutable> nsos)
+        internal bool ApplyExefsReplacements(ulong titleId, List<NsoExecutable> nsos)
         {
+            bool replaced = false;
             if (!TitleMods.TryGetValue(titleId, out var titleMods))
             {
-                return;
+                return false;
             }
 
             if (nsos.Count > 32)
@@ -290,8 +293,7 @@ namespace Ryujinx.HLE.HOS
                 throw new ArgumentOutOfRangeException("NSO Count is more than 32");
             }
 
-            var exefsDirs = titleMods.Where(mod => mod.Check() && mod.Exefs.Exists)
-                            .Select(mod => mod.Exefs);
+            var exefsDirs = titleMods.Where(mod => mod.Check() && mod.Exefs.Exists).Select(mod => mod.Exefs);
 
             BitVector32 stubs = new BitVector32();
             BitVector32 repls = new BitVector32();
@@ -317,6 +319,8 @@ namespace Ryujinx.HLE.HOS
                         nsos[i] = new NsoExecutable(nsoFile.OpenRead().AsStorage(), nsoName);
                         Logger.PrintInfo(LogClass.Loader, $"NSO '{nsoName}' replaced");
 
+                        replaced = true;
+
                         continue;
                     }
 
@@ -330,8 +334,11 @@ namespace Ryujinx.HLE.HOS
                 {
                     Logger.PrintInfo(LogClass.Loader, $"NSO '{nsos[i].Name}' stubbed");
                     nsos.RemoveAt(i);
+                    replaced = true;
                 }
             }
+
+            return replaced;
         }
 
         internal void ApplyNroPatches(NroExecutable nro)
@@ -343,19 +350,21 @@ namespace Ryujinx.HLE.HOS
             ApplyProgramPatches(nroPatches, 0, nro);
         }
 
-        internal void ApplyNsoPatches(ulong titleId, params IExecutable[] programs)
+        internal bool ApplyNsoPatches(ulong titleId, params IExecutable[] programs)
         {
             var nsoMods = NsoMods.Values
-                          .Concat(TitleMods.TryGetValue(titleId, out var titleMods) ? titleMods : Enumerable.Empty<Mod>())
-                          .Where(mod => mod.Check() && mod.Exefs.Exists);
+                .Concat(TitleMods.TryGetValue(titleId, out var titleMods) ? titleMods : Enumerable.Empty<Mod>())
+                .Where(mod => mod.Check() && mod.Exefs.Exists);
 
             // NSO patches are created with offset 0 according to Atmosphere's patcher module
             // But `Program` doesn't contain the header which is 0x100 bytes. So, we adjust for that here
-            ApplyProgramPatches(nsoMods, 0x100, programs);
+            return ApplyProgramPatches(nsoMods, 0x100, programs);
         }
 
-        private void ApplyProgramPatches(IEnumerable<Mod> mods, int protectedOffset, params IExecutable[] programs)
+        private bool ApplyProgramPatches(IEnumerable<Mod> mods, int protectedOffset, params IExecutable[] programs)
         {
+            int count = 0;
+
             MemPatch[] patches = new MemPatch[programs.Length];
 
             for (int i = 0; i < patches.Length; ++i)
@@ -420,8 +429,10 @@ namespace Ryujinx.HLE.HOS
             // Apply patches
             for (int i = 0; i < programs.Length; ++i)
             {
-                patches[i].Patch(programs[i].Program, protectedOffset);
+                count += patches[i].Patch(programs[i].Program, protectedOffset);
             }
+
+            return count > 0;
         }
     }
 }
