@@ -44,10 +44,27 @@ namespace Ryujinx.Configuration
                 }
             }
 
+            public class ColumnSortSettings
+            {
+                public ReactiveObject<int>  SortColumnId  { get; private set; }
+                public ReactiveObject<bool> SortAscending { get; private set; }
+
+                public ColumnSortSettings()
+                {
+                    SortColumnId  = new ReactiveObject<int>();
+                    SortAscending = new ReactiveObject<bool>();
+                }
+            }
+
             /// <summary>
             /// Used to toggle columns in the GUI
             /// </summary>
             public Columns GuiColumns { get; private set; }
+
+            /// <summary>
+            /// Used to configure column sort settings in the GUI
+            /// </summary>
+            public ColumnSortSettings ColumnSort { get; private set; }
 
             /// <summary>
             /// A list of directories containing games to be used to load games into the games list
@@ -67,6 +84,7 @@ namespace Ryujinx.Configuration
             public UiSection()
             {
                 GuiColumns        = new Columns();
+                ColumnSort        = new ColumnSortSettings();
                 GameDirs          = new ReactiveObject<List<string>>();
                 EnableCustomTheme = new ReactiveObject<bool>();
                 CustomThemePath   = new ReactiveObject<string>();
@@ -347,7 +365,7 @@ namespace Ryujinx.Configuration
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
-                GuiColumns                = new GuiColumns()
+                GuiColumns                = new GuiColumns
                 {
                     FavColumn        = Ui.GuiColumns.FavColumn,
                     IconColumn       = Ui.GuiColumns.IconColumn,
@@ -359,6 +377,11 @@ namespace Ryujinx.Configuration
                     FileExtColumn    = Ui.GuiColumns.FileExtColumn,
                     FileSizeColumn   = Ui.GuiColumns.FileSizeColumn,
                     PathColumn       = Ui.GuiColumns.PathColumn,
+                },
+                ColumnSort                = new ColumnSort
+                {
+                    SortColumnId  = Ui.ColumnSort.SortColumnId,
+                    SortAscending = Ui.ColumnSort.SortAscending
                 },
                 GameDirs                  = Ui.GameDirs,
                 EnableCustomTheme         = Ui.EnableCustomTheme,
@@ -406,6 +429,8 @@ namespace Ryujinx.Configuration
             Ui.GuiColumns.FileExtColumn.Value      = true;
             Ui.GuiColumns.FileSizeColumn.Value     = true;
             Ui.GuiColumns.PathColumn.Value         = true;
+            Ui.ColumnSort.SortColumnId.Value       = 0;
+            Ui.ColumnSort.SortAscending.Value      = false;
             Ui.GameDirs.Value                      = new List<string>();
             Ui.EnableCustomTheme.Value             = false;
             Ui.CustomThemePath.Value               = "";
@@ -587,6 +612,19 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 9)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 9.");
+
+                configurationFileFormat.ColumnSort = new ColumnSort
+                {
+                    SortColumnId  = 0,
+                    SortAscending = false
+                };
+
+                configurationFileUpdated = true;
+            }
+
             List<InputConfig> inputConfig = new List<InputConfig>();
             foreach (ControllerConfig controllerConfig in configurationFileFormat.ControllerConfig)
             {
@@ -631,6 +669,8 @@ namespace Ryujinx.Configuration
             Ui.GuiColumns.FileExtColumn.Value      = configurationFileFormat.GuiColumns.FileExtColumn;
             Ui.GuiColumns.FileSizeColumn.Value     = configurationFileFormat.GuiColumns.FileSizeColumn;
             Ui.GuiColumns.PathColumn.Value         = configurationFileFormat.GuiColumns.PathColumn;
+            Ui.ColumnSort.SortColumnId.Value       = configurationFileFormat.ColumnSort.SortColumnId;
+            Ui.ColumnSort.SortAscending.Value      = configurationFileFormat.ColumnSort.SortAscending;
             Ui.GameDirs.Value                      = configurationFileFormat.GameDirs;
             Ui.EnableCustomTheme.Value             = configurationFileFormat.EnableCustomTheme;
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;

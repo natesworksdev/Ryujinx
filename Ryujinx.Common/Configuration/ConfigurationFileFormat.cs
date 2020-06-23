@@ -13,7 +13,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 8;
+        public const int CurrentVersion = 9;
 
         public int Version { get; set; }
 
@@ -136,6 +136,11 @@ namespace Ryujinx.Configuration
         /// Used to toggle columns in the GUI
         /// </summary>
         public GuiColumns GuiColumns { get; set; }
+
+        /// <summary>
+        /// Used to configure column sort settings in the GUI
+        /// </summary>
+        public ColumnSort ColumnSort { get; set; }
 
         /// <summary>
         /// A list of directories containing games to be used to load games into the games list
