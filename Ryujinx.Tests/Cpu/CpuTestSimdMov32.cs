@@ -262,7 +262,7 @@ namespace Ryujinx.Tests.Cpu
         public void Vmvn([Range(0u, 1u, 2u)] uint size,
                          [Values(0u, 1u, 2u, 3u)] uint vd,
                          [Values(0u, 2u, 4u, 8u)] uint vm,
-                         [Values()] bool q)
+                         [Values] bool q)
         {
             uint opcode = 0xf3b00580u; // VMVN D0, D0
 
