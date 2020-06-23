@@ -700,6 +700,11 @@ namespace Ryujinx.Ui
                 }
 
                 _progressBar.Value = barValue;
+
+                if (args.NumAppsLoaded == args.NumAppsFound) // Reset the vertical scrollbar to the top when titles finish loading
+                {
+                    _gameTableWindow.Vadjustment.Value = 0;
+                }
             });
         }
 
