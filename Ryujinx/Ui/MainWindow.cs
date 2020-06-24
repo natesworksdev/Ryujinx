@@ -32,6 +32,8 @@ namespace Ryujinx.Ui
 
         private static GlRenderer _glWidget;
 
+        private static Builder builderr;
+
         private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
 
         private static ListStore _tableStore;
@@ -112,6 +114,8 @@ namespace Ryujinx.Ui
             {
                 End(null);
             }
+
+            builderr = builder;
 
             _virtualFileSystem = VirtualFileSystem.CreateInstance();
             _contentManager    = new ContentManager(_virtualFileSystem);
@@ -1178,6 +1182,11 @@ namespace Ryujinx.Ui
             }
 
             return DateTime.Compare(DateTime.Parse(bValue), DateTime.Parse(aValue));
+        }
+
+        public static void MakeTasMenuVisible()
+        {
+            builderr.GetObject("TasMenu").SetProperty("visible", new GLib.Value(true));
         }
 
         private static int FileSizeSort(ITreeModel model, TreeIter a, TreeIter b)

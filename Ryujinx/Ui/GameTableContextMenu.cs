@@ -87,7 +87,7 @@ namespace Ryujinx.Ui
 
             MenuItem extractLogo = new MenuItem("Extract Logo Section")
             {
-                Sensitive   = hasNca,
+                Sensitive = hasNca,
                 TooltipText = "Exctact the Logo section present in the main NCA"
             };
 

@@ -347,6 +347,60 @@
                 </child>
               </object>
             </child>
+			<child>
+				<object class="GtkMenuItem" id="TasMenu">
+					<property name="visible">False</property>
+					<property name="can_focus">False</property>
+					<property name="label" translatable="yes">TAS</property>
+					<property name="use_underline">True</property>
+					<child type="submenu">
+						<object class="GtkMenu">
+							<property name="visible">True</property>
+							<property name="can_focus">False</property>
+							<child>
+								<object class="GtkMenuItem" id="CreateTas">
+									<property name="visible">True</property>
+									<property name="can_focus">False</property>
+									<property name="tooltip_text" translatable="yes">Create a new TAS table for the currently running game</property>
+									<property name="label" translatable="yes">Create TAS</property>
+									<property name="use_underline">True</property>
+									<signal name="activate" handler="Create_Tas_Pressed" swapped="no" />
+								</object>
+							</child>
+							<child>
+								<object class="GtkMenuItem" id="EditTas">
+									<property name="visible">True</property>
+									<property name="can_focus">False</property>
+									<property name="tooltip_text" translatable="yes">Create a new TAS table for the currently running game</property>
+									<property name="label" translatable="yes">Edit TAS</property>
+									<property name="use_underline">True</property>
+									<signal name="activate" handler="Edit_Tas_Pressed" swapped="no" />
+								</object>
+							</child>
+							<child>
+								<object class="GtkMenuItem" id="RunTas">
+									<property name="visible">True</property>
+									<property name="can_focus">False</property>
+									<property name="tooltip_text" translatable="yes">Create a new TAS table for the currently running game</property>
+									<property name="label" translatable="yes">Run TAS</property>
+									<property name="use_underline">True</property>
+									<signal name="activate" handler="Run_Tas_Pressed" swapped="no" />
+								</object>
+							</child>
+							<child>
+								<object class="GtkMenuItem" id="DeleteTas">
+									<property name="visible">True</property>
+									<property name="can_focus">False</property>
+									<property name="tooltip_text" translatable="yes">Create a new TAS table for the currently running game</property>
+									<property name="label" translatable="yes">Delete TAS</property>
+									<property name="use_underline">True</property>
+									<signal name="activate" handler="Delete_Tas_Pressed" swapped="no" />
+								</object>
+							</child>
+						</object>
+					</child>
+				</object>
+			</child>
           </object>
           <packing>
             <property name="expand">False</property>

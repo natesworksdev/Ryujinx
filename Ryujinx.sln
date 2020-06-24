@@ -46,6 +46,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Memory.Tests", "Ryu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Cpu", "Ryujinx.Cpu\Ryujinx.Cpu.csproj", "{3DF35E3D-D844-4399-A9A1-A9E923264C17}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.RyuTas", "Ryujinx.RyuTas\Ryujinx.RyuTas.csproj", "{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -206,6 +208,14 @@ Global
 		{3DF35E3D-D844-4399-A9A1-A9E923264C17}.Profile Release|Any CPU.Build.0 = Release|Any CPU
 		{3DF35E3D-D844-4399-A9A1-A9E923264C17}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DF35E3D-D844-4399-A9A1-A9E923264C17}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Profile Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Profile Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Profile Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Profile Release|Any CPU.Build.0 = Release|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0A6FF8C5-54E9-4AD3-8C2C-C63C0364A951}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
