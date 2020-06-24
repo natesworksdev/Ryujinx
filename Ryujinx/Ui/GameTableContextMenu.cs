@@ -42,6 +42,8 @@ namespace Ryujinx.Ui
             _virtualFileSystem = virtualFileSystem;
             _controlData       = controlData;
 
+            MenuItem manageSaveData = new MenuItem("Save Data");
+            
             MenuItem openSaveUserDir = new MenuItem("Open User Save Directory")
             {
                 Sensitive   = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize > 0,
@@ -59,6 +61,17 @@ namespace Ryujinx.Ui
                 Sensitive   = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.BcatDeliveryCacheStorageSize > 0,
                 TooltipText = "Open the folder where the BCAT save for the application is loaded"
             };
+            
+            Menu manageSaveDataSubMenu = new Menu();
+
+            manageSaveData.Submenu = manageSaveDataSubMenu;
+            
+            manageSaveDataSubMenu.Append(openSaveUserDir);
+            manageSaveDataSubMenu.Append(openSaveDeviceDir);
+            manageSaveDataSubMenu.Append(openSaveBcatDir);
+
+            
+            MenuItem manageGameData = new MenuItem("Game Management");
 
             MenuItem manageTitleUpdates = new MenuItem("Manage Title Updates")
             {
@@ -69,28 +82,67 @@ namespace Ryujinx.Ui
             {
                 TooltipText = "Open the DLC management window"
             };
+            
+            Menu manageGameDataSubMenu = new Menu();
 
+            manageGameData.Submenu = manageGameDataSubMenu;
+
+            manageGameDataSubMenu.Append(manageTitleUpdates);
+            manageGameDataSubMenu.Append(manageDlc);
+            
+            
             string ext    = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
             bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci";
+
+            MenuItem extractMenu = new MenuItem("Extract");
 
             MenuItem extractRomFs = new MenuItem("Extract RomFS Section")
             {
                 Sensitive   = hasNca,
-                TooltipText = "Exctact the RomFs section present in the main NCA"
+                TooltipText = "Extract the RomFs section present in the main NCA"
             };
 
             MenuItem extractExeFs = new MenuItem("Extract ExeFS Section")
             {
                 Sensitive   = hasNca,
-                TooltipText = "Exctact the ExeFs section present in the main NCA"
+                TooltipText = "Extract the ExeFs section present in the main NCA"
             };
 
             MenuItem extractLogo = new MenuItem("Extract Logo Section")
             {
                 Sensitive   = hasNca,
-                TooltipText = "Exctact the Logo section present in the main NCA"
+                TooltipText = "Extract the Logo section present in the main NCA"
             };
 
+
+            Menu extractSubMenu = new Menu();
+            
+            extractMenu.Submenu = extractSubMenu;
+
+            extractSubMenu.Append(extractExeFs);
+            extractSubMenu.Append(extractRomFs);
+            extractSubMenu.Append(extractLogo);
+
+
+            MenuItem managePtc = new MenuItem("PPTC cache management");
+
+            MenuItem purgePtcCache = new MenuItem("Purge the PPTC cache")
+            {
+                TooltipText = "Delete the PPTC cache of the game"
+            };
+            
+            MenuItem openPtcDir = new MenuItem("Open the PPTC directory")
+            {
+                TooltipText = "open the PPTC directory in the file explorer"
+            };
+            
+            Menu managePtcSubMenu = new Menu();
+            
+            managePtc.Submenu = managePtcSubMenu;
+
+            managePtcSubMenu.Append(purgePtcCache);
+            managePtcSubMenu.Append(openPtcDir);
+            
             openSaveUserDir.Activated    += OpenSaveUserDir_Clicked;
             openSaveDeviceDir.Activated  += OpenSaveDeviceDir_Clicked;
             openSaveBcatDir.Activated    += OpenSaveBcatDir_Clicked;
@@ -99,19 +151,17 @@ namespace Ryujinx.Ui
             extractRomFs.Activated       += ExtractRomFs_Clicked;
             extractExeFs.Activated       += ExtractExeFs_Clicked;
             extractLogo.Activated        += ExtractLogo_Clicked;
+            purgePtcCache.Activated      += PurgePtcCache_Clicked;
+            openPtcDir.Activated         += OpenPtcDir_Clicked;
             
-            this.Add(openSaveUserDir);
-            this.Add(openSaveDeviceDir);
-            this.Add(openSaveBcatDir);
-            this.Add(new SeparatorMenuItem());
-            this.Add(manageTitleUpdates);
-            this.Add(manageDlc);
-            this.Add(new SeparatorMenuItem());
-            this.Add(extractRomFs);
-            this.Add(extractExeFs);
-            this.Add(extractLogo);
+            
+            this.Add(manageSaveData);
+            this.Add(manageGameData);
+            this.Add(managePtc);
+            this.Add(extractMenu);
         }
 
+        
         private bool TryFindSaveData(string titleName, ulong titleId, BlitStruct<ApplicationControlProperty> controlHolder, SaveDataFilter filter, out ulong saveDataId)
         {
             saveDataId = default;
@@ -585,6 +635,51 @@ namespace Ryujinx.Ui
         private void ExtractLogo_Clicked(object sender, EventArgs args)
         {
             ExtractSection(NcaSectionType.Logo);
+        }
+
+        private void OpenPtcDir_Clicked(object sender, EventArgs args)
+        {
+            string titleId   = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
+            string ptdDir = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
+            
+            string mainPath = System.IO.Path.Combine(ptdDir, "0");
+            string backupPath = System.IO.Path.Combine(ptdDir, "1");
+
+            if (!Directory.Exists(ptdDir))
+            {
+                Directory.CreateDirectory(ptdDir);
+                Directory.CreateDirectory(mainPath);
+                Directory.CreateDirectory(backupPath);
+            }
+            Process.Start(new ProcessStartInfo
+                {
+                    FileName        = ptdDir,
+                    UseShellExecute = true,
+                    Verb            = "open"
+                });
+        }
+        
+        private void PurgePtcCache_Clicked(object sender, EventArgs args)
+        {
+            string titleId     = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
+            string gameVersion = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
+            
+            string ptdDir = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", gameVersion);
+            _dialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+            {
+                Title         = "Ryujinx - Warning",
+                Text          = "You are about to delete the PPTC cache. Are you sure you want to proceed?",
+                WindowPosition = WindowPosition.Center
+            };
+
+            if (_dialog.Run() == (int)ResponseType.Yes)
+            {
+                if(File.Exists(ptdDir))
+                    File.Delete(ptdDir);
+            }
+
+            _dialog.Dispose();
+            
         }
     }
 }
