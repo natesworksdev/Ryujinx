@@ -640,9 +640,9 @@ namespace Ryujinx.Ui
         private void OpenPtcDir_Clicked(object sender, EventArgs args)
         {
             string titleId   = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string ptdDir = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
+            string ptdDir    = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
             
-            string mainPath = System.IO.Path.Combine(ptdDir, "0");
+            string mainPath   = System.IO.Path.Combine(ptdDir, "0");
             string backupPath = System.IO.Path.Combine(ptdDir, "1");
 
             if (!Directory.Exists(ptdDir))
@@ -651,34 +651,36 @@ namespace Ryujinx.Ui
                 Directory.CreateDirectory(mainPath);
                 Directory.CreateDirectory(backupPath);
             }
+            
             Process.Start(new ProcessStartInfo
-                {
-                    FileName        = ptdDir,
-                    UseShellExecute = true,
-                    Verb            = "open"
-                });
+            {
+                FileName        = ptdDir,
+                UseShellExecute = true,
+                Verb            = "open"
+            });
         }
         
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
             string titleId     = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string gameVersion = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
+            string fileName    = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
             
-            string ptdDir = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", gameVersion);
-            _dialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
+            string cachePath = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", fileName);
+           
+            MessageDialog warningDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
             {
-                Title         = "Ryujinx - Warning",
-                Text          = "You are about to delete the PPTC cache. Are you sure you want to proceed?",
+                Title          = "Ryujinx - Warning",
+                Text           = "You are about to delete the PPTC cache. Are you sure you want to proceed?",
                 WindowPosition = WindowPosition.Center
             };
 
-            if (_dialog.Run() == (int)ResponseType.Yes)
+            if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                if(File.Exists(ptdDir))
-                    File.Delete(ptdDir);
+                if(File.Exists(cachePath))
+                    File.Delete(cachePath);
             }
 
-            _dialog.Dispose();
+            warningDialog.Dispose();
             
         }
     }
