@@ -22,6 +22,7 @@
   "enable_ptc": false,
   "enable_fs_integrity_checks": true,
   "fs_global_access_log_mode": 0,
+  "audio_backend": "SoundIo",
   "ignore_missing_services": false,
   "gui_columns": {
     "fav_column": true,

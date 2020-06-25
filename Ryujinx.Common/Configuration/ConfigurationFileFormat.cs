@@ -128,6 +128,11 @@ namespace Ryujinx.Configuration
         public int FsGlobalAccessLogMode { get; set; }
 
         /// <summary>
+        /// The selected audio backend
+        /// </summary>
+        public AudioBackend AudioBackend { get; set; }
+
+        /// <summary>
         /// Enable or disable ignoring missing services
         /// </summary>
         public bool IgnoreMissingServices { get; set; }
