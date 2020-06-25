@@ -41,7 +41,7 @@
     <property name="modal">True</property>
     <property name="window_position">center</property>
     <property name="default_width">650</property>
-    <property name="default_height">520</property>
+    <property name="default_height">550</property>
     <child>
       <placeholder/>
     </child>
