@@ -1008,7 +1008,7 @@
       "type": "string",
       "title": "The selected audio backend",
       "description": "The selected audio backend",
-      "default": "SoundIo",
+      "default": "OpenAl",
       "enum": [
         "Dummy",
         "SoundIo",

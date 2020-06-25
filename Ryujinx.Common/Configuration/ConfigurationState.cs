@@ -432,7 +432,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = false;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
-            System.AudioBackend.Value              = AudioBackend.SoundIo;
+            System.AudioBackend.Value              = AudioBackend.OpenAl;
             System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
@@ -647,7 +647,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 10.");
 
-                configurationFileFormat.AudioBackend = AudioBackend.SoundIo;
+                configurationFileFormat.AudioBackend = AudioBackend.OpenAl;
 
                 configurationFileUpdated = true;
             }
