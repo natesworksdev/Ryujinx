@@ -313,7 +313,9 @@ namespace Ryujinx.Ui
                         }
 
                         if (!directoryAdded)
+                        {
                             _gameDirsBoxStore.AppendValues(directory);
+                        }
                     }
                 }
 
