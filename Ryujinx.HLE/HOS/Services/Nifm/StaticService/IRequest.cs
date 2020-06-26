@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             ResultCode result = GetResultImpl();
 
-            if(result == 0 || ((int)result & 0x3fffff) == 0xe06e)
+            if (result == ResultCode.Success || ((int)result & 0x3fffff) == 0xe06e)
             {
                 return (ResultCode)0x1686e;
             }
