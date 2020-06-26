@@ -63,13 +63,12 @@ namespace Ryujinx.Ui
             };
             
             Menu manageSaveDataSubMenu = new Menu();
-
-            manageSaveData.Submenu = manageSaveDataSubMenu;
             
             manageSaveDataSubMenu.Append(openSaveUserDir);
             manageSaveDataSubMenu.Append(openSaveDeviceDir);
             manageSaveDataSubMenu.Append(openSaveBcatDir);
 
+            manageSaveData.Submenu = manageSaveDataSubMenu;
             
             MenuItem manageGameData = new MenuItem("Game Management");
 
@@ -84,13 +83,12 @@ namespace Ryujinx.Ui
             };
             
             Menu manageGameDataSubMenu = new Menu();
+            
+            manageGameDataSubMenu.Append(manageTitleUpdates);
+            manageGameDataSubMenu.Append(manageDlc);
 
             manageGameData.Submenu = manageGameDataSubMenu;
 
-            manageGameDataSubMenu.Append(manageTitleUpdates);
-            manageGameDataSubMenu.Append(manageDlc);
-            
-            
             string ext    = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
             bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci";
 
@@ -114,15 +112,13 @@ namespace Ryujinx.Ui
                 TooltipText = "Extract the Logo section present in the main NCA"
             };
 
-
             Menu extractSubMenu = new Menu();
             
-            extractMenu.Submenu = extractSubMenu;
-
             extractSubMenu.Append(extractExeFs);
             extractSubMenu.Append(extractRomFs);
             extractSubMenu.Append(extractLogo);
 
+            extractMenu.Submenu = extractSubMenu;
 
             MenuItem managePtc = new MenuItem("PPTC cache management");
 
@@ -133,16 +129,16 @@ namespace Ryujinx.Ui
             
             MenuItem openPtcDir = new MenuItem("Open the PPTC directory")
             {
-                TooltipText = "open the PPTC directory in the file explorer"
+                TooltipText = "Open the PPTC directory in the file explorer"
             };
             
             Menu managePtcSubMenu = new Menu();
             
-            managePtc.Submenu = managePtcSubMenu;
-
             managePtcSubMenu.Append(purgePtcCache);
             managePtcSubMenu.Append(openPtcDir);
             
+            managePtc.Submenu = managePtcSubMenu;
+
             openSaveUserDir.Activated    += OpenSaveUserDir_Clicked;
             openSaveDeviceDir.Activated  += OpenSaveDeviceDir_Clicked;
             openSaveBcatDir.Activated    += OpenSaveBcatDir_Clicked;
@@ -154,14 +150,12 @@ namespace Ryujinx.Ui
             purgePtcCache.Activated      += PurgePtcCache_Clicked;
             openPtcDir.Activated         += OpenPtcDir_Clicked;
             
-            
             this.Add(manageSaveData);
             this.Add(manageGameData);
             this.Add(managePtc);
             this.Add(extractMenu);
         }
 
-        
         private bool TryFindSaveData(string titleName, ulong titleId, BlitStruct<ApplicationControlProperty> controlHolder, SaveDataFilter filter, out ulong saveDataId)
         {
             saveDataId = default;
