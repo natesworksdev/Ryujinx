@@ -634,21 +634,21 @@ namespace Ryujinx.Ui
         private void OpenPtcDir_Clicked(object sender, EventArgs args)
         {
             string titleId   = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string ptdDir    = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
+            string ptcDir    = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
             
-            string mainPath   = System.IO.Path.Combine(ptdDir, "0");
-            string backupPath = System.IO.Path.Combine(ptdDir, "1");
+            string mainPath   = System.IO.Path.Combine(ptcDir, "0");
+            string backupPath = System.IO.Path.Combine(ptcDir, "1");
 
-            if (!Directory.Exists(ptdDir))
+            if (!Directory.Exists(ptcDir))
             {
-                Directory.CreateDirectory(ptdDir);
+                Directory.CreateDirectory(ptcDir);
                 Directory.CreateDirectory(mainPath);
                 Directory.CreateDirectory(backupPath);
             }
             
             Process.Start(new ProcessStartInfo
             {
-                FileName        = ptdDir,
+                FileName        = ptcDir,
                 UseShellExecute = true,
                 Verb            = "open"
             });
@@ -656,10 +656,10 @@ namespace Ryujinx.Ui
         
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
-            string titleId     = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string fileName    = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
+            string titleId         = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
+            string cacheFileName   = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
             
-            string cachePath = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", fileName);
+            string cachePath       = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", cacheFileName);
            
             MessageDialog warningDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
             {
@@ -675,7 +675,6 @@ namespace Ryujinx.Ui
             }
 
             warningDialog.Dispose();
-            
         }
     }
 }
