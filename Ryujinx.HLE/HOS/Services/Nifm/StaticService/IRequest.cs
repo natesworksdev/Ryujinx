@@ -102,9 +102,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 
             ResultCode result = GetResultImpl();
 
-            if (result == ResultCode.Success || ((int)result & 0x3fffff) == 0xe06e)
+            if (result == ResultCode.Success || (ResultCode)((int)result & 0x3fffff) == ResultCode.Unknown112)
             {
-                return (ResultCode)0x1686e;
+                return ResultCode.Unknown180;
             }
 
             // Returns appletId, libraryAppletMode, outSize and a buffer. 
