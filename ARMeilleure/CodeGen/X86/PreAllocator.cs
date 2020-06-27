@@ -1307,7 +1307,7 @@ namespace ARMeilleure.CodeGen.X86
             IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
             IntrinsicInfo info = IntrinsicTable.GetInfo(intrinOp.Intrinsic);
 
-            return info.Type == IntrinsicType.Crc32;
+            return info.Type == IntrinsicType.Crc32 || IsVexSameOperandDestSrc1(operation);
         }
 
         private static bool IsVexSameOperandDestSrc1(Operation operation)

@@ -46,7 +46,8 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                string name = (size, castagnoli) switch {
+                string name = (size, castagnoli) switch 
+                {
                     (0, false) => nameof(SoftFallback.Crc32b),
                     (1, false) => nameof(SoftFallback.Crc32h),
                     (2, false) => nameof(SoftFallback.Crc32w),
@@ -76,7 +77,7 @@ namespace ARMeilleure.Instructions
                 case 2: data = context.VectorInsert(context.VectorZero(), data, 0); break;
             }
 
-            int bitsize = (8 << size);
+            int bitsize = 8 << size;
 
             Operand tmp = context.AddIntrinsic(Intrinsic.X86Pxor, crc, data);
             tmp = context.AddIntrinsic(Intrinsic.X86Psllq, tmp, Const(64 - bitsize));
