@@ -668,10 +668,6 @@ namespace Ryujinx.Ui
 
             Profile.FinishProfiling();
             DiscordIntegrationModule.Exit();
-            Logger.Shutdown();
-
-            Ptc.Dispose();
-            PtcProfiler.Dispose();
 
             Application.Quit();
         }

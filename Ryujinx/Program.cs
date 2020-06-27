@@ -33,7 +33,10 @@ namespace Ryujinx
             string systemPath = Environment.GetEnvironmentVariable("Path", EnvironmentVariableTarget.Machine);
             Environment.SetEnvironmentVariable("Path", $"{Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "bin")};{systemPath}");
 
-            GLib.ExceptionManager.UnhandledException += Glib_UnhandledException;
+            // Hook unhandled exception and process exit events
+            GLib.ExceptionManager.UnhandledException += (GLib.UnhandledExceptionArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
+            AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
+            AppDomain.CurrentDomain.ProcessExit += (object sender, EventArgs e) => ProgramExit();
 
             // Initialize the configuration
             ConfigurationState.Initialize();
@@ -105,22 +108,29 @@ namespace Ryujinx
             Application.Run();
         }
 
-        private static void Glib_UnhandledException(GLib.UnhandledExceptionArgs e)
+        private static void ProcessUnhandledException(Exception e, bool isTerminating)
         {
-            Exception exception = e.ExceptionObject as Exception;
-
-            Logger.PrintError(LogClass.Application, $"Unhandled exception caught: {exception}");
-
             Ptc.Close();
             PtcProfiler.Stop();
 
-            if (e.IsTerminating)
-            {
-                Logger.Shutdown();
+            string message = $"Unhandled exception caught: {e}";
 
-                Ptc.Dispose();
-                PtcProfiler.Dispose();
+            Logger.Error?.PrintMsg(LogClass.Application, message);
+
+            if (Logger.Error == null) Logger.Notice.PrintMsg(LogClass.Application, message);
+
+            if (isTerminating)
+            {
+                ProgramExit();
             }
+        }
+
+        private static void ProgramExit()
+        {
+            Ptc.Dispose();
+            PtcProfiler.Dispose();
+
+            Logger.Shutdown();
         }
     }
 }
