@@ -33,7 +33,7 @@ namespace ARMeilleure.Instructions
                     _ => Intrinsic.X86Crc32,
                 };
 
-                return (size == 3) ? context.AddIntrinsicLong(op, crc, value) : context.AddIntrinsicInt(op, crc, value);
+                return (size == 3) ? context.ConvertI64ToI32(context.AddIntrinsicLong(op, crc, value)) : context.AddIntrinsicInt(op, crc, value);
             }
             else if (Optimizations.UsePclmulqdq)
             {
@@ -43,32 +43,6 @@ namespace ARMeilleure.Instructions
                     _ => EmitCrc32Optimized(context, crc, value, castagnoli, size),
                 };
             }
-            /*
-            else
-            {
-                if (crc.Type == OperandType.I64)
-                {
-                    crc = context.ConvertI64ToI32(crc);
-                }
-
-                Operand poly = Const(castagnoli ? Crc32cRevPoly : Crc32RevPoly);
-                int bytes = 1 << size;
-                Operand one = Const(1);
-
-                for (int i = 0; i < bytes; i++)
-                {
-                    Operand val = context.ZeroExtend8(OperandType.I32, context.ShiftRightUI(value, Const(i * 8)));
-                    crc = context.BitwiseExclusiveOr(crc, val);
-                    for (int k = 0; k < 8; k++)
-                    {
-                        // crc = (crc >> 1) ^ (poly & (0 - (crc & 1)));
-                        crc = context.BitwiseExclusiveOr(context.ShiftRightUI(crc, one), context.BitwiseAnd(poly, context.Negate(context.BitwiseAnd(crc, one))));
-                    }
-                }
-
-                return crc;
-            } 
-            */
             else
             {
                 string name = (size, castagnoli) switch {
