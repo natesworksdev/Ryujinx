@@ -1227,10 +1227,12 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     WriteByte(0x66);
                 }
+
                 if (flags.HasFlag(InstructionFlags.PrefixF2))
                 {
                     WriteByte(0xf2);
                 }
+
                 if (flags.HasFlag(InstructionFlags.PrefixF3))
                 {
                     WriteByte(0xf3);
