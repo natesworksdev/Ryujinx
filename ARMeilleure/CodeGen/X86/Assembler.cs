@@ -1175,7 +1175,15 @@ namespace ARMeilleure.CodeGen.X86
 
             if ((flags & InstructionFlags.Vex) != 0 && HardwareCapabilities.SupportsVexEncoding)
             {
-                int vexByte2 = (int)(flags & InstructionFlags.PrefixMask) >> (int)InstructionFlags.PrefixBit;
+                // In a vex encoding, only one prefix can be active at a time. The active prefix is encoded in the second byte using two bits.
+
+                int vexByte2 = (flags & InstructionFlags.PrefixMask) switch
+                {
+                    InstructionFlags.Prefix66 => 1,
+                    InstructionFlags.PrefixF3 => 2,
+                    InstructionFlags.PrefixF2 => 3,
+                    _ => 0
+                };
 
                 if (src1 != null)
                 {
