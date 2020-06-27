@@ -28,10 +28,10 @@ namespace ARMeilleure.CodeGen.X86
             Vex      = 1 << 4,
 
             PrefixBit  = 16,
-            PrefixMask = 3 << PrefixBit,
+            PrefixMask = 7 << PrefixBit,
             Prefix66   = 1 << PrefixBit,
             PrefixF3   = 2 << PrefixBit,
-            PrefixF2   = 3 << PrefixBit
+            PrefixF2   = 4 << PrefixBit
         }
 
         private struct InstructionInfo
@@ -106,7 +106,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cpuid,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fa2, InstructionFlags.RegOnly));
             Add(X86Instruction.Crc32,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f1, InstructionFlags.PrefixF2));
             Add(X86Instruction.Crc32_16,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f1, InstructionFlags.PrefixF2 | InstructionFlags.Prefix66));
-            Add(X86Instruction.Crc32_8,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f0, InstructionFlags.PrefixF2));
+            Add(X86Instruction.Crc32_8,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f0, InstructionFlags.PrefixF2 | InstructionFlags.Reg8Dest));
             Add(X86Instruction.Cvtdq2pd,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstructionFlags.Vex | InstructionFlags.PrefixF3));
             Add(X86Instruction.Cvtdq2ps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5b, InstructionFlags.Vex));
             Add(X86Instruction.Cvtpd2dq,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstructionFlags.Vex | InstructionFlags.PrefixF2));
@@ -1223,11 +1223,17 @@ namespace ARMeilleure.CodeGen.X86
             }
             else
             {
-                switch (flags & InstructionFlags.PrefixMask)
+                if (flags.HasFlag(InstructionFlags.Prefix66))
                 {
-                    case InstructionFlags.Prefix66: WriteByte(0x66); break;
-                    case InstructionFlags.PrefixF2: WriteByte(0xf2); break;
-                    case InstructionFlags.PrefixF3: WriteByte(0xf3); break;
+                    WriteByte(0x66);
+                }
+                if (flags.HasFlag(InstructionFlags.PrefixF2))
+                {
+                    WriteByte(0xf2);
+                }
+                if (flags.HasFlag(InstructionFlags.PrefixF3))
+                {
+                    WriteByte(0xf3);
                 }
 
                 if (rexPrefix != 0)

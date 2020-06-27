@@ -2,6 +2,7 @@
 
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System;
 using System.Diagnostics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -16,11 +17,15 @@ namespace ARMeilleure.Instructions
 
         public static Operand EmitCrc32(ArmEmitterContext context, Operand crc, Operand value, int size, bool castagnoli)
         {
-            Debug.Assert(crc.Type == OperandType.I32);
+            Debug.Assert(crc.Type == OperandType.I32 || crc.Type == OperandType.I64);
             Debug.Assert(size >= 0 && size < 4);
 
             if (castagnoli && Optimizations.UseSse42)
             {
+                // The CRC32 instruction does not have an immediate variant, so ensure both inputs are in registers.
+                value = (value.Kind == OperandKind.Constant) ? context.Copy(value) : value;
+                crc = (crc.Kind == OperandKind.Constant) ? context.Copy(crc) : crc;
+
                 Intrinsic op = size switch
                 {
                     0 => Intrinsic.X86Crc32_8,
@@ -28,7 +33,7 @@ namespace ARMeilleure.Instructions
                     _ => Intrinsic.X86Crc32,
                 };
 
-                return context.AddIntrinsicInt(op, crc, value);
+                return (size == 3) ? context.AddIntrinsicLong(op, crc, value) : context.AddIntrinsicInt(op, crc, value);
             }
             else if (Optimizations.UsePclmulqdq)
             {
@@ -38,8 +43,14 @@ namespace ARMeilleure.Instructions
                     _ => EmitCrc32Optimized(context, crc, value, castagnoli, size),
                 };
             }
+            /*
             else
             {
+                if (crc.Type == OperandType.I64)
+                {
+                    crc = context.ConvertI64ToI32(crc);
+                }
+
                 Operand poly = Const(castagnoli ? Crc32cRevPoly : Crc32RevPoly);
                 int bytes = 1 << size;
                 Operand one = Const(1);
@@ -56,6 +67,23 @@ namespace ARMeilleure.Instructions
                 }
 
                 return crc;
+            } 
+            */
+            else
+            {
+                string name = (size, castagnoli) switch {
+                    (0, false) => nameof(SoftFallback.Crc32b),
+                    (1, false) => nameof(SoftFallback.Crc32h),
+                    (2, false) => nameof(SoftFallback.Crc32w),
+                    (3, false) => nameof(SoftFallback.Crc32x),
+                    (0, true) => nameof(SoftFallback.Crc32cb),
+                    (1, true) => nameof(SoftFallback.Crc32ch),
+                    (2, true) => nameof(SoftFallback.Crc32cw),
+                    (3, true) => nameof(SoftFallback.Crc32cx),
+                    _ => throw new ArgumentOutOfRangeException(nameof(size))
+                };
+
+                return context.Call(typeof(SoftFallback).GetMethod(name), crc, value);
             }
         }
 
