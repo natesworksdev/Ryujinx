@@ -405,7 +405,7 @@ namespace Ryujinx.Ui
 
                 UpdateGraphicsConfig();
 
-                Logger.PrintInfo(LogClass.Application, $"Using Firmware Version: {_contentManager.GetCurrentFirmwareVersion()?.VersionString}");
+                Logger.Notice.Print(LogClass.Application, $"Using Firmware Version: {_contentManager.GetCurrentFirmwareVersion()?.VersionString}");
 
                 if (Directory.Exists(path))
                 {

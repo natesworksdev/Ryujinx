@@ -90,6 +90,7 @@ namespace Ryujinx.Common.Logging
         public static Log? Guest     { get; private set; }
         public static Log? AccessLog { get; private set; }
         public static Log? Stub      { get; private set; }
+        public static Log  Notice    { get; } // Always enabled
 
         static Logger()
         {
@@ -109,6 +110,8 @@ namespace Ryujinx.Common.Logging
                 new ConsoleLogTarget("console"),
                 1000,
                 AsyncLogTargetOverflowAction.Discard));
+
+            Notice = new Log(LogLevel.Notice);
         }
 
         public static void RestartTime()
