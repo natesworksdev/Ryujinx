@@ -19,6 +19,7 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(crc.Type.IsInteger() && value.Type.IsInteger());
             Debug.Assert(size >= 0 && size < 4);
+            Debug.Assert((size < 3) || (value.Type == OperandType.I64));
 
             if (castagnoli && Optimizations.UseSse42)
             {
