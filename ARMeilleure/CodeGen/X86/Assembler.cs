@@ -106,7 +106,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Cpuid,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fa2, InstructionFlags.RegOnly));
             Add(X86Instruction.Crc32,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f1, InstructionFlags.PrefixF2));
             Add(X86Instruction.Crc32_16,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f1, InstructionFlags.PrefixF2 | InstructionFlags.Prefix66));
-            Add(X86Instruction.Crc32_8,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f0, InstructionFlags.PrefixF2 | InstructionFlags.Reg8Dest));
+            Add(X86Instruction.Crc32_8,    new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f38f0, InstructionFlags.PrefixF2 | InstructionFlags.Reg8Src));
             Add(X86Instruction.Cvtdq2pd,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstructionFlags.Vex | InstructionFlags.PrefixF3));
             Add(X86Instruction.Cvtdq2ps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5b, InstructionFlags.Vex));
             Add(X86Instruction.Cvtpd2dq,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000fe6, InstructionFlags.Vex | InstructionFlags.PrefixF2));
