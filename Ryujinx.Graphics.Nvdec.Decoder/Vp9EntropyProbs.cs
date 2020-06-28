@@ -4,33 +4,33 @@ namespace Ryujinx.Graphics.Video
 {
     public struct Vp9EntropyProbs
     {
-        public Array10<Array10<Array9<byte>>> KfYModeProbs;
-        public Array7<byte> seg_tree_probs;
-        public Array3<byte> seg_pred_probs;
-        public Array10<Array9<byte>> KfUvModeProbs;
-        public Array4<Array9<byte>> y_mode_prob;
-        public Array10<Array9<byte>> uv_mode_prob;
-        public Array16<Array3<byte>> KfPartitionProbs;
-        public Array16<Array3<byte>> partition_prob;
-        public Array4<Array2<Array2<Array6<Array6<Array3<byte>>>>>> coef_probs;
-        public Array4<Array2<byte>> switchable_interp_prob;
-        public Array7<Array3<byte>> inter_mode_probs;
-        public Array4<byte> intra_inter_prob;
-        public Array5<byte> comp_inter_prob;
-        public Array5<Array2<byte>> single_ref_prob;
-        public Array5<byte> comp_ref_prob;
-        public Array2<Array3<byte>> p32x32;
-        public Array2<Array2<byte>> p16x16;
-        public Array2<Array1<byte>> p8x8;
-        public Array3<byte> skip_probs;
-        public Array3<byte> joints;
-        public Array2<byte> sign;
-        public Array2<Array10<byte>> classes;
-        public Array2<Array1<byte>> class0;
-        public Array2<Array10<byte>> bits;
-        public Array2<Array2<Array3<byte>>> class0_fp;
-        public Array2<Array3<byte>> fp;
-        public Array2<byte> class0_hp;
-        public Array2<byte> hp;
+        public Array10<Array10<Array9<byte>>> KfYModeProb;
+        public Array7<byte> SegTreeProb;
+        public Array3<byte> SegPredProb;
+        public Array10<Array9<byte>> KfUvModeProb;
+        public Array4<Array9<byte>> YModeProb;
+        public Array10<Array9<byte>> UvModeProb;
+        public Array16<Array3<byte>> KfPartitionProb;
+        public Array16<Array3<byte>> PartitionProb;
+        public Array4<Array2<Array2<Array6<Array6<Array3<byte>>>>>> CoefProbs;
+        public Array4<Array2<byte>> SwitchableInterpProb;
+        public Array7<Array3<byte>> InterModeProb;
+        public Array4<byte> IntraInterProb;
+        public Array5<byte> CompInterProb;
+        public Array5<Array2<byte>> SingleRefProb;
+        public Array5<byte> CompRefProb;
+        public Array2<Array3<byte>> Tx32x32Prob;
+        public Array2<Array2<byte>> Tx16x16Prob;
+        public Array2<Array1<byte>> Tx8x8Prob;
+        public Array3<byte> SkipProb;
+        public Array3<byte> Joints;
+        public Array2<byte> Sign;
+        public Array2<Array10<byte>> Classes;
+        public Array2<Array1<byte>> Class0;
+        public Array2<Array10<byte>> Bits;
+        public Array2<Array2<Array3<byte>>> Class0Fp;
+        public Array2<Array3<byte>> Fp;
+        public Array2<byte> Class0Hp;
+        public Array2<byte> Hp;
     }
 }

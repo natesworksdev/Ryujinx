@@ -974,7 +974,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             if (!twd.Xd.Counts.IsNull)
             {
-                ++twd.Xd.Counts.Value.partition[ctx][(int)p];
+                ++twd.Xd.Counts.Value.Partition[ctx][(int)p];
             }
 
             return p;

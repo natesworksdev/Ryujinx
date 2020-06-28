@@ -315,8 +315,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         private void SetPartitionProbs(ref MacroBlockD xd)
         {
             xd.PartitionProbs = FrameIsIntraOnly()
-                ? new ArrayPtr<Array3<byte>>(ref Fc.Value.KfPartitionProbs[0], 16)
-                : new ArrayPtr<Array3<byte>>(ref Fc.Value.partition_prob[0], 16);
+                ? new ArrayPtr<Array3<byte>>(ref Fc.Value.KfPartitionProb[0], 16)
+                : new ArrayPtr<Array3<byte>>(ref Fc.Value.PartitionProb[0], 16);
         }
 
         internal void InitMacroBlockD(ref MacroBlockD xd, ArrayPtr<int> dqcoeff)

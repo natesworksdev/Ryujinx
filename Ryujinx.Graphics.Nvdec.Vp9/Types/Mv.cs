@@ -91,11 +91,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             int s, z, c, o = 0, d, e, f;
             Debug.Assert(v != 0); /* Should not be zero */
             s = v < 0 ? 1 : 0;
-            counts.sign[comp][s] += (uint)incr;
+            counts.Sign[comp][s] += (uint)incr;
             z = (s != 0 ? -v : v) - 1; /* Magnitude - 1 */
 
             c = (int)GetMvClass(z, new Ptr<int>(ref o));
-            counts.classes[comp][c] += (uint)incr;
+            counts.Classes[comp][c] += (uint)incr;
 
             d = (o >> 3);     /* Int mv data */
             f = (o >> 1) & 3; /* Fractional pel mv data */
@@ -103,9 +103,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
             if (c == (int)MvClassType.MvClass0)
             {
-                counts.class0[comp][d] += (uint)incr;
-                counts.class0_fp[comp][d][f] += (uint)incr;
-                counts.class0_hp[comp][e] += (uint)(usehp * incr);
+                counts.Class0[comp][d] += (uint)incr;
+                counts.Class0Fp[comp][d][f] += (uint)incr;
+                counts.Class0Hp[comp][e] += (uint)(usehp * incr);
             }
             else
             {
@@ -113,11 +113,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 int b = c + Constants.Class0Bits - 1;  // Number of bits
                 for (i = 0; i < b; ++i)
                 {
-                    counts.bits[comp][i][((d >> i) & 1)] += (uint)incr;
+                    counts.Bits[comp][i][((d >> i) & 1)] += (uint)incr;
                 }
 
-                counts.fp[comp][f] += (uint)incr;
-                counts.hp[comp][e] += (uint)(usehp * incr);
+                counts.Fp[comp][f] += (uint)incr;
+                counts.Hp[comp][e] += (uint)(usehp * incr);
             }
         }
 
@@ -138,7 +138,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             if (!counts.IsNull)
             {
                 MvJointType j = GetMvJoint();
-                ++counts.Value.joints[(int)j];
+                ++counts.Value.Joints[(int)j];
 
                 if (MvJointVertical(j))
                 {

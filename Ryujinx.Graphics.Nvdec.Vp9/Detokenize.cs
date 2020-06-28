@@ -55,7 +55,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref Vp9EntropyProbs fc = ref xd.Fc.Value;
             int refr = xd.Mi[0].Value.IsInterBlock() ? 1 : 0;
             int band, c = 0;
-            ref Array6<Array6<Array3<byte>>> coefProbs = ref fc.coef_probs[(int)txSize][(int)type][refr];
+            ref Array6<Array6<Array3<byte>>> coefProbs = ref fc.CoefProbs[(int)txSize][(int)type][refr];
             Span<byte> tokenCache = stackalloc byte[32 * 32];
             ReadOnlySpan<byte> bandTranslate = Luts.get_band_translate(txSize);
             int dqShift = (txSize == TxSize.Tx32x32) ? 1 : 0;
@@ -79,14 +79,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 ref Array3<byte> prob = ref coefProbs[band][ctx];
                 if (!xd.Counts.IsNull)
                 {
-                    ++counts.eob_branch[(int)txSize][(int)type][refr][band][ctx];
+                    ++counts.EobBranch[(int)txSize][(int)type][refr][band][ctx];
                 }
 
                 if (r.ReadBool(prob[EobContextNode], ref value, ref count, ref range) == 0)
                 {
                     if (!xd.Counts.IsNull)
                     {
-                        ++counts.coef[(int)txSize][(int)type][refr][band][ctx][Constants.EobModelToken];
+                        ++counts.Coef[(int)txSize][(int)type][refr][band][ctx][Constants.EobModelToken];
                     }
 
                     break;
@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 {
                     if (!xd.Counts.IsNull)
                     {
-                        ++counts.coef[(int)txSize][(int)type][refr][band][ctx][Constants.ZeroToken];
+                        ++counts.Coef[(int)txSize][(int)type][refr][band][ctx][Constants.ZeroToken];
                     }
 
                     dqv = dq[1];
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                     ReadOnlySpan<byte> p = Luts.Vp9Pareto8Full[prob[Constants.PivotNode] - 1];
                     if (!xd.Counts.IsNull)
                     {
-                        ++counts.coef[(int)txSize][(int)type][refr][band][ctx][Constants.TwoToken];
+                        ++counts.Coef[(int)txSize][(int)type][refr][band][ctx][Constants.TwoToken];
                     }
 
                     if (r.ReadBool(p[0], ref value, ref count, ref range) != 0)
@@ -185,7 +185,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 {
                     if (!xd.Counts.IsNull)
                     {
-                        ++counts.coef[(int)txSize][(int)type][refr][band][ctx][Constants.OneToken];
+                        ++counts.Coef[(int)txSize][(int)type][refr][band][ctx][Constants.OneToken];
                     }
 
                     tokenCache[scan[c]] = 1;

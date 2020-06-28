@@ -5,28 +5,28 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
 {
     struct EntropyProbs
     {
-        public Array10<Array10<Array8<byte>>> KfYModeProbsE0ToE7;
-        public Array10<Array10<byte>> KfYModeProbsE8;
+        public Array10<Array10<Array8<byte>>> KfYModeProbE0ToE7;
+        public Array10<Array10<byte>> KfYModeProbE8;
         public Array3<byte> Padding384;
         public Array7<byte> SegTreeProbs;
         public Array3<byte> SegPredProbs;
         public Array15<byte> Padding391;
-        public Array10<Array8<byte>> KfUvModeProbsE0ToE7;
-        public Array10<byte> KfUvModeProbsE8;
+        public Array10<Array8<byte>> KfUvModeProbE0ToE7;
+        public Array10<byte> KfUvModeProbE8;
         public Array6<byte> Padding3FA;
-        public Array7<Array4<byte>> InterModeProbs;
-        public Array4<byte> IntraInterProbs;
-        public Array10<Array8<byte>> UvModeProbsE0ToE7;
-        public Array2<Array1<byte>> Tx8x8;
-        public Array2<Array2<byte>> Tx16x16;
-        public Array2<Array3<byte>> Tx32x32;
-        public Array4<byte> YModeProbsE8;
-        public Array4<Array8<byte>> YModeProbsE0ToE7;
-        public Array16<Array4<byte>> KfPartitionProbs;
-        public Array16<Array4<byte>> PartitionProbs;
-        public Array10<byte> UvModeProbsE8;
-        public Array4<Array2<byte>> SwitchableInterpProbs;
-        public Array5<byte> CompInterProbs;
+        public Array7<Array4<byte>> InterModeProb;
+        public Array4<byte> IntraInterProb;
+        public Array10<Array8<byte>> UvModeProbE0ToE7;
+        public Array2<Array1<byte>> Tx8x8Prob;
+        public Array2<Array2<byte>> Tx16x16Prob;
+        public Array2<Array3<byte>> Tx32x32Prob;
+        public Array4<byte> YModeProbE8;
+        public Array4<Array8<byte>> YModeProbE0ToE7;
+        public Array16<Array4<byte>> KfPartitionProb;
+        public Array16<Array4<byte>> PartitionProb;
+        public Array10<byte> UvModeProbE8;
+        public Array4<Array2<byte>> SwitchableInterpProb;
+        public Array5<byte> CompInterProb;
         public Array4<byte> SkipProbs;
         public Array3<byte> Joints;
         public Array2<byte> Sign;
@@ -37,8 +37,8 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
         public Array2<Array10<byte>> Classes;
         public Array2<Array2<Array3<byte>>> Class0Fp;
         public Array2<Array10<byte>> Bits;
-        public Array5<Array2<byte>> SingleRefProbs;
-        public Array5<byte> CompRefProbs;
+        public Array5<Array2<byte>> SingleRefProb;
+        public Array5<byte> CompRefProb;
         public Array17<byte> Padding58F;
         public Array4<Array2<Array2<Array6<Array6<Array4<byte>>>>>> CoefProbs;
 
@@ -50,42 +50,42 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
                 {
                     for (int k = 0; k < 9; k++)
                     {
-                        fc.KfYModeProbs[i][j][k] = k < 8 ? KfYModeProbsE0ToE7[i][j][k] : KfYModeProbsE8[i][j];
+                        fc.KfYModeProb[i][j][k] = k < 8 ? KfYModeProbE0ToE7[i][j][k] : KfYModeProbE8[i][j];
                     }
                 }
             }
 
-            fc.seg_tree_probs = SegTreeProbs;
-            fc.seg_pred_probs = SegPredProbs;
+            fc.SegTreeProb = SegTreeProbs;
+            fc.SegPredProb = SegPredProbs;
 
             for (int i = 0; i < 7; i++)
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    fc.inter_mode_probs[i][j] = InterModeProbs[i][j];
+                    fc.InterModeProb[i][j] = InterModeProb[i][j];
                 }
             }
 
-            fc.intra_inter_prob = IntraInterProbs;
+            fc.IntraInterProb = IntraInterProb;
             
             for (int i = 0; i < 10; i++)
             {
                 for (int j = 0; j < 9; j++)
                 {
-                    fc.KfUvModeProbs[i][j] = j < 8 ? KfUvModeProbsE0ToE7[i][j] : KfUvModeProbsE8[i];
-                    fc.uv_mode_prob[i][j] = j < 8 ? UvModeProbsE0ToE7[i][j] : UvModeProbsE8[i];
+                    fc.KfUvModeProb[i][j] = j < 8 ? KfUvModeProbE0ToE7[i][j] : KfUvModeProbE8[i];
+                    fc.UvModeProb[i][j] = j < 8 ? UvModeProbE0ToE7[i][j] : UvModeProbE8[i];
                 }
             }
 
-            fc.p8x8 = Tx8x8;
-            fc.p16x16 = Tx16x16;
-            fc.p32x32 = Tx32x32;
+            fc.Tx8x8Prob = Tx8x8Prob;
+            fc.Tx16x16Prob = Tx16x16Prob;
+            fc.Tx32x32Prob = Tx32x32Prob;
 
             for (int i = 0; i < 4; i++)
             {
                 for (int j = 0; j < 9; j++)
                 {
-                    fc.y_mode_prob[i][j] = j < 8 ? YModeProbsE0ToE7[i][j] : YModeProbsE8[i];
+                    fc.YModeProb[i][j] = j < 8 ? YModeProbE0ToE7[i][j] : YModeProbE8[i];
                 }
             }
 
@@ -93,27 +93,27 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    fc.KfPartitionProbs[i][j] = KfPartitionProbs[i][j];
-                    fc.partition_prob[i][j] = PartitionProbs[i][j];
+                    fc.KfPartitionProb[i][j] = KfPartitionProb[i][j];
+                    fc.PartitionProb[i][j] = PartitionProb[i][j];
                 }
             }
 
-            fc.switchable_interp_prob = SwitchableInterpProbs;
-            fc.comp_inter_prob = CompInterProbs;
-            fc.skip_probs[0] = SkipProbs[0];
-            fc.skip_probs[1] = SkipProbs[1];
-            fc.skip_probs[2] = SkipProbs[2];
-            fc.joints = Joints;
-            fc.sign = Sign;
-            fc.class0 = Class0;
-            fc.fp = Fp;
-            fc.class0_hp = Class0Hp;
-            fc.hp = Hp;
-            fc.classes = Classes;
-            fc.class0_fp = Class0Fp;
-            fc.bits = Bits;
-            fc.single_ref_prob = SingleRefProbs;
-            fc.comp_ref_prob = CompRefProbs;
+            fc.SwitchableInterpProb = SwitchableInterpProb;
+            fc.CompInterProb = CompInterProb;
+            fc.SkipProb[0] = SkipProbs[0];
+            fc.SkipProb[1] = SkipProbs[1];
+            fc.SkipProb[2] = SkipProbs[2];
+            fc.Joints = Joints;
+            fc.Sign = Sign;
+            fc.Class0 = Class0;
+            fc.Fp = Fp;
+            fc.Class0Hp = Class0Hp;
+            fc.Hp = Hp;
+            fc.Classes = Classes;
+            fc.Class0Fp = Class0Fp;
+            fc.Bits = Bits;
+            fc.SingleRefProb = SingleRefProb;
+            fc.CompRefProb = CompRefProb;
 
             for (int i = 0; i < 4; i++)
             {
@@ -127,7 +127,7 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
                             {
                                 for (int n = 0; n < 3; n++)
                                 {
-                                    fc.coef_probs[i][j][k][l][m][n] = CoefProbs[i][j][k][l][m][n];
+                                    fc.CoefProbs[i][j][k][l][m][n] = CoefProbs[i][j][k][l][m][n];
                                 }
                             }
                         }
