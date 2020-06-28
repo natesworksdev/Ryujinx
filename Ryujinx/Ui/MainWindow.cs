@@ -808,6 +808,26 @@ namespace Ryujinx.Ui
             HandleInstallerDialog(fileChooser);
         }
 
+        private void Create_Tas_Pressed(object o, EventArgs args)
+        {
+
+        }
+
+        private void Edit_Tas_Pressed(object o, EventArgs args)
+        {
+
+        }
+
+        private void Run_Tas_Pressed(object o, EventArgs args)
+        {
+
+        }
+
+        private void Delete_Tas_Pressed(object o, EventArgs args)
+        {
+
+        }
+
         private void Installer_Directory_Pressed(object o, EventArgs args)
         {
             FileChooserDialog directoryChooser = new FileChooserDialog("Choose the firmware directory to open",
@@ -1184,9 +1204,9 @@ namespace Ryujinx.Ui
             return DateTime.Compare(DateTime.Parse(bValue), DateTime.Parse(aValue));
         }
 
-        public static void MakeTasMenuVisible()
+        public static void SetTasVisibility(bool v)
         {
-            builderr.GetObject("TasMenu").SetProperty("visible", new GLib.Value(true));
+            builderr.GetObject("TasMenu").SetProperty("visible", new GLib.Value(v));
         }
 
         private static int FileSizeSort(ITreeModel model, TreeIter a, TreeIter b)

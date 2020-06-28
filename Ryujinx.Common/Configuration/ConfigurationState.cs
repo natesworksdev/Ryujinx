@@ -259,6 +259,16 @@ namespace Ryujinx.Configuration
             }
         }
 
+        public class TASSection
+        {
+            public ReactiveObject<bool> TasModeEnabled { get; private set; }
+
+            public TASSection()
+            {
+                TasModeEnabled = new ReactiveObject<bool>();
+            }
+        }
+
         /// <summary>
         /// The default configuration instance
         /// </summary>
@@ -290,6 +300,11 @@ namespace Ryujinx.Configuration
         public HidSection Hid { get; private set; }
 
         /// <summary>
+        /// The TAS Section
+        /// </summary>
+        public TASSection TAS { get; private set; }
+
+        /// <summary>
         /// Enables or disables Discord Rich Presence
         /// </summary>
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
@@ -301,6 +316,7 @@ namespace Ryujinx.Configuration
             System                   = new SystemSection();
             Graphics                 = new GraphicsSection();
             Hid                      = new HidSection();
+            TAS                      = new TASSection();
             EnableDiscordIntegration = new ReactiveObject<bool>();
         }
 

@@ -39,6 +39,7 @@ namespace Ryujinx.Ui
         [GUI] CheckButton  _fsicToggle;
         [GUI] CheckButton  _ignoreToggle;
         [GUI] CheckButton  _directKeyboardAccess;
+        [GUI] CheckButton  _tasEnable;
         [GUI] ComboBoxText _systemLanguageSelect;
         [GUI] ComboBoxText _systemRegionSelect;
         [GUI] ComboBoxText _systemTimeZoneSelect;
@@ -392,6 +393,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
+            ConfigurationState.Instance.TAS.TasModeEnabled.Value               = _tasEnable.Active;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value                    = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
             ConfigurationState.Instance.System.TimeZone.Value                  = _systemTimeZoneSelect.ActiveId;
@@ -403,6 +405,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId);
 
             MainWindow.SaveConfig();
+            MainWindow.SetTasVisibility(_tasEnable.Active);
             MainWindow.ApplyTheme();
             MainWindow.UpdateGameTable();
             Dispose();
