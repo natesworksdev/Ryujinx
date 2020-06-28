@@ -42,8 +42,6 @@ namespace Ryujinx.Ui
             _virtualFileSystem = virtualFileSystem;
             _controlData       = controlData;
 
-            MenuItem manageSaveData = new MenuItem("Save Data");
-            
             MenuItem openSaveUserDir = new MenuItem("Open User Save Directory")
             {
                 Sensitive   = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.UserAccountSaveDataSize > 0,
@@ -61,16 +59,6 @@ namespace Ryujinx.Ui
                 Sensitive   = !Util.IsEmpty(controlData.ByteSpan) && controlData.Value.BcatDeliveryCacheStorageSize > 0,
                 TooltipText = "Open the folder where the BCAT save for the application is loaded"
             };
-            
-            Menu manageSaveDataSubMenu = new Menu();
-            
-            manageSaveDataSubMenu.Append(openSaveUserDir);
-            manageSaveDataSubMenu.Append(openSaveDeviceDir);
-            manageSaveDataSubMenu.Append(openSaveBcatDir);
-
-            manageSaveData.Submenu = manageSaveDataSubMenu;
-            
-            MenuItem manageGameData = new MenuItem("Game Management");
 
             MenuItem manageTitleUpdates = new MenuItem("Manage Title Updates")
             {
@@ -82,31 +70,24 @@ namespace Ryujinx.Ui
                 TooltipText = "Open the DLC management window"
             };
             
-            Menu manageGameDataSubMenu = new Menu();
-            
-            manageGameDataSubMenu.Append(manageTitleUpdates);
-            manageGameDataSubMenu.Append(manageDlc);
-
-            manageGameData.Submenu = manageGameDataSubMenu;
-
             string ext    = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
             bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci";
 
-            MenuItem extractMenu = new MenuItem("Extract");
+            MenuItem extractMenu = new MenuItem("Extract Data");
 
-            MenuItem extractRomFs = new MenuItem("Extract RomFS Section")
+            MenuItem extractRomFs = new MenuItem("RomFS")
             {
                 Sensitive   = hasNca,
                 TooltipText = "Extract the RomFs section present in the main NCA"
             };
 
-            MenuItem extractExeFs = new MenuItem("Extract ExeFS Section")
+            MenuItem extractExeFs = new MenuItem("ExeFS")
             {
                 Sensitive   = hasNca,
                 TooltipText = "Extract the ExeFs section present in the main NCA"
             };
 
-            MenuItem extractLogo = new MenuItem("Extract Logo Section")
+            MenuItem extractLogo = new MenuItem("Logo")
             {
                 Sensitive   = hasNca,
                 TooltipText = "Extract the Logo section present in the main NCA"
@@ -120,7 +101,7 @@ namespace Ryujinx.Ui
 
             extractMenu.Submenu = extractSubMenu;
 
-            MenuItem managePtc = new MenuItem("PPTC cache management");
+            MenuItem managePtcMenu = new MenuItem("Cache Management");
 
             MenuItem purgePtcCache = new MenuItem("Purge the PPTC cache")
             {
@@ -137,7 +118,7 @@ namespace Ryujinx.Ui
             managePtcSubMenu.Append(purgePtcCache);
             managePtcSubMenu.Append(openPtcDir);
             
-            managePtc.Submenu = managePtcSubMenu;
+            managePtcMenu.Submenu = managePtcSubMenu;
 
             openSaveUserDir.Activated    += OpenSaveUserDir_Clicked;
             openSaveDeviceDir.Activated  += OpenSaveDeviceDir_Clicked;
@@ -150,9 +131,14 @@ namespace Ryujinx.Ui
             purgePtcCache.Activated      += PurgePtcCache_Clicked;
             openPtcDir.Activated         += OpenPtcDir_Clicked;
             
-            this.Add(manageSaveData);
-            this.Add(manageGameData);
-            this.Add(managePtc);
+            this.Add(openSaveUserDir);
+            this.Add(openSaveDeviceDir);
+            this.Add(openSaveBcatDir);
+            this.Add(new SeparatorMenuItem());
+            this.Add(manageTitleUpdates);
+            this.Add(manageDlc);
+            this.Add(new SeparatorMenuItem());
+            this.Add(managePtcMenu);
             this.Add(extractMenu);
         }
 
@@ -633,8 +619,8 @@ namespace Ryujinx.Ui
 
         private void OpenPtcDir_Clicked(object sender, EventArgs args)
         {
-            string titleId   = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string ptcDir    = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
+            string titleId = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
+            string ptcDir  = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu");
             
             string mainPath   = System.IO.Path.Combine(ptcDir, "0");
             string backupPath = System.IO.Path.Combine(ptcDir, "1");
@@ -656,10 +642,10 @@ namespace Ryujinx.Ui
         
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
-            string titleId         = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
-            string cacheFileName   = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
+            string titleId       = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
+            string cacheFileName = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
             
-            string cachePath       = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", cacheFileName);
+            string cachePath = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", cacheFileName);
            
             MessageDialog warningDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
             {
@@ -670,8 +656,10 @@ namespace Ryujinx.Ui
 
             if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                if(File.Exists(cachePath))
+                if (File.Exists(cachePath))
+                {
                     File.Delete(cachePath);
+                }
             }
 
             warningDialog.Dispose();
