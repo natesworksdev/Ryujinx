@@ -86,16 +86,16 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             return c;
         }
 
-        private static void IncMvComponent(int v, ref nmv_component_counts compCounts, int incr, int usehp)
+        private static void IncMvComponent(int v, ref Vp9BackwardUpdates counts, int comp, int incr, int usehp)
         {
             int s, z, c, o = 0, d, e, f;
             Debug.Assert(v != 0); /* Should not be zero */
             s = v < 0 ? 1 : 0;
-            compCounts.sign[s] += (uint)incr;
+            counts.sign[comp][s] += (uint)incr;
             z = (s != 0 ? -v : v) - 1; /* Magnitude - 1 */
 
             c = (int)GetMvClass(z, new Ptr<int>(ref o));
-            compCounts.classes[c] += (uint)incr;
+            counts.classes[comp][c] += (uint)incr;
 
             d = (o >> 3);     /* Int mv data */
             f = (o >> 1) & 3; /* Fractional pel mv data */
@@ -103,9 +103,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
             if (c == (int)MvClassType.MvClass0)
             {
-                compCounts.class0[d] += (uint)incr;
-                compCounts.class0_fp[d][f] += (uint)incr;
-                compCounts.class0_hp[e] += (uint)(usehp * incr);
+                counts.class0[comp][d] += (uint)incr;
+                counts.class0_fp[comp][d][f] += (uint)incr;
+                counts.class0_hp[comp][e] += (uint)(usehp * incr);
             }
             else
             {
@@ -113,11 +113,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
                 int b = c + Constants.Class0Bits - 1;  // Number of bits
                 for (i = 0; i < b; ++i)
                 {
-                    compCounts.bits[i][((d >> i) & 1)] += (uint)incr;
+                    counts.bits[comp][i][((d >> i) & 1)] += (uint)incr;
                 }
 
-                compCounts.fp[f] += (uint)incr;
-                compCounts.hp[e] += (uint)(usehp * incr);
+                counts.fp[comp][f] += (uint)incr;
+                counts.hp[comp][e] += (uint)(usehp * incr);
             }
         }
 
@@ -133,7 +133,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             }
         }
 
-        internal void IncMv(Ptr<nmv_context_counts> counts)
+        internal void IncMv(Ptr<Vp9BackwardUpdates> counts)
         {
             if (!counts.IsNull)
             {
@@ -142,12 +142,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
                 if (MvJointVertical(j))
                 {
-                    IncMvComponent(Row, ref counts.Value.comps[0], 1, 1);
+                    IncMvComponent(Row, ref counts.Value, 0, 1, 1);
                 }
 
                 if (MvJointHorizontal(j))
                 {
-                    IncMvComponent(Col, ref counts.Value.comps[1], 1, 1);
+                    IncMvComponent(Col, ref counts.Value, 1, 1, 1);
                 }
             }
         }

@@ -17,7 +17,9 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
         public Array7<Array4<byte>> InterModeProbs;
         public Array4<byte> IntraInterProbs;
         public Array10<Array8<byte>> UvModeProbsE0ToE7;
-        public TxProbs TxProbs;
+        public Array2<Array1<byte>> Tx8x8;
+        public Array2<Array2<byte>> Tx16x16;
+        public Array2<Array3<byte>> Tx32x32;
         public Array4<byte> YModeProbsE8;
         public Array4<Array8<byte>> YModeProbsE0ToE7;
         public Array16<Array4<byte>> KfPartitionProbs;
@@ -26,7 +28,15 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
         public Array4<Array2<byte>> SwitchableInterpProbs;
         public Array5<byte> CompInterProbs;
         public Array4<byte> SkipProbs;
-        public NmvContext Nmvc;
+        public Array3<byte> Joints;
+        public Array2<byte> Sign;
+        public Array2<Array1<byte>> Class0;
+        public Array2<Array3<byte>> Fp;
+        public Array2<byte> Class0Hp;
+        public Array2<byte> Hp;
+        public Array2<Array10<byte>> Classes;
+        public Array2<Array2<Array3<byte>>> Class0Fp;
+        public Array2<Array10<byte>> Bits;
         public Array5<Array2<byte>> SingleRefProbs;
         public Array5<byte> CompRefProbs;
         public Array17<byte> Padding58F;
@@ -67,7 +77,9 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
                 }
             }
 
-            TxProbs.Convert(ref fc.tx_probs);
+            fc.p8x8 = Tx8x8;
+            fc.p16x16 = Tx16x16;
+            fc.p32x32 = Tx32x32;
 
             for (int i = 0; i < 4; i++)
             {
@@ -91,9 +103,15 @@ namespace Ryujinx.Graphics.Nvdec.Types.Vp9
             fc.skip_probs[0] = SkipProbs[0];
             fc.skip_probs[1] = SkipProbs[1];
             fc.skip_probs[2] = SkipProbs[2];
-
-            Nmvc.Convert(ref fc.nmvc);
-
+            fc.joints = Joints;
+            fc.sign = Sign;
+            fc.class0 = Class0;
+            fc.fp = Fp;
+            fc.class0_hp = Class0Hp;
+            fc.hp = Hp;
+            fc.classes = Classes;
+            fc.class0_fp = Class0Fp;
+            fc.bits = Bits;
             fc.single_ref_prob = SingleRefProbs;
             fc.comp_ref_prob = CompRefProbs;
 

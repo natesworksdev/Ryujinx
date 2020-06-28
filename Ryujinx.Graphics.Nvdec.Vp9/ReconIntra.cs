@@ -27,14 +27,14 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         private static readonly byte[] ExtendModes = new byte[]
         {
             NeedAbove | NeedLeft,  // DC
-            NeedAbove,              // V
-            NeedLeft,               // H
-            NeedAboveRight,         // D45
+            NeedAbove,             // V
+            NeedLeft,              // H
+            NeedAboveRight,        // D45
             NeedLeft | NeedAbove,  // D135
             NeedLeft | NeedAbove,  // D117
             NeedLeft | NeedAbove,  // D153
-            NeedLeft,               // D207
-            NeedAboveRight,         // D63
+            NeedLeft,              // D207
+            NeedAboveRight,        // D63
             NeedLeft | NeedAbove,  // TM
         };
 

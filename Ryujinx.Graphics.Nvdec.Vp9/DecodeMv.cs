@@ -57,24 +57,24 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return r.ReadTree(Luts.Vp9SegmentTree, segTreeProbs.ToSpan());
         }
 
-        private static ReadOnlySpan<byte> GetTxProbs(ref tx_probs tx, TxSize maxTxSize, int ctx)
+        private static ReadOnlySpan<byte> GetTxProbs(ref Vp9EntropyProbs fc, TxSize maxTxSize, int ctx)
         {
             switch (maxTxSize)
             {
-                case TxSize.Tx8x8: return tx.p8x8[ctx].ToSpan();
-                case TxSize.Tx16x16: return tx.p16x16[ctx].ToSpan();
-                case TxSize.Tx32x32: return tx.p32x32[ctx].ToSpan();
+                case TxSize.Tx8x8: return fc.p8x8[ctx].ToSpan();
+                case TxSize.Tx16x16: return fc.p16x16[ctx].ToSpan();
+                case TxSize.Tx32x32: return fc.p32x32[ctx].ToSpan();
                 default: Debug.Assert(false, "Invalid maxTxSize."); return ReadOnlySpan<byte>.Empty;
             }
         }
 
-        private static Span<uint> GetTxCounts(ref tx_counts tx, TxSize maxTxSize, int ctx)
+        private static Span<uint> GetTxCounts(ref Vp9BackwardUpdates counts, TxSize maxTxSize, int ctx)
         {
             switch (maxTxSize)
             {
-                case TxSize.Tx8x8: return tx.p8x8[ctx].ToSpan();
-                case TxSize.Tx16x16: return tx.p16x16[ctx].ToSpan();
-                case TxSize.Tx32x32: return tx.p32x32[ctx].ToSpan();
+                case TxSize.Tx8x8: return counts.p8x8[ctx].ToSpan();
+                case TxSize.Tx16x16: return counts.p16x16[ctx].ToSpan();
+                case TxSize.Tx32x32: return counts.p32x32[ctx].ToSpan();
                 default: Debug.Assert(false, "Invalid maxTxSize."); return Span<uint>.Empty;
             }
         }
@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
         private static TxSize ReadSelectedTxSize(ref Vp9Common cm, ref MacroBlockD xd, TxSize maxTxSize, ref Reader r)
         {
             int ctx = xd.GetTxSizeContext();
-            ReadOnlySpan<byte> txProbs = GetTxProbs(ref cm.Fc.Value.tx_probs, maxTxSize, ctx);
+            ReadOnlySpan<byte> txProbs = GetTxProbs(ref cm.Fc.Value, maxTxSize, ctx);
             TxSize txSize = (TxSize)r.Read(txProbs[0]);
             if (txSize != TxSize.Tx4x4 && maxTxSize >= TxSize.Tx16x16)
             {
@@ -95,18 +95,18 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             if (!xd.Counts.IsNull)
             {
-                ++GetTxCounts(ref xd.Counts.Value.tx, maxTxSize, ctx)[(int)txSize];
+                ++GetTxCounts(ref xd.Counts.Value, maxTxSize, ctx)[(int)txSize];
             }
 
             return txSize;
         }
 
-        private static TxSize ReadTxSize(ref Vp9Common cm, ref MacroBlockD xd, int allowSelect, ref Reader r)
+        private static TxSize ReadTxSize(ref Vp9Common cm, ref MacroBlockD xd, bool allowSelect, ref Reader r)
         {
             TxMode txMode = cm.TxMode;
             BlockSize bsize = xd.Mi[0].Value.SbType;
             TxSize maxTxSize = Luts.MaxTxSizeLookup[(int)bsize];
-            if (allowSelect != 0 && txMode == TxMode.TxModeSelect && bsize >= BlockSize.Block8x8)
+            if (allowSelect && txMode == TxMode.TxModeSelect && bsize >= BlockSize.Block8x8)
             {
                 return ReadSelectedTxSize(ref cm, ref xd, maxTxSize, ref r);
             }
@@ -249,17 +249,17 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static int ReadMvComponent(ref Reader r, ref nmv_component mvcomp, bool usehp)
+        private static int ReadMvComponent(ref Reader r, ref Vp9EntropyProbs fc, int mvcomp, bool usehp)
         {
             int mag, d, fr, hp;
-            bool sign = r.Read(mvcomp.sign) != 0;
-            MvClassType mvClass = (MvClassType)r.ReadTree(Luts.Vp9MvClassTree, mvcomp.classes.ToSpan());
+            bool sign = r.Read(fc.sign[mvcomp]) != 0;
+            MvClassType mvClass = (MvClassType)r.ReadTree(Luts.Vp9MvClassTree, fc.classes[mvcomp].ToSpan());
             bool class0 = mvClass == MvClassType.MvClass0;
 
             // Integer part
             if (class0)
             {
-                d = r.Read(mvcomp.class0[0]);
+                d = r.Read(fc.class0[mvcomp][0]);
                 mag = 0;
             }
             else
@@ -270,17 +270,17 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 d = 0;
                 for (i = 0; i < n; ++i)
                 {
-                    d |= r.Read(mvcomp.bits[i]) << i;
+                    d |= r.Read(fc.bits[mvcomp][i]) << i;
                 }
 
                 mag = Constants.Class0Size << ((int)mvClass + 2);
             }
 
             // Fractional part
-            fr = r.ReadTree(Luts.Vp9MvFPTree, class0 ? mvcomp.class0_fp[d].ToSpan() : mvcomp.fp.ToSpan());
+            fr = r.ReadTree(Luts.Vp9MvFPTree, class0 ? fc.class0_fp[mvcomp][d].ToSpan() : fc.fp[mvcomp].ToSpan());
 
             // High precision part (if hp is not used, the default value of the hp is 1)
-            hp = usehp ? r.Read(class0 ? mvcomp.class0_hp : mvcomp.hp) : 1;
+            hp = usehp ? r.Read(class0 ? fc.class0_hp[mvcomp] : fc.hp[mvcomp]) : 1;
 
             // Result
             mag += ((d << 3) | (fr << 1) | hp) + 1;
@@ -291,22 +291,22 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref Reader r,
             ref Mv mv,
             ref Mv refr,
-            ref nmv_context ctx,
-            Ptr<nmv_context_counts> counts,
+            ref Vp9EntropyProbs fc,
+            Ptr<Vp9BackwardUpdates> counts,
             bool allowHP)
         {
-            MvJointType jointType = (MvJointType)r.ReadTree(Luts.Vp9MvJointTree, ctx.joints.ToSpan());
+            MvJointType jointType = (MvJointType)r.ReadTree(Luts.Vp9MvJointTree, fc.joints.ToSpan());
             bool useHP = allowHP && refr.UseMvHp();
             Mv diff = new Mv();
 
             if (Mv.MvJointVertical(jointType))
             {
-                diff.Row = (short)ReadMvComponent(ref r, ref ctx.comps[0], useHP);
+                diff.Row = (short)ReadMvComponent(ref r, ref fc, 0, useHP);
             }
 
             if (Mv.MvJointHorizontal(jointType))
             {
-                diff.Col = (short)ReadMvComponent(ref r, ref ctx.comps[1], useHP);
+                diff.Col = (short)ReadMvComponent(ref r, ref fc, 1, useHP);
             }
 
             diff.IncMv(counts);
@@ -489,10 +489,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             {
                 case PredictionMode.NewMv:
                     {
-                        Ptr<nmv_context_counts> mvCounts = !xd.Counts.IsNull ? new Ptr<nmv_context_counts>(ref xd.Counts.Value.mv) : Ptr<nmv_context_counts>.Null;
                         for (i = 0; i < 1 + isCompound; ++i)
                         {
-                            ReadMv(ref r, ref mv[i], ref refMv[i], ref cm.Fc.Value.nmvc, mvCounts, allowHP);
+                            ReadMv(ref r, ref mv[i], ref refMv[i], ref cm.Fc.Value, xd.Counts, allowHP);
                             ret = ret && IsMvValid(ref mv[i]);
                         }
                         break;
@@ -1007,7 +1006,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             mi.SegmentId = (sbyte)ReadInterSegmentId(ref cm, ref xd, miRow, miCol, ref r, xMis, yMis);
             mi.Skip = (sbyte)ReadSkip(ref cm, ref xd, mi.SegmentId, ref r);
             interBlock = ReadIsInterBlock(ref cm, ref xd, mi.SegmentId, ref r);
-            mi.TxSize = ReadTxSize(ref cm, ref xd, mi.Skip == 0 || !interBlock ? 1 : 0, ref r);
+            mi.TxSize = ReadTxSize(ref cm, ref xd, mi.Skip == 0 || !interBlock, ref r);
 
             if (interBlock)
             {
@@ -1085,7 +1084,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             mi.Value.SegmentId = (sbyte)ReadIntraSegmentId(ref cm, miOffset, xMis, yMis, ref r);
             mi.Value.Skip = (sbyte)ReadSkip(ref cm, ref xd, mi.Value.SegmentId, ref r);
-            mi.Value.TxSize = ReadTxSize(ref cm, ref xd, 1, ref r);
+            mi.Value.TxSize = ReadTxSize(ref cm, ref xd, true, ref r);
             mi.Value.RefFrame[0] = Constants.IntraFrame;
             mi.Value.RefFrame[1] = Constants.None;
 

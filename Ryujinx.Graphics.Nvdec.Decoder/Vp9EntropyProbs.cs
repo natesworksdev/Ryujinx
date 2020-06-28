@@ -19,8 +19,18 @@ namespace Ryujinx.Graphics.Video
         public Array5<byte> comp_inter_prob;
         public Array5<Array2<byte>> single_ref_prob;
         public Array5<byte> comp_ref_prob;
-        public tx_probs tx_probs;
+        public Array2<Array3<byte>> p32x32;
+        public Array2<Array2<byte>> p16x16;
+        public Array2<Array1<byte>> p8x8;
         public Array3<byte> skip_probs;
-        public nmv_context nmvc;
+        public Array3<byte> joints;
+        public Array2<byte> sign;
+        public Array2<Array10<byte>> classes;
+        public Array2<Array1<byte>> class0;
+        public Array2<Array10<byte>> bits;
+        public Array2<Array2<Array3<byte>>> class0_fp;
+        public Array2<Array3<byte>> fp;
+        public Array2<byte> class0_hp;
+        public Array2<byte> hp;
     }
 }
