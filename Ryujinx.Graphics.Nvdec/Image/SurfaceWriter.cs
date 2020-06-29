@@ -53,52 +53,72 @@ namespace Ryujinx.Graphics.Nvdec.Image
         {
             OffsetCalculator calc = new OffsetCalculator(width, height, 0, false, 2, 2);
 
-            int strideTrunc64 = BitUtils.AlignDown(width * 2, 64);
-
-            int inStrideGap = srcStride - width;
-
-            fixed (byte* outputPtr = dst, srcUPtr = srcU, srcVPtr = srcV)
+            if (Sse2.IsSupported)
             {
-                byte* inUPtr = srcUPtr;
-                byte* inVPtr = srcVPtr;
+                int strideTrunc64 = BitUtils.AlignDown(width * 2, 64);
 
+                int inStrideGap = srcStride - width;
+
+                fixed (byte* outputPtr = dst, srcUPtr = srcU, srcVPtr = srcV)
+                {
+                    byte* inUPtr = srcUPtr;
+                    byte* inVPtr = srcVPtr;
+
+                    for (int y = 0; y < height; y++)
+                    {
+                        calc.SetY(y);
+
+                        for (int x = 0; x < strideTrunc64; x += 64, inUPtr += 32, inVPtr += 32)
+                        {
+                            byte* offset = outputPtr + calc.GetOffsetWithLineOffset64(x);
+                            byte* offset2 = offset + 0x20;
+                            byte* offset3 = offset + 0x100;
+                            byte* offset4 = offset + 0x120;
+
+                            Vector128<byte> value = *(Vector128<byte>*)inUPtr;
+                            Vector128<byte> value2 = *(Vector128<byte>*)inVPtr;
+                            Vector128<byte> value3 = *(Vector128<byte>*)(inUPtr + 16);
+                            Vector128<byte> value4 = *(Vector128<byte>*)(inVPtr + 16);
+
+                            Vector128<byte> uv0 = Sse2.UnpackLow(value, value2);
+                            Vector128<byte> uv1 = Sse2.UnpackHigh(value, value2);
+                            Vector128<byte> uv2 = Sse2.UnpackLow(value3, value4);
+                            Vector128<byte> uv3 = Sse2.UnpackHigh(value3, value4);
+
+                            *(Vector128<byte>*)offset = uv0;
+                            *(Vector128<byte>*)offset2 = uv1;
+                            *(Vector128<byte>*)offset3 = uv2;
+                            *(Vector128<byte>*)offset4 = uv3;
+                        }
+
+                        for (int x = strideTrunc64 / 2; x < width; x++, inUPtr++, inVPtr++)
+                        {
+                            byte* offset = outputPtr + calc.GetOffset(x);
+
+                            *offset = *inUPtr;
+                            *(offset + 1) = *inVPtr;
+                        }
+
+                        inUPtr += inStrideGap;
+                        inVPtr += inStrideGap;
+                    }
+                }
+            }
+            else
+            {
                 for (int y = 0; y < height; y++)
                 {
+                    int srcBaseOffset = y * srcStride;
+
                     calc.SetY(y);
 
-                    for (int x = 0; x < strideTrunc64; x += 64, inUPtr += 32, inVPtr += 32)
+                    for (int x = 0; x < width; x++)
                     {
-                        byte* offset = outputPtr + calc.GetOffsetWithLineOffset64(x);
-                        byte* offset2 = offset + 0x20;
-                        byte* offset3 = offset + 0x100;
-                        byte* offset4 = offset + 0x120;
+                        int dstOffset = calc.GetOffset(x);
 
-                        Vector128<byte> value = *(Vector128<byte>*)inUPtr;
-                        Vector128<byte> value2 = *(Vector128<byte>*)inVPtr;
-                        Vector128<byte> value3 = *(Vector128<byte>*)(inUPtr + 16);
-                        Vector128<byte> value4 = *(Vector128<byte>*)(inVPtr + 16);
-
-                        Vector128<byte> uv0 = Sse2.UnpackLow(value, value2);
-                        Vector128<byte> uv1 = Sse2.UnpackHigh(value, value2);
-                        Vector128<byte> uv2 = Sse2.UnpackLow(value3, value4);
-                        Vector128<byte> uv3 = Sse2.UnpackHigh(value3, value4);
-
-                        *(Vector128<byte>*)offset = uv0;
-                        *(Vector128<byte>*)offset2 = uv1;
-                        *(Vector128<byte>*)offset3 = uv2;
-                        *(Vector128<byte>*)offset4 = uv3;
+                        dst[dstOffset + 0] = srcU[srcBaseOffset + x];
+                        dst[dstOffset + 1] = srcV[srcBaseOffset + x];
                     }
-
-                    for (int x = strideTrunc64 / 2; x < width; x++, inUPtr++, inVPtr++)
-                    {
-                        byte* offset = outputPtr + calc.GetOffset(x);
-
-                        *offset = *inUPtr;
-                        *(offset + 1) = *inVPtr;
-                    }
-
-                    inUPtr += inStrideGap;
-                    inVPtr += inStrideGap;
                 }
             }
         }
