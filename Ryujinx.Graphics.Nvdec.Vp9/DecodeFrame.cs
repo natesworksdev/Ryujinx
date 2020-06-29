@@ -193,8 +193,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 }
             }
 
-            ReconIntra.PredictIntraBlock(ref xd, pd.N4Wl, txSize, mode, dst, pd.Dst.Stride,
-                                    dst, pd.Dst.Stride, col, row, plane);
+            ReconIntra.PredictIntraBlock(ref xd, pd.N4Wl, txSize, mode, dst, pd.Dst.Stride, dst, pd.Dst.Stride, col, row, plane);
 
             if (mi.Skip == 0)
             {
@@ -904,11 +903,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
 
             xd.Corrupted |= r.HasError();
-
-            if (r.HasError())
-            {
-                throw new Exception("huh?");
-            }
 
             if (cm.Lf.FilterLevel != 0)
             {

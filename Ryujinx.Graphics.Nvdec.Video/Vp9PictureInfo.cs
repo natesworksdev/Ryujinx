@@ -7,13 +7,9 @@ namespace Ryujinx.Graphics.Video
         public ISurface LastReference;
         public ISurface GoldenReference;
         public ISurface AltReference;
-        public int Width;
-        public int Height;
         public bool IsKeyFrame;
         public bool IntraOnly;
         public Array4<sbyte> RefFrameSignBias;
-        public int LoopFilterLevel;
-        public int LoopFilterSharpness;
         public int BaseQIndex;
         public int YDcDeltaQ;
         public int UvDcDeltaQ;
@@ -21,7 +17,6 @@ namespace Ryujinx.Graphics.Video
         public bool Lossless;
         public int TransformMode;
         public bool AllowHighPrecisionMv;
-        public bool AllowCompInterInter;
         public int InterpFilter;
         public int ReferenceMode;
         public sbyte CompFixedRef;

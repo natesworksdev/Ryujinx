@@ -4,7 +4,7 @@ namespace Ryujinx.Graphics.Video
 {
     public interface IVp9Decoder : IDecoder
     {
-        void Decode(
+        bool Decode(
             ref Vp9PictureInfo pictureInfo,
             ISurface output,
             ReadOnlySpan<byte> bitstream,

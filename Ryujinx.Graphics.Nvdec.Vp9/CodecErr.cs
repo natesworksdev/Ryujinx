@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Ryujinx.Graphics.Nvdec.Vp9
+﻿namespace Ryujinx.Graphics.Nvdec.Vp9
 {
     internal enum CodecErr
     {
@@ -54,23 +52,5 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
          *
          */
         CodecListEnd
-    }
-
-    internal enum BitDepth
-    {
-        Bits8 = 8,   /**<  8 bits */
-        Bits10 = 10, /**< 10 bits */
-        Bits12 = 12, /**< 12 bits */
-    }
-
-    internal struct InternalErrorInfo
-    {
-        public CodecErr ErrorCode;
-        public int SetJmp;
-
-        public void InternalError(CodecErr error, string message)
-        {
-            throw new Exception(message);
-        }
     }
 }

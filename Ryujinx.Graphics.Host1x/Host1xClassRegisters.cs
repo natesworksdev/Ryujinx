@@ -37,6 +37,5 @@ namespace Ryujinx.Graphics.Host1x
         public uint Xrefctrl;
         public uint ChannelXrefHi;
         public uint ChannelXrefLo;
-
     }
 }

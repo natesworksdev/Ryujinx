@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             Constants.Bilinear
         };
 
-        public unsafe void Decode(
+        public unsafe bool Decode(
             ref Vp9PictureInfo pictureInfo,
             ISurface output,
             ReadOnlySpan<byte> bitstream,
@@ -32,8 +32,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             cm.FrameType = pictureInfo.IsKeyFrame ? FrameType.KeyFrame : FrameType.InterFrame;
             cm.IntraOnly = pictureInfo.IntraOnly;
 
-            cm.Width = pictureInfo.Width;
-            cm.Height = pictureInfo.Height;
+            cm.Width = output.Width;
+            cm.Height = output.Height;
 
             cm.UsePrevFrameMvs = pictureInfo.UsePrevInFindMvRefs;
 
@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             cm.InitializeTileWorkerData(1 << pictureInfo.Log2TileCols, 1 << pictureInfo.Log2TileRows);
 
-            cm.AllocContextBuffers(pictureInfo.Width, pictureInfo.Height);
+            cm.AllocContextBuffers(output.Width, output.Height);
             cm.InitContextBuffers();
             cm.SetupSegmentationDequant();
             cm.SetupScaleFactors();
@@ -97,17 +97,21 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             fixed (byte* dataPtr = bitstream)
             {
-                DecodeFrame.DecodeTiles(ref cm, new ArrayPtr<byte>(dataPtr, bitstream.Length));
+                try
+                {
+                    DecodeFrame.DecodeTiles(ref cm, new ArrayPtr<byte>(dataPtr, bitstream.Length));
+                }
+                catch (InternalErrorException)
+                {
+                    return false;
+                }
             }
 
             GetMvs(ref cm, mvsOut);
 
             cm.FreeContextBuffers();
-        }
 
-        public bool ReceiveFrame(ISurface surface)
-        {
-            throw new NotImplementedException();
+            return true;
         }
 
         private static void SetMvs(ref Vp9Common cm, ReadOnlySpan<MvRef> mvs)

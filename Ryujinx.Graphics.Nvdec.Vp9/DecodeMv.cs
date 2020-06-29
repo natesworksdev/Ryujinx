@@ -411,11 +411,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return type;
         }
 
-        private static void ReadIntraBlockModeInfo(
-            ref Vp9Common cm,
-            ref MacroBlockD xd,
-            ref ModeInfo mi,
-            ref Reader r)
+        private static void ReadIntraBlockModeInfo(ref Vp9Common cm, ref MacroBlockD xd, ref ModeInfo mi, ref Reader r)
         {
             BlockSize bsize = mi.SbType;
             int i;

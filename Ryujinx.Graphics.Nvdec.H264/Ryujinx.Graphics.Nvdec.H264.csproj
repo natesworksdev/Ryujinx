@@ -17,7 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Ryujinx.Graphics.Nvdec.Decoder\Ryujinx.Graphics.Video.csproj" />
+    <ProjectReference Include="..\Ryujinx.Graphics.Nvdec.Video\Ryujinx.Graphics.Video.csproj" />
   </ItemGroup>
 
 </Project>

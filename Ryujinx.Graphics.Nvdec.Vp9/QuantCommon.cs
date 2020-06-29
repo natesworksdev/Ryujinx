@@ -8,8 +8,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
     {
         public const int MinQ = 0;
         public const int MaxQ = 255;
-        public const int QindexRange = MaxQ - MinQ + 1;
-        public const int QindexBits = 8;
 
         private static readonly short[] DcQlookup = new short[]
         {

@@ -54,13 +54,17 @@ namespace Ryujinx.Graphics.Nvdec
 
             Span<MvRef> mvsOut = MemoryMarshal.Cast<byte, MvRef>(mvsRegion.Memory.Span);
 
-            _decoder.Decode(ref info, currentSurface, bitstream, mvsIn, mvsOut);
+            uint lumaOffset   = state.SetSurfaceLumaOffset[3];
+            uint chromaOffset = state.SetSurfaceChromaOffset[3];
+
+            if (_decoder.Decode(ref info, currentSurface, bitstream, mvsIn, mvsOut))
+            {
+                SurfaceWriter.Write(rm.Gmm, currentSurface, lumaOffset, chromaOffset);
+
+                device.OnFrameDecoded(CodecId.Vp9, lumaOffset, chromaOffset);
+            }
 
             WriteBackwardUpdates(rm.Gmm, state.SetVp9BackwardUpdatesOffset, ref info.BackwardUpdateCounts);
-
-            SurfaceWriter.Write(rm.Gmm, currentSurface, state.SetSurfaceLumaOffset[3], state.SetSurfaceChromaOffset[3]);
-
-            device.OnFrameDecoded(CodecId.Vp9, state.SetSurfaceLumaOffset[3], state.SetSurfaceChromaOffset[3]);
 
             rm.Cache.Put(lastSurface);
             rm.Cache.Put(goldenSurface);

@@ -5,7 +5,5 @@
         bool IsHardwareAccelerated { get; }
 
         ISurface CreateSurface(int width, int height);
-
-        bool ReceiveFrame(ISurface surface);
     }
 }

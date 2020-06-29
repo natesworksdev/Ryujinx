@@ -96,11 +96,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             _buffer = _buffer.Slice(bufferStart.Length - buffer.Length);
             Value = value;
             Count = count;
-
-            if (HasError())
-            {
-                throw new Exception("broke");
-            }
         }
 
         public bool HasError()
@@ -235,10 +230,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Dsp
             {
                 Count -= 8;
                 _buffer = _buffer.Slice(-1);
-            }
-            if (HasError())
-            {
-                throw new Exception("broke");
             }
             return _buffer;
         }

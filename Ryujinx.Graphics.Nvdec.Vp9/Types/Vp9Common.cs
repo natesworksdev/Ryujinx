@@ -28,8 +28,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         public Array3<RefBuffer> FrameRefs;
 
-        public int NewFbIdx;
-
         public FrameType FrameType;
 
         // Flag signaling that the frame is encoded using only Intra modes.

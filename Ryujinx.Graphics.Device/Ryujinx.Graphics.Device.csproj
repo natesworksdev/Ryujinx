@@ -4,8 +4,4 @@
     <TargetFramework>netcoreapp3.1</TargetFramework>
   </PropertyGroup>
 
-  <ItemGroup>
-    <None Remove="DeviceBase.cs~RF10e768f4.TMP" />
-  </ItemGroup>
-
 </Project>

@@ -18,7 +18,6 @@ namespace Ryujinx.Graphics.Video
         public Array2<Array4<uint>> Tx32x32;
         public Array2<Array3<uint>> Tx16x16;
         public Array2<Array2<uint>> Tx8x8;
-        public Array4<uint> TxTotals;
         public Array3<Array2<uint>> Skip;
         public Array4<uint> Joints;
         public Array2<Array2<uint>> Sign;

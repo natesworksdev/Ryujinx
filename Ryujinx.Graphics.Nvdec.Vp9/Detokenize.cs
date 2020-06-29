@@ -107,10 +107,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                         r.Value = value;
                         r.Range = range;
                         r.Count = count;
-                        if (r.HasError())
-                        {
-                            throw new Exception("broke");
-                        }
                         return c;  // Zero tokens at the end (no eob token)
                     }
                     ctx = GetCoefContext(nb, tokenCache, c);
@@ -200,10 +196,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             r.Value = value;
             r.Range = range;
             r.Count = count;
-            if (r.HasError())
-            {
-                throw new Exception("broke");
-            }
             return c;
         }
 

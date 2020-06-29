@@ -18,9 +18,11 @@ namespace Ryujinx.Graphics.Nvdec.H264
             return new Surface();
         }
 
-        public void Decode(ref H264PictureInfo pictureInfo, ReadOnlySpan<byte> data)
+        public bool Decode(ref H264PictureInfo pictureInfo, ISurface output, ReadOnlySpan<byte> bitstream)
         {
-            _context.DecodeFrame(Prepend(data, SpsAndPpsReconstruction.Reconstruct(ref pictureInfo, _workBuffer)));
+            Span<byte> bs = Prepend(bitstream, SpsAndPpsReconstruction.Reconstruct(ref pictureInfo, _workBuffer));
+
+            return _context.DecodeFrame((Surface)output, bs) == 0;
         }
 
         private static byte[] Prepend(ReadOnlySpan<byte> data, ReadOnlySpan<byte> prep)
@@ -31,11 +33,6 @@ namespace Ryujinx.Graphics.Nvdec.H264
             data.CopyTo(new Span<byte>(output).Slice(prep.Length));
 
             return output;
-        }
-
-        public bool ReceiveFrame(ISurface surface)
-        {
-            return _context.ReceiveFrame((Surface)surface) == 0;
         }
     }
 }

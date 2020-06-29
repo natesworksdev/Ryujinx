@@ -19,18 +19,17 @@ namespace Ryujinx.Graphics.Nvdec
 
             ReadOnlySpan<byte> bitstream = rm.Gmm.DeviceGetSpan(state.SetBitstreamOffset, (int)pictureInfo.BitstreamSize);
 
-            int width = (int)pictureInfo.PicWidthInMbs * MbSizeInPixels;
+            int width  = (int)pictureInfo.PicWidthInMbs * MbSizeInPixels;
             int height = (int)pictureInfo.PicHeightInMbs * MbSizeInPixels;
 
             ISurface outputSurface = rm.Cache.Get(_decoder, CodecId.H264, 0, 0, width, height);
 
-            _decoder.Decode(ref info, bitstream);
-            if (_decoder.ReceiveFrame(outputSurface))
+            if (_decoder.Decode(ref info, outputSurface, bitstream))
             {
                 int li = (int)pictureInfo.LumaOutputSurfaceIndex;
                 int ci = (int)pictureInfo.ChromaOutputSurfaceIndex;
 
-                uint lumaOffset = state.SetSurfaceLumaOffset[li];
+                uint lumaOffset   = state.SetSurfaceLumaOffset[li];
                 uint chromaOffset = state.SetSurfaceChromaOffset[ci];
 
                 SurfaceWriter.Write(rm.Gmm, outputSurface, lumaOffset, chromaOffset);

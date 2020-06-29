@@ -16,24 +16,26 @@ namespace Ryujinx.Graphics.Nvdec.H264
             ffmpeg.avcodec_open2(_context, _codec, null);
         }
 
-        public int DecodeFrame(ReadOnlySpan<byte> data)
+        public int DecodeFrame(Surface output, ReadOnlySpan<byte> bitstream)
         {
             AVPacket packet;
 
             ffmpeg.av_init_packet(&packet);
 
-            fixed (byte* ptr = data)
+            fixed (byte* ptr = bitstream)
             {
                 packet.data = ptr;
-                packet.size = data.Length;
+                packet.size = bitstream.Length;
 
-                return ffmpeg.avcodec_send_packet(_context, &packet);
+                int rc = ffmpeg.avcodec_send_packet(_context, &packet);
+
+                if (rc != 0)
+                {
+                    return rc;
+                }
             }
-        }
 
-        public int ReceiveFrame(Surface surface)
-        {
-            return ffmpeg.avcodec_receive_frame(_context, surface.Frame);
+            return ffmpeg.avcodec_receive_frame(_context, output.Frame);
         }
 
         public void Dispose()
