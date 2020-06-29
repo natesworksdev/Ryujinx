@@ -66,6 +66,9 @@ namespace Ryujinx.HLE
 
             nvdec.FrameDecoded += (FrameDecodedEventArgs e) =>
             {
+                // FIXME:
+                // Figure out what is causing frame ordering issues on H264.
+                // For now this is needed as workaround.
                 if (e.CodecId == CodecId.H264)
                 {
                     vic.SetSurfaceOverride(e.LumaOffset, e.ChromaOffset, 0);

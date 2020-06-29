@@ -276,7 +276,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress != 0)
                     {
-                        // FIXME
+                        // FIXME:
+                        // To make unmapping work, we need separate address space per channel.
+                        // Right now NVDEC and VIC share the GPU address space which is not correct at all.
+
                         // gmm.Free((ulong)map.DmaMapAddress, (uint)map.Size);
 
                         // map.DmaMapAddress = 0;
