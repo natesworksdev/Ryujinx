@@ -412,6 +412,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
             ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId);
+
             MainWindow.SaveConfig();
             MainWindow.ApplyTheme();
             MainWindow.UpdateGameTable();

@@ -652,16 +652,24 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
             {
                 if (SoundIoAudioOut.IsSupported)
+                {
                     return new SoundIoAudioOut();
+                }
                 else
+                {
                     Logger.PrintWarning(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
+                }
             }
             else if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
             {
                 if (OpenALAudioOut.IsSupported)
+                {
                     return new OpenALAudioOut();
+                }
                 else
+                {
                     Logger.PrintWarning(LogClass.Audio, "OpenAL is not supported, falling back to dummy audio out.");
+                }
             }
 
             return new DummyAudioOut();
