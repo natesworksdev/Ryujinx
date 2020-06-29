@@ -18,11 +18,11 @@ namespace Ryujinx.Common.Logging
 
         public struct Log
         {
-            private readonly LogLevel _level;
+            internal readonly LogLevel Level;
 
             internal Log(LogLevel level)
             {
-                _level = level;
+                Level = level;
             }
 
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -30,7 +30,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, "", message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, "", message)));
                 }
             }
 
@@ -39,7 +39,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
                 }
             }
 
@@ -48,7 +48,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), data));
                 }
             }
 
@@ -57,7 +57,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message)));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message)));
                 }
             }
 
@@ -66,7 +66,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed."), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed."), data));
                 }
             }
 
@@ -75,7 +75,7 @@ namespace Ryujinx.Common.Logging
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(_level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
                 }
             }            
 
@@ -163,6 +163,21 @@ namespace Ryujinx.Common.Logging
             }
 
             m_LogTargets.Clear();
+        }
+
+        public static IReadOnlyCollection<LogLevel> GetEnabledLevels()
+        {
+            var logs = new Log?[] { Debug, Info, Warning, Error, Guest, AccessLog, Stub };
+            List<LogLevel> levels = new List<LogLevel>(logs.Length);
+            foreach (var log in logs)
+            {
+                if (log.HasValue)
+                {
+                    levels.Add(log.Value.Level);
+                }
+            }
+
+            return levels;
         }
 
         public static void SetEnable(LogLevel logLevel, bool enabled)

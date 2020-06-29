@@ -80,11 +80,7 @@ namespace Ryujinx
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(globalConfigurationPath);
             }
 
-            Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
-
-            Logger.Notice.Print(LogClass.Application, $"Operating System: {SystemInfo.Instance.OsDescription}");
-            Logger.Notice.Print(LogClass.Application, $"CPU: {SystemInfo.Instance.CpuName}");
-            Logger.Notice.Print(LogClass.Application, $"Total RAM: {SystemInfo.Instance.RamSizeInMB}");
+            PrintSystemInfo();
 
             Profile.Initialize();
 
@@ -106,6 +102,18 @@ namespace Ryujinx
             }
 
             Application.Run();
+        }
+
+        private static void PrintSystemInfo()
+        {
+            Logger.Notice.Print(LogClass.Application, $"Ryujinx Version: {Version}");
+
+            Logger.Notice.Print(LogClass.Application, $"Operating System: {SystemInfo.Instance.OsDescription}");
+            Logger.Notice.Print(LogClass.Application, $"CPU: {SystemInfo.Instance.CpuName}");
+            Logger.Notice.Print(LogClass.Application, $"Total RAM: {SystemInfo.Instance.RamSizeInMB}");
+
+            var enabledLogs = Logger.GetEnabledLevels();
+            Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(enabledLogs.Count == 0 ? "<None>" : string.Join(", ", enabledLogs))}");
         }
 
         private static void ProcessUnhandledException(Exception e, bool isTerminating)
