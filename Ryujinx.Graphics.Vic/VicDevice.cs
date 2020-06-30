@@ -81,12 +81,6 @@ namespace Ryujinx.Graphics.Vic
                     offsets = _overrideOffsets;
                 }
 
-                Logger.PrintInfo(LogClass.Vic, $"VIC Copy " +
-                    $"{slot.SlotSurfaceConfig.SlotPixelFormat} " +
-                    $"{slot.SlotSurfaceConfig.SlotSurfaceWidth + 1}x{slot.SlotSurfaceConfig.SlotSurfaceHeight + 1} -> " +
-                    $"{config.OutputSurfaceConfig.OutPixelFormat} " +
-                    $"{config.OutputSurfaceConfig.OutSurfaceWidth + 1}x{config.OutputSurfaceConfig.OutSurfaceHeight + 1}");
-
                 using Surface src = SurfaceReader.Read(_rm, ref slot.SlotSurfaceConfig, ref offsets);
 
                 Blender.BlendOne(output, src, ref slot);

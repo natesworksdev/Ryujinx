@@ -33,8 +33,6 @@ namespace Ryujinx.Graphics.Nvdec
 
         private void Decode(CodecId codecId)
         {
-            Logger.PrintInfo(LogClass.Nvdec, $"Decode {codecId}");
-
             switch (codecId)
             {
                 case CodecId.H264:
