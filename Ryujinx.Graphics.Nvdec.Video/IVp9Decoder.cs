@@ -8,7 +8,7 @@ namespace Ryujinx.Graphics.Video
             ref Vp9PictureInfo pictureInfo,
             ISurface output,
             ReadOnlySpan<byte> bitstream,
-            ReadOnlySpan<MvRef> mvsIn,
-            Span<MvRef> mvsOut);
+            ReadOnlySpan<Vp9MvRef> mvsIn,
+            Span<Vp9MvRef> mvsOut);
     }
 }

@@ -2,7 +2,7 @@
 using Ryujinx.Graphics.Nvdec.Vp9.Types;
 using Ryujinx.Graphics.Video;
 using System;
-using MvRef = Ryujinx.Graphics.Video.MvRef;
+using Vp9MvRef = Ryujinx.Graphics.Video.Vp9MvRef;
 
 namespace Ryujinx.Graphics.Nvdec.Vp9
 {
@@ -24,8 +24,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             ref Vp9PictureInfo pictureInfo,
             ISurface output,
             ReadOnlySpan<byte> bitstream,
-            ReadOnlySpan<MvRef> mvsIn,
-            Span<MvRef> mvsOut)
+            ReadOnlySpan<Vp9MvRef> mvsIn,
+            Span<Vp9MvRef> mvsOut)
         {
             Vp9Common cm = new Vp9Common();
 
@@ -114,7 +114,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             return true;
         }
 
-        private static void SetMvs(ref Vp9Common cm, ReadOnlySpan<MvRef> mvs)
+        private static void SetMvs(ref Vp9Common cm, ReadOnlySpan<Vp9MvRef> mvs)
         {
             if (mvs.Length > cm.PrevFrameMvs.Length)
             {
@@ -135,7 +135,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             }
         }
 
-        private static void GetMvs(ref Vp9Common cm, Span<MvRef> mvs)
+        private static void GetMvs(ref Vp9Common cm, Span<Vp9MvRef> mvs)
         {
             if (mvs.Length > cm.CurFrameMvs.Length)
             {

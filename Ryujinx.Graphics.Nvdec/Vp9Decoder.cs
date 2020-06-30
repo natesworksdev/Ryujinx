@@ -40,7 +40,7 @@ namespace Ryujinx.Graphics.Nvdec
 
             ReadOnlySpan<byte> bitstream = rm.Gmm.DeviceGetSpan(state.SetBitstreamOffset, (int)pictureInfo.BitstreamSize);
 
-            ReadOnlySpan<MvRef> mvsIn = ReadOnlySpan<MvRef>.Empty;
+            ReadOnlySpan<Vp9MvRef> mvsIn = ReadOnlySpan<Vp9MvRef>.Empty;
 
             if (info.UsePrevInFindMvRefs)
             {
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Nvdec
 
             using var mvsRegion = rm.Gmm.GetWritableRegion(ExtendOffset(state.SetVp9CurrFrameMvsOffset), miRows * miCols * 16);
 
-            Span<MvRef> mvsOut = MemoryMarshal.Cast<byte, MvRef>(mvsRegion.Memory.Span);
+            Span<Vp9MvRef> mvsOut = MemoryMarshal.Cast<byte, Vp9MvRef>(mvsRegion.Memory.Span);
 
             uint lumaOffset   = state.SetSurfaceLumaOffset[3];
             uint chromaOffset = state.SetSurfaceChromaOffset[3];
@@ -72,12 +72,12 @@ namespace Ryujinx.Graphics.Nvdec
             rm.Cache.Put(currentSurface);
         }
 
-        private static ReadOnlySpan<MvRef> GetMvsInput(MemoryManager gmm, FrameSize size, uint offset)
+        private static ReadOnlySpan<Vp9MvRef> GetMvsInput(MemoryManager gmm, FrameSize size, uint offset)
         {
             int miCols = BitUtils.DivRoundUp(size.Width, 8);
             int miRows = BitUtils.DivRoundUp(size.Height, 8);
 
-            return MemoryMarshal.Cast<byte, MvRef>(gmm.DeviceGetSpan(offset, miRows * miCols * 16));
+            return MemoryMarshal.Cast<byte, Vp9MvRef>(gmm.DeviceGetSpan(offset, miRows * miCols * 16));
         }
 
         private static void WriteBackwardUpdates(MemoryManager gmm, uint offset, ref Vp9BackwardUpdates counts)
