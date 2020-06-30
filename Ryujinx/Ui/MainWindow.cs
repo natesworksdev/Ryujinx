@@ -179,6 +179,14 @@ namespace Ryujinx.Ui
             UpdateColumns();
             UpdateGameTable();
 
+            ConfigurationState.Instance.Ui.GameDirs.Event += (sender, args) =>
+            {
+                if (args.OldValue != args.NewValue)
+                {
+                    UpdateGameTable();
+                }
+            };
+
             Task.Run(RefreshFirmwareLabel);
 
             _statusBar.Hide();
