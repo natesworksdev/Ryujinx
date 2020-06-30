@@ -15,6 +15,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class Texture : IRange, IDisposable
     {
+        public static float DefaultUpscaleFactor = 2f;
+
         private GpuContext _context;
 
         private SizeInfo _sizeInfo;
@@ -28,6 +30,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Texture information.
         /// </summary>
         public TextureInfo Info { get; private set; }
+
+        /// <summary>
+        /// Host scale factor.
+        /// </summary>
+        public float ScaleFactor { get; private set; }
+
+        /// <summary>
+        /// Upscaling mode. Informs if a texture is scaled, or is eligible for scaling.
+        /// </summary>
+        public TextureScaleMode ScaleMode { get; private set; }
+
+        public bool Rescaled => ScaleFactor != 1.0f;
 
         private int _depth;
         private int _layers;
@@ -93,16 +107,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="firstLayer">The first layer of the texture, or 0 if the texture has no parent</param>
         /// <param name="firstLevel">The first mipmap level of the texture, or 0 if the texture has no parent</param>
         private Texture(
-            GpuContext  context,
-            TextureInfo info,
-            SizeInfo    sizeInfo,
-            int         firstLayer,
-            int         firstLevel)
+            GpuContext       context,
+            TextureInfo      info,
+            SizeInfo         sizeInfo,
+            int              firstLayer,
+            int              firstLevel,
+            float            scaleFactor,
+            TextureScaleMode scaleMode)
         {
             InitializeTexture(context, info, sizeInfo);
 
             _firstLayer = firstLayer;
             _firstLevel = firstLevel;
+
+            ScaleFactor = scaleFactor;
+            ScaleMode = scaleMode;
 
             _hasData = true;
         }
@@ -113,13 +132,22 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="context">GPU context that the texture belongs to</param>
         /// <param name="info">Texture information</param>
         /// <param name="sizeInfo">Size information of the texture</param>
-        public Texture(GpuContext context, TextureInfo info, SizeInfo sizeInfo)
+        public Texture(GpuContext context, TextureInfo info, SizeInfo sizeInfo, TextureScaleMode scaleMode)
         {
+            ScaleFactor = 1f; // Texture is first loaded at scale 1x.
+            ScaleMode = scaleMode;
+
             InitializeTexture(context, info, sizeInfo);
 
             TextureCreateInfo createInfo = TextureManager.GetCreateInfo(info, context.Capabilities);
 
-            HostTexture = _context.Renderer.CreateTexture(createInfo);
+            HostTexture = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
+
+            if (scaleMode == TextureScaleMode.Scaled)
+            {
+                SynchronizeMemory(); // Load the data and then scale it up.
+                SetScale(DefaultUpscaleFactor);
+            }
         }
 
         /// <summary>
@@ -162,7 +190,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 info,
                 sizeInfo,
                 _firstLayer + firstLayer,
-                _firstLevel + firstLevel);
+                _firstLevel + firstLevel,
+                ScaleFactor,
+                ScaleMode);
 
             TextureCreateInfo createInfo = TextureManager.GetCreateInfo(info, _context.Capabilities);
 
@@ -282,11 +312,59 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                ITexture newStorage = _context.Renderer.CreateTexture(createInfo);
+                ITexture newStorage = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
 
                 HostTexture.CopyTo(newStorage, 0, 0);
 
                 ReplaceStorage(newStorage);
+            }
+        }
+
+        public void SetScale(float scale)
+        {
+            if (ScaleFactor != scale)
+            {
+                TextureScaleMode newScaleMode = scale == 1f ? TextureScaleMode.Blacklisted : TextureScaleMode.Scaled;
+
+                Logger.PrintError(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.Target.ToString()} to ({ScaleFactor} to {scale}). ");
+                if (_viewStorage != this)
+                {
+                    Logger.PrintError(LogClass.Gpu, $"  We are a view. Rescaling the parent... ");
+                    _viewStorage.SetScale(scale);
+                }
+                else
+                {
+                    TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
+
+                    ScaleFactor = scale;
+
+                    ITexture newStorage = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
+
+                    if (Info.Target == Target.Texture2D)
+                    {
+                        HostTexture.CopyTo(newStorage, new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), new Extents2D(0, 0, newStorage.Width, newStorage.Height), true);
+                        Logger.PrintError(LogClass.Gpu, $"  Copy performed: {HostTexture.Width}x{HostTexture.Height} to {newStorage.Width}x{newStorage.Height}");
+                    }
+
+                    ReplaceStorage(newStorage);
+
+                    // All views must be recreated against the new storage.
+
+                    foreach (var view in _views)
+                    {
+                        Logger.PrintError(LogClass.Gpu, $"  Recreating view ${Info.Width}x${Info.Height} ${Info.Target.ToString()}.");
+                        view.ScaleFactor = scale;
+
+                        TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities);
+
+                        ITexture newView = HostTexture.CreateView(viewCreateInfo, view._firstLayer, view._firstLevel);
+
+                        view.ReplaceStorage(newView);
+
+                        view.ScaleMode = newScaleMode;
+                    }
+                }
+                ScaleMode = newScaleMode;
             }
         }
 
@@ -432,6 +510,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Flush()
         {
+            SetScale(1f);
             _context.PhysicalMemory.Write(Address, GetTextureDataFromGpu());
         }
 
@@ -445,6 +524,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>Host texture data</returns>
         private Span<byte> GetTextureDataFromGpu()
         {
+            SetScale(1f);
             Span<byte> data = HostTexture.GetData();
 
             if (Info.IsLinear)
@@ -1075,7 +1155,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // already deleted (views count is 0).
             if (_referenceCount == 0 && _views.Count == 0)
             {
-                DisposeTextures();
+                Dispose();
             }
         }
 
@@ -1088,8 +1168,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _arrayViewTexture?.Dispose();
             _arrayViewTexture = null;
-
-            Disposed?.Invoke(this);
         }
 
         /// <summary>
@@ -1098,6 +1176,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Dispose()
         {
             DisposeTextures();
+
+            Disposed?.Invoke(this);
         }
     }
 }

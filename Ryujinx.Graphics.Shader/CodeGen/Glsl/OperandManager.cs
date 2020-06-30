@@ -185,8 +185,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     {
                         switch (value & ~3)
                         {
-                            case AttributeConsts.PositionX: return "gl_FragCoord.x";
-                            case AttributeConsts.PositionY: return "gl_FragCoord.y";
+                            case AttributeConsts.PositionX: return "(gl_FragCoord.x / renderScale)";
+                            case AttributeConsts.PositionY: return "(gl_FragCoord.y / renderScale)";
                             case AttributeConsts.PositionZ: return "gl_FragCoord.z";
                             case AttributeConsts.PositionW: return "gl_FragCoord.w";
                         }

@@ -86,6 +86,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
+            if (context.Config.Stage == ShaderStage.Fragment)
+            {
+                DeclareRenderScale(context);
+
+                context.AppendLine();
+            }
+
             if (info.SBuffers.Count != 0)
             {
                 DeclareStorages(context, info);
@@ -217,6 +224,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 context.LeaveScope(";");
             }
+        }
+
+        private static void DeclareRenderScale(CodeGenContext context)
+        {
+            context.AppendLine("uniform float renderScale = 1.0;");
         }
 
         private static void DeclareStorages(CodeGenContext context, StructuredProgramInfo info)

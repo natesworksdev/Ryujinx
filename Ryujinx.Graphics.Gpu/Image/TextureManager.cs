@@ -39,6 +39,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly HashSet<Texture> _modified;
         private readonly HashSet<Texture> _modifiedLinear;
 
+        public float RtScale { get; private set; } = 1f;
+
         /// <summary>
         /// Constructs a new instance of the texture manager.
         /// </summary>
@@ -169,18 +171,87 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="index">The index of the color buffer to set (up to 8)</param>
         /// <param name="color">The color buffer texture</param>
-        public void SetRenderTargetColor(int index, Texture color)
+        public bool SetRenderTargetColor(int index, Texture color)
         {
+            bool changesScale = (color?.ScaleFactor ?? 1f) != (_rtColors[index]?.ScaleFactor ?? 1f);
             _rtColors[index] = color;
+            return changesScale;
+        }
+
+        public void UpdateRtScale(int singleUse)
+        {
+            bool mismatch = false;
+            float minScale = -1f;
+            float previousScale = -1f;
+
+            void considerTarget(Texture target)
+            {
+                if (target == null) return;
+                float scale = target.ScaleFactor;
+                if (previousScale == -1f)
+                {
+                    if (target.ScaleMode != TextureScaleMode.Eligible) minScale = scale;
+                    previousScale = scale;
+                }
+                else
+                {
+                    if (scale != previousScale)
+                    {
+                        previousScale = scale;
+                        if ((target.ScaleMode != TextureScaleMode.Eligible) && (scale < minScale || minScale == -1))
+                        {
+                            minScale = scale;
+                        }
+                        mismatch = true;
+                    }
+                }
+            }
+
+            if (singleUse != -1)
+            {
+                // If only one target is in use (by a clear, for example) the others do not need to be checked for mismatching scale.
+                considerTarget(_rtColors[singleUse]);
+            }
+            else
+            {
+                foreach (Texture color in _rtColors)
+                {
+                    considerTarget(color);
+                }
+            }
+
+            considerTarget(_rtDepthStencil);
+
+            if (minScale == -1)
+            {
+                // Scale has not yet been decided for the target texture - try upscaling it.
+                minScale = Texture.DefaultUpscaleFactor;
+                mismatch = true;
+            }
+
+            if (mismatch)
+            {
+                // We need to scale down these targets - they must all have scales that match.
+                foreach (Texture color in _rtColors)
+                {
+                    color?.SetScale(minScale);
+                }
+
+                _rtDepthStencil?.SetScale(minScale);
+            }
+
+            RtScale = minScale;
         }
 
         /// <summary>
         /// Sets the render target depth-stencil buffer.
         /// </summary>
         /// <param name="depthStencil">The depth-stencil buffer texture</param>
-        public void SetRenderTargetDepthStencil(Texture depthStencil)
+        public bool SetRenderTargetDepthStencil(Texture depthStencil)
         {
+            bool changesScale = (depthStencil?.ScaleFactor ?? 1f) != (_rtDepthStencil?.ScaleFactor ?? 1f);
             _rtDepthStencil = depthStencil;
+            return changesScale;
         }
 
         /// <summary>
@@ -267,7 +338,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="copyTexture">Copy texture to find or create</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(CopyTexture copyTexture)
+        public Texture FindOrCreateTexture(CopyTexture copyTexture, bool allowScaling = true)
         {
             ulong address = _context.MemoryManager.Translate(copyTexture.Address.Pack());
 
@@ -308,7 +379,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Target.Texture2D,
                 formatInfo);
 
-            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.IgnoreMs);
+            TextureSearchFlags flags = TextureSearchFlags.IgnoreMs;
+
+            if (allowScaling)
+            {
+                flags |= TextureSearchFlags.WithUpscale;
+            }
+
+            Texture texture = FindOrCreateTexture(info, flags);
 
             texture.SynchronizeMemory();
 
@@ -391,7 +469,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 target,
                 formatInfo);
 
-            Texture texture = FindOrCreateTexture(info);
+            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.WithUpscale);
 
             texture.SynchronizeMemory();
 
@@ -440,11 +518,37 @@ namespace Ryujinx.Graphics.Gpu.Image
                 target,
                 formatInfo);
 
-            Texture texture = FindOrCreateTexture(info);
+            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.WithUpscale);
 
             texture.SynchronizeMemory();
 
             return texture;
+        }
+
+        public bool IsUpscaleCompatible(TextureInfo info)
+        {
+            return (info.Target == Target.Texture2D || info.Target == Target.Texture2DArray) && info.Levels == 1 && !info.FormatInfo.IsCompressed && UpscaleSafeMode(info);
+        }
+
+        public bool UpscaleSafeMode(TextureInfo info)
+        {
+            // While upscaling works for all targets defined by IsUpscaleCompatible, we additionally blacklist targets here that
+            // may have undesirable results (upscaling blur textures) or simply waste GPU resources (upscaling texture atlas).
+
+            if (info.Width / 8 == info.Height / 8 && !(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
+            {
+                // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, texture atlas)
+                return false;
+            }
+
+            int aspect = (int)Math.Round((info.Width / (float)info.Height) * 9);
+            if (aspect == 16 && info.Height < 360)
+            {
+                // Targets that are roughly 16:9 can only be rescaled if they're equal to or above 360p. (excludes blur and bloom textures)
+                return false;
+            }
+
+            return true;
         }
 
         /// <summary>
@@ -456,6 +560,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         public Texture FindOrCreateTexture(TextureInfo info, TextureSearchFlags flags = TextureSearchFlags.None)
         {
             bool isSamplerTexture = (flags & TextureSearchFlags.Sampler) != 0;
+
+            bool isScalable = IsUpscaleCompatible(info);
+
+            TextureScaleMode scaleMode = TextureScaleMode.Blacklisted;
+            if (isScalable)
+            {
+                scaleMode = (flags & TextureSearchFlags.WithUpscale) != 0 ? TextureScaleMode.Scaled : TextureScaleMode.Eligible;
+            }
 
             // Try to find a perfect texture match, with the same address and parameters.
             int sameAddressOverlapsCount = _textures.FindOverlaps(info.Address, ref _textureOverlaps);
@@ -556,7 +668,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // No match, create a new texture.
             if (texture == null)
             {
-                texture = new Texture(_context, info, sizeInfo);
+                texture = new Texture(_context, info, sizeInfo, scaleMode);
 
                 // We need to synchronize before copying the old view data to the texture,
                 // otherwise the copied data would be overwritten by a future synchronization.
@@ -571,6 +683,15 @@ namespace Ryujinx.Graphics.Gpu.Image
                         TextureInfo overlapInfo = AdjustSizes(texture, overlap.Info, firstLevel);
 
                         TextureCreateInfo createInfo = GetCreateInfo(overlapInfo, _context.Capabilities);
+
+                        if (texture.ScaleFactor != overlap.ScaleFactor)
+                        {
+                            // A bit tricky, our new texture may need to contain an existing texture that is upscaled, but isn't itself. 
+                            // In that case, we prefer the higher scale only if our format is render-target-like, otherwise we scale the view down before copy.
+                            float preferredScale = IsUpscaleCompatible(info) ? Math.Max(texture.ScaleFactor, overlap.ScaleFactor) : 1f;
+                            texture.SetScale(preferredScale);
+                            overlap.SetScale(preferredScale);
+                        }
 
                         ITexture newView = texture.HostTexture.CreateView(createInfo, firstLayer, firstLevel);
 

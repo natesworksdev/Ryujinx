@@ -31,6 +31,8 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
+        private float _renderScale = 1f;
+
         private TextureBase _unit0Texture;
 
         private ClipOrigin _clipOrigin;
@@ -685,6 +687,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _program = (Program)program;
             _program.Bind();
+            SetRenderScale(_renderScale);
         }
 
         public void SetRasterizerDiscard(bool discard)
@@ -699,6 +702,15 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             _rasterizerDiscard = discard;
+        }
+
+        public void SetRenderScale(float scale)
+        {
+            _renderScale = scale;
+            if (_program != null && _program.RenderScaleUniform != -1)
+            {
+                GL.Uniform1(_program.RenderScaleUniform, scale);
+            }
         }
 
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMasks)
