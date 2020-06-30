@@ -321,7 +321,7 @@ namespace Ryujinx.Ui
 
         internal static void UpdateGameTable()
         {
-            if (_updatingGameTable)
+            if (_updatingGameTable || _gameLoaded)
             {
                 return;
             }
