@@ -137,17 +137,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             MBs = MbRows * MbCols;
         }
 
-        private bool AllocSegMap(int segMapSize)
+        private void AllocSegMap(int segMapSize)
         {
             int i;
 
             for (i = 0; i < Constants.NumPingPongBuffers; ++i)
             {
                 SegMapArray[i] = MemoryUtil.Allocate<byte>(segMapSize);
-                if (SegMapArray[i].IsNull)
-                {
-                    return true;
-                }
             }
             SegMapAllocSize = segMapSize;
 
@@ -157,8 +153,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
             CurrentFrameSegMap = SegMapArray[SegMapIdx];
             LastFrameSegMap = SegMapArray[PrevSegMapIdx];
-
-            return false;
         }
 
         private void FreeSegMap()
@@ -175,22 +169,11 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             LastFrameSegMap = ArrayPtr<byte>.Null;
         }
 
-        private bool DecAllocMi(int miSize)
+        private void DecAllocMi(int miSize)
         {
             Mip = MemoryUtil.Allocate<ModeInfo>(miSize);
-            if (Mip.IsNull)
-            {
-                return true;
-            }
-
             MiAllocSize = miSize;
             MiGridBase = MemoryUtil.Allocate<Ptr<ModeInfo>>(miSize);
-            if (MiGridBase.IsNull)
-            {
-                return true;
-            }
-
-            return false;
         }
 
         private void DecFreeMi()
@@ -212,28 +195,25 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             AboveSegContext = ArrayPtr<sbyte>.Null;
             MemoryUtil.Free(Lf.Lfm);
             Lf.Lfm = ArrayPtr<LoopFilterMask>.Null;
-            MemoryUtil.Free(PrevFrameMvs);
-            PrevFrameMvs = ArrayPtr<MvRef>.Null;
             MemoryUtil.Free(CurFrameMvs);
             CurFrameMvs = ArrayPtr<MvRef>.Null;
+            if (UsePrevFrameMvs)
+            {
+                MemoryUtil.Free(PrevFrameMvs);
+                PrevFrameMvs = ArrayPtr<MvRef>.Null;
+            }
         }
 
-        private bool AllocLoopFilter()
+        private void AllocLoopFilter()
         {
             MemoryUtil.Free(Lf.Lfm);
             // Each lfm holds bit masks for all the 8x8 blocks in a 64x64 region. The
             // stride and rows are rounded up / truncated to a multiple of 8.
             Lf.LfmStride = (MiCols + (Constants.MiBlockSize - 1)) >> 3;
             Lf.Lfm = MemoryUtil.Allocate<LoopFilterMask>(((MiRows + (Constants.MiBlockSize - 1)) >> 3) * Lf.LfmStride);
-            if (Lf.Lfm.IsNull)
-            {
-                return true;
-            }
-
-            return false;
         }
 
-        public bool AllocContextBuffers(int width, int height)
+        public void AllocContextBuffers(int width, int height)
         {
             int newMiSize;
 
@@ -242,56 +222,34 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             if (MiAllocSize < newMiSize)
             {
                 DecFreeMi();
-                if (DecAllocMi(newMiSize))
-                {
-                    goto Fail;
-                }
+                DecAllocMi(newMiSize);
             }
 
             if (SegMapAllocSize < MiRows * MiCols)
             {
                 // Create the segmentation map structure and set to 0.
                 FreeSegMap();
-                if (AllocSegMap(MiRows * MiCols))
-                {
-                    goto Fail;
-                }
+                AllocSegMap(MiRows * MiCols);
             }
 
             if (AboveContextAllocCols < MiCols)
             {
                 MemoryUtil.Free(AboveContext);
                 AboveContext = MemoryUtil.Allocate<sbyte>(2 * TileInfo.MiColsAlignedToSb(MiCols) * Constants.MaxMbPlane);
-                if (AboveContext.IsNull)
-                {
-                    goto Fail;
-                }
-
                 MemoryUtil.Free(AboveSegContext);
                 AboveSegContext = MemoryUtil.Allocate<sbyte>(TileInfo.MiColsAlignedToSb(MiCols));
-                if (AboveSegContext.IsNull)
-                {
-                    goto Fail;
-                }
-
                 AboveContextAllocCols = MiCols;
             }
 
-            if (AllocLoopFilter())
-            {
-                goto Fail;
-            }
+            AllocLoopFilter();
 
-            PrevFrameMvs = MemoryUtil.Allocate<MvRef>(MiRows * MiCols);
             CurFrameMvs = MemoryUtil.Allocate<MvRef>(MiRows * MiCols);
-
-            return false;
-
-        Fail:
-            // clear the mi_* values to force a realloc on resync
-            SetMbMi(0, 0);
-            FreeContextBuffers();
-            return true;
+            // Using the same size as the current frame is fine here,
+            // as this is never true when we have a resolution change.
+            if (UsePrevFrameMvs)
+            {
+                PrevFrameMvs = MemoryUtil.Allocate<MvRef>(MiRows * MiCols);
+            }
         }
 
         private unsafe void DecSetupMi()

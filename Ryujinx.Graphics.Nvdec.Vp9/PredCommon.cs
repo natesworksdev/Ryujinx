@@ -23,14 +23,12 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 else if (!xd.AboveMi.Value.HasSecondRef())
                 {
                     // One of two edges uses comp pred (2/3)
-                    ctx = 2 + (xd.AboveMi.Value.RefFrame[0] == cm.CompFixedRef ||
-                               !xd.AboveMi.Value.IsInterBlock() ? 1 : 0);
+                    ctx = 2 + (xd.AboveMi.Value.RefFrame[0] == cm.CompFixedRef || !xd.AboveMi.Value.IsInterBlock() ? 1 : 0);
                 }
                 else if (!xd.LeftMi.Value.HasSecondRef())
                 {
                     // One of two edges uses comp pred (2/3)
-                    ctx = 2 + (xd.LeftMi.Value.RefFrame[0] == cm.CompFixedRef ||
-                               !xd.LeftMi.Value.IsInterBlock() ? 1 : 0);
+                    ctx = 2 + (xd.LeftMi.Value.RefFrame[0] == cm.CompFixedRef || !xd.LeftMi.Value.IsInterBlock() ? 1 : 0);
                 }
                 else  // Both edges use comp pred (4)
                 {
@@ -377,7 +375,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 else
                 {
                     predContext = 3 * (edgeMi.RefFrame[0] == Constants.GoldenFrame ||
-                                        edgeMi.RefFrame[1] == Constants.GoldenFrame ? 1 : 0);
+                                       edgeMi.RefFrame[1] == Constants.GoldenFrame ? 1 : 0);
                 }
             }
             else

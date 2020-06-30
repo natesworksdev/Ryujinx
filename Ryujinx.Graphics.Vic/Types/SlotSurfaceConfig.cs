@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Ryujinx.Graphics.Vic.Types
+﻿namespace Ryujinx.Graphics.Vic.Types
 {
     struct SlotSurfaceConfig
     {
