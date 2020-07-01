@@ -1,4 +1,5 @@
 using ARMeilleure.Translation.PTC;
+using LibHac.Loader;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
@@ -8,6 +9,7 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
+using System.Text;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -32,7 +34,7 @@ namespace Ryujinx.HLE.HOS
 
             int codePagesCount = codeSize / KMemoryManager.PageSize;
 
-            ulong codeBaseAddress = (kip.Header.Flags & 0x10) != 0 ? 0x8000000UL : 0x200000UL;
+            ulong codeBaseAddress = kip.Header.Flags.HasFlag(KipHeader.Flag.ProcessAddressSpace64Bit) ? 0x8000000UL : 0x200000UL;
 
             ulong codeAddress = codeBaseAddress + (ulong)kip.TextOffset;
 
@@ -45,27 +47,27 @@ namespace Ryujinx.HLE.HOS
                 mmuFlags |= 0x20;
             }
 
-            if ((kip.Header.Flags & 0x10) != 0)
+            if (kip.Header.Flags.HasFlag(KipHeader.Flag.ProcessAddressSpace64Bit))
             {
                 mmuFlags |= (int)AddressSpaceType.Addr39Bits << 1;
             }
 
-            if ((kip.Header.Flags & 0x08) != 0)
+            if (kip.Header.Flags.HasFlag(KipHeader.Flag.Is64BitInstruction))
             {
                 mmuFlags |= 1;
             }
 
             ProcessCreationInfo creationInfo = new ProcessCreationInfo(
-                kip.Header.Name,
-                kip.Header.ProcessCategory,
-                kip.Header.TitleId,
+                Encoding.ASCII.GetString(kip.Header.Name),
+                kip.Header.Version,
+                kip.Header.ProgramId,
                 codeAddress,
                 codePagesCount,
                 mmuFlags,
                 0,
                 0);
 
-            MemoryRegion memoryRegion = (kip.Header.Flags & 0x20) != 0
+            MemoryRegion memoryRegion = kip.Header.Flags.HasFlag(KipHeader.Flag.UseSecureMemory)
                 ? MemoryRegion.Service
                 : MemoryRegion.Application;
 
@@ -105,9 +107,9 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
-            process.DefaultCpuCore = kip.Header.DefaultCore;
+            process.DefaultCpuCore = kip.Header.IdealCoreId;
 
-            result = process.Start(kip.Header.MainThreadPriority, (ulong)kip.Header.Sections[1].Attribute);
+            result = process.Start(kip.Header.Priority, (ulong)kip.Header.StackSize);
 
             if (result != KernelResult.Success)
             {
