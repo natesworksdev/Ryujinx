@@ -8,6 +8,7 @@ using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE;
+using Ryujinx.RyuTas;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Collections.Generic;
@@ -34,6 +35,8 @@ namespace Ryujinx.Ui
         private bool   _mousePressed;
 
         private bool _toggleFullscreen;
+
+        private TasRecorder _tasRecorder;
 
         private readonly long _ticksPerFrame;
 
@@ -172,6 +175,8 @@ namespace Ryujinx.Ui
 
             IsActive = true;
 
+            _tasRecorder = new TasRecorder();
+
             Gtk.Window parent = this.Toplevel as Gtk.Window;
 
             parent.FocusInEvent  += Parent_FocusInEvent;
@@ -284,6 +289,8 @@ namespace Ryujinx.Ui
             {
                 return;
             }
+
+            Console.WriteLine(_tasRecorder.GetRecording());
 
             IsStopped = true;
             IsActive  = false;
@@ -402,6 +409,8 @@ namespace Ryujinx.Ui
                 JoystickPosition rightJoystick = new JoystickPosition();
                 KeyboardInput?   hidKeyboard   = null;
 
+                TASInstruction currentInst = new TASInstruction();
+
                 int leftJoystickDx  = 0;
                 int leftJoystickDy  = 0;
                 int rightJoystickDx = 0;
@@ -414,10 +423,28 @@ namespace Ryujinx.Ui
                         // Keyboard Input
                         KeyboardController keyboardController = new KeyboardController(keyboardConfig);
 
-                        currentButton = keyboardController.GetButtons();
+                        if (ConfigurationState.Instance.TAS.TasRecordingEnabled)
+                        {
+                            currentButton = keyboardController.GetButtons(out currentInst);
+                        }
+                        else
+                        {
+                            currentButton = keyboardController.GetButtons();
+                        }
+
 
                         (leftJoystickDx,  leftJoystickDy)  = keyboardController.GetLeftStick();
                         (rightJoystickDx, rightJoystickDy) = keyboardController.GetRightStick();
+
+                        if (ConfigurationState.Instance.TAS.TasRecordingEnabled)
+                        {
+                            currentInst.LX = leftJoystickDx;
+                            currentInst.LY = leftJoystickDy;
+                            currentInst.RX = rightJoystickDx;
+                            currentInst.RY = rightJoystickDy;
+                            _tasRecorder.AppendInstruction(currentInst);
+                        }
+                        
 
                         leftJoystick = new JoystickPosition
                         {

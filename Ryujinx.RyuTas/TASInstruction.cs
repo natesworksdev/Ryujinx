@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Ryujinx.RyuTas
 {
-    class TASInstruction
+    public class TASInstruction
     {
         public bool A { get; set; }
         public bool B { get; set; }
@@ -26,6 +26,11 @@ namespace Ryujinx.RyuTas
         public bool R { get; set; }
         public bool ZL { get; set; }
         public bool ZR { get; set; }
+
+        public bool SlLeft { get; set; }
+        public bool SrLeft { get; set; }
+        public bool SlRight { get; set; }
+        public bool SrRight { get; set; }
 
         public int LX { get; set; }
         public int LY { get; set; }

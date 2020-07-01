@@ -2104,18 +2104,36 @@
                                     <property name="margin_left">10</property>
                                     <property name="margin_right">10</property>
                                     <property name="orientation">vertical</property>
-								    <child>
-                                      <object class="GtkCheckButton" id="_tasEnable">
-                                        <property name="label" translatable="yes">Enable TAS Mode</property>
-                                        <property name="visible">True</property>
-                                        <property name="can_focus">True</property>
-                                        <property name="receives_default">False</property>
-                                        <property name="tooltip_text" translatable="yes">Enables the built-in TAS Editing mode</property>
-                                        <property name="halign">start</property>
-                                        <property name="margin_top">5</property>
-                                        <property name="margin_bottom">5</property>
-                                        <property name="draw_indicator">True</property>
-                                      </object>
+									<child>
+										<object class="GtkCheckButton" id="_tasEnable">
+											<property name="label" translatable="yes">Enable TAS Mode</property>
+											<property name="visible">True</property>
+											<property name="can_focus">True</property>
+											<property name="receives_default">False</property>
+											<property name="tooltip_text" translatable="yes">Enables the built-in TAS Editing mode</property>
+											<property name="halign">start</property>
+											<property name="margin_top">5</property>
+											<property name="margin_bottom">5</property>
+											<property name="draw_indicator">True</property>
+										</object>
+										<packing>
+											<property name="expand">False</property>
+											<property name="fill">True</property>
+											<property name="position">8</property>
+										</packing>
+									</child>
+									<child>
+										<object class="GtkCheckButton" id="_recordingEnabled">
+											<property name="label" translatable="yes">Enable Movie Recording Mode</property>
+											<property name="visible">True</property>
+											<property name="can_focus">True</property>
+											<property name="receives_default">False</property>
+											<property name="tooltip_text" translatable="yes">Records all your inputs into a .RyuTas file</property>
+											<property name="halign">start</property>
+											<property name="margin_top">5</property>
+											<property name="margin_bottom">5</property>
+											<property name="draw_indicator">True</property>
+										</object>
                                       <packing>
                                         <property name="expand">False</property>
                                         <property name="fill">True</property>

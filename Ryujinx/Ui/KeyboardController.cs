@@ -2,6 +2,7 @@
 using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.RyuTas;
 
 namespace Ryujinx.Ui
 {
@@ -32,9 +33,47 @@ namespace Ryujinx.Ui
 
         public ControllerKeys GetButtons()
         {
+            return GetButton();
+        }
+
+        public ControllerKeys GetButtons(out TASInstruction inst)
+        {
+            inst = new TASInstruction();
+
+            KeyboardState keyboard = GetKeyboardState(_config.Index);
+
+            if (keyboard[(Key)_config.LeftJoycon.StickButton]) inst.LStick = true;
+            if (keyboard[(Key)_config.LeftJoycon.DPadUp])      inst.DUp = true;
+            if (keyboard[(Key)_config.LeftJoycon.DPadDown])    inst.DDown = true;
+            if (keyboard[(Key)_config.LeftJoycon.DPadLeft])    inst.DLeft = true;
+            if (keyboard[(Key)_config.LeftJoycon.DPadRight])   inst.DRight = true;
+            if (keyboard[(Key)_config.LeftJoycon.ButtonMinus]) inst.Minus = true;
+            if (keyboard[(Key)_config.LeftJoycon.ButtonL])     inst.L = true;
+            if (keyboard[(Key)_config.LeftJoycon.ButtonZl])    inst.R = true;
+            if (keyboard[(Key)_config.LeftJoycon.ButtonSl])    inst.SlLeft = true;
+            if (keyboard[(Key)_config.LeftJoycon.ButtonSr])    inst.SrLeft = true;
+
+            if (keyboard[(Key)_config.RightJoycon.StickButton]) inst.LStick = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonA])     inst.DUp = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonB])     inst.DDown = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonX])     inst.DLeft = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonY])     inst.DRight = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonPlus])  inst.Minus = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonR])     inst.L = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonZr])    inst.R = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonSl])    inst.SlRight = true;
+            if (keyboard[(Key)_config.RightJoycon.ButtonSr])    inst.SrRight = true;
+
+            return GetButton();
+        }
+
+        private ControllerKeys GetButton()
+        {
             KeyboardState keyboard = GetKeyboardState(_config.Index);
 
             ControllerKeys buttons = 0;
+
+            
 
             if (keyboard[(Key)_config.LeftJoycon.StickButton]) buttons |= ControllerKeys.LStick;
             if (keyboard[(Key)_config.LeftJoycon.DPadUp])      buttons |= ControllerKeys.DpadUp;

@@ -168,6 +168,15 @@ namespace Ryujinx.Configuration
         public List<ControllerConfig> ControllerConfig { get; set; }
 
         /// <summary>
+        /// is tas mode enabled? let's find out
+        /// </summary>
+        public bool TasModeEnabled { get; set; }
+        /// <summary>
+        /// how about recording? who knows?
+        /// </summary>
+        public bool TasRecordingEnabled { get; set; }
+
+        /// <summary>
         /// Loads a configuration file from disk
         /// </summary>
         /// <param name="path">The path to the JSON configuration file</param>

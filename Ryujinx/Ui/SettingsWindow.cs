@@ -40,6 +40,7 @@ namespace Ryujinx.Ui
         [GUI] CheckButton  _ignoreToggle;
         [GUI] CheckButton  _directKeyboardAccess;
         [GUI] CheckButton  _tasEnable;
+        [GUI] CheckButton  _recordingEnabled;
         [GUI] ComboBoxText _systemLanguageSelect;
         [GUI] ComboBoxText _systemRegionSelect;
         [GUI] ComboBoxText _systemTimeZoneSelect;
@@ -177,6 +178,16 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Ui.EnableCustomTheme)
             {
                 _custThemeToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.TAS.TasModeEnabled)
+            {
+                _tasEnable.Click();
+            }
+
+            if (ConfigurationState.Instance.TAS.TasRecordingEnabled)
+            {
+                _recordingEnabled.Click();
             }
 
             TimeZoneContentManager timeZoneContentManager = new TimeZoneContentManager();
@@ -394,6 +405,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
             ConfigurationState.Instance.TAS.TasModeEnabled.Value               = _tasEnable.Active;
+            ConfigurationState.Instance.TAS.TasRecordingEnabled.Value          = _recordingEnabled.Active;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value                    = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
             ConfigurationState.Instance.System.TimeZone.Value                  = _systemTimeZoneSelect.ActiveId;

@@ -263,9 +263,12 @@ namespace Ryujinx.Configuration
         {
             public ReactiveObject<bool> TasModeEnabled { get; private set; }
 
+            public ReactiveObject<bool> TasRecordingEnabled { get; private set; }
+
             public TASSection()
             {
                 TasModeEnabled = new ReactiveObject<bool>();
+                TasRecordingEnabled = new ReactiveObject<bool>();
             }
         }
 
@@ -381,7 +384,10 @@ namespace Ryujinx.Configuration
                 CustomThemePath           = Ui.CustomThemePath,
                 EnableKeyboard            = Hid.EnableKeyboard,
                 KeyboardConfig            = keyboardConfigList,
-                ControllerConfig          = controllerConfigList
+                ControllerConfig          = controllerConfigList,
+                TasRecordingEnabled = TAS.TasRecordingEnabled,
+                TasModeEnabled = TAS.TasModeEnabled,
+
             };
 
             return configurationFile;
@@ -426,6 +432,8 @@ namespace Ryujinx.Configuration
             Ui.EnableCustomTheme.Value             = false;
             Ui.CustomThemePath.Value               = "";
             Hid.EnableKeyboard.Value               = false;
+            TAS.TasRecordingEnabled.Value          = false;
+            TAS.TasModeEnabled.Value               = false;
 
             Hid.InputConfig.Value = new List<InputConfig>
             {
@@ -652,6 +660,8 @@ namespace Ryujinx.Configuration
             Ui.CustomThemePath.Value               = configurationFileFormat.CustomThemePath;
             Hid.EnableKeyboard.Value               = configurationFileFormat.EnableKeyboard;
             Hid.InputConfig.Value                  = inputConfig;
+            TAS.TasRecordingEnabled.Value          = configurationFileFormat.TasModeEnabled;
+            TAS.TasModeEnabled.Value               = configurationFileFormat.TasRecordingEnabled;
 
             if (configurationFileUpdated)
             {
