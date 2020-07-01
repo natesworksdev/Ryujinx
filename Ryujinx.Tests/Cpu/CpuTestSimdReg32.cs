@@ -234,7 +234,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Explicit]
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
-        public void Vadd_f32([Values(0u)]    uint rd,
+        public void Vadd_f32([Values(0u)] uint rd,
                              [Values(0u, 1u)] uint rn,
                              [Values(0u, 2u)] uint rm,
                              [ValueSource("_2S_F_")] ulong z0,

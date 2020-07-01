@@ -9,21 +9,33 @@ namespace Ryujinx.Tests.Cpu
     public sealed class CpuTestSimdShImm32 : CpuTest32
     {
 #if SimdShImm32
+
+#region "ValueSource (Opcodes)"
+        private static uint[] _Vsra_Vshr_()
+        {
+            return new uint[]
+            {
+                0xf2800110u, // VORR.I32 D0, #0 (immediate value changes it to SRA)
+                0xf2800010u  // VMOV.I32 D0, #0 (immediate value changes it to SHR)
+            };
+        }
+#endregion
+
         private const int RndCnt = 2;
 
         [Test, Pairwise]
-        public void Vrshr_Vshr_Imm([Values(0u)] uint rd,
-                             [Values(2u, 0u)] uint rm,
-                             [Values(0u, 1u, 2u, 3u)] uint size,
-                             [Random(RndCnt), Values(0u)] uint shiftImm,
-                             [Random(RndCnt)] ulong z,
-                             [Random(RndCnt)] ulong a,
-                             [Random(RndCnt)] ulong b,
-                             [Values] bool u,
-                             [Values] bool q,
-                             [Values] bool round)
+        public void Vsra_Vrshr_Vshr_Imm([ValueSource("_Vsra_Vshr_")] uint opcode,
+                                        [Values(0u)] uint rd,
+                                        [Values(2u, 0u)] uint rm,
+                                        [Values(0u, 1u, 2u, 3u)] uint size,
+                                        [Random(RndCnt), Values(0u)] uint shiftImm,
+                                        [Random(RndCnt)] ulong z,
+                                        [Random(RndCnt)] ulong a,
+                                        [Random(RndCnt)] ulong b,
+                                        [Values] bool u,
+                                        [Values] bool q,
+                                        [Values] bool round)
         {
-            uint opcode = 0xf2800010u; // VMOV.I32 D0, #0 (immediate value changes it into SHR)
             if (q)
             {
                 opcode |= 1 << 6;
@@ -31,9 +43,10 @@ namespace Ryujinx.Tests.Cpu
                 rd <<= 1;
             }
 
-            if (round)
+            // TODO: Remove "(opcode & 0x100u) == 0" once we have VRSRA implemented.
+            if (round && (opcode & 0x100u) == 0)
             {
-                opcode |= 1 << 9; // Turn into VRSHR
+                opcode |= 1 << 9;
             }
 
             if (u)

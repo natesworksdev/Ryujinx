@@ -128,7 +128,7 @@ namespace ARMeilleure.Instructions
 
             EmitVectorUnaryNarrowOp32(context, (op1) => context.ShiftRightUI(op1, Const(shift)));
         }
-        
+
         public static void Vsra(ArmEmitterContext context)
         {
             OpCode32SimdShImm op = (OpCode32SimdShImm)context.CurrOp;
@@ -139,12 +139,9 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorImmBinaryQdQmOpZx32(context, (op1, op2) =>
                 {
-                    if (shift > maxShift)
-                    {
-                        return Const(op2.Type, 0);
-                    }
+                    Operand shiftRes = shift > maxShift ? Const(op2.Type, 0) : context.ShiftRightUI(op2, Const(shift));
 
-                    return context.Add(op1, context.ShiftRightUI(op2, Const(shift)));
+                    return context.Add(op1, shiftRes);
                 });
             }
             else
