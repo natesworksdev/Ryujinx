@@ -29,8 +29,6 @@ namespace Ryujinx.HLE.Loaders.Executables
         public int Version { get; }
         public string Name { get; }
 
-
-
         public KipExecutable(IStorage inStorage)
         {
             KipReader reader = new KipReader();
