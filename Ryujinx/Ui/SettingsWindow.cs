@@ -196,9 +196,9 @@ namespace Ryujinx.Ui
 
             _audioBackendSelect.Append(AudioBackend.Dummy.ToString(), AudioBackend.Dummy.ToString());
             if (SoundIoAudioOut.IsSupported)
-                _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), AudioBackend.SoundIo.ToString());
+                _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
             if (OpenALAudioOut.IsSupported)
-                _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), AudioBackend.OpenAl.ToString());
+                _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
