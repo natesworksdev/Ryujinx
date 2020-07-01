@@ -59,6 +59,8 @@ namespace Ryujinx.Ui
 
             _device = device;
 
+            _tasRecorder = new TasRecorder();
+
             this.Initialized  += GLRenderer_Initialized;
             this.Destroyed    += GLRenderer_Destroyed;
             this.ShuttingDown += GLRenderer_ShuttingDown;
@@ -175,8 +177,6 @@ namespace Ryujinx.Ui
 
             IsActive = true;
 
-            _tasRecorder = new TasRecorder();
-
             Gtk.Window parent = this.Toplevel as Gtk.Window;
 
             parent.FocusInEvent  += Parent_FocusInEvent;
@@ -290,7 +290,7 @@ namespace Ryujinx.Ui
                 return;
             }
 
-            Console.WriteLine(_tasRecorder.GetRecording());
+            Console.WriteLine(_tasRecorder.GetRecording().Count);
 
             IsStopped = true;
             IsActive  = false;
@@ -426,11 +426,14 @@ namespace Ryujinx.Ui
                         if (ConfigurationState.Instance.TAS.TasRecordingEnabled)
                         {
                             currentButton = keyboardController.GetButtons(out currentInst);
+                            Console.WriteLine(_tasRecorder.GetRecording().Count);
                         }
                         else
                         {
                             currentButton = keyboardController.GetButtons();
                         }
+
+                        
 
 
                         (leftJoystickDx,  leftJoystickDy)  = keyboardController.GetLeftStick();
