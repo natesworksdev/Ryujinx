@@ -939,7 +939,7 @@ namespace ARMeilleure.Decoders
             SetA32("111100100x10xxxxxxxx1101xxx0xxxx", InstName.Vsub,     InstEmit32.Vsub_V,   typeof(OpCode32SimdReg));
             SetA32("111100111x11xxxxxxxx10xxxxx0xxxx", InstName.Vtbl,     InstEmit32.Vtbl,     typeof(OpCode32SimdTbl));
             SetA32("111100111x11<<10xxxx00001xx0xxxx", InstName.Vtrn,     InstEmit32.Vtrn,     typeof(OpCode32SimdCmpZ));
-            SetA32("111100100xxxxxxxxxxx1000xxx1xxxx", InstName.Vtst,     InstEmit32.Vtst,     typeof(OpCode32SimdBinary));
+            SetA32("111100100x<<xxxxxxxx1000xxx1xxxx", InstName.Vtst,     InstEmit32.Vtst,     typeof(OpCode32SimdReg));
             SetA32("111100111x11<<10xxxx00010xx0xxxx", InstName.Vuzp,     InstEmit32.Vuzp,     typeof(OpCode32SimdCmpZ));
             SetA32("111100111x11<<10xxxx00011xx0xxxx", InstName.Vzip,     InstEmit32.Vzip,     typeof(OpCode32SimdCmpZ));
 #endregion

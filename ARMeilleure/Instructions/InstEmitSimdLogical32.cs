@@ -22,12 +22,12 @@ namespace ARMeilleure.Instructions
                 EmitVectorBinaryOpZx32(context, (op1, op2) => context.BitwiseAnd(op1, op2));
             }
         }
-        
+
         public static void Vbic_I(ArmEmitterContext context)
         {
             if (Optimizations.UseSse2)
             {
-                EmitVectorBinaryOpF32(context, Intrinsic.X86Pandn, Intrinsic.X86Pandn);
+                EmitVectorBinaryOpSimd32(context, (n, m) => context.AddIntrinsic(Intrinsic.X86Pandn, m, n));
             }
             else
             {
@@ -57,14 +57,14 @@ namespace ARMeilleure.Instructions
                 for (int elem = 0; elem < 2; elem++)
                 {
                     Operand de = EmitVectorExtractZx(context, op.Qd, elem, 3);
-                    
+
                     res = EmitVectorInsert(context, res, context.BitwiseAnd(de, context.BitwiseNot(imm)), elem, 3);
                 }
             }
             else
             {
                 Operand de = EmitVectorExtractZx(context, op.Qd, op.Vd & 1, 3);
-                
+
                 res = EmitVectorInsert(context, res, context.BitwiseAnd(de, context.BitwiseNot(imm)), op.Vd & 1, 3);
             }
 
@@ -162,13 +162,13 @@ namespace ARMeilleure.Instructions
 
             context.Copy(GetVecA32(op.Qd), res);
         }
-        
+
         public static void Vtst(ArmEmitterContext context)
         {
             EmitVectorBinaryOpZx32(context, (op1, op2) =>
             {
-                Operand isZero = context.ICompareEqual(context.BitwiseAnd(op1, op2), Const(0L));
-                return context.ConditionalSelect(isZero, Const(0L), Const(-1L));
+                Operand isZero = context.ICompareEqual(context.BitwiseAnd(op1, op2), Const(0));
+                return context.ConditionalSelect(isZero, Const(0), Const(-1));
             });
         }
 
