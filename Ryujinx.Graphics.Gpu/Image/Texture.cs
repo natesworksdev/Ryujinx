@@ -15,8 +15,6 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class Texture : IRange, IDisposable
     {
-        public static float DefaultUpscaleFactor = 2f;
-
         private GpuContext _context;
 
         private SizeInfo _sizeInfo;
@@ -41,12 +39,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public TextureScaleMode ScaleMode { get; private set; }
 
-        public bool Rescaled => ScaleFactor != 1.0f;
-
         private int _depth;
         private int _layers;
-        private readonly int _firstLayer;
-        private readonly int _firstLevel;
+        private int _firstLayer;
+        private int _firstLevel;
 
         private bool _hasData;
 
@@ -146,7 +142,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (scaleMode == TextureScaleMode.Scaled)
             {
                 SynchronizeMemory(); // Load the data and then scale it up.
-                SetScale(DefaultUpscaleFactor);
+                SetScale(GraphicsConfig.ResScale);
             }
         }
 
@@ -320,51 +316,121 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        public void BlacklistScale()
+        {
+            ScaleMode = TextureScaleMode.Blacklisted;
+            SetScale(1f);
+        }
+
+        public void PropagateScale(Texture other)
+        {
+            if (other.ScaleMode == TextureScaleMode.Blacklisted || ScaleMode == TextureScaleMode.Blacklisted)
+            {
+                BlacklistScale();
+                other.BlacklistScale();
+            }
+            else
+            {
+                float sharedScale = Math.Max(ScaleFactor, other.ScaleFactor);
+                SetScale(sharedScale);
+                other.SetScale(sharedScale);
+            }
+        }
+
+        private void CopyArrayScaled(ITexture target)
+        {
+            TextureInfo viewInfo = new TextureInfo(
+                Info.Address,
+                Info.Width,
+                Info.Height,
+                1,
+                Info.Levels,
+                Info.SamplesInX,
+                Info.SamplesInY,
+                Info.Stride,
+                Info.IsLinear,
+                Info.GobBlocksInY,
+                Info.GobBlocksInZ,
+                Info.GobBlocksInTileX,
+                Target.Texture2D,
+                Info.FormatInfo,
+                Info.DepthStencilMode,
+                Info.SwizzleR,
+                Info.SwizzleG,
+                Info.SwizzleB,
+                Info.SwizzleA);
+
+            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(viewInfo, _context.Capabilities);
+
+            for (int i = 0; i < Info.DepthOrLayers; i++)
+            {
+                ITexture from = HostTexture.CreateView(createInfo, i, 0);
+                ITexture to = target.CreateView(createInfo, i, 0);
+
+                from.CopyTo(to, new Extents2D(0, 0, from.Width, from.Height), new Extents2D(0, 0, to.Width, to.Height), true);
+
+                from.Dispose();
+                to.Dispose();
+            }
+        }
+
         public void SetScale(float scale)
         {
+            TextureScaleMode newScaleMode = ScaleMode == TextureScaleMode.Blacklisted ? ScaleMode : TextureScaleMode.Scaled;
+
+            if (_viewStorage != this)
+            {
+                _viewStorage.ScaleMode = newScaleMode;
+                _viewStorage.SetScale(scale);
+                return;
+            }
+
             if (ScaleFactor != scale)
             {
-                TextureScaleMode newScaleMode = scale == 1f ? TextureScaleMode.Blacklisted : TextureScaleMode.Scaled;
+                Logger.PrintInfo(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.Target.ToString()} to ({ScaleFactor} to {scale}). ");
+                TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
 
-                Logger.PrintError(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.Target.ToString()} to ({ScaleFactor} to {scale}). ");
-                if (_viewStorage != this)
+                ScaleFactor = scale;
+
+                ITexture newStorage = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
+
+                if (Info.Target == Target.Texture2DArray)
                 {
-                    Logger.PrintError(LogClass.Gpu, $"  We are a view. Rescaling the parent... ");
-                    _viewStorage.SetScale(scale);
+                    CopyArrayScaled(newStorage);
                 }
                 else
                 {
-                    TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
-
-                    ScaleFactor = scale;
-
-                    ITexture newStorage = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
-
-                    if (Info.Target == Target.Texture2D)
-                    {
-                        HostTexture.CopyTo(newStorage, new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), new Extents2D(0, 0, newStorage.Width, newStorage.Height), true);
-                        Logger.PrintError(LogClass.Gpu, $"  Copy performed: {HostTexture.Width}x{HostTexture.Height} to {newStorage.Width}x{newStorage.Height}");
-                    }
-
-                    ReplaceStorage(newStorage);
-
-                    // All views must be recreated against the new storage.
-
-                    foreach (var view in _views)
-                    {
-                        Logger.PrintError(LogClass.Gpu, $"  Recreating view ${Info.Width}x${Info.Height} ${Info.Target.ToString()}.");
-                        view.ScaleFactor = scale;
-
-                        TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities);
-
-                        ITexture newView = HostTexture.CreateView(viewCreateInfo, view._firstLayer, view._firstLevel);
-
-                        view.ReplaceStorage(newView);
-
-                        view.ScaleMode = newScaleMode;
-                    }
+                    HostTexture.CopyTo(newStorage, new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), new Extents2D(0, 0, newStorage.Width, newStorage.Height), true);
                 }
+                Logger.PrintInfo(LogClass.Gpu, $"  Copy performed: {HostTexture.Width}x{HostTexture.Height} to {newStorage.Width}x{newStorage.Height}");
+
+                ReplaceStorage(newStorage);
+
+                // All views must be recreated against the new storage.
+
+                foreach (var view in _views)
+                {
+                    Logger.PrintInfo(LogClass.Gpu, $"  Recreating view ${Info.Width}x${Info.Height} ${Info.Target.ToString()}.");
+                    view.ScaleFactor = scale;
+
+                    TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities);
+
+                    ITexture newView = HostTexture.CreateView(viewCreateInfo, view._firstLayer - _firstLayer, view._firstLevel - _firstLevel);
+
+                    view.ReplaceStorage(newView);
+
+                    view.ScaleMode = newScaleMode;
+                }
+            }
+
+            if (ScaleMode != newScaleMode)
+            {
                 ScaleMode = newScaleMode;
+
+                foreach (var view in _views)
+                {
+                    view.ScaleMode = newScaleMode;
+                }
             }
         }
 
@@ -510,7 +576,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Flush()
         {
-            SetScale(1f);
+            BlacklistScale();
             _context.PhysicalMemory.Write(Address, GetTextureDataFromGpu());
         }
 
@@ -524,7 +590,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>Host texture data</returns>
         private Span<byte> GetTextureDataFromGpu()
         {
-            SetScale(1f);
+            BlacklistScale();
             Span<byte> data = HostTexture.GetData();
 
             if (Info.IsLinear)
@@ -1060,10 +1126,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="parent">The parent texture</param>
         /// <param name="info">The new view texture information</param>
         /// <param name="hostTexture">The new host texture</param>
-        public void ReplaceView(Texture parent, TextureInfo info, ITexture hostTexture)
+        public void ReplaceView(Texture parent, TextureInfo info, ITexture hostTexture, int firstLayer, int firstLevel)
         {
             ReplaceStorage(hostTexture);
 
+            _firstLayer = parent._firstLayer + firstLayer;
+            _firstLevel = parent._firstLevel + firstLevel;
             parent._viewStorage.AddView(this);
 
             SetInfo(info);

@@ -173,37 +173,38 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="color">The color buffer texture</param>
         public bool SetRenderTargetColor(int index, Texture color)
         {
-            bool changesScale = (color?.ScaleFactor ?? 1f) != (_rtColors[index]?.ScaleFactor ?? 1f);
+            bool bindChanged = (color == null) != (_rtColors[index] == null);
+            bool changesScale = bindChanged || (color != null && RtScale != color.ScaleFactor);
             _rtColors[index] = color;
-            return changesScale;
+            return changesScale || (color?.ScaleMode != TextureScaleMode.Blacklisted && color?.ScaleFactor != GraphicsConfig.ResScale);
         }
 
         public void UpdateRtScale(int singleUse)
         {
+            // Make sure all scales for render targets are at the highest they should be. Blacklisted targets should propagate their scale to the other targets.
             bool mismatch = false;
-            float minScale = -1f;
-            float previousScale = -1f;
+            bool blacklisted = false;
+            bool hasUpscaled = false;
+            float targetScale = GraphicsConfig.ResScale;
 
             void considerTarget(Texture target)
             {
                 if (target == null) return;
                 float scale = target.ScaleFactor;
-                if (previousScale == -1f)
+
+                switch (target.ScaleMode)
                 {
-                    if (target.ScaleMode != TextureScaleMode.Eligible) minScale = scale;
-                    previousScale = scale;
-                }
-                else
-                {
-                    if (scale != previousScale)
-                    {
-                        previousScale = scale;
-                        if ((target.ScaleMode != TextureScaleMode.Eligible) && (scale < minScale || minScale == -1))
-                        {
-                            minScale = scale;
-                        }
-                        mismatch = true;
-                    }
+                    case TextureScaleMode.Blacklisted:
+                        mismatch |= (scale != targetScale);
+                        blacklisted = true;
+                        break;
+                    case TextureScaleMode.Eligible:
+                        mismatch = true; // We must make a decision.
+                        break;
+                    case TextureScaleMode.Scaled:
+                        hasUpscaled = true;
+                        mismatch |= (scale != targetScale); // If the target scale has changed, reset the scale for all targets.
+                        break;
                 }
             }
 
@@ -222,25 +223,38 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             considerTarget(_rtDepthStencil);
 
-            if (minScale == -1)
+            mismatch |= blacklisted && hasUpscaled;
+
+            if (blacklisted)
             {
-                // Scale has not yet been decided for the target texture - try upscaling it.
-                minScale = Texture.DefaultUpscaleFactor;
-                mismatch = true;
+                targetScale = 1f;
             }
 
             if (mismatch)
             {
-                // We need to scale down these targets - they must all have scales that match.
-                foreach (Texture color in _rtColors)
+                if (blacklisted)
                 {
-                    color?.SetScale(minScale);
-                }
+                    // Propagate the blacklisted state to the other textures.
+                    foreach (Texture color in _rtColors)
+                    {
+                        color?.BlacklistScale();
+                    }
 
-                _rtDepthStencil?.SetScale(minScale);
+                    _rtDepthStencil?.BlacklistScale();
+                }
+                else
+                {
+                    // Set the scale of the other textures.
+                    foreach (Texture color in _rtColors)
+                    {
+                        color?.SetScale(targetScale);
+                    }
+
+                    _rtDepthStencil?.SetScale(targetScale);
+                }
             }
 
-            RtScale = minScale;
+            RtScale = targetScale;
         }
 
         /// <summary>
@@ -249,9 +263,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="depthStencil">The depth-stencil buffer texture</param>
         public bool SetRenderTargetDepthStencil(Texture depthStencil)
         {
-            bool changesScale = (depthStencil?.ScaleFactor ?? 1f) != (_rtDepthStencil?.ScaleFactor ?? 1f);
+            bool bindChanged = (depthStencil == null) != (_rtDepthStencil == null);
+            bool changesScale = bindChanged || (depthStencil != null && RtScale != depthStencil.ScaleFactor);
             _rtDepthStencil = depthStencil;
-            return changesScale;
+            return changesScale || (depthStencil?.ScaleMode != TextureScaleMode.Blacklisted && depthStencil?.ScaleFactor != GraphicsConfig.ResScale);
         }
 
         /// <summary>
@@ -688,9 +703,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                         {
                             // A bit tricky, our new texture may need to contain an existing texture that is upscaled, but isn't itself. 
                             // In that case, we prefer the higher scale only if our format is render-target-like, otherwise we scale the view down before copy.
-                            float preferredScale = IsUpscaleCompatible(info) ? Math.Max(texture.ScaleFactor, overlap.ScaleFactor) : 1f;
-                            texture.SetScale(preferredScale);
-                            overlap.SetScale(preferredScale);
+                            texture.PropagateScale(overlap);
+
+                            //float preferredScale = IsUpscaleCompatible(info) ? Math.Max(texture.ScaleFactor, overlap.ScaleFactor) : 1f;
+                            //texture.SetScale(preferredScale);
+                            //overlap.SetScale(preferredScale);
                         }
 
                         ITexture newView = texture.HostTexture.CreateView(createInfo, firstLayer, firstLevel);
@@ -704,7 +721,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             CacheTextureModified(texture);
                         }
 
-                        overlap.ReplaceView(texture, overlapInfo, newView);
+                        overlap.ReplaceView(texture, overlapInfo, newView, firstLayer, firstLevel);
                     }
                 }
 

@@ -33,19 +33,16 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 dstCopyTexture.Format = RtFormat.D32Float;
             }
 
-            Texture dstTexture = TextureManager.FindOrCreateTexture(dstCopyTexture, srcTexture.Rescaled);
+            Texture dstTexture = TextureManager.FindOrCreateTexture(dstCopyTexture, srcTexture.ScaleMode == Image.TextureScaleMode.Scaled);
 
             if (dstTexture == null)
             {
                 return;
             }
 
-            // Make sure the textures are the same scale. Prefer the worse scale.
             if (srcTexture.ScaleFactor != dstTexture.ScaleFactor)
             {
-                float preferredScale = Math.Min(srcTexture.ScaleFactor, dstTexture.ScaleFactor);
-                srcTexture.SetScale(preferredScale);
-                dstTexture.SetScale(preferredScale);
+                srcTexture.PropagateScale(dstTexture);
             }
 
             var control = state.Get<CopyTextureControl>(MethodOffset.CopyTextureControl);
@@ -94,8 +91,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
             {
                 srcCopyTexture.Height++;
 
-                srcTexture = TextureManager.FindOrCreateTexture(srcCopyTexture, srcTexture.Rescaled);
-                srcTexture.SetScale(scale);
+                srcTexture = TextureManager.FindOrCreateTexture(srcCopyTexture, srcTexture.ScaleMode == Image.TextureScaleMode.Scaled);
+                if (srcTexture.ScaleFactor != dstTexture.ScaleFactor)
+                {
+                    srcTexture.PropagateScale(dstTexture);
+                }
 
                 srcRegion = new Extents2D(
                     (int)Math.Ceiling(scale * ((srcX1 / srcTexture.Info.SamplesInX) - srcTexture.Info.Width)),
