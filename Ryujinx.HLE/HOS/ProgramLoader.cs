@@ -1,5 +1,4 @@
 using ARMeilleure.Translation.PTC;
-using LibHac.Loader;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
@@ -9,7 +8,6 @@ using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
-using System.Text;
 
 namespace Ryujinx.HLE.HOS
 {
