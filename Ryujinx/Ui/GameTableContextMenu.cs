@@ -69,7 +69,7 @@ namespace Ryujinx.Ui
             {
                 TooltipText = "Open the DLC management window"
             };
-            
+
             string ext    = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
             bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci";
 
@@ -645,23 +645,27 @@ namespace Ryujinx.Ui
             string titleId       = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n")[1].ToLower();
             string cacheFileName = _gameTableStore.GetValue(_rowIter, 4) + ".cache";
             
-            string cachePath = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", cacheFileName);
-           
+            string mainPath   = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0", cacheFileName);
+            string backupPath = System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "1", cacheFileName);
+            
             MessageDialog warningDialog = new MessageDialog(null, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
             {
                 Title          = "Ryujinx - Warning",
                 Text           = "You are about to delete the PPTC cache. Are you sure you want to proceed?",
                 WindowPosition = WindowPosition.Center
             };
-
+            
             if (warningDialog.Run() == (int)ResponseType.Yes)
             {
-                if (File.Exists(cachePath))
+                if (File.Exists(mainPath))
                 {
-                    File.Delete(cachePath);
+                    File.Delete(mainPath);
+                }
+                if (File.Exists(backupPath))
+                {
+                    File.Delete(backupPath);
                 }
             }
-
             warningDialog.Dispose();
         }
     }
