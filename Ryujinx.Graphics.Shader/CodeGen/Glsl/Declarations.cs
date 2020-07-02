@@ -228,7 +228,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static void DeclareRenderScale(CodeGenContext context)
         {
-            context.AppendLine("uniform float renderScale = 1.0;");
+            context.AppendLine($"uniform float renderScale[{1 + 32}];"); //context.TextureDescriptors.Count
+            // TODO: only appears on shaders with texelFetch
+            context.AppendLine("ivec2 texelFetchScale(ivec2 inputVec, int samplerIndex) {\n" +
+                               "    float scale = renderScale[1 + samplerIndex];\n" +
+                               "    if (scale == 1.0) {\n" +
+                               "        return inputVec;\n" +
+                               "    }\n" +
+                               "    if (scale < 0.0) { // If less than 0, try interpolate between texels by using the screen position.\n" +
+                               "        return ivec2(vec2(inputVec) * (-scale) + mod(gl_FragCoord.xy, -scale));\n" +
+                               "    } else {\n" +
+                               "        return ivec2(vec2(inputVec) * scale);\n" +
+                               "    }\n" +
+                               "}");
         }
 
         private static void DeclareStorages(CodeGenContext context, StructuredProgramInfo info)

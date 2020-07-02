@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
-        private float _renderScale = 1f;
+        private float[] _renderScale = new float[33];
 
         private TextureBase _unit0Texture;
 
@@ -55,6 +55,11 @@ namespace Ryujinx.Graphics.OpenGL
             for (int index = 0; index < Constants.MaxRenderTargets; index++)
             {
                 _componentMasks[index] = 0xf;
+            }
+
+            for (int index = 0; index < _renderScale.Length; index++)
+            {
+                _renderScale[index] = 1f;
             }
         }
 
@@ -687,7 +692,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _program = (Program)program;
             _program.Bind();
-            SetRenderScale(_renderScale);
+            SetRenderScale(_renderScale[0]);
         }
 
         public void SetRasterizerDiscard(bool discard)
@@ -706,10 +711,10 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetRenderScale(float scale)
         {
-            _renderScale = scale;
+            _renderScale[0] = scale;
             if (_program != null && _program.RenderScaleUniform != -1)
             {
-                GL.Uniform1(_program.RenderScaleUniform, scale);
+                GL.Uniform1(_program.RenderScaleUniform, _renderScale.Length, _renderScale);
             }
         }
 
@@ -838,7 +843,32 @@ namespace Ryujinx.Graphics.OpenGL
                 {
                     ((TextureBase)texture).Bind(unit);
                 }
+
+                if (stage == ShaderStage.Fragment && _program.RenderScaleUniform != 0)
+                {
+                    // Only update and send sampled texture scales if the shader uses them.
+                    bool interpolate = false;
+                    float scale = texture.ScaleFactor;
+                    if (scale != 1)
+                    {
+                        int unscaledWidth = (int)(texture.Width / texture.ScaleFactor);
+                        int unscaledHeight = (int)(texture.Height / texture.ScaleFactor);
+
+                        if ((unscaledWidth == 1920 && unscaledHeight == 1080) || (unscaledWidth == 1280 && unscaledHeight == 720))
+                        {
+                            // If the texture's size matches the viewport size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
+                            interpolate = true;
+                        }
+                    }
+                    SetTextureScale(index, interpolate ? -scale : scale);
+                }
             }
+        }
+
+        private void SetTextureScale(int index, float scale)
+        {
+            _renderScale[index + 1] = scale;
+            SetRenderScale(_renderScale[0]);
         }
 
         public void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer)

@@ -390,7 +390,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 }
             }
 
-            Append(AssemblePVector(pCount));
+            string ApplyScaling(string vector)
+            {
+                if (intCoords && context.Config.Stage == ShaderStage.Fragment && (texOp.Flags & TextureFlags.Bindless) == 0 && texOp.Type != SamplerType.Indexed && pCount == 2)
+                {
+                    int index = context.TextureDescriptors.FindIndex(descriptor => descriptor.HandleIndex == texOp.Handle);
+                    return "texelFetchScale(" + vector + ", " + index + ")";
+                }
+
+                return vector;
+            }
+
+            Append(ApplyScaling(AssemblePVector(pCount)));
 
             string AssembleDerivativesVector(int count)
             {
