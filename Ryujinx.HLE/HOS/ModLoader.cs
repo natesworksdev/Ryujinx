@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS
             foreach (var modDir in patchDir.EnumerateDirectories())
             {
                 patches.Add(new Mod<DirectoryInfo>(modDir.Name, modDir));
-                Logger.PrintInfo(LogClass.Loader, $"Found {type} patch '{modDir.Name}'");
+                Logger.PrintInfo(LogClass.ModLoader, $"Found {type} patch '{modDir.Name}'");
             }
         }
 
@@ -173,7 +173,7 @@ namespace Ryujinx.HLE.HOS
                     }
                 }
 
-                if (types.Length > 0) Logger.PrintInfo(LogClass.Loader, $"Found mod '{mod.Name}' [{types}]");
+                if (types.Length > 0) Logger.PrintInfo(LogClass.ModLoader, $"Found mod '{mod.Name}' [{types}]");
             }
         }
 
@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (!contentsDir.Exists) return;
 
-            Logger.PrintInfo(LogClass.Loader, $"Searching mods for Title {titleId:X16}");
+            Logger.PrintInfo(LogClass.ModLoader, $"Searching mods for Title {titleId:X16}");
 
             var titleDir = new DirectoryInfo(Path.Combine(contentsDir.FullName, $"{titleId:x16}"));
             QueryTitleDir(mods, titleDir);
@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS
                 var dir = new DirectoryInfo(path);
                 if(!dir.Exists)
                 {
-                    Logger.PrintWarning(LogClass.Loader, $"Mod Search Dir '{dir.FullName}' doesn't exist");
+                    Logger.PrintWarning(LogClass.ModLoader, $"Mod Search Dir '{dir.FullName}' doesn't exist");
                     continue;
                 }
 
@@ -257,7 +257,7 @@ namespace Ryujinx.HLE.HOS
             var builder = new RomFsBuilder();
             int count = 0;
 
-            Logger.PrintInfo(LogClass.Loader, $"Applying RomFS mods for Title {titleId:X16}");
+            Logger.PrintInfo(LogClass.ModLoader, $"Applying RomFS mods for Title {titleId:X16}");
 
             // Prioritize loose files first
             foreach (var mod in mods.RomfsDirs)
@@ -281,12 +281,12 @@ namespace Ryujinx.HLE.HOS
 
             if (fileSet.Count == 0)
             {
-                Logger.PrintInfo(LogClass.Loader, "No files found. Using base RomFS");
+                Logger.PrintInfo(LogClass.ModLoader, "No files found. Using base RomFS");
 
                 return baseStorage;
             }
 
-            Logger.PrintInfo(LogClass.Loader, $"Replaced {fileSet.Count} file(s) over {count} mod(s). Processing base storage...");
+            Logger.PrintInfo(LogClass.ModLoader, $"Replaced {fileSet.Count} file(s) over {count} mod(s). Processing base storage...");
 
             // And finally, the base romfs
             var baseRom = new RomFsFileSystem(baseStorage);
@@ -298,9 +298,9 @@ namespace Ryujinx.HLE.HOS
                 builder.AddFile(entry.FullPath, file);
             }
 
-            Logger.PrintInfo(LogClass.Loader, "Building new RomFS...");
+            Logger.PrintInfo(LogClass.ModLoader, "Building new RomFS...");
             IStorage newStorage = builder.Build();
-            Logger.PrintInfo(LogClass.Loader, "Using modded RomFS");
+            Logger.PrintInfo(LogClass.ModLoader, "Using modded RomFS");
 
             return newStorage;
         }
@@ -318,7 +318,7 @@ namespace Ryujinx.HLE.HOS
                 }
                 else
                 {
-                    Logger.PrintWarning(LogClass.Loader, $"    Skipped duplicate file '{entry.FullPath}' from '{modName}'", "ApplyRomFsMods");
+                    Logger.PrintWarning(LogClass.ModLoader, $"    Skipped duplicate file '{entry.FullPath}' from '{modName}'", "ApplyRomFsMods");
                 }
             }
         }
@@ -332,10 +332,10 @@ namespace Ryujinx.HLE.HOS
 
             if (mods.ExefsContainers.Count > 1)
             {
-                Logger.PrintWarning(LogClass.Loader, "Multiple ExeFS partition replacements detected");
+                Logger.PrintWarning(LogClass.ModLoader, "Multiple ExeFS partition replacements detected");
             }
 
-            Logger.PrintInfo(LogClass.Loader, $"Using replacement ExeFS partition");
+            Logger.PrintInfo(LogClass.ModLoader, $"Using replacement ExeFS partition");
 
             exefs = new PartitionFileSystem(mods.ExefsContainers[0].Path.OpenRead().AsStorage());
 
@@ -373,14 +373,14 @@ namespace Ryujinx.HLE.HOS
                     {
                         if (repls[1 << i])
                         {
-                            Logger.PrintWarning(LogClass.Loader, $"Multiple replacements to '{nsoName}'");
+                            Logger.PrintWarning(LogClass.ModLoader, $"Multiple replacements to '{nsoName}'");
                             continue;
                         }
 
                         repls[1 << i] = true;
 
                         nsos[i] = new NsoExecutable(nsoFile.OpenRead().AsStorage(), nsoName);
-                        Logger.PrintInfo(LogClass.Loader, $"NSO '{nsoName}' replaced");
+                        Logger.PrintInfo(LogClass.ModLoader, $"NSO '{nsoName}' replaced");
 
                         replaced = true;
 
@@ -395,7 +395,7 @@ namespace Ryujinx.HLE.HOS
             {
                 if (stubs[1 << i] && !repls[1 << i]) // Prioritizes replacements over stubs
                 {
-                    Logger.PrintInfo(LogClass.Loader, $"    NSO '{nsos[i].Name}' stubbed");
+                    Logger.PrintInfo(LogClass.ModLoader, $"    NSO '{nsos[i].Name}' stubbed");
                     nsos.RemoveAt(i);
                     replaced = true;
                 }
@@ -462,7 +462,7 @@ namespace Ryujinx.HLE.HOS
                             continue;
                         }
 
-                        Logger.PrintInfo(LogClass.Loader, $"Matching IPS patch '{patchFile.Name}' in '{mod.Name}' bid={buildId}");
+                        Logger.PrintInfo(LogClass.ModLoader, $"Matching IPS patch '{patchFile.Name}' in '{mod.Name}' bid={buildId}");
 
                         using var fs = patchFile.OpenRead();
                         using var reader = new BinaryReader(fs);
@@ -483,7 +483,7 @@ namespace Ryujinx.HLE.HOS
                             continue;
                         }
 
-                        Logger.PrintInfo(LogClass.Loader, $"Matching IPSwitch patch '{patchFile.Name}' in '{mod.Name}' bid={patcher.BuildId}");
+                        Logger.PrintInfo(LogClass.ModLoader, $"Matching IPSwitch patch '{patchFile.Name}' in '{mod.Name}' bid={patcher.BuildId}");
 
                         patcher.AddPatches(patches[index]);
                     }

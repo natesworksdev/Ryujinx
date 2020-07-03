@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             string header = reader.ReadLine();
             if (header == null || !header.StartsWith(BidHeader))
             {
-                Logger.PrintError(LogClass.Loader, "IPSwitch:    Malformed PCHTXT file. Skipping...");
+                Logger.PrintError(LogClass.ModLoader, "IPSwitch:    Malformed PCHTXT file. Skipping...");
                 return;
             }
 
@@ -154,9 +154,9 @@ namespace Ryujinx.HLE.Loaders.Mods
             string line;
             int lineNum = 0;
 
-            static void Print(string s) => Logger.PrintInfo(LogClass.Loader, $"IPSwitch:    {s}");
+            static void Print(string s) => Logger.PrintInfo(LogClass.ModLoader, $"IPSwitch:    {s}");
 
-            void ParseWarn() => Logger.PrintWarning(LogClass.Loader, $"IPSwitch:    Parse error at line {lineNum} for bid={BuildId}");
+            void ParseWarn() => Logger.PrintWarning(LogClass.ModLoader, $"IPSwitch:    Parse error at line {lineNum} for bid={BuildId}");
 
             while ((line = _reader.ReadLine()) != null)
             {
