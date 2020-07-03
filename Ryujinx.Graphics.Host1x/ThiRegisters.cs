@@ -1,19 +1,21 @@
-﻿namespace Ryujinx.Graphics.Host1x
+﻿using Ryujinx.Common.Memory;
+
+namespace Ryujinx.Graphics.Host1x
 {
-    unsafe struct ThiRegisters
+    struct ThiRegisters
     {
         public uint IncrSyncpt;
         public uint Reserved4;
         public uint IncrSyncptErr;
         public uint CtxswIncrSyncpt;
-        public fixed uint Reserved10[4];
+        public Array4<uint> Reserved10;
         public uint Ctxsw;
         public uint Reserved24;
         public uint ContSyncptEof;
-        public fixed uint Reserved2C[5];
+        public Array5<uint> Reserved2C;
         public uint Method0;
         public uint Method1;
-        public fixed uint Reserved48[12];
+        public Array12<uint> Reserved48;
         public uint IntStatus;
         public uint IntMask;
     }
