@@ -335,10 +335,6 @@ namespace Ryujinx.Ui
                 ApplicationLibrary.LoadApplications(ConfigurationState.Instance.Ui.GameDirs,
                     _virtualFileSystem, ConfigurationState.Instance.System.Language);
 
-                // TODO: Add more paths after GUI's in place
-                _virtualFileSystem.ModLoader.Clear();
-                _virtualFileSystem.ModLoader.SearchMods(new DirectoryInfo(System.IO.Path.Combine(_virtualFileSystem.GetBasePath(),"mods")));
-
                 _updatingGameTable = false;
             });
             applicationLibraryThread.Name = "GUI.ApplicationLibraryThread";

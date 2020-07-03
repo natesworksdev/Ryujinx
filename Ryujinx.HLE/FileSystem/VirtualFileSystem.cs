@@ -17,11 +17,12 @@ namespace Ryujinx.HLE.FileSystem
         public const string NandPath   = "bis";
         public const string SdCardPath = "sdcard";
         public const string SystemPath = "system";
+        public const string ModsPath   = "mods";
 
         public static string SafeNandPath   = Path.Combine(NandPath, "safe");
         public static string SystemNandPath = Path.Combine(NandPath, "system");
         public static string UserNandPath   = Path.Combine(NandPath, "user");
-
+        
         private static bool _isInitialized = false;
 
         public Keyset           KeySet   { get; private set; }
@@ -74,6 +75,14 @@ namespace Ryujinx.HLE.FileSystem
             }
 
             return fullPath;
+        }
+
+        public string GetBaseModsPath()
+        {
+            var baseModsDir = Path.Combine(GetBasePath(), "mods");
+            ModLoader.EnsureBaseDirStructure(baseModsDir);
+
+            return baseModsDir;
         }
 
         public string GetSdCardPath() => MakeFullPath(SdCardPath);

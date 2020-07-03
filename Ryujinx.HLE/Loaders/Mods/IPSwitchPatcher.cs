@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             }
 
             _reader = reader;
-            BuildId = header.Substring(BidHeader.Length).TrimEnd();
+            BuildId = header.Substring(BidHeader.Length).TrimEnd().TrimEnd('0');
         }
 
         private enum Token

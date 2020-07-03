@@ -53,6 +53,9 @@ namespace Ryujinx.HLE.HOS
             _fileSystem = fileSystem;
 
             ControlData = new BlitStruct<ApplicationControlProperty>(1);
+
+            // Clear Mods cache
+            _fileSystem.ModLoader.Clear();
         }
 
         public void LoadCart(string exeFsDir, string romFsFile = null)
@@ -305,6 +308,8 @@ namespace Ryujinx.HLE.HOS
 
             Npdm metaData = ReadNpdm(codeFs);
 
+            _fileSystem.ModLoader.CollectMods(TitleId, _fileSystem.GetBaseModsPath());
+
             if (controlNca != null)
             {
                 ReadControlData(controlNca);
@@ -389,6 +394,11 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadExeFs(IFileSystem codeFs, Npdm metaData = null)
         {
+            if(_fileSystem.ModLoader.ReplaceExefsPartition(TitleId, ref codeFs))
+            {
+                metaData = null; //TODO: Check if we should retain old npdm
+            }
+
             metaData ??= ReadNpdm(codeFs);
 
             List<NsoExecutable> nsos = new List<NsoExecutable>();
@@ -413,7 +423,7 @@ namespace Ryujinx.HLE.HOS
             }
 
             // ExeFs file replacements
-            bool modified = _fileSystem.ModLoader.ApplyExefsReplacements(TitleId, nsos);
+            bool modified = _fileSystem.ModLoader.ApplyExefsMods(TitleId, nsos);
 
             var programs = nsos.ToArray();
 
