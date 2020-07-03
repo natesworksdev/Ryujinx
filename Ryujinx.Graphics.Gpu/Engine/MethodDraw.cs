@@ -1,9 +1,9 @@
-using Ryujinx.Graphics.Gpu.State;
-using Ryujinx.Graphics.Gpu.Image;
+using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Image;
+using Ryujinx.Graphics.Gpu.State;
 using System;
 using System.Runtime.InteropServices;
-using Ryujinx.Common;
 
 namespace Ryujinx.Graphics.Gpu.Engine
 {
