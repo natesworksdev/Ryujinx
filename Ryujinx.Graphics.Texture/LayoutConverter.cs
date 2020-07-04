@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.Texture
 
             int wAligned = BitUtils.AlignUp(width, alignment);
 
-            BlockLinearLayout layoutConverter = new BlockLinearLayout(wAligned, height, 1, gobBlocksInY, 1, bytesPerPixel);
+            BlockLinearLayout layoutConverter = new BlockLinearLayout(wAligned, height, gobBlocksInY, 1, bytesPerPixel);
 
             unsafe bool Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
             {
@@ -296,7 +296,7 @@ namespace Ryujinx.Graphics.Texture
 
             int wAligned = BitUtils.AlignUp(width, alignment);
 
-            BlockLinearLayout layoutConverter = new BlockLinearLayout(wAligned, height, 1, gobBlocksInY, 1, bytesPerPixel);
+            BlockLinearLayout layoutConverter = new BlockLinearLayout(wAligned, height, gobBlocksInY, 1, bytesPerPixel);
 
             unsafe bool Convert<T>(Span<byte> output, ReadOnlySpan<byte> data) where T : unmanaged
             {
