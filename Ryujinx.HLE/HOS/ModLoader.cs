@@ -79,6 +79,19 @@ namespace Ryujinx.HLE.HOS
         public Dictionary<ulong, ModCache> AppMods; // key is TitleId
         public PatchCache Patches;
 
+        private static readonly EnumerationOptions _dirEnumOptions;
+
+        static ModLoader()
+        {
+            _dirEnumOptions = new EnumerationOptions
+            {
+                MatchCasing = MatchCasing.CaseInsensitive,
+                MatchType = MatchType.Simple,
+                RecurseSubdirectories = false,
+                ReturnSpecialDirectories = false
+            };
+        }
+
         public ModLoader()
         {
             AppMods = new Dictionary<ulong, ModCache>();
@@ -183,8 +196,12 @@ namespace Ryujinx.HLE.HOS
 
             Logger.PrintInfo(LogClass.ModLoader, $"Searching mods for Title {titleId:X16}");
 
-            var titleDir = new DirectoryInfo(Path.Combine(contentsDir.FullName, $"{titleId:x16}"));
-            QueryTitleDir(mods, titleDir);
+            var titleDir = contentsDir.EnumerateDirectories($"{titleId:x16}*", _dirEnumOptions).FirstOrDefault();
+
+            if (titleDir != null)
+            {
+                QueryTitleDir(mods, titleDir);
+            }
         }
 
         public static void CollectMods(ModCache mods, PatchCache patches, ulong? titleId, params string[] searchDirPaths)
@@ -217,7 +234,7 @@ namespace Ryujinx.HLE.HOS
             foreach (var path in searchDirPaths)
             {
                 var dir = new DirectoryInfo(path);
-                if(!dir.Exists)
+                if (!dir.Exists)
                 {
                     Logger.PrintWarning(LogClass.ModLoader, $"Mod Search Dir '{dir.FullName}' doesn't exist");
                     continue;
@@ -272,6 +289,7 @@ namespace Ryujinx.HLE.HOS
             // Then files inside images
             foreach (var mod in mods.RomfsContainers)
             {
+                Logger.PrintInfo(LogClass.ModLoader, $"Found 'romfs.bin' for Title {titleId:X16}");
                 using (IFileSystem fs = new RomFsFileSystem(mod.Path.OpenRead().AsStorage()))
                 {
                     AddFiles(fs, mod.Name, fileSet, builder);
