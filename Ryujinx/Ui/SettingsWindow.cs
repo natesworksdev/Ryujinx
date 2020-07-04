@@ -11,7 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
+using System.Threading.Tasks;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -199,19 +199,13 @@ namespace Ryujinx.Ui
                 _systemTimeZoneSelect.Append(locationName, locationName);
             }
 
-            Thread audioBackendOptionsThread = new Thread(() =>
+            Task.Run(() =>
             {
                 if (SoundIoAudioOut.IsSupported) _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
-                if (OpenALAudioOut.IsSupported)  _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
+                if (OpenALAudioOut.IsSupported) _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
 
                 _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
-            })
-            {
-                IsBackground = true,
-                Name         = "GUI.AudioBackendOptionsThread"
-            };
-
-            audioBackendOptionsThread.Start();
+            });
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
