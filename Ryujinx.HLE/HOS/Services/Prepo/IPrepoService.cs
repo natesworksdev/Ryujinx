@@ -32,7 +32,23 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ProcessReport(context, withUserID: true);
         }
 
-        [Command(10102)] // 6.0.0+
+        [Command(10102)] // 6.0.0-9.2.0
+        // SaveReportOld2(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
+        public ResultCode SaveReportOld2(ServiceCtx context)
+        {
+            // We don't care about the differences since we don't use the play report.
+            return ProcessReport(context, withUserID: false);
+        }
+
+        [Command(10103)] // 6.0.0-9.2.0
+        // SaveReportWithUserOld2(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
+        public ResultCode SaveReportWithUserOld2(ServiceCtx context)
+        {
+            // We don't care about the differences since we don't use the play report.
+            return ProcessReport(context, withUserID: true);
+        }
+
+        [Command(10104)] // 10.0.0+
         // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReport(ServiceCtx context)
         {
@@ -40,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
             return ProcessReport(context, withUserID: false);
         }
 
-        [Command(10103)] // 6.0.0+
+        [Command(10105)] // 10.0.0+
         // SaveReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportWithUser(ServiceCtx context)
         {
