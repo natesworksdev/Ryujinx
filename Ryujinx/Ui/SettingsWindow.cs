@@ -11,6 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Threading;
 
 using GUI = Gtk.Builder.ObjectAttribute;
 
@@ -198,15 +199,22 @@ namespace Ryujinx.Ui
                 _systemTimeZoneSelect.Append(locationName, locationName);
             }
 
-            _audioBackendSelect.Append(AudioBackend.Dummy.ToString(), AudioBackend.Dummy.ToString());
-            if (SoundIoAudioOut.IsSupported)
-                _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
-            if (OpenALAudioOut.IsSupported)
-                _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
+            Thread audioBackendOptionsThread = new Thread(() =>
+            {
+                if (SoundIoAudioOut.IsSupported) _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
+                if (OpenALAudioOut.IsSupported)  _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
+
+                _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
+            })
+            {
+                IsBackground = true,
+                Name         = "GUI.AudioBackendOptionsThread"
+            };
+
+            audioBackendOptionsThread.Start();
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
-            _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
             _systemTimeZoneSelect.SetActiveId(timeZoneContentManager.SanityCheckDeviceLocationName());
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
