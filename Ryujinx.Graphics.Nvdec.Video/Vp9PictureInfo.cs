@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Graphics.Video
 {
-    public struct Vp9PictureInfo
+    public ref struct Vp9PictureInfo
     {
         public ISurface LastReference;
         public ISurface GoldenReference;
