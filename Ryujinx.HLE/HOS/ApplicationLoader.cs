@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS
         private readonly ContentManager _contentManager;
         private readonly VirtualFileSystem _fileSystem;
 
-        public BlitStruct<ApplicationControlProperty> ControlData { get; set; }        
+        public BlitStruct<ApplicationControlProperty> ControlData { get; set; }
 
         public string TitleName { get; private set; }
         public string DisplayVersion { get; private set; }
@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS
         public bool EnablePtc => _device.System.EnablePtc;
 
         // Binaries from exefs are loaded into mem in this order. Do not change.
-        private static readonly string[] ExeFsPrefixes = {"rtld", "main", "subsdk*", "sdk"};
+        private static readonly string[] ExeFsPrefixes = { "rtld", "main", "subsdk*", "sdk" };
 
         public ApplicationLoader(Switch device, VirtualFileSystem fileSystem, ContentManager contentManager)
         {
@@ -394,7 +394,7 @@ namespace Ryujinx.HLE.HOS
 
         private void LoadExeFs(IFileSystem codeFs, Npdm metaData = null)
         {
-            if(_fileSystem.ModLoader.ReplaceExefsPartition(TitleId, ref codeFs))
+            if (_fileSystem.ModLoader.ReplaceExefsPartition(TitleId, ref codeFs))
             {
                 metaData = null; //TODO: Check if we should retain old npdm
             }
@@ -403,7 +403,7 @@ namespace Ryujinx.HLE.HOS
 
             List<NsoExecutable> nsos = new List<NsoExecutable>();
 
-            foreach(string exePrefix in ExeFsPrefixes) // Load binaries with standard prefixes
+            foreach (string exePrefix in ExeFsPrefixes) // Load binaries with standard prefixes
             {
                 foreach (DirectoryEntryEx file in codeFs.EnumerateEntries("/", exePrefix))
                 {
@@ -431,7 +431,7 @@ namespace Ryujinx.HLE.HOS
 
             _contentManager.LoadEntries(_device);
 
-            if(EnablePtc && modified)
+            if (EnablePtc && modified)
             {
                 Logger.PrintWarning(LogClass.Ptc, $"Detected exefs modifications. PPTC disabled.");
             }
