@@ -86,13 +86,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            if (context.Config.Stage == ShaderStage.Fragment)
-            {
-                DeclareRenderScale(context);
-
-                context.AppendLine();
-            }
-
             if (info.SBuffers.Count != 0)
             {
                 DeclareStorages(context, info);
@@ -142,6 +135,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     $"local_size_y = {localSizeY}, " +
                     $"local_size_z = {localSizeZ}) in;");
                 context.AppendLine();
+            }
+
+            if (context.Config.Stage == ShaderStage.Fragment)
+            {
+                if (DeclareRenderScale(context))
+                {
+                    context.AppendLine();
+                }
             }
 
             if ((info.HelperFunctionsMask & HelperFunctionsMask.MultiplyHighS32) != 0)
@@ -226,21 +227,22 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
         }
 
-        private static void DeclareRenderScale(CodeGenContext context)
+        private static bool DeclareRenderScale(CodeGenContext context)
         {
-            context.AppendLine($"uniform float renderScale[{1 + 32}];"); //context.TextureDescriptors.Count
-            // TODO: only appears on shaders with texelFetch
-            context.AppendLine("ivec2 texelFetchScale(ivec2 inputVec, int samplerIndex) {\n" +
-                               "    float scale = renderScale[1 + samplerIndex];\n" +
-                               "    if (scale == 1.0) {\n" +
-                               "        return inputVec;\n" +
-                               "    }\n" +
-                               "    if (scale < 0.0) { // If less than 0, try interpolate between texels by using the screen position.\n" +
-                               "        return ivec2(vec2(inputVec) * (-scale) + mod(gl_FragCoord.xy, -scale));\n" +
-                               "    } else {\n" +
-                               "        return ivec2(vec2(inputVec) * scale);\n" +
-                               "    }\n" +
-                               "}");
+            if ((context.Config.UsedFeatures & (FeatureFlags.FragCoordXY | FeatureFlags.IntegerSampling)) > 0)
+            {
+                context.AppendLine($"uniform float renderScale[{1 + 32}];");
+
+                if (context.Config.UsedFeatures.HasFlag(FeatureFlags.IntegerSampling))
+                {
+                    context.AppendLine();
+                    AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/TexelFetchScale.glsl");
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
         private static void DeclareStorages(CodeGenContext context, StructuredProgramInfo info)

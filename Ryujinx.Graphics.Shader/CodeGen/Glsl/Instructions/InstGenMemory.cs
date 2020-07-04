@@ -392,10 +392,23 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             string ApplyScaling(string vector)
             {
-                if (intCoords && context.Config.Stage == ShaderStage.Fragment && (texOp.Flags & TextureFlags.Bindless) == 0 && texOp.Type != SamplerType.Indexed && pCount == 2)
+                if (intCoords)
                 {
-                    int index = context.TextureDescriptors.FindIndex(descriptor => descriptor.HandleIndex == texOp.Handle);
-                    return "texelFetchScale(" + vector + ", " + index + ")";
+                    int index = context.FindTextureDescriptorIndex(texOp);
+
+                    if (context.Config.Stage == ShaderStage.Fragment && (texOp.Flags & TextureFlags.Bindless) == 0 && texOp.Type != SamplerType.Indexed && pCount == 2)
+                    {
+                        return "Helper_TexelFetchScale(" + vector + ", " + index + ")";
+                    }
+                    else
+                    {
+                        // Resolution scaling cannot be applied to this texture right now.
+                        // Flag so that we know to blacklist scaling on related textures when binding them.
+
+                        TextureDescriptor descriptor = context.TextureDescriptors[index];
+                        descriptor.Flags |= TextureUsageFlags.ResScaleUnsupported;
+                        context.TextureDescriptors[index] = descriptor;
+                    }
                 }
 
                 return vector;

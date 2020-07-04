@@ -943,11 +943,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     if (descriptor.IsBindless)
                     {
-                        textureBindings[index] = new TextureBindingInfo(target, descriptor.CbufSlot, descriptor.CbufOffset);
+                        textureBindings[index] = new TextureBindingInfo(target, descriptor.CbufSlot, descriptor.CbufOffset, descriptor.Flags);
                     }
                     else
                     {
-                        textureBindings[index] = new TextureBindingInfo(target, descriptor.HandleIndex);
+                        textureBindings[index] = new TextureBindingInfo(target, descriptor.HandleIndex, descriptor.Flags);
                     }
                 }
 
@@ -961,7 +961,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     Target target = GetTarget(descriptor.Type);
 
-                    imageBindings[index] = new TextureBindingInfo(target, descriptor.HandleIndex);
+                    imageBindings[index] = new TextureBindingInfo(target, descriptor.HandleIndex, descriptor.Flags);
                 }
 
                 TextureManager.SetGraphicsImages(stage, imageBindings);

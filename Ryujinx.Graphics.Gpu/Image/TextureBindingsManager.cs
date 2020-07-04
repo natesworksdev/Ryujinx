@@ -216,6 +216,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 Texture texture = pool.Get(textureId);
 
+                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0)
+                {
+                    texture?.BlacklistScale();
+                }
+
                 ITexture hostTexture = texture?.GetTargetTexture(binding.Target);
 
                 if (_textureState[stageIndex][index].Texture != hostTexture || _rebind)
@@ -268,6 +273,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 int textureId = UnpackTextureId(packedId);
 
                 Texture texture = pool.Get(textureId);
+
+                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0)
+                {
+                    texture?.BlacklistScale();
+                }
 
                 ITexture hostTexture = texture?.GetTargetTexture(binding.Target);
 

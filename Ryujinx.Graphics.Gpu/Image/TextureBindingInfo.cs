@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Shader;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -38,11 +39,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         public int CbufOffset { get; }
 
         /// <summary>
+        /// Flags from the texture descriptor that indicate how the texture is used.
+        /// </summary>
+        public TextureUsageFlags Flags { get; }
+
+        /// <summary>
         /// Constructs the texture binding information structure.
         /// </summary>
         /// <param name="target">The shader sampler target type</param>
         /// <param name="handle">The shader texture handle (read index into the texture constant buffer)</param>
-        public TextureBindingInfo(Target target, int handle)
+        public TextureBindingInfo(Target target, int handle, TextureUsageFlags flags)
         {
             Target = target;
             Handle = handle;
@@ -51,6 +57,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             CbufSlot   = 0;
             CbufOffset = 0;
+
+            Flags = flags;
         }
 
         /// <summary>
@@ -59,7 +67,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="target">The shader sampler target type</param>
         /// <param name="cbufSlot">Constant buffer slot where the bindless texture handle is located</param>
         /// <param name="cbufOffset">Constant buffer offset of the bindless texture handle</param>
-        public TextureBindingInfo(Target target, int cbufSlot, int cbufOffset)
+        public TextureBindingInfo(Target target, int cbufSlot, int cbufOffset, TextureUsageFlags flags)
         {
             Target = target;
             Handle = 0;
@@ -68,6 +76,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             CbufSlot   = cbufSlot;
             CbufOffset = cbufOffset;
+
+            Flags = flags;
         }
     }
 }

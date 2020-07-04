@@ -34,6 +34,8 @@ namespace Ryujinx.Graphics.OpenGL
         private float[] _renderScale = new float[33];
 
         private TextureBase _unit0Texture;
+        private TextureBase _rtColor0Texture;
+        private TextureBase _rtDepthTexture;
 
         private ClipOrigin _clipOrigin;
         private ClipDepthMode _clipDepthMode;
@@ -732,6 +734,9 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureFramebuffer();
 
+            _rtColor0Texture = (TextureBase)colors[0];
+            _rtDepthTexture = (TextureBase)depthStencil;
+
             for (int index = 0; index < colors.Length; index++)
             {
                 TextureView color = (TextureView)colors[index];
@@ -849,14 +854,14 @@ namespace Ryujinx.Graphics.OpenGL
                     // Only update and send sampled texture scales if the shader uses them.
                     bool interpolate = false;
                     float scale = texture.ScaleFactor;
+
                     if (scale != 1)
                     {
-                        int unscaledWidth = (int)(texture.Width / texture.ScaleFactor);
-                        int unscaledHeight = (int)(texture.Height / texture.ScaleFactor);
+                        TextureBase activeTarget = _rtColor0Texture ?? _rtDepthTexture;
 
-                        if ((unscaledWidth == 1920 && unscaledHeight == 1080) || (unscaledWidth == 1280 && unscaledHeight == 720))
+                        if (activeTarget.Width / (float)texture.Width == activeTarget.Height / (float)texture.Height)
                         {
-                            // If the texture's size matches the viewport size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
+                            // If the texture's size is a multiple of the sampler size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
                             interpolate = true;
                         }
                     }
