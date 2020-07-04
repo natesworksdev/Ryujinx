@@ -26,7 +26,7 @@ namespace Ryujinx.Graphics.Host1x
         public Host1xDevice(SynchronizationManager syncMgr)
         {
             _syncptIncrMgr = new SyncptIncrManager(syncMgr);
-            _commandQueue = new AsyncWorkQueue<int[]>(Process);
+            _commandQueue = new AsyncWorkQueue<int[]>(Process, "Ryujinx.Host1xProcessor");
 
             Class = new Host1xClass(syncMgr);
 

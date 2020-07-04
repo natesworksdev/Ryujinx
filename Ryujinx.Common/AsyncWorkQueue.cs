@@ -6,26 +6,23 @@ namespace Ryujinx.Common
 {
     public sealed class AsyncWorkQueue<T> : IDisposable
     {
-        protected Thread _workerThread;
-
-        protected CancellationTokenSource _cts;
-
-        protected Action<T> _workerAction;
-
-        protected BlockingCollection<T> _queue;
+        private readonly Thread _workerThread;
+        private readonly CancellationTokenSource _cts;
+        private readonly Action<T> _workerAction;
+        private readonly BlockingCollection<T> _queue;
 
         public bool IsCancellationRequested => _cts.IsCancellationRequested;
 
-        public AsyncWorkQueue(Action<T> callback)
-            : this(callback, new BlockingCollection<T>())
-        { }
+        public AsyncWorkQueue(Action<T> callback, string name = null) : this(callback, new BlockingCollection<T>(), name)
+        {
+        }
 
-        public AsyncWorkQueue(Action<T> callback, BlockingCollection<T> collection)
+        public AsyncWorkQueue(Action<T> callback, BlockingCollection<T> collection, string name)
         {
             _cts = new CancellationTokenSource();
             _queue = collection;
             _workerAction = callback;
-            _workerThread = new Thread(DoWork);
+            _workerThread = new Thread(DoWork) { Name = name };
 
             _workerThread.IsBackground = true;
             _workerThread.Start();

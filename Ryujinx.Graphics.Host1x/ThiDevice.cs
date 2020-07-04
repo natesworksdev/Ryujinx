@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Host1x
             _classId = classId;
             _device = device;
             _syncptIncrMgr = syncptIncrMgr;
-            _commandQueue = new AsyncWorkQueue<CommandAction>(Process);
+            _commandQueue = new AsyncWorkQueue<CommandAction>(Process, $"Ryujinx.{classId}Processor");
             _state = new DeviceState<ThiRegisters>(new Dictionary<string, (Action<int>, Func<int>)>
             {
                 { nameof(ThiRegisters.IncrSyncpt), (IncrSyncpt, null) },
