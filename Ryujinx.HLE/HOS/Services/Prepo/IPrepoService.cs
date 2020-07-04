@@ -87,8 +87,8 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
         private ResultCode ProcessReport(ServiceCtx context, bool withUserID)
         {
-            UserId  userId   = withUserID ? context.RequestData.ReadStruct<UserId>() : new UserId();
-            string  gameRoom = StringUtils.ReadUtf8String(context);
+            UserId userId   = withUserID ? context.RequestData.ReadStruct<UserId>() : new UserId();
+            string gameRoom = StringUtils.ReadUtf8String(context);
 
             if (withUserID)
             {
@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
 
             if (!userId.IsNull)
             {
-                builder.AppendLine($" UserId: {userId.ToString()}");
+                builder.AppendLine($" UserId: {userId}");
             }
 
             builder.AppendLine($" Room: {room}");
