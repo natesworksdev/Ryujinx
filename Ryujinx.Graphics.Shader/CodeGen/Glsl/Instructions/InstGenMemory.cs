@@ -396,7 +396,10 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 {
                     int index = context.FindTextureDescriptorIndex(texOp);
 
-                    if (context.Config.Stage == ShaderStage.Fragment && (texOp.Flags & TextureFlags.Bindless) == 0 && texOp.Type != SamplerType.Indexed && pCount == 2)
+                    if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
+                        (texOp.Flags & TextureFlags.Bindless) == 0 &&
+                        texOp.Type != SamplerType.Indexed &&
+                        pCount == 2)
                     {
                         return "Helper_TexelFetchScale(" + vector + ", " + index + ")";
                     }

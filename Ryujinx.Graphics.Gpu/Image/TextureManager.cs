@@ -171,12 +171,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="index">The index of the color buffer to set (up to 8)</param>
         /// <param name="color">The color buffer texture</param>
+        /// <returns>True if render target scale must be updated.</returns>
         public bool SetRenderTargetColor(int index, Texture color)
         {
-            bool bindChanged = (color == null) != (_rtColors[index] == null);
-            bool changesScale = bindChanged || (color != null && RtScale != color.ScaleFactor);
+            bool hasValue = color != null;
+            bool changesScale = (hasValue != (_rtColors[index] != null)) || (hasValue && RtScale != color.ScaleFactor);
             _rtColors[index] = color;
-            return changesScale || (color?.ScaleMode != TextureScaleMode.Blacklisted && color?.ScaleFactor != GraphicsConfig.ResScale);
+
+            return changesScale || (hasValue && color.ScaleMode != TextureScaleMode.Blacklisted && color.ScaleFactor != GraphicsConfig.ResScale);
         }
 
         public void UpdateRtScale(int singleUse)
@@ -195,7 +197,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 switch (target.ScaleMode)
                 {
                     case TextureScaleMode.Blacklisted:
-                        mismatch |= (scale != 1f);
+                        mismatch |= scale != 1f;
                         blacklisted = true;
                         break;
                     case TextureScaleMode.Eligible:
@@ -203,7 +205,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         break;
                     case TextureScaleMode.Scaled:
                         hasUpscaled = true;
-                        mismatch |= (scale != targetScale); // If the target scale has changed, reset the scale for all targets.
+                        mismatch |= scale != targetScale; // If the target scale has changed, reset the scale for all targets.
                         break;
                 }
             }
@@ -261,12 +263,14 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Sets the render target depth-stencil buffer.
         /// </summary>
         /// <param name="depthStencil">The depth-stencil buffer texture</param>
+        /// <returns>True if render target scale must be updated.</returns>
         public bool SetRenderTargetDepthStencil(Texture depthStencil)
         {
-            bool bindChanged = (depthStencil == null) != (_rtDepthStencil == null);
-            bool changesScale = bindChanged || (depthStencil != null && RtScale != depthStencil.ScaleFactor);
+            bool hasValue = depthStencil != null;
+            bool changesScale = (hasValue != (_rtDepthStencil != null)) || (hasValue && RtScale != depthStencil.ScaleFactor);
             _rtDepthStencil = depthStencil;
-            return changesScale || (depthStencil?.ScaleMode != TextureScaleMode.Blacklisted && depthStencil?.ScaleFactor != GraphicsConfig.ResScale);
+
+            return changesScale || (hasValue && depthStencil.ScaleMode != TextureScaleMode.Blacklisted && depthStencil.ScaleFactor != GraphicsConfig.ResScale);
         }
 
         /// <summary>

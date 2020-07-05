@@ -324,7 +324,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             int samplesInX = msaaMode.SamplesInX();
             int samplesInY = msaaMode.SamplesInY();
 
-            bool changedColorScale = false;
+            bool changedScale = false;
 
             for (int index = 0; index < Constants.TotalRenderTargets; index++)
             {
@@ -334,14 +334,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 if (index >= count || !IsRtEnabled(colorState))
                 {
-                    changedColorScale |= TextureManager.SetRenderTargetColor(index, null);
+                    changedScale |= TextureManager.SetRenderTargetColor(index, null);
 
                     continue;
                 }
 
                 Texture color = TextureManager.FindOrCreateTexture(colorState, samplesInX, samplesInY);
 
-                changedColorScale |= TextureManager.SetRenderTargetColor(index, color);
+                changedScale |= TextureManager.SetRenderTargetColor(index, color);
 
                 if (color != null)
                 {
@@ -361,12 +361,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 depthStencil = TextureManager.FindOrCreateTexture(dsState, dsSize, samplesInX, samplesInY);
             }
 
-            bool changedScale = TextureManager.SetRenderTargetDepthStencil(depthStencil);
+            changedScale |= TextureManager.SetRenderTargetDepthStencil(depthStencil);
 
-            if (changedScale || changedColorScale)
+            if (changedScale || changedScale)
             {
                 TextureManager.UpdateRtScale(singleUse);
-                _context.Renderer.Pipeline.SetRenderScale(TextureManager.RtScale);
+                _context.Renderer.Pipeline.SetRenderTargetScale(TextureManager.RtScale);
 
                 UpdateViewportTransform(state);
                 UpdateScissorState(state);

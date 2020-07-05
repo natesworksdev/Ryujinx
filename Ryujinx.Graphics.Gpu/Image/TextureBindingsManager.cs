@@ -174,6 +174,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
+            bool changed = false;
+
             for (int index = 0; index < _textureBindings[stageIndex].Length; index++)
             {
                 TextureBindingInfo binding = _textureBindings[stageIndex][index];
@@ -217,7 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Texture texture = pool.Get(textureId);
 
                 // TODO: Support texelFetch scaling in compute.
-                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0 && stage != ShaderStage.Compute)
+                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0)
                 {
                     texture?.BlacklistScale();
                 }
@@ -229,6 +231,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                     _textureState[stageIndex][index].Texture = hostTexture;
 
                     _context.Renderer.Pipeline.SetTexture(index, stage, hostTexture);
+
+                    changed = true;
                 }
 
                 if (hostTexture != null && texture.Info.Target == Target.TextureBuffer)
@@ -249,6 +253,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     _context.Renderer.Pipeline.SetSampler(index, stage, hostSampler);
                 }
+            }
+
+            if (changed)
+            {
+                _context.Renderer.Pipeline.UpdateRenderScale(stage, _textureBindings[stageIndex].Length);
             }
         }
 

@@ -137,7 +137,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 context.AppendLine();
             }
 
-            if (context.Config.Stage == ShaderStage.Fragment)
+            if (context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute)
             {
                 if (DeclareRenderScale(context))
                 {
@@ -231,12 +231,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             if ((context.Config.UsedFeatures & (FeatureFlags.FragCoordXY | FeatureFlags.IntegerSampling)) > 0)
             {
-                context.AppendLine($"uniform float renderScale[{1 + 32}];");
+                string stage = OperandManager.GetShaderStagePrefix(context.Config.Stage);
+
+                int scaleElements = context.TextureDescriptors.Count;
+                
+                if (context.Config.Stage == ShaderStage.Fragment)
+                {
+                    scaleElements += 1; // Also includes render target scale, for gl_FragCoord.
+                }
+
+                context.AppendLine($"uniform float {stage}_renderScale[{scaleElements}];");
 
                 if (context.Config.UsedFeatures.HasFlag(FeatureFlags.IntegerSampling))
                 {
                     context.AppendLine();
-                    AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/TexelFetchScale.glsl");
+                    AppendHelperFunction(context, $"Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/TexelFetchScale_{stage}.glsl");
                 }
 
                 return true;

@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetRasterizerDiscard(bool discard);
 
-        void SetRenderScale(float scale);
+        void SetRenderTargetScale(float scale);
 
         void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask);
 
@@ -86,5 +86,7 @@ namespace Ryujinx.Graphics.GAL
         bool TryHostConditionalRendering(ICounterEvent value, ulong compare, bool isEqual);
         bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual);
         void EndHostConditionalRendering();
+
+        void UpdateRenderScale(ShaderStage stage, int textureCount);
     }
 }
