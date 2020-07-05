@@ -364,7 +364,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             changedScale |= TextureManager.SetRenderTargetDepthStencil(depthStencil);
 
-            if (changedScale || changedScale)
+            if (changedScale)
             {
                 TextureManager.UpdateRenderTargetScale(singleUse);
                 _context.Renderer.Pipeline.SetRenderTargetScale(TextureManager.RenderTargetScale);

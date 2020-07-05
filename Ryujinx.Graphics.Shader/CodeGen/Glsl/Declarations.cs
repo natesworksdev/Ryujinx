@@ -237,7 +237,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 
                 if (context.Config.Stage == ShaderStage.Fragment)
                 {
-                    scaleElements += 1; // Also includes render target scale, for gl_FragCoord.
+                    scaleElements++; // Also includes render target scale, for gl_FragCoord.
                 }
 
                 context.AppendLine($"uniform float {stage}_renderScale[{scaleElements}];");

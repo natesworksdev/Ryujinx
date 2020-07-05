@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             bool hasUpscaled = false;
             float targetScale = GraphicsConfig.ResScale;
 
-            void considerTarget(Texture target)
+            void ConsiderTarget(Texture target)
             {
                 if (target == null) return;
                 float scale = target.ScaleFactor;
@@ -728,11 +728,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         {
                             // A bit tricky, our new texture may need to contain an existing texture that is upscaled, but isn't itself. 
                             // In that case, we prefer the higher scale only if our format is render-target-like, otherwise we scale the view down before copy.
-                            texture.PropagateScale(overlap);
 
-                            //float preferredScale = IsUpscaleCompatible(info) ? Math.Max(texture.ScaleFactor, overlap.ScaleFactor) : 1f;
-                            //texture.SetScale(preferredScale);
-                            //overlap.SetScale(preferredScale);
+                            texture.PropagateScale(overlap);
                         }
 
                         ITexture newView = texture.HostTexture.CreateView(createInfo, firstLayer, firstLevel);

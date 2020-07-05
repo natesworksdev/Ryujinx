@@ -64,6 +64,11 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _fpRenderScale[index] = 1f;
             }
+
+            for (int index = 0; index < _cpRenderScale.Length; index++)
+            {
+                _cpRenderScale[index] = 1f;
+            }
         }
 
         public void Barrier()

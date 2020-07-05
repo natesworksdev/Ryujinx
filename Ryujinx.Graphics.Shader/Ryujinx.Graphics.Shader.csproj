@@ -1,11 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <None Remove="CodeGen\Glsl\HelperFunctions\TexelFetchScale_cp.glsl" />
-    <None Remove="CodeGen\Glsl\HelperFunctions\TexelFetchScale_fp.glsl" />
-  </ItemGroup>
-
-  <ItemGroup>
     <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\MultiplyHighS32.glsl" />
     <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\MultiplyHighU32.glsl" />
     <EmbeddedResource Include="CodeGen\Glsl\HelperFunctions\Shuffle.glsl" />

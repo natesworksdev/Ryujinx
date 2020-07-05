@@ -9,7 +9,7 @@ namespace Ryujinx.Graphics.Shader.Translation
     [Flags]
     public enum FeatureFlags
     {
-        None            = 0,
+        None = 0,
 
         // Affected by resolution scaling.
         FragCoordXY     = 1 << 1,
