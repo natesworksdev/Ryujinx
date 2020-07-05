@@ -216,7 +216,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 Texture texture = pool.Get(textureId);
 
-                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0)
+                // TODO: Support texelFetch scaling in compute.
+                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0 && stage != ShaderStage.Compute)
                 {
                     texture?.BlacklistScale();
                 }
