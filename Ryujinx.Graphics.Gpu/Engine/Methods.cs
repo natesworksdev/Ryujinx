@@ -313,6 +313,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="useControl">Use draw buffers information from render target control register</param>
+        /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param> 
         private void UpdateRenderTargetState(GpuState state, bool useControl, int singleUse = -1)
         {
             var rtControl = state.Get<RtControl>(MethodOffset.RtControl);
@@ -365,8 +366,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             if (changedScale || changedScale)
             {
-                TextureManager.UpdateRtScale(singleUse);
-                _context.Renderer.Pipeline.SetRenderTargetScale(TextureManager.RtScale);
+                TextureManager.UpdateRenderTargetScale(singleUse);
+                _context.Renderer.Pipeline.SetRenderTargetScale(TextureManager.RenderTargetScale);
 
                 UpdateViewportTransform(state);
                 UpdateScissorState(state);
@@ -410,7 +411,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     int width = scissor.X2 - x;
                     int height = scissor.Y2 - y;
 
-                    float scale = TextureManager.RtScale;
+                    float scale = TextureManager.RenderTargetScale;
                     if (scale != 1f)
                     {
                         x = (int)(x * scale);
@@ -485,7 +486,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 float width  = MathF.Abs(transform.ScaleX) * 2;
                 float height = MathF.Abs(transform.ScaleY) * 2;
 
-                float scale = TextureManager.RtScale;
+                float scale = TextureManager.RenderTargetScale;
                 if (scale != 1f)
                 {
                     x *= scale;

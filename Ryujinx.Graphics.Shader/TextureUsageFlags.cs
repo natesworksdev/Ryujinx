@@ -2,6 +2,9 @@
 
 namespace Ryujinx.Graphics.Shader
 {
+    /// <summary>
+    /// Flags that indicate how a texture will be used in a shader.
+    /// </summary>
     [Flags]
     public enum TextureUsageFlags
     {

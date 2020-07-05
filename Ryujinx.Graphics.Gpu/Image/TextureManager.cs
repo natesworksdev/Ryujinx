@@ -39,7 +39,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly HashSet<Texture> _modified;
         private readonly HashSet<Texture> _modifiedLinear;
 
-        public float RtScale { get; private set; } = 1f;
+        /// <summary>
+        /// The scaling factor applied to all currently bound render targets.
+        /// </summary>
+        public float RenderTargetScale { get; private set; } = 1f;
 
         /// <summary>
         /// Constructs a new instance of the texture manager.
@@ -175,13 +178,19 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool SetRenderTargetColor(int index, Texture color)
         {
             bool hasValue = color != null;
-            bool changesScale = (hasValue != (_rtColors[index] != null)) || (hasValue && RtScale != color.ScaleFactor);
+            bool changesScale = (hasValue != (_rtColors[index] != null)) || (hasValue && RenderTargetScale != color.ScaleFactor);
             _rtColors[index] = color;
 
             return changesScale || (hasValue && color.ScaleMode != TextureScaleMode.Blacklisted && color.ScaleFactor != GraphicsConfig.ResScale);
         }
 
-        public void UpdateRtScale(int singleUse)
+        /// <summary>
+        /// Updates the Render Target scale, given the currently bound render targets.
+        /// This will update scale to match the configured scale, scale textures that are eligible but not scaled,
+        /// and propagate blacklisted status from one texture to the ones bound with it.
+        /// </summary>
+        /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param> 
+        public void UpdateRenderTargetScale(int singleUse)
         {
             // Make sure all scales for render targets are at the highest they should be. Blacklisted targets should propagate their scale to the other targets.
             bool mismatch = false;
@@ -256,7 +265,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            RtScale = targetScale;
+            RenderTargetScale = targetScale;
         }
 
         /// <summary>
@@ -267,7 +276,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool SetRenderTargetDepthStencil(Texture depthStencil)
         {
             bool hasValue = depthStencil != null;
-            bool changesScale = (hasValue != (_rtDepthStencil != null)) || (hasValue && RtScale != depthStencil.ScaleFactor);
+            bool changesScale = (hasValue != (_rtDepthStencil != null)) || (hasValue && RenderTargetScale != depthStencil.ScaleFactor);
             _rtDepthStencil = depthStencil;
 
             return changesScale || (hasValue && depthStencil.ScaleMode != TextureScaleMode.Blacklisted && depthStencil.ScaleFactor != GraphicsConfig.ResScale);
@@ -353,11 +362,49 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Determines if a given texture is eligible for upscaling from its info.
+        /// </summary>
+        /// <param name="info">The texture info to check</param>
+        /// <returns>True if eligible</returns>
+        public bool IsUpscaleCompatible(TextureInfo info)
+        {
+            return (info.Target == Target.Texture2D || info.Target == Target.Texture2DArray) && info.Levels == 1 && !info.FormatInfo.IsCompressed && UpscaleSafeMode(info);
+        }
+
+        /// <summary>
+        /// Determines if a given texture is "safe" for upscaling from its info.
+        /// Note that this is different from being compatible - this elilinates targets that would have detrimental effects when scaled.
+        /// </summary>
+        /// <param name="info">The texture info to check</param>
+        /// <returns>True if safe</returns>
+        public bool UpscaleSafeMode(TextureInfo info)
+        {
+            // While upscaling works for all targets defined by IsUpscaleCompatible, we additionally blacklist targets here that
+            // may have undesirable results (upscaling blur textures) or simply waste GPU resources (upscaling texture atlas).
+
+            if (info.Width / 8 == info.Height / 8 && !(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
+            {
+                // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, texture atlas)
+                return false;
+            }
+
+            int aspect = (int)Math.Round((info.Width / (float)info.Height) * 9);
+            if (aspect == 16 && info.Height < 360)
+            {
+                // Targets that are roughly 16:9 can only be rescaled if they're equal to or above 360p. (excludes blur and bloom textures)
+                return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Tries to find an existing texture, or create a new one if not found.
         /// </summary>
         /// <param name="copyTexture">Copy texture to find or create</param>
+        /// <param name="preferScaling">Indicates if the texture should be scaled from the start</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(CopyTexture copyTexture, bool allowScaling = true)
+        public Texture FindOrCreateTexture(CopyTexture copyTexture, bool preferScaling = true)
         {
             ulong address = _context.MemoryManager.Translate(copyTexture.Address.Pack());
 
@@ -400,7 +447,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             TextureSearchFlags flags = TextureSearchFlags.IgnoreMs;
 
-            if (allowScaling)
+            if (preferScaling)
             {
                 flags |= TextureSearchFlags.WithUpscale;
             }
@@ -542,32 +589,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             texture.SynchronizeMemory();
 
             return texture;
-        }
-
-        public bool IsUpscaleCompatible(TextureInfo info)
-        {
-            return (info.Target == Target.Texture2D || info.Target == Target.Texture2DArray) && info.Levels == 1 && !info.FormatInfo.IsCompressed && UpscaleSafeMode(info);
-        }
-
-        public bool UpscaleSafeMode(TextureInfo info)
-        {
-            // While upscaling works for all targets defined by IsUpscaleCompatible, we additionally blacklist targets here that
-            // may have undesirable results (upscaling blur textures) or simply waste GPU resources (upscaling texture atlas).
-
-            if (info.Width / 8 == info.Height / 8 && !(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
-            {
-                // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, texture atlas)
-                return false;
-            }
-
-            int aspect = (int)Math.Round((info.Width / (float)info.Height) * 9);
-            if (aspect == 16 && info.Height < 360)
-            {
-                // Targets that are roughly 16:9 can only be rescaled if they're equal to or above 360p. (excludes blur and bloom textures)
-                return false;
-            }
-
-            return true;
         }
 
         /// <summary>

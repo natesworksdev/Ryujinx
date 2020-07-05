@@ -102,6 +102,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="sizeInfo">Size information of the texture</param>
         /// <param name="firstLayer">The first layer of the texture, or 0 if the texture has no parent</param>
         /// <param name="firstLevel">The first mipmap level of the texture, or 0 if the texture has no parent</param>
+        /// <param name="scaleFactor">The floating point scale factor to initialize with</param>
+        /// <param name="scaleMode">The scale mode to initialize with</param>
         private Texture(
             GpuContext       context,
             TextureInfo      info,
@@ -128,6 +130,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="context">GPU context that the texture belongs to</param>
         /// <param name="info">Texture information</param>
         /// <param name="sizeInfo">Size information of the texture</param>
+        /// <param name="scaleMode">The scale mode to initialize with. If scaled, the texture's data is loaded immediately and scaled up</param>
         public Texture(GpuContext context, TextureInfo info, SizeInfo sizeInfo, TextureScaleMode scaleMode)
         {
             ScaleFactor = 1f; // Texture is first loaded at scale 1x.
@@ -316,12 +319,20 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Blacklists this texture from being scaled. Resets its scale to 1 if needed.
+        /// </summary>
         public void BlacklistScale()
         {
             ScaleMode = TextureScaleMode.Blacklisted;
             SetScale(1f);
         }
 
+        /// <summary>
+        /// Propagates the scale between this texture and another to ensure they have the same scale.
+        /// If one texture is blacklisted from scaling, the other will become blacklisted too.
+        /// </summary>
+        /// <param name="other">The other texture</param>
         public void PropagateScale(Texture other)
         {
             if (other.ScaleMode == TextureScaleMode.Blacklisted || ScaleMode == TextureScaleMode.Blacklisted)
@@ -340,6 +351,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Helper method for copying our Texture2DArray texture to the given target, with scaling.
+        /// This creates temporary views for each array layer on both textures, copying each one at a time.
+        /// </summary>
+        /// <param name="target">The texture array to copy to</param>
         private void CopyArrayScaled(ITexture target)
         {
             TextureInfo viewInfo = new TextureInfo(
@@ -377,6 +393,14 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
+        /// <summary>
+        /// Sets the Scale Factor on this texture, and immediately recreates it at the correct size.
+        /// When a texture is resized, a scaled copy is performed from the old texture to the new one, to ensure no data is lost.
+        /// If scale is equivalent, this only propagates the blacklisted/scaled mode.
+        /// If called on a view, its storage is resized instead.
+        /// When resizing storage, all texture views are recreated.
+        /// </summary>
+        /// <param name="scale">The new scale factor for this texture</param>
         public void SetScale(float scale)
         {
             TextureScaleMode newScaleMode = ScaleMode == TextureScaleMode.Blacklisted ? ScaleMode : TextureScaleMode.Scaled;
@@ -390,7 +414,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (ScaleFactor != scale)
             {
-                Logger.PrintInfo(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.Target.ToString()} to ({ScaleFactor} to {scale}). ");
+                Logger.PrintDebug(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.FormatInfo.Format.ToString()} to ({ScaleFactor} to {scale}). ");
                 TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
 
                 ScaleFactor = scale;
@@ -405,7 +429,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     HostTexture.CopyTo(newStorage, new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), new Extents2D(0, 0, newStorage.Width, newStorage.Height), true);
                 }
-                Logger.PrintInfo(LogClass.Gpu, $"  Copy performed: {HostTexture.Width}x{HostTexture.Height} to {newStorage.Width}x{newStorage.Height}");
+
+                Logger.PrintDebug(LogClass.Gpu, $"  Copy performed: {HostTexture.Width}x{HostTexture.Height} to {newStorage.Width}x{newStorage.Height}");
 
                 ReplaceStorage(newStorage);
 
@@ -413,7 +438,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 foreach (var view in _views)
                 {
-                    Logger.PrintInfo(LogClass.Gpu, $"  Recreating view ${Info.Width}x${Info.Height} ${Info.Target.ToString()}.");
+                    Logger.PrintDebug(LogClass.Gpu, $"  Recreating view ${Info.Width}x${Info.Height} ${Info.FormatInfo.Format.ToString()}.");
                     view.ScaleFactor = scale;
 
                     TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities);
@@ -1129,6 +1154,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="parent">The parent texture</param>
         /// <param name="info">The new view texture information</param>
         /// <param name="hostTexture">The new host texture</param>
+        /// <param name="firstLayer">The first layer of the view</param>
+        /// <param name="firstLevel">The first level of the view</param>
         public void ReplaceView(Texture parent, TextureInfo info, ITexture hostTexture, int firstLayer, int firstLevel)
         {
             ReplaceStorage(hostTexture);
