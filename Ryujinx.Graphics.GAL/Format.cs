@@ -162,11 +162,21 @@ namespace Ryujinx.Graphics.GAL
 
     public static class FormatExtensions
     {
+        /// <summary>
+        /// Checks if the texture format is an ASTC format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the texture format is an ASTC format, false otherwise</returns>
         public static bool IsAstc(this Format format)
         {
             return format.IsAstcUnorm() || format.IsAstcSrgb();
         }
 
+        /// <summary>
+        /// Checks if the texture format is an ASTC Unorm format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the texture format is an ASTC Unorm format, false otherwise</returns>
         public static bool IsAstcUnorm(this Format format)
         {
             switch (format)
@@ -191,6 +201,11 @@ namespace Ryujinx.Graphics.GAL
             return false;
         }
 
+        /// <summary>
+        /// Checks if the texture format is an ASTC SRGB format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the texture format is an ASTC SRGB format, false otherwise</returns>
         public static bool IsAstcSrgb(this Format format)
         {
             switch (format)
@@ -215,6 +230,11 @@ namespace Ryujinx.Graphics.GAL
             return false;
         }
 
+        /// <summary>
+        /// Checks if the texture format is a depth, stencil or depth-stencil format.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the format is a depth, stencil or depth-stencil format, false otherwise</returns>
         public static bool IsDepthOrStencil(this Format format)
         {
             switch (format)
@@ -231,6 +251,11 @@ namespace Ryujinx.Graphics.GAL
             return false;
         }
 
+        /// <summary>
+        /// Checks if the texture format only has one component.
+        /// </summary>
+        /// <param name="format">Texture format</param>
+        /// <returns>True if the texture format only has one component, false otherwise</returns>
         public static bool HasOneComponent(this Format format)
         {
             switch (format)
