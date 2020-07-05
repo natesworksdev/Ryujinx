@@ -331,7 +331,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                float sharedScale = Math.Max(ScaleFactor, other.ScaleFactor);
+                // Prefer the configured scale if present. If not, prefer the max.
+                float targetScale = GraphicsConfig.ResScale;
+                float sharedScale = (ScaleFactor == targetScale || other.ScaleFactor == targetScale) ? targetScale : Math.Max(ScaleFactor, other.ScaleFactor);
+
                 SetScale(sharedScale);
                 other.SetScale(sharedScale);
             }

@@ -195,7 +195,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 switch (target.ScaleMode)
                 {
                     case TextureScaleMode.Blacklisted:
-                        mismatch |= (scale != targetScale);
+                        mismatch |= (scale != 1f);
                         blacklisted = true;
                         break;
                     case TextureScaleMode.Eligible:
