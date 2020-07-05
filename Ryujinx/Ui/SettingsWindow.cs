@@ -1,5 +1,7 @@
 using Gtk;
+using Ryujinx.Audio;
 using Ryujinx.Configuration;
+using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.FileSystem;
@@ -9,7 +11,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Ryujinx.Common.Configuration.Hid;
+
 using GUI = Gtk.Builder.ObjectAttribute;
 
 namespace Ryujinx.Ui
@@ -42,6 +44,7 @@ namespace Ryujinx.Ui
         [GUI] ComboBoxText _systemLanguageSelect;
         [GUI] ComboBoxText _systemRegionSelect;
         [GUI] ComboBoxText _systemTimeZoneSelect;
+        [GUI] ComboBoxText _audioBackendSelect;
         [GUI] SpinButton   _systemTimeYearSpin;
         [GUI] SpinButton   _systemTimeMonthSpin;
         [GUI] SpinButton   _systemTimeDaySpin;
@@ -191,8 +194,15 @@ namespace Ryujinx.Ui
                 _systemTimeZoneSelect.Append(locationName, locationName);
             }
 
+            _audioBackendSelect.Append(AudioBackend.Dummy.ToString(), AudioBackend.Dummy.ToString());
+            if (SoundIoAudioOut.IsSupported)
+                _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
+            if (OpenALAudioOut.IsSupported)
+                _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
+
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
+            _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
             _systemTimeZoneSelect.SetActiveId(timeZoneContentManager.SanityCheckDeviceLocationName());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
 
@@ -289,11 +299,34 @@ namespace Ryujinx.Ui
             }
             else
             {
-                FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept);
+                FileChooserDialog fileChooser = new FileChooserDialog("Choose the game directory to add to the list", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept)
+                {
+                    SelectMultiple = true
+                };
 
                 if (fileChooser.Run() == (int)ResponseType.Accept)
                 {
-                    _gameDirsBoxStore.AppendValues(fileChooser.Filename);
+                    foreach (string directory in fileChooser.Filenames)
+                    {
+                        bool directoryAdded = false;
+                        
+                        if (_gameDirsBoxStore.GetIterFirst(out TreeIter treeIter))
+                        {
+                            do
+                            {
+                                if (directory.Equals((string)_gameDirsBoxStore.GetValue(treeIter, 0)))
+                                {
+                                    directoryAdded = true;
+                                    break;
+                                }
+                            } while(_gameDirsBoxStore.IterNext(ref treeIter));
+                        }
+
+                        if (!directoryAdded)
+                        {
+                            _gameDirsBoxStore.AppendValues(directory);
+                        }
+                    }
                 }
 
                 fileChooser.Dispose();
@@ -394,6 +427,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value                    = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
+            ConfigurationState.Instance.System.AudioBackend.Value              = Enum.Parse<AudioBackend>(_audioBackendSelect.ActiveId);
             ConfigurationState.Instance.System.TimeZone.Value                  = _systemTimeZoneSelect.ActiveId;
             ConfigurationState.Instance.System.SystemTimeOffset.Value          = _systemTimeOffset;
             ConfigurationState.Instance.Ui.CustomThemePath.Value               = _custThemePath.Buffer.Text;
@@ -404,7 +438,6 @@ namespace Ryujinx.Ui
 
             MainWindow.SaveConfig();
             MainWindow.ApplyTheme();
-            MainWindow.UpdateGameTable();
             Dispose();
         }
 

@@ -38,6 +38,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
         private bool _isAnyVbInstanced;
         private bool _vsUsesInstanceId;
 
+        private bool _forceShaderUpdate;
+
         /// <summary>
         /// Creates a new instance of the GPU methods class.
         /// </summary>
@@ -75,6 +77,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
             state.RegisterCallback(MethodOffset.TextureBarrier,      TextureBarrier);
             state.RegisterCallback(MethodOffset.InvalidateTextures,  InvalidateTextures);
             state.RegisterCallback(MethodOffset.TextureBarrierTiled, TextureBarrierTiled);
+
+            state.RegisterCallback(MethodOffset.VbElementU8,  VbElementU8);
+            state.RegisterCallback(MethodOffset.VbElementU16, VbElementU16);
+            state.RegisterCallback(MethodOffset.VbElementU32, VbElementU32);
 
             state.RegisterCallback(MethodOffset.ResetCounter, ResetCounter);
 
@@ -121,8 +127,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
             // Shaders must be the first one to be updated if modified, because
             // some of the other state depends on information from the currently
             // bound shaders.
-            if (state.QueryModified(MethodOffset.ShaderBaseAddress, MethodOffset.ShaderState))
+            if (state.QueryModified(MethodOffset.ShaderBaseAddress, MethodOffset.ShaderState) || _forceShaderUpdate)
             {
+                _forceShaderUpdate = false;
+
                 UpdateShaderState(state);
             }
 
@@ -722,7 +730,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 ulong size;
 
-                if (_drawIndexed || stride == 0 || instanced)
+                if (_inlineIndexCount != 0 || _drawIndexed || stride == 0 || instanced)
                 {
                     // This size may be (much) larger than the real vertex buffer size.
                     // Avoid calculating it this way, unless we don't have any other option.
