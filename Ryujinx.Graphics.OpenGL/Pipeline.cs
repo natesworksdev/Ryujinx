@@ -859,7 +859,7 @@ namespace Ryujinx.Graphics.OpenGL
                     {
                         TextureBase activeTarget = _rtColor0Texture ?? _rtDepthTexture;
 
-                        if (activeTarget.Width / (float)texture.Width == activeTarget.Height / (float)texture.Height)
+                        if (activeTarget != null && activeTarget.Width / (float)texture.Width == activeTarget.Height / (float)texture.Height)
                         {
                             // If the texture's size is a multiple of the sampler size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
                             interpolate = true;
