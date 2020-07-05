@@ -222,17 +222,17 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (singleUse != -1)
             {
                 // If only one target is in use (by a clear, for example) the others do not need to be checked for mismatching scale.
-                considerTarget(_rtColors[singleUse]);
+                ConsiderTarget(_rtColors[singleUse]);
             }
             else
             {
                 foreach (Texture color in _rtColors)
                 {
-                    considerTarget(color);
+                    ConsiderTarget(color);
                 }
             }
 
-            considerTarget(_rtDepthStencil);
+            ConsiderTarget(_rtDepthStencil);
 
             mismatch |= blacklisted && hasUpscaled;
 
