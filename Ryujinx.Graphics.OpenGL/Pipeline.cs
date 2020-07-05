@@ -717,7 +717,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _fpRenderScale[0] = scale;
 
-            if (_program != null && _program.FragmentRenderScaleUniform != 1)
+            if (_program != null && _program.FragmentRenderScaleUniform != -1)
             {
                 GL.Uniform1(_program.FragmentRenderScaleUniform, 1, _fpRenderScale); // Just the first element.
             }
@@ -857,7 +857,7 @@ namespace Ryujinx.Graphics.OpenGL
                 switch (stage)
                 {
                     case ShaderStage.Fragment:
-                        if (_program.FragmentRenderScaleUniform != 0)
+                        if (_program.FragmentRenderScaleUniform != -1)
                         {
                             // Only update and send sampled texture scales if the shader uses them.
                             bool interpolate = false;
@@ -1153,14 +1153,14 @@ namespace Ryujinx.Graphics.OpenGL
                 switch (stage)
                 {
                     case ShaderStage.Fragment:
-                        if (_program.FragmentRenderScaleUniform != 1)
+                        if (_program.FragmentRenderScaleUniform != -1)
                         {
                             GL.Uniform1(_program.FragmentRenderScaleUniform, textureCount + 1, _fpRenderScale);
                         }
                         break;
 
                     case ShaderStage.Compute:
-                        if (_program.ComputeRenderScaleUniform != 1)
+                        if (_program.ComputeRenderScaleUniform != -1)
                         {
                             GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount, _cpRenderScale);
                         }
