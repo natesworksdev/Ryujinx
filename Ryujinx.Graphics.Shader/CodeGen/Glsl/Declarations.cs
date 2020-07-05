@@ -229,7 +229,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         private static bool DeclareRenderScale(CodeGenContext context)
         {
-            if ((context.Config.UsedFeatures & (FeatureFlags.FragCoordXY | FeatureFlags.IntegerSampling)) > 0)
+            if ((context.Config.UsedFeatures & (FeatureFlags.FragCoordXY | FeatureFlags.IntegerSampling)) != 0)
             {
                 string stage = OperandManager.GetShaderStagePrefix(context.Config.Stage);
 

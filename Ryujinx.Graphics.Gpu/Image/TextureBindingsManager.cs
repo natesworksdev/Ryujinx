@@ -218,7 +218,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 Texture texture = pool.Get(textureId);
 
-                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0)
+                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) != 0)
                 {
                     texture?.BlacklistScale();
                 }
@@ -283,7 +283,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 Texture texture = pool.Get(textureId);
 
-                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) > 0)
+                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) != 0)
                 {
                     texture?.BlacklistScale();
                 }

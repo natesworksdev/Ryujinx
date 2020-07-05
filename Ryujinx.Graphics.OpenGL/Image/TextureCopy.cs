@@ -33,7 +33,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             ClearBufferMask mask = GetMask(src.Format);
 
-            if ((mask & (ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit)) > 0)
+            if ((mask & (ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit)) != 0)
             {
                 linearFilter = false;
             }
