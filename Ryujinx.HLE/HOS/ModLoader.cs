@@ -117,6 +117,23 @@ namespace Ryujinx.HLE.HOS
             // modsDir.CreateSubdirectory(AmsKipPatchDir); // uncomment when KIPs are supported
         }
 
+        private static DirectoryInfo FindTitleDir(DirectoryInfo contentsDir, string titleId)
+            => contentsDir.EnumerateDirectories($"{titleId}*", _dirEnumOptions).FirstOrDefault();
+
+        public string GetTitleDir(string modsBasePath, string titleId)
+        {
+            var contentsDir = new DirectoryInfo(Path.Combine(modsBasePath, AmsContentsDir));
+            var titleModsPath = FindTitleDir(contentsDir, titleId);
+
+            if (titleModsPath == null)
+            {
+                Logger.PrintInfo(LogClass.ModLoader, $"Creating mods dir for Title {titleId.ToUpper()}");
+                titleModsPath = contentsDir.CreateSubdirectory(titleId);
+            }
+
+            return titleModsPath.FullName;
+        }
+
         // Static Query Methods
         public static void QueryPatchDirs(PatchCache cache, DirectoryInfo patchDir, DirectoryInfo searchDir)
         {
@@ -196,7 +213,7 @@ namespace Ryujinx.HLE.HOS
 
             Logger.PrintInfo(LogClass.ModLoader, $"Searching mods for Title {titleId:X16}");
 
-            var titleDir = contentsDir.EnumerateDirectories($"{titleId:x16}*", _dirEnumOptions).FirstOrDefault();
+            var titleDir = FindTitleDir(contentsDir, $"{titleId:x16}");
 
             if (titleDir != null)
             {
