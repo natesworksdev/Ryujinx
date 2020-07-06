@@ -482,9 +482,14 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int modifiedCount = _context.PhysicalMemory.QueryModified(Address, Size, ResourceName.Texture, _modifiedRanges);
 
-            if (modifiedCount == 0 && _hasData)
+            if (_hasData)
             {
-                return;
+                if (modifiedCount == 0)
+                {
+                    return;
+                }
+
+                BlacklistScale();
             }
 
             ReadOnlySpan<byte> data = _context.PhysicalMemory.GetSpan(Address, (int)Size);
