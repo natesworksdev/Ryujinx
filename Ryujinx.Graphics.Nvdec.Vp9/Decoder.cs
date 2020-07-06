@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Memory;
+using Ryujinx.Graphics.Nvdec.Vp9.Common;
 using Ryujinx.Graphics.Nvdec.Vp9.Types;
 using Ryujinx.Graphics.Video;
 using System;
@@ -9,6 +10,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
     public class Decoder : IVp9Decoder
     {
         public bool IsHardwareAccelerated => false;
+
+        private readonly MemoryAllocator _allocator = new MemoryAllocator();
 
         public ISurface CreateSurface(int width, int height) => new Surface(width, height);
 
@@ -86,9 +89,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             cm.Mb.SetupBlockPlanes(1, 1);
 
-            cm.InitializeTileWorkerData(1 << pictureInfo.Log2TileCols, 1 << pictureInfo.Log2TileRows);
-
-            cm.AllocContextBuffers(output.Width, output.Height);
+            cm.AllocTileWorkerData(_allocator, 1 << pictureInfo.Log2TileCols, 1 << pictureInfo.Log2TileRows);
+            cm.AllocContextBuffers(_allocator, output.Width, output.Height);
             cm.InitContextBuffers();
             cm.SetupSegmentationDequant();
             cm.SetupScaleFactors();
@@ -109,7 +111,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
 
             GetMvs(ref cm, mvsOut);
 
-            cm.FreeContextBuffers();
+            cm.FreeTileWorkerData(_allocator);
+            cm.FreeContextBuffers(_allocator);
 
             return true;
         }
@@ -154,6 +157,8 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
                 mvs[i].RefFrames[0] = mv.RefFrame[0];
                 mvs[i].RefFrames[1] = mv.RefFrame[1];
             }
-        }        
+        }
+
+        public void Dispose() => _allocator.Dispose();
     }
 }

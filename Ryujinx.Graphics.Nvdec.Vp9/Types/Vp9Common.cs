@@ -10,11 +10,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         public ArrayPtr<TileWorkerData> TileWorkerData;
 
-        public void InitializeTileWorkerData(int tileCols, int tileRows)
-        {
-            TileWorkerData = MemoryUtil.Allocate<TileWorkerData>(tileCols * tileRows);
-        }
-
         public InternalErrorInfo Error;
 
         public int Width;
@@ -54,7 +49,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
 
         /* We allocate a ModeInfo struct for each macroblock, together with
            an extra row on top and column on the left to simplify prediction. */
-        public int MiAllocSize;
         public ArrayPtr<ModeInfo> Mip; /* Base of allocated array */
         public ArrayPtr<ModeInfo> Mi;  /* Corresponds to upper left visible macroblock */
 
@@ -71,7 +65,6 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public Array2<ArrayPtr<byte>> SegMapArray;
         public ArrayPtr<byte> LastFrameSegMap;
         public ArrayPtr<byte> CurrentFrameSegMap;
-        public int SegMapAllocSize;
 
         public byte InterpFilter;
 
@@ -90,7 +83,7 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
         public Ptr<Vp9EntropyProbs> Fc;
         public Ptr<Vp9BackwardUpdates> Counts;
 
-        public int FrameParallelDecodingMode;
+        public bool FrameParallelDecodingMode;
 
         public int Log2TileCols, Log2TileRows;
 
@@ -137,15 +130,24 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             MBs = MbRows * MbCols;
         }
 
-        private void AllocSegMap(int segMapSize)
+        public void AllocTileWorkerData(MemoryAllocator allocator, int tileCols, int tileRows)
+        {
+            TileWorkerData = allocator.Allocate<TileWorkerData>(tileCols * tileRows);
+        }
+
+        public void FreeTileWorkerData(MemoryAllocator allocator)
+        {
+            allocator.Free(TileWorkerData);
+        }
+
+        private void AllocSegMap(MemoryAllocator allocator, int segMapSize)
         {
             int i;
 
             for (i = 0; i < Constants.NumPingPongBuffers; ++i)
             {
-                SegMapArray[i] = MemoryUtil.Allocate<byte>(segMapSize);
+                SegMapArray[i] = allocator.Allocate<byte>(segMapSize);
             }
-            SegMapAllocSize = segMapSize;
 
             // Init the index.
             SegMapIdx = 0;
@@ -155,13 +157,13 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             LastFrameSegMap = SegMapArray[PrevSegMapIdx];
         }
 
-        private void FreeSegMap()
+        private void FreeSegMap(MemoryAllocator allocator)
         {
             int i;
 
             for (i = 0; i < Constants.NumPingPongBuffers; ++i)
             {
-                MemoryUtil.Free(SegMapArray[i]);
+                allocator.Free(SegMapArray[i]);
                 SegMapArray[i] = ArrayPtr<byte>.Null;
             }
 
@@ -169,86 +171,76 @@ namespace Ryujinx.Graphics.Nvdec.Vp9.Types
             LastFrameSegMap = ArrayPtr<byte>.Null;
         }
 
-        private void DecAllocMi(int miSize)
+        private void DecAllocMi(MemoryAllocator allocator, int miSize)
         {
-            Mip = MemoryUtil.Allocate<ModeInfo>(miSize);
-            MiAllocSize = miSize;
-            MiGridBase = MemoryUtil.Allocate<Ptr<ModeInfo>>(miSize);
+            Mip = allocator.Allocate<ModeInfo>(miSize);
+            MiGridBase = allocator.Allocate<Ptr<ModeInfo>>(miSize);
         }
 
-        private void DecFreeMi()
+        private void DecFreeMi(MemoryAllocator allocator)
         {
-            MemoryUtil.Free(Mip);
+            allocator.Free(Mip);
             Mip = ArrayPtr<ModeInfo>.Null;
-            MemoryUtil.Free(MiGridBase);
+            allocator.Free(MiGridBase);
             MiGridBase = ArrayPtr<Ptr<ModeInfo>>.Null;
-            MiAllocSize = 0;
         }
 
-        public void FreeContextBuffers()
+        public void FreeContextBuffers(MemoryAllocator allocator)
         {
-            DecFreeMi();
-            FreeSegMap();
-            MemoryUtil.Free(AboveContext);
+            DecFreeMi(allocator);
+            FreeSegMap(allocator);
+            allocator.Free(AboveContext);
             AboveContext = ArrayPtr<sbyte>.Null;
-            MemoryUtil.Free(AboveSegContext);
+            allocator.Free(AboveSegContext);
             AboveSegContext = ArrayPtr<sbyte>.Null;
-            MemoryUtil.Free(Lf.Lfm);
+            allocator.Free(Lf.Lfm);
             Lf.Lfm = ArrayPtr<LoopFilterMask>.Null;
-            MemoryUtil.Free(CurFrameMvs);
+            allocator.Free(CurFrameMvs);
             CurFrameMvs = ArrayPtr<MvRef>.Null;
             if (UsePrevFrameMvs)
             {
-                MemoryUtil.Free(PrevFrameMvs);
+                allocator.Free(PrevFrameMvs);
                 PrevFrameMvs = ArrayPtr<MvRef>.Null;
             }
         }
 
-        private void AllocLoopFilter()
+        private void AllocLoopFilter(MemoryAllocator allocator)
         {
-            MemoryUtil.Free(Lf.Lfm);
             // Each lfm holds bit masks for all the 8x8 blocks in a 64x64 region. The
             // stride and rows are rounded up / truncated to a multiple of 8.
             Lf.LfmStride = (MiCols + (Constants.MiBlockSize - 1)) >> 3;
-            Lf.Lfm = MemoryUtil.Allocate<LoopFilterMask>(((MiRows + (Constants.MiBlockSize - 1)) >> 3) * Lf.LfmStride);
+            Lf.Lfm = allocator.Allocate<LoopFilterMask>(((MiRows + (Constants.MiBlockSize - 1)) >> 3) * Lf.LfmStride);
         }
 
-        public void AllocContextBuffers(int width, int height)
+        public void AllocContextBuffers(MemoryAllocator allocator, int width, int height)
         {
-            int newMiSize;
-
             SetMbMi(width, height);
-            newMiSize = MiStride * CalcMiSize(MiRows);
-            if (MiAllocSize < newMiSize)
+            int newMiSize = MiStride * CalcMiSize(MiRows);
+            if (newMiSize != 0)
             {
-                DecFreeMi();
-                DecAllocMi(newMiSize);
+                DecAllocMi(allocator, newMiSize);
             }
 
-            if (SegMapAllocSize < MiRows * MiCols)
+            if (MiRows * MiCols != 0)
             {
                 // Create the segmentation map structure and set to 0.
-                FreeSegMap();
-                AllocSegMap(MiRows * MiCols);
+                AllocSegMap(allocator, MiRows * MiCols);
             }
 
-            if (AboveContextAllocCols < MiCols)
+            if (MiCols != 0)
             {
-                MemoryUtil.Free(AboveContext);
-                AboveContext = MemoryUtil.Allocate<sbyte>(2 * TileInfo.MiColsAlignedToSb(MiCols) * Constants.MaxMbPlane);
-                MemoryUtil.Free(AboveSegContext);
-                AboveSegContext = MemoryUtil.Allocate<sbyte>(TileInfo.MiColsAlignedToSb(MiCols));
-                AboveContextAllocCols = MiCols;
+                AboveContext = allocator.Allocate<sbyte>(2 * TileInfo.MiColsAlignedToSb(MiCols) * Constants.MaxMbPlane);
+                AboveSegContext = allocator.Allocate<sbyte>(TileInfo.MiColsAlignedToSb(MiCols));
             }
 
-            AllocLoopFilter();
+            AllocLoopFilter(allocator);
 
-            CurFrameMvs = MemoryUtil.Allocate<MvRef>(MiRows * MiCols);
+            CurFrameMvs = allocator.Allocate<MvRef>(MiRows * MiCols);
             // Using the same size as the current frame is fine here,
             // as this is never true when we have a resolution change.
             if (UsePrevFrameMvs)
             {
-                PrevFrameMvs = MemoryUtil.Allocate<MvRef>(MiRows * MiCols);
+                PrevFrameMvs = allocator.Allocate<MvRef>(MiRows * MiCols);
             }
         }
 

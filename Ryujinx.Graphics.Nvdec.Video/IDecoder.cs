@@ -1,6 +1,8 @@
-﻿namespace Ryujinx.Graphics.Video
+﻿using System;
+
+namespace Ryujinx.Graphics.Video
 {
-    public interface IDecoder
+    public interface IDecoder : IDisposable
     {
         bool IsHardwareAccelerated { get; }
 

@@ -34,5 +34,7 @@ namespace Ryujinx.Graphics.Nvdec.H264
 
             return output;
         }
+
+        public void Dispose() => _context.Dispose();
     }
 }
