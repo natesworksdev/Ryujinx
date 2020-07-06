@@ -382,7 +382,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             // While upscaling works for all targets defined by IsUpscaleCompatible, we additionally blacklist targets here that
             // may have undesirable results (upscaling blur textures) or simply waste GPU resources (upscaling texture atlas).
 
-            if (info.Width / 8 == info.Height / 8 && !(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
+            // Detect if the texture is possibly square. Widths may be aligned, so to remove the uncertainty we align both the width and height.
+
+            int widthAlignment = (info.IsLinear ? 32 : 64) / info.FormatInfo.BytesPerPixel;
+
+            bool possiblySquare = BitUtils.AlignUp(info.Width, widthAlignment) == BitUtils.AlignUp(info.Height, widthAlignment);
+
+            if (possiblySquare && !(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
             {
                 // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, texture atlas)
                 return false;
