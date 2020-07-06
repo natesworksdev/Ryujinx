@@ -382,16 +382,25 @@ namespace Ryujinx.Graphics.Gpu.Image
             // While upscaling works for all targets defined by IsUpscaleCompatible, we additionally blacklist targets here that
             // may have undesirable results (upscaling blur textures) or simply waste GPU resources (upscaling texture atlas).
 
-            // Detect if the texture is possibly square. Widths may be aligned, so to remove the uncertainty we align both the width and height.
-
-            int widthAlignment = (info.IsLinear ? 32 : 64) / info.FormatInfo.BytesPerPixel;
-
-            bool possiblySquare = BitUtils.AlignUp(info.Width, widthAlignment) == BitUtils.AlignUp(info.Height, widthAlignment);
-
-            if (possiblySquare && !(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
+            if (!(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
             {
-                // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, texture atlas)
-                return false;
+                // Discount square or small textures that aren't depth-stencil like. (excludes game textures, cubemap faces, most 3D texture LUT, texture atlas)
+
+                if (Math.Max(info.Width, info.Height) <= GraphicsConfig.ResScaleThreshold)
+                {
+                    return false;
+                }
+
+                // Detect if the texture is possibly square. Widths may be aligned, so to remove the uncertainty we align both the width and height.
+
+                int widthAlignment = (info.IsLinear ? 32 : 64) / info.FormatInfo.BytesPerPixel;
+
+                bool possiblySquare = BitUtils.AlignUp(info.Width, widthAlignment) == BitUtils.AlignUp(info.Height, widthAlignment);
+
+                if (possiblySquare)
+                {
+                    return false;
+                }
             }
 
             int aspect = (int)Math.Round((info.Width / (float)info.Height) * 9);
@@ -768,6 +777,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                             out int firstLayer,
                             out int firstLevel))
                         {
+                            overlap.BlacklistScale();
+
                             overlap.HostTexture.CopyTo(texture.HostTexture, firstLayer, firstLevel);
 
                             if (IsTextureModified(overlap))
