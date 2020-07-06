@@ -384,7 +384,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!(info.FormatInfo.Format.IsDepthOrStencil() || info.FormatInfo.Format.HasOneComponent()))
             {
-                // Discount square or small textures that aren't depth-stencil like. (excludes game textures, cubemap faces, most 3D texture LUT, texture atlas)
+                // Discount square textures that aren't depth-stencil like. (excludes game textures, cubemap faces, most 3D texture LUT, texture atlas)
                 // Detect if the texture is possibly square. Widths may be aligned, so to remove the uncertainty we align both the width and height.
 
                 int widthAlignment = (info.IsLinear ? 32 : 64) / info.FormatInfo.BytesPerPixel;
