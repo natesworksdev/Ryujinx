@@ -27,11 +27,5 @@ namespace Ryujinx.Graphics.Gpu
         /// This can avoid lower resolution on some games when GPU performance is poor.
         /// </summary>
         public static bool FastGpuTime = true;
-
-        /// <summary>
-        /// If a texture is equal or below this threshold, it will be blacklisted for scaling. 
-        /// Small textures are generally used for cubemaps and 3D textures, and end up scaling back down anyways.
-        /// </summary>
-        public static float ResScaleThreshold = 64f;
     }
 }
