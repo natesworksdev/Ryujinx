@@ -206,7 +206,7 @@ namespace Ryujinx.Ui
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
-            _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
+            _audioBackendSelect.SetActiveId(ConfigurationState.Instance.Audio.AudioBackend.Value.ToString());
             _systemTimeZoneSelect.SetActiveId(timeZoneContentManager.SanityCheckDeviceLocationName());
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
@@ -440,7 +440,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value                    = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
-            ConfigurationState.Instance.System.AudioBackend.Value              = Enum.Parse<AudioBackend>(_audioBackendSelect.ActiveId);
+            ConfigurationState.Instance.Audio.AudioBackend.Value               = Enum.Parse<AudioBackend>(_audioBackendSelect.ActiveId);
             ConfigurationState.Instance.System.TimeZone.Value                  = _systemTimeZoneSelect.ActiveId;
             ConfigurationState.Instance.System.SystemTimeOffset.Value          = _systemTimeOffset;
             ConfigurationState.Instance.Ui.CustomThemePath.Value               = _custThemePath.Buffer.Text;
