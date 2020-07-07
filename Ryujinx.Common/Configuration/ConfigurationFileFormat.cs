@@ -13,9 +13,19 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 9;
+        public const int CurrentVersion = 11;
 
         public int Version { get; set; }
+
+        /// <summary>
+        /// Resolution Scale. An integer scale applied to applicable render targets. Values 1-4, or -1 to use a custom floating point scale instead.
+        /// </summary>
+        public int ResScale { get; set; }
+
+        /// <summary>
+        /// Custom Resolution Scale. A custom floating point scale applied to applicable render targets. Only active when Resolution Scale is -1.
+        /// </summary>
+        public float ResScaleCustom { get; set; }
 
         /// <summary>
         /// Max Anisotropy. Values range from 0 - 16. Set to -1 to let the game decide.
@@ -126,6 +136,11 @@ namespace Ryujinx.Configuration
         /// Enables FS access log output to the console. Possible modes are 0-3
         /// </summary>
         public int FsGlobalAccessLogMode { get; set; }
+
+        /// <summary>
+        /// The selected audio backend
+        /// </summary>
+        public AudioBackend AudioBackend { get; set; }
 
         /// <summary>
         /// Enable or disable ignoring missing services

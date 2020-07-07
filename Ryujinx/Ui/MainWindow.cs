@@ -179,6 +179,14 @@ namespace Ryujinx.Ui
             UpdateColumns();
             UpdateGameTable();
 
+            ConfigurationState.Instance.Ui.GameDirs.Event += (sender, args) =>
+            {
+                if (args.OldValue != args.NewValue)
+                {
+                    UpdateGameTable();
+                }
+            };
+
             Task.Run(RefreshFirmwareLabel);
 
             _statusBar.Hide();
@@ -313,7 +321,7 @@ namespace Ryujinx.Ui
 
         internal static void UpdateGameTable()
         {
-            if (_updatingGameTable)
+            if (_updatingGameTable || _gameLoaded)
             {
                 return;
             }
@@ -382,9 +390,7 @@ namespace Ryujinx.Ui
 
                 HLE.Switch device = InitializeSwitchInstance();
 
-                // TODO: Move this somewhere else + reloadable?
-                Graphics.Gpu.GraphicsConfig.MaxAnisotropy   = ConfigurationState.Instance.Graphics.MaxAnisotropy;
-                Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+                UpdateGraphicsConfig();
 
                 Logger.PrintInfo(LogClass.Application, $"Using Firmware Version: {_contentManager.GetCurrentFirmwareVersion()?.VersionString}");
 
@@ -597,6 +603,15 @@ namespace Ryujinx.Ui
             }
         }
 
+        public static void UpdateGraphicsConfig()
+        {
+            int resScale = ConfigurationState.Instance.Graphics.ResScale;
+            float resScaleCustom = ConfigurationState.Instance.Graphics.ResScaleCustom;
+            Graphics.Gpu.GraphicsConfig.ResScale = (resScale == -1) ? resScaleCustom : resScale;
+            Graphics.Gpu.GraphicsConfig.MaxAnisotropy = ConfigurationState.Instance.Graphics.MaxAnisotropy;
+            Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+        }
+
         public static void SaveConfig()
         {
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
@@ -647,24 +662,46 @@ namespace Ryujinx.Ui
             return new Renderer();
         }
 
-        /// <summary>
-        /// Picks an <see cref="IAalOutput"/> audio output renderer supported on this machine
-        /// </summary>
-        /// <returns>An <see cref="IAalOutput"/> supported by this machine</returns>
         private static IAalOutput InitializeAudioEngine()
         {
-            if (OpenALAudioOut.IsSupported)
+            if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
             {
-                return new OpenALAudioOut();
+                if (SoundIoAudioOut.IsSupported)
+                {
+                    return new SoundIoAudioOut();
+                }
+                else
+                {
+                    Logger.PrintWarning(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
+                }
             }
-            else if (SoundIoAudioOut.IsSupported)
+            else if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
             {
-                return new SoundIoAudioOut();
+                if (OpenALAudioOut.IsSupported)
+                {
+                    return new OpenALAudioOut();
+                }
+                else
+                {
+                    Logger.PrintWarning(LogClass.Audio, "OpenAL is not supported, trying to fall back to SoundIO.");
+
+                    if (SoundIoAudioOut.IsSupported)
+                    {
+                        Logger.PrintWarning(LogClass.Audio, "Found SoundIO, changing configuration.");
+
+                        ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
+                        SaveConfig();
+
+                        return new SoundIoAudioOut();
+                    }
+                    else
+                    {
+                        Logger.PrintWarning(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
+                    }
+                }
             }
-            else
-            {
-                return new DummyAudioOut();
-            }
+
+            return new DummyAudioOut();
         }
 
         //Events

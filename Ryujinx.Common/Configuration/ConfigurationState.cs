@@ -206,6 +206,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<int> FsGlobalAccessLogMode { get; private set; }
 
             /// <summary>
+            /// The selected audio backend
+            /// </summary>
+            public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
+
+            /// <summary>
             /// Enable or disable ignoring missing services
             /// </summary>
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
@@ -221,6 +226,7 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = new ReactiveObject<bool>();
                 EnableFsIntegrityChecks   = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode     = new ReactiveObject<int>();
+                AudioBackend              = new ReactiveObject<AudioBackend>();
                 IgnoreMissingServices     = new ReactiveObject<bool>();
             }
         }
@@ -266,6 +272,16 @@ namespace Ryujinx.Configuration
             public ReactiveObject<float> MaxAnisotropy { get; private set; }
 
             /// <summary>
+            /// Resolution Scale. An integer scale applied to applicable render targets. Values 1-4, or -1 to use a custom floating point scale instead.
+            /// </summary>
+            public ReactiveObject<int> ResScale { get; private set; }
+
+            /// <summary>
+            /// Custom Resolution Scale. A custom floating point scale applied to applicable render targets. Only active when Resolution Scale is -1.
+            /// </summary>
+            public ReactiveObject<float> ResScaleCustom { get; private set; }
+
+            /// <summary>
             /// Dumps shaders in this local directory
             /// </summary>
             public ReactiveObject<string> ShadersDumpPath { get; private set; }
@@ -277,6 +293,8 @@ namespace Ryujinx.Configuration
 
             public GraphicsSection()
             {
+                ResScale        = new ReactiveObject<int>();
+                ResScaleCustom  = new ReactiveObject<float>();
                 MaxAnisotropy   = new ReactiveObject<float>();
                 ShadersDumpPath = new ReactiveObject<string>();
                 EnableVsync     = new ReactiveObject<bool>();
@@ -348,6 +366,8 @@ namespace Ryujinx.Configuration
             ConfigurationFileFormat configurationFile = new ConfigurationFileFormat
             {
                 Version                   = ConfigurationFileFormat.CurrentVersion,
+                ResScale                  = Graphics.ResScale,
+                ResScaleCustom            = Graphics.ResScaleCustom,
                 MaxAnisotropy             = Graphics.MaxAnisotropy,
                 GraphicsShadersDumpPath   = Graphics.ShadersDumpPath,
                 LoggingEnableDebug        = Logger.EnableDebug,
@@ -370,6 +390,7 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
+                AudioBackend              = System.AudioBackend,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
                 {
@@ -403,6 +424,8 @@ namespace Ryujinx.Configuration
 
         public void LoadDefault()
         {
+            Graphics.ResScale.Value                = 1;
+            Graphics.ResScaleCustom.Value          = 1.0f;
             Graphics.MaxAnisotropy.Value           = -1;
             Graphics.ShadersDumpPath.Value         = "";
             Logger.EnableDebug.Value               = false;
@@ -425,6 +448,7 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = false;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
+            System.AudioBackend.Value              = AudioBackend.OpenAl;
             System.IgnoreMissingServices.Value     = false;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
@@ -547,7 +571,8 @@ namespace Ryujinx.Configuration
                 Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 6.");
 
                 configurationFileFormat.ControllerConfig = new List<ControllerConfig>();
-                configurationFileFormat.KeyboardConfig   = new List<KeyboardConfig>{
+                configurationFileFormat.KeyboardConfig   = new List<KeyboardConfig>
+                {
                     new KeyboardConfig
                     {
                         Index          = 0,
@@ -634,16 +659,31 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            List<InputConfig> inputConfig = new List<InputConfig>();
-            foreach (ControllerConfig controllerConfig in configurationFileFormat.ControllerConfig)
+            if (configurationFileFormat.Version < 10)
             {
-                inputConfig.Add(controllerConfig);
-            }
-            foreach (KeyboardConfig keyboardConfig in configurationFileFormat.KeyboardConfig)
-            {
-                inputConfig.Add(keyboardConfig);
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 10.");
+
+                configurationFileFormat.AudioBackend = AudioBackend.OpenAl;
+
+                configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 11)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 11.");
+
+                configurationFileFormat.ResScale = 1;
+                configurationFileFormat.ResScaleCustom = 1.0f;
+
+                configurationFileUpdated = true;
+            }
+
+            List<InputConfig> inputConfig = new List<InputConfig>();
+            inputConfig.AddRange(configurationFileFormat.ControllerConfig);
+            inputConfig.AddRange(configurationFileFormat.KeyboardConfig);
+
+            Graphics.ResScale.Value                = configurationFileFormat.ResScale;
+            Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
@@ -660,13 +700,13 @@ namespace Ryujinx.Configuration
             System.TimeZone.Value                  = configurationFileFormat.SystemTimeZone;
             System.SystemTimeOffset.Value          = configurationFileFormat.SystemTimeOffset;
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
-            System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
             EnableDiscordIntegration.Value         = configurationFileFormat.EnableDiscordIntegration;
             Graphics.EnableVsync.Value             = configurationFileFormat.EnableVsync;
             System.EnableMulticoreScheduling.Value = configurationFileFormat.EnableMulticoreScheduling;
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
+            System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;

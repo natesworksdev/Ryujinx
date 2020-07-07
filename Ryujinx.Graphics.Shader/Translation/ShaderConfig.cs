@@ -22,6 +22,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public TranslationFlags Flags { get; }
 
+        public FeatureFlags UsedFeatures { get; set; }
+
         public ShaderConfig(IGpuAccessor gpuAccessor, TranslationFlags flags)
         {
             Stage             = ShaderStage.Compute;
@@ -34,6 +36,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             OmapDepth         = false;
             GpuAccessor       = gpuAccessor;
             Flags             = flags;
+            UsedFeatures      = FeatureFlags.None;
         }
 
         public ShaderConfig(ShaderHeader header, IGpuAccessor gpuAccessor, TranslationFlags flags)
@@ -48,6 +51,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             OmapDepth         = header.OmapDepth;
             GpuAccessor       = gpuAccessor;
             Flags             = flags;
+            UsedFeatures      = FeatureFlags.None;
         }
 
         public int GetDepthRegister()
@@ -67,6 +71,27 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             // The depth register is always two registers after the last color output.
             return count + 1;
+        }
+
+        public TextureFormat GetTextureFormat(int handle)
+        {
+            // When the formatted load extension is supported, we don't need to
+            // specify a format, we can just declare it without a format and the GPU will handle it.
+            if (GpuAccessor.QuerySupportsImageLoadFormatted())
+            {
+                return TextureFormat.Unknown;
+            }
+
+            var format = GpuAccessor.QueryTextureFormat(handle);
+
+            if (format == TextureFormat.Unknown)
+            {
+                GpuAccessor.Log($"Unknown format for texture {handle}.");
+
+                format = TextureFormat.R8G8B8A8Unorm;
+            }
+
+            return format;
         }
     }
 }

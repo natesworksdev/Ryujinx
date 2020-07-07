@@ -7,13 +7,41 @@
     <property name="step_increment">1</property>
     <property name="page_increment">10</property>
   </object>
+  <object class="GtkAdjustment" id="_systemTimeDaySpinAdjustment">
+    <property name="lower">1</property>
+    <property name="upper">31</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="_systemTimeHourSpinAdjustment">
+    <property name="upper">23</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="_systemTimeMinuteSpinAdjustment">
+    <property name="upper">59</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="_systemTimeMonthSpinAdjustment">
+    <property name="lower">1</property>
+    <property name="upper">12</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">5</property>
+  </object>
+  <object class="GtkAdjustment" id="_systemTimeYearSpinAdjustment">
+    <property name="lower">2000</property>
+    <property name="upper">2060</property>
+    <property name="step_increment">1</property>
+    <property name="page_increment">10</property>
+  </object>
   <object class="GtkWindow" id="_settingsWin">
     <property name="can_focus">False</property>
     <property name="title" translatable="yes">Ryujinx - Settings</property>
     <property name="modal">True</property>
     <property name="window_position">center</property>
     <property name="default_width">650</property>
-    <property name="default_height">520</property>
+    <property name="default_height">550</property>
     <child>
       <placeholder/>
     </child>
@@ -1441,6 +1469,46 @@
                                 <property name="position">1</property>
                               </packing>
                             </child>
+                            <child>
+                              <object class="GtkBox" id="AudioBackendBox">
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <child>
+                                  <object class="GtkLabel">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">Change System Region</property>
+                                    <property name="halign">end</property>
+                                    <property name="label" translatable="yes">Audio Backend: </property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">2</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkComboBoxText" id="_audioBackendSelect">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="tooltip_text" translatable="yes">Change Audio Backend</property>
+                                    <property name="margin_left">5</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">3</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="expand">False</property>
+                                <property name="fill">True</property>
+                                <property name="padding">5</property>
+                                <property name="position">2</property>
+                              </packing>
+                            </child>
                           </object>
                           <packing>
                             <property name="expand">False</property>
@@ -1619,6 +1687,70 @@
                                       <object class="GtkLabel">
                                         <property name="visible">True</property>
                                         <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Resolution Scale applied to applicable render targets.</property>
+                                        <property name="label" translatable="yes">Resolution Scale:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkComboBoxText" id="_resScaleCombo">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="tooltip_text" translatable="yes">Resolution Scale applied to applicable render targets.</property>
+                                        <property name="active_id">1</property>
+                                        <items>
+                                          <item id="1" translatable="yes">Native (720p/1080p)</item>
+                                          <item id="2" translatable="yes">2x (1440p/2160p)</item>
+                                          <item id="3" translatable="yes">3x (2160p/3240p)</item>
+                                          <item id="4" translatable="yes">4x (2880p/4320p)</item>
+                                          <item id="-1" translatable="yes">Custom (not recommended)</item>
+                                        </items>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkEntry" id="_resScaleText">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">True</property>
+                                        <property name="tooltip_text" translatable="yes">Floating point resolution scale, such as 1.5. Non-integral scales are more likely to cause issues or crash.</property>
+                                        <property name="valign">center</property>
+                                        <property name="caps_lock_warning">False</property>
+                                        <property name="placeholder-text">1.0</property>
+                                        <property name="input-purpose">GTK_INPUT_PURPOSE_NUMBER</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">True</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">2</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="margin_top">5</property>
+                                    <property name="margin_bottom">5</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
                                         <property name="tooltip_text" translatable="yes">Level of Anisotropic Filtering (set to Auto to use the value requested by the game)</property>
                                         <property name="label" translatable="yes">Anisotropic Filtering:</property>
                                       </object>
@@ -1654,7 +1786,7 @@
                                     <property name="expand">False</property>
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
-                                    <property name="position">0</property>
+                                    <property name="position">1</property>
                                   </packing>
                                 </child>
                               </object>
@@ -2120,33 +2252,5 @@
         </child>
       </object>
     </child>
-  </object>
-  <object class="GtkAdjustment" id="_systemTimeDaySpinAdjustment">
-    <property name="lower">1</property>
-    <property name="upper">31</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">5</property>
-  </object>
-  <object class="GtkAdjustment" id="_systemTimeHourSpinAdjustment">
-    <property name="upper">23</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">5</property>
-  </object>
-  <object class="GtkAdjustment" id="_systemTimeMinuteSpinAdjustment">
-    <property name="upper">59</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">5</property>
-  </object>
-  <object class="GtkAdjustment" id="_systemTimeMonthSpinAdjustment">
-    <property name="lower">1</property>
-    <property name="upper">12</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">5</property>
-  </object>
-  <object class="GtkAdjustment" id="_systemTimeYearSpinAdjustment">
-    <property name="lower">2000</property>
-    <property name="upper">2060</property>
-    <property name="step_increment">1</property>
-    <property name="page_increment">10</property>
   </object>
 </interface>
