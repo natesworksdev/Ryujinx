@@ -206,11 +206,6 @@ namespace Ryujinx.Configuration
             public ReactiveObject<int> FsGlobalAccessLogMode { get; private set; }
 
             /// <summary>
-            /// The selected audio backend
-            /// </summary>
-            public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
-
-            /// <summary>
             /// Enable or disable ignoring missing services
             /// </summary>
             public ReactiveObject<bool> IgnoreMissingServices { get; private set; }
@@ -226,7 +221,6 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = new ReactiveObject<bool>();
                 EnableFsIntegrityChecks   = new ReactiveObject<bool>();
                 FsGlobalAccessLogMode     = new ReactiveObject<int>();
-                AudioBackend              = new ReactiveObject<AudioBackend>();
                 IgnoreMissingServices     = new ReactiveObject<bool>();
             }
         }
@@ -258,6 +252,19 @@ namespace Ryujinx.Configuration
                 EnableKeyboard = new ReactiveObject<bool>();
                 Hotkeys        = new ReactiveObject<KeyboardHotkeys>();
                 InputConfig    = new ReactiveObject<List<InputConfig>>();
+            }
+        }
+
+        public class AudioSection
+        {
+            /// <summary>
+            /// The selected audio backend
+            /// </summary>
+            public ReactiveObject<AudioBackend> AudioBackend { get; private set; }
+
+            public AudioSection()
+            {
+                AudioBackend = new ReactiveObject<AudioBackend>();
             }
         }
 
@@ -332,6 +339,11 @@ namespace Ryujinx.Configuration
         public HidSection Hid { get; private set; }
 
         /// <summary>
+        /// The Audio section
+        /// </summary>
+        public AudioSection Audio { get; private set; }
+
+        /// <summary>
         /// Enables or disables Discord Rich Presence
         /// </summary>
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
@@ -343,6 +355,7 @@ namespace Ryujinx.Configuration
             System                   = new SystemSection();
             Graphics                 = new GraphicsSection();
             Hid                      = new HidSection();
+            Audio                    = new AudioSection();
             EnableDiscordIntegration = new ReactiveObject<bool>();
         }
 
@@ -390,7 +403,7 @@ namespace Ryujinx.Configuration
                 EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
-                AudioBackend              = System.AudioBackend,
+                AudioBackend              = Audio.AudioBackend,
                 IgnoreMissingServices     = System.IgnoreMissingServices,
                 GuiColumns                = new GuiColumns
                 {
@@ -448,8 +461,8 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = false;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
-            System.AudioBackend.Value              = AudioBackend.OpenAl;
             System.IgnoreMissingServices.Value     = false;
+            Audio.AudioBackend.Value               = AudioBackend.OpenAl;
             Ui.GuiColumns.FavColumn.Value          = true;
             Ui.GuiColumns.IconColumn.Value         = true;
             Ui.GuiColumns.AppColumn.Value          = true;
@@ -706,8 +719,8 @@ namespace Ryujinx.Configuration
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;
-            System.AudioBackend.Value              = configurationFileFormat.AudioBackend;
             System.IgnoreMissingServices.Value     = configurationFileFormat.IgnoreMissingServices;
+            Audio.AudioBackend.Value               = configurationFileFormat.AudioBackend;
             Ui.GuiColumns.FavColumn.Value          = configurationFileFormat.GuiColumns.FavColumn;
             Ui.GuiColumns.IconColumn.Value         = configurationFileFormat.GuiColumns.IconColumn;
             Ui.GuiColumns.AppColumn.Value          = configurationFileFormat.GuiColumns.AppColumn;

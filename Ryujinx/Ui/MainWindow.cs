@@ -664,7 +664,7 @@ namespace Ryujinx.Ui
 
         private static IAalOutput InitializeAudioEngine()
         {
-            if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.SoundIo)
+            if (ConfigurationState.Instance.Audio.AudioBackend.Value == AudioBackend.SoundIo)
             {
                 if (SoundIoAudioOut.IsSupported)
                 {
@@ -675,7 +675,7 @@ namespace Ryujinx.Ui
                     Logger.PrintWarning(LogClass.Audio, "SoundIO is not supported, falling back to dummy audio out.");
                 }
             }
-            else if (ConfigurationState.Instance.System.AudioBackend.Value == AudioBackend.OpenAl)
+            else if (ConfigurationState.Instance.Audio.AudioBackend.Value == AudioBackend.OpenAl)
             {
                 if (OpenALAudioOut.IsSupported)
                 {
@@ -689,7 +689,7 @@ namespace Ryujinx.Ui
                     {
                         Logger.PrintWarning(LogClass.Audio, "Found SoundIO, changing configuration.");
 
-                        ConfigurationState.Instance.System.AudioBackend.Value = AudioBackend.SoundIo;
+                        ConfigurationState.Instance.Audio.AudioBackend.Value = AudioBackend.SoundIo;
                         SaveConfig();
 
                         return new SoundIoAudioOut();
