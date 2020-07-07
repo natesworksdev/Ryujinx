@@ -793,7 +793,7 @@ namespace ARMeilleure.Decoders
             SetA32("111100100x00xxxxxxxx1101xxx0xxxx", InstName.Vadd,     InstEmit32.Vadd_V,   typeof(OpCode32SimdReg));
             SetA32("111100100x00xxxxxxxx0001xxx1xxxx", InstName.Vand,     InstEmit32.Vand_I,   typeof(OpCode32SimdBinary));
             SetA32("111100100x01xxxxxxxx0001xxx1xxxx", InstName.Vbic,     InstEmit32.Vbic_I,   typeof(OpCode32SimdBinary));
-            SetA32("1111001x1x000xxxxxxx0xx10x11xxxx", InstName.Vbic,     InstEmit32.Vbic_II,  typeof(OpCode32SimdImm));
+            SetA32("1111001x1x000xxxxxxx<<x10x11xxxx", InstName.Vbic,     InstEmit32.Vbic_II,  typeof(OpCode32SimdImm));
             SetA32("111100110x11xxxxxxxx0001xxx1xxxx", InstName.Vbif,     InstEmit32.Vbif,     typeof(OpCode32SimdBinary));
             SetA32("111100110x10xxxxxxxx0001xxx1xxxx", InstName.Vbit,     InstEmit32.Vbit,     typeof(OpCode32SimdBinary));
             SetA32("111100110x01xxxxxxxx0001xxx1xxxx", InstName.Vbsl,     InstEmit32.Vbsl,     typeof(OpCode32SimdBinary));
