@@ -152,7 +152,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             ulong address = TranslateAndCreateBuffer(gpuVa, size);
 
             _transformFeedbackBuffers[index].Address = address;
-            _transformFeedbackBuffers[index].Size = size;
+            _transformFeedbackBuffers[index].Size    = size;
 
             _transformFeedbackBuffersDirty = true;
         }
@@ -545,6 +545,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (tfb.Address == 0)
                     {
+                        _context.Renderer.Pipeline.SetTransformFeedbackBuffer(index, new BufferRange(BufferHandle.Null, 0, 0));
+
                         continue;
                     }
 

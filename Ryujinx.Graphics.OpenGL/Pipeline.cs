@@ -80,23 +80,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void BeginTransformFeedback(PrimitiveTopology topology)
         {
-            TransformFeedbackPrimitiveType transformFeedbackPrimitiveType = topology switch
-            {
-                PrimitiveTopology.Points => TransformFeedbackPrimitiveType.Points,
-                PrimitiveTopology.Lines => TransformFeedbackPrimitiveType.Lines,
-                PrimitiveTopology.LineLoop => TransformFeedbackPrimitiveType.Lines,
-                PrimitiveTopology.LineStrip => TransformFeedbackPrimitiveType.Lines,
-                PrimitiveTopology.LinesAdjacency => TransformFeedbackPrimitiveType.Lines,
-                PrimitiveTopology.LineStripAdjacency => TransformFeedbackPrimitiveType.Lines,
-                PrimitiveTopology.Triangles => TransformFeedbackPrimitiveType.Triangles,
-                PrimitiveTopology.TriangleStrip => TransformFeedbackPrimitiveType.Triangles,
-                PrimitiveTopology.TriangleFan => TransformFeedbackPrimitiveType.Triangles,
-                PrimitiveTopology.TrianglesAdjacency => TransformFeedbackPrimitiveType.Triangles,
-                PrimitiveTopology.TriangleStripAdjacency => TransformFeedbackPrimitiveType.Triangles,
-                _ => TransformFeedbackPrimitiveType.Points
-            };
-
-            GL.BeginTransformFeedback(transformFeedbackPrimitiveType);
+            GL.BeginTransformFeedback(topology.ConvertToTfType());
         }
 
         public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)

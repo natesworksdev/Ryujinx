@@ -5,6 +5,7 @@ using Ryujinx.Graphics.Shader;
 using Ryujinx.Graphics.Shader.CodeGen.Glsl;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -74,18 +75,20 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 List<string> varyings = new List<string>();
 
-                for (int i = 0; i < transformFeedbackDescriptors.Length; i++)
-                {
-                    var tfd = transformFeedbackDescriptors[i];
+                int cbi = 0;
 
-                    if (tfd.Stride == 0)
+                foreach (var tfd in transformFeedbackDescriptors.OrderBy(x => x.BufferIndex))
+                {
+                    if (tfd.VaryingLocations.Length == 0)
                     {
                         continue;
                     }
 
-                    if (i != 0)
+                    while (cbi < tfd.BufferIndex)
                     {
                         varyings.Add("gl_NextBuffer");
+
+                        cbi++;
                     }
 
                     int stride = Math.Min(128 * 4, (tfd.Stride + 3) & ~3);
