@@ -126,6 +126,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="state">Guest GPU state</param>
         private void UpdateState(GpuState state)
         {
+            bool tfEnable = state.Get<Boolean32>(MethodOffset.TfEnable);
+
+            if (!tfEnable && _prevTfEnable)
+            {
+                _context.Renderer.Pipeline.EndTransformFeedback();
+                _prevTfEnable = false;
+            }
+
             // Shaders must be the first one to be updated if modified, because
             // some of the other state depends on information from the currently
             // bound shaders.
@@ -261,20 +269,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             CommitBindings();
 
-            bool tfEnable = state.Get<Boolean32>(MethodOffset.TfEnable);
-
-            if (tfEnable != _prevTfEnable)
+            if (tfEnable && !_prevTfEnable)
             {
-                if (tfEnable)
-                {
-                    _context.Renderer.Pipeline.BeginTransformFeedback(PrimitiveType.Convert());
-                }
-                else
-                {
-                    _context.Renderer.Pipeline.EndTransformFeedback();
-                }
-
-                _prevTfEnable = tfEnable;
+                _context.Renderer.Pipeline.BeginTransformFeedback(PrimitiveType.Convert());
+                _prevTfEnable = true;
             }
         }
 

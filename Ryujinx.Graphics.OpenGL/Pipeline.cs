@@ -45,7 +45,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private bool _scissor0Enable = false;
 
-        private int _tfHandle;
+        private bool _tfEnabled;
 
         ColorF _blendConstant = new ColorF(0, 0, 0, 0);
 
@@ -81,6 +81,7 @@ namespace Ryujinx.Graphics.OpenGL
         public void BeginTransformFeedback(PrimitiveTopology topology)
         {
             GL.BeginTransformFeedback(topology.ConvertToTfType());
+            _tfEnabled = true;
         }
 
         public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
@@ -522,6 +523,7 @@ namespace Ryujinx.Graphics.OpenGL
         public void EndTransformFeedback()
         {
             GL.EndTransformFeedback();
+            _tfEnabled = false;
         }
 
         public void SetBlendState(int index, BlendDescriptor blend)
@@ -711,7 +713,17 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetProgram(IProgram program)
         {
             _program = (Program)program;
-            _program.Bind();
+
+            if (_tfEnabled)
+            {
+                GL.PauseTransformFeedback();
+                _program.Bind();
+                GL.ResumeTransformFeedback();
+            }
+            else
+            {
+                _program.Bind();
+            }
 
             SetRenderTargetScale(_fpRenderScale[0]);
         }
@@ -904,7 +916,18 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetTransformFeedbackBuffer(int index, BufferRange buffer)
         {
-            GL.BindBufferRange(BufferRangeTarget.TransformFeedbackBuffer, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+            const BufferRangeTarget target = BufferRangeTarget.TransformFeedbackBuffer;
+
+            if (_tfEnabled)
+            {
+                GL.PauseTransformFeedback();
+                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                GL.ResumeTransformFeedback();
+            }
+            else
+            {
+                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+            }
         }
 
         public void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer)
