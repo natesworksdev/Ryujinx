@@ -298,7 +298,7 @@ namespace ARMeilleure.Instructions
 
             Operand pte = Ptc.State == PtcState.Disabled
                 ? Const(context.Memory.PageTablePointer.ToInt64())
-                : Const(context.Memory.PageTablePointer.ToInt64(), true, true, true, Ptc.PageTablePointerIndex);
+                : Const(context.Memory.PageTablePointer.ToInt64(), true, Ptc.PageTablePointerIndex);
 
             int bit = PageBits;
 

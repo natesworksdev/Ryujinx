@@ -103,7 +103,7 @@ namespace ARMeilleure.Translation
 
                 Symbols.Add((ulong)funcPtr.ToInt64(), info.Name);
 
-                return Call(Const(funcPtr.ToInt64(), true, true, true, index), returnType, callArgs);
+                return Call(Const(funcPtr.ToInt64(), true, index), returnType, callArgs);
             }
         }
 
