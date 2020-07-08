@@ -34,9 +34,14 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operand().With(value);
         }
 
-        public static Operand Const(long value, bool disableCF = false, int? index = null)
+        public static Operand Const(
+            long value,
+            bool disableCF = false,
+            bool forceCopyConstAdd = false,
+            bool forceLongConst = false,
+            int? index = null)
         {
-            return Operand().With(value, disableCF, index);
+            return Operand().With(value, disableCF, forceCopyConstAdd, forceLongConst, index);
         }
 
         public static Operand Const(ulong value)

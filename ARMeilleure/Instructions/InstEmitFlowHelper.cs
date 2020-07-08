@@ -346,7 +346,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64(), true, Ptc.DynamicPointerIndex);
+                    dynTablePtr = Const(context.JumpTable.DynamicPointer.ToInt64(), true, true, true, Ptc.DynamicPointerIndex);
                     dynTablePtr = context.Add(dynTablePtr, Const((long)jumpOffset));
                 }
 
@@ -366,7 +366,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    tableEntryPtr = Const(context.JumpTable.JumpPointer.ToInt64(), true, Ptc.JumpPointerIndex);
+                    tableEntryPtr = Const(context.JumpTable.JumpPointer.ToInt64(), true, true, true, Ptc.JumpPointerIndex);
                     tableEntryPtr = context.Add(tableEntryPtr, Const((long)jumpOffset));
                 }
 

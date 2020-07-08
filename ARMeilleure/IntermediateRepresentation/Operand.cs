@@ -10,8 +10,10 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public ulong Value { get; private set; }
 
-        public bool DisableCF { get; private set; }
-        public int? PtcIndex  { get; private set; }
+        public bool DisableCF         { get; private set; }
+        public bool ForceCopyConstAdd { get; private set; }
+        public bool ForceLongConst    { get; private set; }
+        public int? PtcIndex          { get; private set; }
 
         public List<Node> Assignments { get; }
         public List<Node> Uses        { get; }
@@ -28,15 +30,24 @@ namespace ARMeilleure.IntermediateRepresentation
             Type = type;
         }
 
-        public Operand With(OperandKind kind, OperandType type = OperandType.None, ulong value = 0, bool disableCF = false, int? index = null)
+        public Operand With(
+            OperandKind kind,
+            OperandType type = OperandType.None,
+            ulong value = 0,
+            bool disableCF = false,
+            bool forceCopyConstAdd = false,
+            bool forceLongConst = false,
+            int? index = null)
         {
             Kind = kind;
             Type = type;
 
             Value = value;
 
-            DisableCF = disableCF;
-            PtcIndex  = index;
+            DisableCF         = disableCF;
+            ForceCopyConstAdd = forceCopyConstAdd;
+            ForceLongConst    = forceLongConst;
+            PtcIndex          = index;
 
             Assignments.Clear();
             Uses.Clear();
@@ -54,9 +65,14 @@ namespace ARMeilleure.IntermediateRepresentation
             return With(OperandKind.Constant, OperandType.I32, value);
         }
 
-        public Operand With(long value, bool disableCF = false, int? index = null)
+        public Operand With(
+            long value,
+            bool disableCF = false,
+            bool forceCopyConstAdd = false,
+            bool forceLongConst = false,
+            int? index = null)
         {
-            return With(OperandKind.Constant, OperandType.I64, (ulong)value, disableCF, index);
+            return With(OperandKind.Constant, OperandType.I64, (ulong)value, disableCF, forceCopyConstAdd, forceLongConst, index);
         }
 
         public Operand With(ulong value)
