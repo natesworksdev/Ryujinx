@@ -147,7 +147,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             int value = attr.Value;
 
-            string swzMask = GetSwizzleMask((value >> 2) & 3);
+            char swzMask = GetSwizzleMask((value >> 2) & 3);
 
             if (value >= AttributeConsts.UserAttributeBase &&
                 value <  AttributeConsts.UserAttributeEnd)
@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     name += $"[{indexExpr}]";
                 }
 
-                name += "." + swzMask;
+                name += "_" + swzMask;
 
                 return name;
             }
@@ -264,9 +264,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return _stagePrefixes[index];
         }
 
-        private static string GetSwizzleMask(int value)
+        private static char GetSwizzleMask(int value)
         {
-            return "xyzw".Substring(value, 1);
+            return "xyzw"[value];
         }
 
         public static VariableType GetNodeDestType(IAstNode node)

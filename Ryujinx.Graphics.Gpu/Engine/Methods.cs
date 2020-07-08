@@ -40,6 +40,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
         private bool _forceShaderUpdate;
 
+        private bool _prevTfEnable;
+
         /// <summary>
         /// Creates a new instance of the GPU methods class.
         /// </summary>
@@ -132,6 +134,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 _forceShaderUpdate = false;
 
                 UpdateShaderState(state);
+            }
+
+            if (state.QueryModified(MethodOffset.TfBufferState))
+            {
+                UpdateTfBufferState(state);
             }
 
             if (state.QueryModified(MethodOffset.ClipDistanceEnable))
@@ -253,6 +260,22 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             CommitBindings();
+
+            bool tfEnable = state.Get<Boolean32>(MethodOffset.TfEnable);
+
+            if (tfEnable != _prevTfEnable)
+            {
+                if (tfEnable)
+                {
+                    _context.Renderer.Pipeline.BeginTransformFeedback(PrimitiveType.Convert());
+                }
+                else
+                {
+                    _context.Renderer.Pipeline.EndTransformFeedback();
+                }
+
+                _prevTfEnable = tfEnable;
+            }
         }
 
         /// <summary>
@@ -313,7 +336,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// </summary>
         /// <param name="state">Current GPU state</param>
         /// <param name="useControl">Use draw buffers information from render target control register</param>
-        /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param> 
+        /// <param name="singleUse">If this is not -1, it indicates that only the given indexed target will be used.</param>
         private void UpdateRenderTargetState(GpuState state, bool useControl, int singleUse = -1)
         {
             var rtControl = state.Get<RtControl>(MethodOffset.RtControl);
@@ -461,7 +484,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             bool   flipY  = yControl.HasFlag(YControl.NegateY);
             Origin origin = yControl.HasFlag(YControl.TriangleRastFlip) ? Origin.LowerLeft : Origin.UpperLeft;
-            
+
             _context.Renderer.Pipeline.SetOrigin(origin);
 
             // The triangle rast flip flag only affects rasterization, the viewport is not flipped.
@@ -985,6 +1008,27 @@ namespace Ryujinx.Graphics.Gpu.Engine
             }
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
+        }
+
+        /// <summary>
+        /// Updates transform feedback buffer state based on the guest GPU state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        private void UpdateTfBufferState(GpuState state)
+        {
+            for (int index = 0; index < Constants.TotalTransformFeedbackBuffers; index++)
+            {
+                TfBufferState tfb = state.Get<TfBufferState>(MethodOffset.TfBufferState, index);
+
+                if (!tfb.Enable)
+                {
+                    BufferManager.SetTransformFeedbackBuffer(index, 0, 0);
+
+                    continue;
+                }
+
+                BufferManager.SetTransformFeedbackBuffer(index, tfb.Address.Pack(), (uint)tfb.Size);
+            }
         }
 
         /// <summary>
