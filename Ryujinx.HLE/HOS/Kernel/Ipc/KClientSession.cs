@@ -13,18 +13,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public ChannelState State { get; set; }
 
+        public KClientPort ParentPort { get; }
+
         // TODO: Remove that, we need it for now to allow HLE
         // services implementation to work with the new IPC system.
         public IpcService Service { get; set; }
 
-        public KClientSession(KernelContext context, KSession parent) : base(context)
+        public KClientSession(KernelContext context, KSession parent, KClientPort parentPort) : base(context)
         {
-            _parent = parent;
+            _parent    = parent;
+            ParentPort = parentPort;
+
+            parentPort?.IncrementReferenceCount();
 
             State = ChannelState.Open;
 
             CreatorProcess = context.Scheduler.GetCurrentProcess();
-
             CreatorProcess.IncrementReferenceCount();
         }
 
@@ -49,6 +53,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             return result;
+        }
+
+        public void DisconnectFromPort()
+        {
+            if (ParentPort != null)
+            {
+                ParentPort.Disconnect();
+                ParentPort.DecrementReferenceCount();
+            }
         }
 
         protected override void Destroy()
