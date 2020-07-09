@@ -3240,7 +3240,12 @@ namespace ARMeilleure.Instructions
             context.Copy(GetVec(op.Rd), res);
         }
 
-        public static Operand EmitSse2VectorIsNaNOpF(ArmEmitterContext context, Operand opF, bool isQNaN)
+        public static void EmitSse2VectorIsNaNOpF(
+            ArmEmitterContext context,
+            Operand opF,
+            out Operand qNaNMask,
+            out Operand sNaNMask,
+            bool? isQNaN = null)
         {
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
 
@@ -3255,7 +3260,8 @@ namespace ARMeilleure.Instructions
                 Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand,  opF,   qMask);
                         mask2 = context.AddIntrinsic(Intrinsic.X86Cmpps, mask2, qMask, Const((int)CmpCondition.Equal));
 
-                return context.AddIntrinsic(isQNaN ? Intrinsic.X86Andps : Intrinsic.X86Andnps, mask2, mask1);
+                qNaNMask = isQNaN == null ||  (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andps,  mask2, mask1) : null;
+                sNaNMask = isQNaN == null || !(bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andnps, mask2, mask1) : null;
             }
             else /* if ((op.Size & 1) == 1) */
             {
@@ -3268,7 +3274,8 @@ namespace ARMeilleure.Instructions
                 Operand mask2 = context.AddIntrinsic(Intrinsic.X86Pand,  opF,   qMask);
                         mask2 = context.AddIntrinsic(Intrinsic.X86Cmppd, mask2, qMask, Const((int)CmpCondition.Equal));
 
-                return context.AddIntrinsic(isQNaN ? Intrinsic.X86Andpd : Intrinsic.X86Andnpd, mask2, mask1);
+                qNaNMask = isQNaN == null ||  (bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andpd,  mask2, mask1) : null;
+                sNaNMask = isQNaN == null || !(bool)isQNaN ? context.AddIntrinsic(Intrinsic.X86Andnpd, mask2, mask1) : null;
             }
         }
 
@@ -3282,9 +3289,8 @@ namespace ARMeilleure.Instructions
             Operand nCopy = n ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn));
             Operand mCopy = m ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm));
 
-            Operand nQNaNMask = EmitSse2VectorIsNaNOpF(context, nCopy, isQNaN: true);
-            Operand nSNaNMask = EmitSse2VectorIsNaNOpF(context, nCopy, isQNaN: false);
-            Operand mSNaNMask = EmitSse2VectorIsNaNOpF(context, mCopy, isQNaN: false);
+            EmitSse2VectorIsNaNOpF(context, nCopy, out Operand nQNaNMask, out Operand nSNaNMask);
+            EmitSse2VectorIsNaNOpF(context, mCopy, out _, out Operand mSNaNMask, isQNaN: false);
 
             int sizeF = ((IOpCodeSimd)context.CurrOp).Size & 1;
 
@@ -3394,8 +3400,8 @@ namespace ARMeilleure.Instructions
             Operand nCopy = n ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn));
             Operand mCopy = m ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm));
 
-            Operand nQNaNMask = EmitSse2VectorIsNaNOpF(context, nCopy, isQNaN: true);
-            Operand mQNaNMask = EmitSse2VectorIsNaNOpF(context, mCopy, isQNaN: true);
+            EmitSse2VectorIsNaNOpF(context, nCopy, out Operand nQNaNMask, out _, isQNaN: true);
+            EmitSse2VectorIsNaNOpF(context, mCopy, out Operand mQNaNMask, out _, isQNaN: true);
 
             int sizeF = ((IOpCodeSimd)context.CurrOp).Size & 1;
 
