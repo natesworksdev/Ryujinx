@@ -8,7 +8,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
     class KClientPort : KSynchronizationObject
     {
         private int _sessionsCount;
-        private int _currentCapacity;
         private readonly int _maxSessions;
 
         private readonly KPort _parent;
