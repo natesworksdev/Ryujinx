@@ -158,14 +158,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     ? DefaultNames.OAttributePrefix
                     : DefaultNames.IAttributePrefix;
 
-                string name = $"{prefix}{(value >> 4)}";
+                string name = $"{prefix}{(value >> 4)}_{swzMask}";
 
                 if (stage == ShaderStage.Geometry && !isOutAttr)
                 {
                     name += $"[{indexExpr}]";
                 }
-
-                name += "_" + swzMask;
 
                 return name;
             }
