@@ -3,7 +3,6 @@ using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.RomFs;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Loaders.Mods;
 using Ryujinx.HLE.Loaders.Executables;
 using System;
