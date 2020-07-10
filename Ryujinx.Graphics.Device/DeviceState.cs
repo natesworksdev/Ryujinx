@@ -20,7 +20,7 @@ namespace Ryujinx.Graphics.Device
         private readonly Dictionary<int, Func<int>> _readCallbacks;
         private readonly Dictionary<int, Action<int>> _writeCallbacks;
 
-        public DeviceState(IReadOnlyDictionary<string, (Action<int> write, Func<int> read)> callbacks = null)
+        public DeviceState(IReadOnlyDictionary<string, RwCallback> callbacks = null)
         {
             int size = (Unsafe.SizeOf<TState>() + RegisterSize - 1) / RegisterSize;
 
@@ -46,16 +46,16 @@ namespace Ryujinx.Graphics.Device
                     _writableRegisters[(offset + i) / RegisterSize] = regAttr?.AccessControl.HasFlag(AccessControl.WriteOnly) ?? true;
                 }
 
-                if (callbacks != null && callbacks.TryGetValue(field.Name, out var tuple))
+                if (callbacks != null && callbacks.TryGetValue(field.Name, out var cb))
                 {
-                    if (tuple.read != null)
+                    if (cb.Read != null)
                     {
-                        _readCallbacks.Add(offset, tuple.read);
+                        _readCallbacks.Add(offset, cb.Read);
                     }
 
-                    if (tuple.write != null)
+                    if (cb.Write != null)
                     {
-                        _writeCallbacks.Add(offset, tuple.write);
+                        _writeCallbacks.Add(offset, cb.Write);
                     }
                 }
 

@@ -14,7 +14,6 @@ using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Memory;
 using System;
-using System.Threading;
 
 namespace Ryujinx.HLE
 {
@@ -162,13 +161,6 @@ namespace Ryujinx.HLE
             Gpu.Window.Present(swapBuffersCallback);
         }
 
-        internal void Unload()
-        {
-            FileSystem.Unload();
-
-            Memory.Dispose();
-        }
-
         public void DisposeGpu()
         {
             Gpu.Dispose();
@@ -184,7 +176,10 @@ namespace Ryujinx.HLE
             if (disposing)
             {
                 System.Dispose();
+                Host1x.Dispose();
                 AudioOut.Dispose();
+                FileSystem.Unload();
+                Memory.Dispose();
             }
         }
     }

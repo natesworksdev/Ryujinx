@@ -7,7 +7,7 @@ using System.Numerics;
 
 namespace Ryujinx.Graphics.Host1x
 {
-    public class Host1xDevice
+    public sealed class Host1xDevice : IDisposable
     {
         private readonly SyncptIncrManager _syncptIncrMgr;
         private readonly AsyncWorkQueue<int[]> _commandQueue;
@@ -112,6 +112,12 @@ namespace Ryujinx.Graphics.Host1x
         private void DeviceWrite(int offset, int data)
         {
             _device?.Write(offset * 4, data);
+        }
+
+        public void Dispose()
+        {
+            _commandQueue.Dispose();
+            _devices.Dispose();
         }
     }
 }

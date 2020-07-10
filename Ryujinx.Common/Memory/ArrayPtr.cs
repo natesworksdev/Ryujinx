@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 namespace Ryujinx.Common.Memory
 {
     /// <summary>
-    /// Represents a array of unmanaged resources.
+    /// Represents an array of unmanaged resources.
     /// </summary>
     /// <typeparam name="T">Array element type</typeparam>
     public unsafe struct ArrayPtr<T> : IEquatable<ArrayPtr<T>>, IArray<T> where T : unmanaged
@@ -32,7 +32,7 @@ namespace Ryujinx.Common.Memory
         /// Gets a reference to the item at the given index.
         /// </summary>
         /// <remarks>
-        /// No bounds checking are performed, this allows negative indexing,
+        /// No bounds checks are performed, this allows negative indexing,
         /// but care must be taken if the index may be out of bounds.
         /// </remarks>
         /// <param name="index">Index of the element</param>

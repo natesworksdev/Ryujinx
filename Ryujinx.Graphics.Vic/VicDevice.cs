@@ -21,9 +21,9 @@ namespace Ryujinx.Graphics.Vic
         {
             _gmm = gmm;
             _rm = new ResourceManager(gmm, new BufferPool<Pixel>(), new BufferPool<byte>());
-            _state = new DeviceState<VicRegisters>(new Dictionary<string, (Action<int>, Func<int>)>
+            _state = new DeviceState<VicRegisters>(new Dictionary<string, RwCallback>
             {
-                { nameof(VicRegisters.Execute), (Execute, null) }
+                { nameof(VicRegisters.Execute), new RwCallback(Execute, null) }
             });
         }
 

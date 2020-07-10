@@ -77,20 +77,23 @@ namespace Ryujinx.Graphics.Host1x
 
         private void IncrementAllDone()
         {
-            // Increment all sequential pending increments that are already done.
-            int doneCount = 0;
-
-            for (; doneCount < _incrs.Count; doneCount++)
+            lock (_incrs)
             {
-                if (!_incrs[doneCount].Done)
+                // Increment all sequential pending increments that are already done.
+                int doneCount = 0;
+
+                for (; doneCount < _incrs.Count; doneCount++)
                 {
-                    break;
+                    if (!_incrs[doneCount].Done)
+                    {
+                        break;
+                    }
+
+                    _syncMgr.IncrementSyncpoint(_incrs[doneCount].SyncptId);
                 }
 
-                _syncMgr.IncrementSyncpoint(_incrs[doneCount].SyncptId);
+                _incrs.RemoveRange(0, doneCount);
             }
-
-            _incrs.RemoveRange(0, doneCount);
         }
     }
 }

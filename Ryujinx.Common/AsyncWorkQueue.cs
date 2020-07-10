@@ -13,11 +13,11 @@ namespace Ryujinx.Common
 
         public bool IsCancellationRequested => _cts.IsCancellationRequested;
 
-        public AsyncWorkQueue(Action<T> callback, string name = null) : this(callback, new BlockingCollection<T>(), name)
+        public AsyncWorkQueue(Action<T> callback, string name = null) : this(callback, name, new BlockingCollection<T>())
         {
         }
 
-        public AsyncWorkQueue(Action<T> callback, BlockingCollection<T> collection, string name)
+        public AsyncWorkQueue(Action<T> callback, string name, BlockingCollection<T> collection)
         {
             _cts = new CancellationTokenSource();
             _queue = collection;

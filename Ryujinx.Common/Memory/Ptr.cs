@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 namespace Ryujinx.Common.Memory
 {
     /// <summary>
-    /// Represents a pointer to a unmanaged resource.
+    /// Represents a pointer to an unmanaged resource.
     /// </summary>
     /// <typeparam name="T">Type of the unmanaged resource</typeparam>
     public unsafe struct Ptr<T> : IEquatable<Ptr<T>> where T : unmanaged
@@ -28,7 +28,7 @@ namespace Ryujinx.Common.Memory
         public ref T Value => ref Unsafe.AsRef<T>((void*)_ptr);
 
         /// <summary>
-        /// Creates a new pointer to a unmanaged resource.
+        /// Creates a new pointer to an unmanaged resource.
         /// </summary>
         /// <remarks>
         /// For data on the heap, proper pinning is necessary during

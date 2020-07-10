@@ -5,31 +5,37 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Host1x
 {
-    class ThiDevice : IDeviceState
+    class ThiDevice : IDeviceState, IDisposable
     {
         private readonly ClassId _classId;
         private readonly IDeviceState _device;
 
         private readonly SyncptIncrManager _syncptIncrMgr;
 
-        private struct CommandAction
+        private class CommandAction
         {
-            public bool IsSyncptIncr { get; }
-            public int Method { get; }
             public int Data { get; }
 
-            public CommandAction(int method, int data)
+            public CommandAction(int data)
             {
-                IsSyncptIncr = false;
-                Method = method;
                 Data = data;
             }
+        }
 
-            public CommandAction(uint syncptIncrHandle)
+        private class MethodCallAction : CommandAction
+        {
+            public int Method { get; }
+
+            public MethodCallAction(int method, int data) : base(data)
             {
-                IsSyncptIncr = true;
-                Method = 0;
-                Data = (int)syncptIncrHandle;
+                Method = method;
+            }
+        }
+
+        private class SyncptIncrAction : CommandAction
+        {
+            public SyncptIncrAction(uint syncptIncrHandle) : base((int)syncptIncrHandle)
+            {
             }
         }
 
@@ -43,10 +49,10 @@ namespace Ryujinx.Graphics.Host1x
             _device = device;
             _syncptIncrMgr = syncptIncrMgr;
             _commandQueue = new AsyncWorkQueue<CommandAction>(Process, $"Ryujinx.{classId}Processor");
-            _state = new DeviceState<ThiRegisters>(new Dictionary<string, (Action<int>, Func<int>)>
+            _state = new DeviceState<ThiRegisters>(new Dictionary<string, RwCallback>
             {
-                { nameof(ThiRegisters.IncrSyncpt), (IncrSyncpt, null) },
-                { nameof(ThiRegisters.Method1), (Method1, null) }
+                { nameof(ThiRegisters.IncrSyncpt), new RwCallback(IncrSyncpt, null) },
+                { nameof(ThiRegisters.Method1), new RwCallback(Method1, null) }
             });
         }
 
@@ -64,25 +70,27 @@ namespace Ryujinx.Graphics.Host1x
             }
             else
             {
-                _commandQueue.Add(new CommandAction(_syncptIncrMgr.IncrementWhenDone(_classId, syncpointId)));
+                _commandQueue.Add(new SyncptIncrAction(_syncptIncrMgr.IncrementWhenDone(_classId, syncpointId)));
             }
         }
 
         private void Method1(int data)
         {
-            _commandQueue.Add(new CommandAction((int)_state.State.Method0 * 4, data));
+            _commandQueue.Add(new MethodCallAction((int)_state.State.Method0 * 4, data));
         }
 
         private void Process(CommandAction cmdAction)
         {
-            if (cmdAction.IsSyncptIncr)
+            if (cmdAction is SyncptIncrAction syncptIncrAction)
             {
-                _syncptIncrMgr.SignalDone((uint)cmdAction.Data);
+                _syncptIncrMgr.SignalDone((uint)syncptIncrAction.Data);
             }
-            else
+            else if (cmdAction is MethodCallAction methodCallAction)
             {
-                _device.Write(cmdAction.Method, cmdAction.Data);
+                _device.Write(methodCallAction.Method, methodCallAction.Data);
             }
         }
+
+        public void Dispose() => _commandQueue.Dispose();
     }
 }
