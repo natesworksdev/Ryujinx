@@ -881,14 +881,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
         }
 
         /// <summary>
-        /// Updates host logical op state, based on guest state.
+        /// Updates host logical operation state, based on guest state.
         /// </summary>
         /// <param name="state">Current GPU state</param>
         public void UpdateLogicOpState(GpuState state)
         {
-            LogicalOpState blendConstant = state.Get<LogicalOpState>(MethodOffset.LogicOpState);
+            LogicalOpState logicOpState = state.Get<LogicalOpState>(MethodOffset.LogicOpState);
 
-            _context.Renderer.Pipeline.SetLogicOpState(blendConstant.Enable, blendConstant.LogicalOp);
+            _context.Renderer.Pipeline.SetLogicOpState(logicOpState.Enable, logicOpState.LogicalOp);
         }
 
         /// <summary>
