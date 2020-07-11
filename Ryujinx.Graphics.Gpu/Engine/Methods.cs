@@ -267,6 +267,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 UpdateBlendState(state);
             }
 
+            if (state.QueryModified(MethodOffset.LogicOpState))
+            {
+                UpdateLogicOpState(state);
+            }
+
             CommitBindings();
 
             if (tfEnable && !_prevTfEnable)
@@ -894,6 +899,17 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 _context.Renderer.Pipeline.SetBlendState(index, descriptor);
             }
+        }
+
+        /// <summary>
+        /// Updates host logical operation state, based on guest state.
+        /// </summary>
+        /// <param name="state">Current GPU state</param>
+        public void UpdateLogicOpState(GpuState state)
+        {
+            LogicalOpState logicOpState = state.Get<LogicalOpState>(MethodOffset.LogicOpState);
+
+            _context.Renderer.Pipeline.SetLogicOpState(logicOpState.Enable, logicOpState.LogicalOp);
         }
 
         /// <summary>
