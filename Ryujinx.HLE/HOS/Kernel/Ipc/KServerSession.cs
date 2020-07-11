@@ -1221,14 +1221,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             KProcess clientProcess = request.ClientThread.Owner;
 
-            ulong address = clientProcess.MemoryManager.GetDramAddressFromVa(request.CustomCmdBuffAddr);
+            if (result != KernelResult.Success)
+            {
+                ulong address = clientProcess.MemoryManager.GetDramAddressFromVa(request.CustomCmdBuffAddr);
 
-            KernelContext.Memory.Write<ulong>(address, 0);
-            KernelContext.Memory.Write(address + 8, (int)result);
+                KernelContext.Memory.Write<ulong>(address, 0);
+                KernelContext.Memory.Write(address + 8, (int)result);
+            }
 
-            clientProcess.MemoryManager.UnborrowIpcBuffer(
-                request.CustomCmdBuffAddr,
-                request.CustomCmdBuffSize);
+            clientProcess.MemoryManager.UnborrowIpcBuffer(request.CustomCmdBuffAddr, request.CustomCmdBuffSize);
 
             request.AsyncEvent.Signal();
         }

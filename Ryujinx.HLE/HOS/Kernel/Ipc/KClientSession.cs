@@ -55,6 +55,21 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return result;
         }
 
+        public KernelResult SendAsyncRequest(KWritableEvent asyncEvent, ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
+        {
+            KThread currentThread = KernelContext.Scheduler.GetCurrentThread();
+
+            KSessionRequest request = new KSessionRequest(currentThread, customCmdBuffAddr, customCmdBuffSize, asyncEvent);
+
+            KernelContext.CriticalSection.Enter();
+
+            KernelResult result = _parent.ServerSession.EnqueueRequest(request);
+
+            KernelContext.CriticalSection.Leave();
+
+            return result;
+        }
+
         public void DisconnectFromPort()
         {
             if (ParentPort != null)

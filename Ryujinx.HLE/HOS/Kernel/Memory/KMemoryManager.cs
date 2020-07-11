@@ -2147,6 +2147,108 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return KernelResult.Success;
         }
 
+        public KernelResult BorrowIpcBuffer(ulong address, ulong size)
+        {
+            return SetAttributesAndChangePermission(
+                address,
+                size,
+                MemoryState.IpcBufferAllowed,
+                MemoryState.IpcBufferAllowed,
+                MemoryPermission.Mask,
+                MemoryPermission.ReadAndWrite,
+                MemoryAttribute.Mask,
+                MemoryAttribute.None,
+                MemoryPermission.None,
+                MemoryAttribute.Borrowed);
+        }
+
+        private KernelResult SetAttributesAndChangePermission(
+            ulong            address,
+            ulong            size,
+            MemoryState      stateMask,
+            MemoryState      stateExpected,
+            MemoryPermission permissionMask,
+            MemoryPermission permissionExpected,
+            MemoryAttribute  attributeMask,
+            MemoryAttribute  attributeExpected,
+            MemoryPermission newPermission,
+            MemoryAttribute  attributeSetMask,
+            KPageList        pageList = null)
+        {
+            if (address + size <= address || !InsideAddrSpace(address, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            lock (_blocks)
+            {
+                if (CheckRange(
+                    address,
+                    size,
+                    stateMask     | MemoryState.IsPoolAllocated,
+                    stateExpected | MemoryState.IsPoolAllocated,
+                    permissionMask,
+                    permissionExpected,
+                    attributeMask,
+                    attributeExpected,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out MemoryState      oldState,
+                    out MemoryPermission oldPermission,
+                    out MemoryAttribute  oldAttribute))
+                {
+                    ulong pagesCount = size / PageSize;
+
+                    if (pageList != null)
+                    {
+                        KPageList currPageList = new KPageList();
+
+                        AddVaRangeToPageList(currPageList, address, pagesCount);
+
+                        if (!currPageList.IsEqual(pageList))
+                        {
+                            return KernelResult.InvalidMemRange;
+                        }
+                    }
+
+                    if (!_blockAllocator.CanAllocate(MaxBlocksNeededForInsertion))
+                    {
+                        return KernelResult.OutOfResource;
+                    }
+
+                    if (newPermission == MemoryPermission.None)
+                    {
+                        newPermission = oldPermission;
+                    }
+
+                    if (newPermission != oldPermission)
+                    {
+                        KernelResult result = DoMmuOperation(
+                            address,
+                            pagesCount,
+                            0,
+                            false,
+                            newPermission,
+                            MemoryOperation.ChangePermRw);
+
+                        if (result != KernelResult.Success)
+                        {
+                            return result;
+                        }
+                    }
+
+                    MemoryAttribute newAttribute = oldAttribute | attributeSetMask;
+
+                    InsertBlock(address, pagesCount, oldState, newPermission, newAttribute);
+
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
+                }
+            }
+        }
+
         public KernelResult UnborrowIpcBuffer(ulong address, ulong size)
         {
             return ClearAttributesAndChangePermission(
@@ -2175,6 +2277,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             MemoryAttribute  attributeClearMask,
             KPageList        pageList = null)
         {
+            if (address + size <= address || !InsideAddrSpace(address, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
             lock (_blocks)
             {
                 if (CheckRange(
