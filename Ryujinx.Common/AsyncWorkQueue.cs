@@ -30,9 +30,15 @@ namespace Ryujinx.Common
 
         private void DoWork()
         {
-            foreach (var item in _queue.GetConsumingEnumerable(_cts.Token))
+            try
             {
-                _workerAction(item);
+                foreach (var item in _queue.GetConsumingEnumerable(_cts.Token))
+                {
+                    _workerAction(item);
+                }
+            }
+            catch (OperationCanceledException)
+            {
             }
         }
 
