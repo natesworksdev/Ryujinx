@@ -42,6 +42,8 @@ namespace Ryujinx.Graphics.GAL
 
         void SetImage(int index, ShaderStage stage, ITexture texture);
 
+        void SetLogicOpState(bool enable, LogicalOp op);
+
         void SetOrigin(Origin origin);
 
         void SetPointSize(float size);
@@ -53,6 +55,8 @@ namespace Ryujinx.Graphics.GAL
         void SetProgram(IProgram program);
 
         void SetRasterizerDiscard(bool discard);
+
+        void SetRenderTargetScale(float scale);
 
         void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMask);
 
@@ -84,5 +88,7 @@ namespace Ryujinx.Graphics.GAL
         bool TryHostConditionalRendering(ICounterEvent value, ulong compare, bool isEqual);
         bool TryHostConditionalRendering(ICounterEvent value, ICounterEvent compare, bool isEqual);
         void EndHostConditionalRendering();
+
+        void UpdateRenderScale(ShaderStage stage, int textureCount);
     }
 }

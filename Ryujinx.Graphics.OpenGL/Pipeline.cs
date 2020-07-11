@@ -31,7 +31,12 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
+        private float[] _fpRenderScale = new float[33];
+        private float[] _cpRenderScale = new float[32];
+
         private TextureBase _unit0Texture;
+        private TextureBase _rtColor0Texture;
+        private TextureBase _rtDepthTexture;
 
         private ClipOrigin _clipOrigin;
         private ClipDepthMode _clipDepthMode;
@@ -53,6 +58,16 @@ namespace Ryujinx.Graphics.OpenGL
             for (int index = 0; index < Constants.MaxRenderTargets; index++)
             {
                 _componentMasks[index] = 0xf;
+            }
+
+            for (int index = 0; index < _fpRenderScale.Length; index++)
+            {
+                _fpRenderScale[index] = 1f;
+            }
+
+            for (int index = 0; index < _cpRenderScale.Length; index++)
+            {
+                _cpRenderScale[index] = 1f;
             }
         }
 
@@ -532,6 +547,20 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Enable(IndexedEnableCap.Blend, index);
         }
 
+        public void SetLogicOpState(bool enable, LogicalOp op)
+        {
+            if (enable)
+            {
+                GL.Enable(EnableCap.ColorLogicOp);
+
+                GL.LogicOp((LogicOp)op.Convert());
+            }
+            else
+            {
+                GL.Disable(EnableCap.ColorLogicOp);
+            }
+        }
+
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
             if ((enables & PolygonModeMask.Point) != 0)
@@ -685,6 +714,8 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _program = (Program)program;
             _program.Bind();
+
+            SetRenderTargetScale(_fpRenderScale[0]);
         }
 
         public void SetRasterizerDiscard(bool discard)
@@ -701,6 +732,16 @@ namespace Ryujinx.Graphics.OpenGL
             _rasterizerDiscard = discard;
         }
 
+        public void SetRenderTargetScale(float scale)
+        {
+            _fpRenderScale[0] = scale;
+
+            if (_program != null && _program.FragmentRenderScaleUniform != -1)
+            {
+                GL.Uniform1(_program.FragmentRenderScaleUniform, 1, _fpRenderScale); // Just the first element.
+            }
+        }
+
         public void SetRenderTargetColorMasks(ReadOnlySpan<uint> componentMasks)
         {
             for (int index = 0; index < componentMasks.Length; index++)
@@ -714,6 +755,9 @@ namespace Ryujinx.Graphics.OpenGL
         public void SetRenderTargets(ITexture[] colors, ITexture depthStencil)
         {
             EnsureFramebuffer();
+
+            _rtColor0Texture = (TextureBase)colors[0];
+            _rtDepthTexture = (TextureBase)depthStencil;
 
             for (int index = 0; index < colors.Length; index++)
             {
@@ -825,6 +869,37 @@ namespace Ryujinx.Graphics.OpenGL
                 else
                 {
                     ((TextureBase)texture).Bind(unit);
+                }
+
+                // Update scale factor for bound textures.
+
+                switch (stage)
+                {
+                    case ShaderStage.Fragment:
+                        if (_program.FragmentRenderScaleUniform != -1)
+                        {
+                            // Only update and send sampled texture scales if the shader uses them.
+                            bool interpolate = false;
+                            float scale = texture.ScaleFactor;
+
+                            if (scale != 1)
+                            {
+                                TextureBase activeTarget = _rtColor0Texture ?? _rtDepthTexture;
+
+                                if (activeTarget != null && activeTarget.Width / (float)texture.Width == activeTarget.Height / (float)texture.Height)
+                                {
+                                    // If the texture's size is a multiple of the sampler size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
+                                    interpolate = true;
+                                }
+                            }
+
+                            _fpRenderScale[index + 1] = interpolate ? -scale : scale;
+                        }
+                        break;
+
+                    case ShaderStage.Compute:
+                        _cpRenderScale[index] = texture.ScaleFactor;
+                        break;
                 }
             }
         }
@@ -1088,6 +1163,29 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _framebuffer?.Dispose();
             _vertexArray?.Dispose();
+        }
+
+        public void UpdateRenderScale(ShaderStage stage, int textureCount)
+        {
+            if (_program != null)
+            {
+                switch (stage)
+                {
+                    case ShaderStage.Fragment:
+                        if (_program.FragmentRenderScaleUniform != -1)
+                        {
+                            GL.Uniform1(_program.FragmentRenderScaleUniform, textureCount + 1, _fpRenderScale);
+                        }
+                        break;
+
+                    case ShaderStage.Compute:
+                        if (_program.ComputeRenderScaleUniform != -1)
+                        {
+                            GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount, _cpRenderScale);
+                        }
+                        break;
+                }
+            }
         }
     }
 }
