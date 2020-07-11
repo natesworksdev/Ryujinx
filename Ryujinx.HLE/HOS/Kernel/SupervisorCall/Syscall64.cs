@@ -25,9 +25,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.SendSyncRequestHLE(handle);
         }
 
-        public KernelResult SendSyncRequestWithUserBuffer64([R(0)] ulong messagePtr, [R(1)] ulong size, [R(2)] int handle)
+        public KernelResult SendSyncRequestWithUserBuffer64([R(0)] ulong messagePtr, [R(1)] ulong messageSize, [R(2)] int handle)
         {
-            return _syscall.SendSyncRequestWithUserBufferHLE(messagePtr, size, handle);
+            return _syscall.SendSyncRequestWithUserBufferHLE(messagePtr, messageSize, handle);
         }
 
         public KernelResult SendAsyncRequestWithUserBuffer64(
