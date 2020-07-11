@@ -770,6 +770,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 PointerBufferDesc descriptor = new PointerBufferDesc(pointerDesc);
 
+                ulong recvListBufferAddress = 0;
+
                 if (descriptor.BufferSize != 0)
                 {
                     clientResult = GetReceiveListAddress(
@@ -778,8 +780,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         clientHeader.ReceiveListType,
                         serverHeader.MessageSizeInWords,
                         receiveList,
-                        ref       recvListDstOffset,
-                        out ulong recvListBufferAddress);
+                        ref recvListDstOffset,
+                        out recvListBufferAddress);
 
                     if (clientResult != KernelResult.Success)
                     {
@@ -805,6 +807,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         return serverResult;
                     }
                 }
+
+                ulong dstDescAddress = clientMsg.DramAddress + offset * 4;
+
+                ulong clientPointerDesc =
+                    (recvListBufferAddress << 32) |
+                    ((recvListBufferAddress >> 20) & 0xf000) |
+                    ((recvListBufferAddress >> 30) & 0xffc0);
+
+                clientPointerDesc |= pointerDesc & 0xffff000f;
+
+                KernelContext.Memory.Write(dstDescAddress + 0, clientPointerDesc);
 
                 offset += 2;
             }
