@@ -117,4 +117,4 @@ If you'd like to donate, please take a look at our [Patreon](https://www.patreon
 
 This software is licensed under the terms of the MIT license.
 This project makes use of code authored by the libvpx project, licensed under BSD and the ffmpeg project, licensed under LGPLv3.
-See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](THIRDPARTY.md) for more details.
+See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](Ryujinx/THIRDPARTY.md) for more details.
