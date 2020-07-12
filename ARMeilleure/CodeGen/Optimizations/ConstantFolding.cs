@@ -81,9 +81,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 case Instruction.ConvertI64ToI32:
                     if (type == OperandType.I32)
                     {
-                        long x = operation.GetSource(0).AsInt64();
-
-                        operation.TurnIntoCopy(Const((int)x));
+                        EvaluateUnaryI32(operation, (x) => x);
                     }
                     break;
 
