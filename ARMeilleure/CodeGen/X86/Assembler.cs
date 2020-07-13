@@ -882,6 +882,10 @@ namespace ARMeilleure.CodeGen.X86
 
                 source = null;
             }
+            else if (source.Kind == OperandKind.Constant)
+            {
+                source = source.With((uint)source.Value & (dest.Type == OperandType.I32 ? 0x1f : 0x3f));
+            }
 
             WriteInstruction(dest, source, type, inst);
         }
@@ -914,7 +918,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         WriteByte((byte)imm);
                     }
-                    else if (IsImm32(imm, type) && info.OpRMImm32 != BadOp)
+                    else if (!source.Relocatable && IsImm32(imm, type) && info.OpRMImm32 != BadOp)
                     {
                         WriteOpCode(dest, null, null, type, info.Flags, info.OpRMImm32);
 
