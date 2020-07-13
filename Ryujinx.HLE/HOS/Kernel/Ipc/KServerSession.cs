@@ -633,7 +633,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             {
                 CloseAllHandles(clientMsg, serverHeader, clientProcess);
 
-                CancelRequest(request, clientResult);
+                FinishRequest(request, clientResult);
             }
 
             if (clientHeader.ReceiveListType < 2 &&
@@ -873,16 +873,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
 
             // Unmap buffers from server.
-            clientResult = request.BufferDescriptorTable.UnmapServerBuffers(serverProcess.MemoryManager);
-
-            if (clientResult != KernelResult.Success)
-            {
-                CleanUpForError();
-
-                return serverResult;
-            }
-
-            WakeClientThread(request, clientResult);
+            FinishRequest(request, clientResult);
 
             return serverResult;
         }
@@ -1122,7 +1113,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
         {
             foreach (KSessionRequest request in IterateWithRemovalOfAllRequests())
             {
-                CancelRequest(request, KernelResult.PortRemoteClosed);
+                FinishRequest(request, KernelResult.PortRemoteClosed);
             }
         }
 
@@ -1193,7 +1184,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return hasRequest;
         }
 
-        private void CancelRequest(KSessionRequest request, KernelResult result)
+        private void FinishRequest(KSessionRequest request, KernelResult result)
         {
             KProcess clientProcess = request.ClientThread.Owner;
             KProcess serverProcess = request.ServerProcess;

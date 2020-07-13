@@ -1796,25 +1796,31 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             MemoryRegion  region,
             out KPageList pageList)
         {
+            // When the start address is unaligned, we can't safely map the
+            // first page as it would expose other undesirable information on the
+            // target process. So, instead we allocate new pages, copy the data
+            // inside the range, and then clear the remaining space.
+            // The same also holds for the last page, if the end address
+            // (address + size) is also not aligned.
+
             pageList = null;
+
+            KPageList pages = new KPageList();
 
             ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
             ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
 
             ulong endAddr = address + size;
 
-            ulong dstFirstPagePa = AllocateSinglePage(region, aslrDisabled);
-
-            if (dstFirstPagePa == 0)
-            {
-                return KernelResult.OutOfMemory;
-            }
-
-            ulong dstLastPagePa = 0;
+            ulong dstFirstPagePa = 0;
+            ulong dstLastPagePa  = 0;
 
             void CleanUpForError()
             {
-                FreeSinglePage(region, dstFirstPagePa);
+                if (dstFirstPagePa != 0)
+                {
+                    FreeSinglePage(region, dstFirstPagePa);
+                }
 
                 if (dstLastPagePa != 0)
                 {
@@ -1822,56 +1828,60 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 }
             }
 
-            ulong firstPageFillAddress = dstFirstPagePa;
-
-            if (!ConvertVaToPa(addressTruncated, out ulong srcFirstPagePa))
+            // Is the first page address aligned?
+            // If not, allocate a new page and copy the unaligned chunck.
+            if (addressTruncated < addressRounded)
             {
-                CleanUpForError();
+                dstFirstPagePa = AllocateSinglePage(region, aslrDisabled);
 
-                return KernelResult.InvalidMemState;
-            }
+                if (dstFirstPagePa == 0)
+                {
+                    return KernelResult.OutOfMemory;
+                }
 
-            ulong unusedSizeAfter;
+                ulong firstPageFillAddress = dstFirstPagePa;
 
-            // When the start address is unaligned, we can't safely map the
-            // first page as it would expose other undesirable information on the
-            // target process. So, instead we allocate new pages, copy the data
-            // inside the range, and then clear the remaining space.
-            // The same also holds for the last page, if the end address
-            // (address + size) is also not aligned.
-            if (copyData)
-            {
-                ulong unusedSizeBefore = address - addressTruncated;
+                if (!ConvertVaToPa(addressTruncated, out ulong srcFirstPagePa))
+                {
+                    CleanUpForError();
 
-                _context.Memory.ZeroFill(dstFirstPagePa, unusedSizeBefore);
+                    return KernelResult.InvalidMemState;
+                }
 
-                ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
+                ulong unusedSizeAfter;
+                
+                if (copyData)
+                {
+                    ulong unusedSizeBefore = address - addressTruncated;
 
-                _context.Memory.Copy(
-                    GetDramAddressFromPa(dstFirstPagePa + unusedSizeBefore),
-                    GetDramAddressFromPa(srcFirstPagePa + unusedSizeBefore), copySize);
+                    _context.Memory.ZeroFill(dstFirstPagePa, unusedSizeBefore);
 
-                firstPageFillAddress += unusedSizeBefore + copySize;
+                    ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
 
-                unusedSizeAfter = addressRounded > endAddr ? addressRounded - endAddr : 0;
-            }
-            else
-            {
-                unusedSizeAfter = PageSize;
-            }
+                    _context.Memory.Copy(
+                        GetDramAddressFromPa(dstFirstPagePa + unusedSizeBefore),
+                        GetDramAddressFromPa(srcFirstPagePa + unusedSizeBefore), copySize);
 
-            if (unusedSizeAfter != 0)
-            {
-                _context.Memory.ZeroFill(firstPageFillAddress, unusedSizeAfter);
-            }
+                    firstPageFillAddress += unusedSizeBefore + copySize;
 
-            KPageList pages = new KPageList();
+                    unusedSizeAfter = addressRounded > endAddr ? addressRounded - endAddr : 0;
+                }
+                else
+                {
+                    unusedSizeAfter = PageSize;
+                }
 
-            if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
-            {
-                CleanUpForError();
+                if (unusedSizeAfter != 0)
+                {
+                    _context.Memory.ZeroFill(firstPageFillAddress, unusedSizeAfter);
+                }
 
-                return KernelResult.OutOfResource;
+                if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
+                {
+                    CleanUpForError();
+
+                    return KernelResult.OutOfResource;
+                }
             }
 
             ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
@@ -1884,9 +1894,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 AddVaRangeToPageList(pages, addressRounded, alignedPagesCount);
             }
 
-            if (endAddrTruncated != endAddrRounded)
+            // Is the last page end address aligned?
+            // If not, allocate a new page and copy the unaligned chunck.
+            if (endAddrTruncated < endAddrRounded && (addressTruncated != addressRounded || addressTruncated < endAddrTruncated))
             {
-                // End is also not aligned...
                 dstLastPagePa = AllocateSinglePage(region, aslrDisabled);
 
                 if (dstLastPagePa == 0)
@@ -1904,6 +1915,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                     return KernelResult.InvalidMemState;
                 }
+
+                ulong unusedSizeAfter;
 
                 if (copyData)
                 {
