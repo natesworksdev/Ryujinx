@@ -1896,7 +1896,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             // Is the last page end address aligned?
             // If not, allocate a new page and copy the unaligned chunck.
-            if (endAddrTruncated < endAddrRounded && (addressTruncated != addressRounded || addressTruncated < endAddrTruncated))
+            if (endAddrTruncated < endAddrRounded && (addressTruncated == addressRounded || addressTruncated < endAddrTruncated))
             {
                 dstLastPagePa = AllocateSinglePage(region, aslrDisabled);
 
