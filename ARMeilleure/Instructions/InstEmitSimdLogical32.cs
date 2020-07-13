@@ -15,7 +15,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitVectorBinaryOpF32(context, Intrinsic.X86Pand, Intrinsic.X86Pand);
+                EmitVectorBinaryOpSimd32(context, (n, m) => context.AddIntrinsic(Intrinsic.X86Pand, n, m));
             }
             else
             {
@@ -107,7 +107,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitVectorBinaryOpF32(context, Intrinsic.X86Pxor, Intrinsic.X86Pxor);
+                EmitVectorBinaryOpSimd32(context, (n, m) => context.AddIntrinsic(Intrinsic.X86Pxor, n, m));
             }
             else
             {
@@ -119,7 +119,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.UseSse2)
             {
-                EmitVectorBinaryOpF32(context, Intrinsic.X86Por, Intrinsic.X86Por);
+                EmitVectorBinaryOpSimd32(context, (n, m) => context.AddIntrinsic(Intrinsic.X86Por, n, m));
             }
             else
             {
