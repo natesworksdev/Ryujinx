@@ -80,7 +80,7 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 - **GPU**
 
-  The GPU emulator emulates the Switch's Maxwell GPU using the OpenGL API (version 4.4 minimum) through a custom build of OpenTK.
+  The GPU emulator emulates the Switch's Maxwell GPU using the OpenGL API (version 4.4 minimum) through a custom build of OpenTK. There are currently two graphics enhancements available to the end user in Ryujinx: resolution scaling and anisotropic filtering. These can both be adjusted in the GUI.
 
 - **Input**
 
@@ -88,6 +88,10 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
    Windows: Xinput-compatible controllers are supported natively; other controllers can be supported with the help of Xinput wrappers such as x360ce.  
    Linux: most modern controllers are supported.  
    In either case, you can set up everything inside the input configuration menu.
+
+- **DLC & Modifications**
+
+   Ryujinx is able to manage add-on content/downloadable content through the GUI. Mods (romfs and exefs) are also supported and the GUI contains a shortcut to open the respective mods folder for a particular game.
 
 - **Configuration**
 
@@ -112,3 +116,9 @@ If you need help with setting up Ryujinx, you can ask questions in the #support 
 If you have contributions, need support, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/N2FmfVc)!
 
 If you'd like to donate, please take a look at our [Patreon](https://www.patreon.com/ryujinx).
+
+## License
+
+This software is licensed under the terms of the MIT license.
+This project makes use of code authored by the libvpx project, licensed under BSD and the ffmpeg project, licensed under LGPLv3.
+See [LICENSE.txt](LICENSE.txt) and [THIRDPARTY.md](Ryujinx/THIRDPARTY.md) for more details.
