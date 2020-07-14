@@ -140,7 +140,7 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
             opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
 
-            opcode |= size << 20;
+            opcode |= (size & 0x3) << 20;
 
             V128 v0 = MakeVectorE0E1(z, ~z);
             V128 v1 = MakeVectorE0E1(a, ~a);
