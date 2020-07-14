@@ -1850,7 +1850,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 ulong firstPageFillAddress = dstFirstPagePa;
 
-                if (!ConvertVaToPa(addressTruncated, out ulong srcFirstPagePa))
+                if (!TryConvertVaToPa(addressTruncated, out ulong srcFirstPagePa))
                 {
                     CleanUpForError();
 
@@ -1918,7 +1918,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 ulong lastPageFillAddr = dstLastPagePa;
 
-                if (!ConvertVaToPa(endAddrTruncated, out ulong srcLastPagePa))
+                if (!TryConvertVaToPa(endAddrTruncated, out ulong srcLastPagePa))
                 {
                     CleanUpForError();
 
@@ -2069,6 +2069,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     }
 
                     ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
+                    ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
+                    ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
                     ulong endAddrRounded   = BitUtils.AlignUp  (endAddr, PageSize);
 
                     ulong pagesCount = (endAddrRounded - addressTruncated) / PageSize;
@@ -2080,6 +2082,18 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         false,
                         MemoryPermission.None,
                         MemoryOperation.Unmap);
+
+                    // Free pages we had to create on-demand, if any of the buffer was not page aligned.
+                    // Real kernel has page ref counting, so this is done as part of the unmap operation.
+                    if (addressTruncated != addressRounded)
+                    {
+                        FreeSinglePage(_memRegion, ConvertVaToPa(addressTruncated));
+                    }
+
+                    if (endAddrTruncated < endAddrRounded && (addressTruncated == addressRounded || addressTruncated < endAddrTruncated))
+                    {
+                        FreeSinglePage(_memRegion, ConvertVaToPa(endAddrTruncated));
+                    }
 
                     if (result == KernelResult.Success)
                     {
@@ -2379,7 +2393,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             while (address < start + pagesCount * PageSize)
             {
-                if (!ConvertVaToPa(address, out ulong pa))
+                if (!TryConvertVaToPa(address, out ulong pa))
                 {
                     throw new InvalidOperationException("Unexpected failure translating virtual address.");
                 }
@@ -3246,7 +3260,17 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return _cpuMemory.GetPhysicalAddress(va);
         }
 
-        public bool ConvertVaToPa(ulong va, out ulong pa)
+        public ulong ConvertVaToPa(ulong va)
+        {
+            if (!TryConvertVaToPa(va, out ulong pa))
+            {
+                throw new ArgumentException($"Invalid virtual address 0x{va:X} specified.");
+            }
+
+            return pa;
+        }
+
+        public bool TryConvertVaToPa(ulong va, out ulong pa)
         {
             pa = DramMemoryMap.DramBase + _cpuMemory.GetPhysicalAddress(va);
 
