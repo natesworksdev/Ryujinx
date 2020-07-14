@@ -1691,6 +1691,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             ulong addressRounded   = BitUtils.AlignUp  (address, PageSize);
+            ulong addressTruncated = BitUtils.AlignDown(address, PageSize);
             ulong endAddrRounded   = BitUtils.AlignUp  (endAddr, PageSize);
             ulong endAddrTruncated = BitUtils.AlignDown(endAddr, PageSize);
 
@@ -1703,9 +1704,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             void CleanUpForError()
             {
+                if (visitedSize == 0)
+                {
+                    return;
+                }
+
                 ulong endAddrVisited = address + visitedSize;
 
-                foreach (KMemoryInfo info in IterateOverRange(address, endAddrVisited))
+                foreach (KMemoryInfo info in IterateOverRange(addressRounded, endAddrVisited))
                 {
                     if ((info.Permission & MemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
                     {
@@ -1732,42 +1738,45 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             {
                 KernelResult result;
 
-                foreach (KMemoryInfo info in IterateOverRange(address, endAddrRounded))
+                if (addressRounded < endAddrTruncated)
                 {
-                    // Check if the block state matches what we expect.
-                    if ((info.State      & stateMask)     != stateMask  ||
-                        (info.Permission & permission)    != permission ||
-                        (info.Attribute  & attributeMask) != MemoryAttribute.None)
+                    foreach (KMemoryInfo info in IterateOverRange(addressTruncated, endAddrRounded))
                     {
-                        CleanUpForError();
-
-                        return KernelResult.InvalidMemState;
-                    }
-
-                    ulong blockAddress = GetAddrInRange(info, addressRounded);
-                    ulong blockSize    = GetSizeInRange(info, addressRounded, endAddrTruncated);
-
-                    ulong blockPagesCount = blockSize / PageSize;
-
-                    if ((info.Permission & MemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
-                    {
-                        result = DoMmuOperation(
-                            blockAddress,
-                            blockPagesCount,
-                            0,
-                            false,
-                            permissionMask,
-                            MemoryOperation.ChangePermRw);
-
-                        if (result != KernelResult.Success)
+                        // Check if the block state matches what we expect.
+                        if ((info.State      & stateMask)     != stateMask  ||
+                            (info.Permission & permission)    != permission ||
+                            (info.Attribute  & attributeMask) != MemoryAttribute.None)
                         {
                             CleanUpForError();
 
-                            return result;
+                            return KernelResult.InvalidMemState;
                         }
-                    }
 
-                    visitedSize += blockSize;
+                        ulong blockAddress = GetAddrInRange(info, addressRounded);
+                        ulong blockSize    = GetSizeInRange(info, addressRounded, endAddrTruncated);
+
+                        ulong blockPagesCount = blockSize / PageSize;
+
+                        if ((info.Permission & MemoryPermission.ReadAndWrite) != permissionMask && info.IpcRefCount == 0)
+                        {
+                            result = DoMmuOperation(
+                                blockAddress,
+                                blockPagesCount,
+                                0,
+                                false,
+                                permissionMask,
+                                MemoryOperation.ChangePermRw);
+
+                            if (result != KernelResult.Success)
+                            {
+                                CleanUpForError();
+
+                                return result;
+                            }
+                        }
+
+                        visitedSize += blockSize;
+                    }
                 }
 
                 result = GetPagesForIpcTransfer(address, size, copyData, aslrDisabled, region, out pageList);
@@ -1781,7 +1790,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (visitedSize != 0)
                 {
-                    InsertBlock(address, visitedSize / PageSize, SetIpcMappingPermissions, permissionMask);
+                    InsertBlock(addressRounded, visitedSize / PageSize, SetIpcMappingPermissions, permissionMask);
                 }
             }
 
@@ -1849,7 +1858,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 }
 
                 ulong unusedSizeAfter;
-                
+
                 if (copyData)
                 {
                     ulong unusedSizeBefore = address - addressTruncated;
@@ -1937,7 +1946,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 _context.Memory.ZeroFill(lastPageFillAddr, unusedSizeAfter);
 
-                if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
+                if (pages.AddRange(dstLastPagePa, 1) != KernelResult.Success)
                 {
                     CleanUpForError();
 
@@ -1970,9 +1979,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             MemoryPermission permission,
             MemoryState      state,
             KPageList        pageList,
-            out ulong        mappedVa)
+            out ulong        dst)
         {
-            mappedVa = 0;
+            dst = 0;
 
             lock (_blocks)
             {
@@ -2018,7 +2027,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 InsertBlock(va, neededPagesCount, state, permission);
 
-                mappedVa = va;
+                dst = va + (address - addressTruncated);
             }
 
             return KernelResult.Success;
@@ -2123,7 +2132,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             lock (_blocks)
             {
-                foreach (KMemoryInfo info in IterateOverRange(address, endAddrTruncated))
+                foreach (KMemoryInfo info in IterateOverRange(addressRounded, endAddrTruncated))
                 {
                     // Check if the block state matches what we expect.
                     if ((info.State      & stateMask)     != stateMask ||
@@ -2155,7 +2164,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 }
             }
 
-            InsertBlock(address, pagesCount, RestoreIpcMappingPermissions);
+            InsertBlock(addressRounded, pagesCount, RestoreIpcMappingPermissions);
 
             return KernelResult.Success;
         }

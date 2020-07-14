@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             Attribute |= attribute;
         }
 
-        public void SetIpcMappingPermission(MemoryPermission permission)
+        public void SetIpcMappingPermission(MemoryPermission newPermission)
         {
             int oldIpcRefCount = IpcRefCount++;
 
@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 SourcePermission = Permission;
 
                 Permission &= ~MemoryPermission.ReadAndWrite;
-                Permission |=  MemoryPermission.ReadAndWrite & permission;
+                Permission |=  MemoryPermission.ReadAndWrite & newPermission;
             }
 
             Attribute |= MemoryAttribute.IpcMapped;
