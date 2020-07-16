@@ -151,7 +151,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             byte[] data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
 
-            _context.PhysicalMemory.Write(address, data);
+            _context.PhysicalMemory.WriteUntracked(address, data);
         }
 
         /// <summary>
