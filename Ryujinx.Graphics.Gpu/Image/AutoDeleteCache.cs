@@ -82,11 +82,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-        public void Remove(Texture texture, bool flush)
+        public bool Remove(Texture texture, bool flush)
         {
             if (texture.CacheNode == null)
             {
-                return;
+                return false;
             }
 
             // Remove our reference to this texture.
@@ -97,9 +97,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _textures.Remove(texture.CacheNode);
 
-            texture.DecrementReferenceCount();
-
             texture.CacheNode = null;
+
+            return texture.DecrementReferenceCount();
         }
 
         public IEnumerator<Texture> GetEnumerator()

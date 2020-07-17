@@ -1021,7 +1021,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Decrements the texture reference count.
         /// When the reference count hits zero, the texture may be deleted and can't be used anymore.
         /// </summary>
-        public void DecrementReferenceCount()
+        /// <returns>True if the texture is now referenceless, false otherwise</returns>
+        public bool DecrementReferenceCount()
         {
             int newRefCount = --_referenceCount;
 
@@ -1038,6 +1039,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             Debug.Assert(newRefCount >= 0);
 
             DeleteIfNotUsed();
+
+            return newRefCount == 0;
         }
 
         /// <summary>

@@ -436,6 +436,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public void Dispose()
         {
+            // TODO: this is really "release".
+
+            bool isDefault = _parent._defaultView == this;
+
             if (_incompatibleFormatView != null)
             {
                 _incompatibleFormatView.Dispose();
@@ -443,14 +447,31 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 _incompatibleFormatView = null;
             }
 
-            if (Handle != 0)
+            if (isDefault)
             {
-                GL.DeleteTexture(Handle);
-
-                _parent.DecrementViewsCount();
-
-                Handle = 0;
+                if (Handle != 0)
+                {
+                    _parent.DecrementViewsCount();
+                }
             }
+            else
+            {
+                if (Handle != 0)
+                {
+                    GL.DeleteTexture(Handle);
+
+                    _parent.DecrementViewsCount();
+
+                    Handle = 0;
+                }
+            }
+        }
+
+        public void TrueDispose()
+        {
+            _parent.DeleteDefault();
+
+            Dispose();
         }
     }
 }

@@ -770,6 +770,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 for (int index = 0; index < overlapsCount; index++)
                 {
                     Texture overlap = _textureOverlaps[index];
+                    bool overlapInCache = overlap.CacheNode != null;
 
                     if (texture.IsViewCompatible(overlap.Info, overlap.Size, true, out int firstLayer, out int firstLevel) || overlap.Info.Target == Target.Texture3D)
                     {
@@ -781,19 +782,24 @@ namespace Ryujinx.Graphics.Gpu.Image
                         _overlapInfo[viewCompatible] = new OverlapInfo { FirstLayer = firstLayer, FirstLevel = firstLevel };
                         _textureOverlaps[viewCompatible++] = overlap;
                     }
-                    else
+                    else if (overlapInCache || !setData)
                     {
                         // The overlap texture is going to contain garbage data after we draw, or is generally incompatible.
                         // If the texture cannot be entirely contained in the new address space, and one of its view children is compatible with us,
                         // it must be flushed before removal, so that the data is not lost.
 
-                        bool flush = (overlap.Address < texture.Address || overlap.EndAddress > texture.EndAddress) && overlap.HasViewCompatibleChild(texture);
+                        bool flush = overlapInCache && (overlap.Address < texture.Address || overlap.EndAddress > texture.EndAddress) && overlap.HasViewCompatibleChild(texture);
 
                         // If the texture was modified since its last use, then that data is probably meant to go into this texture.
                         setData |= overlap.ConsumeModified();
 
-                        Logger.PrintWarning(LogClass.Gpu, $"Removed overlapping texture {overlap.Info.Target} {overlap.Info.Width}x{overlap.Info.Height}x{overlap.Info.DepthOrLayers}");
-                        _cache.Remove(overlap, flush);
+                        if (overlapInCache)
+                        {
+                            if (_cache.Remove(overlap, flush))
+                            {
+                                Logger.PrintWarning(LogClass.Gpu, $"Removed overlapping texture {overlap.Info.Target} {overlap.Info.Width}x{overlap.Info.Height}x{overlap.Info.DepthOrLayers}");
+                            }
+                        }
                     }
                 }
 
