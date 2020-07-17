@@ -23,7 +23,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal TextureCopy TextureCopy { get; }
 
-        internal DisposedResourceCache ResourceCache { get; }
+        internal ResourceCache ResourceCache { get; }
 
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
@@ -35,7 +35,7 @@ namespace Ryujinx.Graphics.OpenGL
             _counters = new Counters();
             _window = new Window(this);
             TextureCopy = new TextureCopy(this);
-            ResourceCache = new DisposedResourceCache();
+            ResourceCache = new ResourceCache();
         }
 
         public IShader CompileShader(ShaderProgram shader)
