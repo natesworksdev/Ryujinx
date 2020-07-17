@@ -1021,8 +1021,6 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return result;
             }
 
-            resourceLimit = null;
-
             result = process.HandleTable.GenerateHandle(transferMemory, out handle);
 
             transferMemory.DecrementReferenceCount();
