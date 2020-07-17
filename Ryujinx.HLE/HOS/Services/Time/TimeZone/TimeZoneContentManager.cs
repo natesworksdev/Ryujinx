@@ -132,7 +132,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
                         continue;
                     }
 
-                    if (romfs.OpenFile(out IFile tzif, $"/zoneinfo/{locName}".ToU8Span(), OpenMode.Read) != Result.Success)
+                    if (romfs.OpenFile(out IFile tzif, $"/zoneinfo/{locName}".ToU8Span(), OpenMode.Read).IsFailure())
                     {
                         Logger.PrintError(LogClass.ServiceTime, $"Error opening /zoneinfo/{locName}");
                         continue;
