@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Decoders;
+using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System;
@@ -272,6 +272,30 @@ namespace ARMeilleure.Instructions
                 if (op.Size == 2)
                 {
                     ne = signed ? context.SignExtend32(OperandType.I64, ne) : context.ZeroExtend32(OperandType.I64, ne);
+                    me = signed ? context.SignExtend32(OperandType.I64, me) : context.ZeroExtend32(OperandType.I64, me);
+                }
+
+                res = EmitVectorInsert(context, res, emit(ne, me), index, op.Size + 1);
+            }
+
+            context.Copy(GetVecA32(op.Qd), res);
+        }
+
+        public static void EmitVectorBinaryWideOpI32(ArmEmitterContext context, Func2I emit, bool signed)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            Operand res = context.VectorZero();
+
+            int elems = op.GetBytesCount() >> op.Size;
+
+            for (int index = 0; index < elems; index++)
+            {
+                Operand ne = EmitVectorExtract32(context, op.Qn, op.In + index, op.Size + 1, signed);
+                Operand me = EmitVectorExtract32(context, op.Qm, op.Im + index, op.Size,     signed);
+
+                if (op.Size == 2)
+                {
                     me = signed ? context.SignExtend32(OperandType.I64, me) : context.ZeroExtend32(OperandType.I64, me);
                 }
 
