@@ -434,10 +434,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotSupportedException();
         }
 
-        public void Dispose()
+        public void Release()
         {
-            // TODO: this is really "release".
-
             bool isDefault = _parent._defaultView == this;
 
             if (_incompatibleFormatView != null)
@@ -467,11 +465,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        public void TrueDispose()
+        public void Dispose()
         {
             _parent.DeleteDefault();
 
-            Dispose();
+            Release();
         }
     }
 }

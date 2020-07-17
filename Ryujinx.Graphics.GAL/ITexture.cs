@@ -17,5 +17,6 @@ namespace Ryujinx.Graphics.GAL
 
         void SetData(ReadOnlySpan<byte> data);
         void SetStorage(BufferRange buffer);
+        void Release();
     }
 }

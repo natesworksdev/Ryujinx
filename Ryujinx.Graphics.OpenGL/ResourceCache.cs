@@ -78,7 +78,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                     if (--tex.RemainingFrames < 0)
                     {
-                        tex.View.TrueDispose();
+                        tex.View.Dispose();
                         list.RemoveAt(i--);
                     }
                 }

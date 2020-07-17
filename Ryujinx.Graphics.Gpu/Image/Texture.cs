@@ -420,8 +420,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 from.CopyTo(to, new Extents2D(0, 0, from.Width, from.Height), new Extents2D(0, 0, to.Width, to.Height), true);
 
-                from.Dispose();
-                to.Dispose();
+                from.Release();
+                to.Release();
             }
         }
 
@@ -1065,9 +1065,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private void DisposeTextures()
         {
-            HostTexture.Dispose();
+            HostTexture.Release();
 
-            _arrayViewTexture?.Dispose();
+            _arrayViewTexture?.Release();
             _arrayViewTexture = null;
         }
 
