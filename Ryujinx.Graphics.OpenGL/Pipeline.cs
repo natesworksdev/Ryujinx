@@ -702,7 +702,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetPointSize(float size)
         {
-            GL.PointSize(size);
+            // Games seem to set point size to 0 which generates a GL_INVALID_VALUE
+            // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0. 
+            GL.PointSize(Math.Max(float.Epsilon, size));
         }
 
         public void SetPrimitiveRestart(bool enable, int index)
