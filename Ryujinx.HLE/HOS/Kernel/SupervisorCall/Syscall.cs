@@ -1,5 +1,4 @@
-﻿using ARMeilleure.Memory;
-using Ryujinx.Common;
+﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
@@ -9,6 +8,7 @@ using Ryujinx.HLE.HOS.Kernel.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -96,16 +96,25 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return result;
         }
 
-        public KernelResult SendSyncRequest(int handle)
-        {
-            return SendSyncRequestWithUserBuffer((ulong)_context.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
-        }
-
-        public KernelResult SendSyncRequestWithUserBuffer(ulong messagePtr, ulong size, int handle)
+        public KernelResult SendSyncRequestHLE(int handle)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            byte[] messageData = new byte[size];
+            KClientSession clientSession = process.HandleTable.GetObject<KClientSession>(handle);
+
+            if (clientSession == null || clientSession.Service == null)
+            {
+                return SendSyncRequest(handle);
+            }
+
+            return SendSyncRequestWithUserBufferHLE((ulong)_context.Scheduler.GetCurrentThread().Context.Tpidr, 0x100, handle);
+        }
+
+        public KernelResult SendSyncRequestWithUserBufferHLE(ulong messagePtr, ulong messageSize, int handle)
+        {
+            KProcess process = _context.Scheduler.GetCurrentProcess();
+
+            byte[] messageData = new byte[messageSize];
 
             process.CpuMemory.Read(messagePtr, messageData);
 
@@ -113,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
             if (clientSession == null || clientSession.Service == null)
             {
-                return SendSyncRequest_(handle);
+                return SendSyncRequestWithUserBuffer(messagePtr, messageSize, handle);
             }
 
             if (clientSession != null)
@@ -168,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             ipcMessage.Thread.Reschedule(ThreadSchedState.Running);
         }
 
-        private KernelResult SendSyncRequest_(int handle)
+        private KernelResult SendSyncRequest(int handle)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
@@ -180,6 +189,123 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             return session.SendSyncRequest();
+        }
+
+        public KernelResult SendSyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle)
+        {
+            if (!PageAligned(messagePtr))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(messageSize) || messageSize == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (messagePtr + messageSize <= messagePtr)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+            KernelResult result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            KClientSession session = currentProcess.HandleTable.GetObject<KClientSession>(handle);
+
+            if (session == null)
+            {
+                result = KernelResult.InvalidHandle;
+            }
+            else
+            {
+                result = session.SendSyncRequest(messagePtr, messageSize);
+            }
+
+            KernelResult result2 = currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
+
+            if (result == KernelResult.Success)
+            {
+                result = result2;
+            }
+
+            return result;
+        }
+
+        public KernelResult SendAsyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle, out int doneEventHandle)
+        {
+            doneEventHandle = 0;
+
+            if (!PageAligned(messagePtr))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(messageSize) || messageSize == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (messagePtr + messageSize <= messagePtr)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+            KernelResult result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            KResourceLimit resourceLimit = currentProcess.ResourceLimit;
+
+            if (resourceLimit != null && !resourceLimit.Reserve(LimitableResource.Event, 1))
+            {
+                currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
+
+                return KernelResult.ResLimitExceeded;
+            }
+
+            KClientSession session = currentProcess.HandleTable.GetObject<KClientSession>(handle);
+
+            if (session == null)
+            {
+                result = KernelResult.InvalidHandle;
+            }
+            else
+            {
+                KEvent doneEvent = new KEvent(_context);
+
+                result = currentProcess.HandleTable.GenerateHandle(doneEvent.ReadableEvent, out doneEventHandle);
+
+                if (result == KernelResult.Success)
+                {
+                    result = session.SendAsyncRequest(doneEvent.WritableEvent, messagePtr, messageSize);
+
+                    if (result != KernelResult.Success)
+                    {
+                        currentProcess.HandleTable.CloseHandle(doneEventHandle);
+                    }
+                }
+            }
+
+            if (result != KernelResult.Success)
+            {
+                resourceLimit?.Release(LimitableResource.Event, 1);
+
+                currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
+            }
+
+            return result;
         }
 
         public KernelResult CreateSession(
@@ -348,7 +474,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 syncObjs[index] = obj;
             }
 
-            KernelResult result;
+            KernelResult result = KernelResult.Success;
 
             if (replyTargetHandle != 0)
             {
@@ -356,31 +482,130 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 if (replyTarget == null)
                 {
+                    result = KernelResult.InvalidHandle;
+                }
+                else
+                {
+                    result = replyTarget.Reply();
+                }
+            }
+
+            if (result == KernelResult.Success)
+            {
+                while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+                {
+                    KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
+
+                    if (session == null)
+                    {
+                        break;
+                    }
+
+                    if ((result = session.Receive()) != KernelResult.NotFound)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return result;
+        }
+
+        public KernelResult ReplyAndReceiveWithUserBuffer(
+            ulong handlesPtr,
+            ulong messagePtr,
+            ulong messageSize,
+            int handlesCount,
+            int replyTargetHandle,
+            long timeout,
+            out int handleIndex)
+        {
+            handleIndex = 0;
+
+            if ((uint)handlesCount > 0x40)
+            {
+                return KernelResult.MaximumExceeded;
+            }
+
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+            ulong copySize = (ulong)((long)handlesCount * 4);
+
+            if (!currentProcess.MemoryManager.InsideAddrSpace(handlesPtr, copySize))
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            if (handlesPtr + copySize < handlesPtr)
+            {
+                return KernelResult.UserCopyFailed;
+            }
+
+            KernelResult result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            int[] handles = new int[handlesCount];
+
+            if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
+            {
+                currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
+
+                return KernelResult.UserCopyFailed;
+            }
+
+            KSynchronizationObject[] syncObjs = new KSynchronizationObject[handlesCount];
+
+            for (int index = 0; index < handlesCount; index++)
+            {
+                KSynchronizationObject obj = currentProcess.HandleTable.GetObject<KSynchronizationObject>(handles[index]);
+
+                if (obj == null)
+                {
+                    currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
+
                     return KernelResult.InvalidHandle;
                 }
 
-                result = replyTarget.Reply();
-
-                if (result != KernelResult.Success)
-                {
-                    return result;
-                }
+                syncObjs[index] = obj;
             }
 
-            while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+            if (replyTargetHandle != 0)
             {
-                KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
+                KServerSession replyTarget = currentProcess.HandleTable.GetObject<KServerSession>(replyTargetHandle);
 
-                if (session == null)
+                if (replyTarget == null)
                 {
-                    break;
+                    result = KernelResult.InvalidHandle;
                 }
-
-                if ((result = session.Receive()) != KernelResult.NotFound)
+                else
                 {
-                    break;
+                    result = replyTarget.Reply(messagePtr, messageSize);
                 }
             }
+
+            if (result == KernelResult.Success)
+            {
+                while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+                {
+                    KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
+
+                    if (session == null)
+                    {
+                        break;
+                    }
+
+                    if ((result = session.Receive(messagePtr, messageSize)) != KernelResult.NotFound)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
             return result;
         }
@@ -1915,30 +2140,84 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             handleIndex = 0;
 
-            if ((uint)handlesCount > 0x40)
+            if ((uint)handlesCount > KThread.MaxWaitSyncObjects)
             {
                 return KernelResult.MaximumExceeded;
             }
 
-            List<KSynchronizationObject> syncObjs = new List<KSynchronizationObject>();
+            KThread currentThread = _context.Scheduler.GetCurrentThread();
 
-            KProcess process = _context.Scheduler.GetCurrentProcess();
+            var syncObjs = new Span<KSynchronizationObject>(currentThread.WaitSyncObjects).Slice(0, handlesCount);
+
+            if (handlesCount != 0)
+            {
+                KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+                if (currentProcess.MemoryManager.AddrSpaceStart > handlesPtr)
+                {
+                    return KernelResult.UserCopyFailed;
+                }
+
+                long handlesSize = handlesCount * 4;
+
+                if (handlesPtr + (ulong)handlesSize <= handlesPtr)
+                {
+                    return KernelResult.UserCopyFailed;
+                }
+
+                if (handlesPtr + (ulong)handlesSize - 1 > currentProcess.MemoryManager.AddrSpaceEnd - 1)
+                {
+                    return KernelResult.UserCopyFailed;
+                }
+
+                Span<int> handles = new Span<int>(currentThread.WaitSyncHandles).Slice(0, handlesCount);
+
+                if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
+                {
+                    return KernelResult.UserCopyFailed;
+                }
+
+                int processedHandles = 0;
+
+                for (; processedHandles < handlesCount; processedHandles++)
+                {
+                    KSynchronizationObject syncObj = currentProcess.HandleTable.GetObject<KSynchronizationObject>(handles[processedHandles]);
+
+                    if (syncObj == null)
+                    {
+                        break;
+                    }
+
+                    syncObjs[processedHandles] = syncObj;
+
+                    syncObj.IncrementReferenceCount();
+                }
+
+                if (processedHandles != handlesCount)
+                {
+                    // One or more handles are invalid.
+                    for (int index = 0; index < processedHandles; index++)
+                    {
+                        currentThread.WaitSyncObjects[index].DecrementReferenceCount();
+                    }
+
+                    return KernelResult.InvalidHandle;
+                }
+            }
+
+            KernelResult result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex);
+
+            if (result == KernelResult.PortRemoteClosed)
+            {
+                result = KernelResult.Success;
+            }
 
             for (int index = 0; index < handlesCount; index++)
             {
-                int handle = process.CpuMemory.Read<int>(handlesPtr + (ulong)index * 4);
-
-                KSynchronizationObject syncObj = process.HandleTable.GetObject<KSynchronizationObject>(handle);
-
-                if (syncObj == null)
-                {
-                    break;
-                }
-
-                syncObjs.Add(syncObj);
+                currentThread.WaitSyncObjects[index].DecrementReferenceCount();
             }
 
-            return _context.Synchronization.WaitFor(syncObjs.ToArray(), timeout, out handleIndex);
+            return result;
         }
 
         public KernelResult CancelSynchronization(int handle)
