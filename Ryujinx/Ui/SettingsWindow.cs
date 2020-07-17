@@ -201,10 +201,26 @@ namespace Ryujinx.Ui
 
             Task.Run(() =>
             {
-                if (SoundIoAudioOut.IsSupported) _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
-                if (OpenALAudioOut.IsSupported) _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
+                if (SoundIoAudioOut.IsSupported)
+                {
+                    Application.Invoke(delegate
+                    {
+                        _audioBackendSelect.Append(AudioBackend.SoundIo.ToString(), "SoundIO");
+                    });
+                }
 
-                _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
+                if (OpenALAudioOut.IsSupported)
+                {
+                    Application.Invoke(delegate
+                    {
+                        _audioBackendSelect.Append(AudioBackend.OpenAl.ToString(), "OpenAL");
+                    });
+                } 
+
+                Application.Invoke(delegate
+                {
+                    _audioBackendSelect.SetActiveId(ConfigurationState.Instance.System.AudioBackend.Value.ToString());
+                });
             });
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
