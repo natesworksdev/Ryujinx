@@ -1,3 +1,4 @@
+using Ryujinx.Graphics.Gpu.Engine.GPFifo;
 using System;
 using System.Collections.Concurrent;
 using System.Runtime.InteropServices;
@@ -87,6 +88,8 @@ namespace Ryujinx.Graphics.Gpu
 
         private AutoResetEvent _event;
 
+        internal GPFifoProcessor Processor { get; }
+
         /// <summary>
         /// Creates a new instance of the GPU DMA pusher.
         /// </summary>
@@ -100,6 +103,8 @@ namespace Ryujinx.Graphics.Gpu
             _commandBufferQueue = new ConcurrentQueue<CommandBuffer>();
 
             _event = new AutoResetEvent(false);
+
+            Processor = new GPFifoProcessor(context);
         }
 
         /// <summary>
@@ -194,7 +199,13 @@ namespace Ryujinx.Graphics.Gpu
         /// </summary>
         public void DispatchCalls()
         {
-            while (Step());
+            while (_ibEnable && _commandBufferQueue.TryDequeue(out CommandBuffer entry))
+            {
+                _currentCommandBuffer = entry;
+                _currentCommandBuffer.Fetch(_context);
+
+                Processor.Process(_currentCommandBuffer.Words);
+            }
         }
 
         /// <summary>
