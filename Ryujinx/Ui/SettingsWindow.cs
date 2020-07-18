@@ -328,7 +328,7 @@ namespace Ryujinx.Ui
         private bool TimeZoneMatchFunc(EntryCompletion compl, string key, TreeIter iter)
         {
             key = key.Trim().Replace(' ', '_');
-            
+
             return ((string)compl.Model.GetValue(iter, 1)).Contains(key, StringComparison.OrdinalIgnoreCase) || // region
                    ((string)compl.Model.GetValue(iter, 2)).StartsWith(key, StringComparison.OrdinalIgnoreCase) || // abbr
                    ((string)compl.Model.GetValue(iter, 0)).Substring(3).StartsWith(key); // offset

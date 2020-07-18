@@ -120,9 +120,16 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
 
         public IEnumerable<(int Offset, string Location, string Abbr)> ParseTzOffsets()
         {
+            var tzBinaryContentPath = GetTimeZoneBinaryTitleContentPath();
+
+            if (string.IsNullOrEmpty(tzBinaryContentPath))
+            {
+                return new[] { (0, "UTC", "UTC") };
+            }
+
             List<(int Offset, string Location, string Abbr)> outList = new List<(int Offset, string Location, string Abbr)>();
             var now = System.DateTimeOffset.Now.ToUnixTimeSeconds();
-            using (IStorage ncaStorage = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(GetTimeZoneBinaryTitleContentPath()), FileAccess.Read, FileMode.Open))
+            using (IStorage ncaStorage = new LocalStorage(_virtualFileSystem.SwitchPathToSystemPath(tzBinaryContentPath), FileAccess.Read, FileMode.Open))
             using (IFileSystem romfs = new Nca(_virtualFileSystem.KeySet, ncaStorage).OpenFileSystem(NcaSectionType.Data, _fsIntegrityCheckLevel))
             {
                 foreach (string locName in LocationNameCache)
