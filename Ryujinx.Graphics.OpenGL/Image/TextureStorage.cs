@@ -16,7 +16,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private int _viewsCount;
 
-        internal ITexture _defaultView;
+        internal ITexture DefaultView { get; private set; }
 
         public TextureStorage(Renderer renderer, TextureCreateInfo info, float scaleFactor)
         {
@@ -149,9 +149,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         public ITexture CreateDefaultView()
         {
-            _defaultView = CreateView(Info, 0, 0);
+            DefaultView = CreateView(Info, 0, 0);
 
-            return _defaultView;
+            return DefaultView;
         }
 
         public ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel)
@@ -171,7 +171,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             // If we don't have any views, then the storage is now useless, delete it.
             if (--_viewsCount == 0)
             {
-                if (_defaultView == null)
+                if (DefaultView == null)
                 {
                     Dispose();
                 }
@@ -186,17 +186,17 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             _viewsCount = 1; // Has the default view.
 
-            _renderer.ResourceCache.AddTexture((TextureView)_defaultView);
+            _renderer.ResourceCache.AddTexture((TextureView)DefaultView);
         }
 
         public void DeleteDefault()
         {
-            _defaultView = null;
+            DefaultView = null;
         }
 
         public void Dispose()
         {
-            _defaultView = null;
+            DefaultView = null;
 
             if (Handle != 0)
             {

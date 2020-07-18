@@ -434,10 +434,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotSupportedException();
         }
 
-        public void Release()
+        private void DisposeHandles()
         {
-            bool isDefault = _parent._defaultView == this;
-
             if (_incompatibleFormatView != null)
             {
                 _incompatibleFormatView.Dispose();
@@ -445,29 +443,36 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 _incompatibleFormatView = null;
             }
 
-            if (isDefault)
+            if (Handle != 0)
             {
-                if (Handle != 0)
-                {
-                    _parent.DecrementViewsCount();
-                }
+                GL.DeleteTexture(Handle);
+
+                Handle = 0;
             }
-            else
+        }
+
+        public void Release()
+        {
+            bool hadHandle = Handle != 0;
+
+            if (_parent.DefaultView != this)
             {
-                if (Handle != 0)
-                {
-                    GL.DeleteTexture(Handle);
+                DisposeHandles();
+            }
 
-                    _parent.DecrementViewsCount();
-
-                    Handle = 0;
-                }
+            if (hadHandle)
+            {
+                _parent.DecrementViewsCount();
             }
         }
 
         public void Dispose()
         {
-            _parent.DeleteDefault();
+            if (_parent.DefaultView == this)
+            {
+                // Remove the default view (us), so that the texture cannot be released to the cache.
+                _parent.DeleteDefault();
+            }
 
             Release();
         }
