@@ -33,7 +33,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vabs_V(ArmEmitterContext context)
         {
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+            OpCode32SimdCmpZ op = (OpCode32SimdCmpZ)context.CurrOp;
 
             if (op.F)
             {
@@ -105,6 +105,13 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpZx32(context, (op1, op2) => context.Add(op1, op2));
             }
+        }
+
+        public static void Vaddw_I(ArmEmitterContext context)
+        {
+            OpCode32SimdRegWide op = (OpCode32SimdRegWide)context.CurrOp;
+
+            EmitVectorBinaryWideOpI32(context, (op1, op2) => context.Add(op1, op2), !op.U);
         }
 
         public static void Vdup(ArmEmitterContext context)
@@ -378,22 +385,22 @@ namespace ARMeilleure.Instructions
 
         public static void Vneg_V(ArmEmitterContext context)
         {
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+            OpCode32SimdCmpZ op = (OpCode32SimdCmpZ)context.CurrOp;
 
             if (op.F)
             {
-                if (Optimizations.UseSse2)
+                if (Optimizations.FastFP && Optimizations.UseSse2)
                 {
                     EmitVectorUnaryOpSimd32(context, (m) =>
                     {
                         if ((op.Size & 1) == 0)
                         {
-                            Operand mask = X86GetScalar(context, -0f);
+                            Operand mask = X86GetAllElements(context, -0f);
                             return context.AddIntrinsic(Intrinsic.X86Xorps, mask, m);
                         }
                         else
                         {
-                            Operand mask = X86GetScalar(context, -0d);
+                            Operand mask = X86GetAllElements(context, -0d);
                             return context.AddIntrinsic(Intrinsic.X86Xorpd, mask, m);
                         }
                     });
@@ -1189,6 +1196,13 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorBinaryOpZx32(context, (op1, op2) => context.Subtract(op1, op2));
             }
+        }
+
+        public static void Vsubw_I(ArmEmitterContext context)
+        {
+            OpCode32SimdRegWide op = (OpCode32SimdRegWide)context.CurrOp;
+
+            EmitVectorBinaryWideOpI32(context, (op1, op2) => context.Subtract(op1, op2), !op.U);
         }
 
         private static void EmitSse41MaxMinNumOpF32(ArmEmitterContext context, bool isMaxNum, bool scalar)
