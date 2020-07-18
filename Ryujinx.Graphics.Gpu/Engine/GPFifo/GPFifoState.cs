@@ -89,7 +89,7 @@
     enum WfiScope
     {
         CurrentScgType = 0,
-        All = 1,
+        All = 1
     }
 
     enum YieldOp
@@ -97,7 +97,7 @@
         Nop = 0,
         PbdmaTimeslice = 1,
         RunlistTimeslice = 2,
-        Tsg = 3,
+        Tsg = 3
     }
 
     struct GPFifoState

@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             int macroUploadAddress = state.Get<int>(MethodOffset.MacroUploadAddress);
 
-            _context.DmaPusher.Processor.SendMacroCodeData(macroUploadAddress++, argument);
+            _context.GPFifo.Processor.SendMacroCodeData(macroUploadAddress++, argument);
 
             state.Write((int)MethodOffset.MacroUploadAddress, macroUploadAddress);
         }
@@ -67,14 +67,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             int macroBindingIndex = state.Get<int>(MethodOffset.MacroBindingIndex);
 
-            _context.DmaPusher.Processor.BindMacro(macroBindingIndex++, argument);
+            _context.GPFifo.Processor.BindMacro(macroBindingIndex++, argument);
 
             state.Write((int)MethodOffset.MacroBindingIndex, macroBindingIndex);
         }
 
         public void SetMmeShadowRamControl(GpuState state, int argument)
         {
-            _context.DmaPusher.Processor.SetMmeShadowRamControl((ShadowRamControl)argument);
+            _context.GPFifo.Processor.SetMmeShadowRamControl((ShadowRamControl)argument);
         }
 
         /// <summary>

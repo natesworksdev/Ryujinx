@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Graphics.u.Engine.GPFifo
+﻿namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
     enum Entry0Fetch
     {
