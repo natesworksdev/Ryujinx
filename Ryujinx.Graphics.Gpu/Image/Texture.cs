@@ -355,7 +355,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void BlacklistScale()
         {
-            if (Info.Width == 1920) { }
             ScaleMode = TextureScaleMode.Blacklisted;
             SetScale(1f);
         }
@@ -542,7 +541,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // Note that if ASTC is not supported by the GPU we can't read it back since
             // it will use a different format. Since applications shouldn't be writing
             // ASTC textures from the GPU anyway, ignoring it should be safe.
-            if (_context.Methods.TextureManager.IsTextureModified(this) && !Info.FormatInfo.Format.IsAstc())
+            if (IsModified && !Info.FormatInfo.Format.IsAstc())
             {
                 Span<byte> gpuData = GetTextureDataFromGpu(true);
 
@@ -655,6 +654,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             IsModified = false;
 
+            if (Info.FormatInfo.Format.IsAstc())
+            {
+                return; // Flushing this format is not supported, as it may have been converted to another host format.
+            }
+
+            if (Info.FormatInfo.IsCompressed)
+            {
+                Logger.PrintError(LogClass.Gpu, "Flushing compressed texture!");
+            }
+
             _context.PhysicalMemory.WriteUntracked(Address, GetTextureDataFromGpu(blacklist));
         }
 
@@ -675,12 +684,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                 BlacklistScale();
                 data = HostTexture.GetData();
             } 
-            else
+            else if (ScaleFactor != 1f)
             {
                 float scale = ScaleFactor;
                 SetScale(1f);
                 data = HostTexture.GetData();
                 SetScale(scale);
+            }
+            else
+            {
+                data = HostTexture.GetData();
             }
 
             if (Info.IsLinear)

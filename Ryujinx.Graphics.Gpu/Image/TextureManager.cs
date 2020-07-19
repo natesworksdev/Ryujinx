@@ -772,7 +772,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Texture overlap = _textureOverlaps[index];
                     bool overlapInCache = overlap.CacheNode != null;
 
-                    if (texture.IsViewCompatible(overlap.Info, overlap.Size, true, out int firstLayer, out int firstLevel) || overlap.Info.Target == Target.Texture3D)
+                    if (texture.IsViewCompatible(overlap.Info, overlap.Size, true, out int firstLayer, out int firstLevel))
                     {
                         if (_overlapInfo.Length != _textureOverlaps.Length)
                         {
@@ -784,14 +784,23 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
                     else if (overlapInCache || !setData)
                     {
+                        if (info.GobBlocksInZ > 1 && info.GobBlocksInZ == overlap.Info.GobBlocksInZ)
+                        {
+                            // Allow overlapping slices of 3D textures. Could be improved in future by making sure the textures don't overlap.
+                            continue;
+                        }
+
                         // The overlap texture is going to contain garbage data after we draw, or is generally incompatible.
                         // If the texture cannot be entirely contained in the new address space, and one of its view children is compatible with us,
                         // it must be flushed before removal, so that the data is not lost.
 
-                        bool flush = overlapInCache && (overlap.Address < texture.Address || overlap.EndAddress > texture.EndAddress) && overlap.HasViewCompatibleChild(texture);
-
                         // If the texture was modified since its last use, then that data is probably meant to go into this texture.
-                        setData |= overlap.ConsumeModified();
+                        // If the data has been modified by the CPU, then it also shouldn't be flushed.
+                        bool modified = overlap.ConsumeModified();
+
+                        bool flush = overlapInCache && !modified && (overlap.Address < texture.Address || overlap.EndAddress > texture.EndAddress) && overlap.HasViewCompatibleChild(texture);
+
+                        setData |= modified || flush;
 
                         if (overlapInCache)
                         {
