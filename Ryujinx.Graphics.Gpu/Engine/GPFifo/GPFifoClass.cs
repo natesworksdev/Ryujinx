@@ -1,5 +1,7 @@
 ﻿using Ryujinx.Graphics.Device;
 using Ryujinx.Graphics.Gpu.Engine.MME;
+using Ryujinx.Graphics.Gpu.State;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -18,7 +20,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
         private readonly Macro[] _macros;
         private readonly int[] _macroCode;
-        private ShadowRamControl _shadowCtrl;
+
+        public ShadowRamControl ShadowCtrl { get; private set; }
 
         public GPFifoClass(GpuContext context)
         {
@@ -51,9 +54,49 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 
             int value = _state.State.SemaphorecPayload;
 
-            _context.MemoryAccessor.Write(address, value);
+            SemaphoredOperation operation = _state.State.SemaphoredOperation;
 
-            _context.AdvanceSequence();
+            // TODO: Acquire operations (Wait), interrupts for invalid combinations.
+            if (operation == SemaphoredOperation.Release)
+            {
+                _context.MemoryAccessor.Write(address, value);
+            }
+            else if (operation == SemaphoredOperation.Reduction)
+            {
+                bool signed = _state.State.SemaphoredFormat == SemaphoredFormat.Signed;
+
+                int mem = _context.MemoryAccessor.Read<int>(address);
+
+                switch (_state.State.SemaphoredReduction)
+                {
+                    case SemaphoredReduction.Min:
+                        value = signed ? Math.Min(mem, value) : (int)Math.Min((uint)mem, (uint)value);
+                        break;
+                    case SemaphoredReduction.Max:
+                        value = signed ? Math.Max(mem, value) : (int)Math.Max((uint)mem, (uint)value);
+                        break;
+                    case SemaphoredReduction.Xor:
+                        value ^= mem;
+                        break;
+                    case SemaphoredReduction.And:
+                        value &= mem;
+                        break;
+                    case SemaphoredReduction.Or:
+                        value |= mem;
+                        break;
+                    case SemaphoredReduction.Add:
+                        value += mem;
+                        break;
+                    case SemaphoredReduction.Inc:
+                        value = (uint)mem < (uint)value ? mem + 1 : 0;
+                        break;
+                    case SemaphoredReduction.Dec:
+                        value = (uint)mem > 0 && (uint)mem <= (uint)value ? mem - 1 : value;
+                        break;
+                }
+
+                _context.MemoryAccessor.Write(address, value);
+            }
         }
 
         /// <summary>
@@ -76,6 +119,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             {
                 _context.Synchronization.IncrementSyncpoint(syncpointId);
             }
+
+            _context.AdvanceSequence();
         }
 
         /// <summary>
@@ -112,7 +157,37 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         /// <param name="argument">Method call argument</param>
         public void SetMmeShadowRamControl(int argument)
         {
-            _shadowCtrl = (ShadowRamControl)argument;
+            ShadowCtrl = (ShadowRamControl)argument;
+        }
+
+        /// <summary>
+        /// Pushes an argument to a macro.
+        /// </summary>
+        /// <param name="index">Index of the macro</param>
+        /// <param name="argument">Argument to be pushed to the macro</param>
+        public void MmePushArgument(int index, int argument)
+        {
+            _macros[index].PushArgument(argument);
+        }
+
+        /// <summary>
+        /// Prepares a macro for execution.
+        /// </summary>
+        /// <param name="index">Index of the macro</param>
+        /// <param name="argument">Initial argument passed to the macro</param>
+        public void MmeStart(int index, int argument)
+        {
+            _macros[index].StartExecution(argument);
+        }
+
+        /// <summary>
+        /// Executes a macro.
+        /// </summary>
+        /// <param name="index">Index of the macro</param>
+        /// <param name="state">Current GPU state</param>
+        public void CallMme(int index, GpuState state)
+        {
+            _macros[index].Execute(_macroCode, ShadowCtrl, state);
         }
     }
 }
