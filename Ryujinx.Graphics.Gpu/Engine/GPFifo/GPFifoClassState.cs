@@ -1,4 +1,6 @@
-﻿using Ryujinx.Common.Memory;
+﻿// This file was auto-generated from NVIDIA official Maxwell definitions.
+
+using Ryujinx.Common.Memory;
 
 namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {

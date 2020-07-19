@@ -119,6 +119,7 @@ namespace Ryujinx.Graphics.Gpu
             Methods.BufferManager.Dispose();
             Methods.TextureManager.Dispose();
             Renderer.Dispose();
+            GPFifo.Dispose();
         }
     }
 }

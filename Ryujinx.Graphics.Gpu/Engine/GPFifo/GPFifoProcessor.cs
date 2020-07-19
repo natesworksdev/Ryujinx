@@ -4,6 +4,9 @@ using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
+    /// <summary>
+    /// Represents a GPU General Purpose FIFO command processor.
+    /// </summary>
     class GPFifoProcessor
     {
         private const int MacrosCount = 0x80;
@@ -28,6 +31,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private readonly GpuState[] _subChannels;
         private readonly GPFifoClass _fifoClass;
 
+        /// <summary>
+        /// Creates a new instance of the GPU General Purpose FIFO command processor.
+        /// </summary>
+        /// <param name="context">GPU context</param>
         public GPFifoProcessor(GpuContext context)
         {
             _context = context;
@@ -44,6 +51,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             }
         }
 
+        /// <summary>
+        /// Processes a command buffer.
+        /// </summary>
+        /// <param name="commandBuffer">Command buffer</param>
         public void Process(ReadOnlySpan<int> commandBuffer)
         {
             for (int index = 0; index < commandBuffer.Length; index++)
@@ -95,6 +106,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             }
         }
 
+        /// <summary>
+        /// Tries to perform a fast constant buffer data update.
+        /// If successful, all data will be copied at once, and <see cref="CompressedMethod.MethodCount"/> + 1
+        /// command buffer entries will be consumed.
+        /// </summary>
+        /// <param name="meth">Compressed method to be checked</param>
+        /// <param name="commandBuffer">Command buffer where <paramref name="meth"/> is contained</param>
+        /// <param name="offset">Offset at <paramref name="commandBuffer"/> where <paramref name="meth"/> is located</param>
+        /// <returns>True if the fast copy was successful, false otherwise</returns>
         private bool TryFastUniformBufferUpdate(CompressedMethod meth, ReadOnlySpan<int> commandBuffer, int offset)
         {
             int availableCount = commandBuffer.Length - offset;
@@ -113,6 +133,10 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             return false;
         }
 
+        /// <summary>
+        /// Sends a uncompressed method for processing by the graphics pipeline.
+        /// </summary>
+        /// <param name="meth">Method to be processed</param>
         private void Send(MethodParams meth)
         {
             if ((MethodOffset)meth.Method == MethodOffset.BindChannel)

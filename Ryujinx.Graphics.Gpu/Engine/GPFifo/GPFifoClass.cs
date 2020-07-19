@@ -7,6 +7,9 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
+    /// <summary>
+    /// Represents a GPU General Purpose FIFO class.
+    /// </summary>
     class GPFifoClass : IDeviceState
     {
         private readonly GpuContext _context;
@@ -21,8 +24,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private readonly Macro[] _macros;
         private readonly int[] _macroCode;
 
+        /// <summary>
+        /// MME Shadow RAM Control.
+        /// </summary>
         public ShadowRamControl ShadowCtrl { get; private set; }
 
+        /// <summary>
+        /// Creates a new instance of the GPU General Purpose FIFO class.
+        /// </summary>
+        /// <param name="context">GPU context</param>
         public GPFifoClass(GpuContext context)
         {
             _context = context;
@@ -40,7 +50,18 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             _macroCode = new int[MacroCodeSize];
         }
 
+        /// <summary>
+        /// Reads data from the class registers.
+        /// </summary>
+        /// <param name="offset">Register byte offset</param>
+        /// <returns>Data at the specified offset</returns>
         public int Read(int offset) => _state.Read(offset);
+
+        /// <summary>
+        /// Writes data to the class registers.
+        /// </summary>
+        /// <param name="offset">Register byte offset</param>
+        /// <param name="data">Data to be written</param>
         public void Write(int offset, int data) => _state.Write(offset, data);
 
         /// <summary>

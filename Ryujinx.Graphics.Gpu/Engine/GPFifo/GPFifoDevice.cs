@@ -6,14 +6,23 @@ using System.Threading;
 
 namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
-    public class GPFifoDevice
+    /// <summary>
+    /// Represents a GPU General Purpose FIFO device.
+    /// </summary>
+    public sealed class GPFifoDevice : IDisposable
     {
+        /// <summary>
+        /// Indicates if the command buffer has pre-fetch enabled.
+        /// </summary>
         private enum CommandBufferType
         {
             Prefetch,
             NoPrefetch
         }
 
+        /// <summary>
+        /// Command buffer data.
+        /// </summary>
         private struct CommandBuffer
         {
             /// <summary>
@@ -27,7 +36,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             public int[] Words;
 
             /// <summary>
-            /// The GPFIFO entry address. (used in NoPrefetch mode)
+            /// The GPFIFO entry address (used in <see cref="CommandBufferType.NoPrefetch"/> mode).
             /// </summary>
             public ulong EntryAddress;
 
@@ -55,13 +64,12 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         private readonly bool _ibEnable;
         private readonly GpuContext _context;
         private readonly AutoResetEvent _event;
-
-        internal GPFifoProcessor Processor { get; }
+        private readonly GPFifoProcessor _processor;
 
         /// <summary>
-        /// Creates a new instance of the GPU DMA pusher.
+        /// Creates a new instance of the GPU General Purpose FIFO device.
         /// </summary>
-        /// <param name="context">GPU context that the pusher belongs to</param>
+        /// <param name="context">GPU context that the GPFIFO belongs to</param>
         internal GPFifoDevice(GpuContext context)
         {
             _commandBufferQueue = new ConcurrentQueue<CommandBuffer>();
@@ -69,11 +77,11 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             _context = context;
             _event = new AutoResetEvent(false);
 
-            Processor = new GPFifoProcessor(context);
+            _processor = new GPFifoProcessor(context);
         }
 
         /// <summary>
-        /// Signal the pusher that there are new entries to process.
+        /// Signal the FIFO that there are new entries to process.
         /// </summary>
         public void SignalNewEntries()
         {
@@ -168,8 +176,13 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 _currentCommandBuffer = entry;
                 _currentCommandBuffer.Fetch(_context);
 
-                Processor.Process(_currentCommandBuffer.Words);
+                _processor.Process(_currentCommandBuffer.Words);
             }
         }
+
+        /// <summary>
+        /// Disposes of resources used for GPFifo command processing.
+        /// </summary>
+        public void Dispose() => _event.Dispose();
     }
 }
