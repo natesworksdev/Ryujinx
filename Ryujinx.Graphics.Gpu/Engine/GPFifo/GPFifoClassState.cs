@@ -1,4 +1,6 @@
-﻿namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
+﻿using Ryujinx.Common.Memory;
+
+namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
 {
     enum SemaphoredOperation
     {
@@ -100,7 +102,7 @@
         Tsg = 3
     }
 
-    struct GPFifoState
+    struct GPFifoClassState
     {
         public uint SetObject;
         public int SetObjectNvclass => (int)((SetObject >> 0) & 0xFFFF);
@@ -166,5 +168,17 @@
         public int CrcCheckValue => (int)(CrcCheck);
         public uint Yield;
         public YieldOp YieldOp => (YieldOp)((Yield >> 0) & 0x3);
+        // TODO: Eventually move this to per-engine state.
+        public Array31<uint> Reserved84;
+        public uint NoOperation;
+        public uint SetNotifyA;
+        public uint SetNotifyB;
+        public uint Notify;
+        public uint WaitForIdle;
+        public uint LoadMmeInstructionRamPointer;
+        public uint LoadMmeInstructionRam;
+        public uint LoadMmeStartAddressRamPointer;
+        public uint LoadMmeStartAddressRam;
+        public uint SetMmeShadowRamControl;
     }
 }

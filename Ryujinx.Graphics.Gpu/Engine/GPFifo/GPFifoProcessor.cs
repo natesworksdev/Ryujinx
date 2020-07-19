@@ -63,48 +63,69 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         {
             for (int index = 0; index < commandBuffer.Length; index++)
             {
-                Process(commandBuffer[index]);
+                int command = commandBuffer[index];
+
+                if (_state.MethodCount != 0)
+                {
+                    Send(new MethodParams(_state.Method, command, _state.SubChannel, _state.MethodCount));
+
+                    if (!_state.NonIncrementing)
+                    {
+                        _state.Method++;
+                    }
+
+                    if (_state.IncrementOnce)
+                    {
+                        _state.NonIncrementing = true;
+                    }
+
+                    _state.MethodCount--;
+                }
+                else
+                {
+                    CompressedMethod meth = Unsafe.As<int, CompressedMethod>(ref command);
+
+                    if (TryFastUniformBufferUpdate(meth, commandBuffer, index))
+                    {
+                        index += meth.MethodCount;
+                        continue;
+                    }
+
+                    switch (meth.SecOp)
+                    {
+                        case SecOp.IncMethod:
+                        case SecOp.NonIncMethod:
+                        case SecOp.OneInc:
+                            _state.Method = meth.MethodAddress;
+                            _state.SubChannel = meth.MethodSubchannel;
+                            _state.MethodCount = meth.MethodCount;
+                            _state.IncrementOnce = meth.SecOp == SecOp.OneInc;
+                            _state.NonIncrementing = meth.SecOp == SecOp.NonIncMethod;
+                            break;
+                        case SecOp.ImmdDataMethod:
+                            Send(new MethodParams(meth.MethodAddress, meth.ImmdData, meth.MethodSubchannel, 1));
+                            break;
+                    }
+                }
             }
         }
 
-        private void Process(int command)
+        private bool TryFastUniformBufferUpdate(CompressedMethod meth, ReadOnlySpan<int> commandBuffer, int offset)
         {
-            if (_state.MethodCount != 0)
+            int availableCount = commandBuffer.Length - offset;
+
+            if (meth.MethodCount < availableCount &&
+                meth.SecOp == SecOp.NonIncMethod &&
+                meth.MethodAddress == (int)MethodOffset.UniformBufferUpdateData)
             {
-                Send(new MethodParams(_state.Method, command, _state.SubChannel, _state.MethodCount));
+                GpuState state = _subChannels[meth.MethodSubchannel];
 
-                if (!_state.NonIncrementing)
-                {
-                    _state.Method++;
-                }
+                _context.Methods.UniformBufferUpdate(state, commandBuffer.Slice(offset + 1, meth.MethodCount));
 
-                if (_state.IncrementOnce)
-                {
-                    _state.NonIncrementing = true;
-                }
-
-                _state.MethodCount--;
+                return true;
             }
-            else
-            {
-                CompressedMethod meth = Unsafe.As<int, CompressedMethod>(ref command);
 
-                switch (meth.SecOp)
-                {
-                    case SecOp.IncMethod:
-                    case SecOp.NonIncMethod:
-                    case SecOp.OneInc:
-                        _state.Method = meth.MethodAddress;
-                        _state.SubChannel = meth.MethodSubchannel;
-                        _state.MethodCount = meth.MethodCount;
-                        _state.IncrementOnce = meth.SecOp == SecOp.OneInc;
-                        _state.NonIncrementing = meth.SecOp == SecOp.NonIncMethod;
-                        break;
-                    case SecOp.ImmdDataMethod:
-                        Send(new MethodParams(meth.MethodAddress, meth.ImmdData, meth.MethodSubchannel, 1));
-                        break;
-                }
-            }
+            return false;
         }
 
         private void Send(MethodParams meth)
