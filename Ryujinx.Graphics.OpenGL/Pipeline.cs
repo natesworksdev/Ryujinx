@@ -700,8 +700,10 @@ namespace Ryujinx.Graphics.OpenGL
             SetOrigin(clipOrigin);
         }
 
-        public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, PointCoordOrigin origin)
+        public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
         {
+            // GL_POINT_SPRITE was deprecated in core profile 3.2+ and causes GL_INVALID_ENUM when set.
+            // As we don't know if the current context is core or compat, it's safer to keep this code.
             if (enablePointSprite)
             {
                 GL.Enable(EnableCap.PointSprite);
@@ -720,7 +722,7 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Disable(EnableCap.ProgramPointSize);
             }
 
-            GL.PointParameter(origin == PointCoordOrigin.LowerLeft 
+            GL.PointParameter(origin == Origin.LowerLeft 
                 ? PointSpriteCoordOriginParameter.LowerLeft 
                 : PointSpriteCoordOriginParameter.UpperLeft);
 

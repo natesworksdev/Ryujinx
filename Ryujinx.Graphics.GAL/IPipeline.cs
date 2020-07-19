@@ -50,7 +50,7 @@ namespace Ryujinx.Graphics.GAL
 
         void SetOrigin(Origin origin);
 
-        void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, PointCoordOrigin origin);
+        void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin);
 
         void SetPrimitiveRestart(bool enable, int index);
 

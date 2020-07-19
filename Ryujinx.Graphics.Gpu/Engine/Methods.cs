@@ -713,7 +713,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             bool enablePointSprite = state.Get<Boolean32>(MethodOffset.PointSpriteEnable);
             
             // TODO: Need to figure out a way to map PointCoordReplace enable bit.
-            PointCoordOrigin origin = (PointCoordOrigin)((state.Get<int>(MethodOffset.PointCoordReplace) >> 2) & 1);
+            Origin origin = (state.Get<int>(MethodOffset.PointCoordReplace) & 4) == 0 ? Origin.LowerLeft : Origin.UpperLeft;
 
             _context.Renderer.Pipeline.SetPointParameters(size, isProgramPointSize, enablePointSprite, origin);
         }
