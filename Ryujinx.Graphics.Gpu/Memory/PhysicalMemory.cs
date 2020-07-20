@@ -68,7 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Writes data to the application process, without any tracking
+        /// Writes data to the application process, without any tracking.
         /// </summary>
         /// <param name="address">Address to write into</param>
         /// <param name="data">Data to be written</param>

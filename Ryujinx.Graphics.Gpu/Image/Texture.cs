@@ -168,20 +168,25 @@ namespace Ryujinx.Graphics.Gpu.Image
             _views = new List<Texture>();
         }
 
+        /// <summary>
+        /// Initializes the data for a texture. Can optionally initialize the texture with or without data.
+        /// If the texture is a view, it will initialize memory tracking to be non-dirty.
+        /// </summary>
+        /// <param name="isView">True if the texture is a view or not</param>
+        /// <param name="withData">True if the texture is to be initialized with data</param>
         public void InitializeData(bool isView, bool withData = false)
         {
             if (withData)
             {
-                if (!isView)
-                {
-                    TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
-                    HostTexture = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
+                Debug.Assert(!isView);
 
-                    SynchronizeMemory(); // Load the data.
-                    if (ScaleMode == TextureScaleMode.Scaled)
-                    {
-                        SetScale(GraphicsConfig.ResScale); // Scale the data up.
-                    }
+                TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
+                HostTexture = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
+
+                SynchronizeMemory(); // Load the data.
+                if (ScaleMode == TextureScaleMode.Scaled)
+                {
+                    SetScale(GraphicsConfig.ResScale); // Scale the data up.
                 }
             }
             else
@@ -661,11 +666,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return; // Flushing this format is not supported, as it may have been converted to another host format.
             }
 
-            if (Info.FormatInfo.IsCompressed)
-            {
-                Logger.Error?.PrintMsg(LogClass.Gpu, "Flushing compressed texture!");
-            }
-
             _context.PhysicalMemory.WriteUntracked(Address, GetTextureDataFromGpu(blacklist));
         }
 
@@ -824,7 +824,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             result = TextureCompatibility.PropagateViewCompatability(result, TextureCompatibility.ViewTargetCompatible(Info, info));
 
             return (Info.SamplesInX == info.SamplesInX &&
-                   Info.SamplesInY == info.SamplesInY) ? result : TextureViewCompatibility.Incompatible;
+                    Info.SamplesInY == info.SamplesInY) ? result : TextureViewCompatibility.Incompatible;
         }
 
         /// <summary>

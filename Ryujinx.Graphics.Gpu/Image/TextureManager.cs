@@ -1,5 +1,4 @@
 using Ryujinx.Common;
-using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Image;
 using Ryujinx.Graphics.Gpu.Memory;
@@ -10,7 +9,6 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
-
     /// <summary>
     /// Texture manager.
     /// </summary>
@@ -21,6 +19,13 @@ namespace Ryujinx.Graphics.Gpu.Image
             public TextureViewCompatibility Compatibility;
             public int FirstLayer;
             public int FirstLevel;
+
+            public OverlapInfo(TextureViewCompatibility compatibility, int firstLayer, int firstLevel)
+            {
+                Compatibility = compatibility;
+                FirstLayer = firstLayer;
+                FirstLevel = firstLevel;
+            }
         }
 
         private const int OverlapsBufferInitialCapacity = 10;
@@ -782,7 +787,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                             Array.Resize(ref _overlapInfo, _textureOverlaps.Length);
                         }
 
-                        _overlapInfo[viewCompatible] = new OverlapInfo { Compatibility = compatibility, FirstLayer = firstLayer, FirstLevel = firstLevel };
+                        _overlapInfo[viewCompatible] = new OverlapInfo(compatibility, firstLayer, firstLevel);
                         _textureOverlaps[viewCompatible++] = overlap;
                     }
                     else if (overlapInCache || !setData)
