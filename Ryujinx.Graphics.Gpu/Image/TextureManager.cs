@@ -18,6 +18,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private struct OverlapInfo
         {
+            public TextureViewCompatibility Compatibility;
             public int FirstLayer;
             public int FirstLevel;
         }
@@ -730,7 +731,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Texture overlap = _textureOverlaps[index];
 
-                if (overlap.IsViewCompatible(info, size, out int firstLayer, out int firstLevel))
+                if (overlap.IsViewCompatible(info, size, out int firstLayer, out int firstLevel) == TextureViewCompatibility.Full)
                 {
                     if (!isSamplerTexture)
                     {
@@ -772,14 +773,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Texture overlap = _textureOverlaps[index];
                     bool overlapInCache = overlap.CacheNode != null;
 
-                    if (texture.IsViewCompatible(overlap.Info, overlap.Size, true, out int firstLayer, out int firstLevel))
+                    TextureViewCompatibility compatibility = texture.IsViewCompatible(overlap.Info, overlap.Size, out int firstLayer, out int firstLevel);
+
+                    if (compatibility != TextureViewCompatibility.Incompatible)
                     {
                         if (_overlapInfo.Length != _textureOverlaps.Length)
                         {
                             Array.Resize(ref _overlapInfo, _textureOverlaps.Length);
                         }
 
-                        _overlapInfo[viewCompatible] = new OverlapInfo { FirstLayer = firstLayer, FirstLevel = firstLevel };
+                        _overlapInfo[viewCompatible] = new OverlapInfo { Compatibility = compatibility, FirstLayer = firstLayer, FirstLevel = firstLevel };
                         _textureOverlaps[viewCompatible++] = overlap;
                     }
                     else if (overlapInCache || !setData)
@@ -804,10 +807,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         if (overlapInCache)
                         {
-                            if (_cache.Remove(overlap, flush))
-                            {
-                                Logger.PrintWarning(LogClass.Gpu, $"Removed overlapping texture {overlap.Info.Target} {overlap.Info.Width}x{overlap.Info.Height}x{overlap.Info.DepthOrLayers}");
-                            }
+                            _cache.Remove(overlap, flush);
                         }
                     }
                 }
@@ -821,9 +821,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Texture overlap = _textureOverlaps[index];
                     OverlapInfo oInfo = _overlapInfo[index];
 
-                    if (!texture.IsViewCompatible(overlap.Info, overlap.Size, out int firstLayer, out int firstLevel))
+                    if (oInfo.Compatibility != TextureViewCompatibility.Full)
                     {
-                        continue; // 3D texture copy. TODO: make less bad.
+                        continue; // Copy only compatibilty.
                     }
 
                     TextureInfo overlapInfo = AdjustSizes(texture, overlap.Info, oInfo.FirstLevel);
@@ -859,17 +859,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                     for (int index = 0; index < viewCompatible; index++)
                     {
                         Texture overlap = _textureOverlaps[index];
+                        OverlapInfo oInfo = _overlapInfo[index];
 
-                        if (texture.IsViewCompatible(
-                            overlap.Info,
-                            overlap.Size,
-                            isCopy: true,
-                            out int firstLayer,
-                            out int firstLevel))
+                        if (oInfo.Compatibility != TextureViewCompatibility.Incompatible)
                         {
                             overlap.BlacklistScale();
 
-                            overlap.HostTexture.CopyTo(texture.HostTexture, firstLayer, firstLevel);
+                            overlap.HostTexture.CopyTo(texture.HostTexture, oInfo.FirstLayer, oInfo.FirstLevel);
 
                             if (IsTextureModified(overlap))
                             {

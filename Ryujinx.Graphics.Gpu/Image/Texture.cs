@@ -44,6 +44,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool IsModified { get; internal set; }
 
+        private bool _everModified;
+
         private int _depth;
         private int _layers;
         private int _firstLayer;
@@ -535,13 +537,13 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             ReadOnlySpan<byte> data = _context.PhysicalMemory.GetSpan(Address, (int)Size);
 
-            // If the texture was modified by the host GPU, we do partial invalidation
+            // If the texture was ever modified by the host GPU, we do partial invalidation
             // of the texture by getting GPU data and merging in the pages of memory
             // that were modified.
             // Note that if ASTC is not supported by the GPU we can't read it back since
             // it will use a different format. Since applications shouldn't be writing
             // ASTC textures from the GPU anyway, ignoring it should be safe.
-            if (IsModified && !Info.FormatInfo.Format.IsAstc())
+            if (_everModified && !Info.FormatInfo.Format.IsAstc())
             {
                 Span<byte> gpuData = GetTextureDataFromGpu(true);
 
@@ -661,7 +663,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (Info.FormatInfo.IsCompressed)
             {
-                Logger.PrintError(LogClass.Gpu, "Flushing compressed texture!");
+                Logger.Error?.PrintMsg(LogClass.Gpu, "Flushing compressed texture!");
             }
 
             _context.PhysicalMemory.WriteUntracked(Address, GetTextureDataFromGpu(blacklist));
@@ -783,29 +785,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="size">Texture view size</param>
         /// <param name="firstLayer">Texture view initial layer on this texture</param>
         /// <param name="firstLevel">Texture view first mipmap level on this texture</param>
-        /// <returns>True if a view with the given parameters can be created from this texture, false otherwise</returns>
-        public bool IsViewCompatible(
+        /// <returns>The level of compatiblilty a view with the given parameters created from this texture has</returns>
+        public TextureViewCompatibility IsViewCompatible(
             TextureInfo info,
             ulong       size,
-            out int     firstLayer,
-            out int     firstLevel)
-        {
-            return IsViewCompatible(info, size, isCopy: false, out firstLayer, out firstLevel);
-        }
-
-        /// <summary>
-        /// Check if it's possible to create a view, with the given parameters, from this texture.
-        /// </summary>
-        /// <param name="info">Texture view information</param>
-        /// <param name="size">Texture view size</param>
-        /// <param name="isCopy">True to check for copy compability, instead of view compatibility</param>
-        /// <param name="firstLayer">Texture view initial layer on this texture</param>
-        /// <param name="firstLevel">Texture view first mipmap level on this texture</param>
-        /// <returns>True if a view with the given parameters can be created from this texture, false otherwise</returns>
-        public bool IsViewCompatible(
-            TextureInfo info,
-            ulong       size,
-            bool        isCopy,
             out int     firstLayer,
             out int     firstLevel)
         {
@@ -815,38 +798,46 @@ namespace Ryujinx.Graphics.Gpu.Image
                 firstLayer = 0;
                 firstLevel = 0;
 
-                return false;
+                return TextureViewCompatibility.Incompatible;
             }
 
             int offset = (int)(info.Address - Address);
 
             if (!_sizeInfo.FindView(offset, (int)size, out firstLayer, out firstLevel))
             {
-                return false;
+                return TextureViewCompatibility.Incompatible;
             }
 
             if (!TextureCompatibility.ViewLayoutCompatible(Info, info, firstLevel))
             {
-                return false;
+                return TextureViewCompatibility.Incompatible;
             }
 
             if (!TextureCompatibility.ViewFormatCompatible(Info, info))
             {
-                return false;
+                return TextureViewCompatibility.Incompatible;
             }
 
-            if (!TextureCompatibility.ViewSizeMatches(Info, info, firstLevel, isCopy))
-            {
-                return false;
-            }
+            TextureViewCompatibility result = TextureViewCompatibility.Full;
 
-            if (!TextureCompatibility.ViewTargetCompatible(Info, info, isCopy))
-            {
-                return false;
-            }
+            result = TextureCompatibility.PropagateViewCompatability(result, TextureCompatibility.ViewSizeMatches(Info, info, firstLevel));
+            result = TextureCompatibility.PropagateViewCompatability(result, TextureCompatibility.ViewTargetCompatible(Info, info));
 
-            return Info.SamplesInX == info.SamplesInX &&
-                   Info.SamplesInY == info.SamplesInY;
+            return (Info.SamplesInX == info.SamplesInX &&
+                   Info.SamplesInY == info.SamplesInY) ? result : TextureViewCompatibility.Incompatible;
+        }
+
+        /// <summary>
+        /// Checks if the view format is compatible with this texture format.
+        /// In general, the formats are considered compatible if the bytes per pixel values are equal,
+        /// but there are more complex rules for some formats, like compressed or depth-stencil formats.
+        /// This follows the host API copy compatibility rules.
+        /// </summary>
+        /// <param name="info">Texture information of the texture view</param>
+        /// <returns>True if the formats are compatible, false otherwise</returns>
+        private bool ViewFormatCompatible(TextureInfo info)
+        {
+            return TextureCompatibility.FormatCompatible(Info.FormatInfo, info.FormatInfo);
         }
 
         /// <summary>
@@ -973,6 +964,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void SignalModified()
         {
             IsModified = true;
+            _everModified = true;
 
             Modified?.Invoke(this);
 
@@ -1004,7 +996,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             return Address < address + size && address < EndAddress;
         }
 
-        public bool HasViewCompatibleChild(Texture other)
+        /// <summary>
+        /// Determine if any of our child textures are compaible as views of the given texture.
+        /// </summary>
+        /// <param name="texture">The texture to check against</param>
+        /// <returns>True if any child is view compatible, false otherwise</returns>
+        public bool HasViewCompatibleChild(Texture texture)
         {
             if (_viewStorage != this || _views.Count == 0)
             {
@@ -1013,7 +1010,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (Texture view in _views)
             {
-                if (other.IsViewCompatible(view.Info, view.Size, true, out int firstLayer, out int firstLevel))
+                if (texture.IsViewCompatible(view.Info, view.Size, out int _, out int _) != TextureViewCompatibility.Incompatible)
                 {
                     return true;
                 }
