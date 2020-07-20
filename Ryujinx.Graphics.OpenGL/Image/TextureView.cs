@@ -453,7 +453,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         /// <summary>
         /// Release the view without necessarily disposing the parent if we are the default view.
-        /// This allows it to be added to the resource cache and reused later.
+        /// This allows it to be added to the resource pool and reused later.
         /// </summary>
         public void Release()
         {

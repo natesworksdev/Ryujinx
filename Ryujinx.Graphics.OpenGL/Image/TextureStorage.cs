@@ -177,20 +177,20 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
                 else
                 {
-                    // If our default view still exists, we can put it into the resource cache so we can be used later.
+                    // If our default view still exists, we can put it into the resource pool so we can be used later.
                     Release();
                 }
             }
         }
 
         /// <summary>
-        /// Release the TextureStorage to the resource cache without disposing its handle.
+        /// Release the TextureStorage to the resource pool without disposing its handle.
         /// </summary>
         public void Release()
         {
             _viewsCount = 1; // When we are used again, we will have the default view.
 
-            _renderer.ResourceCache.AddTexture((TextureView)DefaultView);
+            _renderer.ResourcePool.AddTexture((TextureView)DefaultView);
         }
 
         public void DeleteDefault()

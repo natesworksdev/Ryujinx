@@ -14,11 +14,11 @@ namespace Ryujinx.Graphics.OpenGL
     }
 
     /// <summary>
-    /// A structure for caching resources that can be reused without recreation, such as textures.
+    /// A structure for pooling resources that can be reused without recreation, such as textures.
     /// </summary>
-    class ResourceCache
+    class ResourcePool
     {
-        private const int DisposedCacheFrames = 2;
+        private const int DisposedLiveFrames = 2;
 
         private object _lock = new object();
         private Dictionary<uint, List<DisposedTexture>> _textures = new Dictionary<uint, List<DisposedTexture>>();
@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         /// <summary>
-        /// Add a texture that is not being used anymore to the resource cache to be used later.
+        /// Add a texture that is not being used anymore to the resource pool to be used later.
         /// Both the texture's view and storage should be completely unused.
         /// </summary>
         /// <param name="view">The texture's view</param>
@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.OpenGL
                     Info = view.Info,
                     View = view,
                     ScaleFactor = view.ScaleFactor,
-                    RemainingFrames = DisposedCacheFrames
+                    RemainingFrames = DisposedLiveFrames
                 });
             }
         }
@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.OpenGL
         }
 
         /// <summary>
-        /// Update the cache, removing any resources that have expired.
+        /// Update the pool, removing any resources that have expired.
         /// </summary>
         public void Tick()
         {
