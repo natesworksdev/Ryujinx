@@ -18,6 +18,8 @@ namespace Ryujinx.Cpu
 
         private const int PteSize = 8;
 
+        private readonly InvalidAccessHandler _invalidAccessHandler;
+
         public int AddressSpaceBits { get; }
 
         private readonly ulong _addressSpaceSize;
@@ -32,8 +34,11 @@ namespace Ryujinx.Cpu
         /// </summary>
         /// <param name="backingMemory">Physical backing memory where virtual memory will be mapped to</param>
         /// <param name="addressSpaceSize">Size of the address space</param>
-        public MemoryManager(MemoryBlock backingMemory, ulong addressSpaceSize)
+        /// <param name="invalidAccessHandler">Optional function to handle invalid memory accesses</param>
+        public MemoryManager(MemoryBlock backingMemory, ulong addressSpaceSize, InvalidAccessHandler invalidAccessHandler = null)
         {
+            _invalidAccessHandler = invalidAccessHandler;
+
             ulong asSize = PageSize;
             int asBits = PageBits;
 
@@ -130,34 +135,44 @@ namespace Ryujinx.Cpu
                 return;
             }
 
-            MarkRegionAsModified(va, (ulong)data.Length);
-
-            if (IsContiguous(va, data.Length))
+            try
             {
-                data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressInternal(va), data.Length));
-            }
-            else
-            {
-                int offset = 0, size;
+                MarkRegionAsModified(va, (ulong)data.Length);
 
-                if ((va & PageMask) != 0)
+                if (IsContiguousAndMapped(va, data.Length))
                 {
-                    ulong pa = GetPhysicalAddressInternal(va);
-
-                    size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
-
-                    data.Slice(0, size).CopyTo(_backingMemory.GetSpan(pa, size));
-
-                    offset += size;
+                    data.CopyTo(_backingMemory.GetSpan(GetPhysicalAddressInternal(va), data.Length));
                 }
-
-                for (; offset < data.Length; offset += size)
+                else
                 {
-                    ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+                    int offset = 0, size;
 
-                    size = Math.Min(data.Length - offset, PageSize);
+                    if ((va & PageMask) != 0)
+                    {
+                        ulong pa = GetPhysicalAddressInternal(va);
 
-                    data.Slice(offset, size).CopyTo(_backingMemory.GetSpan(pa, size));
+                        size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
+
+                        data.Slice(0, size).CopyTo(_backingMemory.GetSpan(pa, size));
+
+                        offset += size;
+                    }
+
+                    for (; offset < data.Length; offset += size)
+                    {
+                        ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+
+                        size = Math.Min(data.Length - offset, PageSize);
+
+                        data.Slice(offset, size).CopyTo(_backingMemory.GetSpan(pa, size));
+                    }
+                }
+            }
+            catch (InvalidMemoryRegionException)
+            {
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
                 }
             }
         }
@@ -179,7 +194,7 @@ namespace Ryujinx.Cpu
                 return ReadOnlySpan<byte>.Empty;
             }
 
-            if (IsContiguous(va, size))
+            if (IsContiguousAndMapped(va, size))
             {
                 return _backingMemory.GetSpan(GetPhysicalAddressInternal(va), size);
             }
@@ -211,7 +226,7 @@ namespace Ryujinx.Cpu
                 return new WritableRegion(null, va, Memory<byte>.Empty);
             }
 
-            if (IsContiguous(va, size))
+            if (IsContiguousAndMapped(va, size))
             {
                 return new WritableRegion(null, va, _backingMemory.GetMemory(GetPhysicalAddressInternal(va), size));
             }
@@ -257,6 +272,9 @@ namespace Ryujinx.Cpu
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsContiguousAndMapped(ulong va, int size) => IsContiguous(va, size) && IsMapped(va);
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private bool IsContiguous(ulong va, int size)
         {
             if (!ValidateAddress(va))
@@ -295,26 +313,36 @@ namespace Ryujinx.Cpu
                 return;
             }
 
-            int offset = 0, size;
-
-            if ((va & PageMask) != 0)
+            try
             {
-                ulong pa = GetPhysicalAddressInternal(va);
+                int offset = 0, size;
 
-                size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
+                if ((va & PageMask) != 0)
+                {
+                    ulong pa = GetPhysicalAddressInternal(va);
 
-                _backingMemory.GetSpan(pa, size).CopyTo(data.Slice(0, size));
+                    size = Math.Min(data.Length, PageSize - (int)(va & PageMask));
 
-                offset += size;
+                    _backingMemory.GetSpan(pa, size).CopyTo(data.Slice(0, size));
+
+                    offset += size;
+                }
+
+                for (; offset < data.Length; offset += size)
+                {
+                    ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
+
+                    size = Math.Min(data.Length - offset, PageSize);
+
+                    _backingMemory.GetSpan(pa, size).CopyTo(data.Slice(offset, size));
+                }
             }
-
-            for (; offset < data.Length; offset += size)
+            catch (InvalidMemoryRegionException)
             {
-                ulong pa = GetPhysicalAddressInternal(va + (ulong)offset);
-
-                size = Math.Min(data.Length - offset, PageSize);
-
-                _backingMemory.GetSpan(pa, size).CopyTo(data.Slice(offset, size));
+                if (_invalidAccessHandler == null || !_invalidAccessHandler(va))
+                {
+                    throw;
+                }
             }
         }
 
@@ -416,6 +444,7 @@ namespace Ryujinx.Cpu
         /// </summary>
         /// <param name="va">Virtual address to check</param>
         /// <returns>True if the address is mapped, false otherwise</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public bool IsMapped(ulong va)
         {
             if (!ValidateAddress(va))
