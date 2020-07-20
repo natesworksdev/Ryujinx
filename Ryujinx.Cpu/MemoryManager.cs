@@ -20,6 +20,9 @@ namespace Ryujinx.Cpu
 
         private readonly InvalidAccessHandler _invalidAccessHandler;
 
+        /// <summary>
+        /// Address space width in bits.
+        /// </summary>
         public int AddressSpaceBits { get; }
 
         private readonly ulong _addressSpaceSize;
@@ -27,6 +30,9 @@ namespace Ryujinx.Cpu
         private readonly MemoryBlock _backingMemory;
         private readonly MemoryBlock _pageTable;
 
+        /// <summary>
+        /// Page table base pointer.
+        /// </summary>
         public IntPtr PageTablePointer => _pageTable.Pointer;
 
         /// <summary>
@@ -97,6 +103,7 @@ namespace Ryujinx.Cpu
         /// <typeparam name="T">Type of the data being read</typeparam>
         /// <param name="va">Virtual address of the data in memory</param>
         /// <returns>The data</returns>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public T Read<T>(ulong va) where T : unmanaged
         {
             return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>()))[0];
@@ -107,6 +114,7 @@ namespace Ryujinx.Cpu
         /// </summary>
         /// <param name="va">Virtual address of the data in memory</param>
         /// <param name="data">Span to store the data being read into</param>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public void Read(ulong va, Span<byte> data)
         {
             ReadImpl(va, data);
@@ -118,6 +126,7 @@ namespace Ryujinx.Cpu
         /// <typeparam name="T">Type of the data being written</typeparam>
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="value">Data to be written</param>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public void Write<T>(ulong va, T value) where T : unmanaged
         {
             Write(va, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
@@ -128,6 +137,7 @@ namespace Ryujinx.Cpu
         /// </summary>
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="data">Data to be written</param>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public void Write(ulong va, ReadOnlySpan<byte> data)
         {
             if (data.Length == 0)
@@ -187,6 +197,7 @@ namespace Ryujinx.Cpu
         /// <param name="va">Virtual address of the data</param>
         /// <param name="size">Size of the data</param>
         /// <returns>A read-only span of the data</returns>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size)
         {
             if (size == 0)
@@ -219,6 +230,7 @@ namespace Ryujinx.Cpu
         /// <param name="va">Virtual address of the data</param>
         /// <param name="size">Size of the data</param>
         /// <returns>A writable region of memory containing the data</returns>
+        /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public WritableRegion GetWritableRegion(ulong va, int size)
         {
             if (size == 0)
@@ -249,6 +261,7 @@ namespace Ryujinx.Cpu
         /// <typeparam name="T">Type of the data to get the reference</typeparam>
         /// <param name="va">Virtual address of the data</param>
         /// <returns>A reference to the data in memory</returns>
+        /// <exception cref="MemoryNotContiguousException">Throw if the specified memory region is not contiguous in physical memory</exception>
         public ref T GetRef<T>(ulong va) where T : unmanaged
         {
             if (!IsContiguous(va, Unsafe.SizeOf<T>()))

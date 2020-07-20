@@ -245,7 +245,7 @@ namespace Ryujinx.Memory
         /// <param name="size">Size in bytes of the region</param>
         /// <returns>Memory of the memory region</returns>
         /// <exception cref="ObjectDisposedException">Throw when the memory block has already been disposed</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
+        /// <exception cref="InvalidMemoryRegionException">Throw when either <paramref name="offset"/> or <paramref name="size"/> are out of range</exception>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public unsafe Memory<byte> GetMemory(ulong offset, int size)
         {
