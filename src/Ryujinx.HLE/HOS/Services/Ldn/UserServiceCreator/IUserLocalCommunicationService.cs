@@ -10,6 +10,7 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
+using Ryujinx.Memory;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -156,19 +157,26 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             // NOTE: Return ResultCode.InvalidArgument if ip_address and subnet_mask are null, doesn't occur in our case.
 
-            (_, UnicastIPAddressInformation unicastAddress) = NetworkHelpers.GetLocalInterface();
-
-            if (unicastAddress == null)
+            if (_state == NetworkState.AccessPointCreated || _state == NetworkState.StationConnected)
             {
-                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_IP_ADDRESS));
-                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
+                (_, UnicastIPAddressInformation unicastAddress) = NetworkHelpers.GetLocalInterface();
+
+                if (unicastAddress == null)
+                {
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_IP_ADDRESS));
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
+                }
+                else
+                {
+                    Logger.Info?.Print(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
+
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(unicastAddress.Address));
+                    context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
+                }
             }
             else
             {
-                Logger.Info?.Print(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
-
-                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(unicastAddress.Address));
-                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
+                return ResultCode.InvalidArgument;
             }
 
             return ResultCode.Success;
@@ -352,7 +360,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return resultCode;
         }
 
-        private ResultCode ScanInternal(MemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
+        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
         {
             long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
             long maxGames        = bufferSize / networkInfoSize;
@@ -413,6 +421,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             {
                 return ResultCode.InvalidState;
             }
+
+            _station?.Dispose();
+            _station = null;
 
             SetState(NetworkState.AccessPoint);
 
@@ -683,6 +694,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return ResultCode.InvalidState;
             }
 
+            _accessPoint?.Dispose();
+            _accessPoint = null;
+
             SetState(NetworkState.Station);
 
             _station = new Station(this);
@@ -784,7 +798,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (securityConfig.SecurityMode - 1 <= SecurityMode.Debug)
             {
-                if (optionUnknown <= 1 && (localCommunicationVersion >> 15) == 0 && securityConfig.PassphraseSize <= 48)
+                if (optionUnknown <= 1 && (localCommunicationVersion >> 15) == 0 && securityConfig.PassphraseSize <= 64)
                 {
                     resultCode = ResultCode.VersionTooLow;
                     if (localCommunicationVersion >= 0)
