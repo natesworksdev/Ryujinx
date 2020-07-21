@@ -50,7 +50,7 @@ namespace ARMeilleure.State
 
         public unsafe V128 GetV(int index)
         {
-            if ((uint)index >= RegisterConsts.IntRegsCount)
+            if ((uint)index >= RegisterConsts.VecRegsCount)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -60,7 +60,7 @@ namespace ARMeilleure.State
 
         public unsafe void SetV(int index, V128 value)
         {
-            if ((uint)index >= RegisterConsts.IntRegsCount)
+            if ((uint)index >= RegisterConsts.VecRegsCount)
             {
                 throw new ArgumentOutOfRangeException(nameof(index));
             }
@@ -91,7 +91,7 @@ namespace ARMeilleure.State
 
         public unsafe bool GetFPStateFlag(FPState flag)
         {
-            if ((uint)flag >= RegisterConsts.FlagsCount)
+            if ((uint)flag >= RegisterConsts.FpFlagsCount)
             {
                 throw new ArgumentException($"Invalid flag \"{flag}\" specified.");
             }
@@ -101,7 +101,7 @@ namespace ARMeilleure.State
 
         public unsafe void SetFPStateFlag(FPState flag, bool value)
         {
-            if ((uint)flag >= RegisterConsts.FlagsCount)
+            if ((uint)flag >= RegisterConsts.FpFlagsCount)
             {
                 throw new ArgumentException($"Invalid flag \"{flag}\" specified.");
             }
