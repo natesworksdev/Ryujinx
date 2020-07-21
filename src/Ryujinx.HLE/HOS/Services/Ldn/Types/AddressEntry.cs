@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     [StructLayout(LayoutKind.Sequential, Size = 0xC)]
     struct AddressEntry
     {
-        public uint   Ipv4Address;
+        public uint Ipv4Address;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
         public byte[] MacAddress;
         public ushort Reserved;

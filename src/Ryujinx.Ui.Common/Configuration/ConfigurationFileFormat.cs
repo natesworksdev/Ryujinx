@@ -1,5 +1,6 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Ui.Common.Configuration.System;
@@ -359,6 +360,10 @@ namespace Ryujinx.Ui.Common.Configuration
         /// Preferred GPU
         /// </summary>
         public string PreferredGpu { get; set; }
+
+        /// Multiplayer Mode
+        /// </summary>
+        public MultiplayerMode MultiplayerMode { get; set; }
 
         /// <summary>
         /// GUID for the network interface used by LAN (or 0 for default)

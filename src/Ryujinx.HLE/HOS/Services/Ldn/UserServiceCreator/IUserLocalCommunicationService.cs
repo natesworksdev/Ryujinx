@@ -1,4 +1,4 @@
-﻿using LibHac.Ns;
+using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
@@ -29,18 +29,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private KEvent _stateChangeEvent;
 
-        private NetworkState     _state;
+        private NetworkState _state;
         private DisconnectReason _disconnectReason;
-        private ResultCode       _nifmResultCode;
-        private long             _currentPid;
+        private ResultCode _nifmResultCode;
+        private ulong _currentPid;
 
         private AccessPoint _accessPoint;
-        private Station     _station;
+        private Station _station;
 
         public IUserLocalCommunicationService(ServiceCtx context)
         {
             _stateChangeEvent = new KEvent(context.Device.System.KernelContext);
-            _state            = NetworkState.None;
+            _state = NetworkState.None;
             _disconnectReason = DisconnectReason.None;
         }
 
@@ -57,18 +57,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private bool CheckLocalCommunicationIdPermission(ServiceCtx context, ulong localCommunicationIdChecked)
         {
             // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
-            ApplicationControlProperty controlProperty = context.Device.Application.ControlData.Value;
+            ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-            return (controlProperty.LocalCommunicationIds[0] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationIds[1] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationIds[2] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationIds[3] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationIds[4] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationIds[5] == localCommunicationIdChecked
-                 || controlProperty.LocalCommunicationIds[6] == localCommunicationIdChecked) | (controlProperty.LocalCommunicationIds[7] == localCommunicationIdChecked);
+            return (controlProperty.LocalCommunicationId[0] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationId[1] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationId[2] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationId[3] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationId[4] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationId[5] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationId[6] == localCommunicationIdChecked) | (controlProperty.LocalCommunicationId[7] == localCommunicationIdChecked);
         }
 
-        [Command(0)]
+        [CommandCmif(0)]
         // GetState() -> s32 state
         public ResultCode GetState(ServiceCtx context)
         {
@@ -97,11 +97,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             SetState();
         }
 
-        [Command(1)]
+        [CommandCmif(1)]
         // GetNetworkInfo() -> buffer<network_info<0x480>, 0x1a>
         public ResultCode GetNetworkInfo(ServiceCtx context)
         {
-            long bufferPosition = context.Request.RecvListBuff[0].Position;
+            ulong bufferPosition = context.Request.RecvListBuff[0].Position;
 
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x480);
 
@@ -116,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return resultCode;
             }
 
-            long infoSize = MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
+            ulong infoSize = MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
 
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(infoSize);
 
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
         }
 
-        [Command(2)]
+        [CommandCmif(2)]
         // GetIpv4Address() -> (u32 ip_address, u32 subnet_mask)
         public ResultCode GetIpv4Address(ServiceCtx context)
         {
@@ -172,7 +172,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (_state == NetworkState.AccessPointCreated || _state == NetworkState.StationConnected)
             {
-                (_, UnicastIPAddressInformation unicastAddress) = NetworkHelpers.GetLocalInterface();
+                (_, UnicastIPAddressInformation unicastAddress) = NetworkHelpers.GetLocalInterface(context.Device.Configuration.MultiplayerLanInterfaceId);
 
                 if (unicastAddress == null)
                 {
@@ -195,14 +195,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(3)]
+        [CommandCmif(3)]
         // GetDisconnectReason() -> u16 disconnect_reason
         public ResultCode GetDisconnectReason(ServiceCtx context)
         {
             // NOTE: Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
             context.ResponseData.Write((short)_disconnectReason);
-            
+
             return ResultCode.Success;
         }
 
@@ -216,7 +216,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
         }
 
-        [Command(4)]
+        [CommandCmif(4)]
         // GetSecurityParameter() -> bytes<0x20, 1> security_parameter
         public ResultCode GetSecurityParameter(ServiceCtx context)
         {
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             SecurityParameter securityParameter = new SecurityParameter()
             {
-                Data      = new byte[0x10],
+                Data = new byte[0x10],
                 SessionId = networkInfo.NetworkId.SessionId
             };
 
@@ -242,7 +242,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(5)]
+        [CommandCmif(5)]
         // GetNetworkConfig() -> bytes<0x20, 8> network_config
         public ResultCode GetNetworkConfig(ServiceCtx context)
         {
@@ -259,11 +259,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             NetworkConfig networkConfig = new NetworkConfig
             {
-                IntentId                  = networkInfo.NetworkId.IntentId,
-                Channel                   = networkInfo.Common.Channel,
-                NodeCountMax              = networkInfo.Ldn.NodeCountMax,
+                IntentId = networkInfo.NetworkId.IntentId,
+                Channel = networkInfo.Common.Channel,
+                NodeCountMax = networkInfo.Ldn.NodeCountMax,
                 LocalCommunicationVersion = networkInfo.Ldn.Nodes[0].LocalCommunicationVersion,
-                Reserved2                 = new byte[10]
+                Reserved2 = new byte[10]
             };
 
             context.ResponseData.WriteStruct(networkConfig);
@@ -271,11 +271,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(100)]
+        [CommandCmif(100)]
         // AttachStateChangeEvent() -> handle<copy>
         public ResultCode AttachStateChangeEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_stateChangeEvent.ReadableEvent, out int stateChangeEventHandle) != KernelResult.Success)
+            if (context.Process.HandleTable.GenerateHandle(_stateChangeEvent.ReadableEvent, out int stateChangeEventHandle) != Result.Success)
             {
                 throw new InvalidOperationException("Out of handles!");
             }
@@ -287,11 +287,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(101)]
+        [CommandCmif(101)]
         // GetNetworkInfoLatestUpdate() -> (buffer<network_info<0x480>, 0x1a>, buffer<node_latest_update, 0xa>)
         public ResultCode GetNetworkInfoLatestUpdate(ServiceCtx context)
         {
-            long bufferPosition = context.Request.RecvListBuff[0].Position;
+            ulong bufferPosition = context.Request.RecvListBuff[0].Position;
 
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x480);
 
@@ -306,10 +306,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return resultCode;
             }
 
-            long outputPosition = context.Request.RecvListBuff[0].Position;
-            long outputSize = context.Request.RecvListBuff[0].Size;
+            ulong outputPosition = context.Request.RecvListBuff[0].Position;
+            ulong outputSize = context.Request.RecvListBuff[0].Size;
 
-            long latestUpdateSize = Marshal.SizeOf<NodeLatestUpdate>();
+            ulong latestUpdateSize = (ulong)Marshal.SizeOf<NodeLatestUpdate>();
             int count = (int)(outputSize / latestUpdateSize);
 
             NodeLatestUpdate[] latestUpdate = GetNodeLatestUpdateImpl(count);
@@ -323,21 +323,21 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 outputPosition += latestUpdateSize;
             }
 
-            long infoSize = MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
+            ulong infoSize = MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
 
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(infoSize);
 
             return ResultCode.Success;
         }
 
-        [Command(102)]
+        [CommandCmif(102)]
         // Scan(u16 channel, bytes<0x60, 8> scan_filter) -> (u16 count, buffer<network_info, 0x22>)
         public ResultCode Scan(ServiceCtx context)
         {
             return ScanImpl(context);
         }
 
-        [Command(103)]
+        [CommandCmif(103)]
         // ScanPrivate(u16 channel, bytes<0x60, 8> scan_filter) -> (u16 count, buffer<network_info, 0x22>)
         public ResultCode ScanPrivate(ServiceCtx context)
         {
@@ -346,10 +346,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private ResultCode ScanImpl(ServiceCtx context, bool isPrivate = false)
         {
-            ushort     channel    = (ushort)context.RequestData.ReadUInt64();
+            ushort channel = (ushort)context.RequestData.ReadUInt64();
             ScanFilter scanFilter = context.RequestData.ReadStruct<ScanFilter>();
 
-            (long bufferPosition, long bufferSize) = context.Request.GetBufferType0x22(0);
+            (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x22(0);
 
             if (_nifmResultCode != ResultCode.Success)
             {
@@ -395,12 +395,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                                 if (scanFilter.NetworkId.IntentId.LocalCommunicationId == -1)
                                 {
                                     // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
-                                    ApplicationControlProperty controlProperty = context.Device.Application.ControlData.Value;
+                                    ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-                                    scanFilter.NetworkId.IntentId.LocalCommunicationId = (long)controlProperty.LocalCommunicationIds[0];
+                                    scanFilter.NetworkId.IntentId.LocalCommunicationId = (long)controlProperty.LocalCommunicationId[0];
                                 }
 
-                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
+                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out ulong counter);
 
                                 context.ResponseData.Write(counter);
                             }
@@ -416,10 +416,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return resultCode;
         }
 
-        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
+        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, ulong bufferPosition, ulong bufferSize, out ulong counter)
         {
-            long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
-            long maxGames        = bufferSize / networkInfoSize;
+            ulong networkInfoSize = (ulong)Marshal.SizeOf(typeof(NetworkInfo));
+            ulong maxGames = bufferSize / networkInfoSize;
 
             MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
 
@@ -440,7 +440,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(104)] // 5.0.0+
+        [CommandCmif(104)] // 5.0.0+
         // SetWirelessControllerRestriction(u32 wireless_controller_restriction)
         public ResultCode SetWirelessControllerRestriction(ServiceCtx context)
         {
@@ -464,7 +464,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(200)]
+        [CommandCmif(200)]
         // OpenAccessPoint()
         public ResultCode OpenAccessPoint(ServiceCtx context)
         {
@@ -491,7 +491,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(201)]
+        [CommandCmif(201)]
         // CloseAccessPoint()
         public ResultCode CloseAccessPoint(ServiceCtx context)
         {
@@ -521,14 +521,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _accessPoint = null;
         }
 
-        [Command(202)]
+        [CommandCmif(202)]
         // CreateNetwork(bytes<0x44, 2> security_config, bytes<0x30, 1> user_config, bytes<0x20, 8> network_config)
         public ResultCode CreateNetwork(ServiceCtx context)
         {
             return CreateNetworkImpl(context);
         }
 
-        [Command(203)]
+        [CommandCmif(203)]
         // CreateNetworkPrivate(bytes<0x44, 2> security_config, bytes<0x20, 1> security_parameter, bytes<0x30, 1>, bytes<0x20, 8> network_config, buffer<unknown, 9> address_entry, int count)
         public ResultCode CreateNetworkPrivate(ServiceCtx context)
         {
@@ -537,19 +537,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public ResultCode CreateNetworkImpl(ServiceCtx context, bool isPrivate = false)
         {
-            SecurityConfig    securityConfig    = context.RequestData.ReadStruct<SecurityConfig>();
+            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
             SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
-            UserConfig    userConfig    = context.RequestData.ReadStruct<UserConfig>();
-            uint          unknown       = context.RequestData.ReadUInt32(); // Alignment?
+            UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
+            uint unknown = context.RequestData.ReadUInt32(); // Alignment?
             NetworkConfig networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
 
             if (networkConfig.IntentId.LocalCommunicationId == -1)
             {
                 // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
-                ApplicationControlProperty controlProperty = context.Device.Application.ControlData.Value;
+                ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-                networkConfig.IntentId.LocalCommunicationId = (long)controlProperty.LocalCommunicationIds[0];
+                networkConfig.IntentId.LocalCommunicationId = (long)controlProperty.LocalCommunicationId[0];
             }
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, (ulong)networkConfig.IntentId.LocalCommunicationId);
@@ -563,7 +563,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            networkConfig.Channel       = CheckDevelopmentChannel(networkConfig.Channel);
+            networkConfig.Channel = CheckDevelopmentChannel(networkConfig.Channel);
             securityConfig.SecurityMode = CheckDevelopmentSecurityMode(securityConfig.SecurityMode);
 
             if (networkConfig.NodeCountMax <= 8)
@@ -578,8 +578,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                             {
                                 if (isPrivate)
                                 {
-                                    long bufferPosition = context.Request.PtrBuff[0].Position;
-                                    long bufferSize = context.Request.PtrBuff[0].Size;
+                                    ulong bufferPosition = context.Request.PtrBuff[0].Position;
+                                    ulong bufferSize = context.Request.PtrBuff[0].Size;
 
                                     byte[] addressListBytes = new byte[bufferSize];
 
@@ -608,7 +608,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.InvalidArgument;
         }
 
-        [Command(204)]
+        [CommandCmif(204)]
         // DestroyNetwork()
         public ResultCode DestroyNetwork(ServiceCtx context)
         {
@@ -641,7 +641,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.InvalidArgument;
         }
 
-        [Command(205)]
+        [CommandCmif(205)]
         // Reject(u32 node_id)
         public ResultCode Reject(ServiceCtx context)
         {
@@ -665,11 +665,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return NetworkClient.Reject(disconnectReason, nodeId);
         }
 
-        [Command(206)]
+        [CommandCmif(206)]
         // SetAdvertiseData(buffer<advertise_data, 0x21>)
         public ResultCode SetAdvertiseData(ServiceCtx context)
         {
-            (long bufferPosition, long bufferSize) = context.Request.GetBufferType0x21(0);
+            (ulong bufferPosition, ulong bufferSize) = context.Request.GetBufferType0x21(0);
 
             if (_nifmResultCode != ResultCode.Success)
             {
@@ -695,7 +695,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
         }
 
-        [Command(207)]
+        [CommandCmif(207)]
         // SetStationAcceptPolicy(u8 accept_policy)
         public ResultCode SetStationAcceptPolicy(ServiceCtx context)
         {
@@ -721,7 +721,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
         }
 
-        [Command(208)]
+        [CommandCmif(208)]
         // AddAcceptFilterEntry(bytes<6, 1> mac_address)
         public ResultCode AddAcceptFilterEntry(ServiceCtx context)
         {
@@ -733,7 +733,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             throw new NotImplementedException();
         }
 
-        [Command(209)]
+        [CommandCmif(209)]
         // ClearAcceptFilter()
         public ResultCode ClearAcceptFilter(ServiceCtx context)
         {
@@ -745,7 +745,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             throw new NotImplementedException();
         }
 
-        [Command(300)]
+        [CommandCmif(300)]
         // OpenStation()
         public ResultCode OpenStation(ServiceCtx context)
         {
@@ -773,7 +773,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(301)]
+        [CommandCmif(301)]
         // CloseStation()
         public ResultCode CloseStation(ServiceCtx context)
         {
@@ -803,14 +803,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _station = null;
         }
 
-        [Command(302)]
+        [CommandCmif(302)]
         // Connect(bytes<0x44, 2> security_config, bytes<0x30, 1> user_config, u32 local_communication_version, u32 option_unknown, buffer<network_info<0x480>, 0x19>)
         public ResultCode Connect(ServiceCtx context)
         {
             return ConnectImpl(context);
         }
 
-        [Command(303)]
+        [CommandCmif(303)]
         // ConnectPrivate(bytes<0x44, 2> security_config, bytes<0x20, 1> security_parameter, bytes<0x30, 1> user_config, u32 local_communication_version, u32 option_unknown, bytes<0x20, 8> network_config)
         public ResultCode ConnectPrivate(ServiceCtx context)
         {
@@ -819,15 +819,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private ResultCode ConnectImpl(ServiceCtx context, bool isPrivate = false)
         {
-            SecurityConfig    securityConfig    = context.RequestData.ReadStruct<SecurityConfig>();
+            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
             SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
-            UserConfig userConfig                = context.RequestData.ReadStruct<UserConfig>();
-            uint       localCommunicationVersion = context.RequestData.ReadUInt32();
-            uint       optionUnknown             = context.RequestData.ReadUInt32();
+            UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
+            uint localCommunicationVersion = context.RequestData.ReadUInt32();
+            uint optionUnknown = context.RequestData.ReadUInt32();
 
             NetworkConfig networkConfig = new NetworkConfig();
-            NetworkInfo   networkInfo   = new NetworkInfo();
+            NetworkInfo networkInfo = new NetworkInfo();
 
             if (isPrivate)
             {
@@ -837,8 +837,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                long bufferPosition = context.Request.PtrBuff[0].Position;
-                long bufferSize     = context.Request.PtrBuff[0].Size;
+                ulong bufferPosition = context.Request.PtrBuff[0].Position;
+                ulong bufferSize = context.Request.PtrBuff[0].Size;
 
                 byte[] networkInfoBytes = new byte[bufferSize];
 
@@ -850,9 +850,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             if (networkInfo.NetworkId.IntentId.LocalCommunicationId == -1)
             {
                 // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
-                ApplicationControlProperty controlProperty = context.Device.Application.ControlData.Value;
+                ApplicationControlProperty controlProperty = context.Device.Processes.ActiveApplication.ApplicationControlProperties;
 
-                networkInfo.NetworkId.IntentId.LocalCommunicationId = (long)controlProperty.LocalCommunicationIds[0];
+                networkInfo.NetworkId.IntentId.LocalCommunicationId = (long)controlProperty.LocalCommunicationId[0];
             }
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, (ulong)networkInfo.NetworkId.IntentId.LocalCommunicationId);
@@ -903,7 +903,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return resultCode;
         }
 
-        [Command(304)]
+        [CommandCmif(304)]
         // Disconnect()
         public ResultCode Disconnect(ServiceCtx context)
         {
@@ -938,14 +938,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.InvalidArgument;
         }
 
-        [Command(400)]
+        [CommandCmif(400)]
         // InitializeOld(pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
             return InitializeImpl(context, context.Process.Pid, NIFM_REQUEST_ID);
         }
 
-        [Command(401)]
+        [CommandCmif(401)]
         // Finalize()
         public ResultCode Finalize(ServiceCtx context)
         {
@@ -970,7 +970,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             switch (_state)
             {
-                case NetworkState.None: return ResultCode.Success;
+                case NetworkState.None:
+                    return ResultCode.Success;
                 case NetworkState.AccessPoint:
                     {
                         CloseAccessPoint();
@@ -1023,12 +1024,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        [Command(402)] // 7.0.0+
+        [CommandCmif(402)] // 7.0.0+
         // Initialize(u64 ip_addresses, pid)
         public ResultCode Initialize(ServiceCtx context)
         {
-            IPAddress ipAddress  = new IPAddress(context.RequestData.ReadUInt32());
-            IPAddress subnetMask = new IPAddress(context.RequestData.ReadUInt32());
+            IPAddress ipAddress = new(context.RequestData.ReadUInt32());
+            IPAddress subnetMask = new(context.RequestData.ReadUInt32());
 
             // NOTE: It seems the guest can get ip_address and subnet_mask from nifm service and pass it through the initialize.
             //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
@@ -1037,7 +1038,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return InitializeImpl(context, context.Process.Pid, NIFM_REQUEST_ID);
         }
 
-        public ResultCode InitializeImpl(ServiceCtx context, long pid, int nifmRequestId)
+        public ResultCode InitializeImpl(ServiceCtx context, ulong pid, int nifmRequestId)
         {
             ResultCode resultCode = ResultCode.InvalidArgument;
 
@@ -1050,7 +1051,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     //       and return related error codes.
                     if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
                     {
-                        MultiplayerMode mode = ConfigurationState.Instance.Multiplayer.Mode;
+                        MultiplayerMode mode = context.Device.Configuration.MultiplayerMode;
                         switch (mode)
                         {
                             case MultiplayerMode.Disabled:
@@ -1058,12 +1059,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                                 break;
                         }
 
-                        NetworkClient.SetGameVersion(context.Device.Application.ControlData.Value.DisplayVersion.Value.ToArray());
+                        NetworkClient.SetGameVersion(context.Device.Processes.ActiveApplication.ApplicationControlProperties.DisplayVersion.Items.ToArray());
 
                         resultCode = ResultCode.Success;
 
                         _nifmResultCode = resultCode;
-                        _currentPid     = pid;
+                        _currentPid = pid;
 
                         SetState(NetworkState.Initialized);
                     }
