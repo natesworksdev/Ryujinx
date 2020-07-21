@@ -22,6 +22,7 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 GL.Disable(EnableCap.DebugOutputSynchronous);
                 GL.DebugMessageCallback(null, IntPtr.Zero);
+
                 return;
             }
 
@@ -83,6 +84,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static void PushGroup(string dbgMsg)
         {
             int counter = Interlocked.Increment(ref _counter);
+
             GL.PushDebugGroup(DebugSourceExternal.DebugSourceApplication, counter, dbgMsg.Length, dbgMsg);
         }
 
