@@ -5,12 +5,18 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
 using System;
+using System.Net;
+using System.Net.NetworkInformation;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     class IUserLocalCommunicationService : IpcService
     {
+        public static string LanPlayHost = "192.168.0.17";
+        public static short LanPlayPort = 4242;
+
         private const int RequestId = 90;
 
         private KEvent _stateChangeEvent;
@@ -70,6 +76,51 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
+        private (IPInterfaceProperties, UnicastIPAddressInformation) GetLocalInterface()
+        {
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                return (null, null);
+            }
+
+            IPInterfaceProperties targetProperties = null;
+            UnicastIPAddressInformation targetAddressInfo = null;
+
+            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
+
+            foreach (NetworkInterface adapter in interfaces)
+            {
+                // Ignore loopback and non IPv4 capable interface.
+                if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && adapter.Supports(NetworkInterfaceComponent.IPv4))
+                {
+                    IPInterfaceProperties properties = adapter.GetIPProperties();
+
+                    if (properties.GatewayAddresses.Count > 0 && properties.DnsAddresses.Count > 1)
+                    {
+                        foreach (UnicastIPAddressInformation info in properties.UnicastAddresses)
+                        {
+                            // Only accept an IPv4 address
+                            if (info.Address.GetAddressBytes().Length == 4)
+                            {
+                                targetProperties = properties;
+                                targetAddressInfo = info;
+
+                                break;
+                            }
+                        }
+                    }
+
+                    // Found the target interface, stop here.
+                    if (targetProperties != null)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            return (targetProperties, targetAddressInfo);
+        }
+
         [Command(2)]
         // GetIpv4Address() -> (u32, u32)
         public ResultCode GetIpv4Address(ServiceCtx context)
@@ -78,8 +129,23 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             // Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
-            context.ResponseData.Write((127 << 0) |   (0 << 8) |   (0 << 16) | (1 << 24));
-            context.ResponseData.Write((255 << 0) | (255 << 8) | (255 << 16) | (0 << 24));
+            (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
+
+            if (unicastAddress == null)
+            {
+                context.ResponseData.Write((127 << 24) |   (0 << 16) |   (0 << 8) | (1 << 0));
+                context.ResponseData.Write((255 << 24) | (255 << 16) | (255 << 8) | (0 << 0));
+            } 
+            else
+            {
+                Logger.PrintInfo(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
+
+                var addressBytes = unicastAddress.Address.GetAddressBytes();
+                Array.Reverse(addressBytes);
+
+                context.ResponseData.Write(BitConverter.ToUInt32(addressBytes));
+                context.ResponseData.Write((255 << 24) | (255 << 16) | (255 << 8) | (0 << 0));
+            }
 
             return ResultCode.Success;
         }
@@ -109,6 +175,16 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 {
                     Unknown = new byte[0x10],
                     SessionId = _accessPoint.NetworkInfo.NetworkId.SessionId
+                };
+
+                context.ResponseData.WriteStruct(securityParameter);
+            }
+            else if (_state == NetworkState.StationConnected)
+            {
+                SecurityParameter securityParameter = new SecurityParameter()
+                {
+                    Unknown = new byte[0x10],
+                    SessionId = _station.CurrentNetworkInfo.NetworkId.SessionId
                 };
 
                 context.ResponseData.WriteStruct(securityParameter);
@@ -188,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 _stateChangeEvent.WritableEvent.Signal();
 
-                _accessPoint = new AccessPoint("127.0.0.1", 4242, _stateChangeEvent);
+                _accessPoint = new AccessPoint(LanPlayHost, LanPlayPort, _stateChangeEvent);
 
                 _state = NetworkState.AccessPointCreated;
 
@@ -235,7 +311,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 _state            = NetworkState.Station;
                 _disconnectReason = DisconnectReason.None;
 
-                _station          = new Station("127.0.0.1", 4242);
+                _station          = new Station(LanPlayHost, LanPlayPort);
 
                 _stateChangeEvent.WritableEvent.Signal();
 
@@ -295,12 +371,23 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return InitializeImpl(RequestId);
         }
 
-        /*
+
         [Command(401)]
         // Finalize()
         public ResultCode Finalize(ServiceCtx context)
         {
-            return _networkInterface.Finalize();
+            _station?.DisconnectAndStop();
+            _accessPoint?.DisconnectAndStop();
+
+            _station = null;
+            _accessPoint = null;
+
+            _state = NetworkState.None;
+            _initialized = false;
+
+            _stateChangeEvent.WritableEvent.Signal();
+
+            return ResultCode.Success;
         }
 
         [Command(402)] // 7.0.0+
@@ -311,9 +398,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             IPAddress unknownAddress1 = new IPAddress(context.RequestData.ReadUInt32());
             IPAddress unknownAddress2 = new IPAddress(context.RequestData.ReadUInt32());
 
-            return _networkInterface.Initialize(ClientId, version: 1, unknownAddress1, unknownAddress2);
+            return InitializeImpl(RequestId);
         }
-        */
 
         public ResultCode InitializeImpl(int requestId)
         {

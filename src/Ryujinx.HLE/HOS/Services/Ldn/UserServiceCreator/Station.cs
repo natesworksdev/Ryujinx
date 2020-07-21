@@ -15,10 +15,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     class Station : TcpClient
     {
         private bool _stop;
-        private bool _scanReplyReceived;
 
         public NetworkConfig CurrentNetworkConfig;
         public NetworkInfo   CurrentNetworkInfo;
+
+        private AutoResetEvent ConnectEvent = new AutoResetEvent(false);
+        private AutoResetEvent ScanEvent = new AutoResetEvent(false);
 
         private List<NetworkInfo> _availableGames;
 
@@ -91,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private void ProcessScanReplyEnd()
         {
-            _scanReplyReceived = true;
+            ScanEvent.Set();
         }
 
         private void ProcessConnected(LdnPacket ldnPacket)
@@ -111,6 +113,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 LocalCommunicationVersion = (ushort)CurrentNetworkInfo.NetworkId.IntentId.LocalCommunicationId,
                 Unknown2                  = new byte[10]
             };
+
+            ConnectEvent.Set();
         }
 
         protected override void OnError(SocketError error)
@@ -145,10 +149,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             SendAsync(LdnHelper.StructureToByteArray(ldnPacket));
 
-            while (!_scanReplyReceived)
-            {
-                Thread.Sleep(100);
-            }
+            ScanEvent.WaitOne(1000);
 
             uint counter = 0;
 
@@ -191,6 +192,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             };
 
             SendAsync(LdnHelper.StructureToByteArray(ldnPacket));
+
+            ConnectEvent.WaitOne(1000);
 
             return ResultCode.Success;
         }
