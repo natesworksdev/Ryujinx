@@ -10,7 +10,7 @@ namespace ARMeilleure.State
         private unsafe struct NativeCtxStorage
         {
             public fixed ulong X[RegisterConsts.IntRegsCount];
-            public fixed ulong V[RegisterConsts.VecRegsCount];
+            public fixed ulong V[RegisterConsts.VecRegsCount * 2];
             public fixed uint Flags[RegisterConsts.FlagsCount];
             public fixed uint FpFlags[RegisterConsts.FpFlagsCount];
             public int Counter;
@@ -127,9 +127,13 @@ namespace ARMeilleure.State
             {
                 return StorageOffset(ref _dummyStorage, ref _dummyStorage.V[reg.Index * 2]);
             }
-            else /* if (reg.Type == RegisterType.Flag) */
+            else if (reg.Type == RegisterType.Flag)
             {
                 return StorageOffset(ref _dummyStorage, ref _dummyStorage.Flags[reg.Index]);
+            }
+            else /* if (reg.Type == RegisterType.FpFlag) */
+            {
+                return StorageOffset(ref _dummyStorage, ref _dummyStorage.FpFlags[reg.Index]);
             }
         }
 
