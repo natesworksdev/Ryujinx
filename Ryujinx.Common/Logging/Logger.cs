@@ -184,13 +184,13 @@ namespace Ryujinx.Common.Logging
         {
             switch (logLevel)
             {
-                case LogLevel.Debug    : Debug     = enabled ? new Log(LogLevel.Debug)    : new Log?(); break;
-                case LogLevel.Info     : Info      = enabled ? new Log(LogLevel.Info)     : new Log?(); break;
-                case LogLevel.Warning  : Warning   = enabled ? new Log(LogLevel.Warning)  : new Log?(); break;
-                case LogLevel.Error    : Error     = enabled ? new Log(LogLevel.Error)    : new Log?(); break;
-                case LogLevel.Guest    : Guest     = enabled ? new Log(LogLevel.Guest)    : new Log?(); break;
-                case LogLevel.AccessLog: AccessLog = enabled ? new Log(LogLevel.AccessLog): new Log?(); break;
-                case LogLevel.Stub     : Stub      = enabled ? new Log(LogLevel.Stub)     : new Log?(); break;
+                case LogLevel.Debug     : Debug     = enabled ? new Log(LogLevel.Debug)    : new Log?(); break;
+                case LogLevel.Info      : Info      = enabled ? new Log(LogLevel.Info)     : new Log?(); break;
+                case LogLevel.Warning   : Warning   = enabled ? new Log(LogLevel.Warning)  : new Log?(); break;
+                case LogLevel.Error     : Error     = enabled ? new Log(LogLevel.Error)    : new Log?(); break;
+                case LogLevel.Guest     : Guest     = enabled ? new Log(LogLevel.Guest)    : new Log?(); break;
+                case LogLevel.AccessLog : AccessLog = enabled ? new Log(LogLevel.AccessLog): new Log?(); break;
+                case LogLevel.Stub      : Stub      = enabled ? new Log(LogLevel.Stub)     : new Log?(); break;
                 default: throw new ArgumentException("Unknown Log Level");
             }
         }
