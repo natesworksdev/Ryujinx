@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                throw new NotImplementedException();
+                //throw new NotImplementedException();
             }
 
             return ResultCode.Success;
