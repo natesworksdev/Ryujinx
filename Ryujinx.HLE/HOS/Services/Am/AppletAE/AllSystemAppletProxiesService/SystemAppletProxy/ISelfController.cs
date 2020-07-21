@@ -209,7 +209,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // SetIdleTimeDetectionExtension(u32)
         public ResultCode SetIdleTimeDetectionExtension(ServiceCtx context)
         {
-            _idleTimeDetectionExtension = context.RequestData.ReadInt32();
+            _idleTimeDetectionExtension = context.RequestData.ReadUInt32();
 
             Logger.PrintStub(LogClass.ServiceAm, new { _idleTimeDetectionExtension });
 
