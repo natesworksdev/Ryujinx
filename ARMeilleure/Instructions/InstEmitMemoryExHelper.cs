@@ -16,21 +16,21 @@ namespace ARMeilleure.Instructions
         {
             if (exclusive)
             {
-                Operand isUnalignedAddr = InstEmitMemoryHelper.EmitAddressCheck(context, address, size);
-
-                Operand lblFastPath = Label();
-
-                context.BranchIfFalse(lblFastPath, isUnalignedAddr);
-
-                // The call is not expected to return (it should throw).
-                context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)), address);
-
-                context.MarkLabel(lblFastPath);
-
                 Operand value;
 
                 if (size == 4)
                 {
+                    Operand isUnalignedAddr = InstEmitMemoryHelper.EmitAddressCheck(context, address, size);
+
+                    Operand lblFastPath = Label();
+
+                    context.BranchIfFalse(lblFastPath, isUnalignedAddr);
+
+                    // The call is not expected to return (it should throw).
+                    context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)), address);
+
+                    context.MarkLabel(lblFastPath);
+
                     // Only 128-bit CAS is guaranteed to have a atomic load.
                     Operand physAddr = InstEmitMemoryHelper.EmitPtPointerLoad(context, address, null, write: false);
 
