@@ -161,8 +161,6 @@ namespace Ryujinx.Graphics.OpenGL
             return handle;
         }
 
-
-
         public void Dispose()
         {
             if (_copyFramebufferHandle != 0)
