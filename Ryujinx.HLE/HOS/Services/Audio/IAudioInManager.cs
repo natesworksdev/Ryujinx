@@ -65,6 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
             if (bufferSize > 0)
             {
+                // NOTE: The service also check that the input target is enabled when in filtering mode, as audctl and most of the audin logic isn't supported, we don't support it.
                 if (!filtered)
                 {
                     byte[] deviceNameBuffer = Encoding.ASCII.GetBytes(DefaultAudioInsName + "\0");
