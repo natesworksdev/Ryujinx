@@ -7,8 +7,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     [Service("audin:u")]
     class IAudioInManager : IpcService
     {
-        private const string DefaultAudioInsName       = "BuiltInHeadset";
-        private const uint   DefaultAudioInsNameLength = 0x100;
+        private const string DefaultAudioInsName = "BuiltInHeadset";
 
         public IAudioInManager(ServiceCtx context) { }
 
@@ -60,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         private uint ListAudioInsImpl(MemoryManager memory, long bufferPosition, long bufferSize, bool filtered = false)
         {
-            uint deviceNameSize = 0;
+            uint count = 0;
 
             MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
 
@@ -70,18 +69,17 @@ namespace Ryujinx.HLE.HOS.Services.Audio
                 {
                     byte[] deviceNameBuffer = Encoding.ASCII.GetBytes(DefaultAudioInsName + "\0");
 
-                    Array.Resize(ref deviceNameBuffer, (int)DefaultAudioInsNameLength);
-
                     memory.Write((ulong)bufferPosition, deviceNameBuffer);
 
-                    deviceNameSize = DefaultAudioInsNameLength;
+                    count++;
                 }
 
                 // NOTE: The service adds other input devices names available in the buffer,
-                //       since we don't support it for now, it's fine to do nothing here.
+                //       every names are aligned to 0x100.
+                //       Since we don't support it for now, it's fine to do nothing here.
             }
 
-            return deviceNameSize;
+            return count;
         }
     }
 }
