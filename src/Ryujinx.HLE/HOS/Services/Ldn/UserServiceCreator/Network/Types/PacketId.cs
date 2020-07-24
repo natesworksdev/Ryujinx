@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Types
+﻿namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types
 {
     enum PacketId
     {
@@ -8,6 +8,6 @@
         ScanReply,
         ScanReplyEnd,
         Connect,
-        Connected
+        Connected,
     }
 }

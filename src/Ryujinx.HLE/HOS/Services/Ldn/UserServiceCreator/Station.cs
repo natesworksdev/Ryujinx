@@ -1,7 +1,8 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -70,51 +71,45 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             Buffer.BlockCopy(buffer, 0, incomingBuffer, 0, (int)size);
 
-            LdnPacket ldnPacket = LdnHelper.FromBytes<LdnPacket>(incomingBuffer);
+            LdnHeader ldnHeader = LdnHelper.FromBytes<LdnHeader>(incomingBuffer);
 
-            switch ((PacketId)ldnPacket.Type)
+            incomingBuffer = incomingBuffer.Skip(Marshal.SizeOf(ldnHeader)).ToArray();
+
+            switch ((PacketId)ldnHeader.Type)
             {
-                case PacketId.ScanReply:    ProcessScanReply(ldnPacket); break;
-                case PacketId.ScanReplyEnd: ProcessScanReplyEnd();       break;
-                case PacketId.Connected:    ProcessConnected(ldnPacket); break;
+                case PacketId.ScanReply:    HandleScanReply(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
+                case PacketId.ScanReplyEnd: HandleScanReplyEnd(ldnHeader);                                                    break;
+                case PacketId.Connected:    HandleConnected(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
 
                 default: break;
             }
         }
 
-        private void ProcessScanReply(LdnPacket ldnPacket)
+        private void HandleConnected(LdnHeader header, NetworkInfo info)
         {
-            byte[] networkInfoBuffer = new byte[Marshal.SizeOf(typeof(NetworkInfo))];
-
-            Buffer.BlockCopy(ldnPacket.Data, 0, networkInfoBuffer, 0, networkInfoBuffer.Length);
-
-            _availableGames.Add(LdnHelper.FromBytes<NetworkInfo>(networkInfoBuffer));
-        }
-
-        private void ProcessScanReplyEnd()
-        {
-            ScanEvent.Set();
-        }
-
-        private void ProcessConnected(LdnPacket ldnPacket)
-        {
-            byte[] networkInfoBuffer = new byte[Marshal.SizeOf(typeof(NetworkInfo))];
-
-            Buffer.BlockCopy(ldnPacket.Data, 0, networkInfoBuffer, 0, networkInfoBuffer.Length);
-
-            CurrentNetworkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBuffer);
+            CurrentNetworkInfo = info;
 
             CurrentNetworkConfig = new NetworkConfig
             {
-                IntentId                  = CurrentNetworkInfo.NetworkId.IntentId,
-                Channel                   = CurrentNetworkInfo.Common.Channel,
-                NodeCountMax              = CurrentNetworkInfo.Ldn.NodeCountMax,
-                Unknown1                  = 0x00,
+                IntentId = CurrentNetworkInfo.NetworkId.IntentId,
+                Channel = CurrentNetworkInfo.Common.Channel,
+                NodeCountMax = CurrentNetworkInfo.Ldn.NodeCountMax,
+                Unknown1 = 0x00,
                 LocalCommunicationVersion = (ushort)CurrentNetworkInfo.NetworkId.IntentId.LocalCommunicationId,
-                Unknown2                  = new byte[10]
+                Unknown2 = new byte[10]
             };
 
             ConnectEvent.Set();
+        }
+
+        private void HandleScanReply(LdnHeader header, NetworkInfo info)
+        {
+            _availableGames.Add(info);
+        }
+
+        private void HandleScanReplyEnd(LdnHeader obj)
+        {
+            ScanEvent.Set();
         }
 
         protected override void OnError(SocketError error)
@@ -138,16 +133,21 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             Array.Resize(ref scanFilterBuffer, 0x600);
 
-            LdnPacket ldnPacket = new LdnPacket
+            LdnHeader ldnHeader = new LdnHeader
             {
                 Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
                 Type     = (byte)PacketId.Scan,
                 UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
-                DataSize = scanFilterBufferLength,
-                Data     = scanFilterBuffer
+                DataSize = scanFilterBufferLength
             };
 
-            SendAsync(LdnHelper.StructureToByteArray(ldnPacket));
+            byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
+            int ldnHeaderLength = ldnPacket.Length;
+
+            Array.Resize(ref ldnPacket, ldnHeaderLength + scanFilterBuffer.Length);
+            scanFilterBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+
+            SendAsync(ldnPacket);
 
             ScanEvent.WaitOne(1000);
 
@@ -169,29 +169,38 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         {
             ConnectNetworkData connectNetworkData = context.RequestData.ReadStruct<ConnectNetworkData>();
 
-            byte[] connectNetworkDataBuffer = LdnHelper.StructureToByteArray(connectNetworkData);
-
             long bufferPosition = context.Request.PtrBuff[0].Position;
             long bufferSize     = context.Request.PtrBuff[0].Size;
 
-            byte[] networkInfo = new byte[bufferSize];
+            byte[] networkInfoBytes = new byte[bufferSize];
 
-            context.Memory.Read((ulong)bufferPosition, networkInfo);
+            context.Memory.Read((ulong)bufferPosition, networkInfoBytes);
 
-            byte[] ldnPacketBuffer = connectNetworkDataBuffer.Concat(networkInfo).ToArray();
+            NetworkInfo networkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBytes);
 
-            Array.Resize(ref ldnPacketBuffer, 0x600);
+            ConnectRequest request = new ConnectRequest
+            {
+                Data = connectNetworkData,
+                Info = networkInfo
+            };
 
-            LdnPacket ldnPacket = new LdnPacket
+            byte[] requestBuffer = LdnHelper.StructureToByteArray(request);
+
+            LdnHeader ldnHeader = new LdnHeader
             {
                 Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
                 Type     = (byte)PacketId.Connect,
                 UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
-                DataSize = connectNetworkDataBuffer.Length + networkInfo.Length,
-                Data     = ldnPacketBuffer
+                DataSize = requestBuffer.Length
             };
 
-            SendAsync(LdnHelper.StructureToByteArray(ldnPacket));
+            byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
+            int ldnHeaderLength = ldnPacket.Length;
+
+            Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length);
+            requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+
+            SendAsync(ldnPacket);
 
             ConnectEvent.WaitOne(1000);
 

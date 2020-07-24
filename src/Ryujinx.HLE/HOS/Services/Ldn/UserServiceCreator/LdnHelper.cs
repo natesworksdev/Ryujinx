@@ -6,10 +6,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     static class LdnHelper
     {
-        public static byte[] StructureToByteArray(object obj)
+        public static byte[] StructureToByteArray(object obj, int padding = 0)
         {
             int len = Marshal.SizeOf(obj);
-            byte[] arr = new byte[len];
+            byte[] arr = new byte[len + padding];
             IntPtr ptr = Marshal.AllocHGlobal(len);
 
             Marshal.StructureToPtr(obj, ptr, true);
@@ -19,17 +19,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return arr;
         }
 
-        public static byte[] GetBytes(object str)
+        public static byte[] StructureToByteArrayWithData(object obj, byte[] data)
         {
-            int size = Marshal.SizeOf(str);
-            byte[] arr = new byte[size];
-            IntPtr ptr = Marshal.AllocHGlobal(size);
+            byte[] result = StructureToByteArray(obj, data.Length);
 
-            Marshal.StructureToPtr(str, ptr, true);
-            Marshal.Copy(ptr, arr, 0, size);
-            Marshal.FreeHGlobal(ptr);
+            Array.Copy(data, 0, result, result.Length - data.Length, data.Length);
 
-            return arr;
+            return result;
         }
 
         public static T FromBytes<T>(byte[] arr)

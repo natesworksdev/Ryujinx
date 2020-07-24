@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Types;
 using System;
 using System.Linq;
@@ -20,7 +21,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private KEvent _stateChangeEvent;
 
         public NetworkInfo NetworkInfo;
-
 
         public AccessPoint(string address, int port, KEvent stateChangeEvent) : base(address, port)
         {
@@ -66,12 +66,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             Buffer.BlockCopy(buffer, 0, incomingBuffer, 0, (int)size);
 
-            LdnPacket ldnPacket = LdnHelper.FromBytes<LdnPacket>(incomingBuffer);
+            LdnHeader ldnHeader = LdnHelper.FromBytes<LdnHeader>(incomingBuffer);
 
-            switch ((PacketId)ldnPacket.Type)
+            incomingBuffer = incomingBuffer.Skip(Marshal.SizeOf(ldnHeader)).ToArray();
+
+            switch ((PacketId)ldnHeader.Type)
             {
-                case PacketId.SyncNetwork: ParseSyncNetwork(ldnPacket); break;
-                case PacketId.Connected:   ParseConnected(ldnPacket);   break;
+                case PacketId.SyncNetwork: HandleSyncNetwork(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
+                case PacketId.Connected:   HandleConnected(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer));   break;
 
                 default: break;
             }
@@ -82,22 +84,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             Console.WriteLine($"LDN TCP client caught an error with code {error}");
         }
 
-        private void ParseSyncNetwork(LdnPacket ldnPacket)
+        private void HandleSyncNetwork(LdnHeader header, NetworkInfo info)
         {
-            byte[] networkInfoBuffer = new byte[Marshal.SizeOf(typeof(NetworkInfo))];
-
-            Buffer.BlockCopy(ldnPacket.Data, 0, networkInfoBuffer, 0, networkInfoBuffer.Length);
-
-            NetworkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBuffer);
+            NetworkInfo = info;
         }
 
-        private void ParseConnected(LdnPacket ldnPacket)
+        private void HandleConnected(LdnHeader header, NetworkInfo info)
         {
-            byte[] networkInfoBuffer = new byte[Marshal.SizeOf(typeof(NetworkInfo))];
-
-            Buffer.BlockCopy(ldnPacket.Data, 0, networkInfoBuffer, 0, networkInfoBuffer.Length);
-
-            NetworkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBuffer);
+            NetworkInfo = info;
 
             _stateChangeEvent.WritableEvent.Signal();
         }
@@ -128,24 +122,30 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             ConnectAsync();
 
-            byte[] securityConfigBuffer = LdnHelper.StructureToByteArray(securityConfig);
-            byte[] userConfigBuffer     = LdnHelper.StructureToByteArray(userConfig);
-            byte[] networkConfigBuffer  = LdnHelper.StructureToByteArray(networkConfig);
+            CreateAccessPointRequest request = new CreateAccessPointRequest
+            {
+                SecurityConfig = securityConfig,
+                UserConfig = userConfig,
+                NetworkConfig = networkConfig
+            };
 
-            byte[] ldnPacketBuffer = securityConfigBuffer.Concat(userConfigBuffer).Concat(networkConfigBuffer).Concat(_advertiseData).ToArray();
+            byte[] requestBuffer = LdnHelper.StructureToByteArray(request);
 
-            Array.Resize(ref ldnPacketBuffer, 0x600);
-
-            LdnPacket ldnPacket = new LdnPacket
+            LdnHeader ldnHeader = new LdnHeader
             {
                 Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
                 Type     = (byte)PacketId.CreateAccessPoint,
                 UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb065"),
-                DataSize = securityConfigBuffer.Length + userConfigBuffer.Length + networkConfigBuffer.Length + _advertiseData.Length,
-                Data     = ldnPacketBuffer
+                DataSize = requestBuffer.Length
             };
 
-            SendAsync(LdnHelper.StructureToByteArray(ldnPacket));
+            byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
+            int ldnHeaderLength = ldnPacket.Length;
+
+            Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length);
+            requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+
+            SendAsync(ldnPacket);
 
             return ResultCode.Success;
         }
