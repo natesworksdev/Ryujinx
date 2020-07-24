@@ -88,6 +88,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Writes a 32-bits signed integer to GPU mapped memory.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address to write the value into</param>
+        /// <param name="value">The value to be written</param>
+        public void Write<T>(ulong gpuVa, T value) where T : unmanaged
+        {
+            ulong processVa = Translate(gpuVa);
+
+            _context.PhysicalMemory.Write(processVa, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
+        }
+
+        /// <summary>
         /// Writes data to GPU mapped memory.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address to write the data into</param>
