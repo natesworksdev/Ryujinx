@@ -88,7 +88,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Writes a 32-bits signed integer to GPU mapped memory.
+        /// Writes data to GPU mapped memory.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address to write the value into</param>
         /// <param name="value">The value to be written</param>
