@@ -28,7 +28,6 @@ namespace Ryujinx.Common.SystemInfo
                 Logger.PrintError(LogClass.Application, "WMI isn't available, system informations will use default values.");
 
                 CpuName = "Unknown";
-                RamSize = 0;
             }
         }
     }
