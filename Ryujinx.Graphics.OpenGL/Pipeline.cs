@@ -31,7 +31,7 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundDrawFramebuffer;
         private int _boundReadFramebuffer;
 
-        private bool[] _fpIsBgra = new bool[8];
+        private int[] _fpIsBgra = new int[8];
         private float[] _fpRenderScale = new float[33];
         private float[] _cpRenderScale = new float[32];
 
@@ -817,7 +817,7 @@ namespace Ryujinx.Graphics.OpenGL
 
                 _framebuffer.AttachColor(index, color);
 
-                _fpIsBgra[index] = color != null ? color.Format.IsBgra8() : false;
+                _fpIsBgra[index] = color != null && color.Format.IsBgra8() ? 1 : 0;
             }
 
             UpdateFpIsBgra();
@@ -1123,10 +1123,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             if (_program != null)
             {
-                for (int index = 0; index < _fpIsBgra.Length; index++)
-                {
-                    GL.Uniform1(_program.FragmentIsBgraUniform[index], _fpIsBgra[index] ? 1 : 0);
-                }
+                GL.Uniform1(_program.FragmentIsBgraUniform, 8, _fpIsBgra);
             }
         }
 

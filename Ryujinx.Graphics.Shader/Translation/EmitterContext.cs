@@ -130,7 +130,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                         Operand src = Register(regIndex, RegisterType.Gpr);
 
-                        // Perform B <-> R swap if needed, for BGRA formats (not support on OpenGL).
+                        // Perform B <-> R swap if needed, for BGRA formats (not supported on OpenGL).
                         if (component == 0 || component == 2)
                         {
                             Operand isBgra = Attribute(AttributeConsts.FragmentOutputIsBgraBase + rtIndex * 4);
