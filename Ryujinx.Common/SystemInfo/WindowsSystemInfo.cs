@@ -1,6 +1,6 @@
 using Ryujinx.Common.Logging;
-using System;
 using System.Management;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Common.SystemInfo
 {
@@ -23,7 +23,7 @@ namespace Ryujinx.Common.SystemInfo
                     RamSize = ulong.Parse(mObject["TotalVisibleMemorySize"].ToString()) * 1024;
                 }
             }
-            catch (Exception)
+            catch (COMException)
             {
                 Logger.PrintError(LogClass.Application, "WMI isn't available, system informations will use default values.");
 
