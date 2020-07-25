@@ -1,13 +1,13 @@
+using Gtk;
+using ICSharpCode.SharpZipLib.GZip;
+using ICSharpCode.SharpZipLib.Tar;
+using ICSharpCode.SharpZipLib.Zip;
+using Ryujinx.Common.Logging;
 using Ryujinx.Ui;
 using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
-using Gtk;
-using Ryujinx.Common.Logging;
-using ICSharpCode.SharpZipLib.GZip;
-using ICSharpCode.SharpZipLib.Tar;
-using ICSharpCode.SharpZipLib.Zip;
 
 namespace Ryujinx
 {
@@ -17,7 +17,7 @@ namespace Ryujinx
         private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
 
-        private static void MoveAllFilesOver(string root, string dest)
+        private static async Task MoveAllFilesOver(string root, string dest)
         {
             foreach (string directory in Directory.GetDirectories(root))
             {
@@ -30,7 +30,7 @@ namespace Ryujinx
                         Directory.CreateDirectory(Path.Combine(dest, dirName));
                     }
 
-                    MoveAllFilesOver(directory, Path.Combine(dest, dirName));
+                    await MoveAllFilesOver(directory, Path.Combine(dest, dirName));
                 }
             }
 
@@ -51,29 +51,19 @@ namespace Ryujinx
             }
         }
 
-        public static void ExtractTGZ(String gzArchiveName, String destFolder)
-        {
-            using (Stream     inStream   = File.OpenRead(gzArchiveName))
-            using (Stream     gzipStream = new GZipInputStream(inStream))
-            using (TarArchive tarArchive = TarArchive.CreateInputTarArchive(gzipStream))
-            {
-                tarArchive.ExtractContents(destFolder);
-                tarArchive.Close();
-            }
-        }
-
         public async static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl, bool isLinux)
         {
-            updateDialog.MainText.Text = "Downloading Update...";
-
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
                 Directory.Delete(UpdateDir, true);
 
             Directory.CreateDirectory(UpdateDir);
+            string updateFile = Path.Combine(UpdateDir, "update.bin");
 
             // Download the update .zip
-            string updateFile = Path.Combine(UpdateDir, "update.bin");
+            updateDialog.MainText.Text        = "Downloading Update...";
+            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.ProgressBar.MaxValue = 100;
 
             using (WebClient client = new WebClient())
             {
@@ -83,61 +73,121 @@ namespace Ryujinx
                 };
 
                 await client.DownloadFileTaskAsync(downloadUrl, updateFile);
+            }
 
-                //Extract Update
-                updateDialog.MainText.Text = "Extracting Update...";
+            //Extract Update
+            updateDialog.MainText.Text     = "Extracting Update...";
+            updateDialog.ProgressBar.Value = 0;
 
-                await Task.Run(() =>
+            if (isLinux)
+            {
+                using (Stream inStream          = File.OpenRead(updateFile))
+                using (Stream gzipStream        = new GZipInputStream(inStream))
+                using (TarInputStream tarStream = new TarInputStream(gzipStream))
                 {
-                    if (isLinux)
+                    updateDialog.ProgressBar.MaxValue = inStream.Length;
+                    
+                    await Task.Run(() =>
                     {
-                        ExtractTGZ(updateFile, UpdateDir);
-                    } else
-                    {
-                        FastZip fastZip = new FastZip();
-                        string fileFilter = null;
-                        fastZip.ExtractZip(updateFile, UpdateDir, fileFilter);
-                    }
-                });
-
-                // Delete downloaded zip
-                File.Delete(updateFile);
-
-                string[] allFiles = Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories);
-                updateDialog.ProgressBar.MaxValue = allFiles.Length;
-                updateDialog.MainText.Text        = "Replacing Files...";
-                updateDialog.ProgressBar.Value    = 0;
-
-                // Replace old files
-                await Task.Run(() =>
-                {
-                    foreach (string file in Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories))
-                    {
-                        try
+                        TarEntry tarEntry;
+                        while ((tarEntry = tarStream.GetNextEntry()) != null)
                         {
-                            File.Move(file, file + ".ryuold");
+                            if (tarEntry.IsDirectory) continue;
+
+                            string outPath = Path.Combine(UpdateDir, tarEntry.Name);
+
+                            Directory.CreateDirectory(Path.GetDirectoryName(outPath));
+
+                            using (FileStream outStream = File.OpenWrite(outPath))
+                            {
+                                tarStream.CopyEntryContents(outStream);
+                            }
+
+                            File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
+
+                            TarEntry entry = tarEntry;
+                            Application.Invoke(delegate
+                            {
+                                updateDialog.ProgressBar.Value += entry.Size;
+                            });
+                        }
+                    });
+
+                    updateDialog.ProgressBar.Value = inStream.Length;
+                }
+            }
+            else
+            {
+                using (Stream inStream = File.OpenRead(updateFile))
+                using (ZipFile zipFile = new ZipFile(inStream))
+                {
+                    updateDialog.ProgressBar.MaxValue = zipFile.Count;
+
+                    await Task.Run(() =>
+                    {
+                        foreach (ZipEntry zipEntry in zipFile)
+                        {
+                            if (zipEntry.IsDirectory) continue;
+
+                            string outPath = Path.Combine(UpdateDir, zipEntry.Name);
+
+                            Directory.CreateDirectory(Path.GetDirectoryName(outPath));
+
+                            using (Stream zipStream = zipFile.GetInputStream(zipEntry))
+                            using (FileStream outStream = File.OpenWrite(outPath))
+                            {
+                                zipStream.CopyTo(outStream);
+                            }
+
+                            File.SetLastWriteTime(outPath, DateTime.SpecifyKind(zipEntry.DateTime, DateTimeKind.Utc));
 
                             Application.Invoke(delegate
                             {
                                 updateDialog.ProgressBar.Value++;
                             });
                         }
-                        catch
-                        {
-                            Logger.PrintWarning(LogClass.Application, "Updater wasn't able to rename file: " + file);
-                        }
-                    }
-                });
-
-                MoveAllFilesOver(UpdatePublishDir, HomeDir);
-
-                updateDialog.MainText.Text      = "Update Complete!";
-                updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
-                
-                updateDialog.ProgressBar.Hide();
-                updateDialog.YesButton.Show();
-                updateDialog.NoButton.Show();
+                    });
+                }
             }
+
+            // Delete downloaded zip
+            File.Delete(updateFile);
+
+            string[] allFiles = Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories);
+
+            updateDialog.MainText.Text        = "Replacing Files...";
+            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.ProgressBar.MaxValue = allFiles.Length;
+
+            // Replace old files
+            await Task.Run(() =>
+            {
+                foreach (string file in allFiles)
+                {
+                    try
+                    {
+                        File.Move(file, file + ".ryuold");
+
+                        Application.Invoke(delegate
+                        {
+                            updateDialog.ProgressBar.Value++;
+                        });
+                    }
+                    catch
+                    {
+                        Logger.PrintWarning(LogClass.Application, "Updater wasn't able to rename file: " + file);
+                    }
+                }
+            });
+
+            await MoveAllFilesOver(UpdatePublishDir, HomeDir);
+
+            updateDialog.MainText.Text      = "Update Complete!";
+            updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
+
+            updateDialog.ProgressBar.Hide();
+            updateDialog.YesButton.Show();
+            updateDialog.NoButton.Show();
         }
     }
 }
