@@ -207,17 +207,17 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 return ResultCode.InvalidArgument;
             }
 
-            // NOTE: Call nn::friends::detail::service::core::PlayHistoryManager::GetInstance and store the instance.
+            // NOTE: Calls nn::friends::detail::service::core::PlayHistoryManager::GetInstance and stores the instance.
 
             byte[] randomBytes = new byte[8];
             Random random      = new Random();
 
             random.NextBytes(randomBytes);
 
-            // NOTE: Call nn::friends::detail::service::core::UuidManager::GetInstance and store the instance.
+            // NOTE: Calls nn::friends::detail::service::core::UuidManager::GetInstance and stores the instance.
             //       Then call nn::friends::detail::service::core::AccountStorageManager::GetInstance and store the instance.
-            //       Then it's check if an Uuid is already stored for the UserId, if not it's generate a random Uuid
-            //       and store it in the savedata 8000000000000080 in the friends:/uid.bin file.
+            //       Then it checks if an Uuid is already stored for the UserId, if not it generates a random Uuid.
+            //       And store it in the savedata 8000000000000080 in the friends:/uid.bin file.
 
             Guid randomGuid = Guid.NewGuid();
 
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
             byte[] playHistoryRegistrationKeyBuffer = SpanHelpers.AsByteSpan(ref playHistoryRegistrationKey).ToArray();
 
-            // NOTE: Service use the KeyIndex to get a random key from a keys buffer (since the key index is stored in the returned buffer).
+            // NOTE: The service uses the KeyIndex to get a random key from a keys buffer (since the key index is stored in the returned buffer).
             //       We currently don't support play history and online services so we can use a blank key for now.
 
             byte[] hmacKey = new byte[0x20];
