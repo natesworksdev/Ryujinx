@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Nvdec
     {
 #pragma warning disable CS0649
         public Array64<uint> Reserved0;
-        public Array64<uint> Reserved40;
+        public Array64<uint> Reserved100;
         public uint SetCodecID;
         public Array63<uint> Reserved204;
         public uint Execute;
