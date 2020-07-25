@@ -3,14 +3,15 @@
 namespace Ryujinx.Graphics.Nvdec
 {
     // Note: Most of those names are not official.
-    unsafe struct NvdecRegisters
+    struct NvdecRegisters
     {
 #pragma warning disable CS0649
-        public fixed uint Reserved0[128];
+        public Array64<uint> Reserved0;
+        public Array64<uint> Reserved40;
         public uint SetCodecID;
-        public fixed uint Reserved204[63];
+        public Array63<uint> Reserved204;
         public uint Execute;
-        public fixed uint Reserved304[63];
+        public Array63<uint> Reserved304;
         public uint SetPlatformID;
         public uint SetPictureInfoOffset;
         public uint SetBitstreamOffset;
