@@ -156,7 +156,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (!_program.IsLinked)
             {
                 Logger.PrintDebug(LogClass.Gpu, "Dispatch error, shader not linked.");
-
                 return;
             }
 
@@ -170,7 +169,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (!_program.IsLinked)
             {
                 Logger.PrintDebug(LogClass.Gpu, "Draw error, shader not linked.");
-
                 return;
             }
 
@@ -289,7 +287,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (!_program.IsLinked)
             {
                 Logger.PrintDebug(LogClass.Gpu, "Draw error, shader not linked.");
-
                 return;
             }
 
@@ -526,12 +523,23 @@ namespace Ryujinx.Graphics.OpenGL
             _tfEnabled = false;
         }
 
+        public void SetAlphaTest(bool enable, float reference, CompareOp op)
+        {
+            if (!enable)
+            {
+                GL.Disable(EnableCap.AlphaTest);
+                return;
+            }
+
+            GL.AlphaFunc((AlphaFunction)op.Convert(), reference);
+            GL.Enable(EnableCap.AlphaTest);
+        }
+
         public void SetBlendState(int index, BlendDescriptor blend)
         {
             if (!blend.Enable)
             {
                 GL.Disable(IndexedEnableCap.Blend, index);
-
                 return;
             }
 
@@ -652,7 +660,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (!enable)
             {
                 GL.Disable(EnableCap.CullFace);
-
                 return;
             }
 
@@ -722,12 +729,12 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Disable(EnableCap.ProgramPointSize);
             }
 
-            GL.PointParameter(origin == Origin.LowerLeft 
-                ? PointSpriteCoordOriginParameter.LowerLeft 
+            GL.PointParameter(origin == Origin.LowerLeft
+                ? PointSpriteCoordOriginParameter.LowerLeft
                 : PointSpriteCoordOriginParameter.UpperLeft);
 
             // Games seem to set point size to 0 which generates a GL_INVALID_VALUE
-            // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0. 
+            // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0.
             GL.PointSize(Math.Max(float.Epsilon, size));
         }
 
@@ -736,7 +743,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (!enable)
             {
                 GL.Disable(EnableCap.PrimitiveRestart);
-
                 return;
             }
 
@@ -864,7 +870,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (!stencilTest.TestEnable)
             {
                 GL.Disable(EnableCap.StencilTest);
-
                 return;
             }
 
@@ -1065,7 +1070,6 @@ namespace Ryujinx.Graphics.OpenGL
             if (buffer.Handle == null)
             {
                 GL.BindBufferRange(target, bindingPoint, 0, IntPtr.Zero, 0);
-
                 return;
             }
 
