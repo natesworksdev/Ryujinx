@@ -44,6 +44,9 @@ namespace Ryujinx
                 }
             }
 
+            // Delete backup files after updating
+            Updater.CleanupUpdate();
+
             Toolkit.Init(new ToolkitOptions
             {
                 Backend = PlatformBackend.PreferNative,
@@ -120,6 +123,11 @@ namespace Ryujinx
             if (launchPath != null)
             {
                 mainWindow.LoadApplication(launchPath);
+            }
+
+            if (ConfigurationState.Instance.CheckUpdatesOnStart.Value)
+            {
+                UpdateParser.BeginParse(mainWindow, false);
             }
 
             Application.Run();

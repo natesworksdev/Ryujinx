@@ -44,6 +44,8 @@ namespace Ryujinx.Ui
 
 #pragma warning disable CS0169, CS0649, IDE0044
 
+        [GUI] public MenuItem ExitMenuItem;
+        [GUI] public MenuItem UpdateMenuItem;
         [GUI] MenuBar        _menuBar;
         [GUI] Box            _footerBox;
         [GUI] Box            _statusBar;
@@ -1124,16 +1126,7 @@ namespace Ryujinx.Ui
 
         private void Update_Pressed(object sender, EventArgs args)
         {
-            string ryuUpdater = System.IO.Path.Combine(AppDataManager.BaseDirPath, "RyuUpdater.exe");
-
-            try
-            {
-                Process.Start(new ProcessStartInfo(ryuUpdater, "/U") { UseShellExecute = true });
-            }
-            catch(System.ComponentModel.Win32Exception)
-            {
-                GtkDialog.CreateErrorDialog("Update canceled by user or updater was not found");
-            }
+            UpdateParser.BeginParse(this, true);
         }
 
         private void About_Pressed(object sender, EventArgs args)

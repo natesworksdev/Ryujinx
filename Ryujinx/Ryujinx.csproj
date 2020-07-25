@@ -14,6 +14,8 @@
   <PropertyGroup>
     <EmbeddedResourceUseDependentUponConvention>false</EmbeddedResourceUseDependentUponConvention>
     <ApplicationIcon>Ryujinx.ico</ApplicationIcon>
+    <AssemblyName>Ryujinx</AssemblyName>
+    <RootNamespace>Ryujinx</RootNamespace>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(RuntimeIdentifier)' == 'osx-x64'">
@@ -42,6 +44,7 @@
     <None Remove="Ui\ProfileDialog.glade" />
     <None Remove="Ui\SettingsWindow.glade" />
     <None Remove="Ui\TitleUpdateWindow.glade" />
+    <None Remove="Ui\UpdateDialog.glade" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,6 +69,7 @@
     <EmbeddedResource Include="Ui\SettingsWindow.glade" />
     <EmbeddedResource Include="Ui\DlcWindow.glade" />
     <EmbeddedResource Include="Ui\TitleUpdateWindow.glade" />
+    <EmbeddedResource Include="Updater\UpdateDialog.glade" />
   </ItemGroup>
 
   <ItemGroup>
@@ -75,6 +79,7 @@
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.3.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.5.12" />
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>

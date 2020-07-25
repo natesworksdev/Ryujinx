@@ -10,6 +10,10 @@
 
 # Build results
 
+win-release/
+linux-release/
+osd-release/
+
 [Dd]ebug/
 [Rr]elease/
 x64/
