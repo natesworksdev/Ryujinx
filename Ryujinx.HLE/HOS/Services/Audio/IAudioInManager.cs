@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
                 }
 
                 // NOTE: The service adds other input devices names available in the buffer,
-                //       every names are aligned to 0x100.
+                //       every name is aligned to 0x100 bytes.
                 //       Since we don't support it for now, it's fine to do nothing here.
             }
 
