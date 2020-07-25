@@ -609,9 +609,14 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            GL.PolygonOffset(factor, units / 2f);
-            // TODO: Enable when GL_EXT_polygon_offset_clamp is supported.
-            // GL.PolygonOffsetClamp(factor, units, clamp);
+            if (HwCapabilities.SupportsPolygonOffsetClamp)
+            {
+                GL.PolygonOffsetClamp(factor, units, clamp);
+            }
+            else
+            {
+                GL.PolygonOffset(factor, units);
+            }
         }
 
         public void SetDepthClamp(bool clamp)
@@ -722,12 +727,12 @@ namespace Ryujinx.Graphics.OpenGL
                 GL.Disable(EnableCap.ProgramPointSize);
             }
 
-            GL.PointParameter(origin == Origin.LowerLeft 
-                ? PointSpriteCoordOriginParameter.LowerLeft 
+            GL.PointParameter(origin == Origin.LowerLeft
+                ? PointSpriteCoordOriginParameter.LowerLeft
                 : PointSpriteCoordOriginParameter.UpperLeft);
 
             // Games seem to set point size to 0 which generates a GL_INVALID_VALUE
-            // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0. 
+            // From the spec, GL_INVALID_VALUE is generated if size is less than or equal to 0.
             GL.PointSize(Math.Max(float.Epsilon, size));
         }
 
