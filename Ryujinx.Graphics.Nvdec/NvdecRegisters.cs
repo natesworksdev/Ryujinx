@@ -5,6 +5,7 @@ namespace Ryujinx.Graphics.Nvdec
     // Note: Most of those names are not official.
     unsafe struct NvdecRegisters
     {
+#pragma warning disable CS0649
         public fixed uint Reserved0[128];
         public uint SetCodecID;
         public fixed uint Reserved204[63];
@@ -37,5 +38,6 @@ namespace Ryujinx.Graphics.Nvdec
         public uint SetVp9LastFrameMvsOffset;
         public uint SetVp9CurrFrameMvsOffset;
         public uint Unknown5DC;
+#pragma warning restore CS0649
     }
 }
