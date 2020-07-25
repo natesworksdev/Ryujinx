@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
 {
     class IPurchaseEventManager : IpcService
     {
-        private KEvent _purchasedEvent;
+        private readonly KEvent _purchasedEvent;
 
         public IPurchaseEventManager(Horizon system)
         {

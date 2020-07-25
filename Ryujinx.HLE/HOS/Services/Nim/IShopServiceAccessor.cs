@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServ
 {
     class IShopServiceAccessor : IpcService
     {
-        private KEvent _event;
+        private readonly KEvent _event;
 
         public IShopServiceAccessor(Horizon system)
         {
