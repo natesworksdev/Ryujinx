@@ -161,6 +161,11 @@ namespace Ryujinx.Configuration
         public class SystemSection
         {
             /// <summary>
+            /// Change Default Player Name
+            /// </summary>
+            public ReactiveObject<string> PlayerName { get; private set; }
+            
+            /// <summary>
             /// Change System Language
             /// </summary>
             public ReactiveObject<Language> Language { get; private set; }
@@ -217,6 +222,7 @@ namespace Ryujinx.Configuration
 
             public SystemSection()
             {
+                PlayerName                = new ReactiveObject<string>();
                 Language                  = new ReactiveObject<Language>();
                 Region                    = new ReactiveObject<Region>();
                 TimeZone                  = new ReactiveObject<string>();
@@ -379,6 +385,7 @@ namespace Ryujinx.Configuration
                 LoggingEnableFsAccessLog  = Logger.EnableFsAccessLog,
                 LoggingFilteredClasses    = Logger.FilteredClasses,
                 EnableFileLog             = Logger.EnableFileLog,
+                PlayerName                = System.PlayerName,
                 SystemLanguage            = System.Language,
                 SystemRegion              = System.Region,
                 SystemTimeZone            = System.TimeZone,
@@ -437,6 +444,7 @@ namespace Ryujinx.Configuration
             Logger.EnableFsAccessLog.Value         = false;
             Logger.FilteredClasses.Value           = new LogClass[] { };
             Logger.EnableFileLog.Value             = true;
+            System.PlayerName.Value                = "Ryujinx";
             System.Language.Value                  = Language.AmericanEnglish;
             System.Region.Value                    = Region.USA;
             System.TimeZone.Value                  = "UTC";
@@ -677,6 +685,15 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
+            
+            if (configurationFileFormat.Version < 12)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 12.");
+
+                configurationFileFormat.PlayerName = "Ryujinx";
+
+                configurationFileUpdated = true;
+            }
 
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(configurationFileFormat.ControllerConfig);
@@ -695,6 +712,7 @@ namespace Ryujinx.Configuration
             Logger.EnableFsAccessLog.Value         = configurationFileFormat.LoggingEnableFsAccessLog;
             Logger.FilteredClasses.Value           = configurationFileFormat.LoggingFilteredClasses;
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
+            System.PlayerName.Value                = configurationFileFormat.PlayerName;
             System.Language.Value                  = configurationFileFormat.SystemLanguage;
             System.Region.Value                    = configurationFileFormat.SystemRegion;
             System.TimeZone.Value                  = configurationFileFormat.SystemTimeZone;

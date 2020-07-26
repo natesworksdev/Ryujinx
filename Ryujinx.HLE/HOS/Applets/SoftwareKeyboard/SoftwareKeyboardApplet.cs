@@ -4,13 +4,14 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using Ryujinx.Configuration;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
     internal class SoftwareKeyboardApplet : IApplet
     {
         private const string DefaultNumb = "1";
-        private const string DefaultText = "Ryujinx";
+        private static readonly string DefaultText = ConfigurationState.Instance.System.PlayerName.Value;
 
         private const int StandardBufferSize    = 0x7D8;
         private const int InteractiveBufferSize = 0x7D4;

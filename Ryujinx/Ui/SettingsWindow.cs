@@ -45,6 +45,7 @@ namespace Ryujinx.Ui
         [GUI] CheckButton     _directKeyboardAccess;
         [GUI] ComboBoxText    _systemLanguageSelect;
         [GUI] ComboBoxText    _systemRegionSelect;
+        [GUI] Entry           _playerName;
         [GUI] Entry           _systemTimeZoneEntry;
         [GUI] EntryCompletion _systemTimeZoneCompletion;
         [GUI] ComboBoxText    _audioBackendSelect;
@@ -245,6 +246,8 @@ namespace Ryujinx.Ui
 
                 maxLocationLength = Math.Max(maxLocationLength, location.Length);
             }
+            
+            _playerName.Text = ConfigurationState.Instance.System.PlayerName.Value;
 
             _systemTimeZoneEntry.WidthChars = Math.Max(20, maxLocationLength + 1); // Ensure minimum Entry width
             _systemTimeZoneEntry.Text = _timeZoneContentManager.SanityCheckDeviceLocationName();
@@ -505,6 +508,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
             ConfigurationState.Instance.Hid.EnableKeyboard.Value               = _directKeyboardAccess.Active;
             ConfigurationState.Instance.Ui.EnableCustomTheme.Value             = _custThemeToggle.Active;
+            ConfigurationState.Instance.System.PlayerName.Value                = _playerName.Text;
             ConfigurationState.Instance.System.Language.Value                  = Enum.Parse<Language>(_systemLanguageSelect.ActiveId);
             ConfigurationState.Instance.System.Region.Value                    = Enum.Parse<Configuration.System.Region>(_systemRegionSelect.ActiveId);
             ConfigurationState.Instance.System.AudioBackend.Value              = Enum.Parse<AudioBackend>(_audioBackendSelect.ActiveId);
