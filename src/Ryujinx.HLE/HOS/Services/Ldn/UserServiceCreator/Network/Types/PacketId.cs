@@ -9,5 +9,6 @@
         ScanReplyEnd,
         Connect,
         Connected,
+        Disconnect,
     }
 }

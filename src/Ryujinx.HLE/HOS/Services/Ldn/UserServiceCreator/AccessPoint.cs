@@ -2,7 +2,6 @@
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Types;
 using System;
 using System.Linq;
 using System.Net.Sockets;
@@ -18,18 +17,30 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private byte[] _advertiseData;
 
-        private KEvent _stateChangeEvent;
+        private IUserLocalCommunicationService _parent;
+
+        private AutoResetEvent _connected = new AutoResetEvent(false);
 
         public NetworkInfo NetworkInfo;
 
-        public AccessPoint(string address, int port, KEvent stateChangeEvent) : base(address, port)
+        public AccessPoint(IUserLocalCommunicationService parent, string address, int port) : base(address, port)
         {
-            _stateChangeEvent = stateChangeEvent;
+            _parent = parent;
         }
 
         public void DisconnectAndStop()
         {
             _stop = true;
+
+            LdnHeader ldnHeader = new LdnHeader
+            {
+                Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
+                Type     = (byte)PacketId.Disconnect,
+                UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb065"),
+                DataSize = 0,
+            };
+
+            SendAsync(LdnHelper.StructureToByteArray(ldnHeader));
 
             DisconnectAsync();
 
@@ -87,13 +98,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private void HandleSyncNetwork(LdnHeader header, NetworkInfo info)
         {
             NetworkInfo = info;
+
+            _parent.SetState();
         }
 
         private void HandleConnected(LdnHeader header, NetworkInfo info)
         {
             NetworkInfo = info;
 
-            _stateChangeEvent.WritableEvent.Signal();
+            _parent.SetState(NetworkState.AccessPointCreated);
+
+            _connected.Set();
         }
 
         public ResultCode SetAdvertiseData(ServiceCtx context)
@@ -136,16 +151,24 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
                 Type     = (byte)PacketId.CreateAccessPoint,
                 UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb065"),
-                DataSize = requestBuffer.Length
+                DataSize = requestBuffer.Length + _advertiseData.Length,
             };
 
             byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
             int ldnHeaderLength = ldnPacket.Length;
 
-            Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length);
+            Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length + _advertiseData.Length);
             requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+            _advertiseData.CopyTo(ldnPacket, ldnHeaderLength + requestBuffer.Length);
+
+            while (!IsConnected)
+            {
+                Thread.Yield(); // TODO: Must return failure if we disconnected or errored while waiting.
+            }
 
             SendAsync(ldnPacket);
+
+            _connected.WaitOne(1000);
 
             return ResultCode.Success;
         }

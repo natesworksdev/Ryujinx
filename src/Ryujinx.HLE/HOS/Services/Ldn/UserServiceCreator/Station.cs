@@ -25,8 +25,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private List<NetworkInfo> _availableGames;
 
-        public Station(string address, int port) : base(address, port)
+        private IUserLocalCommunicationService _parent;
+
+        public Station(IUserLocalCommunicationService parent, string address, int port) : base(address, port)
         {
+            _parent = parent;
+
             ConnectAsync();
 
             _availableGames = new List<NetworkInfo>();
@@ -35,6 +39,16 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         public void DisconnectAndStop()
         {
             _stop = true;
+
+            LdnHeader ldnHeader = new LdnHeader
+            {
+                Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
+                Type     = (byte)PacketId.Disconnect,
+                UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb065"),
+                DataSize = 0,
+            };
+
+            SendAsync(LdnHelper.StructureToByteArray(ldnHeader));
 
             DisconnectAsync();
 
@@ -77,9 +91,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             switch ((PacketId)ldnHeader.Type)
             {
-                case PacketId.ScanReply:    HandleScanReply(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
-                case PacketId.ScanReplyEnd: HandleScanReplyEnd(ldnHeader);                                                    break;
-                case PacketId.Connected:    HandleConnected(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
+                case PacketId.ScanReply:    HandleScanReply(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer));   break;
+                case PacketId.ScanReplyEnd: HandleScanReplyEnd(ldnHeader);                                                      break;
+                case PacketId.Connected:    HandleConnected(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer));   break;
+                case PacketId.SyncNetwork:  HandleSyncNetwork(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
 
                 default: break;
             }
@@ -100,6 +115,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             };
 
             ConnectEvent.Set();
+
+            _parent.SetState(NetworkState.StationConnected);
+        }
+
+        private void HandleSyncNetwork(LdnHeader header, NetworkInfo info)
+        {
+            CurrentNetworkInfo = info;
+
+            _parent.SetState();
         }
 
         private void HandleScanReply(LdnHeader header, NetworkInfo info)
@@ -146,6 +170,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             Array.Resize(ref ldnPacket, ldnHeaderLength + scanFilterBuffer.Length);
             scanFilterBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+
+            while (!IsConnected)
+            {
+                Thread.Yield();
+            }
 
             SendAsync(ldnPacket);
 

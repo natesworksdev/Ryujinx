@@ -131,11 +131,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
 
-            if (unicastAddress == null)
+            if (unicastAddress == null || _state == NetworkState.Initialized)
             {
                 context.ResponseData.Write((127 << 24) |   (0 << 16) |   (0 << 8) | (1 << 0));
                 context.ResponseData.Write((255 << 24) | (255 << 16) | (255 << 8) | (0 << 0));
-            } 
+            }
             else
             {
                 Logger.PrintInfo(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
@@ -169,7 +169,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         {
             Logger.PrintStub(LogClass.ServiceLdn);
 
-            if (_state == NetworkState.AccessPointCreated)
+            if (_state == NetworkState.AccessPointCreated || _state == NetworkState.AccessPoint)
             {
                 SecurityParameter securityParameter = new SecurityParameter()
                 {
@@ -252,6 +252,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.InvalidArgument;
         }
 
+        public void SetState()
+        {
+            _stateChangeEvent.WritableEvent.Signal();
+        }
+
+        public void SetState(NetworkState state)
+        {
+            _state = state;
+
+            _stateChangeEvent.WritableEvent.Signal();
+        }
+
         [Command(200)]
         // OpenAccessPoint()
         public ResultCode OpenAccessPoint(ServiceCtx context)
@@ -264,16 +276,31 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 _stateChangeEvent.WritableEvent.Signal();
 
-                _accessPoint = new AccessPoint(LanPlayHost, LanPlayPort, _stateChangeEvent);
-
-                _state = NetworkState.AccessPointCreated;
-
-                _stateChangeEvent.WritableEvent.Signal();
+                _accessPoint = new AccessPoint(this, LanPlayHost, LanPlayPort);
 
                 return ResultCode.Success;
             }
 
             return ResultCode.InvalidArgument;
+        }
+
+        [Command(201)]
+        // CloseAccessPoint()
+        public ResultCode CloseAccessPoint(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceLdn);
+
+            if (_state == NetworkState.AccessPoint || _state == NetworkState.AccessPointCreated)
+            {
+                _accessPoint.DisconnectAndStop();
+                _accessPoint = null;
+
+                _state = NetworkState.Initialized;
+
+                _stateChangeEvent.WritableEvent.Signal();
+            }
+
+            return ResultCode.Success;
         }
 
         [Command(202)]
@@ -311,7 +338,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 _state            = NetworkState.Station;
                 _disconnectReason = DisconnectReason.None;
 
-                _station          = new Station(LanPlayHost, LanPlayPort);
+                _station          = new Station(this, LanPlayHost, LanPlayPort);
 
                 _stateChangeEvent.WritableEvent.Signal();
 
@@ -330,6 +357,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             if (_state == NetworkState.Station || _state == NetworkState.StationConnected)
             {
                 _station.DisconnectAndStop();
+                _station = null;
 
                 _state = NetworkState.Initialized;
 
@@ -353,10 +381,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 {
                     return resultCode;
                 }
-
-                _state = NetworkState.StationConnected;
-
-                _stateChangeEvent.WritableEvent.Signal();
 
                 return ResultCode.Success;
             }
