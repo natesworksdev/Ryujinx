@@ -1,4 +1,6 @@
-﻿using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
+﻿using Ryujinx.Configuration;
+using Ryujinx.Configuration.System;
+using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
 using System.IO;
@@ -9,7 +11,6 @@ namespace Ryujinx.HLE.HOS.Applets
 {
     internal class SoftwareKeyboardApplet : IApplet
     {
-        private const string DefaultNumb = "1";
         private const string DefaultText = "Ryujinx";
 
         private const int StandardBufferSize    = 0x7D8;
@@ -62,12 +63,18 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void Execute()
         {
-            // If the keyboard type is numbers only, we swap to a default
-            // text that only contains numbers.
-            if (_keyboardConfig.Mode == KeyboardMode.NumbersOnly)
+            var args = new SoftwareKeyboardAppletArgs
             {
-                _textValue = DefaultNumb;
-            }
+                HeaderText = _keyboardConfig.HeaderText,
+                SubtitleText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubtitleText) ?  $"{_keyboardConfig.SubtitleText}\n" : "")
+                    + $"Must be between {_keyboardConfig.StringLengthMin} and {_keyboardConfig.StringLengthMax} characters long.\nInvalid Characters: {_keyboardConfig.InvalidCharFlag}",
+                GuideText = _keyboardConfig.GuideText,
+                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
+                InitialText = "" // TODO: add this after transfer memory works
+            };
+
+            // Call the configured GUI handler to get user's input
+            _textValue = ConfigurationState.Instance.SwKbdHandler(args);
 
             // If the max string length is 0, we set it to a large default
             // length.

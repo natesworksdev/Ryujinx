@@ -336,6 +336,11 @@ namespace Ryujinx.Configuration
         /// </summary>
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
 
+        /// <summary>
+        /// Callback method that SwKbd applet uses to open an Input Dialog box
+        /// </summary>
+        public Func<SoftwareKeyboardAppletArgs, string> SwKbdHandler { get; set; }
+
         private ConfigurationState()
         {
             Ui                       = new UiSection();

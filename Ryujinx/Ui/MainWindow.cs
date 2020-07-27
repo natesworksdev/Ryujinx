@@ -5,6 +5,7 @@ using LibHac.Ns;
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
+using Ryujinx.Configuration.System;
 using Ryujinx.Debugger.Profiler;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
@@ -191,6 +192,39 @@ namespace Ryujinx.Ui
             Task.Run(RefreshFirmwareLabel);
 
             _statusBar.Hide();
+
+            ConfigurationState.Instance.SwKbdHandler = ShowSwKbdInputDialog;
+        }
+
+        public string ShowSwKbdInputDialog(SoftwareKeyboardAppletArgs args)
+        {
+            ManualResetEvent mre = new ManualResetEvent(false);
+            string inputText = "Ryujinx"; // default
+
+            Application.Invoke(delegate
+            {
+                var swkbdDialog = new InputDialog(this)
+                {
+                    Title = "Software Keyboard",
+                    Text = args.HeaderText,
+                    SecondaryText = args.SubtitleText,
+                    InputText = args.InitialText,
+                    InputPlaceholderText = args.GuideText,
+                    SubmitButtonText = args.SubmitText
+                };
+
+                if (swkbdDialog.Run() == (int)ResponseType.Ok)
+                {
+                    inputText = swkbdDialog.InputText;
+                }
+
+                mre.Set();
+                swkbdDialog.Dispose();
+            });
+
+            mre.WaitOne();
+
+            return inputText;
         }
 
         private void MainWindow_WindowStateEvent(object o, WindowStateEventArgs args)
