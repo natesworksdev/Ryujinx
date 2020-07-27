@@ -107,20 +107,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
         }
 
         /// <summary>
-        /// Register callback for Fifo method calls that triggers an action on the GPFIFO.
-        /// </summary>
-        /// <param name="state">GPU state where the triggers will be registered</param>
-        public void RegisterCallbacksForFifo(GpuState state)
-        {
-            state.RegisterCallback(MethodOffset.Semaphore,              Semaphore);
-            state.RegisterCallback(MethodOffset.FenceAction,            FenceAction);
-            state.RegisterCallback(MethodOffset.WaitForIdle,            WaitForIdle);
-            state.RegisterCallback(MethodOffset.SendMacroCodeData,      SendMacroCodeData);
-            state.RegisterCallback(MethodOffset.BindMacro,              BindMacro);
-            state.RegisterCallback(MethodOffset.SetMmeShadowRamControl, SetMmeShadowRamControl);
-        }
-
-        /// <summary>
         /// Updates host state based on the current guest GPU state.
         /// </summary>
         /// <param name="state">Guest GPU state</param>
@@ -582,7 +568,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             enables |= (depthBias.LineEnable  ? PolygonModeMask.Line  : 0);
             enables |= (depthBias.FillEnable  ? PolygonModeMask.Fill  : 0);
 
-            _context.Renderer.Pipeline.SetDepthBias(enables, factor, units, clamp);
+            _context.Renderer.Pipeline.SetDepthBias(enables, factor, units / 2f, clamp);
         }
 
         /// <summary>
@@ -711,7 +697,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             float size = state.Get<float>(MethodOffset.PointSize);
             bool isProgramPointSize = state.Get<Boolean32>(MethodOffset.VertexProgramPointSize);
             bool enablePointSprite = state.Get<Boolean32>(MethodOffset.PointSpriteEnable);
-            
+
             // TODO: Need to figure out a way to map PointCoordReplace enable bit.
             Origin origin = (state.Get<int>(MethodOffset.PointCoordReplace) & 4) == 0 ? Origin.LowerLeft : Origin.UpperLeft;
 
