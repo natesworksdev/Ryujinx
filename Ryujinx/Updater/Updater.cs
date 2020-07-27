@@ -184,9 +184,12 @@ namespace Ryujinx
                     }
                 }
 
-                updateDialog.MainText.Text = "Adding New Files...";
-                updateDialog.ProgressBar.Value = 0;
-                updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
+                Application.Invoke(delegate
+                {
+                    updateDialog.MainText.Text = "Adding New Files...";
+                    updateDialog.ProgressBar.Value = 0;
+                    updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
+                });
 
                 MoveAllFilesOver(UpdatePublishDir, HomeDir, updateDialog);
             });
