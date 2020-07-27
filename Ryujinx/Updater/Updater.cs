@@ -13,11 +13,11 @@ namespace Ryujinx
 {
     class Updater
     {
-        private static readonly string HomeDir          = Path.Combine(AppDomain.CurrentDomain.BaseDirectory);
-        private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
+        private static readonly string HomeDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly string UpdateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
 
-        private static async Task MoveAllFilesOver(string root, string dest)
+        private static async Task MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
         {
             foreach (string directory in Directory.GetDirectories(root))
             {
@@ -30,13 +30,18 @@ namespace Ryujinx
                         Directory.CreateDirectory(Path.Combine(dest, dirName));
                     }
 
-                    await MoveAllFilesOver(directory, Path.Combine(dest, dirName));
+                    await MoveAllFilesOver(directory, Path.Combine(dest, dirName), dialog);
                 }
             }
 
             foreach (string file in Directory.GetFiles(root))
             {
                 File.Move(file, Path.Combine(dest, Path.GetFileName(file)), true);
+
+                Application.Invoke(delegate
+                {
+                    dialog.ProgressBar.Value++;
+                });
             }
         }
 
@@ -61,8 +66,8 @@ namespace Ryujinx
             string updateFile = Path.Combine(UpdateDir, "update.bin");
 
             // Download the update .zip
-            updateDialog.MainText.Text        = "Downloading Update...";
-            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.MainText.Text = "Downloading Update...";
+            updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
             using (WebClient client = new WebClient())
@@ -76,17 +81,17 @@ namespace Ryujinx
             }
 
             //Extract Update
-            updateDialog.MainText.Text     = "Extracting Update...";
+            updateDialog.MainText.Text = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
             if (isLinux)
             {
-                using (Stream inStream          = File.OpenRead(updateFile))
-                using (Stream gzipStream        = new GZipInputStream(inStream))
+                using (Stream inStream = File.OpenRead(updateFile))
+                using (Stream gzipStream = new GZipInputStream(inStream))
                 using (TarInputStream tarStream = new TarInputStream(gzipStream))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
-                    
+
                     await Task.Run(() =>
                     {
                         TarEntry tarEntry;
@@ -155,8 +160,8 @@ namespace Ryujinx
 
             string[] allFiles = Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories);
 
-            updateDialog.MainText.Text        = "Replacing Files...";
-            updateDialog.ProgressBar.Value    = 0;
+            updateDialog.MainText.Text = "Renaming Old Files...";
+            updateDialog.ProgressBar.Value = 0;
             updateDialog.ProgressBar.MaxValue = allFiles.Length;
 
             // Replace old files
@@ -180,9 +185,16 @@ namespace Ryujinx
                 }
             });
 
-            await MoveAllFilesOver(UpdatePublishDir, HomeDir);
+            updateDialog.MainText.Text = "Adding New Files...";
+            updateDialog.ProgressBar.Value = 0;
+            updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
 
-            updateDialog.MainText.Text      = "Update Complete!";
+            await Task.Run(() =>
+            {
+                MoveAllFilesOver(UpdatePublishDir, HomeDir, updateDialog);
+            });
+
+            updateDialog.MainText.Text = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
 
             updateDialog.ProgressBar.Hide();
