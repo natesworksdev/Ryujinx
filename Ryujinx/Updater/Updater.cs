@@ -13,8 +13,8 @@ namespace Ryujinx
 {
     class Updater
     {
-        private static readonly string HomeDir = AppDomain.CurrentDomain.BaseDirectory;
-        private static readonly string UpdateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
+        private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
+        private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
 
         private static void MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
@@ -46,7 +46,7 @@ namespace Ryujinx
         {
             foreach (string file in Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories))
             {
-                if (Path.GetExtension(file).EndsWith("ryuold"))
+                if (Path.GetExtension(file).EndsWith(".ryuold"))
                 {
                     File.Delete(file);
                 }
@@ -63,8 +63,8 @@ namespace Ryujinx
             string updateFile = Path.Combine(UpdateDir, "update.bin");
 
             // Download the update .zip
-            updateDialog.MainText.Text = "Downloading Update...";
-            updateDialog.ProgressBar.Value = 0;
+            updateDialog.MainText.Text        = "Downloading Update...";
+            updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
             using (WebClient client = new WebClient())
@@ -78,14 +78,14 @@ namespace Ryujinx
             }
 
             //Extract Update
-            updateDialog.MainText.Text = "Extracting Update...";
+            updateDialog.MainText.Text     = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
             if (isLinux)
             {
-                using (Stream inStream = File.OpenRead(updateFile))
-                using (Stream gzipStream = new GZipInputStream(inStream))
-                using (TarInputStream tarStream = new TarInputStream(gzipStream))
+                using (Stream         inStream   = File.OpenRead(updateFile))
+                using (Stream         gzipStream = new GZipInputStream(inStream))
+                using (TarInputStream tarStream  = new TarInputStream(gzipStream))
                 {
                     updateDialog.ProgressBar.MaxValue = inStream.Length;
 
@@ -120,8 +120,8 @@ namespace Ryujinx
             }
             else
             {
-                using (Stream inStream = File.OpenRead(updateFile))
-                using (ZipFile zipFile = new ZipFile(inStream))
+                using (Stream  inStream = File.OpenRead(updateFile))
+                using (ZipFile zipFile  = new ZipFile(inStream))
                 {
                     updateDialog.ProgressBar.MaxValue = zipFile.Count;
 
@@ -135,7 +135,7 @@ namespace Ryujinx
 
                             Directory.CreateDirectory(Path.GetDirectoryName(outPath));
 
-                            using (Stream zipStream = zipFile.GetInputStream(zipEntry))
+                            using (Stream     zipStream = zipFile.GetInputStream(zipEntry))
                             using (FileStream outStream = File.OpenWrite(outPath))
                             {
                                 zipStream.CopyTo(outStream);
@@ -157,8 +157,8 @@ namespace Ryujinx
 
             string[] allFiles = Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories);
 
-            updateDialog.MainText.Text = "Renaming Old Files...";
-            updateDialog.ProgressBar.Value = 0;
+            updateDialog.MainText.Text        = "Renaming Old Files...";
+            updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = allFiles.Length;
 
             // Replace old files
@@ -186,8 +186,8 @@ namespace Ryujinx
 
                 Application.Invoke(delegate
                 {
-                    updateDialog.MainText.Text = "Adding New Files...";
-                    updateDialog.ProgressBar.Value = 0;
+                    updateDialog.MainText.Text        = "Adding New Files...";
+                    updateDialog.ProgressBar.Value    = 0;
                     updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
                 });
 
@@ -196,8 +196,9 @@ namespace Ryujinx
 
             Directory.Delete(UpdateDir, true);
 
-            updateDialog.MainText.Text = "Update Complete!";
+            updateDialog.MainText.Text      = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
+            updateDialog.Modal              = true;
 
             updateDialog.ProgressBar.Hide();
             updateDialog.YesButton.Show();
