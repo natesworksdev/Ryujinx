@@ -17,21 +17,18 @@ namespace Ryujinx
         private static readonly string UpdateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
 
-        private static async Task MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
+        private static void MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
         {
             foreach (string directory in Directory.GetDirectories(root))
             {
                 string dirName = Path.GetFileName(directory);
 
-                if (dirName != "Logs")
+                if (!Directory.Exists(Path.Combine(dest, dirName)))
                 {
-                    if (!Directory.Exists(Path.Combine(dest, dirName)))
-                    {
-                        Directory.CreateDirectory(Path.Combine(dest, dirName));
-                    }
-
-                    await MoveAllFilesOver(directory, Path.Combine(dest, dirName), dialog);
+                    Directory.CreateDirectory(Path.Combine(dest, dirName));
                 }
+
+                MoveAllFilesOver(directory, Path.Combine(dest, dirName), dialog);
             }
 
             foreach (string file in Directory.GetFiles(root))
@@ -169,28 +166,28 @@ namespace Ryujinx
             {
                 foreach (string file in allFiles)
                 {
-                    try
+                    if (!Path.GetExtension(file).Equals(".log"))
                     {
-                        File.Move(file, file + ".ryuold");
-
-                        Application.Invoke(delegate
+                        try
                         {
-                            updateDialog.ProgressBar.Value++;
-                        });
-                    }
-                    catch
-                    {
-                        Logger.PrintWarning(LogClass.Application, "Updater wasn't able to rename file: " + file);
+                            File.Move(file, file + ".ryuold");
+
+                            Application.Invoke(delegate
+                            {
+                                updateDialog.ProgressBar.Value++;
+                            });
+                        }
+                        catch
+                        {
+                            Logger.PrintWarning(LogClass.Application, "Updater wasn't able to rename file: " + file);
+                        }
                     }
                 }
-            });
 
-            updateDialog.MainText.Text = "Adding New Files...";
-            updateDialog.ProgressBar.Value = 0;
-            updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
+                updateDialog.MainText.Text = "Adding New Files...";
+                updateDialog.ProgressBar.Value = 0;
+                updateDialog.ProgressBar.MaxValue = Directory.GetFiles(UpdatePublishDir, "*", SearchOption.AllDirectories).Length;
 
-            await Task.Run(() =>
-            {
                 MoveAllFilesOver(UpdatePublishDir, HomeDir, updateDialog);
             });
 
