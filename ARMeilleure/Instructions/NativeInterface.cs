@@ -145,6 +145,11 @@ namespace ARMeilleure.Instructions
             GetContext().Fpsr = (FPSR)value;
         }
 
+        public static void SetFpsrQc()
+        {
+            GetContext().Fpsr |= FPSR.Qc;
+        }
+
         public static void SetFpscr(uint fpscr)
         {
             var context = GetContext();
