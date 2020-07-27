@@ -13,7 +13,7 @@ namespace Ryujinx
 {
     class Updater
     {
-        private static readonly string HomeDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory);
+        private static readonly string HomeDir = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string UpdateDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
 
@@ -193,6 +193,8 @@ namespace Ryujinx
             {
                 MoveAllFilesOver(UpdatePublishDir, HomeDir, updateDialog);
             });
+
+            Directory.Delete(UpdateDir, true);
 
             updateDialog.MainText.Text = "Update Complete!";
             updateDialog.SecondaryText.Text = "Do you want to restart Ryujinx now?";
