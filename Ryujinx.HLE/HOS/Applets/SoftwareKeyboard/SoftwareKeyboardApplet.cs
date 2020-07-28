@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Configuration;
-using Ryujinx.Configuration.System;
 using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
@@ -12,6 +11,8 @@ namespace Ryujinx.HLE.HOS.Applets
     internal class SoftwareKeyboardApplet : IApplet
     {
         private const string DefaultText = "Ryujinx";
+        
+        private readonly Switch _device;
 
         private const int StandardBufferSize    = 0x7D8;
         private const int InteractiveBufferSize = 0x7D4;
@@ -28,7 +29,10 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public event EventHandler AppletStateChanged;
 
-        public SoftwareKeyboardApplet(Horizon system) { }
+        public SoftwareKeyboardApplet(Horizon system) 
+        {
+            _device = system.Device;
+        }
 
         public ResultCode Start(AppletSession normalSession,
                                 AppletSession interactiveSession)
@@ -63,18 +67,19 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void Execute()
         {
-            var args = new SoftwareKeyboardAppletArgs
+            var args = new SoftwareKeyboardUiArgs
             {
                 HeaderText = _keyboardConfig.HeaderText,
-                SubtitleText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubtitleText) ?  $"{_keyboardConfig.SubtitleText}\n" : "")
-                    + $"Must be between {_keyboardConfig.StringLengthMin} and {_keyboardConfig.StringLengthMax} characters long.\nInvalid Characters: {_keyboardConfig.InvalidCharFlag}",
+                SubtitleText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubtitleText) ? $"{_keyboardConfig.SubtitleText}\n" : "")
+                    + $"Must be {_keyboardConfig.StringLengthMin}-{_keyboardConfig.StringLengthMax} characters long.\nInvalid Characters: {_keyboardConfig.InvalidCharFlag}",
                 GuideText = _keyboardConfig.GuideText,
                 SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
+                AllowedStringSize = (_keyboardConfig.StringLengthMin, _keyboardConfig.StringLengthMax),
                 InitialText = "" // TODO: add this after transfer memory works
             };
 
             // Call the configured GUI handler to get user's input
-            _textValue = ConfigurationState.Instance.SwKbdHandler(args);
+            _textValue = _device.UiHandler.DisplayInputDialog(args);
 
             // If the max string length is 0, we set it to a large default
             // length.

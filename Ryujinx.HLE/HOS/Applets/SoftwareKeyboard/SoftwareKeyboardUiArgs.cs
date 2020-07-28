@@ -1,11 +1,12 @@
-namespace Ryujinx.Configuration.System
+namespace Ryujinx.HLE.HOS.Applets
 {
-    public struct SoftwareKeyboardAppletArgs
+    public struct SoftwareKeyboardUiArgs
     {
         public string HeaderText;
         public string SubtitleText;
         public string InitialText;
         public string GuideText;
         public string SubmitText;
+        public (int Min, int Max) AllowedStringSize;
     }
 }

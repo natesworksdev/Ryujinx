@@ -32,6 +32,7 @@ namespace Ryujinx.Ui
         private static HLE.Switch _emulationContext;
 
         private static GlRenderer _glWidget;
+        private static GtkHostUiHandler _uiHandler;
 
         private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
 
@@ -193,38 +194,7 @@ namespace Ryujinx.Ui
 
             _statusBar.Hide();
 
-            ConfigurationState.Instance.SwKbdHandler = ShowSwKbdInputDialog;
-        }
-
-        public string ShowSwKbdInputDialog(SoftwareKeyboardAppletArgs args)
-        {
-            ManualResetEvent mre = new ManualResetEvent(false);
-            string inputText = "Ryujinx"; // default
-
-            Application.Invoke(delegate
-            {
-                var swkbdDialog = new InputDialog(this)
-                {
-                    Title = "Software Keyboard",
-                    Text = args.HeaderText,
-                    SecondaryText = args.SubtitleText,
-                    InputText = args.InitialText,
-                    InputPlaceholderText = args.GuideText,
-                    SubmitButtonText = args.SubmitText
-                };
-
-                if (swkbdDialog.Run() == (int)ResponseType.Ok)
-                {
-                    inputText = swkbdDialog.InputText;
-                }
-
-                mre.Set();
-                swkbdDialog.Dispose();
-            });
-
-            mre.WaitOne();
-
-            return inputText;
+            _uiHandler ??= new GtkHostUiHandler(this);
         }
 
         private void MainWindow_WindowStateEvent(object o, WindowStateEventArgs args)
@@ -352,7 +322,10 @@ namespace Ryujinx.Ui
         {
             _virtualFileSystem.Reload();
 
-            HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, InitializeRenderer(), InitializeAudioEngine());
+            HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, InitializeRenderer(), InitializeAudioEngine())
+            {
+                UiHandler = _uiHandler
+            };
 
             instance.Initialize();
 
