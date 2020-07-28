@@ -40,7 +40,7 @@ namespace Ryujinx.Ui
 
             YesButton.Pressed += YesButton_Pressed;
             NoButton.Pressed  += (obj, args) =>
-           {
+            {
                UpdateParser.Running = false;
                _mainWindow.Window.Functions = WMFunction.All;
 
@@ -48,7 +48,7 @@ namespace Ryujinx.Ui
                _mainWindow.UpdateMenuItem.Sensitive = true;
 
                this.Dispose();
-           };
+            };
         }
 
         private void YesButton_Pressed(object sender, EventArgs args)

@@ -81,6 +81,8 @@ namespace Ryujinx
                     GtkDialog.CreateInfoDialog("Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
                 }
 
+                Running = false;
+                mainWindow.UpdateMenuItem.Sensitive = true;
                 return;
             }
 
