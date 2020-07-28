@@ -2,55 +2,103 @@ using Gtk;
 using ICSharpCode.SharpZipLib.GZip;
 using ICSharpCode.SharpZipLib.Tar;
 using ICSharpCode.SharpZipLib.Zip;
+using Newtonsoft.Json.Linq;
 using Ryujinx.Common.Logging;
 using Ryujinx.Ui;
 using System;
 using System.IO;
 using System.Net;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
 namespace Ryujinx
 {
-    class Updater
+    public static class Updater
     {
+        internal static bool Running;
+
         private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
 
-        private static void MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
-        {
-            foreach (string directory in Directory.GetDirectories(root))
-            {
-                string dirName = Path.GetFileName(directory);
+        private static string _jobId;
+        private static string _buildVer;
+        private static string _platformExt;
+        private static string _buildUrl;
 
-                if (!Directory.Exists(Path.Combine(dest, dirName)))
+        private const string MasterUrl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
+
+        public async static void BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
+        {
+            if (Running) return;
+            Running = true;
+            mainWindow.UpdateMenuItem.Sensitive = false;
+
+            // Detect current platform
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                _platformExt = "osx_x64.zip";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                _platformExt = "win_x64.zip";
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                _platformExt = "linux_x64.tar.gz";
+            }
+
+            // Get latest version number from Appveyor
+            try
+            {
+                using (WebClient jsonClient = new WebClient())
                 {
-                    Directory.CreateDirectory(Path.Combine(dest, dirName));
+                    string fetchedJson = await jsonClient.DownloadStringTaskAsync(MasterUrl);
+                    JObject jsonRoot   = JObject.Parse(fetchedJson);
+                    JToken buildToken  = jsonRoot["build"];
+
+                    _jobId    = (string)buildToken["jobs"][0]["jobId"];
+                    _buildVer = (string)buildToken["version"];
+                    _buildUrl = "https://ci.appveyor.com/api/buildjobs/" + _jobId + "/artifacts/ryujinx-" + _buildVer + "-" + _platformExt;
+                }
+            }
+            catch (Exception exception)
+            {
+                Logger.PrintError(LogClass.Application, exception.Message);
+                GtkDialog.CreateErrorDialog($"An error has occured when trying to get release information from GitHub.");
+
+                return;
+            }
+
+            // Get Version from app.config to compare versions
+            Version newVersion     = Version.Parse("0.0");
+            Version currentVersion = Version.Parse("0.0");
+
+            try
+            {
+                newVersion     = Version.Parse(_buildVer);
+                currentVersion = Version.Parse(Program.Version);
+            }
+            catch
+            {
+                Logger.PrintWarning(LogClass.Application, "Failed to convert current Ryujinx version.");
+            }
+
+            if (newVersion < currentVersion)
+            {
+                if (showVersionUpToDate)
+                {
+                    GtkDialog.CreateInfoDialog("Ryujinx - Updater", "You are already using the most updated version of Ryujinx!", "");
                 }
 
-                MoveAllFilesOver(directory, Path.Combine(dest, dirName), dialog);
+                Running = false;
+                mainWindow.UpdateMenuItem.Sensitive = true;
+                return;
             }
 
-            foreach (string file in Directory.GetFiles(root))
-            {
-                File.Move(file, Path.Combine(dest, Path.GetFileName(file)), true);
-
-                Application.Invoke(delegate
-                {
-                    dialog.ProgressBar.Value++;
-                });
-            }
-        }
-
-        public static void CleanupUpdate()
-        {
-            foreach (string file in Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories))
-            {
-                if (Path.GetExtension(file).EndsWith(".ryuold"))
-                {
-                    File.Delete(file);
-                }
-            }
+            // Show a message asking the user if they want to update
+            UpdateDialog updateDialog = new UpdateDialog(mainWindow, newVersion, _buildUrl);
+            updateDialog.Show();
         }
 
         public async static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl, bool isLinux)
@@ -203,6 +251,42 @@ namespace Ryujinx
             updateDialog.ProgressBar.Hide();
             updateDialog.YesButton.Show();
             updateDialog.NoButton.Show();
+        }
+
+        private static void MoveAllFilesOver(string root, string dest, UpdateDialog dialog)
+        {
+            foreach (string directory in Directory.GetDirectories(root))
+            {
+                string dirName = Path.GetFileName(directory);
+
+                if (!Directory.Exists(Path.Combine(dest, dirName)))
+                {
+                    Directory.CreateDirectory(Path.Combine(dest, dirName));
+                }
+
+                MoveAllFilesOver(directory, Path.Combine(dest, dirName), dialog);
+            }
+
+            foreach (string file in Directory.GetFiles(root))
+            {
+                File.Move(file, Path.Combine(dest, Path.GetFileName(file)), true);
+
+                Application.Invoke(delegate
+                {
+                    dialog.ProgressBar.Value++;
+                });
+            }
+        }
+
+        public static void CleanupUpdate()
+        {
+            foreach (string file in Directory.GetFiles(HomeDir, "*", SearchOption.AllDirectories))
+            {
+                if (Path.GetExtension(file).EndsWith(".ryuold"))
+                {
+                    File.Delete(file);
+                }
+            }
         }
     }
 }

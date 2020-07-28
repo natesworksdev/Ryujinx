@@ -1126,7 +1126,7 @@ namespace Ryujinx.Ui
 
         private void Update_Pressed(object sender, EventArgs args)
         {
-            UpdateParser.BeginParse(this, true);
+            Updater.BeginParse(this, true);
         }
 
         private void About_Pressed(object sender, EventArgs args)

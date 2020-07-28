@@ -128,7 +128,7 @@ namespace Ryujinx
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value)
             {
-                UpdateParser.BeginParse(mainWindow, false);
+                Updater.BeginParse(mainWindow, false);
             }
 
             Application.Run();

@@ -3,14 +3,11 @@ using Gtk;
 using Mono.Unix;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Runtime.InteropServices;
-
-using Window = Gtk.Window;
 
 namespace Ryujinx.Ui
 {
-    public class UpdateDialog : Window
+    public class UpdateDialog : Gtk.Window
     {
 #pragma warning disable CS0649, IDE0044
         [Builder.Object] public Label MainText;
@@ -41,7 +38,7 @@ namespace Ryujinx.Ui
             YesButton.Pressed += YesButton_Pressed;
             NoButton.Pressed  += (obj, args) =>
             {
-               UpdateParser.Running = false;
+                Updater.Running = false;
                _mainWindow.Window.Functions = WMFunction.All;
 
                _mainWindow.ExitMenuItem.Sensitive   = true;
