@@ -795,6 +795,18 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 21)
+            {
+                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 12.");
+
+                for (int i = 0; i < configurationFileFormat.ControllerConfig.Count; i++)
+                {
+                    configurationFileFormat.ControllerConfig[i].EnableRumble = false;
+                }
+
+                configurationFileUpdated = true;
+            }
+
             if (configurationFileFormat.Version < 22)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 22.");
@@ -803,7 +815,7 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
-
+            
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(configurationFileFormat.ControllerConfig);
             inputConfig.AddRange(configurationFileFormat.KeyboardConfig);

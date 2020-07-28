@@ -28,6 +28,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] Adjustment   _controllerDeadzoneLeft;
         [GUI] Adjustment   _controllerDeadzoneRight;
         [GUI] Adjustment   _controllerTriggerThreshold;
+        [GUI] CheckButton  _rumbleToggle;
         [GUI] Adjustment   _slotNumber;
         [GUI] Adjustment   _altSlotNumber;
         [GUI] Adjustment   _sensitivity;
@@ -201,6 +202,7 @@ namespace Ryujinx.Ui.Windows
                 _deadZoneLeftBox.Hide();
                 _deadZoneRightBox.Hide();
                 _triggerThresholdBox.Hide();
+                _rumbleToggle.Hide();
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
@@ -305,6 +307,7 @@ namespace Ryujinx.Ui.Windows
             _gyroDeadzone.Value               = 1;
             _dsuServerHost.Buffer.Text        = "";
             _dsuServerPort.Buffer.Text        = "";
+            _rumbleToggle.Active              = false;
         }
 
         private void SetValues(InputConfig config)
@@ -403,6 +406,7 @@ namespace Ryujinx.Ui.Windows
                     _mirrorInput.Active               = controllerConfig.MirrorInput;
                     _dsuServerHost.Buffer.Text        = controllerConfig.DsuServerHost;
                     _dsuServerPort.Buffer.Text        = controllerConfig.DsuServerPort.ToString();
+                    _rumbleToggle.Active              = controllerConfig.EnableRumble;
                     break;
             }
         }
@@ -531,6 +535,7 @@ namespace Ryujinx.Ui.Windows
                     DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
                     DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
                     TriggerThreshold = (float)_controllerTriggerThreshold.Value,
+                    EnableRumble     = _rumbleToggle.Active,
                     LeftJoycon       = new NpadControllerLeft
                     {
                         InvertStickX = _invertLStickX.Active,

@@ -601,6 +601,11 @@ namespace Ryujinx.Ui
                         Dx = controllerConfig.RightJoycon.InvertStickX ? -rightJoystickDx : rightJoystickDx,
                         Dy = controllerConfig.RightJoycon.InvertStickY ? -rightJoystickDy : rightJoystickDy
                     };
+
+                    if (controllerConfig.EnableRumble)
+                    {
+                        _device.Hid.Npads.RumbleDevices[(HLE.HOS.Services.Hid.PlayerIndex)controllerConfig.PlayerIndex] = new RumbleDevice(controllerConfig.Index);
+                    }
                 }
 
                 currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);

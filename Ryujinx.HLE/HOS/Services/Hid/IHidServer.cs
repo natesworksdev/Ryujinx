@@ -4,6 +4,8 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using System;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
@@ -33,7 +35,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private HidSensorFusionParameters  _sensorFusionParams;
         private HidAccelerometerParameters _accelerometerParams;
-        private HidVibrationValue          _vibrationValue;
 
         public IHidServer(ServiceCtx context) : base(context.Device.System.HidServer)
         {
@@ -46,7 +47,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             _sensorFusionParams  = new HidSensorFusionParameters();
             _accelerometerParams = new HidAccelerometerParameters();
-            _vibrationValue      = new HidVibrationValue();
 
             // TODO: signal event at right place
             _xpadIdEvent.ReadableEvent.Signal();
@@ -922,7 +922,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int vibrationDeviceHandle = context.RequestData.ReadInt32();
 
-            _vibrationValue = new HidVibrationValue
+            HidVibrationValue vibrationValue = new HidVibrationValue
             {
                 AmplitudeLow  = context.RequestData.ReadSingle(),
                 FrequencyLow  = context.RequestData.ReadSingle(),
@@ -931,15 +931,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             };
 
             long appletResourceUserId = context.RequestData.ReadInt64();
+            PlayerIndex index = (PlayerIndex)appletResourceUserId;
 
-            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
-                appletResourceUserId,
-                vibrationDeviceHandle,
-                _vibrationValue.AmplitudeLow,
-                _vibrationValue.FrequencyLow,
-                _vibrationValue.AmplitudeHigh,
-                _vibrationValue.FrequencyHigh
-            });
+            RumbleDevice device;
+            if (context.Device.Hid.Npads.RumbleDevices.TryGetValue(index, out device))
+            {
+                device.Rumble(vibrationValue);
+            }
 
             return ResultCode.Success;
         }
@@ -951,19 +949,20 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             int vibrationDeviceHandle = context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            context.ResponseData.Write(_vibrationValue.AmplitudeLow);
-            context.ResponseData.Write(_vibrationValue.FrequencyLow);
-            context.ResponseData.Write(_vibrationValue.AmplitudeHigh);
-            context.ResponseData.Write(_vibrationValue.FrequencyHigh);
+            // if the user id is out of range, return zeros
+            HidVibrationValue value = new HidVibrationValue();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new {
-                appletResourceUserId,
-                vibrationDeviceHandle,
-                _vibrationValue.AmplitudeLow,
-                _vibrationValue.FrequencyLow,
-                _vibrationValue.AmplitudeHigh,
-                _vibrationValue.FrequencyHigh
-            });
+            PlayerIndex index = (PlayerIndex)appletResourceUserId;
+            RumbleDevice device;
+            if (context.Device.Hid.Npads.RumbleDevices.TryGetValue(index, out device))
+            {
+                value = device.LastValue;
+            }
+
+            context.ResponseData.Write(value.AmplitudeLow);
+            context.ResponseData.Write(value.FrequencyLow);
+            context.ResponseData.Write(value.AmplitudeHigh);
+            context.ResponseData.Write(value.FrequencyHigh);
 
             return ResultCode.Success;
         }
@@ -1013,13 +1012,17 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.Memory.Read((ulong)context.Request.PtrBuff[1].Position, vibrationValueBuffer);
 
-            // TODO: Read all handles and values from buffer.
+            Span<HidVibrationValue> vibrationValues = MemoryMarshal.Cast<byte, HidVibrationValue>(vibrationValueBuffer);
 
-            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
-                appletResourceUserId,
-                VibrationDeviceHandleBufferLength = vibrationDeviceHandleBuffer.Length,
-                VibrationValueBufferLength = vibrationValueBuffer.Length
-            });
+            Span<int> deviceHandles = MemoryMarshal.Cast<byte, int>(vibrationDeviceHandleBuffer);
+            Trace.Assert(vibrationValues.Length == deviceHandles.Length);
+
+            PlayerIndex index = (PlayerIndex)appletResourceUserId;
+            RumbleDevice device;
+            if (context.Device.Hid.Npads.RumbleDevices.TryGetValue(index, out device))
+            {
+                device.RumbleMultiple(vibrationValues);
+            }
 
             return ResultCode.Success;
         }

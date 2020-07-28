@@ -26,5 +26,10 @@
         /// Right JoyCon Controller Bindings
         /// </summary>
         public NpadControllerRight RightJoycon { get; set; }
+
+        /// <summary>
+        /// Enable Rumble
+        /// </summary>
+        public bool EnableRumble { get; set; }
     }
 }
