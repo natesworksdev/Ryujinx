@@ -67,6 +67,8 @@ namespace Ryujinx.Ui
         
         private Gdk.Cursor _invisibleCursor = new Gdk.Cursor (Gdk.Display.Default, Gdk.CursorType.BlankCursor);
 
+        private Dictionary<HLE.HOS.Services.Hid.PlayerIndex, RumbleDevice> _rumbleDevices = new Dictionary<HLE.HOS.Services.Hid.PlayerIndex, RumbleDevice>();
+
         public GlRenderer(Switch device, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
             3, 3,
@@ -604,7 +606,31 @@ namespace Ryujinx.Ui
 
                     if (controllerConfig.EnableRumble)
                     {
-                        _device.Hid.Npads.RumbleDevices[(HLE.HOS.Services.Hid.PlayerIndex)controllerConfig.PlayerIndex] = new RumbleDevice(controllerConfig.Index);
+                        HLE.HOS.Services.Hid.PlayerIndex playerIndex = (HLE.HOS.Services.Hid.PlayerIndex)controllerConfig.PlayerIndex;
+                        if (!_rumbleDevices.ContainsKey(playerIndex))
+                        {
+                            _rumbleDevices.Add(playerIndex, new RumbleDevice(controllerConfig.Index));
+                        }
+                        if (!_device.Hid.Npads.RumbleQueues.ContainsKey(playerIndex))
+                        {
+                            _device.Hid.Npads.RumbleQueues.Add(playerIndex, new Queue<HidVibrationValue>());
+                        }
+                        Queue<HidVibrationValue> rumbleQueue = _device.Hid.Npads.RumbleQueues[playerIndex];
+                        // XXX: Using Queue#ToArray isn't reliable since it fails sometimes
+                        // with the error "Destination array was not long enough."
+                        List<HidVibrationValue> values = new List<HidVibrationValue>();
+                        while (rumbleQueue.Count > 0)
+                        {
+                            values.Add(rumbleQueue.Dequeue());
+                        }
+                        RumbleDevice rumbleDevice = _rumbleDevices[playerIndex];
+                        rumbleDevice.RumbleMultiple(values.ToArray());
+                        if (!_device.Hid.Npads.LastRumbleValues.ContainsKey(playerIndex))
+                        {
+                            _device.Hid.Npads.LastRumbleValues.Add(playerIndex, new HidVibrationValue());
+                        }
+                        _device.Hid.Npads.LastRumbleValues[playerIndex] = rumbleDevice.LastVibrationValue;
+                        rumbleQueue.Clear();
                     }
                 }
 

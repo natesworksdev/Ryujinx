@@ -61,7 +61,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _supportedPlayers[(int)player] = supported;
         }
 
-        public Dictionary<PlayerIndex, RumbleDevice> RumbleDevices = new Dictionary<PlayerIndex, RumbleDevice>();
+        public Dictionary<PlayerIndex, Queue<HidVibrationValue>> RumbleQueues = new Dictionary<PlayerIndex, Queue<HidVibrationValue>>();
+        public Dictionary<PlayerIndex, HidVibrationValue> LastRumbleValues = new Dictionary<PlayerIndex, HidVibrationValue>();
+
         internal IEnumerable<PlayerIndex> GetSupportedPlayers()
         {
             for (int i = 0; i < _supportedPlayers.Length; ++i)
