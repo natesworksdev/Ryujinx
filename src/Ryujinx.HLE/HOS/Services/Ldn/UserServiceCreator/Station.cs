@@ -249,11 +249,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length);
             requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
 
+            int index = WaitHandle.WaitAny(new WaitHandle[] { _connected, _error }, FailureTimeout);
+
+            if (index != 0)
+            {
+                return ResultCode.InvalidState;
+            }
+
             SendAsync(ldnPacket);
 
-            _apConnected.WaitOne(FailureTimeout);
+            bool signalled = _apConnected.WaitOne(FailureTimeout);
 
-            return ResultCode.Success;
+            return signalled ? ResultCode.Success : ResultCode.InvalidState;
         }
     }
 }
