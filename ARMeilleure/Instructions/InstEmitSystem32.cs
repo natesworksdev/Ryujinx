@@ -186,8 +186,6 @@ namespace ARMeilleure.Instructions
                 return;
             }
 
-            //MethodInfo info;
-
             switch (op.Sreg)
             {
                 case 0b0000: // FPSID
@@ -205,15 +203,11 @@ namespace ARMeilleure.Instructions
                 default:
                     throw new NotImplementedException($"Unknown VMRS 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
-
-            //SetIntA32(context, op.Rt, context.Call(info));
         }
 
         public static void Vmsr(ArmEmitterContext context)
         {
             OpCode32SimdSpecial op = (OpCode32SimdSpecial)context.CurrOp;
-
-            //MethodInfo info;
 
             switch (op.Sreg)
             {
@@ -232,8 +226,6 @@ namespace ARMeilleure.Instructions
                 default:
                     throw new NotImplementedException($"Unknown VMSR 0x{op.RawOpCode:X8} at 0x{op.Address:X16}.");
             }
-
-            //context.Call(info, GetIntA32(context, op.Rt));
         }
 
         private static void EmitSetNzcv(ArmEmitterContext context, Operand t)
