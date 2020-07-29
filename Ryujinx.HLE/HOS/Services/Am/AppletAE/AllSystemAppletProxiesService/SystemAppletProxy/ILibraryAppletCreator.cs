@@ -1,4 +1,5 @@
-using Ryujinx.HLE.HOS.Applets;
+using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
@@ -36,10 +37,21 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             bool unknown = context.RequestData.ReadBoolean();
             long size    = context.RequestData.ReadInt64();
+            int khandle  = context.Request.HandleDesc.ToCopy[0];
 
-            // NOTE: We don't support TransferMemory for now.
+            KTransferMemory tm = context.Process.HandleTable.GetObject<KTransferMemory>(khandle);
 
-            MakeObject(context, new IStorage(new byte[size]));
+            if(tm == null)
+            {
+                Logger.PrintWarning(LogClass.ServiceAm, $"Invalid TransferMemory Handle: {khandle:X}");
+
+                return ResultCode.Success; // TODO: Find correct error code
+            }
+
+            var data = new byte[tm.Size];
+            context.Memory.Read(tm.Address, data);
+
+            MakeObject(context, new IStorage(data));
 
             return ResultCode.Success;
         }

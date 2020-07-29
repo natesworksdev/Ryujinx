@@ -1,4 +1,3 @@
-﻿using Ryujinx.Configuration;
 using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
@@ -23,6 +22,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private AppletSession _interactiveSession;
 
         private SoftwareKeyboardConfig _keyboardConfig;
+        private byte[] _transferMemory;
 
         private string   _textValue = DefaultText;
         private Encoding _encoding  = Encoding.Unicode;
@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
-            var transferMemory = _normalSession.Pop();
+            _transferMemory    = _normalSession.Pop();
 
             _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
 
@@ -67,6 +67,17 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void Execute()
         {
+            // If the max string length is 0, we set it to a large default
+            // length.
+            if (_keyboardConfig.StringLengthMax == 0)
+            {
+                _keyboardConfig.StringLengthMax = 100;
+            }
+
+            // Initial Text is encoded as a UTF-16 string in the work buffer (passed as transfer memory)
+            // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
+            string initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardConfig.InitialStringOffset, 2 * _keyboardConfig.InitialStringLength);
+
             var args = new SoftwareKeyboardUiArgs
             {
                 HeaderText = _keyboardConfig.HeaderText,
@@ -75,18 +86,11 @@ namespace Ryujinx.HLE.HOS.Applets
                 GuideText = _keyboardConfig.GuideText,
                 SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
                 AllowedStringSize = (_keyboardConfig.StringLengthMin, _keyboardConfig.StringLengthMax),
-                InitialText = "" // TODO: add this after transfer memory works
+                InitialText = initialText
             };
 
             // Call the configured GUI handler to get user's input
             _textValue = _device.UiHandler.DisplayInputDialog(args);
-
-            // If the max string length is 0, we set it to a large default
-            // length.
-            if (_keyboardConfig.StringLengthMax == 0)
-            {
-                _keyboardConfig.StringLengthMax = 100;
-            }
 
             // If the game requests a string with a minimum length less
             // than our default text, repeat our default text until we meet
