@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             int index = WaitHandle.WaitAny(new WaitHandle[] { _connected, _error }, FailureTimeout);
 
-            if (index != 0)
+            if (index == 0)
             {
                 LdnHeader ldnHeader = new LdnHeader
                 {
