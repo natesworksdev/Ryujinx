@@ -67,8 +67,8 @@ namespace Ryujinx.Ui
             for (int i = 0; i < values.Length; i++)
             {
                 HidVibrationValue value = values[i];
-                _effect.leftright.small_magnitude = (ushort)(value.AmplitudeLow * ushort.MaxValue);
-                _effect.leftright.large_magnitude = (ushort)(value.AmplitudeHigh * ushort.MaxValue);
+                _effect.leftright.small_magnitude = (ushort)(value.AmplitudeLow * short.MaxValue);
+                _effect.leftright.large_magnitude = (ushort)(value.AmplitudeHigh * short.MaxValue);
                 if (_dllLoaded)
                 {
                     int effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
