@@ -2,28 +2,33 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Hid;
 using SDL2;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Threading;
 
 namespace Ryujinx.Ui
 {
     class RumbleDevice
     {
         private bool _dllLoaded = true;
+        private Thread _thread;
         private bool _rumbleSupported;
         private IntPtr _haptic;
+        private ConcurrentQueue<HidVibrationValue> _vibrationQueue;
         private SDL.SDL_HapticEffect _effect = new SDL.SDL_HapticEffect
         {
             type = SDL.SDL_HAPTIC_LEFTRIGHT,
             leftright = new SDL.SDL_HapticLeftRight
             {
                 type = SDL.SDL_HAPTIC_LEFTRIGHT,
-                length = 1,
+                length = uint.MaxValue,
                 small_magnitude = 0,
                 large_magnitude = 0,
             },
         };
         public HidVibrationValue LastVibrationValue { get; private set; } = new HidVibrationValue();
 
-        public RumbleDevice(int index)
+        public RumbleDevice(int index, ConcurrentQueue<HidVibrationValue> vibrationQueue)
         {
             try
             {
@@ -52,43 +57,38 @@ namespace Ryujinx.Ui
                 Logger.PrintInfo(LogClass.ServiceHid, "SDL2 DLL not found, silently stubbing");
                 _dllLoaded = false;
             }
+            _vibrationQueue = vibrationQueue;
         }
 
-        public void RumbleMultiple(ReadOnlySpan<HidVibrationValue> values)
+        public void ThreadProc()
         {
-            if (!_rumbleSupported)
+            while (true)
             {
-                if (!values.IsEmpty)
+                HidVibrationValue value;
+                while (_vibrationQueue.TryDequeue(out value))
                 {
-                    LastVibrationValue = values[^1];
-                }
-                return;
-            }
-            for (int i = 0; i < values.Length; i++)
-            {
-                HidVibrationValue value = values[i];
-                _effect.leftright.small_magnitude = (ushort)(value.AmplitudeLow * short.MaxValue);
-                _effect.leftright.large_magnitude = (ushort)(value.AmplitudeHigh * short.MaxValue);
-                if (_dllLoaded)
-                {
+                    _effect.leftright.small_magnitude = (ushort)(value.AmplitudeLow * short.MaxValue);
+                    _effect.leftright.large_magnitude = (ushort)(value.AmplitudeHigh * short.MaxValue);
                     int effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
                     SDL.SDL_HapticRunEffect(_haptic, effectIndex, 1);
                     SDL.SDL_HapticDestroyEffect(_haptic, effectIndex);
-                }
-                if (i == values.Length - 1)
-                {
                     LastVibrationValue = value;
                 }
+                Thread.Yield();
             }
         }
 
-        public void Rumble(HidVibrationValue value)
+        public void Start()
         {
-            RumbleMultiple(new HidVibrationValue[] { value });
+            // unnecessary work if dll is not loaded or rumble is not supported
+            if (!_dllLoaded || !_rumbleSupported) return;
+            _thread = new Thread(() => ThreadProc());
+            _thread.Start();
         }
 
         ~RumbleDevice()
         {
+            if (_thread != null) _thread.Join(500);
             if (_dllLoaded)
             {
                 if (_haptic != IntPtr.Zero)

@@ -4,6 +4,7 @@ using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
@@ -936,7 +937,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.RequestData.ReadInt64();
             PlayerIndex index = (PlayerIndex)vibrationDeviceHandle;
 
-            Queue<HidVibrationValue> rumbleQueue;
+            ConcurrentQueue<HidVibrationValue> rumbleQueue;
             if (context.Device.Hid.Npads.RumbleQueues.TryGetValue(index, out rumbleQueue))
             {
                 rumbleQueue.Enqueue(vibrationValue);
@@ -1024,7 +1025,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             foreach (int vibrationHandle in deviceHandles)
             {
                 PlayerIndex index = (PlayerIndex)((vibrationHandle >> 8) & 0xff);
-                Queue<HidVibrationValue> rumbleQueue;
+                ConcurrentQueue<HidVibrationValue> rumbleQueue;
                 if (context.Device.Hid.Npads.RumbleQueues.TryGetValue(index, out rumbleQueue))
                 {
                     foreach (HidVibrationValue value in vibrationValues)
