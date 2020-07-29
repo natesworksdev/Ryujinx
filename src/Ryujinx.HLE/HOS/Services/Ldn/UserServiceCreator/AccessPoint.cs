@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using System;
@@ -13,13 +12,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     class AccessPoint : TcpClient
     {
+        private const int FailureTimeout = 4000;
+
         private bool _stop;
 
         private byte[] _advertiseData;
 
         private IUserLocalCommunicationService _parent;
 
-        private AutoResetEvent _connected = new AutoResetEvent(false);
+        private ManualResetEvent _connected = new ManualResetEvent(false);
+        private AutoResetEvent _error = new AutoResetEvent(false);
+        private AutoResetEvent _apConnected = new AutoResetEvent(false);
 
         public NetworkInfo NetworkInfo;
 
@@ -53,18 +56,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         protected override void OnConnected()
         {
             Console.WriteLine($"LDN TCP client connected a new session with Id {Id}");
+
+            _connected.Set();
         }
 
         protected override void OnDisconnected()
         {
             Console.WriteLine($"LDN TCP client disconnected a session with Id {Id}");
 
-            // Wait for a while...
-            Thread.Sleep(1000);
+            _connected.Reset();
 
-            // Try to connect again
             if (!_stop)
             {
+                // Wait for a while...
+                Thread.Sleep(1000);
+
+                // Try to connect again
                 ConnectAsync();
             }
         }
@@ -93,6 +100,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         protected override void OnError(SocketError error)
         {
             Console.WriteLine($"LDN TCP client caught an error with code {error}");
+
+            _error.Set();
         }
 
         private void HandleSyncNetwork(LdnHeader header, NetworkInfo info)
@@ -108,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             _parent.SetState(NetworkState.AccessPointCreated);
 
-            _connected.Set();
+            _apConnected.Set();
         }
 
         public ResultCode SetAdvertiseData(ServiceCtx context)
@@ -144,6 +153,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 NetworkConfig = networkConfig
             };
 
+            int index = WaitHandle.WaitAny(new WaitHandle[] { _connected, _error }, FailureTimeout);
+
+            if (index != 0)
+            {
+                return ResultCode.Success;
+            }
+
             byte[] requestBuffer = LdnHelper.StructureToByteArray(request);
 
             LdnHeader ldnHeader = new LdnHeader
@@ -161,14 +177,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
             _advertiseData.CopyTo(ldnPacket, ldnHeaderLength + requestBuffer.Length);
 
-            while (!IsConnected)
-            {
-                Thread.Yield(); // TODO: Must return failure if we disconnected or errored while waiting.
-            }
-
             SendAsync(ldnPacket);
 
-            _connected.WaitOne(1000);
+            _apConnected.WaitOne(FailureTimeout);
 
             return ResultCode.Success;
         }

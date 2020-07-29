@@ -15,13 +15,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     class Station : TcpClient
     {
+        private const int FailureTimeout = 4000;
+        private const int ScanTimeout = 1000;
+
         private bool _stop;
 
         public NetworkConfig CurrentNetworkConfig;
         public NetworkInfo   CurrentNetworkInfo;
 
-        private AutoResetEvent ConnectEvent = new AutoResetEvent(false);
-        private AutoResetEvent ScanEvent = new AutoResetEvent(false);
+        private ManualResetEvent _connected = new ManualResetEvent(false);
+        private AutoResetEvent _apConnected = new AutoResetEvent(false);
+        private AutoResetEvent _scan = new AutoResetEvent(false);
+        private AutoResetEvent _error = new AutoResetEvent(false);
 
         private List<NetworkInfo> _availableGames;
 
@@ -61,18 +66,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         protected override void OnConnected()
         {
             Console.WriteLine($"LDN TCP client connected a new session with Id {Id}");
+
+            _connected.Set();
         }
 
         protected override void OnDisconnected()
         {
             Console.WriteLine($"LDN TCP client disconnected a session with Id {Id}");
 
-            // Wait for a while...
-            Thread.Sleep(1000);
+            _connected.Reset();
 
-            // Try to connect again
+            // Wait for a while...
+            Thread.Sleep(1000); // Required to rate limit scan, right now.
+
             if (!_stop)
             {
+                // Try to connect again
                 ConnectAsync();
             }
         }
@@ -114,7 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 Unknown2 = new byte[10]
             };
 
-            ConnectEvent.Set();
+            _apConnected.Set();
 
             _parent.SetState(NetworkState.StationConnected);
         }
@@ -133,12 +142,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private void HandleScanReplyEnd(LdnHeader obj)
         {
-            ScanEvent.Set();
+            _scan.Set();
         }
 
         protected override void OnError(SocketError error)
         {
             Console.WriteLine($"LDN TCP client caught an error with code {error}");
+
+            _error.Set();
         }
 
         public ResultCode Scan(ServiceCtx context)
@@ -157,28 +168,37 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             Array.Resize(ref scanFilterBuffer, 0x600);
 
-            LdnHeader ldnHeader = new LdnHeader
+            int index = WaitHandle.WaitAny(new WaitHandle[] { _connected, _error }, FailureTimeout);
+
+            if (index != 0)
             {
-                Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
-                Type     = (byte)PacketId.Scan,
-                UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
-                DataSize = scanFilterBufferLength
-            };
+                LdnHeader ldnHeader = new LdnHeader
+                {
+                    Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
+                    Type     = (byte)PacketId.Scan,
+                    UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
+                    DataSize = scanFilterBufferLength
+                };
 
-            byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
-            int ldnHeaderLength = ldnPacket.Length;
+                byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
+                int ldnHeaderLength = ldnPacket.Length;
 
-            Array.Resize(ref ldnPacket, ldnHeaderLength + scanFilterBuffer.Length);
-            scanFilterBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+                Array.Resize(ref ldnPacket, ldnHeaderLength + scanFilterBuffer.Length);
+                scanFilterBuffer.CopyTo(ldnPacket, ldnHeaderLength);
 
-            while (!IsConnected)
-            {
-                Thread.Yield();
+                SendAsync(ldnPacket);
+
+                index = WaitHandle.WaitAny(new WaitHandle[] { _scan, _error }, ScanTimeout);
             }
 
-            SendAsync(ldnPacket);
+            if (index != 0)
+            {
+                // An error occurred or timeout. Write 0 games.
 
-            ScanEvent.WaitOne(1000);
+                context.ResponseData.Write(0);
+
+                return ResultCode.Success;
+            }
 
             uint counter = 0;
 
@@ -231,7 +251,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             SendAsync(ldnPacket);
 
-            ConnectEvent.WaitOne(1000);
+            _apConnected.WaitOne(FailureTimeout);
 
             return ResultCode.Success;
         }
