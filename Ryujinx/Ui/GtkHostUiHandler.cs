@@ -17,7 +17,7 @@ namespace Ryujinx.Ui
         public string DisplayInputDialog(SoftwareKeyboardUiArgs args)
         {
             ManualResetEvent mre = new ManualResetEvent(false);
-            string inputText = "Ryujinx"; // default
+            string inputText = string.IsNullOrEmpty(args.InitialText) ? new string('?', args.AllowedStringSize.Max) : args.InitialText;
 
             Application.Invoke(delegate
             {
@@ -26,7 +26,7 @@ namespace Ryujinx.Ui
                     Title = "Software Keyboard",
                     Text = args.HeaderText,
                     SecondaryText = args.SubtitleText,
-                    AllowedInputSize = args.AllowedStringSize
+                    AllowedInputLength = args.AllowedStringSize
                 };
 
                 swkbdDialog.InputEntry.Text = args.InitialText;

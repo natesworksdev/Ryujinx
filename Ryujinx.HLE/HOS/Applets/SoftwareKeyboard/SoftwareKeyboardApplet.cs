@@ -1,3 +1,4 @@
+﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using System;
@@ -10,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Applets
     internal class SoftwareKeyboardApplet : IApplet
     {
         private const string DefaultText = "Ryujinx";
-        
+
         private readonly Switch _device;
 
         private const int StandardBufferSize    = 0x7D8;
@@ -29,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         public event EventHandler AppletStateChanged;
 
-        public SoftwareKeyboardApplet(Horizon system) 
+        public SoftwareKeyboardApplet(Horizon system)
         {
             _device = system.Device;
         }
@@ -43,10 +44,14 @@ namespace Ryujinx.HLE.HOS.Applets
             _interactiveSession.DataAvailable += OnInteractiveData;
 
             var launchParams   = _normalSession.Pop();
-            var keyboardConfig = _normalSession.Pop();
-            _transferMemory    = _normalSession.Pop();
 
+            var keyboardConfig = _normalSession.Pop();
             _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+
+            if(!_normalSession.TryPop(out _transferMemory))
+            {
+                Logger.PrintError(LogClass.ServiceAm, "SwKbd Transfer Memory is null");
+            }
 
             if (_keyboardConfig.UseUtf8)
             {
@@ -74,15 +79,19 @@ namespace Ryujinx.HLE.HOS.Applets
                 _keyboardConfig.StringLengthMax = 100;
             }
 
+            string initialText = "";
+
             // Initial Text is encoded as a UTF-16 string in the work buffer (passed as transfer memory)
             // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
-            string initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardConfig.InitialStringOffset, 2 * _keyboardConfig.InitialStringLength);
+            if (_transferMemory != null && _keyboardConfig.InitialStringLength > 0)
+            {
+                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardConfig.InitialStringOffset, 2 * _keyboardConfig.InitialStringLength);
+            }
 
             var args = new SoftwareKeyboardUiArgs
             {
                 HeaderText = _keyboardConfig.HeaderText,
-                SubtitleText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubtitleText) ? $"{_keyboardConfig.SubtitleText}\n" : "")
-                    + $"Must be {_keyboardConfig.StringLengthMin}-{_keyboardConfig.StringLengthMax} characters long.\nInvalid Characters: {_keyboardConfig.InvalidCharFlag}",
+                SubtitleText = _keyboardConfig.SubtitleText,
                 GuideText = _keyboardConfig.GuideText,
                 SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
                 AllowedStringSize = (_keyboardConfig.StringLengthMin, _keyboardConfig.StringLengthMax),
