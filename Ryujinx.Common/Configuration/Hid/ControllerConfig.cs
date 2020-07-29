@@ -28,6 +28,11 @@
         public NpadControllerRight RightJoycon { get; set; }
 
         /// <summary>
+        /// Rumble SDL2 haptic device index
+        /// </summary>
+        public int RumbleIndex { get; set; }
+
+        /// <summary>
         /// Enable Rumble
         /// </summary>
         public bool EnableRumble { get; set; }

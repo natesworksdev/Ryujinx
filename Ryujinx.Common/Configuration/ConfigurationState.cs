@@ -802,6 +802,7 @@ namespace Ryujinx.Configuration
                 for (int i = 0; i < configurationFileFormat.ControllerConfig.Count; i++)
                 {
                     configurationFileFormat.ControllerConfig[i].EnableRumble = false;
+                    configurationFileFormat.ControllerConfig[i].RumbleIndex = 0;
                 }
 
                 configurationFileUpdated = true;

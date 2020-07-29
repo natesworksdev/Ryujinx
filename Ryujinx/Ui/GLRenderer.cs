@@ -609,7 +609,7 @@ namespace Ryujinx.Ui
                         HLE.HOS.Services.Hid.PlayerIndex playerIndex = (HLE.HOS.Services.Hid.PlayerIndex)controllerConfig.PlayerIndex;
                         if (!_rumbleDevices.ContainsKey(playerIndex))
                         {
-                            _rumbleDevices.Add(playerIndex, new RumbleDevice(controllerConfig.Index));
+                            _rumbleDevices.Add(playerIndex, new RumbleDevice(controllerConfig.RumbleIndex));
                         }
                         if (!_device.Hid.Npads.RumbleQueues.ContainsKey(playerIndex))
                         {

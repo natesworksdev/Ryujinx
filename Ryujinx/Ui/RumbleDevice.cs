@@ -9,7 +9,6 @@ namespace Ryujinx.Ui
     {
         private bool _dllLoaded = true;
         private bool _rumbleSupported;
-        private IntPtr _joystick;
         private IntPtr _haptic;
         private SDL.SDL_HapticEffect _effect = new SDL.SDL_HapticEffect
         {
@@ -28,12 +27,11 @@ namespace Ryujinx.Ui
         {
             try
             {
-                if (SDL.SDL_Init(SDL.SDL_INIT_HAPTIC | SDL.SDL_INIT_JOYSTICK) != 0)
+                if (SDL.SDL_Init(SDL.SDL_INIT_HAPTIC) != 0)
                 {
                     Logger.PrintError(LogClass.ServiceHid, "Failed to initialize SDL, error = " + SDL.SDL_GetError());
                 }
-                _joystick = SDL.SDL_JoystickOpen(index);
-                _haptic = SDL.SDL_HapticOpenFromJoystick(_joystick);
+                _haptic = SDL.SDL_HapticOpen(index);
                 if (_haptic == IntPtr.Zero)
                 {
                     Logger.PrintInfo(LogClass.ServiceHid, "Haptic device is null!");
@@ -97,7 +95,6 @@ namespace Ryujinx.Ui
                 {
                     SDL.SDL_HapticClose(_haptic);
                 }
-                SDL.SDL_JoystickClose(_haptic);
             }
         }
     }
