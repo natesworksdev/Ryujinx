@@ -1152,27 +1152,27 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Debug.Assert(index < 4);
 
-                if (HardwareCapabilities.SupportsSse41)
+                if (index == 0)
                 {
-                    context.Assembler.Pextrd(dest, src1, index);
+                    context.Assembler.Movd(dest, src1);
                 }
                 else
                 {
-                    if (index != 0)
+                    if (HardwareCapabilities.SupportsSse41)
+                    {
+                        context.Assembler.Pextrd(dest, src1, index);
+                    }
+                    else
                     {
                         int mask0 = 0b11_10_01_00;
                         int mask1 = 0b11_10_01_00;
 
-                        mask0 = BitUtils.RotateRight(mask0,     index * 2, 8);
+                        mask0 = BitUtils.RotateRight(mask0, index * 2, 8);
                         mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
 
                         context.Assembler.Pshufd(src1, src1, (byte)mask0);
                         context.Assembler.Movd  (dest, src1);
                         context.Assembler.Pshufd(src1, src1, (byte)mask1);
-                    }
-                    else
-                    {
-                        context.Assembler.Movd(dest, src1);
                     }
                 }
             }
@@ -1180,23 +1180,23 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Debug.Assert(index < 2);
 
-                if (HardwareCapabilities.SupportsSse41)
+                if (index == 0)
                 {
-                    context.Assembler.Pextrq(dest, src1, index);
+                    context.Assembler.Movq(dest, src1);
                 }
                 else
                 {
-                    if (index != 0)
+                    if (HardwareCapabilities.SupportsSse41)
+                    {
+                        context.Assembler.Pextrq(dest, src1, index);
+                    }
+                    else
                     {
                         const byte mask = 0b01_00_11_10;
 
                         context.Assembler.Pshufd(src1, src1, mask);
                         context.Assembler.Movq  (dest, src1);
                         context.Assembler.Pshufd(src1, src1, mask);
-                    }
-                    else
-                    {
-                        context.Assembler.Movq(dest, src1);
                     }
                 }
             }
