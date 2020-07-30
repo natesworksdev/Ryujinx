@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 }
                 else
                 {
-                    // If our default view still exists, we can put it into the resource pool so we can be used later.
+                    // If the default view still exists, we can put it into the resource pool.
                     Release();
                 }
             }

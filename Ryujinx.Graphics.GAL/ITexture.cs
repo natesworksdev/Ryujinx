@@ -2,7 +2,7 @@ using System;
 
 namespace Ryujinx.Graphics.GAL
 {
-    public interface ITexture : IDisposable
+    public interface ITexture
     {
         int Width { get; }
         int Height { get; }

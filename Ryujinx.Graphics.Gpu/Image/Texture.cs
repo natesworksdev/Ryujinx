@@ -172,7 +172,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Initializes the data for a texture. Can optionally initialize the texture with or without data.
         /// If the texture is a view, it will initialize memory tracking to be non-dirty.
         /// </summary>
-        /// <param name="isView">True if the texture is a view or not</param>
+        /// <param name="isView">True if the texture is a view, false otherwise</param>
         /// <param name="withData">True if the texture is to be initialized with data</param>
         public void InitializeData(bool isView, bool withData = false)
         {

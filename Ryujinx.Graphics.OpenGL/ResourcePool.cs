@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -16,12 +17,12 @@ namespace Ryujinx.Graphics.OpenGL
     /// <summary>
     /// A structure for pooling resources that can be reused without recreation, such as textures.
     /// </summary>
-    class ResourcePool
+    class ResourcePool : IDisposable
     {
         private const int DisposedLiveFrames = 2;
 
-        private object _lock = new object();
-        private Dictionary<uint, List<DisposedTexture>> _textures = new Dictionary<uint, List<DisposedTexture>>();
+        private readonly object _lock = new object();
+        private readonly Dictionary<uint, List<DisposedTexture>> _textures = new Dictionary<uint, List<DisposedTexture>>();
 
         private uint GetTextureKey(TextureCreateInfo info)
         {
@@ -62,7 +63,7 @@ namespace Ryujinx.Graphics.OpenGL
         /// <param name="info">The creation info for the desired texture</param>
         /// <param name="scaleFactor">The scale factor for the desired texture</param>
         /// <returns>A TextureView with the description specified, or null if one was not found.</returns>
-        public TextureView TryGetTexture(TextureCreateInfo info, float scaleFactor)
+        public TextureView GetTextureOrNull(TextureCreateInfo info, float scaleFactor)
         {
             lock (_lock)
             {
@@ -107,6 +108,24 @@ namespace Ryujinx.Graphics.OpenGL
                         }
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Disposes the resource pool.
+        /// </summary>
+        public void Dispose()
+        {
+            lock (_lock)
+            {
+                foreach (List<DisposedTexture> list in _textures.Values)
+                {
+                    foreach (DisposedTexture texture in list)
+                    {
+                        texture.View.Dispose();
+                    }
+                }
+                _textures.Clear();
             }
         }
     }
