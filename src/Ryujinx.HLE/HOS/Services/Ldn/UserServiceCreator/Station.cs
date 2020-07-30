@@ -163,6 +163,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferSize     = context.Request.ReceiveBuff[0].Size;
 
+            long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
+            long maxGames = bufferSize / networkInfoSize;
+
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, (int)bufferSize);
 
             byte[] scanFilterBuffer       = LdnHelper.StructureToByteArray(scanFilter);
@@ -206,9 +209,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             foreach (NetworkInfo networkInfo in _availableGames)
             {
-                MemoryHelper.Write(context.Memory, bufferPosition + (Marshal.SizeOf(typeof(NetworkInfo)) * counter), networkInfo);
+                MemoryHelper.Write(context.Memory, bufferPosition + (networkInfoSize * counter), networkInfo);
 
-                counter++;
+                if (++counter >= maxGames)
+                {
+                    break;
+                }
             }
 
             context.ResponseData.Write((long)counter);
