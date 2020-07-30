@@ -28,6 +28,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public AccessPoint(IUserLocalCommunicationService parent, string address, int port) : base(address, port)
         {
+            OptionNoDelay = true;
+
             _parent = parent;
         }
 

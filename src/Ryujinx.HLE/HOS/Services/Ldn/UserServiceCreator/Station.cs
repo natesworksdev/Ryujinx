@@ -34,6 +34,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public Station(IUserLocalCommunicationService parent, string address, int port) : base(address, port)
         {
+            OptionNoDelay = true;
+
             _parent = parent;
 
             ConnectAsync();
