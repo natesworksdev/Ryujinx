@@ -10,5 +10,7 @@
         Connect,
         Connected,
         Disconnect,
+
+        SetAcceptPolicy,
     }
 }

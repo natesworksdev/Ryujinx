@@ -17,6 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private bool _stop;
 
         private byte[] _advertiseData;
+        private bool _networkCreated;
 
         private IUserLocalCommunicationService _parent;
 
@@ -135,6 +136,39 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _advertiseData = new byte[bufferSize];
 
             context.Memory.Read((ulong)bufferPosition, _advertiseData);
+
+            return ResultCode.Success;
+        }
+
+        public ResultCode SetStationAcceptPolicy(ServiceCtx context)
+        {
+            byte acceptPolicy = context.RequestData.ReadByte();
+
+            if (_networkCreated)
+            {
+                SetAcceptPolicyRequest request = new SetAcceptPolicyRequest
+                {
+                    StationAcceptPolicy = acceptPolicy
+                };
+
+                byte[] requestBuffer = LdnHelper.StructureToByteArray(request);
+
+                LdnHeader ldnHeader = new LdnHeader
+                {
+                    Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
+                    Type     = (byte)PacketId.SetAcceptPolicy,
+                    UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
+                    DataSize = requestBuffer.Length
+                };
+
+                byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
+                int ldnHeaderLength = ldnPacket.Length;
+
+                Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length);
+                requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
+
+                SendAsync(ldnPacket);
+            }
 
             return ResultCode.Success;
         }

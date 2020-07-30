@@ -327,6 +327,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return _accessPoint.SetAdvertiseData(context);
         }
 
+        [Command(207)]
+        // SetStationAcceptPolicy(u8)
+        public ResultCode SetStationAcceptPolicy(ServiceCtx context)
+        {
+            Logger.PrintStub(LogClass.ServiceLdn);
+
+            // TODO: check state
+
+            return _accessPoint.SetStationAcceptPolicy(context);
+        }
+
         [Command(300)]
         // OpenStation()
         public ResultCode OpenStation(ServiceCtx context)
@@ -368,7 +379,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(302)]
-        //Connect(bytes<0x44, 2>, bytes<0x30, 1>, u32, u32, buffer<unknown<0x480>, 0x19>)
+        // Connect(bytes<0x44, 2>, bytes<0x30, 1>, u32, u32, buffer<unknown<0x480>, 0x19>)
         public ResultCode Connect(ServiceCtx context)
         {
             Logger.PrintStub(LogClass.ServiceLdn);
@@ -386,6 +397,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
 
             return ResultCode.InvalidArgument;
+        }
+
+        [Command(304)]
+        // Disconnect()
+        public ResultCode Disconnect(ServiceCtx context)
+        {
+            if (_state  == NetworkState.Station)
+            {
+                _station?.DisconnectAndStop();
+
+                _station = null;
+
+                _stateChangeEvent.WritableEvent.Signal();
+            }
+
+            return ResultCode.Success;
         }
 
         [Command(400)]
