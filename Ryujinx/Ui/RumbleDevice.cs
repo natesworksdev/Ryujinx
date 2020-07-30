@@ -14,21 +14,21 @@ namespace Ryujinx.Ui
         private Thread _thread;
         private bool _rumbleSupported;
         private IntPtr _haptic;
-        private ConcurrentQueue<HidVibrationValue> _vibrationQueue;
+        private ConcurrentQueue<Queue<HidVibrationValue>> _vibrationQueue;
         private SDL.SDL_HapticEffect _effect = new SDL.SDL_HapticEffect
         {
             type = SDL.SDL_HAPTIC_LEFTRIGHT,
             leftright = new SDL.SDL_HapticLeftRight
             {
                 type = SDL.SDL_HAPTIC_LEFTRIGHT,
-                length = uint.MaxValue,
+                length = 1,
                 small_magnitude = 0,
                 large_magnitude = 0,
             },
         };
         public HidVibrationValue LastVibrationValue { get; private set; } = new HidVibrationValue();
 
-        public RumbleDevice(int index, ConcurrentQueue<HidVibrationValue> vibrationQueue)
+        public RumbleDevice(int index, ConcurrentQueue<Queue<HidVibrationValue>> vibrationQueue)
         {
             try
             {
@@ -62,20 +62,33 @@ namespace Ryujinx.Ui
 
         public void ThreadProc()
         {
-            while (true)
+            while (_vibrationQueue.Count <= 0)
             {
-                HidVibrationValue value;
-                while (_vibrationQueue.TryDequeue(out value))
-                {
-                    _effect.leftright.small_magnitude = (ushort)(value.AmplitudeLow * short.MaxValue);
-                    _effect.leftright.large_magnitude = (ushort)(value.AmplitudeHigh * short.MaxValue);
-                    int effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
-                    SDL.SDL_HapticRunEffect(_haptic, effectIndex, 1);
-                    SDL.SDL_HapticDestroyEffect(_haptic, effectIndex);
-                    LastVibrationValue = value;
-                }
+                // yield until we start getting values
                 Thread.Yield();
             }
+            while (true)
+            {
+                Queue<HidVibrationValue> value;
+                while (_vibrationQueue.TryDequeue(out value))
+                {
+                    foreach (HidVibrationValue value2 in value)
+                    {
+                        _effect.leftright.small_magnitude = EaseOutQuadratic(value2.AmplitudeLow);
+                        _effect.leftright.large_magnitude = EaseOutQuadratic(value2.AmplitudeHigh);
+                        int effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
+                        SDL.SDL_HapticRunEffect(_haptic, effectIndex, SDL.SDL_HAPTIC_INFINITY);
+                        SDL.SDL_HapticDestroyEffect(_haptic, effectIndex);
+                        LastVibrationValue = value2;
+                    }
+                }
+            }
+        }
+
+        private static ushort EaseOutQuadratic(float x)
+        {
+            // 32768(1-(1-x)^2)
+            return (ushort)(short.MaxValue * (1 - (1 - x) * (1 - x)));
         }
 
         public void Start()

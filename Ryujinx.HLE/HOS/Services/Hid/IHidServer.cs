@@ -937,10 +937,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.RequestData.ReadInt64();
             PlayerIndex index = (PlayerIndex)vibrationDeviceHandle;
 
-            ConcurrentQueue<HidVibrationValue> rumbleQueue;
+            ConcurrentQueue<Queue<HidVibrationValue>> rumbleQueue;
             if (context.Device.Hid.Npads.RumbleQueues.TryGetValue(index, out rumbleQueue))
             {
-                rumbleQueue.Enqueue(vibrationValue);
+                rumbleQueue.Enqueue(new Queue<HidVibrationValue>(new HidVibrationValue[] { vibrationValue }));
             }
 
             return ResultCode.Success;
@@ -1025,13 +1025,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             foreach (int vibrationHandle in deviceHandles)
             {
                 PlayerIndex index = (PlayerIndex)((vibrationHandle >> 8) & 0xff);
-                ConcurrentQueue<HidVibrationValue> rumbleQueue;
+                ConcurrentQueue<Queue<HidVibrationValue>> rumbleQueue;
                 if (context.Device.Hid.Npads.RumbleQueues.TryGetValue(index, out rumbleQueue))
                 {
-                    foreach (HidVibrationValue value in vibrationValues)
-                    {
-                        rumbleQueue.Enqueue(value);
-                    }
+                    rumbleQueue.Enqueue(new Queue<HidVibrationValue>(vibrationValues.ToArray()));
                 }
             }
 

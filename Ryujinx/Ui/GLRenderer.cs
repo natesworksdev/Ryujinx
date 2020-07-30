@@ -610,9 +610,9 @@ namespace Ryujinx.Ui
                         HLE.HOS.Services.Hid.PlayerIndex playerIndex = (HLE.HOS.Services.Hid.PlayerIndex)controllerConfig.PlayerIndex;
                         if (!_device.Hid.Npads.RumbleQueues.ContainsKey(playerIndex))
                         {
-                            _device.Hid.Npads.RumbleQueues.Add(playerIndex, new ConcurrentQueue<HidVibrationValue>());
+                            _device.Hid.Npads.RumbleQueues.Add(playerIndex, new ConcurrentQueue<Queue<HidVibrationValue>>());
                         }
-                        ConcurrentQueue<HidVibrationValue> rumbleQueue = _device.Hid.Npads.RumbleQueues[playerIndex];
+                        ConcurrentQueue<Queue<HidVibrationValue>> rumbleQueue = _device.Hid.Npads.RumbleQueues[playerIndex];
                         if (!_rumbleDevices.ContainsKey(playerIndex))
                         {
                             _rumbleDevices.Add(playerIndex, new RumbleDevice(controllerConfig.RumbleIndex, rumbleQueue));

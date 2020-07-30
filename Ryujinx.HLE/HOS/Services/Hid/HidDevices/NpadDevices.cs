@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _supportedPlayers[(int)player] = supported;
         }
 
-        public Dictionary<PlayerIndex, ConcurrentQueue<HidVibrationValue>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<HidVibrationValue>>();
+        public Dictionary<PlayerIndex, ConcurrentQueue<Queue<HidVibrationValue>>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<Queue<HidVibrationValue>>>();
         public Dictionary<PlayerIndex, HidVibrationValue> LastRumbleValues = new Dictionary<PlayerIndex, HidVibrationValue>();
 
         internal IEnumerable<PlayerIndex> GetSupportedPlayers()
