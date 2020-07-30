@@ -1146,10 +1146,9 @@ namespace ARMeilleure.CodeGen.X86
             Debug.Assert(src1.Type == OperandType.V128);
             Debug.Assert(src2.Kind == OperandKind.Constant);
 
-            int  count = OperandType.V128.GetSizeInBytes() / dest.Type.GetSizeInBytes();
             byte index = src2.AsByte();
 
-            Debug.Assert(index < count);
+            Debug.Assert(index < OperandType.V128.GetSizeInBytes() / dest.Type.GetSizeInBytes());
 
             if (dest.Type == OperandType.I32)
             {
