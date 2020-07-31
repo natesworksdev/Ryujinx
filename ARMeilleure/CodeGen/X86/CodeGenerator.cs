@@ -38,19 +38,10 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.Clobber,                 GenerateClobber);
+            Add(Instruction.Compare,                 GenerateCompare);
             Add(Instruction.CompareAndSwap,          GenerateCompareAndSwap);
             Add(Instruction.CompareAndSwap16,        GenerateCompareAndSwap16);
             Add(Instruction.CompareAndSwap8,         GenerateCompareAndSwap8);
-            Add(Instruction.CompareEqual,            GenerateCompareEqual);
-            Add(Instruction.CompareGreater,          GenerateCompareGreater);
-            Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
-            Add(Instruction.CompareGreaterOrEqualUI, GenerateCompareGreaterOrEqualUI);
-            Add(Instruction.CompareGreaterUI,        GenerateCompareGreaterUI);
-            Add(Instruction.CompareLess,             GenerateCompareLess);
-            Add(Instruction.CompareLessOrEqual,      GenerateCompareLessOrEqual);
-            Add(Instruction.CompareLessOrEqualUI,    GenerateCompareLessOrEqualUI);
-            Add(Instruction.CompareLessUI,           GenerateCompareLessUI);
-            Add(Instruction.CompareNotEqual,         GenerateCompareNotEqual);
             Add(Instruction.ConditionalSelect,       GenerateConditionalSelect);
             Add(Instruction.ConvertI64ToI32,         GenerateConvertI64ToI32);
             Add(Instruction.ConvertToFP,             GenerateConvertToFP);
@@ -566,6 +557,25 @@ namespace ARMeilleure.CodeGen.X86
             // register allocator, we don't need to produce any code.
         }
 
+        private static void GenerateCompare(CodeGenContext context, Operation operation)
+        {
+            Operand dest = operation.Destination;
+            Operand src1 = operation.GetSource(0);
+            Operand src2 = operation.GetSource(1);
+            Operand comp = operation.GetSource(2);
+
+            EnsureSameType(src1, src2);
+
+            Debug.Assert(dest.Type == OperandType.I32);
+            Debug.Assert(comp.Kind == OperandKind.Constant);
+
+            var cond = ((Comparison)comp.AsInt32()).ToX86Condition();
+
+            context.Assembler.Cmp(src1, src2, src1.Type);
+            context.Assembler.Setcc(dest, cond);
+            context.Assembler.Movzx8(dest, dest, OperandType.I32);
+        }
+
         private static void GenerateCompareAndSwap(CodeGenContext context, Operation operation)
         {
             Operand src1 = operation.GetSource(0);
@@ -613,71 +623,6 @@ namespace ARMeilleure.CodeGen.X86
             MemoryOperand memOp = MemoryOp(src3.Type, src1);
 
             context.Assembler.Cmpxchg8(memOp, src3);
-        }
-
-        private static void GenerateCompareEqual(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.Equal);
-        }
-
-        private static void GenerateCompareGreater(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.Greater);
-        }
-
-        private static void GenerateCompareGreaterOrEqual(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.GreaterOrEqual);
-        }
-
-        private static void GenerateCompareGreaterOrEqualUI(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.AboveOrEqual);
-        }
-
-        private static void GenerateCompareGreaterUI(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.Above);
-        }
-
-        private static void GenerateCompareLess(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.Less);
-        }
-
-        private static void GenerateCompareLessOrEqual(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.LessOrEqual);
-        }
-
-        private static void GenerateCompareLessOrEqualUI(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.BelowOrEqual);
-        }
-
-        private static void GenerateCompareLessUI(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.Below);
-        }
-
-        private static void GenerateCompareNotEqual(CodeGenContext context, Operation operation)
-        {
-            GenerateCompare(context, operation, X86Condition.NotEqual);
-        }
-
-        private static void GenerateCompare(CodeGenContext context, Operation operation, X86Condition condition)
-        {
-            Operand dest = operation.Destination;
-            Operand src1 = operation.GetSource(0);
-            Operand src2 = operation.GetSource(1);
-
-            EnsureSameType(src1, src2);
-
-            Debug.Assert(dest.Type == OperandType.I32);
-
-            context.Assembler.Cmp(src1, src2, src1.Type);
-            context.Assembler.Setcc(dest, condition);
-            context.Assembler.Movzx8(dest, dest, OperandType.I32);
         }
 
         private static void GenerateConditionalSelect(CodeGenContext context, Operation operation)
