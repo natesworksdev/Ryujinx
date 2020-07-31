@@ -42,13 +42,25 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         Simplification.RunPass(operation);
 
-                        if (DestIsLocalVar(operation) && IsPropagableCopy(operation))
-                        {
-                            PropagateCopy(operation);
+                        if (DestIsLocalVar(operation))
+                        {   
+                            if (IsPropagableCompare(operation))
+                            {
+                                modified |= PropagateCompare(operation);
 
-                            RemoveNode(block, node);
+                                if (modified && IsUnused(operation))
+                                {
+                                    RemoveNode(block, node);
+                                }
+                            }
+                            else if (IsPropagableCopy(operation))
+                            {
+                                PropagateCopy(operation);
 
-                            modified = true;
+                                RemoveNode(block, node);
+
+                                modified = true;
+                            }
                         }
 
                         node = nextNode;
@@ -86,6 +98,49 @@ namespace ARMeilleure.CodeGen.Optimizations
                 }
             }
             while (modified);
+        }
+
+        private static bool PropagateCompare(Operation compOp)
+        {
+            bool modified = false;
+
+            Operand dest = compOp.Destination;
+            Operand src1 = compOp.GetSource(0);
+            Operand src2 = compOp.GetSource(1);
+            Operand comp = compOp.GetSource(2);
+
+            Comparison compType = (Comparison)comp.AsInt32();
+
+            Node[] uses = dest.Uses.ToArray();
+
+            foreach (Node use in uses)
+            {
+                if (!(use is Operation operation))
+                {
+                    continue;
+                }
+
+                Comparison actualCompType;
+
+                if (operation.Instruction == Instruction.BranchIfTrue)
+                {
+                    actualCompType = compType;
+                }
+                else if (operation.Instruction == Instruction.BranchIfFalse)
+                {
+                    actualCompType = compType.Invert();
+                }
+                else
+                {
+                    continue;
+                }
+
+                operation.TurnIntoBranchIf(src1, src2, actualCompType);
+
+                modified = true;
+            }
+
+            return modified;
         }
 
         private static void PropagateCopy(Operation copyOp)
@@ -141,6 +196,11 @@ namespace ARMeilleure.CodeGen.Optimizations
                 || operation.Instruction == Instruction.CompareAndSwap
                 || operation.Instruction == Instruction.CompareAndSwap16
                 || operation.Instruction == Instruction.CompareAndSwap8);
+        }
+
+        private static bool IsPropagableCompare(Operation operation)
+        {
+            return operation.Instruction == Instruction.Compare;
         }
 
         private static bool IsPropagableCopy(Operation operation)
