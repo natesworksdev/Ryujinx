@@ -62,6 +62,13 @@ namespace ARMeilleure.Translation
             BranchToLabel(label);
         }
 
+        public void BranchIf(Operand label, Operand op1, Operand op2, Comparison comp)
+        {
+            Add(Instruction.BranchIf, null, op1, op2, Const((int)comp));
+
+            BranchToLabel(label);
+        }
+
         public void BranchIfFalse(Operand label, Operand op1)
         {
             Add(Instruction.BranchIfFalse, null, op1);

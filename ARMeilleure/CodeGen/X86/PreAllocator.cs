@@ -1348,6 +1348,7 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.BitwiseAnd:
                 case Instruction.BitwiseExclusiveOr:
                 case Instruction.BitwiseOr:
+                case Instruction.BranchIf:
                 case Instruction.Compare:
                 case Instruction.Multiply:
                 case Instruction.RotateRight:
@@ -1369,9 +1370,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool IsCommutative(Operation operation)
         {
-            Instruction inst = operation.Instruction;
-
-            switch (inst)
+            switch (operation.Instruction)
             {
                 case Instruction.Add:
                 case Instruction.BitwiseAnd:
@@ -1380,11 +1379,16 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.Multiply:
                     return true;
 
+                case Instruction.BranchIf:
                 case Instruction.Compare:
                 {
-                    var comp = (Comparison)operation.GetSource(2).AsInt32();
+                    Operand comp = operation.GetSource(2);
 
-                    return comp == Comparison.Equal || comp == Comparison.NotEqual;
+                    Debug.Assert(comp.Kind == OperandKind.Constant);
+
+                    var compType = (Comparison)comp.AsInt32();
+
+                    return compType == Comparison.Equal || compType == Comparison.NotEqual;
                 }
             }
 

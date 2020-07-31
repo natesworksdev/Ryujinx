@@ -33,6 +33,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.BitwiseNot,              GenerateBitwiseNot);
             Add(Instruction.BitwiseOr,               GenerateBitwiseOr);
             Add(Instruction.Branch,                  GenerateBranch);
+            Add(Instruction.BranchIf,                GenerateBranchIf);
             Add(Instruction.BranchIfFalse,           GenerateBranchIfFalse);
             Add(Instruction.BranchIfTrue,            GenerateBranchIfTrue);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
@@ -514,6 +515,24 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateBranch(CodeGenContext context, Operation operation)
         {
             context.JumpTo(context.CurrBlock.Branch);
+        }
+
+        private static void GenerateBranchIf(CodeGenContext context, Operation operation)
+        {
+            Operand src1 = operation.GetSource(0);
+            Operand src2 = operation.GetSource(1);
+            Operand comp = operation.GetSource(2);
+
+            EnsureSameType(src1, src2);
+
+            Debug.Assert(comp.Kind == OperandKind.Constant);
+
+            var cond = ((Comparison)comp.AsInt32()).ToX86Condition();
+
+            // TODO: Use test when possible.
+            context.Assembler.Cmp(src1, src2, src1.Type);
+
+            context.JumpTo(cond, context.CurrBlock.Branch);
         }
 
         private static void GenerateBranchIfFalse(CodeGenContext context, Operation operation)
