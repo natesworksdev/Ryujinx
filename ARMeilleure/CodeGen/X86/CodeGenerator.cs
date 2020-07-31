@@ -39,6 +39,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.Clobber,                 GenerateClobber);
             Add(Instruction.CompareAndSwap,          GenerateCompareAndSwap);
+            Add(Instruction.CompareAndSwap16,        GenerateCompareAndSwap16);
+            Add(Instruction.CompareAndSwap8,         GenerateCompareAndSwap8);
             Add(Instruction.CompareEqual,            GenerateCompareEqual);
             Add(Instruction.CompareGreater,          GenerateCompareGreater);
             Add(Instruction.CompareGreaterOrEqual,   GenerateCompareGreaterOrEqual);
@@ -585,6 +587,32 @@ namespace ARMeilleure.CodeGen.X86
 
                 context.Assembler.Cmpxchg(memOp, src3);
             }
+        }
+
+        private static void GenerateCompareAndSwap16(CodeGenContext context, Operation operation)
+        {
+            Operand src1 = operation.GetSource(0);
+            Operand src2 = operation.GetSource(1);
+            Operand src3 = operation.GetSource(2);
+
+            EnsureSameType(src2, src3);
+
+            MemoryOperand memOp = MemoryOp(src3.Type, src1);
+
+            context.Assembler.Cmpxchg16(memOp, src3);
+        }
+
+        private static void GenerateCompareAndSwap8(CodeGenContext context, Operation operation)
+        {
+            Operand src1 = operation.GetSource(0);
+            Operand src2 = operation.GetSource(1);
+            Operand src3 = operation.GetSource(2);
+
+            EnsureSameType(src2, src3);
+
+            MemoryOperand memOp = MemoryOp(src3.Type, src1);
+
+            context.Assembler.Cmpxchg8(memOp, src3);
         }
 
         private static void GenerateCompareEqual(CodeGenContext context, Operation operation)
@@ -1148,62 +1176,52 @@ namespace ARMeilleure.CodeGen.X86
 
             byte index = src2.AsByte();
 
+            Debug.Assert(index < OperandType.V128.GetSizeInBytes() / dest.Type.GetSizeInBytes());
+
             if (dest.Type == OperandType.I32)
             {
-                Debug.Assert(index < 4);
-
-                if (HardwareCapabilities.SupportsSse41)
+                if (index == 0)
+                {
+                    context.Assembler.Movd(dest, src1);
+                }
+                else if (HardwareCapabilities.SupportsSse41)
                 {
                     context.Assembler.Pextrd(dest, src1, index);
                 }
                 else
                 {
-                    if (index != 0)
-                    {
-                        int mask0 = 0b11_10_01_00;
-                        int mask1 = 0b11_10_01_00;
+                    int mask0 = 0b11_10_01_00;
+                    int mask1 = 0b11_10_01_00;
 
-                        mask0 = BitUtils.RotateRight(mask0,     index * 2, 8);
-                        mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
+                    mask0 = BitUtils.RotateRight(mask0, index * 2, 8);
+                    mask1 = BitUtils.RotateRight(mask1, 8 - index * 2, 8);
 
-                        context.Assembler.Pshufd(src1, src1, (byte)mask0);
-                        context.Assembler.Movd  (dest, src1);
-                        context.Assembler.Pshufd(src1, src1, (byte)mask1);
-                    }
-                    else
-                    {
-                        context.Assembler.Movd(dest, src1);
-                    }
+                    context.Assembler.Pshufd(src1, src1, (byte)mask0);
+                    context.Assembler.Movd  (dest, src1);
+                    context.Assembler.Pshufd(src1, src1, (byte)mask1);
                 }
             }
             else if (dest.Type == OperandType.I64)
             {
-                Debug.Assert(index < 2);
-
-                if (HardwareCapabilities.SupportsSse41)
+                if (index == 0)
+                {
+                    context.Assembler.Movq(dest, src1);
+                }
+                else if (HardwareCapabilities.SupportsSse41)
                 {
                     context.Assembler.Pextrq(dest, src1, index);
                 }
                 else
                 {
-                    if (index != 0)
-                    {
-                        const byte mask = 0b01_00_11_10;
+                    const byte mask = 0b01_00_11_10;
 
-                        context.Assembler.Pshufd(src1, src1, mask);
-                        context.Assembler.Movq  (dest, src1);
-                        context.Assembler.Pshufd(src1, src1, mask);
-                    }
-                    else
-                    {
-                        context.Assembler.Movq(dest, src1);
-                    }
+                    context.Assembler.Pshufd(src1, src1, mask);
+                    context.Assembler.Movq  (dest, src1);
+                    context.Assembler.Pshufd(src1, src1, mask);
                 }
             }
             else
             {
-                Debug.Assert(index < (dest.Type == OperandType.FP32 ? 4 : 2));
-
                 // Floating-point types.
                 if ((index >= 2 && dest.Type == OperandType.FP32) ||
                     (index == 1 && dest.Type == OperandType.FP64))
