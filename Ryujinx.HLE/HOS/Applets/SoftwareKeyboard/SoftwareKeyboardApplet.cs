@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private SoftwareKeyboardConfig _keyboardConfig;
         private byte[] _transferMemory;
 
-        private string   _textValue = DefaultText;
+        private string   _textValue = null;
         private bool     _okPressed = false;
         private Encoding _encoding  = Encoding.Unicode;
 
@@ -109,9 +109,17 @@ namespace Ryujinx.HLE.HOS.Applets
             };
 
             // Call the configured GUI handler to get user's input
-            _okPressed = _device.UiHandler.DisplayInputDialog(args, out _textValue);
-            _textValue ??= initialText ?? DefaultText;
+            if (_device.UiHandler == null)
+            {
+                Logger.PrintWarning(LogClass.Application, $"GUI Handler is not set. Falling back to default");
+                _okPressed = true;
+            }
+            else
+            {
+                _okPressed = _device.UiHandler.DisplayInputDialog(args, out _textValue);
+            }
 
+            _textValue ??= initialText ?? DefaultText;
 
             // If the game requests a string with a minimum length less
             // than our default text, repeat our default text until we meet
