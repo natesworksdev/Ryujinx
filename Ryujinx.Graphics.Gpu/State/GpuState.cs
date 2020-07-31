@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Gpu.State
                 {
                     value = _shadow[meth.Method];
                 }
-            } 
+            }
 
             Register register = _registers[meth.Method];
 
