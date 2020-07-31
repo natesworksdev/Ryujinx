@@ -5,9 +5,10 @@ namespace Ryujinx.HLE
     public interface IHostUiHandler
     {
         /// <summary>
-        /// Displays an Input Dialog box to the user and blocks until text is entered
+        /// Displays an Input Dialog box to the user and blocks until text is entered.
         /// </summary>
-        /// <returns>A string representing what's typed on the keyboard</returns>
-        string DisplayInputDialog(SoftwareKeyboardUiArgs args);
+        /// <param name="userText">Text that the user entered. Set to `null` on internal errors</param>
+        /// <returns>True when OK is pressed, False otherwise. Also returns True on internal errors</returns>
+        bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText);
     }
 }

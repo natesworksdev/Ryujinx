@@ -1,6 +1,8 @@
 using Gtk;
+using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Applets;
+using System;
 using System.Threading;
 
 namespace Ryujinx.Ui
@@ -14,38 +16,53 @@ namespace Ryujinx.Ui
             _parent = parent;
         }
 
-        public string DisplayInputDialog(SoftwareKeyboardUiArgs args)
+        public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
         {
             ManualResetEvent mre = new ManualResetEvent(false);
-            string inputText = string.IsNullOrEmpty(args.InitialText) ? new string('?', args.StringLengthMin) : args.InitialText;
+            bool okPressed = false;
+            bool error = false;
+            string inputText = args.InitialText ?? "";
 
             Application.Invoke(delegate
             {
-                var swkbdDialog = new InputDialog(_parent)
+                try
                 {
-                    Title = "Software Keyboard",
-                    Text = args.HeaderText,
-                    SecondaryText = args.SubtitleText,
-                };
+                    var swkbdDialog = new InputDialog(_parent)
+                    {
+                        Title = "Software Keyboard",
+                        Text = args.HeaderText,
+                        SecondaryText = args.SubtitleText,
+                    };
 
-                swkbdDialog.InputEntry.Text = args.InitialText;
-                swkbdDialog.InputEntry.PlaceholderText = args.GuideText;
-                swkbdDialog.OkButton.Label = args.SubmitText;
+                    swkbdDialog.InputEntry.Text = inputText;
+                    swkbdDialog.InputEntry.PlaceholderText = args.GuideText;
+                    swkbdDialog.OkButton.Label = args.SubmitText;
 
-                swkbdDialog.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
+                    swkbdDialog.SetInputLengthValidation(args.StringLengthMin, args.StringLengthMax);
 
-                if (swkbdDialog.Run() == (int)ResponseType.Ok)
-                {
-                    inputText = swkbdDialog.InputEntry.Text;
+                    if (swkbdDialog.Run() == (int)ResponseType.Ok)
+                    {
+                        inputText = swkbdDialog.InputEntry.Text;
+                        okPressed = true;
+                    }
+
+                    swkbdDialog.Dispose();
                 }
-
-                mre.Set();
-                swkbdDialog.Dispose();
+                catch (Exception e)
+                {
+                    error = true;
+                    Logger.PrintError(LogClass.Application, $"Error displaying Software Keyboard: {e}");
+                }
+                finally
+                {
+                    mre.Set();
+                }
             });
 
             mre.WaitOne();
 
-            return inputText;
+            userText = error ? null : inputText;
+            return error || okPressed;
         }
     }
 }

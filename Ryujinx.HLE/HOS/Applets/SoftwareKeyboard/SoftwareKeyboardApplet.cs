@@ -26,6 +26,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private byte[] _transferMemory;
 
         private string   _textValue = DefaultText;
+        private bool     _okPressed = false;
         private Encoding _encoding  = Encoding.Unicode;
 
         public event EventHandler AppletStateChanged;
@@ -46,7 +47,15 @@ namespace Ryujinx.HLE.HOS.Applets
             var launchParams   = _normalSession.Pop();
 
             var keyboardConfig = _normalSession.Pop();
-            _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+
+            if (keyboardConfig.Length < Marshal.SizeOf<SoftwareKeyboardConfig>())
+            {
+                Logger.PrintError(LogClass.ServiceAm, $"SoftwareKeyboardConfig size mismatch. Expected {Marshal.SizeOf<SoftwareKeyboardConfig>():x}. Got {keyboardConfig.Length:x}");
+            }
+            else
+            {
+                _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+            }
 
             if (!_normalSession.TryPop(out _transferMemory))
             {
@@ -96,19 +105,13 @@ namespace Ryujinx.HLE.HOS.Applets
                 SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
                 StringLengthMin = _keyboardConfig.StringLengthMin, 
                 StringLengthMax = _keyboardConfig.StringLengthMax,
-                InitialText = initialText ?? ""
+                InitialText = initialText
             };
 
             // Call the configured GUI handler to get user's input
-            try
-            {
-                _textValue = _device.UiHandler.DisplayInputDialog(args);
-            }
-            catch(Exception e)
-            {
-                Logger.PrintError(LogClass.ServiceAm, $"Error launching Software Keyboard UI: {e}");
-                _textValue = initialText ?? DefaultText;
-            }
+            _okPressed = _device.UiHandler.DisplayInputDialog(args, out _textValue);
+            _textValue ??= initialText ?? DefaultText;
+
 
             // If the game requests a string with a minimum length less
             // than our default text, repeat our default text until we meet
@@ -196,7 +199,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 if (!interactive)
                 {
                     // Result Code
-                    writer.Write((uint)0);
+                    writer.Write(_okPressed ? 0U : 1U);
                 }
                 else
                 {
