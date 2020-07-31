@@ -529,8 +529,14 @@ namespace ARMeilleure.CodeGen.X86
 
             var cond = ((Comparison)comp.AsInt32()).ToX86Condition();
 
-            // TODO: Use test when possible.
-            context.Assembler.Cmp(src1, src2, src1.Type);
+            if (src2.Kind == OperandKind.Constant && src2.Value == 0)
+            {
+                context.Assembler.Test(src1, src1, src1.Type);
+            }
+            else
+            {
+                context.Assembler.Cmp(src1, src2, src1.Type);
+            }
 
             context.JumpTo(cond, context.CurrBlock.Branch);
         }
@@ -590,7 +596,15 @@ namespace ARMeilleure.CodeGen.X86
 
             var cond = ((Comparison)comp.AsInt32()).ToX86Condition();
 
-            context.Assembler.Cmp(src1, src2, src1.Type);
+            if (src2.Kind == OperandKind.Constant && src2.Value == 0)
+            {
+                context.Assembler.Test(src1, src1, src1.Type);
+            }
+            else
+            {
+                context.Assembler.Cmp(src1, src2, src1.Type);
+            }
+
             context.Assembler.Setcc(dest, cond);
             context.Assembler.Movzx8(dest, dest, OperandType.I32);
         }
