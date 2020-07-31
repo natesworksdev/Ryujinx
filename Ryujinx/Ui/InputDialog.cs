@@ -5,32 +5,13 @@ namespace Ryujinx.Ui
 {
     public class InputDialog : MessageDialog
     {
+        private int _inputmin, _inputmax;
+        private Predicate<int> _checkLength;
         private Label _validationInfo;
 
         public Entry InputEntry { get; }
         public Button OkButton { get; }
         public Button CancelButton { get; }
-
-        private (int Min, int Max) _stringrange;
-        public (int Min, int Max) AllowedInputLength
-        {
-            get => _stringrange;
-            set
-            {
-                _stringrange = value;
-                OnInputChanged(this, EventArgs.Empty);
-
-                if(_stringrange.Max < 0)
-                {
-                    _validationInfo.Visible = false;
-                }
-                else
-                {
-                    _validationInfo.Visible = true;
-                    _validationInfo.Markup = $"<i>Must be {_stringrange.Min}-{_stringrange.Max} characters long</i>";
-                }
-            }
-        }
 
         public InputDialog(Window parent)
             : base(parent, DialogFlags.Modal | DialogFlags.DestroyWithParent, MessageType.Question, ButtonsType.None, null)
@@ -49,19 +30,40 @@ namespace Ryujinx.Ui
             ((Box)MessageArea).PackEnd(_validationInfo, true, true, 0);
             ((Box)MessageArea).PackEnd(InputEntry, true, true, 4);
 
-            _stringrange = (0, -1); // default disable length check
+            SetInputLengthValidation(0, int.MaxValue); // disable by default
         }
 
-        public void OnInputChanged(object sender, EventArgs e)
+        public void SetInputLengthValidation(int min, int max)
         {
-            if(_stringrange.Max < 0)
-            {
-                OkButton.Sensitive = true;
+            _inputmin = Math.Min(min, max);
+            _inputmax = Math.Max(min, max);
 
-                return;
+            _validationInfo.Visible = false;
+
+            if (_inputmin <= 0 && _inputmax == int.MaxValue) // disable
+            {
+                _validationInfo.Visible = false;
+                _checkLength = (length) => true;
+            }
+            else if (_inputmin > 0 && _inputmax == int.MaxValue)
+            {
+                _validationInfo.Visible = true;
+                _validationInfo.Markup = $"<i>Must be at least {_inputmin} characters long</i>";
+                _checkLength = (length) => _inputmin <= length;
+            }
+            else
+            {
+                _validationInfo.Visible = true;
+                _validationInfo.Markup = $"<i>Must be {_inputmin}-{_inputmax} characters long</i>";
+                _checkLength = (length) => _inputmin <= length && length <= _inputmax;
             }
 
-            OkButton.Sensitive = _stringrange.Min <= InputEntry.Text.Length && InputEntry.Text.Length <= _stringrange.Max;
+            OnInputChanged(this, EventArgs.Empty);
+        }
+
+        private void OnInputChanged(object sender, EventArgs e)
+        {
+            OkButton.Sensitive = _checkLength(InputEntry.Text.Length);
         }
     }
 }

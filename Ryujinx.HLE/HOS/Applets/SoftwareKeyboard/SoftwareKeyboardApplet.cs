@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Applets
             var keyboardConfig = _normalSession.Pop();
             _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
 
-            if(!_normalSession.TryPop(out _transferMemory))
+            if (!_normalSession.TryPop(out _transferMemory))
             {
                 Logger.PrintError(LogClass.ServiceAm, "SwKbd Transfer Memory is null");
             }
@@ -72,20 +72,20 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void Execute()
         {
+            string initialText = null;
+
+            // Initial Text is always encoded as a UTF-16 string in the work buffer (passed as transfer memory)
+            // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
+            if (_transferMemory != null && _keyboardConfig.InitialStringLength > 0)
+            {
+                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardConfig.InitialStringOffset, 2 * _keyboardConfig.InitialStringLength);
+            }
+
             // If the max string length is 0, we set it to a large default
             // length.
             if (_keyboardConfig.StringLengthMax == 0)
             {
                 _keyboardConfig.StringLengthMax = 100;
-            }
-
-            string initialText = "";
-
-            // Initial Text is encoded as a UTF-16 string in the work buffer (passed as transfer memory)
-            // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
-            if (_transferMemory != null && _keyboardConfig.InitialStringLength > 0)
-            {
-                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardConfig.InitialStringOffset, 2 * _keyboardConfig.InitialStringLength);
             }
 
             var args = new SoftwareKeyboardUiArgs
@@ -94,12 +94,21 @@ namespace Ryujinx.HLE.HOS.Applets
                 SubtitleText = _keyboardConfig.SubtitleText,
                 GuideText = _keyboardConfig.GuideText,
                 SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
-                AllowedStringSize = (_keyboardConfig.StringLengthMin, _keyboardConfig.StringLengthMax),
-                InitialText = initialText
+                StringLengthMin = _keyboardConfig.StringLengthMin, 
+                StringLengthMax = _keyboardConfig.StringLengthMax,
+                InitialText = initialText ?? ""
             };
 
             // Call the configured GUI handler to get user's input
-            _textValue = _device.UiHandler.DisplayInputDialog(args);
+            try
+            {
+                _textValue = _device.UiHandler.DisplayInputDialog(args);
+            }
+            catch(Exception e)
+            {
+                Logger.PrintError(LogClass.ServiceAm, $"Error launching Software Keyboard UI: {e}");
+                _textValue = initialText ?? DefaultText;
+            }
 
             // If the game requests a string with a minimum length less
             // than our default text, repeat our default text until we meet

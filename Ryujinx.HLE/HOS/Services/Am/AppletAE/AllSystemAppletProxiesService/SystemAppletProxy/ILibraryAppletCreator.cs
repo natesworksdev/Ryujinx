@@ -37,19 +37,19 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             bool unknown = context.RequestData.ReadBoolean();
             long size    = context.RequestData.ReadInt64();
-            int khandle  = context.Request.HandleDesc.ToCopy[0];
+            int  handle  = context.Request.HandleDesc.ToCopy[0];
 
-            KTransferMemory tm = context.Process.HandleTable.GetObject<KTransferMemory>(khandle);
+            KTransferMemory xfm = context.Process.HandleTable.GetObject<KTransferMemory>(handle);
 
-            if(tm == null)
+            if (xfm == null)
             {
-                Logger.PrintWarning(LogClass.ServiceAm, $"Invalid TransferMemory Handle: {khandle:X}");
+                Logger.PrintWarning(LogClass.ServiceAm, $"Invalid TransferMemory Handle: {handle:X}");
 
                 return ResultCode.Success; // TODO: Find correct error code
             }
 
-            var data = new byte[tm.Size];
-            context.Memory.Read(tm.Address, data);
+            var data = new byte[xfm.Size];
+            context.Memory.Read(xfm.Address, data);
 
             MakeObject(context, new IStorage(data));
 
