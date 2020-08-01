@@ -92,13 +92,5 @@ namespace ARMeilleure.IntermediateRepresentation
 
             SetSource(source);
         }
-
-        public void TurnIntoBranchIf(Operand src1, Operand src2, Comparison comp)
-        {
-            Instruction = Instruction.BranchIf;
-
-            SetDestination(null);
-            SetSources(new Operand[] { src1, src2, OperandHelper.Const((int)comp) });
-        }
     }
 }

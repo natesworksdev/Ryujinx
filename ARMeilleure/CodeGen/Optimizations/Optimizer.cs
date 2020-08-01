@@ -2,6 +2,8 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
 using System.Diagnostics;
 
+using static ARMeilleure.IntermediateRepresentation.OperandHelper;
+
 namespace ARMeilleure.CodeGen.Optimizations
 {
     static class Optimizer
@@ -102,6 +104,42 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static bool PropagateCompare(Operation compOp)
         {
+            // Try to propagate Compare operations into their BranchIf uses, when these BranchIf uses are in the form
+            // of:
+            //
+            // - BranchIf %x, 0x0, Equal        ;; i.e BranchIfFalse %a
+            // - BranchIf %x, 0x0, NotEqual     ;; i.e BranchIfTrue %a
+            //
+            // The commutative property of Equal and NotEqual are taken into consideration as well.
+            //
+            // For example, this:
+            //
+            //  %x = Compare %a, %b, comp
+            //  BranchIf %x, 0x0, NotEqual
+            //
+            // becomes this:
+            //
+            //  BranchIf %a, %b, comp
+
+            static bool IsZeroBranch(Operation operation, out Comparison compType)
+            {
+                compType = Comparison.Equal;
+
+                if (operation.Instruction != Instruction.BranchIf)
+                {
+                    return false;
+                }
+
+                Operand src1 = operation.GetSource(0);
+                Operand src2 = operation.GetSource(1);
+                Operand comp = operation.GetSource(2);
+
+                compType = (Comparison)comp.AsInt32();
+
+                return (src1.Kind == OperandKind.Constant && src1.Value == 0) ||
+                       (src2.Kind == OperandKind.Constant && src2.Value == 0);
+            }
+
             bool modified = false;
 
             Operand dest = compOp.Destination;
@@ -120,24 +158,30 @@ namespace ARMeilleure.CodeGen.Optimizations
                     continue;
                 }
 
-                Comparison actualCompType;
-
-                if (operation.Instruction == Instruction.BranchIfTrue)
+                // If operation is a BranchIf and has a constant value 0 in its RHS or LHS source operands.
+                if (IsZeroBranch(operation, out Comparison otherCompType))
                 {
-                    actualCompType = compType;
-                }
-                else if (operation.Instruction == Instruction.BranchIfFalse)
-                {
-                    actualCompType = compType.Invert();
-                }
-                else
-                {
-                    continue;
-                }
+                    Comparison propCompType;
 
-                operation.TurnIntoBranchIf(src1, src2, actualCompType);
+                    if (otherCompType == Comparison.NotEqual)
+                    {
+                        propCompType = compType;
+                    }
+                    else if (otherCompType == Comparison.Equal)
+                    {
+                        propCompType = compType.Invert();
+                    }
+                    else
+                    {
+                        continue;
+                    }
 
-                modified = true;
+                    operation.SetSource(0, src1);
+                    operation.SetSource(1, src2);
+                    operation.SetSource(2, Const((int)propCompType));
+
+                    modified = true;
+                }
             }
 
             return modified;

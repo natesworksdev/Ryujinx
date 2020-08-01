@@ -34,8 +34,6 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.BitwiseOr,               GenerateBitwiseOr);
             Add(Instruction.Branch,                  GenerateBranch);
             Add(Instruction.BranchIf,                GenerateBranchIf);
-            Add(Instruction.BranchIfFalse,           GenerateBranchIfFalse);
-            Add(Instruction.BranchIfTrue,            GenerateBranchIfTrue);
             Add(Instruction.ByteSwap,                GenerateByteSwap);
             Add(Instruction.Call,                    GenerateCall);
             Add(Instruction.Clobber,                 GenerateClobber);
@@ -539,24 +537,6 @@ namespace ARMeilleure.CodeGen.X86
             }
 
             context.JumpTo(cond, context.CurrBlock.Branch);
-        }
-
-        private static void GenerateBranchIfFalse(CodeGenContext context, Operation operation)
-        {
-            Operand source = operation.GetSource(0);
-
-            context.Assembler.Test(source, source, source.Type);
-
-            context.JumpTo(X86Condition.Equal, context.CurrBlock.Branch);
-        }
-
-        private static void GenerateBranchIfTrue(CodeGenContext context, Operation operation)
-        {
-            Operand source = operation.GetSource(0);
-
-            context.Assembler.Test(source, source, source.Type);
-
-            context.JumpTo(X86Condition.NotEqual, context.CurrBlock.Branch);
         }
 
         private static void GenerateByteSwap(CodeGenContext context, Operation operation)

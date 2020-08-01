@@ -71,16 +71,12 @@ namespace ARMeilleure.Translation
 
         public void BranchIfFalse(Operand label, Operand op1)
         {
-            Add(Instruction.BranchIfFalse, null, op1);
-
-            BranchToLabel(label);
+            BranchIf(label, op1, Const(op1.Type, 0), Comparison.Equal);
         }
 
         public void BranchIfTrue(Operand label, Operand op1)
         {
-            Add(Instruction.BranchIfTrue, null, op1);
-
-            BranchToLabel(label);
+            BranchIf(label, op1, Const(op1.Type, 0), Comparison.NotEqual);
         }
 
         public Operand ByteSwap(Operand op1)
