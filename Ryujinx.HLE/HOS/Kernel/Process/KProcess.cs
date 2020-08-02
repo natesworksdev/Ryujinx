@@ -796,14 +796,10 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         public void IncrementThreadCount()
         {
             Interlocked.Increment(ref _threadCount);
-
-            KernelContext.ThreadCounter.AddCount();
         }
 
         public void DecrementThreadCountAndTerminateIfZero()
         {
-            KernelContext.ThreadCounter.Signal();
-
             if (Interlocked.Decrement(ref _threadCount) == 0)
             {
                 Terminate();
@@ -812,8 +808,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public void DecrementToZeroWhileTerminatingCurrent()
         {
-            KernelContext.ThreadCounter.Signal();
-
             while (Interlocked.Decrement(ref _threadCount) != 0)
             {
                 Destroy();
