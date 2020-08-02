@@ -107,10 +107,10 @@ namespace ARMeilleure.CodeGen.Optimizations
             // Try to propagate Compare operations into their BranchIf uses, when these BranchIf uses are in the form
             // of:
             //
-            // - BranchIf %x, 0x0, Equal        ;; i.e BranchIfFalse %a
-            // - BranchIf %x, 0x0, NotEqual     ;; i.e BranchIfTrue %a
+            // - BranchIf %x, 0x0, Equal        ;; i.e BranchIfFalse %x
+            // - BranchIf %x, 0x0, NotEqual     ;; i.e BranchIfTrue %x
             //
-            // The commutative property of Equal and NotEqual are taken into consideration as well.
+            // The commutative property of Equal and NotEqual is taken into consideration as well.
             //
             // For example, this:
             //
