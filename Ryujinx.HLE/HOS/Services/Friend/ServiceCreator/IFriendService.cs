@@ -200,7 +200,6 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             UserId userId      = context.RequestData.ReadStruct<UserId>();
 
             long bufferPosition  = context.Request.RecvListBuff[0].Position;
-            long bufferSize      = context.Request.RecvListBuff[0].Size;
 
             if (userId.IsNull)
             {
@@ -219,14 +218,9 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             //       Then it checks if an Uuid is already stored for the UserId, if not it generates a random Uuid.
             //       And store it in the savedata 8000000000000080 in the friends:/uid.bin file.
 
-            Guid          randomGuid       = Guid.NewGuid();
-            byte[]        randomGuidBuffer = randomGuid.ToByteArray();
-            Array16<byte> randomGuidArray  = new Array16<byte>();
+            Array16<byte> randomGuid = new Array16<byte>();
 
-            for (int i = 0; i < randomGuidBuffer.Length; i++)
-            {
-                randomGuidArray[i] = randomGuidBuffer[i];
-            }
+            Guid.NewGuid().ToByteArray().AsSpan().CopyTo(randomGuid.ToSpan());
 
             PlayHistoryRegistrationKey playHistoryRegistrationKey = new PlayHistoryRegistrationKey
             {
@@ -235,7 +229,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 UserIdBool  = 0, // TODO: Find it.
                 UnknownBool = (byte)(unknownBool ? 1 : 0), // TODO: Find it.
                 Reserved    = new Array11<byte>(),
-                Uuid        = randomGuidArray
+                Uuid        = randomGuid
             };
 
             ReadOnlySpan<byte> playHistoryRegistrationKeyBuffer = SpanHelpers.AsByteSpan(ref playHistoryRegistrationKey);
