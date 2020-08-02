@@ -1,8 +1,10 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Ipc;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -16,10 +18,10 @@ namespace Ryujinx.HLE.HOS.Services
         public IReadOnlyDictionary<int, MethodInfo> Commands { get; }
 
         private IdDictionary _domainObjects;
-
         private int _selfId;
-
         private bool _isDomain;
+
+        public ServerBase Server { get; set; }
 
         public IpcService()
         {
@@ -151,6 +153,11 @@ namespace Ryujinx.HLE.HOS.Services
         protected static void MakeObject(ServiceCtx context, IpcService obj)
         {
             IpcService service = context.Session.Service;
+
+            if (obj.Server == null)
+            {
+                obj.Server = service.Server;
+            }
 
             if (service._isDomain)
             {
