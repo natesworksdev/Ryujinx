@@ -219,7 +219,14 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
             //       Then it checks if an Uuid is already stored for the UserId, if not it generates a random Uuid.
             //       And store it in the savedata 8000000000000080 in the friends:/uid.bin file.
 
-            Guid randomGuid = Guid.NewGuid();
+            Guid          randomGuid       = Guid.NewGuid();
+            byte[]        randomGuidBuffer = randomGuid.ToByteArray();
+            Array16<byte> randomGuidArray  = new Array16<byte>();
+
+            for (int i = 0; i < randomGuidBuffer.Length; i++)
+            {
+                randomGuidArray[i] = randomGuidBuffer[i];
+            }
 
             PlayHistoryRegistrationKey playHistoryRegistrationKey = new PlayHistoryRegistrationKey
             {
@@ -228,21 +235,26 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                 UserIdBool  = 0, // TODO: Find it.
                 UnknownBool = (byte)(unknownBool ? 1 : 0), // TODO: Find it.
                 Reserved    = new Array11<byte>(),
-                Uuid        = Unsafe.As<Guid, Array16<byte>>(ref randomGuid)
+                Uuid        = randomGuidArray
             };
 
-            byte[] playHistoryRegistrationKeyBuffer = SpanHelpers.AsByteSpan(ref playHistoryRegistrationKey).ToArray();
+            ReadOnlySpan<byte> playHistoryRegistrationKeyBuffer = SpanHelpers.AsByteSpan(ref playHistoryRegistrationKey);
 
-            // NOTE: The service uses the KeyIndex to get a random key from a keys buffer (since the key index is stored in the returned buffer).
-            //       We currently don't support play history and online services so we can use a blank key for now.
+            /*
+
+            NOTE: The service uses the KeyIndex to get a random key from a keys buffer (since the key index is stored in the returned buffer).
+                  We currently don't support play history and online services so we can use a blank key for now.
+                  Code for reference:
 
             byte[] hmacKey = new byte[0x20];
 
             HMACSHA256 hmacSha256 = new HMACSHA256(hmacKey);
             byte[]     hmacHash   = hmacSha256.ComputeHash(playHistoryRegistrationKeyBuffer);
 
+            */
+
             context.Memory.Write((ulong)bufferPosition,        playHistoryRegistrationKeyBuffer);
-            context.Memory.Write((ulong)bufferPosition + 0x20, hmacHash);
+            context.Memory.Write((ulong)bufferPosition + 0x20, new byte[0x20]); // HmacHash
 
             return ResultCode.Success;
         }
