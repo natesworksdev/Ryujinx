@@ -194,7 +194,7 @@ namespace Ryujinx.Ui
 
             _statusBar.Hide();
 
-            _uiHandler ??= new GtkHostUiHandler(this);
+            _uiHandler = new GtkHostUiHandler(this);
         }
 
         private void MainWindow_WindowStateEvent(object o, WindowStateEventArgs args)
