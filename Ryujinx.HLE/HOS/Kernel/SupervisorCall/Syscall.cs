@@ -135,16 +135,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
-                IpcMessage message = new IpcMessage(messageData, (long)messagePtr);
-
-                ThreadPool.QueueUserWorkItem(ProcessIpcRequest, new HleIpcMessage(
-                    process,
-                    currentThread,
-                    clientSession,
-                    message,
-                    (long)messagePtr));
-
-                _context.ThreadCounter.AddCount();
+                clientSession.Service.Server.PushMessage(_device, currentThread, clientSession, messagePtr, messageSize);
 
                 _context.CriticalSection.Leave();
 

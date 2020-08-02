@@ -18,6 +18,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         private ConcurrentDictionary<string, KPort> _registeredServices;
 
+        private readonly ServerBase _commonServer;
+
         private bool _isInitialized;
 
         public IUserInterface(ServiceCtx context = null)
@@ -28,6 +30,8 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 .SelectMany(type => type.GetCustomAttributes(typeof(ServiceAttribute), true)
                 .Select(service => (((ServiceAttribute)service).Name, type)))
                 .ToDictionary(service => service.Name, service => service.type);
+
+            _commonServer = new ServerBase();
         }
 
         public static void InitializePort(Horizon system)
@@ -36,7 +40,10 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
             port.ClientPort.SetName("sm:");
 
-            port.ClientPort.Service = new IUserInterface();
+            IUserInterface smService = new IUserInterface();
+            smService.Server = new ServerBase();
+
+            port.ClientPort.Service = smService;
         }
 
         [Command(0)]
@@ -81,8 +88,16 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 {
                     ServiceAttribute serviceAttribute = (ServiceAttribute)type.GetCustomAttributes(typeof(ServiceAttribute)).First(service => ((ServiceAttribute)service).Name == name);
 
-                    session.ClientSession.Service = serviceAttribute.Parameter != null ? (IpcService)Activator.CreateInstance(type, context, serviceAttribute.Parameter)
-                                                                                       : (IpcService)Activator.CreateInstance(type, context);
+                    IpcService service = serviceAttribute.Parameter != null
+                        ? (IpcService)Activator.CreateInstance(type, context, serviceAttribute.Parameter)
+                        : (IpcService)Activator.CreateInstance(type, context);
+
+                    if (service.Server == null)
+                    {
+                        service.Server = _commonServer;
+                    }
+
+                    session.ClientSession.Service = service;
                 }
                 else
                 {
