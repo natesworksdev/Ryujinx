@@ -5,7 +5,7 @@ namespace Ryujinx.Ui
 {
     public class InputDialog : MessageDialog
     {
-        private int _inputmin, _inputmax;
+        private int _inputMin, _inputMax;
         private Predicate<int> _checkLength;
         private Label _validationInfo;
 
@@ -35,27 +35,27 @@ namespace Ryujinx.Ui
 
         public void SetInputLengthValidation(int min, int max)
         {
-            _inputmin = Math.Min(min, max);
-            _inputmax = Math.Max(min, max);
+            _inputMin = Math.Min(min, max);
+            _inputMax = Math.Max(min, max);
 
             _validationInfo.Visible = false;
 
-            if (_inputmin <= 0 && _inputmax == int.MaxValue) // disable
+            if (_inputMin <= 0 && _inputMax == int.MaxValue) // disable
             {
                 _validationInfo.Visible = false;
                 _checkLength = (length) => true;
             }
-            else if (_inputmin > 0 && _inputmax == int.MaxValue)
+            else if (_inputMin > 0 && _inputMax == int.MaxValue)
             {
                 _validationInfo.Visible = true;
-                _validationInfo.Markup = $"<i>Must be at least {_inputmin} characters long</i>";
-                _checkLength = (length) => _inputmin <= length;
+                _validationInfo.Markup = $"<i>Must be at least {_inputMin} characters long</i>";
+                _checkLength = (length) => _inputMin <= length;
             }
             else
             {
                 _validationInfo.Visible = true;
-                _validationInfo.Markup = $"<i>Must be {_inputmin}-{_inputmax} characters long</i>";
-                _checkLength = (length) => _inputmin <= length && length <= _inputmax;
+                _validationInfo.Markup = $"<i>Must be {_inputMin}-{_inputMax} characters long</i>";
+                _checkLength = (length) => _inputMin <= length && length <= _inputMax;
             }
 
             OnInputChanged(this, EventArgs.Empty);

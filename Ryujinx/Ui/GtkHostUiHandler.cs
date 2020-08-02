@@ -18,7 +18,7 @@ namespace Ryujinx.Ui
 
         public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
         {
-            ManualResetEvent mre = new ManualResetEvent(false);
+            ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);
             bool okPressed = false;
             bool error = false;
             string inputText = args.InitialText ?? "";
@@ -31,7 +31,7 @@ namespace Ryujinx.Ui
                     {
                         Title = "Software Keyboard",
                         Text = args.HeaderText,
-                        SecondaryText = args.SubtitleText,
+                        SecondaryText = args.SubtitleText
                     };
 
                     swkbdDialog.InputEntry.Text = inputText;
@@ -55,13 +55,14 @@ namespace Ryujinx.Ui
                 }
                 finally
                 {
-                    mre.Set();
+                    dialogCloseEvent.Set();
                 }
             });
 
-            mre.WaitOne();
+            dialogCloseEvent.WaitOne();
 
             userText = error ? null : inputText;
+
             return error || okPressed;
         }
     }

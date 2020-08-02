@@ -45,7 +45,6 @@ namespace Ryujinx.HLE.HOS.Applets
             _interactiveSession.DataAvailable += OnInteractiveData;
 
             var launchParams   = _normalSession.Pop();
-
             var keyboardConfig = _normalSession.Pop();
 
             if (keyboardConfig.Length < Marshal.SizeOf<SoftwareKeyboardConfig>())
