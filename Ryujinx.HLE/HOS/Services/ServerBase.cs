@@ -28,13 +28,19 @@ namespace Ryujinx.HLE.HOS.Services
                 MessagePtr = messagePtr;
                 MessageSize = messageSize;
             }
+
+            public void SignalDone(KernelResult result)
+            {
+                Thread.ObjSyncResult = result;
+                Thread.Reschedule(ThreadSchedState.Running);
+            }
         }
 
         private readonly AsyncWorkQueue<IpcRequest> _ipcProcessor;
 
-        public ServerBase()
+        public ServerBase(string name)
         {
-            _ipcProcessor = new AsyncWorkQueue<IpcRequest>(Process);
+            _ipcProcessor = new AsyncWorkQueue<IpcRequest>(Process, name);
         }
 
         public void PushMessage(Switch device, KThread thread, KClientSession session, ulong messagePtr, ulong messageSize)
@@ -89,23 +95,16 @@ namespace Ryujinx.HLE.HOS.Services
                     switch (cmdId)
                     {
                         case 0:
-                        {
                             request = FillResponse(response, 0, message.Session.Service.ConvertToDomain());
-
                             break;
-                        }
 
                         case 3:
-                        {
                             request = FillResponse(response, 0, 0x1000);
-
                             break;
-                        }
 
                         // TODO: Whats the difference between IpcDuplicateSession/Ex?
                         case 2:
                         case 4:
-                        {
                             int unknown = reqReader.ReadInt32();
 
                             if (message.Process.HandleTable.GenerateHandle(message.Session, out int handle) != KernelResult.Success)
@@ -118,17 +117,13 @@ namespace Ryujinx.HLE.HOS.Services
                             request = FillResponse(response, 0);
 
                             break;
-                        }
 
                         default: throw new NotImplementedException(cmdId.ToString());
                     }
                 }
                 else if (request.Type == IpcMessageType.CloseSession)
                 {
-                    // TODO
-                    message.Thread.ObjSyncResult = KernelResult.PortRemoteClosed;
-                    message.Thread.Reschedule(ThreadSchedState.Running);
-
+                    message.SignalDone(KernelResult.PortRemoteClosed);
                     return;
                 }
                 else
@@ -139,8 +134,7 @@ namespace Ryujinx.HLE.HOS.Services
                 message.Process.CpuMemory.Write(message.MessagePtr, response.GetBytes((long)message.MessagePtr));
             }
 
-            message.Thread.ObjSyncResult = KernelResult.Success;
-            message.Thread.Reschedule(ThreadSchedState.Running);
+            message.SignalDone(KernelResult.Success);
         }
 
         private static IpcMessage FillResponse(IpcMessage response, long result, params int[] values)

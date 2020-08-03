@@ -25,6 +25,7 @@ using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.IO;
+using System.Threading;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -278,6 +279,12 @@ namespace Ryujinx.HLE.HOS
                 });
 
                 terminationThread.Start();
+
+                // Wait until the thread is actually started.
+                while (terminationThread.HostThread.ThreadState == ThreadState.Unstarted)
+                {
+                    Thread.Sleep(10);
+                }
 
                 // Wait until the termination thread is done terminating all the other threads.
                 terminationThread.HostThread.Join();

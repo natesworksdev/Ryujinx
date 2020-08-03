@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     [Service("audren:u")]
     class IAudioRendererManager : IpcService
     {
-        public IAudioRendererManager(ServiceCtx context) { }
+        public IAudioRendererManager(ServiceCtx context) : base(new ServerBase("AudioRendererServer")) { }
 
         [Command(0)]
         // OpenAudioRenderer(nn::audio::detail::AudioRendererParameterInternal, u64, nn::applet::AppletResourceUserId, pid, handle<copy>, handle<copy>)
@@ -53,7 +53,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
                        BitUtils.AlignUp(((parameters.SinkCount + parameters.SubMixCount) * 0x3C0 + parameters.SampleCount * 4) *
                                          (parameters.MixBufferCount + 6), AudioRendererConsts.BufferAlignment) +
                        (parameters.SinkCount + parameters.SubMixCount) * 0x2C0 +
-                       (parameters.EffectCount + parameters.VoiceCount * 4) * 0x30 + 
+                       (parameters.EffectCount + parameters.VoiceCount * 4) * 0x30 +
                        0x50;
 
                 if (behaviorInfo.IsSplitterSupported())
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
                 if (parameters.PerformanceManagerCount >= 1)
                 {
-                    size += (PerformanceManager.GetRequiredBufferSizeForPerformanceMetricsPerFrame(behaviorInfo, parameters) * 
+                    size += (PerformanceManager.GetRequiredBufferSizeForPerformanceMetricsPerFrame(behaviorInfo, parameters) *
                             (parameters.PerformanceManagerCount + 1) + 0xFF) & ~0x3FL;
                 }
 
