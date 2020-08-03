@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         private bool _isInitialized;
 
-        public IUserInterface(ServiceCtx context = null)
+        public IUserInterface(ServiceCtx context = null) : base(new ServerBase("SmServer"))
         {
             _registeredServices = new ConcurrentDictionary<string, KPort>();
 
@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                 .Select(service => (((ServiceAttribute)service).Name, type)))
                 .ToDictionary(service => service.Name, service => service.type);
 
-            _commonServer = new ServerBase();
+            _commonServer = new ServerBase("CommonServer");
         }
 
         public static void InitializePort(Horizon system)
@@ -41,7 +41,6 @@ namespace Ryujinx.HLE.HOS.Services.Sm
             port.ClientPort.SetName("sm:");
 
             IUserInterface smService = new IUserInterface();
-            smService.Server = new ServerBase();
 
             port.ClientPort.Service = smService;
         }
@@ -92,10 +91,7 @@ namespace Ryujinx.HLE.HOS.Services.Sm
                         ? (IpcService)Activator.CreateInstance(type, context, serviceAttribute.Parameter)
                         : (IpcService)Activator.CreateInstance(type, context);
 
-                    if (service.Server == null)
-                    {
-                        service.Server = _commonServer;
-                    }
+                    service.TrySetServer(_commonServer);
 
                     session.ClientSession.Service = service;
                 }
