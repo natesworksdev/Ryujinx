@@ -112,12 +112,12 @@ namespace ARMeilleure.CodeGen.Optimizations
             //
             // The commutative property of Equal and NotEqual is taken into consideration as well.
             //
-            // For example, this:
+            // For example:
             //
             //  %x = Compare %a, %b, comp
             //  BranchIf %x, 0x0, NotEqual
             //
-            // becomes this:
+            // =>
             //
             //  BranchIf %a, %b, comp
 

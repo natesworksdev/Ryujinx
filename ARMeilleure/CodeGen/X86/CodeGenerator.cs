@@ -464,6 +464,8 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(dest.Type.IsInteger());
 
+            // Note: GenerateCompareCommon makes the assumption that BitwiseAnd will emit only a single `and`
+            // instruction.
             context.Assembler.And(dest, src2, dest.Type);
         }
 
@@ -517,24 +519,13 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateBranchIf(CodeGenContext context, Operation operation)
         {
-            Operand src1 = operation.GetSource(0);
-            Operand src2 = operation.GetSource(1);
             Operand comp = operation.GetSource(2);
-
-            EnsureSameType(src1, src2);
 
             Debug.Assert(comp.Kind == OperandKind.Constant);
 
             var cond = ((Comparison)comp.AsInt32()).ToX86Condition();
 
-            if (src2.Kind == OperandKind.Constant && src2.Value == 0)
-            {
-                context.Assembler.Test(src1, src1, src1.Type);
-            }
-            else
-            {
-                context.Assembler.Cmp(src1, src2, src1.Type);
-            }
+            GenerateCompareCommon(context, operation);
 
             context.JumpTo(cond, context.CurrBlock.Branch);
         }
@@ -565,28 +556,55 @@ namespace ARMeilleure.CodeGen.X86
         private static void GenerateCompare(CodeGenContext context, Operation operation)
         {
             Operand dest = operation.Destination;
-            Operand src1 = operation.GetSource(0);
-            Operand src2 = operation.GetSource(1);
             Operand comp = operation.GetSource(2);
-
-            EnsureSameType(src1, src2);
 
             Debug.Assert(dest.Type == OperandType.I32);
             Debug.Assert(comp.Kind == OperandKind.Constant);
 
             var cond = ((Comparison)comp.AsInt32()).ToX86Condition();
 
+            GenerateCompareCommon(context, operation);
+
+            context.Assembler.Setcc(dest, cond);
+            context.Assembler.Movzx8(dest, dest, OperandType.I32);
+        }
+
+        private static void GenerateCompareCommon(CodeGenContext context, Operation operation)
+        {
+            Operand src1 = operation.GetSource(0);
+            Operand src2 = operation.GetSource(1);
+
+            EnsureSameType(src1, src2);
+
+            Debug.Assert(src1.Type.IsInteger());
+
             if (src2.Kind == OperandKind.Constant && src2.Value == 0)
             {
-                context.Assembler.Test(src1, src1, src1.Type);
+                if (MatchOperation(operation.ListPrevious, Instruction.BitwiseAnd, src1.Type, src1.GetRegister()))
+                {
+                    // Since the `test` and `and` instruction set the status flags in the same way, we can omit the
+                    // `test r,r` instruction when it is immediately preceded by an `and r,*` instruction.
+                    //
+                    // For example:
+                    //
+                    //  and eax, 0x3
+                    //  test eax, eax
+                    //  jz .L0
+                    //
+                    // =>
+                    //
+                    //  and eax, 0x3
+                    //  jz .L0
+                }
+                else
+                {
+                    context.Assembler.Test(src1, src1, src1.Type);
+                }
             }
             else
             {
                 context.Assembler.Cmp(src1, src2, src1.Type);
             }
-
-            context.Assembler.Setcc(dest, cond);
-            context.Assembler.Movzx8(dest, dest, OperandType.I32);
         }
 
         private static void GenerateCompareAndSwap(CodeGenContext context, Operation operation)
@@ -1517,6 +1535,25 @@ namespace ARMeilleure.CodeGen.X86
         {
             context.Assembler.Movq(dest, source);
             context.Assembler.Pshufd(dest, dest, 0xfc);
+        }
+
+        private static bool MatchOperation(Node node, Instruction inst, OperandType destType, Register destReg)
+        {
+            if (!(node is Operation operation) || node.DestinationsCount == 0)
+            {
+                return false;
+            }
+
+            if (operation.Instruction != inst)
+            {
+                return false;
+            }
+
+            Operand dest = operation.Destination;
+
+            return dest.Kind == OperandKind.Register &&
+                   dest.Type == destType &&
+                   dest.GetRegister() == destReg;
         }
 
         [Conditional("DEBUG")]
