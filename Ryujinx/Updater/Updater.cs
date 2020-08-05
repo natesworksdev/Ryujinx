@@ -64,7 +64,7 @@ namespace Ryujinx
             }
             catch (Exception exception)
             {
-                Logger.PrintError(LogClass.Application, exception.Message);
+                Logger.Error?.Print(LogClass.Application, exception.Message);
                 GtkDialog.CreateErrorDialog($"An error has occured when trying to get release information from GitHub.");
 
                 return;
@@ -81,7 +81,7 @@ namespace Ryujinx
             }
             catch
             {
-                Logger.PrintWarning(LogClass.Application, "Failed to convert current Ryujinx version.");
+                Logger.Warning?.Print(LogClass.Application, "Failed to convert current Ryujinx version.");
             }
 
             if (newVersion < currentVersion)
@@ -227,7 +227,7 @@ namespace Ryujinx
                         }
                         catch
                         {
-                            Logger.PrintWarning(LogClass.Application, "Updater wasn't able to rename file: " + file);
+                            Logger.Warning?.Print(LogClass.Application, "Updater wasn't able to rename file: " + file);
                         }
                     }
                 }
