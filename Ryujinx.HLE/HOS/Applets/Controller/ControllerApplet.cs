@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Applets
             byte[] controllerSupportArgPrivate = _normalSession.Pop();
             ControllerSupportArgPrivate privateArg = IApplet.ReadStruct<ControllerSupportArgPrivate>(controllerSupportArgPrivate);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ArgPriv {privateArg.PrivateSize} {privateArg.ArgSize} {privateArg.Mode}" +
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ArgPriv {privateArg.PrivateSize} {privateArg.ArgSize} {privateArg.Mode} " +
                         $"HoldType:{(NpadJoyHoldType)privateArg.NpadJoyHoldType} StyleSets:{(ControllerType)privateArg.NpadStyleSet}");
 
             if (privateArg.Mode != ControllerSupportMode.ShowControllerSupport)
@@ -60,20 +60,31 @@ namespace Ryujinx.HLE.HOS.Applets
                 argHeader = IApplet.ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {argHeader.PlayerCountMin} {argHeader.PlayerCountMax} {argHeader.EnableTakeOverConnection} {argHeader.EnableSingleMode}");
+            int playerMin = argHeader.PlayerCountMin;
+            int playerMax = argHeader.PlayerCountMax;
 
-            // Currently, the only purpose of this applet is to help 
-            // choose the primary input controller for the game
-            // TODO: Ideally should hook back to HID.Controller. When applet is called, can choose appropriate controller and attach to appropriate id.
-            if (argHeader.PlayerCountMin > 1)
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {playerMin} {playerMax} {argHeader.EnableTakeOverConnection} {argHeader.EnableSingleMode}");
+
+            int configuredCount = 0;
+            PlayerIndex primaryIndex = PlayerIndex.Unknown;
+            while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
-                Logger.Warning?.Print(LogClass.ServiceHid, "More than one controller was requested.");
+                string message = $"Application requests <b>{((playerMin == playerMax) ? $"exactly {playerMin}" : $"{playerMin}-{playerMax}")}</b> player(s) with:\n\n"
+                    + $"<tt><b>TYPES:</b> {(ControllerType)privateArg.NpadStyleSet}</tt>\n\n"
+                    + $"<tt><b>PLAYERS:</b> {string.Join(", ",_system.Device.Hid.Npads.SupportedPlayers)}</tt>\n\n"
+                    + (_system.State.DockedMode ? "Docked mode set. <tt>Handheld</tt> is also invalid.\n\n" : "")
+                    + "<i>Please reconfigure Input now and then press OK.</i>";
+
+                if (!_system.Device.UiHandler.DisplayMessageDialog("Controller Applet", message))
+                {
+                    break;
+                }
             }
 
             ControllerSupportResultInfo result = new ControllerSupportResultInfo
             {
-                PlayerCount = 1,
-                SelectedId = (uint)GetNpadIdTypeFromIndex(_system.Device.Hid.Npads.PrimaryController)
+                PlayerCount = (sbyte)configuredCount,
+                SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex)
             };
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ReturnResult {result.PlayerCount} {result.SelectedId}");

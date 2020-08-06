@@ -16,6 +16,46 @@ namespace Ryujinx.Ui
             _parent = parent;
         }
 
+        public bool DisplayMessageDialog(string title, string message)
+        {
+            ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);
+            bool okPressed = false;
+
+            Application.Invoke(delegate
+            {
+                MessageDialog msgDialog = null;
+                try
+                {
+                    msgDialog = new MessageDialog(_parent, DialogFlags.DestroyWithParent, MessageType.Info, ButtonsType.Ok, null)
+                    {
+                        Title = title,
+                        Text = message,
+                        UseMarkup = true
+                    };
+
+                    msgDialog.SetDefaultSize(400, 0);
+
+                    msgDialog.Response += (object o, ResponseArgs args) =>
+                    {
+                        if (args.ResponseId == ResponseType.Ok) okPressed = true;
+                        dialogCloseEvent.Set();
+                        msgDialog?.Dispose();
+                    };
+
+                    msgDialog.Show();
+                }
+                catch (Exception e)
+                {
+                    Logger.Error?.Print(LogClass.Application, $"Error displaying Message Dialog: {e}");
+                    dialogCloseEvent.Set();
+                }
+            });
+
+            dialogCloseEvent.WaitOne();
+
+            return okPressed;
+        }
+
         public bool DisplayInputDialog(SoftwareKeyboardUiArgs args, out string userText)
         {
             ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);

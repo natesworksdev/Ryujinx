@@ -5,6 +5,7 @@ using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.Json;
@@ -894,23 +895,29 @@ namespace Ryujinx.Ui
         {
             InputConfig inputConfig = GetValues();
 
+            var newConfig = new List<InputConfig>();
+            newConfig.AddRange(ConfigurationState.Instance.Hid.InputConfig.Value);
+
             if (_inputConfig == null && inputConfig != null)
             {
-                ConfigurationState.Instance.Hid.InputConfig.Value.Add(inputConfig);
+                newConfig.Add(inputConfig);
             }
             else
             {
                 if (_inputDevice.ActiveId == "disabled")
                 {
-                    ConfigurationState.Instance.Hid.InputConfig.Value.Remove(_inputConfig);
+                    newConfig.Remove(_inputConfig);
                 }
                 else if (inputConfig != null)
                 {
-                    int index = ConfigurationState.Instance.Hid.InputConfig.Value.IndexOf(_inputConfig);        
+                    int index = newConfig.IndexOf(_inputConfig);
 
-                    ConfigurationState.Instance.Hid.InputConfig.Value[index] = inputConfig;
+                    newConfig[index] = inputConfig;
                 }
             }
+
+            // Atomically replace and signal input change
+            ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
             MainWindow.SaveConfig();
 
