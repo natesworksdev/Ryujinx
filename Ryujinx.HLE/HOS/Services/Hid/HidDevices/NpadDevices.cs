@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
@@ -7,16 +8,20 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public class NpadDevices : BaseDevice
     {
-        internal NpadJoyHoldType JoyHold { get; set; }
-        internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
-        internal ControllerType SupportedStyleSets { get; set; }
-        internal HashSet<PlayerIndex> SupportedPlayers { get; }
-
         private static readonly Array3<BatteryCharge> _fullBattery;
 
         private const int MaxControllers = 9; // Players 1-8 and Handheld
         private ControllerType[] _configuredTypes;
         private KEvent[] _styleSetUpdateEvents;
+
+        private const int NoMatchNotifyFrequencyMs = 2000;
+        private int _activeCount;
+        private long _lastNotifyTimestamp;
+
+        internal NpadJoyHoldType JoyHold { get; set; }
+        internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
+        internal ControllerType SupportedStyleSets { get; set; }
+        internal HashSet<PlayerIndex> SupportedPlayers { get; }
 
         public NpadDevices(Switch device, bool active = true) : base(device, active)
         {
@@ -39,6 +44,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 _styleSetUpdateEvents[i] = new KEvent(_device.System.KernelContext);
             }
+
+            _activeCount = 0;
 
             _fullBattery[0] = _fullBattery[1] = _fullBattery[2] = BatteryCharge.Percent100;
 
@@ -155,6 +162,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 SetupNpad((PlayerIndex)i, config);
             }
+
+            if (_activeCount == 0 && PerformanceCounter.ElapsedMilliseconds > _lastNotifyTimestamp + NoMatchNotifyFrequencyMs)
+            {
+                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests |{SupportedStyleSets}| on |{string.Join(", ", SupportedPlayers)}|");
+                _lastNotifyTimestamp = PerformanceCounter.ElapsedMilliseconds;
+            }
         }
 
         private void SetupNpad(PlayerIndex player, ControllerType type)
@@ -174,6 +187,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             {
                 Logger.Info?.Print(LogClass.Hid, $"Disconnected Controller {oldType} from {player}");
                 _styleSetUpdateEvents[(int)player].ReadableEvent.Signal(); // signal disconnect
+                _activeCount--;
                 return;
             }
 
@@ -243,6 +257,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             controller.Header = defaultHeader;
 
             _styleSetUpdateEvents[(int)player].ReadableEvent.Signal();
+            _activeCount++;
 
             Logger.Info?.Print(LogClass.Hid, $"Connected Controller {type} to {player}");
         }

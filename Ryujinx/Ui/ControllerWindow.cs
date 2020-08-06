@@ -917,6 +917,7 @@ namespace Ryujinx.Ui
             }
 
             // Atomically replace and signal input change
+            // Note: Do not modify InputConfig.Value directly as then events aren't signaled
             ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
             MainWindow.SaveConfig();
