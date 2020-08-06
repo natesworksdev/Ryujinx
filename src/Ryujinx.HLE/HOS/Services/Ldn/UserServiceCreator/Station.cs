@@ -1,157 +1,66 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
-using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Sockets;
 using System.Runtime.InteropServices;
-using System.Threading;
-using TcpClient = NetCoreServer.TcpClient;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
-    class Station : TcpClient
+    class Station : IDisposable
     {
-        private const int FailureTimeout = 4000;
-        private const int ScanTimeout = 1000;
-
-        private bool _stop;
-
         public NetworkConfig CurrentNetworkConfig;
         public NetworkInfo   CurrentNetworkInfo;
 
-        private ManualResetEvent _connected = new ManualResetEvent(false);
-        private AutoResetEvent _apConnected = new AutoResetEvent(false);
-        private AutoResetEvent _scan = new AutoResetEvent(false);
-        private AutoResetEvent _error = new AutoResetEvent(false);
-
-        private List<NetworkInfo> _availableGames;
-
         private IUserLocalCommunicationService _parent;
 
-        public Station(IUserLocalCommunicationService parent, string address, int port) : base(address, port)
-        {
-            OptionNoDelay = true;
+        public bool Connected { get; private set; }
 
+        public Station(IUserLocalCommunicationService parent)
+        {
             _parent = parent;
 
-            ConnectAsync();
-
-            _availableGames = new List<NetworkInfo>();
+            _parent.NetworkClient.NetworkChange += NetworkChanged;
         }
 
-        public void DisconnectAndStop()
+        private void NetworkChanged(object sender, RyuLdn.NetworkChangeEventArgs e)
         {
-            _stop = true;
+            CurrentNetworkInfo = e.Info;
 
-            LdnHeader ldnHeader = new LdnHeader
+            if (Connected != e.Connected)
             {
-                Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
-                Type     = (byte)PacketId.Disconnect,
-                UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb065"),
-                DataSize = 0,
-            };
+                Connected = e.Connected;
 
-            SendAsync(LdnHelper.StructureToByteArray(ldnHeader));
+                if (Connected)
+                {
+                    CurrentNetworkConfig = new NetworkConfig
+                    {
+                        IntentId = CurrentNetworkInfo.NetworkId.IntentId,
+                        Channel = CurrentNetworkInfo.Common.Channel,
+                        NodeCountMax = CurrentNetworkInfo.Ldn.NodeCountMax,
+                        Unknown1 = 0x00,
+                        LocalCommunicationVersion = (ushort)CurrentNetworkInfo.NetworkId.IntentId.LocalCommunicationId,
+                        Unknown2 = new byte[10]
+                    };
 
-            DisconnectAsync();
-
-            while (IsConnected)
+                    _parent.SetState(NetworkState.StationConnected);
+                }
+                else
+                {
+                    _parent.SetState(NetworkState.Initialized);
+                }
+            }
+            else
             {
-                Thread.Yield();
+                _parent.SetState();
             }
         }
 
-        protected override void OnConnected()
+        public void Dispose()
         {
-            Console.WriteLine($"LDN TCP client connected a new session with Id {Id}");
+            _parent.NetworkClient.DisconnectNetwork();
 
-            _connected.Set();
-        }
-
-        protected override void OnDisconnected()
-        {
-            Console.WriteLine($"LDN TCP client disconnected a session with Id {Id}");
-
-            _connected.Reset();
-
-            // Wait for a while...
-            Thread.Sleep(1000); // Required to rate limit scan, right now.
-
-            if (!_stop)
-            {
-                // Try to connect again
-                ConnectAsync();
-            }
-        }
-
-        protected override void OnReceived(byte[] buffer, long offset, long size)
-        {
-            Console.WriteLine($"Incoming packet from {Id} (size: 0x{size.ToString("X2")}):");
-
-            byte[] incomingBuffer = new byte[size];
-
-            Buffer.BlockCopy(buffer, 0, incomingBuffer, 0, (int)size);
-
-            LdnHeader ldnHeader = LdnHelper.FromBytes<LdnHeader>(incomingBuffer);
-
-            incomingBuffer = incomingBuffer.Skip(Marshal.SizeOf(ldnHeader)).ToArray();
-
-            switch ((PacketId)ldnHeader.Type)
-            {
-                case PacketId.ScanReply:    HandleScanReply(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer));   break;
-                case PacketId.ScanReplyEnd: HandleScanReplyEnd(ldnHeader);                                                      break;
-                case PacketId.Connected:    HandleConnected(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer));   break;
-                case PacketId.SyncNetwork:  HandleSyncNetwork(ldnHeader, LdnHelper.FromBytes<NetworkInfo>(incomingBuffer)); break;
-
-                default: break;
-            }
-        }
-
-        private void HandleConnected(LdnHeader header, NetworkInfo info)
-        {
-            CurrentNetworkInfo = info;
-
-            CurrentNetworkConfig = new NetworkConfig
-            {
-                IntentId = CurrentNetworkInfo.NetworkId.IntentId,
-                Channel = CurrentNetworkInfo.Common.Channel,
-                NodeCountMax = CurrentNetworkInfo.Ldn.NodeCountMax,
-                Unknown1 = 0x00,
-                LocalCommunicationVersion = (ushort)CurrentNetworkInfo.NetworkId.IntentId.LocalCommunicationId,
-                Unknown2 = new byte[10]
-            };
-
-            _apConnected.Set();
-
-            _parent.SetState(NetworkState.StationConnected);
-        }
-
-        private void HandleSyncNetwork(LdnHeader header, NetworkInfo info)
-        {
-            CurrentNetworkInfo = info;
-
-            _parent.SetState();
-        }
-
-        private void HandleScanReply(LdnHeader header, NetworkInfo info)
-        {
-            _availableGames.Add(info);
-        }
-
-        private void HandleScanReplyEnd(LdnHeader obj)
-        {
-            _scan.Set();
-        }
-
-        protected override void OnError(SocketError error)
-        {
-            Console.WriteLine($"LDN TCP client caught an error with code {error}");
-
-            _error.Set();
+            _parent.NetworkClient.NetworkChange -= NetworkChanged;
         }
 
         public ResultCode Scan(ServiceCtx context)
@@ -168,46 +77,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, (int)bufferSize);
 
-            byte[] scanFilterBuffer       = LdnHelper.StructureToByteArray(scanFilter);
-            int    scanFilterBufferLength = scanFilterBuffer.Length;
+            NetworkInfo[] availableGames = _parent.NetworkClient.Scan(channel, bufferCount, scanFilter);
 
-            Array.Resize(ref scanFilterBuffer, 0x600);
+            int counter = 0;
 
-            int index = WaitHandle.WaitAny(new WaitHandle[] { _connected, _error }, FailureTimeout);
-
-            if (index == 0)
-            {
-                LdnHeader ldnHeader = new LdnHeader
-                {
-                    Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
-                    Type     = (byte)PacketId.Scan,
-                    UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
-                    DataSize = scanFilterBufferLength
-                };
-
-                byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
-                int ldnHeaderLength = ldnPacket.Length;
-
-                Array.Resize(ref ldnPacket, ldnHeaderLength + scanFilterBuffer.Length);
-                scanFilterBuffer.CopyTo(ldnPacket, ldnHeaderLength);
-
-                SendAsync(ldnPacket);
-
-                index = WaitHandle.WaitAny(new WaitHandle[] { _scan, _error }, ScanTimeout);
-            }
-
-            if (index != 0)
-            {
-                // An error occurred or timeout. Write 0 games.
-
-                context.ResponseData.Write(0);
-
-                return ResultCode.Success;
-            }
-
-            uint counter = 0;
-
-            foreach (NetworkInfo networkInfo in _availableGames)
+            foreach (NetworkInfo networkInfo in availableGames)
             {
                 MemoryHelper.Write(context.Memory, bufferPosition + (networkInfoSize * counter), networkInfo);
 
@@ -241,34 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 Info = networkInfo
             };
 
-            byte[] requestBuffer = LdnHelper.StructureToByteArray(request);
-
-            LdnHeader ldnHeader = new LdnHeader
-            {
-                Magic    = ('R' << 0) | ('L' << 8) | ('D' << 16) | ('N' << 24),
-                Type     = (byte)PacketId.Connect,
-                UserId   = LdnHelper.StringToByteArray("91ac8b112e1d4536a73c49f8eb9cb064"),
-                DataSize = requestBuffer.Length
-            };
-
-            byte[] ldnPacket = LdnHelper.StructureToByteArray(ldnHeader);
-            int ldnHeaderLength = ldnPacket.Length;
-
-            Array.Resize(ref ldnPacket, ldnHeaderLength + requestBuffer.Length);
-            requestBuffer.CopyTo(ldnPacket, ldnHeaderLength);
-
-            int index = WaitHandle.WaitAny(new WaitHandle[] { _connected, _error }, FailureTimeout);
-
-            if (index != 0)
-            {
-                return ResultCode.InvalidState;
-            }
-
-            SendAsync(ldnPacket);
-
-            bool signalled = _apConnected.WaitOne(FailureTimeout);
-
-            return signalled ? ResultCode.Success : ResultCode.InvalidState;
+            return _parent.NetworkClient.Connect(request) ? ResultCode.Success : ResultCode.InvalidState;
         }
     }
 }

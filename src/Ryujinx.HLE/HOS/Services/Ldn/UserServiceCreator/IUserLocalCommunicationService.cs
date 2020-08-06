@@ -5,7 +5,10 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
+using Ryujinx.Horizon.Common;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
@@ -14,8 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     class IUserLocalCommunicationService : IpcService
     {
-        public static string LanPlayHost = "192.168.0.17";
-        public static short LanPlayPort = 4242;
+        public INetworkClient NetworkClient { get; private set; }
 
         private const int RequestId = 90;
 
@@ -133,7 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (unicastAddress == null || _state == NetworkState.Initialized)
             {
-                context.ResponseData.Write((127 << 24) |   (0 << 16) |   (0 << 8) | (1 << 0));
+                context.ResponseData.Write((127 << 24) | (0 << 16) | (0 << 8) | (1 << 0));
                 context.ResponseData.Write((255 << 24) | (255 << 16) | (255 << 8) | (0 << 0));
             }
             else
@@ -276,7 +278,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 _stateChangeEvent.WritableEvent.Signal();
 
-                _accessPoint = new AccessPoint(this, LanPlayHost, LanPlayPort);
+                _accessPoint = new AccessPoint(this);
 
                 return ResultCode.Success;
             }
@@ -292,7 +294,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (_state == NetworkState.AccessPoint || _state == NetworkState.AccessPointCreated)
             {
-                _accessPoint.DisconnectAndStop();
+                _accessPoint.Dispose();
                 _accessPoint = null;
 
                 _state = NetworkState.Initialized;
@@ -349,7 +351,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 _state            = NetworkState.Station;
                 _disconnectReason = DisconnectReason.None;
 
-                _station          = new Station(this, LanPlayHost, LanPlayPort);
+                _station          = new Station(this);
 
                 _stateChangeEvent.WritableEvent.Signal();
 
@@ -367,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (_state == NetworkState.Station || _state == NetworkState.StationConnected)
             {
-                _station.DisconnectAndStop();
+                _station.Dispose();
                 _station = null;
 
                 _state = NetworkState.Initialized;
@@ -405,7 +407,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         {
             if (_state  == NetworkState.Station)
             {
-                _station?.DisconnectAndStop();
+                _station?.Dispose();
 
                 _station = null;
 
@@ -427,8 +429,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // Finalize()
         public ResultCode Finalize(ServiceCtx context)
         {
-            _station?.DisconnectAndStop();
-            _accessPoint?.DisconnectAndStop();
+            _station?.Dispose();
+            _accessPoint?.Dispose();
 
             _station = null;
             _accessPoint = null;
@@ -437,6 +439,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _initialized = false;
 
             _stateChangeEvent.WritableEvent.Signal();
+
+            NetworkClient?.DisconnectAndStop();
+            NetworkClient = null;
 
             return ResultCode.Success;
         }
@@ -463,6 +468,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
 
             // Initialiaze the sockets here.
+
+            // NetworkClient = new NetworkClient();
 
             _initialized = true;
 
