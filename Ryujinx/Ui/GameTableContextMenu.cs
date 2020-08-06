@@ -680,14 +680,17 @@ namespace Ryujinx.Ui
 
             var cacheFiles = new List<FileInfo>();
 
-            if(mainDir.Exists)   { cacheFiles.AddRange(mainDir.EnumerateFiles("*.cache")); }
-            if(backupDir.Exists) { cacheFiles.AddRange(backupDir.EnumerateFiles("*.cache")); }
+            if (mainDir.Exists)   { cacheFiles.AddRange(mainDir.EnumerateFiles("*.cache")); }
+            if (backupDir.Exists) { cacheFiles.AddRange(backupDir.EnumerateFiles("*.cache")); }
 
             if (cacheFiles.Count > 0 && warningDialog.Run() == (int)ResponseType.Yes)
             {
                 foreach (FileInfo file in cacheFiles)
                 {
-                    try { file.Delete(); }
+                    try 
+                    { 
+                        file.Delete(); 
+                    }
                     catch(Exception e)
                     {
                         Logger.Error?.Print(LogClass.Application, $"Error purging PPTC cache {file.Name}: {e}");
