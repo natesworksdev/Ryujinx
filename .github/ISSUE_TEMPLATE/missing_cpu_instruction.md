@@ -10,7 +10,7 @@ about: CPU Instruction is missing in Ryujinx.
 [ If you do not have the information needed for a section, replace its contents with "Unknown". ]</br>
 [ Lines between [ ] (square brackets) are to be removed before posting. ]
 
-[ Please search for existing [missing service call](https://github.com/Ryujinx/Ryujinx/issues) before you make your own issue. ]</br>
+[ Please search for existing [missing CPU instruction](https://github.com/Ryujinx/Ryujinx/issues) before you make your own issue. ]</br>
 [ See the following [issue](https://github.com/Ryujinx/Ryujinx/issues/1405) as an example ]</br>
 [ Duplicate issue will be marked as such and you will be referred to the original request. ]
 
