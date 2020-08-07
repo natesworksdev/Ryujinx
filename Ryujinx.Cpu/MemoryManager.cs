@@ -445,7 +445,7 @@ namespace Ryujinx.Cpu
         }
 
         /// <summary>
-        /// Checks if the page at a given CPU virtual address.
+        /// Checks if the page at a given CPU virtual address is mapped.
         /// </summary>
         /// <param name="va">Virtual address to check</param>
         /// <returns>True if the address is mapped, false otherwise</returns>

@@ -53,22 +53,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
         private int Open(ServiceCtx context, string path)
         {
-            if (/* context.Process == _owner */ true)
+            if (_deviceFileRegistry.TryGetValue(path, out Type deviceFileClass))
             {
-                if (_deviceFileRegistry.TryGetValue(path, out Type deviceFileClass))
-                {
-                    ConstructorInfo constructor = deviceFileClass.GetConstructor(new Type[] { typeof(ServiceCtx), typeof(IAddressSpaceManager), typeof(long) });
+                ConstructorInfo constructor = deviceFileClass.GetConstructor(new Type[] { typeof(ServiceCtx), typeof(IAddressSpaceManager), typeof(long) });
 
-                    NvDeviceFile deviceFile = (NvDeviceFile)constructor.Invoke(new object[] { context, _clientMemory, _owner });
+                NvDeviceFile deviceFile = (NvDeviceFile)constructor.Invoke(new object[] { context, _clientMemory, _owner });
 
-                    deviceFile.Path = path;
+                deviceFile.Path = path;
 
-                    return _deviceFileIdRegistry.Add(deviceFile);
-                }
-                else
-                {
-                    Logger.Warning?.Print(LogClass.ServiceNv, $"Cannot find file device \"{path}\"!");
-                }
+                return _deviceFileIdRegistry.Add(deviceFile);
+            }
+            else
+            {
+                Logger.Warning?.Print(LogClass.ServiceNv, $"Cannot find file device \"{path}\"!");
             }
 
             return -1;
@@ -328,12 +325,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             _clientMemory = context.Process.HandleTable.GetKProcess(clientHandle).CpuMemory;
 
-            var rc = context.Device.System.KernelContext.Syscall.GetProcessId(clientHandle, out _owner);
-
-            if (rc != Kernel.Common.KernelResult.Success)
-            {
-                throw new Exception("Failure getting client PID: " + rc);
-            }
+            context.Device.System.KernelContext.Syscall.GetProcessId(clientHandle, out _owner);
 
             context.ResponseData.Write((uint)NvResult.Success);
 

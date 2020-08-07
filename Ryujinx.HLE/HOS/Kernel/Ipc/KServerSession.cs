@@ -968,7 +968,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
             for (int index = 0; index < recvListSize; index++)
             {
-
                 receiveList[index] = KernelContext.Memory.Read<ulong>(recvListAddress + (ulong)index * 8);
             }
 

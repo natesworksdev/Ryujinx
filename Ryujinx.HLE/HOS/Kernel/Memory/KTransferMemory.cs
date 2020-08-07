@@ -8,6 +8,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
     {
         private KProcess _creator;
 
+        // TODO: Remove when we no longer need to read it from the owner directly.
+        public KProcess Creator => _creator;
+
         private readonly KPageList _pageList;
 
         public ulong Address { get; private set; }

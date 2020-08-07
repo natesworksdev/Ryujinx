@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services
 {
     class ServerBase
     {
-        // Must be the maximum value used by services (higuest one know is the one used by nvservices = 0x8000).
+        // Must be the maximum value used by services (highest one know is the one used by nvservices = 0x8000).
         // Having a size that is too low will cause failures as data copy will fail if the receiving buffer is
         // not large enough.
         private const int PointerBufferSize = 0x8000;
