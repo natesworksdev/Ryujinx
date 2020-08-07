@@ -24,11 +24,11 @@ Requires the *INSTRUCTION* instruction.</br>
 ```
 [ Add the undefined instruction error message in the above code block ]
 
-### Instruction description
+### Instruction name
 ```
 *
 ```
-[ Include the description from [armconverter.com](https://armconverter.com/?disasm) or [shell-storm.org](http://shell-storm.org/online/Online-Assembler-and-Disassembler/?arch=arm64&endianness=big&dis_with_raw=True&dis_with_ins=True) in the above code block ]
+[ Include the name from [armconverter.com](https://armconverter.com/?disasm) or [shell-storm.org](http://shell-storm.org/online/Online-Assembler-and-Disassembler/?arch=arm64&endianness=big&dis_with_raw=True&dis_with_ins=True) in the above code block ]
 
 ### Required by: 
 [ Add our (games list database)[https://github.com/Ryujinx/Ryujinx-Games-List/issues] links of games who require this instruction ]
