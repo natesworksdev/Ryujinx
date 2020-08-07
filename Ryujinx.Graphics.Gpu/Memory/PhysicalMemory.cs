@@ -1,4 +1,4 @@
-using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     class PhysicalMemory
     {
-        public const int PageSize = Cpu.MemoryManager.PageSize;
+        public const int PageSize = 0x1000;
 
         private readonly Cpu.MemoryManager _cpuMemory;
 

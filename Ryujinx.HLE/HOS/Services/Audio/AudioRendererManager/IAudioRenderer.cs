@@ -4,8 +4,10 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.Utilities;
+using Ryujinx.Memory;
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
@@ -24,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
         private KEvent _updateEvent;
 
-        private MemoryManager _memory;
+        private KProcess _process;
 
         private IAalOutput _audioOut;
 
@@ -44,13 +46,13 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
         public IAudioRenderer(
             Horizon                system,
-            MemoryManager          memory,
+            KProcess               process,
             IAalOutput             audioOut,
             AudioRendererParameter rendererParams)
         {
             _updateEvent = new KEvent(system.KernelContext);
 
-            _memory   = memory;
+            _process  = process;
             _audioOut = audioOut;
             _params   = rendererParams;
 
@@ -333,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             for (int offset = 0; offset < size; offset += 2)
             {
-                context.Coefficients[offset >> 1] = _memory.Read<short>((ulong)(position + offset));
+                context.Coefficients[offset >> 1] = _process.CpuMemory.Read<short>((ulong)(position + offset));
             }
 
             return context;
@@ -367,7 +369,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
                 while (pendingSamples > 0)
                 {
-                    int[] samples = voice.GetBufferData(_memory, pendingSamples, out int returnedSamples);
+                    int[] samples = voice.GetBufferData(_process, pendingSamples, out int returnedSamples);
 
                     if (returnedSamples == 0)
                     {

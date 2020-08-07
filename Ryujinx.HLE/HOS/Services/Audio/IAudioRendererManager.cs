@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     [Service("audren:u")]
     class IAudioRendererManager : IpcService
     {
-        public IAudioRendererManager(ServiceCtx context) : base(new ServerBase("AudioRendererServer")) { }
+        public IAudioRendererManager(ServiceCtx context) : base(new ServerBase(context.Device.System.KernelContext, "AudioRendererServer")) { }
 
         [Command(0)]
         // OpenAudioRenderer(nn::audio::detail::AudioRendererParameterInternal, u64, nn::applet::AppletResourceUserId, pid, handle<copy>, handle<copy>)
@@ -19,11 +19,12 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
             AudioRendererParameter Params = GetAudioRendererParameter(context);
 
-            MakeObject(context, new IAudioRenderer(
-                context.Device.System,
-                context.Memory,
-                audioOut,
-                Params));
+            var process = context.Process.HandleTable.GetKProcess(context.Request.HandleDesc.ToCopy[1]);
+
+            MakeObject(context, new IAudioRenderer(context.Device.System, process, audioOut, Params));
+
+            // Close transfer memory immediately as we don't use it.
+            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
 
             return ResultCode.Success;
         }

@@ -138,12 +138,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             // Workaround that by setting the application ID and owner ID if they're not already set
             if (attribute.TitleId == TitleId.Zero)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.TitleId = new TitleId(context.Device.Application.TitleId);
             }
 
             if (creationInfo.OwnerId == TitleId.Zero)
             {
-                creationInfo.OwnerId = new TitleId(context.Process.TitleId);
+                creationInfo.OwnerId = new TitleId(context.Device.Application.TitleId);
             }
 
             Logger.Info?.Print(LogClass.ServiceFs, $"Creating save with title ID {attribute.TitleId.Value:x16}");
@@ -215,12 +215,12 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             // Workaround that by setting the application ID and owner ID if they're not already set
             if (attribute.TitleId == TitleId.Zero)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.TitleId = new TitleId(context.Device.Application.TitleId);
             }
 
             if (creationInfo.OwnerId == TitleId.Zero)
             {
-                creationInfo.OwnerId = new TitleId(context.Process.TitleId);
+                creationInfo.OwnerId = new TitleId(context.Device.Application.TitleId);
             }
 
             Result result = _baseFileSystemProxy.CreateSaveDataFileSystemWithHashSalt(ref attribute, ref creationInfo, ref metaCreateInfo, ref hashSalt);
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             // Workaround that by setting the application ID if it's not already set
             if (attribute.TitleId == TitleId.Zero)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.TitleId = new TitleId(context.Device.Application.TitleId);
             }
 
             Result result = _baseFileSystemProxy.OpenSaveDataFileSystem(out LibHac.Fs.IFileSystem fileSystem, spaceId, ref attribute);
@@ -280,7 +280,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             // Workaround that by setting the application ID if it's not already set
             if (attribute.TitleId == TitleId.Zero)
             {
-                attribute.TitleId = new TitleId(context.Process.TitleId);
+                attribute.TitleId = new TitleId(context.Device.Application.TitleId);
             }
 
             Result result = _baseFileSystemProxy.OpenReadOnlySaveDataFileSystem(out LibHac.Fs.IFileSystem fileSystem, spaceId, ref attribute);

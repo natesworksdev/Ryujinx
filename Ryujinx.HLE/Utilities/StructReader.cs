@@ -1,15 +1,16 @@
 using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.Utilities
 {
     class StructReader
     {
-        private MemoryManager _memory;
+        private IAddressSpaceManager _memory;
 
         public long Position { get; private set; }
 
-        public StructReader(MemoryManager memory, long position)
+        public StructReader(IAddressSpaceManager memory, long position)
         {
             _memory  = memory;
             Position = position;

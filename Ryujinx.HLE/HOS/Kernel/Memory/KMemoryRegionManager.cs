@@ -104,6 +104,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private KernelResult AllocatePagesImpl(ulong pagesCount, bool backwards, out KPageList pageList)
         {
+            ulong pc = pagesCount;
+
             pageList = new KPageList();
 
             if (_blockOrdersCount > 0)

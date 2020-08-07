@@ -40,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             public int                    ProducerBinderId;
             public IGraphicBufferProducer Producer;
             public BufferItemConsumer     Consumer;
-            public KProcess               Owner;
+            public long                   Owner;
         }
 
         private class TextureCallbackInformation
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public IGraphicBufferProducer OpenLayer(KProcess process, long layerId)
+        public IGraphicBufferProducer OpenLayer(long pid, long layerId)
         {
             bool needCreate;
 
@@ -95,13 +95,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (needCreate)
             {
-                CreateLayerFromId(process, layerId);
+                CreateLayerFromId(pid, layerId);
             }
 
             return GetProducerByLayerId(layerId);
         }
 
-        public IGraphicBufferProducer CreateLayer(KProcess process, out long layerId)
+        public IGraphicBufferProducer CreateLayer(long pid, out long layerId)
         {
             layerId = 1;
 
@@ -116,25 +116,25 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 }
             }
 
-            CreateLayerFromId(process, layerId);
+            CreateLayerFromId(pid, layerId);
 
             return GetProducerByLayerId(layerId);
         }
 
-        private void CreateLayerFromId(KProcess process, long layerId)
+        private void CreateLayerFromId(long pid, long layerId)
         {
             lock (Lock)
             {
                 Logger.Info?.Print(LogClass.SurfaceFlinger, $"Creating layer {layerId}");
 
-                BufferQueue.CreateBufferQueue(_device, process, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
+                BufferQueue.CreateBufferQueue(_device, pid, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
 
                 _layers.Add(layerId, new Layer
                 {
                     ProducerBinderId = HOSBinderDriverServer.RegisterBinderObject(producer),
                     Producer         = producer,
                     Consumer         = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
-                    Owner            = process
+                    Owner            = pid
                 });
 
                 LastId = layerId;

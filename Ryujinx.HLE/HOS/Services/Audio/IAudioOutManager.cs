@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         private const int    DefaultSampleRate    = 48000;
         private const int    DefaultChannelsCount = 2;
 
-        public IAudioOutManager(ServiceCtx context) : base(new ServerBase("AudioOutServer")) { }
+        public IAudioOutManager(ServiceCtx context) : base(new ServerBase(context.Device.System.KernelContext, "AudioOutServer")) { }
 
         [Command(0)]
         // ListAudioOuts() -> (u32 count, buffer<bytes, 6>)
@@ -88,10 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
         private ResultCode OpenAudioOutImpl(ServiceCtx context, long sendPosition, long sendSize, long receivePosition, long receiveSize)
         {
-            string deviceName = MemoryHelper.ReadAsciiString(
-                context.Memory,
-                sendPosition,
-                sendSize);
+            string deviceName = MemoryHelper.ReadAsciiString(context.Memory, sendPosition, sendSize);
 
             if (deviceName == string.Empty)
             {
@@ -149,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
 
             int track = audioOut.OpenTrack(sampleRate, channels, callback);
 
-            MakeObject(context, new IAudioOut(audioOut, releaseEvent, track));
+            MakeObject(context, new IAudioOut(audioOut, releaseEvent, track, context.Request.HandleDesc.ToCopy[0]));
 
             context.ResponseData.Write(sampleRate);
             context.ResponseData.Write(channels);

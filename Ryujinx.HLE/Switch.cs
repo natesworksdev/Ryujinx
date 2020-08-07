@@ -83,6 +83,7 @@ namespace Ryujinx.HLE
             FileSystem = fileSystem;
 
             System = new Horizon(this, contentManager);
+            System.InitializeServices();
 
             Statistics = new PerformanceStatistics();
 
