@@ -4,6 +4,10 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory
 {
+    /// <summary>
+    /// Represents a address space manager.
+    /// Supports virtual memory region mapping, address translation and read/write access to mapped regions.
+    /// </summary>
     public sealed class AddressSpaceManager : IAddressSpaceManager
     {
         public const int PageBits = 12;
@@ -87,7 +91,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Reads data from CPU mapped memory.
+        /// Reads data from mapped memory.
         /// </summary>
         /// <typeparam name="T">Type of the data being read</typeparam>
         /// <param name="va">Virtual address of the data in memory</param>
@@ -99,7 +103,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Reads data from CPU mapped memory.
+        /// Reads data from mapped memory.
         /// </summary>
         /// <param name="va">Virtual address of the data in memory</param>
         /// <param name="data">Span to store the data being read into</param>
@@ -110,7 +114,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Writes data to CPU mapped memory.
+        /// Writes data to mapped memory.
         /// </summary>
         /// <typeparam name="T">Type of the data being written</typeparam>
         /// <param name="va">Virtual address to write the data into</param>
@@ -122,7 +126,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Writes data to CPU mapped memory.
+        /// Writes data to mapped memory.
         /// </summary>
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="data">Data to be written</param>
@@ -165,7 +169,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Gets a read-only span of data from CPU mapped memory.
+        /// Gets a read-only span of data from mapped memory.
         /// </summary>
         /// <remarks>
         /// This may perform a allocation if the data is not contiguous in memory.
@@ -203,7 +207,7 @@ namespace Ryujinx.Memory
         /// <remarks>
         /// If the requested region is not contiguous in physical memory,
         /// this will perform an allocation, and flush the data (writing it
-        /// back to guest memory) on disposal.
+        /// back to the backing memory) on disposal.
         /// </remarks>
         /// <param name="va">Virtual address of the data</param>
         /// <param name="size">Size of the data</param>
@@ -318,7 +322,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Checks if the page at a given CPU virtual address.
+        /// Checks if the page at a given virtual address is mapped.
         /// </summary>
         /// <param name="va">Virtual address to check</param>
         /// <returns>True if the address is mapped, false otherwise</returns>
@@ -339,7 +343,7 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
-        /// Performs address translation of the address inside a CPU mapped memory range.
+        /// Performs address translation of the address inside a mapped memory range.
         /// </summary>
         /// <remarks>
         /// If the address is invalid or unmapped, -1 will be returned.

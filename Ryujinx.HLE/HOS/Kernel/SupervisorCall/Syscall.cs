@@ -15,12 +15,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 {
     class Syscall
     {
-        private readonly Switch _device;
         private readonly KernelContext _context;
 
-        public Syscall(Switch device, KernelContext context)
+        public Syscall(KernelContext context)
         {
-            _device = device;
             _context = context;
         }
 

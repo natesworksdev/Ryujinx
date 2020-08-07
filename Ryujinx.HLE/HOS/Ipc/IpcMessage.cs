@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Ipc
             ReadBuff(ExchangeBuff, xchgBuffCount);
 
             rawDataSize *= 4;
-            
+
             long recvListPos = reader.BaseStream.Position + rawDataSize;
 
             long pad0 = GetPadSize16(reader.BaseStream.Position + cmdPtr);
