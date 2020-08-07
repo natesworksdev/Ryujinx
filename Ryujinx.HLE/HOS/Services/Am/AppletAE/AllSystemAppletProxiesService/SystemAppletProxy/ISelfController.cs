@@ -206,6 +206,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             return ResultCode.Success;
         }
 
+        [Command(40)]
+        // CreateManagedDisplayLayer() -> u64
+        public ResultCode CreateManagedDisplayLayer(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            context.ResponseData.Write(0L);
+
+            return ResultCode.Success;
+        }
+
         [Command(50)]
         // SetHandlesRequestToDisplay(b8)
         public ResultCode SetHandlesRequestToDisplay(ServiceCtx context)

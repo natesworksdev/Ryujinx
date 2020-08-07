@@ -10,15 +10,17 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
 {
     class IAudioOut : IpcService, IDisposable
     {
-        private IAalOutput _audioOut;
-        private KEvent     _releaseEvent;
-        private int        _track;
+        private readonly IAalOutput _audioOut;
+        private readonly KEvent     _releaseEvent;
+        private readonly int        _track;
+        private readonly int        _clientHandle;
 
-        public IAudioOut(IAalOutput audioOut, KEvent releaseEvent, int track)
+        public IAudioOut(IAalOutput audioOut, KEvent releaseEvent, int track, int clientHandle)
         {
             _audioOut     = audioOut;
             _releaseEvent = releaseEvent;
             _track        = track;
+            _clientHandle = clientHandle;
         }
 
         [Command(0)]
@@ -108,7 +110,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
             // NOTE: Assume PCM16 all the time, change if new format are found.
             short[] buffer = new short[data.SampleBufferSize / sizeof(short)];
 
-            context.Memory.Read((ulong)data.SampleBufferPtr, MemoryMarshal.Cast<short, byte>(buffer));
+            context.Process.HandleTable.GetKProcess(_clientHandle).CpuMemory.Read((ulong)data.SampleBufferPtr, MemoryMarshal.Cast<short, byte>(buffer));
 
             _audioOut.AppendBuffer(_track, tag, buffer);
 

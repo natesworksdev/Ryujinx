@@ -121,7 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             long userId    = context.RequestData.ReadInt64();
             long parcelPtr = context.Request.ReceiveBuff[0].Position;
 
-            IBinder producer = context.Device.System.SurfaceFlinger.OpenLayer(context.Process, layerId);
+            IBinder producer = context.Device.System.SurfaceFlinger.OpenLayer(context.Request.HandleDesc.PId, layerId);
 
             Parcel parcel = new Parcel(0x28, 0x4);
 
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             // TODO: support multi display.
             Display disp = _displays.GetData<Display>((int)displayId);
 
-            IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(context.Process, out long layerId);
+            IBinder producer = context.Device.System.SurfaceFlinger.CreateLayer(0, out long layerId);
 
             Parcel parcel = new Parcel(0x28, 0x4);
 
@@ -268,8 +268,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 const ulong defaultAlignment = 0x1000;
                 const ulong defaultSize      = 0x20000;
 
-                // NOTE: The official service setup a A8B8G8R8 texture with a linear layout and then query its size. 
-                //       As we don't need this texture on the emulator, we can just simplify this logic and directly 
+                // NOTE: The official service setup a A8B8G8R8 texture with a linear layout and then query its size.
+                //       As we don't need this texture on the emulator, we can just simplify this logic and directly
                 //       do a linear layout size calculation. (stride * height * bytePerPixel)
                 int   pitch              = BitUtils.AlignUp(BitUtils.DivRoundUp(width * 32, 8), 64);
                 int   memorySize         = pitch * BitUtils.AlignUp(height, 64);

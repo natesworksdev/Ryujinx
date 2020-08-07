@@ -31,7 +31,7 @@ using Ryujinx.Audio.Renderer.Server.Voice;
 using Ryujinx.Audio.Renderer.Utils;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -87,7 +87,7 @@ namespace Ryujinx.Audio.Renderer.Server
 
         private Memory<byte> _performanceBuffer;
 
-        public MemoryManager MemoryManager { get; private set; }
+        public IAddressSpaceManager MemoryManager { get; private set; }
 
         private ulong _elapsedFrameCount;
         private ulong _renderingStartTick;
@@ -113,7 +113,7 @@ namespace Ryujinx.Audio.Renderer.Server
             _sessionId                 = 0;
         }
 
-        public ResultCode Initialize(ref AudioRendererConfiguration parameter, uint processHandle, CpuAddress workBuffer, ulong workBufferSize, int sessionId, ulong appletResourceId, MemoryManager memoryManager)
+        public ResultCode Initialize(ref AudioRendererConfiguration parameter, uint processHandle, CpuAddress workBuffer, ulong workBufferSize, int sessionId, ulong appletResourceId, IAddressSpaceManager memoryManager)
         {
             if (!BehaviourContext.CheckValidRevision(parameter.Revision))
             {

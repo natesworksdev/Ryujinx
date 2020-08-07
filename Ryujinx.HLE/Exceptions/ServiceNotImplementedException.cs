@@ -35,7 +35,7 @@ namespace Ryujinx.HLE.Exceptions
             Request = context.Request;
         }
 
-        protected ServiceNotImplementedException(SerializationInfo info, StreamingContext context) 
+        protected ServiceNotImplementedException(SerializationInfo info, StreamingContext context)
             : base(info, context)
         { }
 
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.Exceptions
             // Print the IPC command details (service name, command ID, and handler)
             (Type callingType, MethodBase callingMethod) = WalkStackTrace(new StackTrace(this));
 
-            if (callingType != null && callingMethod != null)
+            /*if (callingType != null && callingMethod != null)
             {
                 var ipcService  = Context.Session.Service;
                 var ipcCommands = ipcService.Commands;
@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.Exceptions
                     sb.AppendLine($"Service Command: {ipcService.GetType().FullName}: {ipcCommandId} ({ipcMethod.Name})");
                     sb.AppendLine();
                 }
-            }
+            }*/
 
             sb.AppendLine("Guest Stack Trace:");
             sb.AppendLine(Context.Thread.GetGuestStackTrace());

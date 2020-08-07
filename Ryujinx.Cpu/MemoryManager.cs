@@ -13,7 +13,7 @@ namespace Ryujinx.Cpu
     /// <summary>
     /// Represents a CPU memory manager.
     /// </summary>
-    public sealed class MemoryManager : IMemoryManager, IDisposable, IVirtualMemoryManager
+    public sealed class MemoryManager : IMemoryManager, IAddressSpaceManager, IDisposable, IVirtualMemoryManager
     {
         public const int PageBits = 12;
         public const int PageSize = 1 << PageBits;

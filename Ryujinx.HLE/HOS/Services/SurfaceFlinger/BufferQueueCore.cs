@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
 using System;
@@ -40,11 +39,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private KEvent _waitBufferFreeEvent;
         private KEvent _frameAvailableEvent;
 
-        public KProcess Owner { get; }
+        public long Owner { get; }
 
         public const int BufferHistoryArraySize = 8;
 
-        public BufferQueueCore(Switch device, KProcess process)
+        public BufferQueueCore(Switch device, long pid)
         {
             Slots                    = new BufferSlotArray();
             IsAbandoned              = false;
@@ -70,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _waitBufferFreeEvent  = new KEvent(device.System.KernelContext);
             _frameAvailableEvent = new KEvent(device.System.KernelContext);
 
-            Owner = process;
+            Owner = pid;
 
             BufferHistory        = new BufferInfo[BufferHistoryArraySize];
             EnableExternalEvent  = true;
