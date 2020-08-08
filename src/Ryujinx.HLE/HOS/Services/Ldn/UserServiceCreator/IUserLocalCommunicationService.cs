@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -78,51 +79,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
-        private (IPInterfaceProperties, UnicastIPAddressInformation) GetLocalInterface()
-        {
-            if (!NetworkInterface.GetIsNetworkAvailable())
-            {
-                return (null, null);
-            }
-
-            IPInterfaceProperties targetProperties = null;
-            UnicastIPAddressInformation targetAddressInfo = null;
-
-            NetworkInterface[] interfaces = NetworkInterface.GetAllNetworkInterfaces();
-
-            foreach (NetworkInterface adapter in interfaces)
-            {
-                // Ignore loopback and non IPv4 capable interface.
-                if (adapter.NetworkInterfaceType != NetworkInterfaceType.Loopback && adapter.Supports(NetworkInterfaceComponent.IPv4))
-                {
-                    IPInterfaceProperties properties = adapter.GetIPProperties();
-
-                    if (properties.GatewayAddresses.Count > 0 && properties.DnsAddresses.Count > 1)
-                    {
-                        foreach (UnicastIPAddressInformation info in properties.UnicastAddresses)
-                        {
-                            // Only accept an IPv4 address
-                            if (info.Address.GetAddressBytes().Length == 4)
-                            {
-                                targetProperties = properties;
-                                targetAddressInfo = info;
-
-                                break;
-                            }
-                        }
-                    }
-
-                    // Found the target interface, stop here.
-                    if (targetProperties != null)
-                    {
-                        break;
-                    }
-                }
-            }
-
-            return (targetProperties, targetAddressInfo);
-        }
-
         [Command(2)]
         // GetIpv4Address() -> (u32, u32)
         public ResultCode GetIpv4Address(ServiceCtx context)
@@ -131,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             // Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
-            (_, UnicastIPAddressInformation unicastAddress) = GetLocalInterface();
+            (_, UnicastIPAddressInformation unicastAddress) = NetworkHelpers.GetLocalInterface();
 
             if (unicastAddress == null || _state == NetworkState.Initialized)
             {
@@ -140,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                Logger.PrintInfo(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
+                Logger.Info?.Print(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
 
                 var addressBytes = unicastAddress.Address.GetAddressBytes();
                 Array.Reverse(addressBytes);
@@ -264,6 +220,16 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _state = state;
 
             _stateChangeEvent.WritableEvent.Signal();
+        }
+
+        public void SignalDisconnect(DisconnectReason reason)
+        {
+            if (_state != NetworkState.Initialized)
+            {
+                _disconnectReason = reason;
+
+                SetState(NetworkState.Initialized);
+            }
         }
 
         [Command(200)]
