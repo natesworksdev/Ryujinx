@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 }
                 else
                 {
-                    _parent.SetState(NetworkState.Initialized);
+                    _parent.SignalDisconnect(DisconnectReason.SignalLost);
                 }
             }
             else
