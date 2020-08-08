@@ -31,6 +31,7 @@ namespace Ryujinx
         public async static void BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
             if (Running) return;
+
             Running = true;
             mainWindow.UpdateMenuItem.Sensitive = false;
 
@@ -53,9 +54,9 @@ namespace Ryujinx
             {
                 using (WebClient jsonClient = new WebClient())
                 {
-                    string fetchedJson = await jsonClient.DownloadStringTaskAsync(MasterUrl);
-                    JObject jsonRoot   = JObject.Parse(fetchedJson);
-                    JToken buildToken  = jsonRoot["build"];
+                    string  fetchedJson = await jsonClient.DownloadStringTaskAsync(MasterUrl);
+                    JObject jsonRoot    = JObject.Parse(fetchedJson);
+                    JToken  buildToken  = jsonRoot["build"];
 
                     _jobId    = (string)buildToken["jobs"][0]["jobId"];
                     _buildVer = (string)buildToken["version"];
@@ -70,21 +71,19 @@ namespace Ryujinx
                 return;
             }
 
-            // Get Version from app.config to compare versions
-            Version newVersion     = Version.Parse("0.0");
-            Version currentVersion = Version.Parse("0.0");
+            Version newVersion     = Version.Parse(_buildVer);
+            Version currentVersion = Version.Parse("0.0.0");
 
             try
             {
-                newVersion     = Version.Parse(_buildVer);
                 currentVersion = Version.Parse(Program.Version);
             }
             catch
             {
-                Logger.Warning?.Print(LogClass.Application, "Failed to convert current Ryujinx version.");
+                Logger.Warning?.Print(LogClass.Application, "Failed to convert current Ryujinx version. Defaulting to 0.0.0");
             }
 
-            if (newVersion < currentVersion)
+            if (newVersion <= currentVersion)
             {
                 if (showVersionUpToDate)
                 {
@@ -93,6 +92,7 @@ namespace Ryujinx
 
                 Running = false;
                 mainWindow.UpdateMenuItem.Sensitive = true;
+
                 return;
             }
 
@@ -101,13 +101,16 @@ namespace Ryujinx
             updateDialog.Show();
         }
 
-        public async static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl, bool isLinux)
+        public async static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl)
         {
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
+            {
                 Directory.Delete(UpdateDir, true);
+            }
 
             Directory.CreateDirectory(UpdateDir);
+
             string updateFile = Path.Combine(UpdateDir, "update.bin");
 
             // Download the update .zip
@@ -129,7 +132,7 @@ namespace Ryujinx
             updateDialog.MainText.Text     = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
-            if (isLinux)
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 using (Stream         inStream   = File.OpenRead(updateFile))
                 using (Stream         gzipStream = new GZipInputStream(inStream))
@@ -156,6 +159,7 @@ namespace Ryujinx
                             File.SetLastWriteTime(outPath, DateTime.SpecifyKind(tarEntry.ModTime, DateTimeKind.Utc));
 
                             TarEntry entry = tarEntry;
+
                             Application.Invoke(delegate
                             {
                                 updateDialog.ProgressBar.Value += entry.Size;

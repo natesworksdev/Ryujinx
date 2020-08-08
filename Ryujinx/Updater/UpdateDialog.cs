@@ -36,18 +36,8 @@ namespace Ryujinx.Ui
             ProgressBar.Hide();
 
             YesButton.Pressed += YesButton_Pressed;
-            NoButton.Pressed  += (obj, args) =>
-            {
-                Updater.Running = false;
-               _mainWindow.Window.Functions = WMFunction.All;
-
-               _mainWindow.ExitMenuItem.Sensitive   = true;
-               _mainWindow.UpdateMenuItem.Sensitive = true;
-
-               this.Dispose();
-            };
+            NoButton.Pressed  += NoButton_Pressed;
         }
-
         private void YesButton_Pressed(object sender, EventArgs args)
         {
             if (_restartQuery)
@@ -77,8 +67,19 @@ namespace Ryujinx.Ui
                 SecondaryText.Text = "";
                 _restartQuery      = true;
 
-                Updater.UpdateRyujinx(this, _buildUrl, RuntimeInformation.IsOSPlatform(OSPlatform.Linux));
+                Updater.UpdateRyujinx(this, _buildUrl);
             }
+        }
+
+        private void NoButton_Pressed(object sender, EventArgs args)
+        {
+            Updater.Running = false;
+            _mainWindow.Window.Functions = WMFunction.All;
+
+            _mainWindow.ExitMenuItem.Sensitive   = true;
+            _mainWindow.UpdateMenuItem.Sensitive = true;
+
+            this.Dispose();
         }
     }
 }
