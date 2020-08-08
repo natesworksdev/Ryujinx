@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetState() -> s32 state
         public ResultCode GetState(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             // Return ResultCode.InvalidArgument if _state is null, doesn't occur in our case.
 
@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetNetworkInfo() -> buffer<unknown<0x480>, 0x1a>
         public ResultCode GetNetworkInfo(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             long bufferPosition = context.Request.RecvListBuff[0].Position;
             long bufferSize = context.Request.RecvListBuff[0].Size;
@@ -83,7 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetIpv4Address() -> (u32, u32)
         public ResultCode GetIpv4Address(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             // Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetDisconnectReason() -> u16
         public ResultCode GetDisconnectReason(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             // Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
@@ -125,7 +125,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetSecurityParameter() -> bytes<0x20, 1>
         public ResultCode GetSecurityParameter(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_state == NetworkState.AccessPointCreated || _state == NetworkState.AccessPoint)
             {
@@ -159,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetNetworkConfig() -> bytes<0x20, 8>
         public ResultCode GetNetworkConfig(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_state == NetworkState.StationConnected)
             {
@@ -179,7 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // AttachStateChangeEvent() -> handle<copy>
         public ResultCode AttachStateChangeEvent(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_stateChangeEventHandle == 0)
             {
@@ -200,7 +200,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // Scan(u16, bytes<0x60, 8>) -> (u16, buffer<unknown, 0x22>)
         public ResultCode Scan(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_initialized && _state == NetworkState.Station)
             {
@@ -236,7 +236,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // OpenAccessPoint()
         public ResultCode OpenAccessPoint(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_initialized)
             {
@@ -256,7 +256,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // CloseAccessPoint()
         public ResultCode CloseAccessPoint(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_state == NetworkState.AccessPoint || _state == NetworkState.AccessPointCreated)
             {
@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // CreateNetwork(bytes<0x44, 2>, bytes<0x30, 1>, bytes<0x20, 8>)
         public ResultCode CreateNetwork(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
             
             // TODO: check state
 
@@ -288,7 +288,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // SetAdvertiseData(buffer<unknown, 0x21>)
         public ResultCode SetAdvertiseData(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             // TODO: check state
 
@@ -299,7 +299,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // SetStationAcceptPolicy(u8)
         public ResultCode SetStationAcceptPolicy(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             // TODO: check state
 
@@ -310,7 +310,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // OpenStation()
         public ResultCode OpenStation(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_initialized)
             {
@@ -331,7 +331,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // CloseStation()
         public ResultCode CloseStation(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_state == NetworkState.Station || _state == NetworkState.StationConnected)
             {
@@ -350,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // Connect(bytes<0x44, 2>, bytes<0x30, 1>, u32, u32, buffer<unknown<0x480>, 0x19>)
         public ResultCode Connect(ServiceCtx context)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             if (_state == NetworkState.Station)
             {
@@ -425,7 +425,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public ResultCode InitializeImpl(int requestId)
         {
-            Logger.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             // requestId is related to Nifm, we don't use it.
             if (requestId > 255 || _initialized)
