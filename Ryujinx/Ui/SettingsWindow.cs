@@ -553,7 +553,9 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
+            {
                 ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+            }
 
             MainWindow.SaveConfig();
             MainWindow.UpdateGraphicsConfig();
