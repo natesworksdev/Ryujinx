@@ -8,7 +8,6 @@ using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
-using Ryujinx.HLE.HOS.Services.Nifm.StaticService.Types;
 using Ryujinx.Horizon.Common;
 using System;
 using System.Net;
@@ -73,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
             else
             {
-                //throw new NotImplementedException();
+                // Should just be zero.
             }
 
             return ResultCode.Success;
