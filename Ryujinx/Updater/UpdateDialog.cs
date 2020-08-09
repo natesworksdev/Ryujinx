@@ -38,6 +38,7 @@ namespace Ryujinx.Ui
             YesButton.Pressed += YesButton_Pressed;
             NoButton.Pressed  += NoButton_Pressed;
         }
+        
         private void YesButton_Pressed(object sender, EventArgs args)
         {
             if (_restartQuery)
