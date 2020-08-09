@@ -12,20 +12,26 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private CpuBoostMode _cpuBoostMode  = CpuBoostMode.Disabled;
         private bool         _vrModeEnabled = false;
 
+        private int _messageEventHandle;
+        private int _displayResolutionChangedEventHandle;
+
         public ICommonStateGetter() { }
 
         [Command(0)]
         // GetEventHandle() -> handle<copy>
         public ResultCode GetEventHandle(ServiceCtx context)
         {
-            KEvent Event = context.Device.System.AppletState.MessageEvent;
+            KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
 
-            if (context.Process.HandleTable.GenerateHandle(Event.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_messageEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(messageEvent.ReadableEvent, out _messageEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_messageEventHandle);
 
             return ResultCode.Success;
         }
@@ -113,12 +119,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetDefaultDisplayResolutionChangeEvent() -> handle<copy>
         public ResultCode GetDefaultDisplayResolutionChangeEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.DisplayResolutionChangeEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_displayResolutionChangedEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(context.Device.System.DisplayResolutionChangeEvent.ReadableEvent, out _displayResolutionChangedEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_displayResolutionChangedEventHandle);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
