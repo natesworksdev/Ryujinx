@@ -12,6 +12,8 @@ using Ryujinx.Horizon.Common;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
+using Ryujinx.Common.Configuration.Multiplayer;
+using Ryujinx.Configuration;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
@@ -434,7 +436,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             // Initialiaze the sockets here.
 
-            // NetworkClient = new NetworkClient();
+            MultiplayerMode mode = ConfigurationState.Instance.Multiplayer.Mode;
+            switch (mode) {
+                case MultiplayerMode.Dummy:
+                    NetworkClient = new DummyLdnClient();
+                    break;
+            }
 
             _initialized = true;
 
