@@ -11,7 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
 {
     class IApplicationDisplayService : IpcService
     {
-        private IdDictionary _displays;
+        private readonly IdDictionary _displays;
+
+        private int _vsyncEventHandle;
 
         public IApplicationDisplayService()
         {
@@ -289,12 +291,15 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         {
             string name = GetDisplayName(context);
 
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.VsyncEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_vsyncEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(context.Device.System.VsyncEvent.ReadableEvent, out _vsyncEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_vsyncEventHandle);
 
             return ResultCode.Success;
         }

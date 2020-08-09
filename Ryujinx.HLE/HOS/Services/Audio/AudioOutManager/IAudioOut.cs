@@ -12,6 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
     {
         private readonly IAalOutput _audioOut;
         private readonly KEvent     _releaseEvent;
+        private          int        _releaseEventHandle;
         private readonly int        _track;
         private readonly int        _clientHandle;
 
@@ -61,12 +62,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         // RegisterBufferEvent() -> handle<copy>
         public ResultCode RegisterBufferEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_releaseEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out _releaseEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_releaseEventHandle);
 
             return ResultCode.Success;
         }

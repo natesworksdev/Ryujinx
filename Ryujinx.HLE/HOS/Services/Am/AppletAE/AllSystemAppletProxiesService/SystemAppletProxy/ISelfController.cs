@@ -9,9 +9,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
     class ISelfController : IpcService
     {
         private KEvent _libraryAppletLaunchableEvent;
+        private int    _libraryAppletLaunchableEventHandle;
 
         private KEvent _accumulatedSuspendedTickChangedEvent;
-        private int    _accumulatedSuspendedTickChangedEventHandle = 0;
+        private int    _accumulatedSuspendedTickChangedEventHandle;
 
         private object _fatalSectionLock = new object();
         private int    _fatalSectionCount;
@@ -103,12 +104,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             _libraryAppletLaunchableEvent.ReadableEvent.Signal();
 
-            if (context.Process.HandleTable.GenerateHandle(_libraryAppletLaunchableEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_libraryAppletLaunchableEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_libraryAppletLaunchableEvent.ReadableEvent, out _libraryAppletLaunchableEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_libraryAppletLaunchableEventHandle);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
