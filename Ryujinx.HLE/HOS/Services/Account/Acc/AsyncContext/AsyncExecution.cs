@@ -8,10 +8,10 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AsyncContext
 {
     class AsyncExecution
     {
-        CancellationTokenSource _tokenSource;
-        CancellationToken       _token;
+        private readonly CancellationTokenSource _tokenSource;
+        private readonly CancellationToken       _token;
 
-        public KEvent SystemEvent   { get; private set; }
+        public KEvent SystemEvent   { get; }
         public bool   IsInitialized { get; private set; }
         public bool   IsRunning     { get; private set; }
 

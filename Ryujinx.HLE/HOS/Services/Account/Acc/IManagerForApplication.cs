@@ -28,8 +28,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // CheckAvailability()
         public ResultCode CheckAvailability(ServiceCtx context)
         {
-            // NOTE: This open the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
-            //       Then its search the Availability of Online Service related to the UserId in this file and return it.
+            // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
+            //       Then it searches the Availability of Online Services related to the UserId in this file and returns it.
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
@@ -41,9 +41,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetAccountId() -> nn::account::NetworkServiceAccountId
         public ResultCode GetAccountId(ServiceCtx context)
         {
-            // NOTE: This open the file at "su/baas/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted 
+            // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted 
             //       as "%08x-%04x-%04x-%02x%02x-%08x%04x") in the account:/ savedata.
-            //       Then its search the NetworkServiceAccountId related to the UserId in this file and return it.
+            //       Then it searches the NetworkServiceAccountId related to the UserId in this file and returns it.
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
@@ -56,8 +56,6 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // EnsureIdTokenCacheAsync() -> object<nn::account::detail::IAsyncContext>
         public ResultCode EnsureIdTokenCacheAsync(ServiceCtx context)
         {
-            // if (!(this + 0x48)) return ResultCode.Unknown1;
-
             KEvent         asyncEvent     = new KEvent(context.Device.System.KernelContext);
             AsyncExecution asyncExecution = new AsyncExecution(asyncEvent);
 
@@ -65,8 +63,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             MakeObject(context, new IAsyncContext(asyncExecution));
 
-            // Doesn't occur in our case.
-            // if (IAsyncContext == null) return ResultCode.NullObject;
+            // return ResultCode.NullObject if the IAsyncContext pointer is null. Doesn't occur in our case.
 
             return ResultCode.Success;
         }
@@ -81,8 +78,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
-            // TODO: Use a real function instead of this little async delay.
-            await Task.Delay(10, token);
+            // TODO: Use a real function instead of the empty Task.
+            await Task.Run(() => { }, token);
         }
 
         [Command(3)]
@@ -92,8 +89,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             long bufferPosition = context.Request.ReceiveBuff[0].Position;
             long bufferSize     = context.Request.ReceiveBuff[0].Size;
 
-            // NOTE: This open the file at "su/cache/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x")
-            //       in the "account:/" savedata and write some data in the buffer.
+            // NOTE: This opens the file at "su/cache/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x")
+            //       in the "account:/" savedata and writes some data in the buffer.
             //       Since we don't support online services, we can stub it.
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
