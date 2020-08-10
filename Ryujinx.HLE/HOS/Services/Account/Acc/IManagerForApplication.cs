@@ -12,17 +12,16 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 {
     class IManagerForApplication : IpcService
     {
+        // TODO: Determine where and how NetworkServiceAccountId is set.
+        private const long NetworkServiceAccountId = 0xcafe;
+
         private UserId                    _userId;
         private ApplicationLaunchProperty _applicationLaunchProperty;
-        private long                      _networkServiceAccountId;
 
         public IManagerForApplication(UserId userId, ApplicationLaunchProperty applicationLaunchProperty)
         {
             _userId                    = userId;
             _applicationLaunchProperty = applicationLaunchProperty;
-
-            // TODO: Determine where and how NetworkServiceAccountId is set.
-            _networkServiceAccountId = new Random().Next();
         }
 
         [Command(0)]
@@ -46,9 +45,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             //       as "%08x-%04x-%04x-%02x%02x-%08x%04x") in the account:/ savedata.
             //       Then its search the NetworkServiceAccountId related to the UserId in this file and return it.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { _networkServiceAccountId });
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
-            context.ResponseData.Write(_networkServiceAccountId);
+            context.ResponseData.Write(NetworkServiceAccountId);
 
             return ResultCode.Success;
         }
@@ -122,9 +121,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, buffer<nn::account::nas::NasUserBaseForApplication, 0x1a>, buffer<bytes, 6>)
         public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { _networkServiceAccountId });
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
-            context.ResponseData.Write(_networkServiceAccountId);
+            context.ResponseData.Write(NetworkServiceAccountId);
 
             // TODO: determine and fill the two output IPC buffers.
 
