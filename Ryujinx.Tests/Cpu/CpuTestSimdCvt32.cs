@@ -92,11 +92,8 @@ namespace Ryujinx.Tests.Cpu
 
             for (int cnt = 1; cnt <= RndCnt; cnt++)
             {
-                ulong rnd1 = GenNormalD();
-                ulong rnd2 = GenSubnormalD();
-
-                yield return rnd1;
-                yield return rnd2;
+                yield return GenNormalD();
+                yield return GenSubnormalD();
             }
         }
 #endregion
