@@ -16,6 +16,22 @@ namespace Ryujinx.Ui
             _parent = parent;
         }
 
+        public bool DisplayMessageDialog(ControllerAppletUiArgs args)
+        {
+            string playerCount = args.PlayerCountMin == args.PlayerCountMax
+                ? $"exactly {args.PlayerCountMin}"
+                : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
+
+            string message =
+                $"Application requests <b>{playerCount}</b> player(s) with:\n\n"
+                + $"<tt><b>TYPES:</b> {args.SupportedStyles}</tt>\n\n"
+                + $"<tt><b>PLAYERS:</b> {string.Join(", ", args.SupportedPlayers)}</tt>\n\n"
+                + (args.IsDocked ? "Docked mode set. <tt>Handheld</tt> is also invalid.\n\n" : "")
+                + "<i>Please reconfigure Input now and then press OK.</i>";
+
+            return DisplayMessageDialog("Controller Applet", message);
+        }
+
         public bool DisplayMessageDialog(string title, string message)
         {
             ManualResetEvent dialogCloseEvent = new ManualResetEvent(false);

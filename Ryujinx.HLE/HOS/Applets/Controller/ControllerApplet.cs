@@ -69,13 +69,16 @@ namespace Ryujinx.HLE.HOS.Applets
             PlayerIndex primaryIndex = PlayerIndex.Unknown;
             while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
             {
-                string message = $"Application requests <b>{((playerMin == playerMax) ? $"exactly {playerMin}" : $"{playerMin}-{playerMax}")}</b> player(s) with:\n\n"
-                    + $"<tt><b>TYPES:</b> {(ControllerType)privateArg.NpadStyleSet}</tt>\n\n"
-                    + $"<tt><b>PLAYERS:</b> {string.Join(", ",_system.Device.Hid.Npads.SupportedPlayers)}</tt>\n\n"
-                    + (_system.State.DockedMode ? "Docked mode set. <tt>Handheld</tt> is also invalid.\n\n" : "")
-                    + "<i>Please reconfigure Input now and then press OK.</i>";
+                ControllerAppletUiArgs uiArgs = new ControllerAppletUiArgs
+                {
+                    PlayerCountMin = playerMin,
+                    PlayerCountMax = playerMax,
+                    SupportedStyles = (ControllerType)privateArg.NpadStyleSet,
+                    SupportedPlayers = _system.Device.Hid.Npads.SupportedPlayers,
+                    IsDocked = _system.State.DockedMode
+                };
 
-                if (!_system.Device.UiHandler.DisplayMessageDialog("Controller Applet", message))
+                if (!_system.Device.UiHandler.DisplayMessageDialog(uiArgs))
                 {
                     break;
                 }

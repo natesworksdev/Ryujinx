@@ -11,7 +11,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
     {
         private static readonly Array3<BatteryCharge> _fullBattery;
 
-        private const int MaxControllers = 9; // Players 1-8 and Handheld
+        public const int MaxControllers = 9; // Players 1-8 and Handheld
         private ControllerType[] _configuredTypes;
         private KEvent[] _styleSetUpdateEvents;
 
@@ -117,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        public void Update(List<GamepadInput> states)
+        public void Update(IList<GamepadInput> states)
         {
             Remap();
 
@@ -166,7 +166,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (_activeCount == 0 && PerformanceCounter.ElapsedMilliseconds > _lastNotifyTimestamp + NoMatchNotifyFrequencyMs)
             {
-                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests |{SupportedStyleSets}| on |{string.Join(", ", SupportedPlayers)}|");
+                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests '{SupportedStyleSets}' on '{string.Join(", ", SupportedPlayers)}'");
                 _lastNotifyTimestamp = PerformanceCounter.ElapsedMilliseconds;
             }
         }

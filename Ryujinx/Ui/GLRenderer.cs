@@ -405,7 +405,7 @@ namespace Ryujinx.Ui
                 });
             }
 
-            List<GamepadInput> gamepadInputs = new List<GamepadInput>();
+            List<GamepadInput> gamepadInputs = new List<GamepadInput>(NpadDevices.MaxControllers);
 
             foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
             {

@@ -16,5 +16,11 @@ namespace Ryujinx.HLE
         /// </summary>
         /// <returns>True when OK is pressed, False otherwise.</returns>
         bool DisplayMessageDialog(string title, string message);
+
+        /// <summary>
+        /// Displays a Message Dialog box specific to Controller Applet and blocks until it is closed.
+        /// </summary>
+        /// <returns>True when OK is pressed, False otherwise.</returns>
+        bool DisplayMessageDialog(ControllerAppletUiArgs args);
     }
 }
