@@ -665,7 +665,7 @@ namespace Ryujinx.Ui
         
         private void PurgePtcCache_Clicked(object sender, EventArgs args)
         {
-            var tableEntry = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n");
+            string[] tableEntry = _gameTableStore.GetValue(_rowIter, 2).ToString().Split("\n");
             string titleId = tableEntry[1].ToLower();
             
             DirectoryInfo mainDir   = new DirectoryInfo(System.IO.Path.Combine(_virtualFileSystem.GetBasePath(), "games", titleId, "cache", "cpu", "0"));
@@ -678,7 +678,7 @@ namespace Ryujinx.Ui
                 WindowPosition = WindowPosition.Center
             };
 
-            var cacheFiles = new List<FileInfo>();
+            List<FileInfo> cacheFiles = new List<FileInfo>();
 
             if (mainDir.Exists)   { cacheFiles.AddRange(mainDir.EnumerateFiles("*.cache")); }
             if (backupDir.Exists) { cacheFiles.AddRange(backupDir.EnumerateFiles("*.cache")); }
