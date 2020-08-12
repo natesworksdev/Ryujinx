@@ -9,7 +9,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public class NpadDevices : BaseDevice
     {
-        private static readonly Array3<BatteryCharge> _fullBattery;
+        const BatteryCharge DefaultBatteryCharge = BatteryCharge.Percent100;
 
         public const int MaxControllers = 9; // Players 1-8 and Handheld
         private ControllerType[] _configuredTypes;
@@ -47,8 +47,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
 
             _activeCount = 0;
-
-            _fullBattery[0] = _fullBattery[1] = _fullBattery[2] = BatteryCharge.Percent100;
 
             JoyHold = NpadJoyHoldType.Vertical;
         }
@@ -208,7 +206,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                                           NpadSystemProperties.PowerInfo1Connected |
                                           NpadSystemProperties.PowerInfo2Connected;
 
-            controller.BatteryState = _fullBattery;
+            controller.BatteryState.ToSpan().Fill(DefaultBatteryCharge);
 
             switch (type)
             {

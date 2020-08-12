@@ -107,6 +107,8 @@ namespace Ryujinx.Ui
                 _controllerType.Append(ControllerType.JoyconRight.ToString(), "Joycon Right");
             }
 
+            _controllerType.Active = 0; // set initial value to first in list
+
             //Bind Events
             _lStickX.Clicked        += Button_Pressed;
             _lStickY.Clicked        += Button_Pressed;
