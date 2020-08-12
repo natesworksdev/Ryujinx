@@ -92,6 +92,21 @@ namespace Ryujinx.Ui
             _virtualFileSystem = virtualFileSystem;
             _inputConfig       = ConfigurationState.Instance.Hid.InputConfig.Value.Find(inputConfig => inputConfig.PlayerIndex == _playerIndex);
 
+            Title = $"Ryujinx - Controller Settings - {_playerIndex}";
+
+            if (_playerIndex == PlayerIndex.Handheld)
+            {
+                _controllerType.Append(ControllerType.Handheld.ToString(), "Handheld");
+                _controllerType.Sensitive = false;
+            }
+            else
+            {
+                _controllerType.Append(ControllerType.ProController.ToString(), "Pro Controller");
+                _controllerType.Append(ControllerType.JoyconPair.ToString(), "Joycon Pair");
+                _controllerType.Append(ControllerType.JoyconLeft.ToString(), "Joycon Left");
+                _controllerType.Append(ControllerType.JoyconRight.ToString(), "Joycon Right");
+            }
+
             //Bind Events
             _lStickX.Clicked        += Button_Pressed;
             _lStickY.Clicked        += Button_Pressed;
@@ -279,7 +294,12 @@ namespace Ryujinx.Ui
             switch (config)
             {
                 case KeyboardConfig keyboardConfig:
-                    _controllerType.SetActiveId(keyboardConfig.ControllerType.ToString());
+                    if (!_controllerType.SetActiveId(keyboardConfig.ControllerType.ToString()))
+                    {
+                        _controllerType.SetActiveId(_playerIndex == PlayerIndex.Handheld 
+                            ? ControllerType.Handheld.ToString() 
+                            : ControllerType.ProController.ToString());
+                    }
 
                     _lStickUp.Label     = keyboardConfig.LeftJoycon.StickUp.ToString();
                     _lStickDown.Label   = keyboardConfig.LeftJoycon.StickDown.ToString();
@@ -311,7 +331,12 @@ namespace Ryujinx.Ui
                     _rSr.Label          = keyboardConfig.RightJoycon.ButtonSr.ToString();
                     break;
                 case ControllerConfig controllerConfig:
-                    _controllerType.SetActiveId(controllerConfig.ControllerType.ToString());
+                    if (!_controllerType.SetActiveId(controllerConfig.ControllerType.ToString()))
+                    {
+                        _controllerType.SetActiveId(_playerIndex == PlayerIndex.Handheld 
+                            ? ControllerType.Handheld.ToString() 
+                            : ControllerType.ProController.ToString());
+                    }
 
                     _lStickX.Label                    = controllerConfig.LeftJoycon.StickX.ToString();
                     _invertLStickX.Active             = controllerConfig.LeftJoycon.InvertStickX;
