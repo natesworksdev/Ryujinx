@@ -78,8 +78,8 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
-            // TODO: Use a real function instead of the empty Task.
-            await Task.Run(() => { }, token);
+            // TODO: Use a real function instead, with the CancellationToken.
+            await Task.CompletedTask;
         }
 
         [Command(3)]
