@@ -118,7 +118,19 @@ namespace Ryujinx.HLE.HOS.Services
 
                     Profile.Begin(profile);
 
-                    result = (ResultCode)processRequest.Invoke(service, new object[] { context });
+                    try
+                    {
+                        result = (ResultCode)processRequest.Invoke(service, new object[] { context });
+                    }
+                    catch (ServiceNotImplementedException ex)
+                    {
+                        // Skip exceptions on service not implemented on execution
+                        bool debug = false;
+                        if (debug)
+                        {
+                            throw ex;
+                        }
+                    }
 
                     Profile.End(profile);
                 }
