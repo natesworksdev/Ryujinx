@@ -28,9 +28,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
             // When the source texture that was found has a depth format,
             // we must enforce the target texture also has a depth format,
             // as copies between depth and color formats are not allowed.
-            if (srcTexture.Format == Format.D32Float)
+            switch (srcTexture.Format)
             {
-                dstCopyTexture.Format = RtFormat.D32Float;
+                case Format.S8Uint         : dstCopyTexture.Format = RtFormat.S8Uint; break;
+                case Format.D16Unorm       : dstCopyTexture.Format = RtFormat.D16Unorm; break;
+                case Format.D24X8Unorm     : dstCopyTexture.Format = RtFormat.D24Unorm; break;
+                case Format.D32Float       : dstCopyTexture.Format = RtFormat.D32Float; break;
+                case Format.D24UnormS8Uint : dstCopyTexture.Format = RtFormat.D24UnormS8Uint; break;
+                case Format.D32FloatS8Uint : dstCopyTexture.Format = RtFormat.D32FloatS8Uint; break;
             }
 
             Texture dstTexture = TextureManager.FindOrCreateTexture(dstCopyTexture, srcTexture.ScaleMode == Image.TextureScaleMode.Scaled);
