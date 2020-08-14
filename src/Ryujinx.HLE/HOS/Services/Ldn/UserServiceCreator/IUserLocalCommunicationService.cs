@@ -4,7 +4,6 @@ using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
-using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -14,7 +13,6 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
-using System.Threading.Channels;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
@@ -86,8 +84,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             // NOTE: Return ResultCode.InvalidArgument if _state is null, doesn't occur in our case.
             context.ResponseData.Write((int)_state);
-
-            Console.WriteLine(_state);
 
             return ResultCode.Success;
         }
@@ -870,7 +866,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             // NOTE: It seems the guest can get ip_address and subnet_mask from nifm service and pass it through the initialize.
             //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
-            //       Since we proxy connections, we don't needs the get ip_address, subnet_mask and nifm_request_id.
+            //       Since we proxy connections, we don't needs to get the ip_address, subnet_mask and nifm_request_id.
 
             return InitializeImpl(context.Process.Pid, NIFM_REQUEST_ID);
         }
