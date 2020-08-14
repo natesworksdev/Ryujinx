@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     {
         public INetworkClient NetworkClient { get; private set; }
 
-        private const int    NIFM_REQUEST_ID   = 90;
+        private const int    NIFM_REQUEST_ID     = 90;
         private const string DEFAULT_IP_ADDRESS  = "127.0.0.1";
         private const string DEFAULT_SUBNET_MASK = "255.255.255.0";
         private const bool   IS_DEVELOPMENT      = false;
@@ -575,7 +575,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            if (acceptPolicy == AcceptPolicy.WhiteList)
+            if (acceptPolicy > AcceptPolicy.WhiteList)
             {
                 return ResultCode.InvalidArgument;
             }
