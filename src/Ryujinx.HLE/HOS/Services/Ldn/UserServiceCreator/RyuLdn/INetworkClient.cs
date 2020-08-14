@@ -13,8 +13,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn
         void DisconnectAndStop();
 
         bool Connect(ConnectRequest request);
-        void SetStationAcceptPolicy(byte acceptPolicy);
+        void SetStationAcceptPolicy(AcceptPolicy acceptPolicy);
+        void SetAdvertiseData(byte[] data);
         bool CreateNetwork(CreateAccessPointRequest request, byte[] advertiseData);
-        NetworkInfo[] Scan(uint channel, uint bufferCount, ScanFilter scanFilter);
+        NetworkInfo[] Scan(ushort channel, ScanFilter scanFilter);
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.Types
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x20, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential, Size = 0x20)]
     struct NetworkConfig
     {
         public IntentId IntentId;

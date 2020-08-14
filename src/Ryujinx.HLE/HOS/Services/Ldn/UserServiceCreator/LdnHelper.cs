@@ -19,15 +19,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return arr;
         }
 
-        public static byte[] StructureToByteArrayWithData(object obj, byte[] data)
-        {
-            byte[] result = StructureToByteArray(obj, data.Length);
-
-            Array.Copy(data, 0, result, result.Length - data.Length, data.Length);
-
-            return result;
-        }
-
         public static T FromBytes<T>(byte[] arr)
         {
             T str = default(T);

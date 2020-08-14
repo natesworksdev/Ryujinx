@@ -1,19 +1,20 @@
-﻿using Ryujinx.Common;
+﻿using LibHac.Ns;
+using Ryujinx.Common;
+using Ryujinx.Common.Configuration.Multiplayer;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
-using Ryujinx.Horizon.Common;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
-using Ryujinx.Common.Configuration.Multiplayer;
-using Ryujinx.Configuration;
+using System.Threading.Channels;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
@@ -21,14 +22,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     {
         public INetworkClient NetworkClient { get; private set; }
 
-        private const int RequestId = 90;
+        private const int    NIFM_REQUEST_ID   = 90;
+        private const string DEFAULT_IP_ADDRESS  = "127.0.0.1";
+        private const string DEFAULT_SUBNET_MASK = "255.255.255.0";
+        private const bool   IS_DEVELOPMENT      = false;
 
         private KEvent _stateChangeEvent;
         private int    _stateChangeEventHandle = 0;
 
         private NetworkState     _state;
         private DisconnectReason _disconnectReason;
-        private bool             _initialized;
+        private ResultCode       _nifmResultCode;
+        private long             _currentPid;
 
         private AccessPoint _accessPoint;
         private Station     _station;
@@ -40,70 +45,134 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _disconnectReason = DisconnectReason.None;
         }
 
+        private ushort CheckDevelopmentChannel(ushort channel)
+        {
+            return (ushort)(!IS_DEVELOPMENT ? 0 : channel);
+        }
+
+        private SecurityMode CheckDevelopmentSecurityMode(SecurityMode securityMode)
+        {
+            return !IS_DEVELOPMENT ? SecurityMode.Retail : securityMode;
+        }
+
+        private bool CheckLocalCommunicationIdPermission(ServiceCtx context, ulong localCommunicationIdChecked)
+        {
+            // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
+            ApplicationControlProperty controlProperty = context.Device.Application.ControlData.Value;
+
+            bool isValid = false;
+
+            foreach (ulong localCommunicationId in controlProperty.LocalCommunicationIds)
+            {
+                if (localCommunicationId == localCommunicationIdChecked)
+                {
+                    isValid = true;
+                }
+            }
+
+            return isValid;
+        }
+
         [Command(0)]
         // GetState() -> s32 state
         public ResultCode GetState(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                context.ResponseData.Write((int)NetworkState.Error);
 
-            // Return ResultCode.InvalidArgument if _state is null, doesn't occur in our case.
+                return ResultCode.Success;
+            }
 
+            // NOTE: Return ResultCode.InvalidArgument if _state is null, doesn't occur in our case.
             context.ResponseData.Write((int)_state);
+
+            Console.WriteLine(_state);
 
             return ResultCode.Success;
         }
 
+        public void SetState()
+        {
+            _stateChangeEvent.WritableEvent.Signal();
+        }
+
+        public void SetState(NetworkState state)
+        {
+            _state = state;
+
+            SetState();
+        }
+
         [Command(1)]
-        // GetNetworkInfo() -> buffer<unknown<0x480>, 0x1a>
+        // GetNetworkInfo() -> buffer<network_info<0x480>, 0x1a>
         public ResultCode GetNetworkInfo(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
             long bufferPosition = context.Request.RecvListBuff[0].Position;
-            long bufferSize = context.Request.RecvListBuff[0].Size;
+            long bufferSize     = context.Request.RecvListBuff[0].Size;
 
             MemoryHelper.FillWithZeros(context.Memory, bufferPosition, (int)bufferSize);
 
-            if (_state == NetworkState.AccessPointCreated)
+            if (_nifmResultCode != ResultCode.Success)
             {
-                MemoryHelper.Write(context.Memory, bufferPosition, _accessPoint.NetworkInfo);
+                return _nifmResultCode;
             }
-            else if (_state == NetworkState.StationConnected)
+
+            ResultCode resultCode = GetNetworkInfoImpl(out NetworkInfo networkInfo);
+            if (resultCode != ResultCode.Success)
             {
-                MemoryHelper.Write(context.Memory, bufferPosition, _station.CurrentNetworkInfo);
+                return resultCode;
+            }
+
+            MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
+
+            return ResultCode.Success;
+        }
+
+        private ResultCode GetNetworkInfoImpl(out NetworkInfo networkInfo)
+        {
+            if (_state == NetworkState.StationConnected)
+            {
+                networkInfo = _station.NetworkInfo;
+            }
+            else if (_state == NetworkState.AccessPointCreated)
+            {
+                networkInfo = _accessPoint.NetworkInfo;
             }
             else
             {
-                // Should just be zero.
+                networkInfo = new NetworkInfo();
+
+                return ResultCode.InvalidState;
             }
 
             return ResultCode.Success;
         }
 
         [Command(2)]
-        // GetIpv4Address() -> (u32, u32)
+        // GetIpv4Address() -> (u32 ip_address, u32 subnet_mask)
         public ResultCode GetIpv4Address(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
 
-            // Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
+            // NOTE: Return ResultCode.InvalidArgument if ip_address and subnet_mask are null, doesn't occur in our case.
 
             (_, UnicastIPAddressInformation unicastAddress) = NetworkHelpers.GetLocalInterface();
 
-            if (unicastAddress == null || _state == NetworkState.Initialized)
+            if (unicastAddress == null)
             {
-                context.ResponseData.Write((127 << 24) | (0 << 16) | (0 << 8) | (1 << 0));
-                context.ResponseData.Write((255 << 24) | (255 << 16) | (255 << 8) | (0 << 0));
+                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_IP_ADDRESS));
+                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
             }
             else
             {
                 Logger.Info?.Print(LogClass.ServiceLdn, $"Console's LDN IP is \"{unicastAddress.Address}\".");
 
-                var addressBytes = unicastAddress.Address.GetAddressBytes();
-                Array.Reverse(addressBytes);
-
-                context.ResponseData.Write(BitConverter.ToUInt32(addressBytes));
-                context.ResponseData.Write((255 << 24) | (255 << 16) | (255 << 8) | (0 << 0));
+                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(unicastAddress.Address));
+                context.ResponseData.Write(NetworkHelpers.ConvertIpv4Address(DEFAULT_SUBNET_MASK));
             }
 
             return ResultCode.Success;
@@ -113,45 +182,45 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetDisconnectReason() -> u16
         public ResultCode GetDisconnectReason(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
-            // Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
+            // NOTE: Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
 
             context.ResponseData.Write((short)_disconnectReason);
             
             return ResultCode.Success;
         }
 
+        public void SetDisconnectReason(DisconnectReason reason)
+        {
+            if (_state != NetworkState.Initialized)
+            {
+                _disconnectReason = reason;
+
+                SetState(NetworkState.Initialized);
+            }
+        }
+
         [Command(4)]
         // GetSecurityParameter() -> bytes<0x20, 1>
         public ResultCode GetSecurityParameter(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
-            if (_state == NetworkState.AccessPointCreated || _state == NetworkState.AccessPoint)
+            if (_nifmResultCode != ResultCode.Success)
             {
-                SecurityParameter securityParameter = new SecurityParameter()
-                {
-                    Unknown = new byte[0x10],
-                    SessionId = _accessPoint.NetworkInfo.NetworkId.SessionId
-                };
+                return _nifmResultCode;
+            }
 
-                context.ResponseData.WriteStruct(securityParameter);
-            }
-            else if (_state == NetworkState.StationConnected)
+            ResultCode resultCode = GetNetworkInfoImpl(out NetworkInfo networkInfo);
+            if (resultCode != ResultCode.Success)
             {
-                SecurityParameter securityParameter = new SecurityParameter()
-                {
-                    Unknown = new byte[0x10],
-                    SessionId = _station.CurrentNetworkInfo.NetworkId.SessionId
-                };
+                return resultCode;
+            }
 
-                context.ResponseData.WriteStruct(securityParameter);
-            }
-            else
+            SecurityParameter securityParameter = new SecurityParameter()
             {
-                throw new NotImplementedException();
-            }
+                Unknown   = new byte[0x10],
+                SessionId = networkInfo.NetworkId.SessionId
+            };
+
+            context.ResponseData.WriteStruct(securityParameter);
 
             return ResultCode.Success;
         }
@@ -160,18 +229,28 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetNetworkConfig() -> bytes<0x20, 8>
         public ResultCode GetNetworkConfig(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
-            if (_state == NetworkState.StationConnected)
+            if (_nifmResultCode != ResultCode.Success)
             {
-                NetworkConfig networkConfig = _station.CurrentNetworkConfig;
+                return _nifmResultCode;
+            }
 
-                context.ResponseData.WriteStruct(networkConfig);
-            }
-            else
+            ResultCode resultCode = GetNetworkInfoImpl(out NetworkInfo networkInfo);
+            if (resultCode != ResultCode.Success)
             {
-                throw new NotImplementedException();
+                return resultCode;
             }
+
+            NetworkConfig networkConfig = new NetworkConfig
+            {
+                IntentId                  = networkInfo.NetworkId.IntentId,
+                Channel                   = networkInfo.Common.Channel,
+                NodeCountMax              = networkInfo.Ldn.NodeCountMax,
+                Unknown1                  = 0x00,
+                LocalCommunicationVersion = (ushort)networkInfo.NetworkId.IntentId.LocalCommunicationId,
+                Unknown2                  = new byte[10]
+            };
+
+            context.ResponseData.WriteStruct(networkConfig);
 
             return ResultCode.Success;
         }
@@ -180,8 +259,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // AttachStateChangeEvent() -> handle<copy>
         public ResultCode AttachStateChangeEvent(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
             if (_stateChangeEventHandle == 0)
             {
                 if (context.Process.HandleTable.GenerateHandle(_stateChangeEvent.ReadableEvent, out _stateChangeEventHandle) != KernelResult.Success)
@@ -197,215 +274,586 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
+        [Command(101)]
+        // GetNetworkInfoLatestUpdate() -> (buffer<unknown<0x480>, 0x1a>, buffer<unknown, 0xa>)
+        public ResultCode GetNetworkInfoLatestUpdate(ServiceCtx context)
+        {
+            throw new NotImplementedException();
+        }
+
         [Command(102)]
-        // Scan(u16, bytes<0x60, 8>) -> (u16, buffer<unknown, 0x22>)
+        // Scan(u16 channel, bytes<0x60, 8> scan_filter) -> (u16 count, buffer<network_info, 0x22>)
         public ResultCode Scan(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            return ScanImpl(context);
+        }
 
-            if (_initialized && _state == NetworkState.Station)
+        [Command(103)]
+        // ScanPrivate(u16, bytes<0x60, 8>) -> (u16, buffer<unknown, 0x22>)
+        public ResultCode ScanPrivate(ServiceCtx context)
+        {
+            return ScanImpl(context, true);
+        }
+
+        private ResultCode ScanImpl(ServiceCtx context, bool isPrivate = false)
+        {
+            ushort     channel    = (ushort)context.RequestData.ReadUInt64();
+            ScanFilter scanFilter = context.RequestData.ReadStruct<ScanFilter>();
+
+            long bufferPosition = context.Request.ReceiveBuff[0].Position;
+            long bufferSize     = context.Request.ReceiveBuff[0].Size;
+
+            if (_nifmResultCode != ResultCode.Success)
             {
-                return _station.Scan(context);
+                return _nifmResultCode;
             }
 
-            return ResultCode.InvalidArgument;
-        }
-
-        public void SetState()
-        {
-            _stateChangeEvent.WritableEvent.Signal();
-        }
-
-        public void SetState(NetworkState state)
-        {
-            _state = state;
-
-            _stateChangeEvent.WritableEvent.Signal();
-        }
-
-        public void SignalDisconnect(DisconnectReason reason)
-        {
-            if (_state != NetworkState.Initialized)
+            if (!isPrivate)
             {
-                _disconnectReason = reason;
-
-                SetState(NetworkState.Initialized);
+                channel = CheckDevelopmentChannel(channel);
             }
+
+            ResultCode resultCode = ResultCode.InvalidArgument;
+
+            if (bufferSize != 0)
+            {
+                if (bufferPosition != 0)
+                {
+                    ScanFilterFlag scanFilterFlag = scanFilter.Flag;
+
+                    if (!scanFilterFlag.HasFlag(ScanFilterFlag.NetworkType) || scanFilter.NetworkType <= NetworkType.All)
+                    {
+                        if (scanFilterFlag.HasFlag(ScanFilterFlag.Ssid))
+                        {
+                            if (scanFilter.Ssid.Length <= 31)
+                            {
+                                return resultCode;
+                            }
+                        }
+
+                        if (!scanFilterFlag.HasFlag(ScanFilterFlag.MacAddress))
+                        {
+                            if (scanFilterFlag > ScanFilterFlag.All)
+                            {
+                                return resultCode;
+                            }
+
+                            if (_state - 3 >= NetworkState.AccessPoint)
+                            {
+                                resultCode = ResultCode.InvalidState;
+                            }
+                            else
+                            {
+                                resultCode = _station.Scan(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
+
+                                context.ResponseData.Write(counter);
+                            }
+                        }
+                        else
+                        {
+                            throw new NotSupportedException();
+                        }
+                    }
+                }
+            }
+
+            return resultCode;
         }
 
         [Command(200)]
         // OpenAccessPoint()
         public ResultCode OpenAccessPoint(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
-            if (_initialized)
+            if (_nifmResultCode != ResultCode.Success)
             {
-                _state = NetworkState.AccessPoint;
-
-                _stateChangeEvent.WritableEvent.Signal();
-
-                _accessPoint = new AccessPoint(this);
-
-                return ResultCode.Success;
+                return _nifmResultCode;
             }
 
-            return ResultCode.InvalidArgument;
+            if (_state != NetworkState.Initialized)
+            {
+                return ResultCode.InvalidState;
+            }
+
+            SetState(NetworkState.AccessPoint);
+
+            _accessPoint = new AccessPoint(this);
+
+            // NOTE: Calls nifm service and return related result codes.
+            //       Since we use our own implementation we can return ResultCode.Success.
+
+            return ResultCode.Success;
         }
 
         [Command(201)]
         // CloseAccessPoint()
         public ResultCode CloseAccessPoint(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
 
             if (_state == NetworkState.AccessPoint || _state == NetworkState.AccessPointCreated)
             {
-                _accessPoint.Dispose();
-                _accessPoint = null;
-
-                _state = NetworkState.Initialized;
-
-                _stateChangeEvent.WritableEvent.Signal();
+                DestroyNetworkImpl(DisconnectReason.DestroyedByUser);
+            }
+            else
+            {
+                return ResultCode.InvalidState;
             }
 
+            SetState(NetworkState.Initialized);
+
             return ResultCode.Success;
+        }
+
+        private void CloseAccessPoint()
+        {
+            _accessPoint?.Dispose();
+
+            _accessPoint = null;
         }
 
         [Command(202)]
         // CreateNetwork(bytes<0x44, 2>, bytes<0x30, 1>, bytes<0x20, 8>)
         public ResultCode CreateNetwork(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-            
-            // TODO: check state
+            return CreateNetworkImpl(context);
+        }
 
-            _accessPoint.CreateNetwork(context);
+        [Command(203)]
+        // CreateNetworkPrivate(bytes<0x44, 2>, bytes<0x20, 1>, bytes<0x30, 1>, bytes<0x20, 8>, buffer<unknown, 9>)
+        public ResultCode CreateNetworkPrivate(ServiceCtx context)
+        {
+            return CreateNetworkImpl(context, true);
+        }
 
-            return ResultCode.Success;
+        public ResultCode CreateNetworkImpl(ServiceCtx context, bool isPrivate = false)
+        {
+            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
+
+            if (isPrivate)
+            {
+                // NOTE: The accessKey is used to encrypt the passphrase.
+                //       Service use random bytes to encrypt the passphrase when the network isn't private.
+                byte[] accessKey = context.RequestData.ReadBytes(0x20);
+            }
+
+            UserConfig     userConfig     = context.RequestData.ReadStruct<UserConfig>();
+            uint           reserved       = context.RequestData.ReadUInt32();
+            NetworkConfig  networkConfig  = context.RequestData.ReadStruct<NetworkConfig>();
+
+            bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkConfig.IntentId.LocalCommunicationId);
+            if (!isLocalCommunicationIdValid)
+            {
+                return ResultCode.InvalidObject;
+            }
+
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            networkConfig.Channel       = CheckDevelopmentChannel(networkConfig.Channel);
+            securityConfig.SecurityMode = CheckDevelopmentSecurityMode(securityConfig.SecurityMode);
+
+            if (networkConfig.NodeCountMax - 1 <= 7)
+            {
+                if ((((ulong)networkConfig.LocalCommunicationVersion) & 0x80000000) == 0)
+                {
+                    if (securityConfig.SecurityMode - 1 <= SecurityMode.Debug)
+                    {
+                        if (securityConfig.Passphrase.Length <= 0x40)
+                        {
+                            if (_state == NetworkState.AccessPoint)
+                            {
+                                _accessPoint.CreateNetwork(securityConfig, userConfig, networkConfig);
+
+                                return ResultCode.Success;
+                            }
+                            else
+                            {
+                                return ResultCode.InvalidState;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return ResultCode.InvalidArgument;
+        }
+
+        [Command(204)]
+        // DestroyNetwork()
+        public ResultCode DestroyNetwork(ServiceCtx context)
+        {
+            return DestroyNetworkImpl(DisconnectReason.DestroyedByUser);
+        }
+
+        private ResultCode DestroyNetworkImpl(DisconnectReason disconnectReason)
+        {
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            if (disconnectReason - 3 <= DisconnectReason.DisconnectedByUser)
+            {
+                if (_state == NetworkState.AccessPointCreated)
+                {
+                    CloseAccessPoint();
+
+                    SetState(NetworkState.AccessPoint);
+
+                    return ResultCode.Success;
+                }
+
+                return ResultCode.InvalidState;
+            }
+
+            return ResultCode.InvalidArgument;
+        }
+
+        [Command(205)]
+        // Reject(u32)
+        public ResultCode Reject(ServiceCtx context)
+        {
+            uint nodeId = context.RequestData.ReadUInt32();
+
+            return RejectImpl(DisconnectReason.Rejected, nodeId);
+        }
+
+        private ResultCode RejectImpl(DisconnectReason disconnectReason, uint nodeId)
+        {
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            // TODO: Search the node with the provided ID and reject it.
+            //       Store disconnectedReason in _disconnectReason.
+            //       Returns ResultCode.NodeNotFound if node is not found in the list.
+
+            throw new NotImplementedException();
         }
 
         [Command(206)]
         // SetAdvertiseData(buffer<unknown, 0x21>)
         public ResultCode SetAdvertiseData(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            long bufferPosition = context.Request.PtrBuff[0].Position;
+            long bufferSize     = context.Request.PtrBuff[0].Size;
 
-            // TODO: check state
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
 
-            return _accessPoint.SetAdvertiseData(context);
+            if (bufferSize == 0 || bufferSize > 0x180)
+            {
+                return ResultCode.InvalidArgument;
+            }
+
+            if (_state == NetworkState.AccessPoint || _state == NetworkState.AccessPointCreated)
+            {
+                byte[] advertiseData = new byte[bufferSize];
+
+                context.Memory.Read((ulong)bufferPosition, advertiseData);
+
+                return _accessPoint.SetAdvertiseData(advertiseData);
+            }
+            else
+            {
+                return ResultCode.InvalidState;
+            }
         }
 
         [Command(207)]
         // SetStationAcceptPolicy(u8)
         public ResultCode SetStationAcceptPolicy(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            AcceptPolicy acceptPolicy = (AcceptPolicy)context.RequestData.ReadByte();
 
-            // TODO: check state
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
 
-            return _accessPoint.SetStationAcceptPolicy(context);
+            if (acceptPolicy == AcceptPolicy.WhiteList)
+            {
+                return ResultCode.InvalidArgument;
+            }
+
+            if (_state == NetworkState.AccessPoint || _state == NetworkState.AccessPointCreated)
+            {
+                return _accessPoint.SetStationAcceptPolicy(acceptPolicy);
+            }
+            else
+            {
+                return ResultCode.InvalidState;
+            }
+        }
+
+        [Command(208)]
+        // AddAcceptFilterEntry(bytes<6, 1>)
+        public ResultCode AddAcceptFilterEntry(ServiceCtx context)
+        {
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            throw new NotImplementedException();
+        }
+
+        [Command(209)]
+        // ClearAcceptFilter()
+        public ResultCode ClearAcceptFilter(ServiceCtx context)
+        {
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            throw new NotImplementedException();
         }
 
         [Command(300)]
         // OpenStation()
         public ResultCode OpenStation(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
-
-            if (_initialized)
+            if (_nifmResultCode != ResultCode.Success)
             {
-                _state            = NetworkState.Station;
-                _disconnectReason = DisconnectReason.None;
-
-                _station          = new Station(this);
-
-                _stateChangeEvent.WritableEvent.Signal();
-
-                return ResultCode.Success;
+                return _nifmResultCode;
             }
 
-            return ResultCode.InvalidArgument;
+            if (_state != NetworkState.Initialized)
+            {
+                return ResultCode.InvalidState;
+            }
+
+            SetState(NetworkState.Station);
+
+            _station = new Station(this);
+
+            // NOTE: Calls nifm service and return related result codes.
+            //       Since we use our own implementation we can return ResultCode.Success.
+
+            return ResultCode.Success;
         }
 
         [Command(301)]
         // CloseStation()
         public ResultCode CloseStation(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
 
             if (_state == NetworkState.Station || _state == NetworkState.StationConnected)
             {
-                _station.Dispose();
-                _station = null;
-
-                _state = NetworkState.Initialized;
-
-                _stateChangeEvent.WritableEvent.Signal();
+                DisconnectImpl(DisconnectReason.DisconnectedByUser);
+            }
+            else
+            {
+                return ResultCode.InvalidState;
             }
 
+            SetState(NetworkState.Initialized);
+
             return ResultCode.Success;
+        }
+
+        private void CloseStation()
+        {
+            _station.Dispose();
+
+            _station = null;
         }
 
         [Command(302)]
         // Connect(bytes<0x44, 2>, bytes<0x30, 1>, u32, u32, buffer<unknown<0x480>, 0x19>)
         public ResultCode Connect(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            return ConnectImpl(context);
+        }
 
-            if (_state == NetworkState.Station)
+        [Command(303)]
+        // ConnectPrivate(bytes<0x44, 2>, bytes<0x20, 1>, bytes<0x30, 1>, u32, u32, bytes<0x20, 8>)
+        public ResultCode ConnectPrivate(ServiceCtx context)
+        {
+            return ConnectImpl(context, true);
+        }
+
+        private ResultCode ConnectImpl(ServiceCtx context, bool isPrivate = false)
+        {
+            if (isPrivate)
             {
-                ResultCode resultCode = _station.Connect(context);
-
-                if (resultCode != ResultCode.Success)
-                {
-                    return resultCode;
-                }
-
-                return ResultCode.Success;
+                throw new NotSupportedException();
             }
 
-            return ResultCode.InvalidArgument;
+            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
+
+            if (isPrivate)
+            {
+                // NOTE: The accessKey is used to encrypt the passphrase.
+                //       Service use random bytes to encrypt the passphrase when the network isn't private.
+                byte[] accessKey = context.RequestData.ReadBytes(0x20);
+            }
+
+            UserConfig userConfig                = context.RequestData.ReadStruct<UserConfig>();
+            uint       localCommunicationVersion = context.RequestData.ReadUInt32();
+            uint       optionUnknown             = context.RequestData.ReadUInt32();
+
+            long bufferPosition = context.Request.PtrBuff[0].Position;
+            long bufferSize     = context.Request.PtrBuff[0].Size;
+
+            byte[] networkInfoBytes = new byte[bufferSize];
+
+            context.Memory.Read((ulong)bufferPosition, networkInfoBytes);
+
+            NetworkInfo networkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBytes);
+
+            bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkInfo.NetworkId.IntentId.LocalCommunicationId);
+            if (!isLocalCommunicationIdValid)
+            {
+                return ResultCode.InvalidObject;
+            }
+
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            securityConfig.SecurityMode = CheckDevelopmentSecurityMode(securityConfig.SecurityMode);
+
+            ResultCode resultCode = ResultCode.InvalidArgument;
+
+            if (securityConfig.SecurityMode - 1 <= SecurityMode.Debug)
+            {
+                if (optionUnknown <= 1 && (localCommunicationVersion >> 15) == 0 && securityConfig.PassphraseSize <= 48)
+                {
+                    resultCode = ResultCode.VersionTooLow;
+                    if (localCommunicationVersion >= 0)
+                    {
+                        resultCode = ResultCode.VersionTooHigh;
+                        if (localCommunicationVersion <= short.MaxValue)
+                        {
+                            if (_state != NetworkState.Station)
+                            {
+                                resultCode = ResultCode.InvalidState;
+                            }
+                            else
+                            {
+                                resultCode = _station.Connect(securityConfig, userConfig, localCommunicationVersion, optionUnknown, networkInfo);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return resultCode;
         }
 
         [Command(304)]
         // Disconnect()
         public ResultCode Disconnect(ServiceCtx context)
         {
-            if (_state  == NetworkState.Station)
+            return DisconnectImpl(DisconnectReason.DisconnectedByUser);
+        }
+
+        private ResultCode DisconnectImpl(DisconnectReason disconnectReason)
+        {
+            if (_nifmResultCode != ResultCode.Success)
             {
-                _station?.Dispose();
-
-                _station = null;
-
-                _stateChangeEvent.WritableEvent.Signal();
+                return _nifmResultCode;
             }
 
-            return ResultCode.Success;
+            if (disconnectReason - 1 <= DisconnectReason.DisconnectedByUser)
+            {
+                if (_state == NetworkState.StationConnected)
+                {
+                    SetState(NetworkState.Station);
+
+                    CloseStation();
+
+                    _disconnectReason = disconnectReason;
+
+                    return ResultCode.Success;
+                }
+
+                return ResultCode.InvalidState;
+            }
+
+            return ResultCode.InvalidArgument;
         }
 
         [Command(400)]
         // InitializeOld(u64, pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
-            return InitializeImpl(RequestId);
+            return InitializeImpl(context.Process.Pid, NIFM_REQUEST_ID);
         }
-
 
         [Command(401)]
         // Finalize()
         public ResultCode Finalize(ServiceCtx context)
         {
-            _station?.Dispose();
-            _accessPoint?.Dispose();
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
 
-            _station = null;
-            _accessPoint = null;
+            // NOTE: Use true when its called in nn::ldn::detail::ISystemLocalCommunicationService
+            ResultCode resultCode = FinalizeImpl(false);
+            if (resultCode == ResultCode.Success)
+            {
+                SetDisconnectReason(DisconnectReason.None);
+            }
 
-            _state = NetworkState.None;
-            _initialized = false;
+            return resultCode;
+        }
 
-            _stateChangeEvent.WritableEvent.Signal();
+        private ResultCode FinalizeImpl(bool isCausedBySystem)
+        {
+            DisconnectReason disconnectReason;
+
+            switch (_state)
+            {
+                case NetworkState.None:
+                    return ResultCode.Success;
+                case NetworkState.AccessPoint:
+                    CloseAccessPoint();
+                    break;
+                case NetworkState.AccessPointCreated:
+                    if (isCausedBySystem)
+                    {
+                        disconnectReason = DisconnectReason.DestroyedBySystem;
+                    }
+                    else
+                    {
+                        disconnectReason = DisconnectReason.DestroyedByUser;
+                    }
+                    DestroyNetworkImpl(disconnectReason);
+                    break;
+                case NetworkState.Station:
+                    CloseStation();
+                    break;
+                case NetworkState.StationConnected:
+                    if (isCausedBySystem)
+                    {
+                        disconnectReason = DisconnectReason.DisconnectedBySystem;
+                    }
+                    else
+                    {
+                        disconnectReason = DisconnectReason.DisconnectedByUser;
+                    }
+                    DisconnectImpl(disconnectReason);
+                    break;
+            }
+
+            SetState(NetworkState.None);
 
             NetworkClient?.DisconnectAndStop();
             NetworkClient = null;
@@ -414,42 +862,58 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(402)] // 7.0.0+
-        // Initialize(u64 ip_addresses, u64, pid)
+        // Initialize(u64 ip_addresses, pid)
         public ResultCode Initialize(ServiceCtx context)
         {
-            // TODO(Ac_K): Determine what addresses are.
-            IPAddress unknownAddress1 = new IPAddress(context.RequestData.ReadUInt32());
-            IPAddress unknownAddress2 = new IPAddress(context.RequestData.ReadUInt32());
+            IPAddress ipAddress  = new IPAddress(context.RequestData.ReadUInt32());
+            IPAddress subnetMask = new IPAddress(context.RequestData.ReadUInt32());
 
-            return InitializeImpl(RequestId);
+            // NOTE: It seems the guest can get ip_address and subnet_mask from nifm service and pass it through the initialize.
+            //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
+            //       Since we proxy connections, we don't needs the get ip_address, subnet_mask and nifm_request_id.
+
+            return InitializeImpl(context.Process.Pid, NIFM_REQUEST_ID);
         }
 
-        public ResultCode InitializeImpl(int requestId)
+        public ResultCode InitializeImpl(long pid, int nifmRequestId)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            ResultCode resultCode = ResultCode.InvalidArgument;
 
-            // requestId is related to Nifm, we don't use it.
-            if (requestId > 255 || _initialized)
+            if (nifmRequestId <= 255)
             {
-                return ResultCode.InvalidArgument;
+                if (_state != NetworkState.Initialized)
+                {
+                    // NOTE: Service calls nn::ldn::detail::NetworkInterfaceManager::NetworkInterfaceMonitor::Initialize() with nifmRequestId as argument.
+                    //       Then it stores the result code of it in a global field. Since we use our own implementation, we can just check the connection
+                    //       and return related error codes.
+                    if (System.Net.NetworkInformation.NetworkInterface.GetIsNetworkAvailable())
+                    {
+                        MultiplayerMode mode = ConfigurationState.Instance.Multiplayer.Mode;
+                        switch (mode)
+                        {
+                            case MultiplayerMode.Dummy:
+                                NetworkClient = new DummyLdnClient();
+                                break;
+                        }
+
+                        resultCode = ResultCode.Success;
+
+                        _nifmResultCode = resultCode;
+                        _currentPid     = pid;
+
+                        SetState(NetworkState.Initialized);
+                    }
+                    else
+                    {
+                        // NOTE: Service returns differents ResultCode here related to the nifm ResultCode.
+                        resultCode = ResultCode.DeviceDisabled;
+
+                        _nifmResultCode = resultCode;
+                    }
+                }
             }
 
-            // Initialiaze the sockets here.
-
-            MultiplayerMode mode = ConfigurationState.Instance.Multiplayer.Mode;
-            switch (mode) {
-                case MultiplayerMode.Dummy:
-                    NetworkClient = new DummyLdnClient();
-                    break;
-            }
-
-            _initialized = true;
-
-            _state = NetworkState.Initialized;
-
-            _stateChangeEvent.WritableEvent.Signal();
-
-            return ResultCode.Success;
+            return resultCode;
         }
     }
 }

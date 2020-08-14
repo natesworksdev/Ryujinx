@@ -1,5 +1,4 @@
-﻿using Ryujinx.HLE.Utilities;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.Types
 {
@@ -8,6 +7,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     {
         public IntentId IntentId;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x10)]
-        public byte[] SessionId;
+        public byte[]   SessionId;
     }
 }

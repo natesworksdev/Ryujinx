@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Cpu;
+using Ryujinx.Cpu.Jit;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
 using System;
@@ -9,8 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
     class Station : IDisposable
     {
-        public NetworkConfig CurrentNetworkConfig;
-        public NetworkInfo   CurrentNetworkInfo;
+        public NetworkInfo NetworkInfo;
 
         private IUserLocalCommunicationService _parent;
 
@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private void NetworkChanged(object sender, RyuLdn.NetworkChangeEventArgs e)
         {
-            CurrentNetworkInfo = e.Info;
+            NetworkInfo = e.Info;
 
             if (Connected != e.Connected)
             {
@@ -33,21 +33,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 if (Connected)
                 {
-                    CurrentNetworkConfig = new NetworkConfig
-                    {
-                        IntentId = CurrentNetworkInfo.NetworkId.IntentId,
-                        Channel = CurrentNetworkInfo.Common.Channel,
-                        NodeCountMax = CurrentNetworkInfo.Ldn.NodeCountMax,
-                        Unknown1 = 0x00,
-                        LocalCommunicationVersion = (ushort)CurrentNetworkInfo.NetworkId.IntentId.LocalCommunicationId,
-                        Unknown2 = new byte[10]
-                    };
-
                     _parent.SetState(NetworkState.StationConnected);
                 }
                 else
                 {
-                    _parent.SignalDisconnect(DisconnectReason.SignalLost);
+                    _parent.SetDisconnectReason(DisconnectReason.SignalLost);
                 }
             }
             else
@@ -63,27 +53,20 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             _parent.NetworkClient.NetworkChange -= NetworkChanged;
         }
 
-        public ResultCode Scan(ServiceCtx context)
+        public ResultCode Scan(MemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
         {
-            uint       channel     = context.RequestData.ReadUInt32();
-            uint       bufferCount = context.RequestData.ReadUInt32();
-            ScanFilter scanFilter  = context.RequestData.ReadStruct<ScanFilter>();
-
-            long bufferPosition = context.Request.ReceiveBuff[0].Position;
-            long bufferSize     = context.Request.ReceiveBuff[0].Size;
-
             long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
-            long maxGames = bufferSize / networkInfoSize;
+            long maxGames        = bufferSize / networkInfoSize;
 
-            MemoryHelper.FillWithZeros(context.Memory, bufferPosition, (int)bufferSize);
+            MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
 
-            NetworkInfo[] availableGames = _parent.NetworkClient.Scan(channel, bufferCount, scanFilter);
+            NetworkInfo[] availableGames = _parent.NetworkClient.Scan(channel, scanFilter);
 
-            int counter = 0;
+            counter = 0;
 
             foreach (NetworkInfo networkInfo in availableGames)
             {
-                MemoryHelper.Write(context.Memory, bufferPosition + (networkInfoSize * counter), networkInfo);
+                MemoryHelper.Write(memory, bufferPosition + (networkInfoSize * counter), networkInfo);
 
                 if (++counter >= maxGames)
                 {
@@ -91,28 +74,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 }
             }
 
-            context.ResponseData.Write((long)counter);
-
             return ResultCode.Success;
         }
 
-        public ResultCode Connect(ServiceCtx context)
+        public ResultCode Connect(SecurityConfig securityConfig, UserConfig userConfig, uint localCommunicationVersion, uint optionUnknown, NetworkInfo networkInfo)
         {
-            ConnectNetworkData connectNetworkData = context.RequestData.ReadStruct<ConnectNetworkData>();
-
-            long bufferPosition = context.Request.PtrBuff[0].Position;
-            long bufferSize     = context.Request.PtrBuff[0].Size;
-
-            byte[] networkInfoBytes = new byte[bufferSize];
-
-            context.Memory.Read((ulong)bufferPosition, networkInfoBytes);
-
-            NetworkInfo networkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBytes);
-
             ConnectRequest request = new ConnectRequest
             {
-                Data = connectNetworkData,
-                Info = networkInfo
+                SecurityConfig            = securityConfig,
+                UserConfig                = userConfig,
+                LocalCommunicationVersion = localCommunicationVersion,
+                OptionUnknown             = optionUnknown,
+                NetworkInfo               = networkInfo
             };
 
             return _parent.NetworkClient.Connect(request) ? ResultCode.Success : ResultCode.InvalidState;

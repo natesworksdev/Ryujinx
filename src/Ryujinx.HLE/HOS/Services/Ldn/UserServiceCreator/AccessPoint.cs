@@ -8,7 +8,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     class AccessPoint : IDisposable
     {
         private byte[] _advertiseData;
-        private bool _networkCreated;
 
         private IUserLocalCommunicationService _parent;
 
@@ -38,7 +37,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             {
                 Connected = e.Connected;
 
-                _parent.SetState(Connected ? NetworkState.AccessPointCreated : NetworkState.Initialized);
+                if (Connected)
+                {
+                    _parent.SetState(NetworkState.AccessPointCreated);
+                } 
+                else
+                {
+                    _parent.SetDisconnectReason(DisconnectReason.DestroyedBySystem);
+                }
             }
             else
             {
@@ -46,44 +52,29 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
         }
 
-        public ResultCode SetAdvertiseData(ServiceCtx context)
+        public ResultCode SetAdvertiseData(byte[] advertiseData)
         {
-            long bufferPosition = context.Request.PtrBuff[0].Position;
-            long bufferSize     = context.Request.PtrBuff[0].Size;
+            _advertiseData = advertiseData;
 
-            if (bufferSize > 0x180)
-            {
-                return ResultCode.InvalidArgument;
-            }
-
-            _advertiseData = new byte[bufferSize];
-
-            context.Memory.Read((ulong)bufferPosition, _advertiseData);
+            _parent.NetworkClient.SetAdvertiseData(_advertiseData);
 
             return ResultCode.Success;
         }
 
-        public ResultCode SetStationAcceptPolicy(ServiceCtx context)
+        public ResultCode SetStationAcceptPolicy(AcceptPolicy acceptPolicy)
         {
-            byte acceptPolicy = context.RequestData.ReadByte();
-
             _parent.NetworkClient.SetStationAcceptPolicy(acceptPolicy);
 
             return ResultCode.Success;
         }
 
-        public ResultCode CreateNetwork(ServiceCtx context)
+        public ResultCode CreateNetwork(SecurityConfig securityConfig, UserConfig userConfig, NetworkConfig networkConfig)
         {
-            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
-            UserConfig     userConfig     = context.RequestData.ReadStruct<UserConfig>();
-            uint           reserved       = context.RequestData.ReadUInt32();
-            NetworkConfig  networkConfig  = context.RequestData.ReadStruct<NetworkConfig>();
-
             CreateAccessPointRequest request = new CreateAccessPointRequest
             {
                 SecurityConfig = securityConfig,
-                UserConfig = userConfig,
-                NetworkConfig = networkConfig
+                UserConfig     = userConfig,
+                NetworkConfig  = networkConfig
             };
 
             bool success = _parent.NetworkClient.CreateNetwork(request, _advertiseData);

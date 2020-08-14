@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     [StructLayout(LayoutKind.Sequential, Size = 0x60, CharSet = CharSet.Ansi)]
     struct ScanFilter
     {
-        public NetworkId      NetworkId; //0x20
-        public uint           NetworkType;
+        public NetworkId      NetworkId;
+        public NetworkType    NetworkType;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 6)]
         public byte[]         MacAddress;
         public Ssid           Ssid;

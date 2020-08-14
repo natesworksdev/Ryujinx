@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.Types
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x30, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential, Size = 0x30)]
     struct UserConfig
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x21)]

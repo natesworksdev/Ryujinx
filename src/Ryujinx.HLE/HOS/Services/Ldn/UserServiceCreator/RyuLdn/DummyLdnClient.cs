@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         }
 
-        public NetworkInfo[] Scan(uint channel, uint bufferCount, ScanFilter scanFilter)
+        public NetworkInfo[] Scan(ushort channel, ScanFilter scanFilter)
         {
             return Array.Empty<NetworkInfo>();
         }
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         }
 
-        public void SetStationAcceptPolicy(byte acceptPolicy)
+        public void SetStationAcceptPolicy(AcceptPolicy acceptPolicy)
         {
 
         }
