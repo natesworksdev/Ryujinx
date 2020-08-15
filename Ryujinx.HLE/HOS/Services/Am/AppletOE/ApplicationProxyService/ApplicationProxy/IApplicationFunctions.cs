@@ -2,7 +2,6 @@ using LibHac;
 using LibHac.Account;
 using LibHac.Common;
 using LibHac.Fs;
-using LibHac.Ncm;
 using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
@@ -18,6 +17,7 @@ using System.Numerics;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using AccountUid = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
+using ApplicationId = LibHac.Ncm.ApplicationId;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy
 {
@@ -49,13 +49,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
             Uid     userId  = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
-            TitleId titleId = new TitleId(context.Process.TitleId);
+            ApplicationId applicationId = new ApplicationId(context.Process.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
 
             ref ApplicationControlProperty control = ref controlHolder.Value;
 
-            if (Util.IsEmpty(controlHolder.ByteSpan))
+            if (LibHac.Utilities.IsEmpty(controlHolder.ByteSpan))
             {
                 // If the current application doesn't have a loaded control property, create a dummy one
                 // and set the savedata sizes so a user savedata will be created.
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            Result result = EnsureApplicationSaveData(context.Device.FileSystem.FsClient, out long requiredSize, titleId,
+            Result result = EnsureApplicationSaveData(context.Device.FileSystem.FsClient, out long requiredSize, applicationId,
                 ref control, ref userId);
 
             context.ResponseData.Write(requiredSize);
