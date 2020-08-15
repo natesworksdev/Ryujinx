@@ -63,14 +63,14 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             for (int i = 0; i < MaxControllers; ++i)
             {
-                var npad = _configuredTypes[i];
+                ControllerType npad = _configuredTypes[i];
 
                 if (npad == ControllerType.Handheld && _device.System.State.DockedMode)
                 {
                     continue;
                 }
 
-                var currentType = _device.Hid.SharedMemory.Npads[i].Header.Type;
+                ControllerType currentType = _device.Hid.SharedMemory.Npads[i].Header.Type;
 
                 if (currentType != ControllerType.None && (npad & acceptedTypes) != 0 && SupportedPlayers.Contains((PlayerIndex)i))
                 {
@@ -130,12 +130,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private void Remap()
         {
-            var configs = _configuredTypes;
-
             // Remap/Init if necessary
             for (int i = 0; i < MaxControllers; ++i)
             {
-                var config = configs[i];
+                ControllerType config = _configuredTypes[i];
 
                 // Remove Handheld config when Docked
                 if (config == ControllerType.Handheld && _device.System.State.DockedMode)
@@ -173,7 +171,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             ref ShMemNpad controller = ref _device.Hid.SharedMemory.Npads[(int)player];
 
-            var oldType = controller.Header.Type;
+            ControllerType oldType = controller.Header.Type;
 
             if (oldType == type)
             {
@@ -184,9 +182,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (type == ControllerType.None)
             {
-                Logger.Info?.Print(LogClass.Hid, $"Disconnected Controller {oldType} from {player}");
-                _styleSetUpdateEvents[(int)player].ReadableEvent.Signal(); // signal disconnect
+                _styleSetUpdateEvents[(int)player].ReadableEvent.Signal(); // Signal disconnect
                 _activeCount--;
+
+                Logger.Info?.Print(LogClass.Hid, $"Disconnected Controller {oldType} from {player}");
+
                 return;
             }
 

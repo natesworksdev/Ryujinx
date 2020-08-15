@@ -107,7 +107,7 @@ namespace Ryujinx.Ui
                 _controllerType.Append(ControllerType.JoyconRight.ToString(), "Joycon Right");
             }
 
-            _controllerType.Active = 0; // set initial value to first in list
+            _controllerType.Active = 0; // Set initial value to first in list.
 
             //Bind Events
             _lStickX.Clicked        += Button_Pressed;
@@ -943,8 +943,8 @@ namespace Ryujinx.Ui
                 }
             }
 
-            // Atomically replace and signal input change
-            // Note: Do not modify InputConfig.Value directly as then events aren't signaled
+            // Atomically replace and signal input change.
+            // NOTE: Do not modify InputConfig.Value directly as other code depends on the on-change event.
             ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
             MainWindow.SaveConfig();
