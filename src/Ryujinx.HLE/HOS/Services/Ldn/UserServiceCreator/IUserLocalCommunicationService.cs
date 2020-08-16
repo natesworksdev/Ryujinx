@@ -684,11 +684,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private ResultCode ConnectImpl(ServiceCtx context, bool isPrivate = false)
         {
-            if (isPrivate)
-            {
-                throw new NotSupportedException();
-            }
-
             SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
 
             if (isPrivate)

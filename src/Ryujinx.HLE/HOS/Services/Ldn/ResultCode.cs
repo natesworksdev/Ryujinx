@@ -14,6 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
         InvalidArgument    = (96  << ErrorCodeShift) | ModuleId,
         InvalidObject      = (97  << ErrorCodeShift) | ModuleId,
         VersionTooLow      = (113 << ErrorCodeShift) | ModuleId,
-        VersionTooHigh     = (114 << ErrorCodeShift) | ModuleId
+        VersionTooHigh     = (114 << ErrorCodeShift) | ModuleId,
+        TooManyPlayers     = (144 << ErrorCodeShift) | ModuleId
     }
 }

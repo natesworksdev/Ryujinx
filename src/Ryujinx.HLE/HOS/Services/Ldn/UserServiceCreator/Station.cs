@@ -3,6 +3,7 @@ using Ryujinx.Cpu;
 using Ryujinx.Cpu.Jit;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using System;
 using System.Runtime.InteropServices;
 
@@ -88,7 +89,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 NetworkInfo               = networkInfo
             };
 
-            return _parent.NetworkClient.Connect(request) ? ResultCode.Success : ResultCode.InvalidState;
+            return _parent.NetworkClient.Connect(request) switch
+            {
+                NetworkError.None           => ResultCode.Success,
+                NetworkError.VersionTooLow  => ResultCode.VersionTooLow,
+                NetworkError.VersionTooHigh => ResultCode.VersionTooHigh,
+                NetworkError.TooManyPlayers => ResultCode.TooManyPlayers,
+                _                           => ResultCode.DeviceNotAvailable
+            };
         }
     }
 }
