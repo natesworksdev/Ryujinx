@@ -1,26 +1,31 @@
 using Ryujinx.Audio;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
 {
     class IAudioOut : IpcService, IDisposable
     {
-        private readonly IAalOutput _audioOut;
-        private readonly KEvent     _releaseEvent;
-        private          int        _releaseEventHandle;
-        private readonly int        _track;
-        private readonly int        _clientHandle;
+        private readonly IAalOutput      _audioOut;
+        private          SystemEventType _releaseEvent;
+        private          SignalableEvent _releaseEventSignalable;
+        private readonly int             _track;
+        private readonly int             _clientHandle;
 
-        public IAudioOut(IAalOutput audioOut, KEvent releaseEvent, int track, int clientHandle)
+        public IAudioOut(IAalOutput audioOut, int sampleRate, int channels, int clientHandle)
         {
             _audioOut     = audioOut;
-            _releaseEvent = releaseEvent;
-            _track        = track;
             _clientHandle = clientHandle;
+
+            _track = audioOut.OpenTrack(sampleRate, channels, SignalRelease);
+
+            Os.CreateSystemEvent(out _releaseEvent, EventClearMode.AutoClear, true);
+
+            _releaseEventSignalable = KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _releaseEvent));
         }
 
         [Command(0)]
@@ -61,15 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         // RegisterBufferEvent() -> handle<copy>
         public ResultCode RegisterBufferEvent(ServiceCtx context)
         {
-            if (_releaseEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out _releaseEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_releaseEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _releaseEvent));
 
             return ResultCode.Success;
         }
@@ -112,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
 
             byte[] buffer = new byte[data.SampleBufferSize];
 
-            context.Process.HandleTable.GetKProcess(_clientHandle).CpuMemory.Read((ulong)data.SampleBufferPtr, buffer);
+            context.Process.HandleTable.GetObject<KProcess>(_clientHandle).CpuMemory.Read(data.SampleBufferPtr, buffer);
 
             _audioOut.AppendBuffer(_track, tag, buffer);
 
@@ -177,17 +174,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
             return ResultCode.Success;
         }
 
-        public void Dispose()
+        private void SignalRelease()
         {
-            Dispose(true);
+            _releaseEventSignalable.Signal();
         }
 
-        protected virtual void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
-            {
-                _audioOut.CloseTrack(_track);
-            }
+            _audioOut.CloseTrack(_track);
+            Os.DestroySystemEvent(ref _releaseEvent);
         }
     }
 }

@@ -1,15 +1,12 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services.Hid;
+﻿using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager
 {
     class Device
     {
-        public KEvent ActivateEvent;
-        public int    ActivateEventHandle;
-
-        public KEvent DeactivateEvent;
-        public int    DeactivateEventHandle;
+        public SystemEventType ActivateEvent;
+        public SystemEventType DeactivateEvent;
 
         public DeviceState State = DeviceState.Unavailable;
 

@@ -1,9 +1,8 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Synchronization;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl.Types;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.Memory;
 using System;
@@ -93,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
             return result;
         }
 
-        private KEvent QueryEvent(uint eventId)
+        private int QueryEvent(uint eventId)
         {
             lock (_events)
             {
@@ -113,32 +112,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                 if (eventSlot >= EventsCount || _events[eventSlot] == null || _events[eventSlot].Fence.Id != syncpointId)
                 {
-                    return null;
+                    return 0;
                 }
 
-                return _events[eventSlot].Event;
+                return Os.GetReadableHandleOfSystemEvent(ref _events[eventSlot].Event);
             }
         }
 
         public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
         {
-            KEvent targetEvent = QueryEvent(eventId);
+            eventHandle = QueryEvent(eventId);
 
-            if (targetEvent != null)
-            {
-                if (Context.Process.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-            else
-            {
-                eventHandle = 0;
-
-                return NvInternalResult.InvalidInput;
-            }
-
-            return NvInternalResult.Success;
+            return eventHandle == 0 ? NvInternalResult.InvalidInput : NvInternalResult.Success;
         }
 
         private NvInternalResult SyncptRead(ref NvFence arguments)

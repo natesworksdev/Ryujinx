@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         private int _timeSharedMemoryNativeHandle = 0;
 
-        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) {}
+        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) { }
 
         public IStaticServiceForPsc(TimeManager manager, TimePermissions permissions)
         {

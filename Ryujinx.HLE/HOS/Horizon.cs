@@ -12,6 +12,7 @@ using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.Services.Arp;
+using Ryujinx.HLE.HOS.Services.Bluetooth.BluetoothDriver;
 using Ryujinx.HLE.HOS.Services.Mii;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
@@ -40,24 +41,26 @@ namespace Ryujinx.HLE.HOS
 
         internal KernelContext KernelContext { get; }
 
-        internal Switch Device { get; private set; }
+        internal Switch Device { get; }
 
-        internal SurfaceFlinger SurfaceFlinger { get; private set; }
+        internal SurfaceFlinger SurfaceFlinger { get; }
 
-        public SystemStateMgr State { get; private set; }
+        public SystemStateMgr State { get; }
 
-        internal AppletStateMgr AppletState { get; private set; }
+        internal AppletStateMgr AppletState { get; }
 
-        internal KSharedMemory HidSharedMem  { get; private set; }
-        internal KSharedMemory FontSharedMem { get; private set; }
-        internal KSharedMemory IirsSharedMem { get; private set; }
-        internal SharedFontManager Font { get; private set; }
+        internal BluetoothEventManager BluetoothEventManager { get; }
 
-        internal ContentManager ContentManager { get; private set; }
+        internal KSharedMemory HidSharedMem  { get; }
+        internal KSharedMemory FontSharedMem { get; }
+        internal KSharedMemory IirsSharedMem { get; }
+        internal SharedFontManager Font { get; }
 
-        internal KEvent VsyncEvent { get; private set; }
+        internal ContentManager ContentManager { get; }
 
-        internal KEvent DisplayResolutionChangeEvent { get; private set; }
+        internal KEvent VsyncEvent { get; }
+
+        internal KEvent DisplayResolutionChangeEvent { get; }
 
         public Keyset KeySet => Device.FileSystem.KeySet;
 
@@ -72,9 +75,9 @@ namespace Ryujinx.HLE.HOS
 
         public int GlobalAccessLogMode { get; set; }
 
-        internal ulong HidBaseAddress { get; private set; }
+        internal ulong HidBaseAddress { get; }
 
-        internal NvHostSyncpt HostSyncpoint { get; private set; }
+        internal NvHostSyncpt HostSyncpoint { get; }
 
         internal LibHac.Horizon LibHacHorizonServer { get; private set; }
         internal HorizonClient LibHacHorizonClient { get; private set; }
@@ -119,6 +122,8 @@ namespace Ryujinx.HLE.HOS
             AppletState = new AppletStateMgr(this);
 
             AppletState.SetFocus(true);
+
+            BluetoothEventManager = new BluetoothEventManager();
 
             Font = new SharedFontManager(device, fontPa - DramMemoryMap.DramBase);
 

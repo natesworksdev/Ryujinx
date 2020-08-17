@@ -1,36 +1,24 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 {
-    class IPsmSession : IpcService
+    class IPsmSession : IpcService, IDisposable
     {
-        private KEvent _stateChangeEvent;
-        private int    _stateChangeEventHandle;
+        private SystemEventType _stateChangeEvent;
 
         public IPsmSession(Horizon system)
         {
-            _stateChangeEvent       = new KEvent(system.KernelContext);
-            _stateChangeEventHandle = -1;
+            Os.CreateSystemEvent(out _stateChangeEvent, EventClearMode.AutoClear, true);
         }
 
         [Command(0)]
         // BindStateChangeEvent() -> KObject
         public ResultCode BindStateChangeEvent(ServiceCtx context)
         {
-            if (_stateChangeEventHandle == -1)
-            {
-                KernelResult resultCode = context.Process.HandleTable.GenerateHandle(_stateChangeEvent.ReadableEvent, out int stateChangeEventHandle);
-
-                if (resultCode != KernelResult.Success)
-                {
-                    return (ResultCode)resultCode;
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_stateChangeEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _stateChangeEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServicePsm);
 
@@ -41,12 +29,6 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
         // UnbindStateChangeEvent()
         public ResultCode UnbindStateChangeEvent(ServiceCtx context)
         {
-            if (_stateChangeEventHandle != -1)
-            {
-                context.Process.HandleTable.CloseHandle(_stateChangeEventHandle);
-                _stateChangeEventHandle = -1;
-            }
-
             Logger.Stub?.PrintStub(LogClass.ServicePsm);
 
             return ResultCode.Success;
@@ -83,6 +65,11 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
             Logger.Stub?.PrintStub(LogClass.ServicePsm, new { batteryVoltageStateChangeEventEnabled });
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _stateChangeEvent);
         }
     }
 }

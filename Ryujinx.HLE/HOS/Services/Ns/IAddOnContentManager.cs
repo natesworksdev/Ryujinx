@@ -1,29 +1,24 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
     [Service("aoc:u")]
-    class IAddOnContentManager : IpcService
+    class IAddOnContentManager : IpcService, IDisposable
     {
-        private readonly KEvent _addOnContentListChangedEvent;
-
-        private int _addOnContentListChangedEventHandle;
+        private SystemEventType _addOnContentListChangedEvent;
 
         public IAddOnContentManager(ServiceCtx context)
         {
-            _addOnContentListChangedEvent = new KEvent(context.Device.System.KernelContext);
+            Os.CreateSystemEvent(out _addOnContentListChangedEvent, EventClearMode.AutoClear, true);
         }
 
         [Command(2)]
         // CountAddOnContent(pid) -> u32
         public ResultCode CountAddOnContent(ServiceCtx context)
         {
-            long pid = context.Process.Pid;
-
             // Official code checks ApplicationControlProperty.RuntimeAddOnContentInstall
             // if true calls ns:am ListAvailableAddOnContent again to get updated count
 
@@ -53,7 +48,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         {
             uint startIndex = context.RequestData.ReadUInt32();
             uint bufferSize = context.RequestData.ReadUInt32();
-            long pid = context.Process.Pid;
 
             var aocTitleIds = context.Device.System.ContentManager.GetAocTitleIds();
 
@@ -88,8 +82,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         // GetAddOnContentBaseId(pid) -> u64
         public ResultCode GetAddonContentBaseId(ServiceCtx context)
         {
-            long pid = context.Process.Pid;
-
             // Official code calls arp:r GetApplicationControlProperty to get AddOnContentBaseId
             // If the call fails, calls arp:r GetApplicationLaunchProperty to get App TitleId
             ulong aocBaseId = GetAddOnContentBaseIdImpl(context);
@@ -119,7 +111,6 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         public ResultCode PrepareAddOnContent(ServiceCtx context)
         {
             uint aocIndex = context.RequestData.ReadUInt32();
-            long pid = context.Process.Pid;
 
             // Official Code calls a bunch of functions from arp:r for aocBaseId
             // and ns:am RegisterContentsExternalKey?, GetOwnedApplicationContentMetaStatus? etc...
@@ -137,15 +128,7 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         {
             // Official code seems to make an internal call to ns:am Cmd 84 GetDynamicCommitEvent()
 
-            if (_addOnContentListChangedEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_addOnContentListChangedEvent.ReadableEvent, out _addOnContentListChangedEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_addOnContentListChangedEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _addOnContentListChangedEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceNs);
 
@@ -188,6 +171,11 @@ namespace Ryujinx.HLE.HOS.Services.Ns
             Logger.Stub?.PrintStub(LogClass.ServiceNs);
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _addOnContentListChangedEvent);
         }
     }
 }

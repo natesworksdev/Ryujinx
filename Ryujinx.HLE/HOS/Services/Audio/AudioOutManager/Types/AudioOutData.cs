@@ -5,10 +5,10 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
     [StructLayout(LayoutKind.Sequential)]
     struct AudioOutData
     {
-        public long NextBufferPtr;
-        public long SampleBufferPtr;
-        public long SampleBufferCapacity;
-        public long SampleBufferSize;
-        public long SampleBufferInnerOffset;
+        public ulong NextBufferPtr;
+        public ulong SampleBufferPtr;
+        public ulong SampleBufferCapacity;
+        public ulong SampleBufferSize;
+        public ulong SampleBufferInnerOffset;
     }
 }

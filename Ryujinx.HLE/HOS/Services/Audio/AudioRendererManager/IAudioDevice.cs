@@ -1,23 +1,22 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 {
-    class IAudioDevice : IpcService
+    class IAudioDevice : IpcService, IDisposable
     {
-        private KEvent _systemEvent;
+        private SystemEventType _systemEvent;
 
         public IAudioDevice(Horizon system)
         {
-            _systemEvent = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _systemEvent, EventClearMode.AutoClear, true);
 
             // TODO: We shouldn't be signaling this here.
-            _systemEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _systemEvent);
         }
 
         [Command(0)]
@@ -62,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             long size     = context.Request.SendBuff[0].Size;
 
             byte[] deviceNameBuffer = new byte[size];
-            
+
             context.Memory.Read((ulong)position, deviceNameBuffer);
 
             string deviceName = Encoding.ASCII.GetString(deviceNameBuffer);
@@ -99,12 +98,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
         // QueryAudioDeviceSystemEvent() -> handle<copy, event>
         public ResultCode QueryAudioDeviceSystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _systemEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceAudio);
 
@@ -209,12 +203,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
         // QueryAudioDeviceInputEvent() -> handle<copy, event>
         public ResultCode QueryAudioDeviceInputEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _systemEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceAudio);
 
@@ -225,16 +214,16 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
         // QueryAudioDeviceOutputEvent() -> handle<copy, event>
         public ResultCode QueryAudioDeviceOutputEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_systemEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _systemEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceAudio);
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _systemEvent);
         }
     }
 }

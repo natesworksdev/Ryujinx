@@ -1,8 +1,8 @@
 using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Audio.AudioOutManager;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
@@ -135,18 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
                 channels = DefaultChannelsCount;
             }
 
-            KEvent releaseEvent = new KEvent(context.Device.System.KernelContext);
-
-            ReleaseCallback callback = () =>
-            {
-                releaseEvent.ReadableEvent.Signal();
-            };
-
-            IAalOutput audioOut = context.Device.AudioOut;
-
-            int track = audioOut.OpenTrack(sampleRate, channels, callback);
-
-            MakeObject(context, new IAudioOut(audioOut, releaseEvent, track, context.Request.HandleDesc.ToCopy[0]));
+            MakeObject(context, new IAudioOut(context.Device.AudioOut, sampleRate, channels, context.Request.HandleDesc.ToCopy[0]));
 
             context.ResponseData.Write(sampleRate);
             context.ResponseData.Write(channels);

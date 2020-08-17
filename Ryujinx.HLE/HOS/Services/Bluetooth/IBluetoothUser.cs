@@ -1,5 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.Bluetooth.BluetoothDriver;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.Settings;
 
 namespace Ryujinx.HLE.HOS.Services.Bluetooth
@@ -15,13 +15,15 @@ namespace Ryujinx.HLE.HOS.Services.Bluetooth
         {
             NxSettings.Settings.TryGetValue("bluetooth_debug!skip_boot", out object debugMode);
 
+            var bluetoothEventManager = context.Device.System.BluetoothEventManager;
+
             if ((bool)debugMode)
             {
-                context.Response.HandleDesc = IpcHandleDesc.MakeCopy(BluetoothEventManager.RegisterBleDebugEventHandle);
+                context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref bluetoothEventManager.RegisterBleDebugEvent));
             }
             else
             {
-                context.Response.HandleDesc = IpcHandleDesc.MakeCopy(BluetoothEventManager.RegisterBleEventHandle);
+                context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref bluetoothEventManager.RegisterBleEvent));
             }
 
             return ResultCode.Success;

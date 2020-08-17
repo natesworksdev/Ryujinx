@@ -1,6 +1,7 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.Memory;
 using System;
 
@@ -8,15 +9,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 {
     internal class NvHostGpuDeviceFile : NvHostChannelDeviceFile
     {
-        private KEvent _smExceptionBptIntReportEvent;
-        private KEvent _smExceptionBptPauseReportEvent;
-        private KEvent _errorNotifierEvent;
+        private SystemEventType _smExceptionBptIntReportEvent;
+        private SystemEventType _smExceptionBptPauseReportEvent;
+        private SystemEventType _errorNotifierEvent;
 
         public NvHostGpuDeviceFile(ServiceCtx context, IAddressSpaceManager memory, long owner) : base(context, memory, owner)
         {
-            _smExceptionBptIntReportEvent   = new KEvent(context.Device.System.KernelContext);
-            _smExceptionBptPauseReportEvent = new KEvent(context.Device.System.KernelContext);
-            _errorNotifierEvent             = new KEvent(context.Device.System.KernelContext);
+            Os.CreateSystemEvent(out _smExceptionBptIntReportEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _smExceptionBptPauseReportEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _errorNotifierEvent, EventClearMode.AutoClear, true);
         }
 
         public override NvInternalResult Ioctl2(NvIoctl command, Span<byte> arguments, Span<byte> inlineInBuffer)
@@ -39,36 +40,22 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
         {
             // TODO: accurately represent and implement those events.
-            KEvent targetEvent = null;
+            eventHandle = 0;
 
             switch (eventId)
             {
                 case 0x1:
-                    targetEvent = _smExceptionBptIntReportEvent;
+                    eventHandle = Os.GetReadableHandleOfSystemEvent(ref _smExceptionBptIntReportEvent);
                     break;
                 case 0x2:
-                    targetEvent = _smExceptionBptPauseReportEvent;
+                    eventHandle = Os.GetReadableHandleOfSystemEvent(ref _smExceptionBptPauseReportEvent);
                     break;
                 case 0x3:
-                    targetEvent = _errorNotifierEvent;
+                    eventHandle = Os.GetReadableHandleOfSystemEvent(ref _errorNotifierEvent);
                     break;
             }
 
-            if (targetEvent != null)
-            {
-                if (Context.Process.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-            else
-            {
-                eventHandle = 0;
-
-                return NvInternalResult.InvalidInput;
-            }
-
-            return NvInternalResult.Success;
+            return eventHandle == 0 ? NvInternalResult.InvalidInput : NvInternalResult.Success;
         }
 
         private NvInternalResult SubmitGpfifoEx(ref SubmitGpfifoArguments arguments, Span<ulong> inlineData)

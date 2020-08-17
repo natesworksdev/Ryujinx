@@ -1,25 +1,21 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
 {
-    class IRequest : IpcService
+    class IRequest : IpcService, IDisposable
     {
-        private KEvent _event0;
-        private KEvent _event1;
-
-        private int _event0Handle;
-        private int _event1Handle;
+        private SystemEventType _event0;
+        private SystemEventType _event1;
 
         private uint _version;
 
         public IRequest(Horizon system, uint version)
         {
-            _event0 = new KEvent(system.KernelContext);
-            _event1 = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _event0, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _event1, EventClearMode.AutoClear, true);
 
             _version = version;
         }
@@ -53,23 +49,9 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
         // GetSystemEventReadableHandles() -> (handle<copy>, handle<copy>)
         public ResultCode GetSystemEventReadableHandles(ServiceCtx context)
         {
-            if (_event0Handle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_event0.ReadableEvent, out _event0Handle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            if (_event1Handle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_event1.ReadableEvent, out _event1Handle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_event0Handle, _event1Handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(
+                Os.GetReadableHandleOfSystemEvent(ref _event0),
+                Os.GetReadableHandleOfSystemEvent(ref _event1));
 
             return ResultCode.Success;
         }
@@ -126,6 +108,12 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             context.ResponseData.Write(0); // outSize
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _event0);
+            Os.DestroySystemEvent(ref _event1);
         }
     }
 }

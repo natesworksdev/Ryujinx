@@ -1,20 +1,18 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class IHomeMenuFunctions : IpcService
+    class IHomeMenuFunctions : IpcService, IDisposable
     {
-        private KEvent _channelEvent;
-        private int    _channelEventHandle;
+        private SystemEventType _channelEvent;
 
         public IHomeMenuFunctions(Horizon system)
         {
-            // TODO: Signal this Event somewhere in future.
-            _channelEvent = new KEvent(system.KernelContext);
+            // TODO: Signal this Event somewhere in the future.
+            Os.CreateSystemEvent(out _channelEvent, EventClearMode.AutoClear, true);
         }
 
         [Command(10)]
@@ -30,19 +28,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetPopFromGeneralChannelEvent() -> handle<copy>
         public ResultCode GetPopFromGeneralChannelEvent(ServiceCtx context)
         {
-            if (_channelEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_channelEvent.ReadableEvent, out _channelEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_channelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _channelEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _channelEvent);
         }
     }
 }

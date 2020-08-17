@@ -1,25 +1,24 @@
-﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Ipc;
+﻿using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
 {
-    class IBtmUserCore : IpcService
+    class IBtmUserCore : IpcService, IDisposable
     {
-        public KEvent _bleScanEvent;
-        public int    _bleScanEventHandle;
+        private SystemEventType _bleScanEvent;
+        private SystemEventType _bleConnectionEvent;
+        private SystemEventType _bleServiceDiscoveryEvent;
+        private SystemEventType _bleMtuConfigEvent;
 
-        public KEvent _bleConnectionEvent;
-        public int    _bleConnectionEventHandle;
-
-        public KEvent _bleServiceDiscoveryEvent;
-        public int    _bleServiceDiscoveryEventHandle;
-
-        public KEvent _bleMtuConfigEvent;
-        public int    _bleMtuConfigEventHandle;
-
-        public IBtmUserCore() { }
+        public IBtmUserCore()
+        {
+            Os.CreateSystemEvent(out _bleScanEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _bleConnectionEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _bleServiceDiscoveryEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _bleMtuConfigEvent, EventClearMode.AutoClear, true);
+        }
 
         [Command(0)] // 5.0.0+
         // AcquireBleScanEvent() -> (byte<1>, handle<copy>)
@@ -27,20 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         {
             KernelResult result = KernelResult.Success;
 
-            if (_bleScanEventHandle == 0)
-            {
-                _bleScanEvent = new KEvent(context.Device.System.KernelContext);
-
-                result = context.Process.HandleTable.GenerateHandle(_bleScanEvent.ReadableEvent, out _bleScanEventHandle);
-
-                if (result != KernelResult.Success)
-                {
-                    // NOTE: We use a Logging instead of an exception because the call return a boolean if succeed or not.
-                    Logger.Error?.Print(LogClass.ServiceBsd, "Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleScanEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleScanEvent));
 
             context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
@@ -53,20 +39,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         {
             KernelResult result = KernelResult.Success;
 
-            if (_bleConnectionEventHandle == 0)
-            {
-                _bleConnectionEvent = new KEvent(context.Device.System.KernelContext);
-
-                result = context.Process.HandleTable.GenerateHandle(_bleConnectionEvent.ReadableEvent, out _bleConnectionEventHandle);
-
-                if (result != KernelResult.Success)
-                {
-                    // NOTE: We use a Logging instead of an exception because the call return a boolean if succeed or not.
-                    Logger.Error?.Print(LogClass.ServiceBsd, "Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleConnectionEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleConnectionEvent));
 
             context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
@@ -79,20 +52,7 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         {
             KernelResult result = KernelResult.Success;
 
-            if (_bleServiceDiscoveryEventHandle == 0)
-            {
-                _bleServiceDiscoveryEvent = new KEvent(context.Device.System.KernelContext);
-
-                result = context.Process.HandleTable.GenerateHandle(_bleServiceDiscoveryEvent.ReadableEvent, out _bleServiceDiscoveryEventHandle);
-
-                if (result != KernelResult.Success)
-                {
-                    // NOTE: We use a Logging instead of an exception because the call return a boolean if succeed or not.
-                    Logger.Error?.Print(LogClass.ServiceBsd, "Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleServiceDiscoveryEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleServiceDiscoveryEvent));
 
             context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
@@ -105,24 +65,19 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         {
             KernelResult result = KernelResult.Success;
 
-            if (_bleMtuConfigEventHandle == 0)
-            {
-                _bleMtuConfigEvent = new KEvent(context.Device.System.KernelContext);
-
-                result = context.Process.HandleTable.GenerateHandle(_bleMtuConfigEvent.ReadableEvent, out _bleMtuConfigEventHandle);
-
-                if (result != KernelResult.Success)
-                {
-                    // NOTE: We use a Logging instead of an exception because the call return a boolean if succeed or not.
-                    Logger.Error?.Print(LogClass.ServiceBsd, "Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_bleMtuConfigEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleMtuConfigEvent));
 
             context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _bleScanEvent);
+            Os.DestroySystemEvent(ref _bleConnectionEvent);
+            Os.DestroySystemEvent(ref _bleServiceDiscoveryEvent);
+            Os.DestroySystemEvent(ref _bleMtuConfigEvent);
         }
     }
 }

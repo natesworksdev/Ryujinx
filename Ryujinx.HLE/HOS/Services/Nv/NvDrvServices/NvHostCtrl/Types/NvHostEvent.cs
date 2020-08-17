@@ -1,8 +1,9 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Synchronization;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 using System.Threading;
 
@@ -12,7 +13,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
     {
         public NvFence          Fence;
         public NvHostEventState State;
-        public KEvent           Event;
+
+        private SystemEventType _event;
+
+        public ref SystemEventType Event => ref _event;
+
+        private SignalableEvent _signalableEvent;
 
         private uint                  _eventId;
         private NvHostSyncpt          _syncpointManager;
@@ -35,7 +41,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
             State = NvHostEventState.Available;
 
-            Event = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _event, EventClearMode.AutoClear, true);
+
+            _signalableEvent = KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _event));
 
             _eventId = eventId;
 
@@ -61,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
                 if (oldState == NvHostEventState.Waiting)
                 {
-                    Event.WritableEvent.Signal();
+                    _signalableEvent.Signal();
                 }
 
                 State = NvHostEventState.Signaled;
@@ -100,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     Signal();
                 }
 
-                Event.WritableEvent.Clear();
+                Os.ClearSystemEvent(ref _event);
             }
         }
 
@@ -155,8 +163,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
 
         public void Dispose()
         {
-            Event.ReadableEvent.DecrementReferenceCount();
-            Event.WritableEvent.DecrementReferenceCount();
+            Os.DestroySystemEvent(ref _event);
         }
     }
 }

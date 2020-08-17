@@ -3,17 +3,16 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     [Service("hid")]
-    class IHidServer : IpcService
+    class IHidServer : IpcService, IDisposable
     {
-        private KEvent _xpadIdEvent;
-        private KEvent _palmaOperationCompleteEvent;
-
-        private int _xpadIdEventHandle;
+        private SystemEventType _xpadIdEvent;
+        private SystemEventType _palmaOperationCompleteEvent;
 
         private bool _sixAxisSensorFusionEnabled;
         private bool _unintendedHomeButtonInputProtectionEnabled;
@@ -37,8 +36,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public IHidServer(ServiceCtx context)
         {
-            _xpadIdEvent                 = new KEvent(context.Device.System.KernelContext);
-            _palmaOperationCompleteEvent = new KEvent(context.Device.System.KernelContext);
+            Os.CreateSystemEvent(out _xpadIdEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _palmaOperationCompleteEvent, EventClearMode.AutoClear, true);
 
             _npadJoyAssignmentMode      = HidNpadJoyAssignmentMode.Dual;
             _npadHandheldActivationMode = HidNpadHandheldActivationMode.Dual;
@@ -49,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _vibrationValue      = new HidVibrationValue();
 
             // TODO: signal event at right place
-            _xpadIdEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _xpadIdEvent);
         }
 
         [Command(0)]
@@ -132,12 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long xpadId = context.RequestData.ReadInt64();
 
-            if (context.Process.HandleTable.GenerateHandle(_xpadIdEvent.ReadableEvent, out _xpadIdEventHandle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_xpadIdEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _xpadIdEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { xpadId });
 
@@ -149,8 +143,6 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public ResultCode ReleaseXpadIdEventHandle(ServiceCtx context)
         {
             long xpadId = context.RequestData.ReadInt64();
-
-            context.Process.HandleTable.CloseHandle(_xpadIdEventHandle);
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { xpadId });
 
@@ -559,9 +551,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             ControllerType type = (ControllerType)context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { 
-                    appletResourceUserId, 
-                    type 
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new {
+                    appletResourceUserId,
+                    type
                 });
 
             context.Device.Hid.Npads.SupportedStyleSets = type;
@@ -577,9 +569,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.ResponseData.Write((int)context.Device.Hid.Npads.SupportedStyleSets);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { 
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new {
                     appletResourceUserId,
-                    context.Device.Hid.Npads.SupportedStyleSets 
+                    context.Device.Hid.Npads.SupportedStyleSets
                 });
 
             return ResultCode.Success;
@@ -695,9 +687,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long appletResourceUserId = context.RequestData.ReadInt64();
             context.Device.Hid.Npads.JoyHold = (NpadJoyHoldType)context.RequestData.ReadInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { 
-                    appletResourceUserId, 
-                    context.Device.Hid.Npads.JoyHold 
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new {
+                    appletResourceUserId,
+                    context.Device.Hid.Npads.JoyHold
                 });
 
             return ResultCode.Success;
@@ -711,9 +703,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.ResponseData.Write((long)context.Device.Hid.Npads.JoyHold);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { 
-                    appletResourceUserId, 
-                    context.Device.Hid.Npads.JoyHold 
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, new {
+                    appletResourceUserId,
+                    context.Device.Hid.Npads.JoyHold
                 });
 
             return ResultCode.Success;
@@ -1294,7 +1286,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
-            _palmaOperationCompleteEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return ResultCode.Success;
         }
@@ -1305,12 +1297,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             int palmaConnectionHandle = context.RequestData.ReadInt32();
 
-            if (context.Process.HandleTable.GenerateHandle(_palmaOperationCompleteEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _palmaOperationCompleteEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
@@ -1341,7 +1328,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, unknown0 });
 
-            _palmaOperationCompleteEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return ResultCode.Success;
         }
@@ -1355,7 +1342,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, frModeType });
 
-            _palmaOperationCompleteEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return ResultCode.Success;
         }
@@ -1380,7 +1367,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, enabledPalmaStep });
 
-            _palmaOperationCompleteEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return ResultCode.Success;
         }
@@ -1393,7 +1380,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle });
 
-            _palmaOperationCompleteEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return ResultCode.Success;
         }
@@ -1422,7 +1409,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { palmaConnectionHandle, unknown0, unknown1 });
 
-            _palmaOperationCompleteEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _palmaOperationCompleteEvent);
 
             return ResultCode.Success;
         }
@@ -1491,6 +1478,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { _npadCommunicationMode });
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _xpadIdEvent);
+            Os.DestroySystemEvent(ref _palmaOperationCompleteEvent);
         }
     }
 }

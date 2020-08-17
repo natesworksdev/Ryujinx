@@ -1,32 +1,27 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator
 {
-    class ILibraryAppletAccessor : IpcService
+    class ILibraryAppletAccessor : IpcService, IDisposable
     {
         private IApplet _applet;
 
         private AppletSession _normalSession;
         private AppletSession _interactiveSession;
 
-        private KEvent _stateChangedEvent;
-        private KEvent _normalOutDataEvent;
-        private KEvent _interactiveOutDataEvent;
-
-        private int _stateChangedEventHandle;
-        private int _normalOutDataEventHandle;
-        private int _interactiveOutDataEventHandle;
+        private SystemEventType _stateChangedEvent;
+        private SystemEventType _normalOutDataEvent;
+        private SystemEventType _interactiveOutDataEvent;
 
         public ILibraryAppletAccessor(AppletId appletId, Horizon system)
         {
-            _stateChangedEvent       = new KEvent(system.KernelContext);
-            _normalOutDataEvent      = new KEvent(system.KernelContext);
-            _interactiveOutDataEvent = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _stateChangedEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _normalOutDataEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _interactiveOutDataEvent, EventClearMode.AutoClear, true);
 
             _applet = AppletManager.Create(appletId, system);
 
@@ -42,32 +37,24 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
         private void OnAppletStateChanged(object sender, EventArgs e)
         {
-            _stateChangedEvent.WritableEvent.Signal();
+            Os.SignalSystemEvent(ref _stateChangedEvent);
         }
 
         private void OnNormalOutData(object sender, EventArgs e)
         {
-            _normalOutDataEvent.WritableEvent.Signal();
+            Os.SignalSystemEvent(ref _normalOutDataEvent);
         }
 
         private void OnInteractiveOutData(object sender, EventArgs e)
         {
-            _interactiveOutDataEvent.WritableEvent.Signal();
+            Os.SignalSystemEvent(ref _interactiveOutDataEvent);
         }
 
         [Command(0)]
         // GetAppletStateChangedEvent() -> handle<copy>
         public ResultCode GetAppletStateChangedEvent(ServiceCtx context)
         {
-            if (_stateChangedEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_stateChangedEvent.ReadableEvent, out _stateChangedEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_stateChangedEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _stateChangedEvent));
 
             return ResultCode.Success;
         }
@@ -101,11 +88,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopOutData(ServiceCtx context)
         {
-            if(_normalSession.TryPop(out byte[] data))
+            if (_normalSession.TryPop(out byte[] data))
             {
                 MakeObject(context, new IStorage(data));
 
-                _normalOutDataEvent.WritableEvent.Clear();
+                Os.ClearSystemEvent(ref _normalOutDataEvent);
 
                 return ResultCode.Success;
             }
@@ -128,11 +115,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // PopInteractiveOutData() -> object<nn::am::service::IStorage>
         public ResultCode PopInteractiveOutData(ServiceCtx context)
         {
-            if(_interactiveSession.TryPop(out byte[] data))
+            if (_interactiveSession.TryPop(out byte[] data))
             {
                 MakeObject(context, new IStorage(data));
 
-                _interactiveOutDataEvent.WritableEvent.Clear();
+                Os.ClearSystemEvent(ref _interactiveOutDataEvent);
 
                 return ResultCode.Success;
             }
@@ -144,16 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // GetPopOutDataEvent() -> handle<copy>
         public ResultCode GetPopOutDataEvent(ServiceCtx context)
         {
-            if (_normalOutDataEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_normalOutDataEvent.ReadableEvent, out _normalOutDataEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_normalOutDataEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _normalOutDataEvent));
 
             return ResultCode.Success;
         }
@@ -162,15 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
         // GetPopInteractiveOutDataEvent() -> handle<copy>
         public ResultCode GetPopInteractiveOutDataEvent(ServiceCtx context)
         {
-            if (_interactiveOutDataEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_interactiveOutDataEvent.ReadableEvent, out _interactiveOutDataEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_interactiveOutDataEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _interactiveOutDataEvent));
 
             return ResultCode.Success;
         }
@@ -210,6 +180,13 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { indirectLayerConsumerHandle });
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _stateChangedEvent);
+            Os.DestroySystemEvent(ref _normalOutDataEvent);
+            Os.DestroySystemEvent(ref _interactiveOutDataEvent);
         }
     }
 }

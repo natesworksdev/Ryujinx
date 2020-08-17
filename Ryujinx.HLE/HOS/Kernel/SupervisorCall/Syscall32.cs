@@ -107,9 +107,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.UnmapMemory(dst, src, size);
         }
 
-        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint position, [R(1)] out uint pageInfo)
+        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint address, [R(1)] out uint pageInfo)
         {
-            KernelResult result = _syscall.QueryMemory(infoPtr, position, out ulong pageInfo64);
+            KernelResult result = _syscall.QueryMemory(infoPtr, out ulong pageInfo64, address);
 
             pageInfo = (uint)pageInfo64;
 
@@ -239,7 +239,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult GetInfo32(
             [R(0)] uint subIdLow,
-            [R(1)] uint id,
+            [R(1)] InfoType id,
             [R(2)] int handle,
             [R(3)] uint subIdHigh,
             [R(1)] out uint valueLow,
@@ -247,7 +247,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             long subId = (long)(subIdLow | ((ulong)subIdHigh << 32));
 
-            KernelResult result = _syscall.GetInfo(id, handle, subId, out long value);
+            KernelResult result = _syscall.GetInfo(id, handle, subId, out ulong value);
 
             valueHigh = (uint)(value >> 32);
             valueLow = (uint)(value & uint.MaxValue);
@@ -384,7 +384,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             long timeout = (long)(timeoutLow | ((ulong)timeoutHigh << 32));
 
-            return _syscall.WaitSynchronization(handlesPtr, handlesCount, timeout, out handleIndex);
+            return _syscall.WaitSynchronization(out handleIndex, handlesPtr, handlesCount, timeout);
         }
 
         public KernelResult CancelSynchronization32([R(0)] int handle)

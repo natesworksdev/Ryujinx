@@ -1,37 +1,27 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 {
-    class IDeliveryCacheProgressService : IpcService
+    class IDeliveryCacheProgressService : IpcService, IDisposable
     {
-        private KEvent _event;
-        private int    _eventHandle;
+        private SystemEventType _event;
 
         public IDeliveryCacheProgressService(ServiceCtx context)
         {
-            _event = new KEvent(context.Device.System.KernelContext);
+            Os.CreateSystemEvent(out _event, EventClearMode.AutoClear, true);
         }
 
         [Command(0)]
         // GetEvent() -> handle<copy>
         public ResultCode GetEvent(ServiceCtx context)
         {
-            if (_eventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_event.ReadableEvent, out _eventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_eventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _event));
 
             Logger.Stub?.PrintStub(LogClass.ServiceBcat);
 
@@ -63,6 +53,11 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
                 bufferWriter.WriteStruct(deliveryCacheProgress);
                 context.Memory.Write((ulong)ipcDesc.Position, memory.ToArray());
             }
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _event);
         }
     }
 }

@@ -359,11 +359,52 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return KernelResult.Success;
         }
 
-        public KernelResult MapPages(
+        public KernelResult GetPages(
             ulong            address,
-            KPageList        pageList,
-            MemoryState      state,
-            KMemoryPermission permission)
+            ulong            pagesCount,
+            MemoryState      stateMask,
+            MemoryState      stateExpected,
+            KMemoryPermission permissionMask,
+            KMemoryPermission permissionExpected,
+            MemoryAttribute  attributeMask,
+            MemoryAttribute  attributeExpected,
+            KPageList        pageList)
+        {
+            ulong size = pagesCount * PageSize;
+
+            if (address + size <= address || !InsideAddrSpace(address, size))
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            lock (_blocks)
+            {
+                if (CheckRange(
+                    address,
+                    size,
+                    stateMask     | MemoryState.IsPoolAllocated,
+                    stateExpected | MemoryState.IsPoolAllocated,
+                    permissionMask,
+                    permissionExpected,
+                    attributeMask,
+                    attributeExpected,
+                    MemoryAttribute.IpcAndDeviceMapped,
+                    out _,
+                    out _,
+                    out _))
+                {
+                    AddVaRangeToPageList(pageList, address, pagesCount);
+
+                    return KernelResult.Success;
+                }
+                else
+                {
+                    return KernelResult.InvalidMemState;
+                }
+            }
+        }
+
+        public KernelResult MapPages(ulong address, KPageList pageList, MemoryState state, KMemoryPermission permission)
         {
             ulong pagesCount = pageList.GetPagesCount();
 
@@ -3253,7 +3294,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return pa - DramMemoryMap.DramBase;
         }
 
-        public long GetMmUsedPages()
+        public ulong GetMmUsedPages()
         {
             lock (_blocks)
             {
@@ -3261,9 +3302,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
         }
 
-        private long GetMmUsedSize()
+        private ulong GetMmUsedSize()
         {
-            return _blocks.Count * KMemoryBlockSize;
+            return (ulong)_blocks.Count * KMemoryBlockSize;
         }
 
         public bool IsInvalidRegion(ulong address, ulong size)

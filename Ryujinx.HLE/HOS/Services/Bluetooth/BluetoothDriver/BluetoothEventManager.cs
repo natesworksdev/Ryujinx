@@ -1,25 +1,15 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.HLE.HOS.Services.OsTypes;
 
 namespace Ryujinx.HLE.HOS.Services.Bluetooth.BluetoothDriver
 {
-    static class BluetoothEventManager
+    class BluetoothEventManager
     {
-        public static KEvent InitializeBleDebugEvent;
-        public static int    InitializeBleDebugEventHandle;
+        public SystemEventType InitializeBleDebugEvent;
+        public SystemEventType UnknownBleDebugEvent;
+        public SystemEventType RegisterBleDebugEvent;
 
-        public static KEvent UnknownBleDebugEvent;
-        public static int    UnknownBleDebugEventHandle;
-
-        public static KEvent RegisterBleDebugEvent;
-        public static int    RegisterBleDebugEventHandle;
-
-        public static KEvent InitializeBleEvent;
-        public static int    InitializeBleEventHandle;
-
-        public static KEvent UnknownBleEvent;
-        public static int    UnknownBleEventHandle;
-
-        public static KEvent RegisterBleEvent;
-        public static int    RegisterBleEventHandle;
+        public SystemEventType InitializeBleEvent;
+        public SystemEventType UnknownBleEvent;
+        public SystemEventType RegisterBleEvent;
     }
 }

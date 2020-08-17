@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.Memory;
 using System;
 using System.Diagnostics;
@@ -13,13 +12,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         private static Stopwatch _pTimer    = new Stopwatch();
         private static double    _ticksToNs = (1.0 / Stopwatch.Frequency) * 1_000_000_000;
 
-        private KEvent _errorEvent;
-        private KEvent _unknownEvent;
+        private SystemEventType _errorEvent;
+        private SystemEventType _unknownEvent;
 
         public NvHostCtrlGpuDeviceFile(ServiceCtx context, IAddressSpaceManager memory, long owner) : base(context, owner)
         {
-            _errorEvent   = new KEvent(context.Device.System.KernelContext);
-            _unknownEvent = new KEvent(context.Device.System.KernelContext);
+            Os.CreateSystemEvent(out _errorEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _unknownEvent, EventClearMode.AutoClear, true);
         }
 
         static NvHostCtrlGpuDeviceFile()
@@ -85,33 +84,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
         public override NvInternalResult QueryEvent(out int eventHandle, uint eventId)
         {
             // TODO: accurately represent and implement those events.
-            KEvent targetEvent = null;
+            eventHandle = 0;
 
             switch (eventId)
             {
                 case 0x1:
-                    targetEvent = _errorEvent;
+                    eventHandle = Os.GetReadableHandleOfSystemEvent(ref _errorEvent);
                     break;
                 case 0x2:
-                    targetEvent = _unknownEvent;
+                    eventHandle = Os.GetReadableHandleOfSystemEvent(ref _unknownEvent);
                     break;
             }
 
-            if (targetEvent != null)
-            {
-                if (Context.Process.HandleTable.GenerateHandle(targetEvent.ReadableEvent, out eventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-            else
-            {
-                eventHandle = 0;
-
-                return NvInternalResult.InvalidInput;
-            }
-
-            return NvInternalResult.Success;
+            return eventHandle == 0 ? NvInternalResult.InvalidInput : NvInternalResult.Success;
         }
 
         public override void Close() { }

@@ -1,9 +1,8 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.NotificationService;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 using System.Collections.Generic;
 
@@ -16,8 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         private readonly object _lock = new object();
 
-        private KEvent _notificationEvent;
-        private int    _notificationEventHandle = 0;
+        private SystemEventType _notificationEvent;
 
         private LinkedList<NotificationInfo> _notifications;
 
@@ -26,10 +24,11 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
 
         public INotificationService(ServiceCtx context, UserId userId, FriendServicePermissionLevel permissionLevel)
         {
-            _userId            = userId;
-            _permissionLevel   = permissionLevel;
-            _notifications     = new LinkedList<NotificationInfo>();
-            _notificationEvent = new KEvent(context.Device.System.KernelContext);
+            _userId          = userId;
+            _permissionLevel = permissionLevel;
+            _notifications   = new LinkedList<NotificationInfo>();
+
+            Os.CreateSystemEvent(out _notificationEvent, EventClearMode.AutoClear, true);
 
             _hasNewFriendRequest = false;
             _hasFriendListUpdate = false;
@@ -41,15 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         // nn::friends::detail::ipc::INotificationService::GetEvent() -> handle<copy>
         public ResultCode GetEvent(ServiceCtx context)
         {
-            if (_notificationEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_notificationEvent.ReadableEvent, out _notificationEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_notificationEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _notificationEvent));
 
             return ResultCode.Success;
         }
@@ -135,7 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                         _notifications.AddFirst(friendListNotification);
                     }
 
-                    _notificationEvent.ReadableEvent.Signal();
+                    Os.SignalSystemEvent(ref _notificationEvent);
                 }
             }
         }
@@ -162,7 +153,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
                         _hasNewFriendRequest = true;
                     }
 
-                    _notificationEvent.ReadableEvent.Signal();
+                    Os.SignalSystemEvent(ref _notificationEvent);
                 }
             }
         }
@@ -170,6 +161,7 @@ namespace Ryujinx.HLE.HOS.Services.Friend.ServiceCreator
         public void Dispose()
         {
             NotificationEventHandler.Instance.UnregisterNotificationService(this);
+            Os.DestroySystemEvent(ref _notificationEvent);
         }
     }
 }

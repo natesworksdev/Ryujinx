@@ -1,21 +1,18 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServiceAccessServer.ShopServiceAccessor;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServiceAccessServer
 {
-    class IShopServiceAccessor : IpcService
+    class IShopServiceAccessor : IpcService, IDisposable
     {
-        private readonly KEvent _event;
-
-        private int _eventHandle;
+        private SystemEventType _event;
 
         public IShopServiceAccessor(Horizon system)
         {
-            _event = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _event, EventClearMode.AutoClear, true);
         }
 
         [Command(0)]
@@ -24,19 +21,16 @@ namespace Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServ
         {
             MakeObject(context, new IShopServiceAsync());
 
-            if (_eventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_event.ReadableEvent, out _eventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_eventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _event));
 
             Logger.Stub?.PrintStub(LogClass.ServiceNim);
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _event);
         }
     }
 }

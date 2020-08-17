@@ -1,19 +1,17 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 using System.Net;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
-    class IUserLocalCommunicationService : IpcService
+    class IUserLocalCommunicationService : IpcService, IDisposable
     {
         // TODO(Ac_K): Determine what the hardcoded unknown value is.
         private const int UnknownValue = 90;
 
         private NetworkInterface _networkInterface;
-
-        private int _stateChangeEventHandle = 0;
 
         public IUserLocalCommunicationService(ServiceCtx context)
         {
@@ -45,15 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // AttachStateChangeEvent() -> handle<copy>
         public ResultCode AttachStateChangeEvent(ServiceCtx context)
         {
-            if (_stateChangeEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_networkInterface.StateChangeEvent.ReadableEvent, out _stateChangeEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_stateChangeEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _networkInterface.StateChangeEvent));
 
             // Return ResultCode.InvalidArgument if handle is null, doesn't occur in our case since we already throw an Exception.
 
@@ -84,5 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             return _networkInterface.Initialize(UnknownValue, version: 1, unknownAddress1, unknownAddress2);
         }
+
+        public void Dispose() => _networkInterface.Dispose();
     }
 }

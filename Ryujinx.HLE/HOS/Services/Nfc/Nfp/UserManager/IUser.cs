@@ -1,21 +1,19 @@
 ﻿using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
 {
-    class IUser : IpcService
+    class IUser : IpcService, IDisposable
     {
         private State _state = State.NonInitialized;
 
-        private KEvent _availabilityChangeEvent;
-        private int    _availabilityChangeEventHandle = 0;
+        private SystemEventType _availabilityChangeEvent;
 
         private List<Device> _devices = new List<Device>();
 
@@ -207,17 +205,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             {
                 if ((uint)_devices[i].Handle == deviceHandle)
                 {
-                    if (_devices[i].ActivateEventHandle == 0)
+                    if (_devices[i].ActivateEvent.NotInitialized)
                     {
-                        _devices[i].ActivateEvent = new KEvent(context.Device.System.KernelContext);
-
-                        if (context.Process.HandleTable.GenerateHandle(_devices[i].ActivateEvent.ReadableEvent, out _devices[i].ActivateEventHandle) != KernelResult.Success)
-                        {
-                            throw new InvalidOperationException("Out of handles!");
-                        }
+                        Os.CreateSystemEvent(out _devices[i].ActivateEvent, EventClearMode.AutoClear, true);
                     }
 
-                    context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_devices[i].ActivateEventHandle);
+                    context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _devices[i].ActivateEvent));
 
                     return ResultCode.Success;
                 }
@@ -236,17 +229,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
             {
                 if ((uint)_devices[i].Handle == deviceHandle)
                 {
-                    if (_devices[i].DeactivateEventHandle == 0)
+                    if (_devices[i].DeactivateEvent.NotInitialized)
                     {
-                        _devices[i].DeactivateEvent = new KEvent(context.Device.System.KernelContext);
-
-                        if (context.Process.HandleTable.GenerateHandle(_devices[i].DeactivateEvent.ReadableEvent, out _devices[i].DeactivateEventHandle) != KernelResult.Success)
-                        {
-                            throw new InvalidOperationException("Out of handles!");
-                        }
+                        Os.CreateSystemEvent(out _devices[i].DeactivateEvent, EventClearMode.AutoClear, true);
                     }
 
-                    context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_devices[i].DeactivateEventHandle);
+                    context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _devices[i].DeactivateEvent));
 
                     return ResultCode.Success;
                 }
@@ -315,17 +303,12 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         // AttachAvailabilityChangeEvent() -> handle<copy>
         public ResultCode AttachAvailabilityChangeEvent(ServiceCtx context)
         {
-            if (_availabilityChangeEventHandle == 0)
+            if (_availabilityChangeEvent.NotInitialized)
             {
-                _availabilityChangeEvent = new KEvent(context.Device.System.KernelContext);
-
-                if (context.Process.HandleTable.GenerateHandle(_availabilityChangeEvent.ReadableEvent, out _availabilityChangeEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
+                Os.CreateSystemEvent(out _availabilityChangeEvent, EventClearMode.AutoClear, true);
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_availabilityChangeEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _availabilityChangeEvent));
 
             return ResultCode.Success;
         }
@@ -335,6 +318,27 @@ namespace Ryujinx.HLE.HOS.Services.Nfc.Nfp
         public ResultCode RecreateApplicationArea(ServiceCtx context)
         {
             throw new ServiceNotImplementedException(context);
+        }
+
+        public void Dispose()
+        {
+            for (int i = 0; i < _devices.Count; i++)
+            {
+                if (!_devices[i].ActivateEvent.NotInitialized)
+                {
+                    Os.DestroySystemEvent(ref _devices[i].ActivateEvent);
+                }
+
+                if (!_devices[i].DeactivateEvent.NotInitialized)
+                {
+                    Os.DestroySystemEvent(ref _devices[i].DeactivateEvent);
+                }
+            }
+
+            if (!_availabilityChangeEvent.NotInitialized)
+            {
+                Os.DestroySystemEvent(ref _availabilityChangeEvent);
+            }
         }
     }
 }

@@ -2,17 +2,15 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
-    class ISelfController : IpcService
+    class ISelfController : IpcService, IDisposable
     {
-        private KEvent _libraryAppletLaunchableEvent;
-        private int    _libraryAppletLaunchableEventHandle;
-
-        private KEvent _accumulatedSuspendedTickChangedEvent;
-        private int    _accumulatedSuspendedTickChangedEventHandle;
+        private SystemEventType _libraryAppletLaunchableEvent;
+        private SystemEventType _accumulatedSuspendedTickChangedEvent;
 
         private object _fatalSectionLock = new object();
         private int    _fatalSectionCount;
@@ -35,7 +33,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         public ISelfController(Horizon system)
         {
-            _libraryAppletLaunchableEvent = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _libraryAppletLaunchableEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _accumulatedSuspendedTickChangedEvent, EventClearMode.AutoClear, true);
+            Os.SignalSystemEvent(ref _accumulatedSuspendedTickChangedEvent);
         }
 
         [Command(0)]
@@ -102,17 +102,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetLibraryAppletLaunchableEvent() -> handle<copy>
         public ResultCode GetLibraryAppletLaunchableEvent(ServiceCtx context)
         {
-            _libraryAppletLaunchableEvent.ReadableEvent.Signal();
+            Os.SignalSystemEvent(ref _libraryAppletLaunchableEvent);
 
-            if (_libraryAppletLaunchableEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_libraryAppletLaunchableEvent.ReadableEvent, out _libraryAppletLaunchableEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_libraryAppletLaunchableEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _libraryAppletLaunchableEvent));
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -291,19 +283,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetAccumulatedSuspendedTickChangedEvent() -> handle<copy>
         public ResultCode GetAccumulatedSuspendedTickChangedEvent(ServiceCtx context)
         {
-            if (_accumulatedSuspendedTickChangedEventHandle == 0)
-            {
-                _accumulatedSuspendedTickChangedEvent = new KEvent(context.Device.System.KernelContext);
-
-                _accumulatedSuspendedTickChangedEvent.ReadableEvent.Signal();
-
-                if (context.Process.HandleTable.GenerateHandle(_accumulatedSuspendedTickChangedEvent.ReadableEvent, out _accumulatedSuspendedTickChangedEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_accumulatedSuspendedTickChangedEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _accumulatedSuspendedTickChangedEvent));
 
             return ResultCode.Success;
         }
@@ -317,6 +297,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
             _albumImageTakenNotificationEnabled = albumImageTakenNotificationEnabled;
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _libraryAppletLaunchableEvent);
+            Os.DestroySystemEvent(ref _accumulatedSuspendedTickChangedEvent);
         }
     }
 }

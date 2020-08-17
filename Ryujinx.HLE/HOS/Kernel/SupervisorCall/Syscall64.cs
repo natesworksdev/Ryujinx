@@ -128,9 +128,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.UnmapMemory(dst, src, size);
         }
 
-        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(2)] ulong position, [R(1)] out ulong pageInfo)
+        public KernelResult QueryMemory64([R(0)] ulong infoPtr, [R(2)] ulong address, [R(1)] out ulong pageInfo)
         {
-            return _syscall.QueryMemory(infoPtr, position, out pageInfo);
+            return _syscall.QueryMemory(infoPtr, out pageInfo, address);
         }
 
         public KernelResult MapSharedMemory64([R(0)] int handle, [R(1)] ulong address, [R(2)] ulong size, [R(3)] KMemoryPermission permission)
@@ -229,7 +229,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             _syscall.OutputDebugString(strPtr, size);
         }
 
-        public KernelResult GetInfo64([R(1)] uint id, [R(2)] int handle, [R(3)] long subId, [R(1)] out long value)
+        public KernelResult GetInfo64([R(1)] InfoType id, [R(2)] int handle, [R(3)] long subId, [R(1)] out ulong value)
         {
             return _syscall.GetInfo(id, handle, subId, out value);
         }
@@ -321,7 +321,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
 
         public KernelResult WaitSynchronization64([R(1)] ulong handlesPtr, [R(2)] int handlesCount, [R(3)] long timeout, [R(1)] out int handleIndex)
         {
-            return _syscall.WaitSynchronization(handlesPtr, handlesCount, timeout, out handleIndex);
+            return _syscall.WaitSynchronization(out handleIndex, handlesPtr, handlesCount, timeout);
         }
 
         public KernelResult CancelSynchronization64([R(0)] int handle)

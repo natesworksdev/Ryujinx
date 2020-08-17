@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public KAddressArbiter AddressArbiter { get; private set; }
 
-        public long[] RandomEntropy { get; private set; }
+        public ulong[] RandomEntropy { get; private set; }
 
         private bool _signaled;
 
@@ -96,7 +96,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             Capabilities = new KProcessCapabilities();
 
-            RandomEntropy = new long[KScheduler.CpuCoresCount];
+            RandomEntropy = new ulong[KScheduler.CpuCoresCount];
 
             // TODO: Remove once we no longer need to initialize it externally.
             HandleTable = new KHandleTable(context);

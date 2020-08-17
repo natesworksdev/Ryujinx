@@ -1143,7 +1143,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public void Execute()
         {
-            if (Interlocked.CompareExchange(ref _hostThreadRunning, 1, 0) == 0)
+            if (Interlocked.Exchange(ref _hostThreadRunning, 1) == 0)
             {
                 HostThread.Start();
             }
@@ -1151,6 +1151,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private void ThreadStart()
         {
+            KernelStatic.SetKernelContext(KernelContext);
+
             if (_customThreadStart != null)
             {
                 _customThreadStart();

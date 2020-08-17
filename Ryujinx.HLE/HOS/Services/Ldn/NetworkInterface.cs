@@ -1,22 +1,27 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
+using Ryujinx.HLE.HOS.Services.OsTypes;
+using System;
 using System.Net;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn
 {
-    internal class NetworkInterface
+    internal class NetworkInterface : IDisposable
     {
-        public ResultCode NifmState        { get; set; }
-        public KEvent     StateChangeEvent { get; private set; }
+        public ResultCode NifmState { get; set; }
+
+        private SystemEventType _stateChangeEvent;
+
+        public ref SystemEventType StateChangeEvent => ref _stateChangeEvent;
 
         private NetworkState _state;
 
         public NetworkInterface(Horizon system)
         {
             // TODO(Ac_K): Determine where the internal state is set.
-            NifmState        = ResultCode.Success;
-            StateChangeEvent = new KEvent(system.KernelContext);
+            NifmState = ResultCode.Success;
+
+            Os.CreateSystemEvent(out _stateChangeEvent, EventClearMode.AutoClear, true);
 
             _state = NetworkState.None;
         }
@@ -48,12 +53,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
 
             _state = NetworkState.None;
 
-            StateChangeEvent.WritableEvent.Signal();
-            StateChangeEvent.WritableEvent.Clear();
+            Os.SignalSystemEvent(ref _stateChangeEvent);
+            Os.ClearSystemEvent(ref _stateChangeEvent);
 
             Logger.Stub?.PrintStub(LogClass.ServiceLdn);
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _stateChangeEvent);
         }
     }
 }

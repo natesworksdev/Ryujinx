@@ -1,19 +1,17 @@
-using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ns
 {
-    class IPurchaseEventManager : IpcService
+    class IPurchaseEventManager : IpcService, IDisposable
     {
-        private readonly KEvent _purchasedEvent;
+        private SystemEventType _purchasedEvent;
 
         public IPurchaseEventManager(Horizon system)
         {
-            _purchasedEvent = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _purchasedEvent, EventClearMode.AutoClear, true);
         }
 
         [Command(0)]
@@ -39,14 +37,14 @@ namespace Ryujinx.HLE.HOS.Services.Ns
         // GetPurchasedEventReadableHandle() -> handle<copy, event>
         public ResultCode GetPurchasedEventReadableHandle(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_purchasedEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _purchasedEvent));
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _purchasedEvent);
         }
     }
 }
