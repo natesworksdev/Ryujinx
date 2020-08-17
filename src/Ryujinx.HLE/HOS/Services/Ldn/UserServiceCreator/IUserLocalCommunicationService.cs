@@ -175,7 +175,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(3)]
-        // GetDisconnectReason() -> u16
+        // GetDisconnectReason() -> u16 disconnect_reason
         public ResultCode GetDisconnectReason(ServiceCtx context)
         {
             // NOTE: Return ResultCode.InvalidArgument if _disconnectReason is null, doesn't occur in our case.
@@ -196,7 +196,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(4)]
-        // GetSecurityParameter() -> bytes<0x20, 1>
+        // GetSecurityParameter() -> bytes<0x20, 1> security_parameter
         public ResultCode GetSecurityParameter(ServiceCtx context)
         {
             if (_nifmResultCode != ResultCode.Success)
@@ -222,7 +222,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(5)]
-        // GetNetworkConfig() -> bytes<0x20, 8>
+        // GetNetworkConfig() -> bytes<0x20, 8> network_config
         public ResultCode GetNetworkConfig(ServiceCtx context)
         {
             if (_nifmResultCode != ResultCode.Success)
@@ -271,7 +271,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(101)]
-        // GetNetworkInfoLatestUpdate() -> (buffer<unknown<0x480>, 0x1a>, buffer<unknown, 0xa>)
+        // GetNetworkInfoLatestUpdate() -> (buffer<network_info<0x480>, 0x1a>, buffer<unknown, 0xa>)
         public ResultCode GetNetworkInfoLatestUpdate(ServiceCtx context)
         {
             throw new NotImplementedException();
@@ -285,7 +285,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(103)]
-        // ScanPrivate(u16, bytes<0x60, 8>) -> (u16, buffer<unknown, 0x22>)
+        // ScanPrivate(u16 channel, bytes<0x60, 8> scan_filter) -> (u16 count, buffer<network_info, 0x22>)
         public ResultCode ScanPrivate(ServiceCtx context)
         {
             return ScanImpl(context, true);
@@ -430,14 +430,17 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (isPrivate)
             {
+                // TODO: Find the unknown struct in buffer<unknown, 9> (PtrBuff[0], size 0x60). And how we should use it.
+                throw new NotImplementedException();
+
                 // NOTE: The accessKey is used to encrypt the passphrase.
                 //       Service use random bytes to encrypt the passphrase when the network isn't private.
-                byte[] accessKey = context.RequestData.ReadBytes(0x20);
+                // byte[] accessKey = context.RequestData.ReadBytes(0x20);
             }
 
-            UserConfig     userConfig     = context.RequestData.ReadStruct<UserConfig>();
-            uint           reserved       = context.RequestData.ReadUInt32();
-            NetworkConfig  networkConfig  = context.RequestData.ReadStruct<NetworkConfig>();
+            UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
+            context.RequestData.ReadUInt32(); // Alignment?
+            NetworkConfig networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkConfig.IntentId.LocalCommunicationId);
             if (!isLocalCommunicationIdValid)
@@ -511,7 +514,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(205)]
-        // Reject(u32)
+        // Reject(u32 node_id)
         public ResultCode Reject(ServiceCtx context)
         {
             uint nodeId = context.RequestData.ReadUInt32();
@@ -534,7 +537,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(206)]
-        // SetAdvertiseData(buffer<unknown, 0x21>)
+        // SetAdvertiseData(buffer<advertise_data, 0x21>)
         public ResultCode SetAdvertiseData(ServiceCtx context)
         {
             long bufferPosition = context.Request.PtrBuff[0].Position;
@@ -565,7 +568,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(207)]
-        // SetStationAcceptPolicy(u8)
+        // SetStationAcceptPolicy(u8 accept_policy)
         public ResultCode SetStationAcceptPolicy(ServiceCtx context)
         {
             AcceptPolicy acceptPolicy = (AcceptPolicy)context.RequestData.ReadByte();
@@ -669,14 +672,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(302)]
-        // Connect(bytes<0x44, 2>, bytes<0x30, 1>, u32, u32, buffer<unknown<0x480>, 0x19>)
+        // Connect(bytes<0x44, 2> security_config, bytes<0x30, 1> user_config, u32 local_communication_version, u32 option_unknown, buffer<network_info<0x480>, 0x19>)
         public ResultCode Connect(ServiceCtx context)
         {
             return ConnectImpl(context);
         }
 
         [Command(303)]
-        // ConnectPrivate(bytes<0x44, 2>, bytes<0x20, 1>, bytes<0x30, 1>, u32, u32, bytes<0x20, 8>)
+        // ConnectPrivate(bytes<0x44, 2> security_config, bytes<0x20, 1> access_key, bytes<0x30, 1> user_config, u32 local_communication_version, u32 option_unknown, bytes<0x20, 8> unknown)
         public ResultCode ConnectPrivate(ServiceCtx context)
         {
             return ConnectImpl(context, true);
@@ -688,9 +691,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             if (isPrivate)
             {
+                // TODO: Find the unknown struct in the last bytes<0x20, 8> and don't handle the buffer instead.
+                throw new NotImplementedException();
+
                 // NOTE: The accessKey is used to encrypt the passphrase.
                 //       Service use random bytes to encrypt the passphrase when the network isn't private.
-                byte[] accessKey = context.RequestData.ReadBytes(0x20);
+                // byte[] accessKey = context.RequestData.ReadBytes(0x20);
             }
 
             UserConfig userConfig                = context.RequestData.ReadStruct<UserConfig>();
@@ -781,7 +787,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(400)]
-        // InitializeOld(u64, pid)
+        // InitializeOld(pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
             return InitializeImpl(context.Process.Pid, NIFM_REQUEST_ID);
