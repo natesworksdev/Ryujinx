@@ -254,7 +254,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (Texture view in _viewStorage._views)
             {
-                int viewWidth  = Math.Max(1, width >> view._firstLevel);
+                int viewWidth  = Math.Max(1, width  >> view._firstLevel);
                 int viewHeight = Math.Max(1, height >> view._firstLevel);
 
                 int viewDepthOrLayers;
