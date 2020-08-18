@@ -414,7 +414,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (ScaleFactor != scale)
             {
-                Logger.Debug?.Print(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.FormatInfo.Format} to ({ScaleFactor} to {scale}). ");
+                Logger.Debug?.Print(LogClass.Gpu, $"Rescaling {Info.Width}x{Info.Height} {Info.FormatInfo.Format.ToString()} to ({ScaleFactor} to {scale}). ");
                 TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
 
                 ScaleFactor = scale;
@@ -438,7 +438,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 foreach (var view in _views)
                 {
-                    Logger.Debug?.Print(LogClass.Gpu, $"  Recreating view {Info.Width}x{Info.Height} {Info.FormatInfo.Format}.");
+                    Logger.Debug?.Print(LogClass.Gpu, $"  Recreating view {Info.Width}x{Info.Height} {Info.FormatInfo.Format.ToString()}.");
                     view.ScaleFactor = scale;
 
                     TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities);
