@@ -201,6 +201,7 @@ namespace Ryujinx.Audio
         /// <summary>
         /// Appends an audio buffer to the specified track
         /// </summary>
+        /// <typeparam name="T">The sample type of the buffer</typeparam>
         /// <param name="trackId">The track to append the buffer to</param>
         /// <param name="bufferTag">The internal tag of the buffer</param>
         /// <param name="buffer">The buffer to append to the track</param>
