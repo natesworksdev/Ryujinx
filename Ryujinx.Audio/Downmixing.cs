@@ -104,7 +104,6 @@ namespace Ryujinx.Audio
 
             ReadOnlySpan<ChannelStereoFormatPCM16> channels = GetStereoBuffer(data);
 
-            // The rest or fallback
             for (int i = 0; i < samplePerChannelCount; i++)
             {
                 ChannelStereoFormatPCM16 channel = channels[i];
