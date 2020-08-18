@@ -196,7 +196,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return false;
             }
 
-            return size.Width == otherSize.Width &&
+            return size.Width  == otherSize.Width &&
                    size.Height == otherSize.Height;
         }
 
@@ -220,8 +220,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the size matches with the level, false otherwise</returns>
         public static bool SizeMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, int level)
         {
-            return Math.Max(1, firstTextureInfo.Width >> level) == secondTextureInfo.Width &&
-                   Math.Max(1, firstTextureInfo.Height >> level) == secondTextureInfo.Height &&
+            return Math.Max(1, firstTextureInfo.Width >> level)      == secondTextureInfo.Width &&
+                   Math.Max(1, firstTextureInfo.Height >> level)     == secondTextureInfo.Height &&
                    Math.Max(1, firstTextureInfo.GetDepth() >> level) == secondTextureInfo.GetDepth();
         }
 
@@ -244,14 +244,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Size size0 = GetAlignedSize(firstTextureInfo);
                 Size size1 = GetAlignedSize(secondTextureInfo);
 
-                return size0.Width == size1.Width &&
+                return size0.Width  == size1.Width &&
                        size0.Height == size1.Height &&
-                       size0.Depth == size1.Depth;
+                       size0.Depth  == size1.Depth;
             }
             else
             {
-                return firstTextureInfo.Width == secondTextureInfo.Width &&
-                       firstTextureInfo.Height == secondTextureInfo.Height &&
+                return firstTextureInfo.Width      == secondTextureInfo.Width &&
+                       firstTextureInfo.Height     == secondTextureInfo.Height &&
                        firstTextureInfo.GetDepth() == secondTextureInfo.GetDepth();
             }
         }
@@ -407,10 +407,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         public static bool SamplerParamsMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
         {
             return firstTextureInfo.DepthStencilMode == secondTextureInfo.DepthStencilMode &&
-                   firstTextureInfo.SwizzleR == secondTextureInfo.SwizzleR &&
-                   firstTextureInfo.SwizzleG == secondTextureInfo.SwizzleG &&
-                   firstTextureInfo.SwizzleB == secondTextureInfo.SwizzleB &&
-                   firstTextureInfo.SwizzleA == secondTextureInfo.SwizzleA;
+                   firstTextureInfo.SwizzleR         == secondTextureInfo.SwizzleR &&
+                   firstTextureInfo.SwizzleG         == secondTextureInfo.SwizzleG &&
+                   firstTextureInfo.SwizzleB         == secondTextureInfo.SwizzleB &&
+                   firstTextureInfo.SwizzleA         == secondTextureInfo.SwizzleA;
         }
 
         /// <summary>
@@ -421,7 +421,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the texture target and samples count matches, false otherwise</returns>
         public static bool TargetAndSamplesCompatible(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
         {
-            return firstTextureInfo.Target == secondTextureInfo.Target &&
+            return firstTextureInfo.Target     == secondTextureInfo.Target &&
                    firstTextureInfo.SamplesInX == secondTextureInfo.SamplesInX &&
                    firstTextureInfo.SamplesInY == secondTextureInfo.SamplesInY;
         }

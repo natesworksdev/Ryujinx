@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _hasData;
 
         private ITexture _arrayViewTexture;
-        private Target _arrayViewTarget;
+        private Target   _arrayViewTarget;
 
         private Texture _viewStorage;
 
@@ -105,12 +105,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="scaleFactor">The floating point scale factor to initialize with</param>
         /// <param name="scaleMode">The scale mode to initialize with</param>
         private Texture(
-            GpuContext context,
+            GpuContext  context,
             TextureInfo info,
-            SizeInfo sizeInfo,
-            int firstLayer,
-            int firstLevel,
-            float scaleFactor,
+            SizeInfo    sizeInfo,
+            int         firstLayer,
+            int         firstLevel,
+            float       scaleFactor,
             TextureScaleMode scaleMode)
         {
             InitializeTexture(context, info, sizeInfo);
@@ -159,7 +159,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="sizeInfo">Size information of the texture</param>
         private void InitializeTexture(GpuContext context, TextureInfo info, SizeInfo sizeInfo)
         {
-            _context = context;
+            _context  = context;
             _sizeInfo = sizeInfo;
 
             _modifiedRanges = new (ulong, ulong)[(sizeInfo.TotalSize / PhysicalMemory.PageSize) + 1];
@@ -238,7 +238,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="depthOrLayers">The new texture depth (for 3D textures) or layers (for layered textures)</param>
         public void ChangeSize(int width, int height, int depthOrLayers)
         {
-            width <<= _firstLevel;
+            width  <<= _firstLevel;
             height <<= _firstLevel;
 
             if (Info.Target == Target.Texture3D)
@@ -254,7 +254,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (Texture view in _viewStorage._views)
             {
-                int viewWidth = Math.Max(1, width >> view._firstLevel);
+                int viewWidth  = Math.Max(1, width >> view._firstLevel);
                 int viewHeight = Math.Max(1, height >> view._firstLevel);
 
                 int viewDepthOrLayers;
@@ -686,10 +686,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if a view with the given parameters can be created from this texture, false otherwise</returns>
         public bool IsViewCompatible(
             TextureInfo info,
-            ulong size,
-            bool isCopy,
-            out int firstLayer,
-            out int firstLevel)
+            ulong       size,
+            bool        isCopy,
+            out         int firstLayer,
+            out         int firstLevel)
         {
             // Out of range.
             if (info.Address < Address || info.Address + size > EndAddress)
@@ -767,7 +767,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 ITexture viewTexture = HostTexture.CreateView(createInfo, 0, 0);
 
                 _arrayViewTexture = viewTexture;
-                _arrayViewTarget = target;
+                _arrayViewTarget  = target;
 
                 return viewTexture;
             }
@@ -845,7 +845,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             Info = info;
 
-            _depth = info.GetDepth();
+            _depth  = info.GetDepth();
             _layers = info.GetLayers();
         }
 
