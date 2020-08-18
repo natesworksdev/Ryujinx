@@ -105,7 +105,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (texture.IsPerfectMatch(GetInfo(descriptor), TextureSearchFlags.Strict))
+                    if (TextureCompatibility.IsPerfectMatch(texture.Info, GetInfo(descriptor), TextureSearchFlags.Strict))
                     {
                         continue;
                     }
@@ -126,10 +126,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             ulong address = Context.MemoryManager.Translate(descriptor.UnpackAddress());
 
-            int width         = descriptor.UnpackWidth();
-            int height        = descriptor.UnpackHeight();
+            int width = descriptor.UnpackWidth();
+            int height = descriptor.UnpackHeight();
             int depthOrLayers = descriptor.UnpackDepth();
-            int levels        = descriptor.UnpackLevels();
+            int levels = descriptor.UnpackLevels();
 
             TextureMsaaMode msaaMode = descriptor.UnpackTextureMsaaMode();
 
@@ -145,7 +145,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             Target target = descriptor.UnpackTextureTarget().Convert((samplesInX | samplesInY) != 1);
 
             uint format = descriptor.UnpackFormat();
-            bool srgb   = descriptor.UnpackSrgb();
+            bool srgb = descriptor.UnpackSrgb();
 
             if (!FormatTable.TryGetTextureFormat(format, srgb, out FormatInfo formatInfo))
             {

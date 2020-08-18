@@ -15,7 +15,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     class TextureManager : IDisposable
     {
         private const int OverlapsBufferInitialCapacity = 10;
-        private const int OverlapsBufferMaxCapacity     = 10000;
+        private const int OverlapsBufferMaxCapacity = 10000;
 
         private readonly GpuContext _context;
 
@@ -519,12 +519,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             // so the width we get here is the aligned width.
             if (isLinear)
             {
-                width  = colorState.WidthOrStride / formatInfo.BytesPerPixel;
+                width = colorState.WidthOrStride / formatInfo.BytesPerPixel;
                 stride = colorState.WidthOrStride;
             }
             else
             {
-                width  = colorState.WidthOrStride;
+                width = colorState.WidthOrStride;
                 stride = 0;
             }
 
@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Texture overlap = _textureOverlaps[index];
 
-                if (overlap.IsPerfectMatch(info, flags))
+                if (TextureCompatibility.IsPerfectMatch(overlap.Info, info, flags))
                 {
                     if (!isSamplerTexture)
                     {
@@ -634,7 +634,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         // deletion.
                         _cache.Lift(overlap);
                     }
-                    else if (!overlap.SizeMatches(info))
+                    else if (!TextureCompatibility.SizeMatches(overlap.Info, info))
                     {
                         // If this is used for sampling, the size must match,
                         // otherwise the shader would sample garbage data.
@@ -707,7 +707,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // The size only matters (and is only really reliable) when the
                     // texture is used on a sampler, because otherwise the size will be
                     // aligned.
-                    if (!overlap.SizeMatches(info, firstLevel) && isSamplerTexture)
+                    if (!TextureCompatibility.SizeMatches(overlap.Info, info, firstLevel) && isSamplerTexture)
                     {
                         texture.ChangeSize(info.Width, info.Height, info.DepthOrLayers);
                     }
@@ -875,17 +875,17 @@ namespace Ryujinx.Graphics.Gpu.Image
             // - If the parent format is not compressed, and the view is, the view
             // size is calculated as described on the first point, but the width and height
             // of the view must be also multiplied by the block width and height.
-            int width  = Math.Max(1, parent.Info.Width  >> firstLevel);
+            int width = Math.Max(1, parent.Info.Width >> firstLevel);
             int height = Math.Max(1, parent.Info.Height >> firstLevel);
 
             if (parent.Info.FormatInfo.IsCompressed && !info.FormatInfo.IsCompressed)
             {
-                width  = BitUtils.DivRoundUp(width,  parent.Info.FormatInfo.BlockWidth);
+                width = BitUtils.DivRoundUp(width, parent.Info.FormatInfo.BlockWidth);
                 height = BitUtils.DivRoundUp(height, parent.Info.FormatInfo.BlockHeight);
             }
             else if (!parent.Info.FormatInfo.IsCompressed && info.FormatInfo.IsCompressed)
             {
-                width  *= info.FormatInfo.BlockWidth;
+                width *= info.FormatInfo.BlockWidth;
                 height *= info.FormatInfo.BlockHeight;
             }
 
@@ -953,16 +953,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // The shader will need the appropriate conversion code to compensate.
                 switch (formatInfo.Format)
                 {
-                    case Format.R8Snorm:           formatInfo = new FormatInfo(Format.R8Sint,           1, 1, 1); break;
-                    case Format.R16Snorm:          formatInfo = new FormatInfo(Format.R16Sint,          1, 1, 2); break;
-                    case Format.R8G8Snorm:         formatInfo = new FormatInfo(Format.R8G8Sint,         1, 1, 2); break;
-                    case Format.R16G16Snorm:       formatInfo = new FormatInfo(Format.R16G16Sint,       1, 1, 4); break;
-                    case Format.R8G8B8A8Snorm:     formatInfo = new FormatInfo(Format.R8G8B8A8Sint,     1, 1, 4); break;
+                    case Format.R8Snorm: formatInfo = new FormatInfo(Format.R8Sint, 1, 1, 1); break;
+                    case Format.R16Snorm: formatInfo = new FormatInfo(Format.R16Sint, 1, 1, 2); break;
+                    case Format.R8G8Snorm: formatInfo = new FormatInfo(Format.R8G8Sint, 1, 1, 2); break;
+                    case Format.R16G16Snorm: formatInfo = new FormatInfo(Format.R16G16Sint, 1, 1, 4); break;
+                    case Format.R8G8B8A8Snorm: formatInfo = new FormatInfo(Format.R8G8B8A8Sint, 1, 1, 4); break;
                     case Format.R16G16B16A16Snorm: formatInfo = new FormatInfo(Format.R16G16B16A16Sint, 1, 1, 8); break;
                 }
             }
 
-            int width  = info.Width  / info.SamplesInX;
+            int width = info.Width / info.SamplesInX;
             int height = info.Height / info.SamplesInY;
 
             int depth = info.GetDepth() * info.GetLayers();
