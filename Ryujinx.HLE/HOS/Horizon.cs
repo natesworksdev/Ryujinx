@@ -208,12 +208,18 @@ namespace Ryujinx.HLE.HOS
 
             HardwareDevice[] devices = new HardwareDevice[RendererConstants.AudioRendererSessionCountMax];
 
-            // TODO: don't hardcode those values.
-            // TODO: keep the device somewhere and dispose it when exiting.
+            uint channelCount = RendererConstants.ChannelCountMax;
+
+            if (!Device.AudioOut.SupportsChannelCount(RendererConstants.ChannelCountMax))
+            {
+                channelCount = 2;
+            }
+
+            // TODO: don't hardcode sample rate values.
             // TODO: This is kind of wrong, we should have an high level API for that and mix all buffers between them.
             for (int i = 0; i < devices.Length; i++)
             {
-                devices[i] = new AalHardwareDevice(i, Device.AudioOut, 2, RendererConstants.TargetSampleRate);
+                devices[i] = new AalHardwareDevice(i, Device.AudioOut, channelCount, RendererConstants.TargetSampleRate);
             }
 
             AudioRendererManager.Initialize(writableEvents, devices);
