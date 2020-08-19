@@ -142,6 +142,11 @@ namespace Ryujinx.HLE
             Application.LoadNca(ncaFile);
         }
 
+        public void LoadZca(string zcaFile)
+        {
+            Application.LoadZca(zcaFile);
+        }
+
         public void LoadNsp(string nspFile)
         {
             Application.LoadNsp(nspFile);

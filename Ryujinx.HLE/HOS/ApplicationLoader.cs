@@ -18,6 +18,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using ZRA.NET.Streaming;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 using ApplicationId = LibHac.Ncm.ApplicationId;
@@ -80,19 +81,23 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(codeFs, metaData);
         }
 
-        private (Nca main, Nca patch, Nca control) GetGameData(PartitionFileSystem pfs)
+        private (Nca main, Nca patch, Nca control) GetGameData(IFileSystem fs)
         {
             Nca mainNca = null;
             Nca patchNca = null;
             Nca controlNca = null;
 
-            _fileSystem.ImportTickets(pfs);
+            _fileSystem.ImportTickets(fs);
 
-            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+            foreach (DirectoryEntryEx fileEntry in fs.EnumerateEntries("/", "*.*ca"))
             {
-                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                fs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(_fileSystem.KeySet, ncaFile.AsStorage());
+                IStorage ncaStorage = Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                    ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                    : ncaFile.AsStorage();
+
+                Nca nca = new Nca(_fileSystem.KeySet, ncaStorage);
 
                 if (nca.Header.ContentType == NcaContentType.Program)
                 {
@@ -131,9 +136,7 @@ namespace Ryujinx.HLE.HOS
 
             PartitionFileSystem securePartition = xci.OpenPartition(XciPartitionType.Secure);
 
-            Nca mainNca = null;
-            Nca patchNca = null;
-            Nca controlNca = null;
+            Nca mainNca, patchNca, controlNca;
 
             try
             {
@@ -167,9 +170,7 @@ namespace Ryujinx.HLE.HOS
 
             PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
 
-            Nca mainNca = null;
-            Nca patchNca = null;
-            Nca controlNca = null;
+            Nca mainNca, patchNca, controlNca;
 
             try
             {
@@ -178,13 +179,6 @@ namespace Ryujinx.HLE.HOS
             catch (Exception e)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Unable to load NSP: {e.Message}");
-
-                return;
-            }
-
-            if (mainNca == null)
-            {
-                Logger.Error?.Print(LogClass.Loader, "Unable to load NSP: Could not find Main NCA");
 
                 return;
             }
@@ -208,6 +202,17 @@ namespace Ryujinx.HLE.HOS
             FileStream file = new FileStream(ncaFile, FileMode.Open, FileAccess.Read);
 
             Nca nca = new Nca(_fileSystem.KeySet, file.AsStorage(false));
+
+            LoadNca(nca, null, null);
+        }
+
+        public void LoadZca(string zcaFile)
+        {
+            FileStream file = new FileStream(zcaFile, FileMode.Open, FileAccess.Read);
+
+            ZraDecompressionStream zraDecompressionStream = new ZraDecompressionStream(file);
+
+            Nca nca = new Nca(_fileSystem.KeySet, zraDecompressionStream.AsStorage(false));
 
             LoadNca(nca, null, null);
         }
@@ -238,11 +243,15 @@ namespace Ryujinx.HLE.HOS
 
                     _fileSystem.ImportTickets(nsp);
 
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.*ca"))
                     {
                         nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                        
+                        IStorage ncaStorage = Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                            ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                            : ncaFile.AsStorage();
 
-                        Nca nca = new Nca(_fileSystem.KeySet, ncaFile.AsStorage());
+                        Nca nca = new Nca(_fileSystem.KeySet, ncaStorage);
 
                         if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
                         {

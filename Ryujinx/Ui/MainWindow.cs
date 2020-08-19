@@ -450,18 +450,24 @@ namespace Ryujinx.Ui
                 {
                     switch (System.IO.Path.GetExtension(path).ToLowerInvariant())
                     {
-                        case ".xci":
-                            Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
-                            device.LoadXci(path);
-                            break;
                         case ".nca":
                             Logger.Info?.Print(LogClass.Application, "Loading as NCA.");
                             device.LoadNca(path);
                             break;
                         case ".nsp":
                         case ".pfs0":
+                        case ".zsp":
                             Logger.Info?.Print(LogClass.Application, "Loading as NSP.");
                             device.LoadNsp(path);
+                            break;
+                        case ".xci":
+                        case ".zci":
+                            Logger.Info?.Print(LogClass.Application, "Loading as XCI.");
+                            device.LoadXci(path);
+                            break;
+                        case ".zca":
+                            Logger.Info?.Print(LogClass.Application, "Loading as ZCA.");
+                            device.LoadZca(path);
                             break;
                         default:
                             Logger.Info?.Print(LogClass.Application, "Loading as homebrew.");
@@ -478,7 +484,7 @@ namespace Ryujinx.Ui
                 }
                 else
                 {
-                    Logger.Warning?.Print(LogClass.Application, "Please specify a valid XCI/NCA/NSP/PFS0/NRO file.");
+                    Logger.Warning?.Print(LogClass.Application, "Please specify a valid NCA/NSP/PFS0/XCI/ZCA/NRO file.");
                     device.Dispose();
 
                     return;
@@ -853,12 +859,15 @@ namespace Ryujinx.Ui
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the file to open", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Open", ResponseType.Accept);
 
             fileChooser.Filter = new FileFilter();
-            fileChooser.Filter.AddPattern("*.nsp" );
+            fileChooser.Filter.AddPattern("*.nca");
+            fileChooser.Filter.AddPattern("*.nro");
+            fileChooser.Filter.AddPattern("*.nsp");
+            fileChooser.Filter.AddPattern("*.nso");
             fileChooser.Filter.AddPattern("*.pfs0");
-            fileChooser.Filter.AddPattern("*.xci" );
-            fileChooser.Filter.AddPattern("*.nca" );
-            fileChooser.Filter.AddPattern("*.nro" );
-            fileChooser.Filter.AddPattern("*.nso" );
+            fileChooser.Filter.AddPattern("*.xci");
+            fileChooser.Filter.AddPattern("*.zca");
+            fileChooser.Filter.AddPattern("*.zci");
+            fileChooser.Filter.AddPattern("*.zsp");
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {

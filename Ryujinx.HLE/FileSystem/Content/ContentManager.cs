@@ -14,6 +14,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using ZRA.NET.Streaming;
 
 namespace Ryujinx.HLE.FileSystem.Content
 {
@@ -201,15 +202,20 @@ namespace Ryujinx.HLE.FileSystem.Content
         {
             _virtualFileSystem.ImportTickets(fs);
 
-            foreach (var ncaPath in fs.EnumerateEntries("*.cnmt.nca", SearchOptions.Default))
+            foreach (var entry in fs.EnumerateEntries("*.cnmt.*ca", SearchOptions.Default))
             {
-                fs.OpenFile(out IFile ncaFile, ncaPath.FullPath.ToU8Span(), OpenMode.Read);
+                fs.OpenFile(out IFile ncaFile, entry.FullPath.ToU8Span(), OpenMode.Read);
+
+                IStorage ncaStorage = Path.GetExtension(entry.Name).ToLower() == ".zca"
+                    ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                    : ncaFile.AsStorage();
+
                 using (ncaFile)
                 {
-                    var nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                    var nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
                     if (nca.Header.ContentType != NcaContentType.Meta)
                     {
-                        Logger.Warning?.Print(LogClass.Application, $"{ncaPath} is not a valid metadata file");
+                        Logger.Warning?.Print(LogClass.Application, $"{entry} is not a valid metadata file");
 
                         continue;
                     }
@@ -228,7 +234,9 @@ namespace Ryujinx.HLE.FileSystem.Content
                         }
 
                         string ncaId = BitConverter.ToString(cnmt.ContentEntries[0].NcaId).Replace("-", "").ToLower();
-                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, $"{ncaId}.nca", true)))
+                        string ncaPath = pfs0.EnumerateEntries($"{ncaId}.*ca", SearchOptions.Default).Single().FullPath;
+
+                        if (!_aocData.TryAdd(cnmt.TitleId, new AocItem(containerPath, ncaPath, true)))
                         {
                             Logger.Warning?.Print(LogClass.Application, $"Duplicate AddOnContent detected. TitleId {cnmt.TitleId:X16}");
                         }
@@ -261,7 +269,7 @@ namespace Ryujinx.HLE.FileSystem.Content
 
         public void ClearAocData() => _aocData.Clear();
 
-        public int GetAocCount() => _aocData.Where(e => e.Value.Enabled).Count();
+        public int GetAocCount() => _aocData.Count(e => e.Value.Enabled);
 
         public IList<ulong> GetAocTitleIds() => _aocData.Where(e => e.Value.Enabled).Select(e => e.Key).ToList();
 
@@ -278,10 +286,12 @@ namespace Ryujinx.HLE.FileSystem.Content
                 switch (Path.GetExtension(aoc.ContainerPath))
                 {
                     case ".xci":
+                    case ".zci":
                         pfs = new Xci(_virtualFileSystem.KeySet, file.AsStorage()).OpenPartition(XciPartitionType.Secure);
                         pfs.OpenFile(out ncaFile, aoc.NcaPath.ToU8Span(), OpenMode.Read);
                         break;
                     case ".nsp":
+                    case ".zsp":
                         pfs = new PartitionFileSystem(file.AsStorage());
                         pfs.OpenFile(out ncaFile, aoc.NcaPath.ToU8Span(), OpenMode.Read);
                         break;
@@ -289,7 +299,11 @@ namespace Ryujinx.HLE.FileSystem.Content
                         return false; // Print error?
                 }
 
-                aocStorage = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage()).OpenStorage(NcaSectionType.Data, Switch.GetIntegrityCheckLevel());
+                IStorage ncaStorage = Path.GetExtension(aoc.NcaPath).ToLower() == ".zca"
+                    ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                    : ncaFile.AsStorage();
+
+                aocStorage = new Nca(_virtualFileSystem.KeySet, ncaStorage).OpenStorage(NcaSectionType.Data, Switch.GetIntegrityCheckLevel());
                 
                 return true;
             }

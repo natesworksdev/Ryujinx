@@ -16,6 +16,7 @@ using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
+using ZRA.NET.Streaming;
 
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 
@@ -26,11 +27,12 @@ namespace Ryujinx.Ui
         public static event EventHandler<ApplicationAddedEventArgs>        ApplicationAdded;
         public static event EventHandler<ApplicationCountUpdatedEventArgs> ApplicationCountUpdated;
 
-        private static readonly byte[] _nspIcon = GetResourceBytes("Ryujinx.Ui.assets.NSPIcon.png");
-        private static readonly byte[] _xciIcon = GetResourceBytes("Ryujinx.Ui.assets.XCIIcon.png");
-        private static readonly byte[] _ncaIcon = GetResourceBytes("Ryujinx.Ui.assets.NCAIcon.png");
-        private static readonly byte[] _nroIcon = GetResourceBytes("Ryujinx.Ui.assets.NROIcon.png");
-        private static readonly byte[] _nsoIcon = GetResourceBytes("Ryujinx.Ui.assets.NSOIcon.png");
+        private static readonly byte[] NcaIcon = GetResourceBytes("Ryujinx.Ui.assets.NCAIcon.png");
+        private static readonly byte[] NspIcon = GetResourceBytes("Ryujinx.Ui.assets.NSPIcon.png");
+        private static readonly byte[] NroIcon = GetResourceBytes("Ryujinx.Ui.assets.NROIcon.png");
+        private static readonly byte[] NsoIcon = GetResourceBytes("Ryujinx.Ui.assets.NSOIcon.png");
+        private static readonly byte[] XciIcon = GetResourceBytes("Ryujinx.Ui.assets.XCIIcon.png");
+        private static readonly byte[] ZcaIcon = GetResourceBytes("Ryujinx.Ui.assets.ZCAIcon.png");
 
         private static VirtualFileSystem _virtualFileSystem;
         private static Language          _desiredTitleLanguage;
@@ -108,8 +110,11 @@ namespace Ryujinx.Ui
                 {
                     if ((Path.GetExtension(app).ToLower() == ".nsp") ||
                         (Path.GetExtension(app).ToLower() == ".pfs0") ||
+                        (Path.GetExtension(app).ToLower() == ".zsp") ||
                         (Path.GetExtension(app).ToLower() == ".xci") ||
+                        (Path.GetExtension(app).ToLower() == ".zci") ||
                         (Path.GetExtension(app).ToLower() == ".nca") ||
+                        (Path.GetExtension(app).ToLower() == ".zca") ||
                         (Path.GetExtension(app).ToLower() == ".nro") ||
                         (Path.GetExtension(app).ToLower() == ".nso"))
                     {
@@ -136,7 +141,9 @@ namespace Ryujinx.Ui
                     {
                         if ((Path.GetExtension(applicationPath).ToLower() == ".nsp")  ||
                             (Path.GetExtension(applicationPath).ToLower() == ".pfs0") ||
-                            (Path.GetExtension(applicationPath).ToLower() == ".xci"))
+                            (Path.GetExtension(applicationPath).ToLower() == ".zsp") ||
+                            (Path.GetExtension(applicationPath).ToLower() == ".xci") ||
+                            (Path.GetExtension(applicationPath).ToLower() == ".zci"))
                         {
                             try
                             {
@@ -144,7 +151,7 @@ namespace Ryujinx.Ui
 
                                 bool isExeFs = false;
 
-                                if (Path.GetExtension(applicationPath).ToLower() == ".xci")
+                                if (Path.GetExtension(applicationPath).ToLower() == ".xci" || (Path.GetExtension(applicationPath).ToLower() == ".zci"))
                                 {
                                     Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -159,11 +166,15 @@ namespace Ryujinx.Ui
 
                                     foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*"))
                                     {
-                                        if (Path.GetExtension(fileEntry.FullPath).ToLower() == ".nca")
+                                        if (Path.GetExtension(fileEntry.FullPath).ToLower() == ".nca" || Path.GetExtension(fileEntry.FullPath).ToLower() == ".zca")
                                         {
                                             pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                                            Nca nca       = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                                            IStorage ncaStorage = Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                                                ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                                                : ncaFile.AsStorage();
+
+                                            Nca nca       = new Nca(_virtualFileSystem.KeySet, ncaStorage);
                                             int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
                                             if (nca.Header.ContentType == NcaContentType.Program && !nca.Header.GetFsHeader(dataIndex).IsPatchSection())
@@ -176,6 +187,8 @@ namespace Ryujinx.Ui
                                         else if (Path.GetFileNameWithoutExtension(fileEntry.FullPath) == "main")
                                         {
                                             isExeFs = true;
+
+                                            break;
                                         }
                                     }
 
@@ -189,7 +202,7 @@ namespace Ryujinx.Ui
 
                                 if (isExeFs)
                                 {
-                                    applicationIcon = _nspIcon;
+                                    applicationIcon = NspIcon;
 
                                     Result result = pfs.OpenFile(out IFile npdmFile, "/main.npdm".ToU8Span(), OpenMode.Read);
 
@@ -249,20 +262,35 @@ namespace Ryujinx.Ui
 
                                         if (applicationIcon == null)
                                         {
-                                            applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                            applicationIcon = Path.GetExtension(applicationPath).ToLower() switch
+                                            {
+                                                ".xci" => XciIcon,
+                                                ".zci" => XciIcon,
+                                                _ => NspIcon
+                                            };
                                         }
                                     }
                                 }
                             }
                             catch (MissingKeyException exception)
                             {
-                                applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                applicationIcon = Path.GetExtension(applicationPath).ToLower() switch
+                                {
+                                    ".xci" => XciIcon,
+                                    ".zci" => XciIcon,
+                                    _ => NspIcon
+                                };
 
                                 Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}");
                             }
                             catch (InvalidDataException)
                             {
-                                applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".xci" ? _xciIcon : _nspIcon;
+                                applicationIcon = Path.GetExtension(applicationPath).ToLower() switch
+                                {
+                                    ".xci" => XciIcon,
+                                    ".zci" => XciIcon,
+                                    _ => NspIcon
+                                };
 
                                 Logger.Warning?.Print(LogClass.Application, $"The header key is incorrect or missing and therefore the NCA header content type check has failed. Errored File: {applicationPath}");
                             }
@@ -317,7 +345,7 @@ namespace Ryujinx.Ui
                                 }
                                 else
                                 {
-                                    applicationIcon = _nroIcon;
+                                    applicationIcon = NroIcon;
                                     titleName       = Path.GetFileNameWithoutExtension(applicationPath);
                                 }
                             }
@@ -330,11 +358,16 @@ namespace Ryujinx.Ui
                                 continue;
                             }
                         }
-                        else if (Path.GetExtension(applicationPath).ToLower() == ".nca")
+                        else if (Path.GetExtension(applicationPath).ToLower() == ".nca" || Path.GetExtension(applicationPath).ToLower() == ".zca")
                         {
                             try
                             {
-                                Nca nca       = new Nca(_virtualFileSystem.KeySet, new FileStream(applicationPath, FileMode.Open, FileAccess.Read).AsStorage());
+                                FileStream ncaStream  = new FileStream(applicationPath, FileMode.Open, FileAccess.Read);
+                                IStorage   ncaStorage = Path.GetExtension(applicationPath).ToLower() == ".zca"
+                                    ? new ZraDecompressionStream(ncaStream).AsStorage()
+                                    : ncaStream.AsStorage();
+
+                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
                                 int dataIndex = Nca.GetSectionIndexFromType(NcaSectionType.Data, NcaContentType.Program);
 
                                 if (nca.Header.ContentType != NcaContentType.Program || nca.Header.GetFsHeader(dataIndex).IsPatchSection())
@@ -358,13 +391,13 @@ namespace Ryujinx.Ui
                                 continue;
                             }
 
-                            applicationIcon = _ncaIcon;
+                            applicationIcon = Path.GetExtension(applicationPath).ToLower() == ".zca" ? ZcaIcon : NcaIcon;
                             titleName       = Path.GetFileNameWithoutExtension(applicationPath);
                         }
                         // If its an NSO we just set defaults
                         else if (Path.GetExtension(applicationPath).ToLower() == ".nso")
                         {
-                            applicationIcon = _nsoIcon;
+                            applicationIcon = NsoIcon;
                             titleName       = Path.GetFileNameWithoutExtension(applicationPath);
                         }
                     }
@@ -454,11 +487,15 @@ namespace Ryujinx.Ui
             _virtualFileSystem.ImportTickets(pfs);
 
             // Find the Control NCA and store it in variable called controlNca
-            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.*ca"))
             {
                 pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                IStorage ncaStorage = Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                    ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                    : ncaFile.AsStorage();
+
+                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
 
                 if (nca.Header.ContentType == NcaContentType.Control)
                 {
@@ -630,13 +667,17 @@ namespace Ryujinx.Ui
 
                     _virtualFileSystem.ImportTickets(nsp);
 
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.*ca"))
                     {
                         nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                         try
                         {
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                            IStorage ncaStorage = Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                                ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                                : ncaFile.AsStorage();
+
+                            Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
 
                             if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != titleId)
                             {

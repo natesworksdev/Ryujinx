@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ZRA.NET.Streaming;
 
 using GUI        = Gtk.Builder.ObjectAttribute;
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
@@ -79,6 +80,11 @@ namespace Ryujinx.Ui
 
             foreach (DlcContainer dlcContainer in _dlcContainerList)
             {
+                if (!File.Exists(dlcContainer.Path))
+                {
+                    continue;
+                }
+
                 TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
 
                 using FileStream containerFile = File.OpenRead(dlcContainer.Path);
@@ -88,7 +94,12 @@ namespace Ryujinx.Ui
                 foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
                 {
                     pfs.OpenFile(out IFile ncaFile, dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                    Nca nca = TryCreateNca(ncaFile.AsStorage(), dlcContainer.Path);
+
+                    IStorage ncaStorage = System.IO.Path.GetExtension(dlcNca.Path).ToLower() == ".zca"
+                        ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                        : ncaFile.AsStorage();
+
+                    Nca nca = TryCreateNca(ncaStorage, dlcContainer.Path);
                     
                     if (nca != null)
                     {
@@ -129,6 +140,7 @@ namespace Ryujinx.Ui
             };
             fileChooser.SetPosition(WindowPosition.Center);
             fileChooser.Filter.AddPattern("*.nsp");
+            fileChooser.Filter.AddPattern("*.zsp");
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {
@@ -148,11 +160,15 @@ namespace Ryujinx.Ui
 
                         TreeIter? parentIter = null;
 
-                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.*ca"))
                         {
                             pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                            Nca nca = TryCreateNca(ncaFile.AsStorage(), containerPath);
+                            IStorage ncaStorage = System.IO.Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                                ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                                : ncaFile.AsStorage();
+
+                            Nca nca = TryCreateNca(ncaStorage, containerPath);
 
                             if (nca == null) continue;
 

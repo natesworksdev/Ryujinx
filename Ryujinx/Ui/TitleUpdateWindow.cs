@@ -13,6 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
+using ZRA.NET.Streaming;
 
 using GUI        = Gtk.Builder.ObjectAttribute;
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
@@ -85,13 +86,17 @@ namespace Ryujinx.Ui
 
                     _virtualFileSystem.ImportTickets(nsp);
 
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.*ca"))
                     {
                         nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
                         try
                         {
-                            Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                            IStorage ncaStorage = System.IO.Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                                ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                                : ncaFile.AsStorage();
+
+                            Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
 
                             if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" == _titleId)
                             {
@@ -155,6 +160,7 @@ namespace Ryujinx.Ui
             };
             fileChooser.SetPosition(WindowPosition.Center);
             fileChooser.Filter.AddPattern("*.nsp");
+            fileChooser.Filter.AddPattern("*.zsp");
 
             if (fileChooser.Run() == (int)ResponseType.Accept)
             {

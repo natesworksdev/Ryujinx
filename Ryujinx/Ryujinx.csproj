@@ -36,6 +36,7 @@
     <None Remove="Ui\assets\PatreonLogo.png" />
     <None Remove="Ui\assets\Icon.png" />
     <None Remove="Ui\assets\TwitterLogo.png" />
+    <None Remove="Ui\assets\ZCAIcon.png" />
     <None Remove="Ui\ControllerWindow.glade" />
     <None Remove="Ui\DlcWindow.glade" />
     <None Remove="Ui\MainWindow.glade" />
@@ -60,6 +61,7 @@
     <EmbeddedResource Include="Ui\assets\PatreonLogo.png" />
     <EmbeddedResource Include="Ui\assets\Icon.png" />
     <EmbeddedResource Include="Ui\assets\TwitterLogo.png" />
+    <EmbeddedResource Include="Ui\assets\ZCAIcon.png" />
     <EmbeddedResource Include="Ui\ControllerWindow.glade" />
     <EmbeddedResource Include="Ui\MainWindow.glade" />
     <EmbeddedResource Include="Ui\ProfileDialog.glade" />
