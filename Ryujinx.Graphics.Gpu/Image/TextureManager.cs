@@ -625,7 +625,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Texture overlap = _textureOverlaps[index];
 
-                if (TextureCompatibility.IsPerfectMatch(overlap.Info, info, flags))
+                if (overlap.IsPerfectMatch(info, flags))
                 {
                     if (!isSamplerTexture)
                     {

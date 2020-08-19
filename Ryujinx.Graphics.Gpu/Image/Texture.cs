@@ -658,6 +658,55 @@ namespace Ryujinx.Graphics.Gpu.Image
             return data;
         }
 
+
+        /// <summary>
+        /// This performs a strict comparison, used to check if this texture is equal to the one supplied.
+        /// </summary>
+        /// <param name="info">Texture information to compare against</param>
+        /// <param name="flags">Comparison flags</param>
+        /// <returns>True if the textures are strictly equal or similar, false otherwise</returns>
+        public bool IsPerfectMatch(TextureInfo info, TextureSearchFlags flags)
+        {
+            if (!TextureCompatibility.FormatMatches(Info, info, (flags & TextureSearchFlags.ForSampler) != 0, (flags & TextureSearchFlags.ForCopy) != 0))
+            {
+                return false;
+            }
+
+            if (!TextureCompatibility.LayoutMatches(Info, info))
+            {
+                return false;
+            }
+
+            if (!TextureCompatibility.SizeMatches(Info, info))
+            {
+                return false;
+            }
+
+            if ((flags & TextureSearchFlags.ForSampler) != 0 || (flags & TextureSearchFlags.Strict) != 0)
+            {
+                if (!TextureCompatibility.SamplerParamsMatches(Info, info))
+                {
+                    return false;
+                }
+            }
+
+            if ((flags & TextureSearchFlags.ForCopy) != 0)
+            {
+                bool msTargetCompatible = Info.Target == Target.Texture2DMultisample && info.Target == Target.Texture2D;
+
+                if (!msTargetCompatible && !TextureCompatibility.TargetAndSamplesCompatible(Info, info))
+                {
+                    return false;
+                }
+            }
+            else if (!TextureCompatibility.TargetAndSamplesCompatible(Info, info))
+            {
+                return false;
+            }
+
+            return Info.Address == info.Address && Info.Levels == info.Levels;
+        }
+
         /// <summary>
         /// Check if it's possible to create a view, with the given parameters, from this texture.
         /// </summary>
@@ -674,6 +723,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             return IsViewCompatible(info, size, isCopy: false, out firstLayer, out firstLevel);
         }
+
 
         /// <summary>
         /// Check if it's possible to create a view, with the given parameters, from this texture.

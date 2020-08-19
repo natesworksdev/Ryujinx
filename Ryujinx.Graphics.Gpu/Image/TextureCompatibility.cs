@@ -57,68 +57,18 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Performs a comparison of two texture informations.
-        /// This performs a strict comparison, used to check if two textures are equal.
-        /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
-        /// <param name="flags">Comparison flags</param>
-        /// <returns>True if the textures are strictly equal or similar, false otherwise</returns>
-        public static bool IsPerfectMatch(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, TextureSearchFlags flags)
-        {
-            if (!FormatMatches(firstTextureInfo, secondTextureInfo, (flags & TextureSearchFlags.ForSampler) != 0, (flags & TextureSearchFlags.ForCopy) != 0))
-            {
-                return false;
-            }
-
-            if (!LayoutMatches(firstTextureInfo, secondTextureInfo))
-            {
-                return false;
-            }
-
-            if (!SizeMatches(firstTextureInfo, secondTextureInfo, (flags & TextureSearchFlags.Strict) == 0))
-            {
-                return false;
-            }
-
-            if ((flags & TextureSearchFlags.ForSampler) != 0 || (flags & TextureSearchFlags.Strict) != 0)
-            {
-                if (!SamplerParamsMatches(firstTextureInfo, secondTextureInfo))
-                {
-                    return false;
-                }
-            }
-
-            if ((flags & TextureSearchFlags.ForCopy) != 0)
-            {
-                bool msTargetCompatible = firstTextureInfo.Target == Target.Texture2DMultisample && secondTextureInfo.Target == Target.Texture2D;
-
-                if (!msTargetCompatible && !TargetAndSamplesCompatible(firstTextureInfo, secondTextureInfo))
-                {
-                    return false;
-                }
-            }
-            else if (!TargetAndSamplesCompatible(firstTextureInfo, secondTextureInfo))
-            {
-                return false;
-            }
-
-            return firstTextureInfo.Address == secondTextureInfo.Address && firstTextureInfo.Levels == secondTextureInfo.Levels;
-        }
-
-        /// <summary>
         /// Checks if the texture format matches with the specified texture information.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <param name="forSampler">Indicates that the texture will be used for shader sampling</param>
         /// <param name="forCopy">Indicates that the texture will be used as copy source or target</param>
         /// <returns>True if the format matches, with the given comparison rules</returns>
-        public static bool FormatMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, bool forSampler, bool forCopy)
+        public static bool FormatMatches(TextureInfo lhs, TextureInfo rhs, bool forSampler, bool forCopy)
         {
             // D32F and R32F texture have the same representation internally,
             // however the R32F format is used to sample from depth textures.
-            if (firstTextureInfo.FormatInfo.Format == Format.D32Float && secondTextureInfo.FormatInfo.Format == Format.R32Float && (forSampler || forCopy))
+            if (lhs.FormatInfo.Format == Format.D32Float && rhs.FormatInfo.Format == Format.R32Float && (forSampler || forCopy))
             {
                 return true;
             }
@@ -127,24 +77,24 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 // The 2D engine does not support depth-stencil formats, so it will instead
                 // use equivalent color formats. We must also consider them as compatible.
-                if (firstTextureInfo.FormatInfo.Format == Format.S8Uint && secondTextureInfo.FormatInfo.Format == Format.R8Unorm)
+                if (lhs.FormatInfo.Format == Format.S8Uint && rhs.FormatInfo.Format == Format.R8Unorm)
                 {
                     return true;
                 }
 
-                if (firstTextureInfo.FormatInfo.Format == Format.D16Unorm && secondTextureInfo.FormatInfo.Format == Format.R16Unorm)
+                if (lhs.FormatInfo.Format == Format.D16Unorm && rhs.FormatInfo.Format == Format.R16Unorm)
                 {
                     return true;
                 }
 
-                if ((firstTextureInfo.FormatInfo.Format == Format.D24UnormS8Uint ||
-                     firstTextureInfo.FormatInfo.Format == Format.D24X8Unorm) && secondTextureInfo.FormatInfo.Format == Format.B8G8R8A8Unorm)
+                if ((lhs.FormatInfo.Format == Format.D24UnormS8Uint ||
+                     lhs.FormatInfo.Format == Format.D24X8Unorm) && rhs.FormatInfo.Format == Format.B8G8R8A8Unorm)
                 {
                     return true;
                 }
             }
 
-            return firstTextureInfo.FormatInfo.Format == secondTextureInfo.FormatInfo.Format;
+            return lhs.FormatInfo.Format == rhs.FormatInfo.Format;
         }
 
         /// <summary>
@@ -152,46 +102,46 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// The layout information is composed of the Stride for linear textures, or GOB block size
         /// for block linear textures.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the layout matches, false otherwise</returns>
-        public static bool LayoutMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
+        public static bool LayoutMatches(TextureInfo lhs, TextureInfo rhs)
         {
-            if (firstTextureInfo.IsLinear != secondTextureInfo.IsLinear)
+            if (lhs.IsLinear != rhs.IsLinear)
             {
                 return false;
             }
 
             // For linear textures, gob block sizes are ignored.
             // For block linear textures, the stride is ignored.
-            if (secondTextureInfo.IsLinear)
+            if (rhs.IsLinear)
             {
-                return firstTextureInfo.Stride == secondTextureInfo.Stride;
+                return lhs.Stride == rhs.Stride;
             }
             else
             {
-                return firstTextureInfo.GobBlocksInY == secondTextureInfo.GobBlocksInY &&
-                       firstTextureInfo.GobBlocksInZ == secondTextureInfo.GobBlocksInZ;
+                return lhs.GobBlocksInY == rhs.GobBlocksInY &&
+                       lhs.GobBlocksInZ == rhs.GobBlocksInZ;
             }
         }
 
         /// <summary>
         /// Checks if the view sizes of a two given texture informations match.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information of the texture view</param>
-        /// <param name="secondTextureInfo">Texture information of the texture view to match against</param>
+        /// <param name="lhs">Texture information of the texture view</param>
+        /// <param name="rhs">Texture information of the texture view to match against</param>
         /// <param name="level">Mipmap level of the texture view in relation to this texture</param>
         /// <param name="isCopy">True to check for copy compatibility rather than view compatibility</param>
         /// <returns>True if the sizes are compatible, false otherwise</returns>
-        public static bool ViewSizeMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, int level, bool isCopy)
+        public static bool ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level, bool isCopy)
         {
-            Size size = GetAlignedSize(firstTextureInfo, level);
+            Size size = GetAlignedSize(lhs, level);
 
-            Size otherSize = GetAlignedSize(secondTextureInfo);
+            Size otherSize = GetAlignedSize(rhs);
 
             // For copies, we can copy a subset of the 3D texture slices,
             // so the depth may be different in this case.
-            if (!isCopy && secondTextureInfo.Target == Target.Texture3D && size.Depth != otherSize.Depth)
+            if (!isCopy && rhs.Target == Target.Texture3D && size.Depth != otherSize.Depth)
             {
                 return false;
             }
@@ -203,46 +153,46 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Checks if the texture sizes of the supplied texture informations match.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the size matches, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
+        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs)
         {
-            return SizeMatches(firstTextureInfo, secondTextureInfo, alignSizes: false);
+            return SizeMatches(lhs, rhs, alignSizes: false);
         }
 
         /// <summary>
         /// Checks if the texture sizes of the supplied texture informations match the given level
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <param name="level">Mipmap level of this texture to compare with</param>
         /// <returns>True if the size matches with the level, false otherwise</returns>
-        public static bool SizeMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, int level)
+        public static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
         {
-            return Math.Max(1, firstTextureInfo.Width >> level)      == secondTextureInfo.Width &&
-                   Math.Max(1, firstTextureInfo.Height >> level)     == secondTextureInfo.Height &&
-                   Math.Max(1, firstTextureInfo.GetDepth() >> level) == secondTextureInfo.GetDepth();
+            return Math.Max(1, lhs.Width >> level)      == rhs.Width &&
+                   Math.Max(1, lhs.Height >> level)     == rhs.Height &&
+                   Math.Max(1, lhs.GetDepth() >> level) == rhs.GetDepth();
         }
 
         /// <summary>
         /// Checks if the texture sizes of the supplied texture informations match.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <param name="alignSizes">True to align the sizes according to the texture layout for comparison</param>
         /// <returns>True if the sizes matches, false otherwise</returns>
-        private static bool SizeMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, bool alignSizes)
+        private static bool SizeMatches(TextureInfo lhs, TextureInfo rhs, bool alignSizes)
         {
-            if (firstTextureInfo.GetLayers() != secondTextureInfo.GetLayers())
+            if (lhs.GetLayers() != rhs.GetLayers())
             {
                 return false;
             }
 
             if (alignSizes)
             {
-                Size size0 = GetAlignedSize(firstTextureInfo);
-                Size size1 = GetAlignedSize(secondTextureInfo);
+                Size size0 = GetAlignedSize(lhs);
+                Size size1 = GetAlignedSize(rhs);
 
                 return size0.Width  == size1.Width &&
                        size0.Height == size1.Height &&
@@ -250,9 +200,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                return firstTextureInfo.Width      == secondTextureInfo.Width &&
-                       firstTextureInfo.Height     == secondTextureInfo.Height &&
-                       firstTextureInfo.GetDepth() == secondTextureInfo.GetDepth();
+                return lhs.Width      == rhs.Width &&
+                       lhs.Height     == rhs.Height &&
+                       lhs.GetDepth() == rhs.GetDepth();
             }
         }
 
@@ -300,43 +250,43 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// The layout information is composed of the Stride for linear textures, or GOB block size
         /// for block linear textures.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information of the texture view</param>
-        /// <param name="secondTextureInfo">Texture information of the texture view to compare against</param>
+        /// <param name="lhs">Texture information of the texture view</param>
+        /// <param name="rhs">Texture information of the texture view to compare against</param>
         /// <param name="level">Start level of the texture view, in relation with the first texture</param>
         /// <returns>True if the layout is compatible, false otherwise</returns>
-        public static bool ViewLayoutCompatible(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, int level)
+        public static bool ViewLayoutCompatible(TextureInfo lhs, TextureInfo rhs, int level)
         {
-            if (firstTextureInfo.IsLinear != secondTextureInfo.IsLinear)
+            if (lhs.IsLinear != rhs.IsLinear)
             {
                 return false;
             }
 
             // For linear textures, gob block sizes are ignored.
             // For block linear textures, the stride is ignored.
-            if (secondTextureInfo.IsLinear)
+            if (rhs.IsLinear)
             {
-                int width = Math.Max(1, firstTextureInfo.Width >> level);
+                int width = Math.Max(1, lhs.Width >> level);
 
-                int stride = width * firstTextureInfo.FormatInfo.BytesPerPixel;
+                int stride = width * lhs.FormatInfo.BytesPerPixel;
 
                 stride = BitUtils.AlignUp(stride, 32);
 
-                return stride == secondTextureInfo.Stride;
+                return stride == rhs.Stride;
             }
             else
             {
-                int height = Math.Max(1, firstTextureInfo.Height >> level);
-                int depth = Math.Max(1, firstTextureInfo.GetDepth() >> level);
+                int height = Math.Max(1, lhs.Height >> level);
+                int depth = Math.Max(1, lhs.GetDepth() >> level);
 
                 (int gobBlocksInY, int gobBlocksInZ) = SizeCalculator.GetMipGobBlockSizes(
                     height,
                     depth,
-                    firstTextureInfo.FormatInfo.BlockHeight,
-                    firstTextureInfo.GobBlocksInY,
-                    firstTextureInfo.GobBlocksInZ);
+                    lhs.FormatInfo.BlockHeight,
+                    lhs.GobBlocksInY,
+                    lhs.GobBlocksInZ);
 
-                return gobBlocksInY == secondTextureInfo.GobBlocksInY &&
-                       gobBlocksInZ == secondTextureInfo.GobBlocksInZ;
+                return gobBlocksInY == rhs.GobBlocksInY &&
+                       gobBlocksInZ == rhs.GobBlocksInZ;
             }
         }
 
@@ -348,51 +298,51 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// but there are more complex rules for some formats, like compressed or depth-stencil formats.
         /// This follows the host API copy compatibility rules.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information of the texture view</param>
-        /// <param name="secondTextureInfo">Texture information of the texture view</param>
+        /// <param name="lhs">Texture information of the texture view</param>
+        /// <param name="rhs">Texture information of the texture view</param>
         /// <returns>True if the formats are compatible, false otherwise</returns>
-        public static bool ViewFormatCompatible(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
+        public static bool ViewFormatCompatible(TextureInfo lhs, TextureInfo rhs)
         {
-            return FormatCompatible(firstTextureInfo.FormatInfo, secondTextureInfo.FormatInfo);
+            return FormatCompatible(lhs.FormatInfo, rhs.FormatInfo);
         }
 
         /// <summary>
         /// Check if the target of the first texture view information is compatible with the target of the second texture view information.
         /// This follows the host API target compatibility rules.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information of the texture view</param
-        /// <param name="secondTextureInfo">Texture information of the texture view</param>
+        /// <param name="lhs">Texture information of the texture view</param
+        /// <param name="rhs">Texture information of the texture view</param>
         /// <param name="isCopy">True to check for copy rather than view compatibility</param>
         /// <returns>True if the targets are compatible, false otherwise</returns>
-        public static bool ViewTargetCompatible(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo, bool isCopy)
+        public static bool ViewTargetCompatible(TextureInfo lhs, TextureInfo rhs, bool isCopy)
         {
-            switch (firstTextureInfo.Target)
+            switch (lhs.Target)
             {
                 case Target.Texture1D:
                 case Target.Texture1DArray:
-                    return secondTextureInfo.Target == Target.Texture1D ||
-                           secondTextureInfo.Target == Target.Texture1DArray;
+                    return rhs.Target == Target.Texture1D ||
+                           rhs.Target == Target.Texture1DArray;
 
                 case Target.Texture2D:
-                    return secondTextureInfo.Target == Target.Texture2D ||
-                           secondTextureInfo.Target == Target.Texture2DArray;
+                    return rhs.Target == Target.Texture2D ||
+                           rhs.Target == Target.Texture2DArray;
 
                 case Target.Texture2DArray:
                 case Target.Cubemap:
                 case Target.CubemapArray:
-                    return secondTextureInfo.Target == Target.Texture2D ||
-                           secondTextureInfo.Target == Target.Texture2DArray ||
-                           secondTextureInfo.Target == Target.Cubemap ||
-                           secondTextureInfo.Target == Target.CubemapArray;
+                    return rhs.Target == Target.Texture2D ||
+                           rhs.Target == Target.Texture2DArray ||
+                           rhs.Target == Target.Cubemap ||
+                           rhs.Target == Target.CubemapArray;
 
                 case Target.Texture2DMultisample:
                 case Target.Texture2DMultisampleArray:
-                    return secondTextureInfo.Target == Target.Texture2DMultisample ||
-                           secondTextureInfo.Target == Target.Texture2DMultisampleArray;
+                    return rhs.Target == Target.Texture2DMultisample ||
+                           rhs.Target == Target.Texture2DMultisampleArray;
 
                 case Target.Texture3D:
-                    return secondTextureInfo.Target == Target.Texture3D ||
-                          (secondTextureInfo.Target == Target.Texture2D && isCopy);
+                    return rhs.Target == Target.Texture3D ||
+                          (rhs.Target == Target.Texture2D && isCopy);
             }
 
             return false;
@@ -401,29 +351,29 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Checks if the texture shader sampling parameters of two texture informations match.
         /// </summary>
-        /// <param name="firstTextureInfo">Texture information to compare</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the texture shader sampling parameters matches, false otherwise</returns>
-        public static bool SamplerParamsMatches(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
+        public static bool SamplerParamsMatches(TextureInfo lhs, TextureInfo rhs)
         {
-            return firstTextureInfo.DepthStencilMode == secondTextureInfo.DepthStencilMode &&
-                   firstTextureInfo.SwizzleR         == secondTextureInfo.SwizzleR &&
-                   firstTextureInfo.SwizzleG         == secondTextureInfo.SwizzleG &&
-                   firstTextureInfo.SwizzleB         == secondTextureInfo.SwizzleB &&
-                   firstTextureInfo.SwizzleA         == secondTextureInfo.SwizzleA;
+            return lhs.DepthStencilMode == rhs.DepthStencilMode &&
+                   lhs.SwizzleR         == rhs.SwizzleR &&
+                   lhs.SwizzleG         == rhs.SwizzleG &&
+                   lhs.SwizzleB         == rhs.SwizzleB &&
+                   lhs.SwizzleA         == rhs.SwizzleA;
         }
 
         /// <summary>
         /// Check if the texture target and samples count (for multisampled textures) matches.
         /// </summary>
         /// <param name="first">Texture information to compare with</param>
-        /// <param name="secondTextureInfo">Texture information to compare with</param>
+        /// <param name="rhs">Texture information to compare with</param>
         /// <returns>True if the texture target and samples count matches, false otherwise</returns>
-        public static bool TargetAndSamplesCompatible(TextureInfo firstTextureInfo, TextureInfo secondTextureInfo)
+        public static bool TargetAndSamplesCompatible(TextureInfo lhs, TextureInfo rhs)
         {
-            return firstTextureInfo.Target     == secondTextureInfo.Target &&
-                   firstTextureInfo.SamplesInX == secondTextureInfo.SamplesInX &&
-                   firstTextureInfo.SamplesInY == secondTextureInfo.SamplesInY;
+            return lhs.Target     == rhs.Target &&
+                   lhs.SamplesInX == rhs.SamplesInX &&
+                   lhs.SamplesInY == rhs.SamplesInY;
         }
 
 
