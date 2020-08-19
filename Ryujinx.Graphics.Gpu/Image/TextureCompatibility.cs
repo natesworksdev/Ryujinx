@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;
 using System;
 
@@ -23,6 +24,26 @@ namespace Ryujinx.Graphics.Gpu.Image
             Bc5,
             Bc6,
             Bc7
+        }
+
+        /// <summary>
+        /// Finds the appropriate depth format for a copy texture if the source texture has a depth format.
+        /// </summary>
+        /// <param name="dstCopyTexture">First comparand</param>
+        /// <param name="srcTexture">Second comparand</param>
+        /// <returns>Dervied RtFormat if the source texture has a depth format, otherwise the format of the destination copy texture.</returns>
+        public static RtFormat DeriveDepthFormat(CopyTexture dstCopyTexture, Texture srcTexture)
+        {
+            return srcTexture.Format switch
+            {
+                Format.S8Uint => RtFormat.S8Uint,
+                Format.D16Unorm => RtFormat.D16Unorm,
+                Format.D24X8Unorm => RtFormat.D24Unorm,
+                Format.D32Float => RtFormat.D32Float,
+                Format.D24UnormS8Uint => RtFormat.D24UnormS8Uint,
+                Format.D32FloatS8Uint => RtFormat.D32FloatS8Uint,
+                _ => dstCopyTexture.Format
+            };
         }
 
         /// <summary>
