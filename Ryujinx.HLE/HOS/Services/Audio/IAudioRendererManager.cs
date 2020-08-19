@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
     [Service("audren:u")]
     class IAudioRendererManager : IpcService
     {
-        public IAudioRendererManager(ServiceCtx context) : base(new ServerBase(context.Device.System.KernelContext, "AudioRendererServer")) { }
+        public IAudioRendererManager(ServiceCtx context) { }
 
         [Command(0)]
         // OpenAudioRenderer(nn::audio::detail::AudioRendererParameterInternal, u64, nn::applet::AppletResourceUserId, pid, handle<copy>, handle<copy>)

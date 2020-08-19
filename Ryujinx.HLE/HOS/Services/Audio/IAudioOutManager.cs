@@ -2,7 +2,6 @@ using Ryujinx.Audio;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Audio.AudioOutManager;
-using Ryujinx.HLE.HOS.Services.OsTypes;
 using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
@@ -14,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
         private const int    DefaultSampleRate    = 48000;
         private const int    DefaultChannelsCount = 2;
 
-        public IAudioOutManager(ServiceCtx context) : base(new ServerBase(context.Device.System.KernelContext, "AudioOutServer")) { }
+        public IAudioOutManager(ServiceCtx context) { }
 
         [Command(0)]
         // ListAudioOuts() -> (u32 count, buffer<bytes, 6>)

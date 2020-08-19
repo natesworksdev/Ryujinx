@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Services
         private int _selfId;
         private bool _isDomain;
 
-        public IpcService(ServerBase server = null)
+        public IpcService()
         {
             Commands = Assembly.GetExecutingAssembly().GetTypes()
                 .Where(type => type == GetType())
@@ -29,8 +29,6 @@ namespace Ryujinx.HLE.HOS.Services
                 .SelectMany(methodInfo => methodInfo.GetCustomAttributes(typeof(CommandAttribute))
                 .Select(command => (((CommandAttribute)command).Id, methodInfo)))
                 .ToDictionary(command => command.Id, command => command.methodInfo);
-
-            Server = server;
 
             _parent = this;
             _domainObjects = new IdDictionary();

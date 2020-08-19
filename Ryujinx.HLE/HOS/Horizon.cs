@@ -10,6 +10,7 @@ using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.Services.Arp;
 using Ryujinx.HLE.HOS.Services.Bluetooth.BluetoothDriver;
@@ -195,6 +196,8 @@ namespace Ryujinx.HLE.HOS
             // only then doing connections to SM is safe.
             sm.Server.InitDone.WaitOne();
             sm.Server.InitDone.Dispose();
+
+            ServiceDiscovery.DiscoverAll(Device);
         }
 
         public void LoadKip(string kipPath)
