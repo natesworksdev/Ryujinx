@@ -658,7 +658,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             return data;
         }
 
-
         /// <summary>
         /// This performs a strict comparison, used to check if this texture is equal to the one supplied.
         /// </summary>
@@ -723,7 +722,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             return IsViewCompatible(info, size, isCopy: false, out firstLayer, out firstLevel);
         }
-
 
         /// <summary>
         /// Check if it's possible to create a view, with the given parameters, from this texture.
