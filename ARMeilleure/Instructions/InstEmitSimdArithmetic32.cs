@@ -1086,6 +1086,53 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vrintx_V(ArmEmitterContext context)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
+            if (op.F)
+            {
+                if (op.Q && (op.Vd == 1 || op.Vm == 1))
+                {
+                    return;
+                }
+                int sizeF = op.Size & 1;
+                if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
+                {
+                    EmitVectorRoundOpF32(context, FPRoundingMode.ToNearest);
+                }
+                else
+                {
+                    EmitVectorUnaryOpF32(context, (op1) =>
+                    {
+                        return EmitUnaryMathCall(context, nameof(Math.Round), op1);
+                    });
+                }
+            }
+            else
+            {
+                throw new NotImplementedException("Integer Vrintx not currently implemented.");
+            }
+        }
+
+        public static void Vrintx_S(ArmEmitterContext context)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
+            int sizeF = op.Size & 1;
+            if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
+            {
+                EmitScalarRoundOpF32(context, FPRoundingMode.ToNearest);
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    return EmitUnaryMathCall(context, nameof(Math.Round), op1);
+                });
+            }
+        }
+
         public static void Vrsqrte(ArmEmitterContext context)
         {
             OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
