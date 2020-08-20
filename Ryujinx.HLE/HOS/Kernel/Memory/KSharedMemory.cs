@@ -77,7 +77,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
             KMemoryPermission expectedPermission = process.Pid == _ownerPid ? _ownerPermission : _userPermission;
 
-            if (permission != expectedPermission)
+            if (expectedPermission != KMemoryPermission.DontCare && permission != expectedPermission)
             {
                 return KernelResult.InvalidPermission;
             }

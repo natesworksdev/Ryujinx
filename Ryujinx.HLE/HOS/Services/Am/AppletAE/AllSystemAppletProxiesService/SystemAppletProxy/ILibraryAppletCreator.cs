@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator;
 
@@ -35,23 +36,19 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // CreateTransferMemoryStorage(b8, u64, handle<copy>) -> object<nn::am::service::IStorage>
         public ResultCode CreateTransferMemoryStorage(ServiceCtx context)
         {
-            bool unknown = context.RequestData.ReadBoolean();
-            long size    = context.RequestData.ReadInt64();
-            int  handle  = context.Request.HandleDesc.ToCopy[0];
+            bool  unknown = context.RequestData.ReadBoolean();
+            ulong size    = context.RequestData.ReadUInt64();
+            int   handle  = context.Request.HandleDesc.ToCopy[0];
 
-            KTransferMemory transferMem = context.Process.HandleTable.GetObject<KTransferMemory>(handle);
+            Map.LocateMappableSpace(out ulong tmemAddress, size);
 
-            if (transferMem == null)
-            {
-                Logger.Warning?.Print(LogClass.ServiceAm, $"Invalid TransferMemory Handle: {handle:X}");
+            KernelStatic.Syscall.MapTransferMemory(handle, tmemAddress, size, KMemoryPermission.Read);
 
-                return ResultCode.Success; // TODO: Find correct error code
-            }
+            var data = new byte[(int)size];
 
-            var data = new byte[transferMem.Size];
-            transferMem.Creator.CpuMemory.Read(transferMem.Address, data);
-
-            context.Device.System.KernelContext.Syscall.CloseHandle(handle);
+            KernelStatic.AddressSpace.Read(tmemAddress, data);
+            KernelStatic.Syscall.UnmapTransferMemory(handle, tmemAddress, size);
+            KernelStatic.Syscall.CloseHandle(handle);
 
             MakeObject(context, new IStorage(data));
 

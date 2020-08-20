@@ -7,6 +7,7 @@ using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -214,28 +215,27 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
         public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
         {
-            int   width                 = context.RequestData.ReadInt32();
-            int   height                = context.RequestData.ReadInt32();
-            ulong transferMemorySize    = context.RequestData.ReadUInt64();
-            int   transferMemoryHandle  = context.Request.HandleDesc.ToCopy[0];
-            ulong transferMemoryAddress = context.Process.HandleTable.GetObject<KTransferMemory>(transferMemoryHandle).Address;
+            int   width                = context.RequestData.ReadInt32();
+            int   height               = context.RequestData.ReadInt32();
+            ulong transferMemorySize   = context.RequestData.ReadUInt64();
+            int   transferMemoryHandle = context.Request.HandleDesc.ToCopy[0];
 
             ResultCode resultCode = ResultCode.InvalidParameters;
 
             if (((transferMemorySize & 0x3FFFF) == 0) && width <= 1280 && height <= 720)
             {
-                resultCode = InitializeApplicationCopyrightFrameBufferImpl(transferMemoryAddress, transferMemorySize, width, height);
+                resultCode = InitializeApplicationCopyrightFrameBufferImpl(transferMemorySize, width, height);
             }
 
             if (transferMemoryHandle != 0)
             {
-                context.Device.System.KernelContext.Syscall.CloseHandle(transferMemoryHandle);
+                KernelStatic.Syscall.CloseHandle(transferMemoryHandle);
             }
 
             return resultCode;
         }
 
-        private ResultCode InitializeApplicationCopyrightFrameBufferImpl(ulong transferMemoryAddress, ulong transferMemorySize, int width, int height)
+        private ResultCode InitializeApplicationCopyrightFrameBufferImpl(ulong transferMemorySize, int width, int height)
         {
             ResultCode resultCode = ResultCode.ObjectInvalid;
 
@@ -248,7 +248,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             {
                 // TODO: Initialize buffer and object.
 
-                Logger.Stub?.PrintStub(LogClass.ServiceAm, new { transferMemoryAddress, transferMemorySize, width, height });
+                Logger.Stub?.PrintStub(LogClass.ServiceAm, new { width, height });
 
                 resultCode = ResultCode.Success;
             }

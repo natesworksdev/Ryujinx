@@ -930,7 +930,10 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             KernelResult result = QueryMemory(out MemoryInfo info, out pageInfo, address);
 
-            KProcess process = _context.Scheduler.GetCurrentProcess();
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
 
             return KernelTransfer.KernelToUser(_context, infoPtr, info)
                 ? KernelResult.Success
@@ -1180,7 +1183,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
         {
             handle = 0;
 
-            if (size == 0 || size >= 0x100000000UL || !PageAligned(size))
+            if (!PageAligned(size) || size == 0 || size >= 0x100000000UL)
             {
                 return KernelResult.InvalidSize;
             }
@@ -1212,6 +1215,81 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             }
 
             return currentProcess.HandleTable.GenerateHandle(sharedMemory, out handle);
+        }
+
+        public KernelResult MapTransferMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
+        {
+            if (!PageAligned(address))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (size + address <= address)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            if (permission != KMemoryPermission.None &&
+                permission != KMemoryPermission.Read &&
+                permission != KMemoryPermission.ReadAndWrite)
+            {
+                return KernelResult.InvalidState;
+            }
+
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+            KTransferMemory transferMemory = currentProcess.HandleTable.GetObject<KTransferMemory>(handle);
+
+            if (transferMemory == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            if (!currentProcess.MemoryManager.CanContain(address, size, MemoryState.TransferMemoryIsolated))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            return transferMemory.Map(address, size, permission);
+        }
+
+        public KernelResult UnmapTransferMemory(int handle, ulong address, ulong size)
+        {
+            if (!PageAligned(address))
+            {
+                return KernelResult.InvalidAddress;
+            }
+
+            if (!PageAligned(size) || size == 0)
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (size + address <= address)
+            {
+                return KernelResult.InvalidMemState;
+            }
+
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+            KTransferMemory transferMemory = currentProcess.HandleTable.GetObject<KTransferMemory>(handle);
+
+            if (transferMemory == null)
+            {
+                return KernelResult.InvalidHandle;
+            }
+
+            if (!currentProcess.MemoryManager.CanContain(address, size, MemoryState.TransferMemoryIsolated))
+            {
+                return KernelResult.InvalidMemRange;
+            }
+
+            return transferMemory.Unmap(address, size);
         }
 
         public KernelResult MapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
