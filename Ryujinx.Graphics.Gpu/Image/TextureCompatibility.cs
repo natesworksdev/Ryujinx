@@ -395,7 +395,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                    lhs.SamplesInY == rhs.SamplesInY;
         }
 
-
         /// <summary>
         /// Gets the texture format class, for compressed textures, or Unclassified otherwise.
         /// </summary>
