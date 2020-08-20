@@ -82,13 +82,12 @@ namespace Ryujinx.HLE
 
             FileSystem = fileSystem;
 
+            Hid = new Hid(this);
+
             System = new Horizon(this, contentManager);
             System.InitializeServices();
 
             Statistics = new PerformanceStatistics();
-
-            Hid = new Hid(this, System.HidBaseAddress);
-            Hid.InitDevices();
 
             Application = new ApplicationLoader(this, fileSystem, contentManager);
         }

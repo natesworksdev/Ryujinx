@@ -1,7 +1,4 @@
-using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {
@@ -9,8 +6,6 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
     [Service("pl:s")] // 9.0.0+
     class ISharedFontManager : IpcService
     {
-        private int _fontSharedMemHandle;
-
         public ISharedFontManager(ServiceCtx context) { }
 
         [Command(0)]
@@ -43,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         {
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
 
-            context.ResponseData.Write(context.Device.System.Font.GetFontSize(fontType));
+            context.ResponseData.Write(context.Device.System.ServiceServer.SharedFontManager.GetFontSize(fontType));
 
             return ResultCode.Success;
         }
@@ -54,7 +49,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         {
             SharedFontType fontType = (SharedFontType)context.RequestData.ReadInt32();
 
-            context.ResponseData.Write(context.Device.System.Font.GetSharedMemoryAddressOffset(fontType));
+            context.ResponseData.Write(context.Device.System.ServiceServer.SharedFontManager.GetSharedMemoryAddressOffset(fontType));
 
             return ResultCode.Success;
         }
@@ -63,17 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         // GetSharedMemoryNativeHandle() -> handle<copy>
         public ResultCode GetSharedMemoryNativeHandle(ServiceCtx context)
         {
-            context.Device.System.Font.EnsureInitialized(context.Device.System.ContentManager);
-
-            if (_fontSharedMemHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(context.Device.System.FontSharedMem, out _fontSharedMemHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_fontSharedMemHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(context.Device.System.ServiceServer.SharedFontManager.GetSharedMemoryHandle());
 
             return ResultCode.Success;
         }
@@ -122,8 +107,10 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
             }
 
             context.Memory.Write((ulong)(typesPosition + offset), (int)fontType);
-            context.Memory.Write((ulong)(offsetsPosition + offset), context.Device.System.Font.GetSharedMemoryAddressOffset(fontType));
-            context.Memory.Write((ulong)(fontSizeBufferPosition + offset), context.Device.System.Font.GetFontSize(fontType));
+            context.Memory.Write((ulong)(offsetsPosition + offset),
+                context.Device.System.ServiceServer.SharedFontManager.GetSharedMemoryAddressOffset(fontType));
+            context.Memory.Write((ulong)(fontSizeBufferPosition + offset),
+                context.Device.System.ServiceServer.SharedFontManager.GetFontSize(fontType));
 
             return true;
         }

@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public void Update(int mouseX, int mouseY, int buttons = 0, int scrollX = 0, int scrollY = 0)
         {
-            ref ShMemMouse mouse = ref _device.Hid.SharedMemory.Mouse;
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref ShMemMouse mouse = ref hidMemory.GetRef<HidSharedMemory>(0).Mouse;
 
             int currentIndex = UpdateEntriesHeader(ref mouse.Header, out int previousIndex);
 

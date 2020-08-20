@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            MakeObject(context, new IAppletResource(context.Device.System.HidSharedMem));
+            MakeObject(context, new IAppletResource());
 
             return ResultCode.Success;
         }

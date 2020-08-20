@@ -2,10 +2,11 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
-using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Kernel.Memory;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -13,13 +14,11 @@ using System.IO;
 
 using static Ryujinx.HLE.Utilities.FontUtils;
 
-namespace Ryujinx.HLE.HOS.Font
+namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
 {
-    class SharedFontManager
+    class SharedFontManager : ServerBase
     {
-        private Switch _device;
-
-        private ulong _physicalAddress;
+        private readonly Switch _device;
 
         private struct FontInfo
         {
@@ -35,24 +34,32 @@ namespace Ryujinx.HLE.HOS.Font
 
         private Dictionary<SharedFontType, FontInfo> _fontData;
 
-        public SharedFontManager(Switch device, ulong physicalAddress)
+        private int _sharedMemoryHandle;
+        private ulong _sharedMemoryBaseAddress;
+        public const int SharedMemorySize = 0x1100000;
+
+        public SharedFontManager(Switch device) : base(device.System.KernelContext, "SdbServer")
         {
-            _physicalAddress = physicalAddress;
-            _device          = device;
+            _device = device;
         }
 
-        public void Initialize(ContentManager contentManager)
-        {
-            _fontData?.Clear();
-            _fontData = null;
-
-        }
-
-        public void EnsureInitialized(ContentManager contentManager)
+        private void EnsureInitialized(ContentManager contentManager)
         {
             if (_fontData == null)
             {
-                _device.Memory.ZeroFill(_physicalAddress, Horizon.FontSize);
+                Map.LocateMappableSpace(out _sharedMemoryBaseAddress, SharedMemorySize);
+
+                KernelStatic.Syscall.CreateSharedMemory(
+                    out _sharedMemoryHandle,
+                    SharedMemorySize,
+                    KMemoryPermission.ReadAndWrite,
+                    KMemoryPermission.Read);
+
+                KernelStatic.Syscall.MapSharedMemory(
+                    _sharedMemoryHandle,
+                    _sharedMemoryBaseAddress,
+                    SharedMemorySize,
+                    KMemoryPermission.ReadAndWrite);
 
                 uint fontOffset = 0;
 
@@ -70,8 +77,8 @@ namespace Ryujinx.HLE.HOS.Font
 
                             using (IStorage ncaFileStream = new LocalStorage(fontPath, FileAccess.Read, FileMode.Open))
                             {
-                                Nca         nca          = new Nca(_device.System.KeySet, ncaFileStream);
-                                IFileSystem romfs        = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
+                                Nca         nca   = new Nca(_device.System.KeySet, ncaFileStream);
+                                IFileSystem romfs = nca.OpenFileSystem(NcaSectionType.Data, _device.System.FsIntegrityCheckLevel);
 
                                 romfs.OpenFile(out IFile fontFile, ("/" + fontFilename).ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
@@ -80,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Font
 
                             FontInfo info = new FontInfo((int)fontOffset, data.Length);
 
-                            WriteMagicAndSize(_physicalAddress + fontOffset, data.Length);
+                            WriteMagicAndSize(_sharedMemoryBaseAddress + fontOffset, data.Length);
 
                             fontOffset += 8;
 
@@ -88,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Font
 
                             for (; fontOffset - start < data.Length; fontOffset++)
                             {
-                                _device.Memory.Write(_physicalAddress + fontOffset, data[fontOffset - start]);
+                                KernelStatic.AddressSpace.Write(_sharedMemoryBaseAddress + fontOffset, data[fontOffset - start]);
                             }
 
                             return info;
@@ -119,11 +126,11 @@ namespace Ryujinx.HLE.HOS.Font
                     { SharedFontType.NintendoEx,          CreateFont("FontNintendoExtended")          }
                 };
 
-                if (fontOffset > Horizon.FontSize)
+                if (fontOffset > SharedMemorySize)
                 {
                     throw new InvalidSystemResourceException(
                         $"The sum of all fonts size exceed the shared memory size. " +
-                        $"Please make sure that the fonts don't exceed {Horizon.FontSize} bytes in total. " +
+                        $"Please make sure that the fonts don't exceed {SharedMemorySize} bytes in total. " +
                         $"(actual size: {fontOffset} bytes).");
                 }
             }
@@ -136,8 +143,8 @@ namespace Ryujinx.HLE.HOS.Font
 
             int encryptedSize = BinaryPrimitives.ReverseEndianness(size ^ key);
 
-            _device.Memory.Write(address + 0, decMagic);
-            _device.Memory.Write(address + 4, encryptedSize);
+            KernelStatic.AddressSpace.Write(address + 0, decMagic);
+            KernelStatic.AddressSpace.Write(address + 4, encryptedSize);
         }
 
         public int GetFontSize(SharedFontType fontType)
@@ -152,6 +159,13 @@ namespace Ryujinx.HLE.HOS.Font
             EnsureInitialized(_device.System.ContentManager);
 
             return _fontData[fontType].Offset + 8;
+        }
+
+        public int GetSharedMemoryHandle()
+        {
+            EnsureInitialized(_device.System.ContentManager);
+
+            return _sharedMemoryHandle;
         }
     }
 }

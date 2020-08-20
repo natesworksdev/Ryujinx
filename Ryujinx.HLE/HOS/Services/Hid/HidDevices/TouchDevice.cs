@@ -8,7 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public void Update(params TouchPoint[] points)
         {
-            ref ShMemTouchScreen touchscreen = ref _device.Hid.SharedMemory.TouchScreen;
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref ShMemTouchScreen touchscreen = ref hidMemory.GetRef<HidSharedMemory>(0).TouchScreen;
 
             int currentIndex = UpdateEntriesHeader(ref touchscreen.Header, out int previousIndex);
 

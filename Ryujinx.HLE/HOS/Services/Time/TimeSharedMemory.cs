@@ -2,6 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
@@ -12,30 +13,35 @@ namespace Ryujinx.HLE.HOS.Services.Time
 {
     class TimeSharedMemory
     {
-        private Switch        _device;
-        private KSharedMemory _sharedMemory;
-        private ulong         _timeSharedMemoryAddress;
-        private int           _timeSharedMemorySize;
+        private int   _sharedMemoryHandle;
+        private ulong _sharedMemoryBaseAddress;
 
+        private const uint SharedMemorySize                 = 0x1000;
         private const uint SteadyClockContextOffset         = 0x00;
         private const uint LocalSystemClockContextOffset    = 0x38;
         private const uint NetworkSystemClockContextOffset  = 0x80;
         private const uint AutomaticCorrectionEnabledOffset = 0xC8;
 
-        public void Initialize(Switch device, KSharedMemory sharedMemory, ulong timeSharedMemoryAddress, int timeSharedMemorySize)
+        public void Initialize()
         {
-            _device                  = device;
-            _sharedMemory            = sharedMemory;
-            _timeSharedMemoryAddress = timeSharedMemoryAddress;
-            _timeSharedMemorySize    = timeSharedMemorySize;
+            Map.LocateMappableSpace(out _sharedMemoryBaseAddress, SharedMemorySize);
 
-            // Clean the shared memory
-            _device.Memory.ZeroFill(_timeSharedMemoryAddress, (ulong)_timeSharedMemorySize);
+            KernelStatic.Syscall.CreateSharedMemory(
+                out _sharedMemoryHandle,
+                SharedMemorySize,
+                KMemoryPermission.ReadAndWrite,
+                KMemoryPermission.Read);
+
+            KernelStatic.Syscall.MapSharedMemory(
+                _sharedMemoryHandle,
+                _sharedMemoryBaseAddress,
+                SharedMemorySize,
+                KMemoryPermission.ReadAndWrite);
         }
 
-        public KSharedMemory GetSharedMemory()
+        public int GetSharedMemoryHandle()
         {
-            return _sharedMemory;
+            return _sharedMemoryHandle;
         }
 
         public void SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType currentTimePoint)
@@ -89,7 +95,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         private T ReadObjectFromSharedMemory<T>(ulong offset, ulong padding) where T : unmanaged
         {
-            ulong indexOffset = _timeSharedMemoryAddress + offset;
+            ulong indexOffset = _sharedMemoryBaseAddress + offset;
 
             T    result;
             uint index;
@@ -97,31 +103,32 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
             do
             {
-                index = _device.Memory.Read<uint>(indexOffset);
+                index = KernelStatic.AddressSpace.Read<uint>(indexOffset);
 
                 ulong objectOffset = indexOffset + 4 + padding + (ulong)((index & 1) * Unsafe.SizeOf<T>());
 
-                result = _device.Memory.Read<T>(objectOffset);
+                result = KernelStatic.AddressSpace.Read<T>(objectOffset);
 
                 Thread.MemoryBarrier();
 
-                possiblyNewIndex = _device.Memory.Read<uint>(indexOffset);
-            } while (index != possiblyNewIndex);
+                possiblyNewIndex = KernelStatic.AddressSpace.Read<uint>(indexOffset);
+            }
+            while (index != possiblyNewIndex);
 
             return result;
         }
 
         private void WriteObjectToSharedMemory<T>(ulong offset, ulong padding, T value) where T : unmanaged
         {
-            ulong indexOffset  = _timeSharedMemoryAddress + offset;
-            uint  newIndex     = _device.Memory.Read<uint>(indexOffset) + 1;
+            ulong indexOffset  = _sharedMemoryBaseAddress + offset;
+            uint  newIndex     = KernelStatic.AddressSpace.Read<uint>(indexOffset) + 1;
             ulong objectOffset = indexOffset + 4 + padding + (ulong)((newIndex & 1) * Unsafe.SizeOf<T>());
 
-            _device.Memory.Write(objectOffset, value);
+            KernelStatic.AddressSpace.Write(objectOffset, value);
 
             Thread.MemoryBarrier();
 
-            _device.Memory.Write(indexOffset, newIndex);
+            KernelStatic.AddressSpace.Write(indexOffset, newIndex);
         }
     }
 }

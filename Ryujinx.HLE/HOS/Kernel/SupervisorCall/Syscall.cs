@@ -1176,6 +1176,44 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
+        public KernelResult CreateSharedMemory(out int handle, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
+        {
+            handle = 0;
+
+            if (size == 0 || size >= 0x100000000UL || !PageAligned(size))
+            {
+                return KernelResult.InvalidSize;
+            }
+
+            if (ownerPermission != KMemoryPermission.Read &&
+                ownerPermission != KMemoryPermission.ReadAndWrite)
+            {
+                return KernelResult.InvalidPermission;
+            }
+
+            if (userPermission != KMemoryPermission.DontCare &&
+                userPermission != KMemoryPermission.Read &&
+                userPermission != KMemoryPermission.ReadAndWrite)
+            {
+                return KernelResult.InvalidPermission;
+            }
+
+            KSharedMemory sharedMemory = new KSharedMemory(_context);
+
+            using var _ = new OnScopeExit(sharedMemory.DecrementReferenceCount);
+
+            KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
+
+            KernelResult result = sharedMemory.Initialize(currentProcess, size, ownerPermission, userPermission);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            return currentProcess.HandleTable.GenerateHandle(sharedMemory, out handle);
+        }
+
         public KernelResult MapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
         {
             return MapOrUnmapProcessMemory(dst, processHandle, src, size, map: true);

@@ -1,10 +1,8 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.Utilities;
-using System;
 using System.IO;
 using System.Text;
 
@@ -13,13 +11,11 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:m")] // 9.0.0+
     class ITimeServiceManager : IpcService
     {
-        private TimeManager _timeManager;
-        private int         _automaticCorrectionEvent;
+        private readonly TimeManager _timeManager;
 
         public ITimeServiceManager(ServiceCtx context)
         {
-            _timeManager              = TimeManager.Instance;
-            _automaticCorrectionEvent = 0;
+            _timeManager = context.Device.System.ServiceServer.TimeManager;
         }
 
         [Command(0)]
@@ -172,15 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetStandardUserSystemClockAutomaticCorrectionEvent() -> handle<copy>
         public ResultCode GetStandardUserSystemClockAutomaticCorrectionEvent(ServiceCtx context)
         {
-            if (_automaticCorrectionEvent == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_timeManager.StandardUserSystemClock.GetAutomaticCorrectionReadableEvent(), out _automaticCorrectionEvent) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_automaticCorrectionEvent);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_timeManager.StandardUserSystemClock.GetAutomaticCorrectionReadableEventHandle());
 
             return ResultCode.Success;
         }

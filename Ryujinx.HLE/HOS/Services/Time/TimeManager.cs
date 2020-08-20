@@ -1,30 +1,19 @@
-﻿using System.IO;
+﻿using Ryujinx.Configuration;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
+using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.Utilities;
+using System;
+using System.IO;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {
-    class TimeManager
+    class TimeManager : ServerBase
     {
-        private static TimeManager _instance;
-
-        public static TimeManager Instance
-        {
-            get
-            {
-                if (_instance == null)
-                {
-                    _instance = new TimeManager();
-                }
-
-                return _instance;
-            }
-        }
-
         public StandardSteadyClockCore                  StandardSteadyClock         { get; }
         public TickBasedSteadyClockCore                 TickBasedSteadyClock        { get; }
         public StandardLocalSystemClockCore             StandardLocalSystemClock    { get; }
@@ -39,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         // TODO: 9.0.0+ power states and alarms
 
-        public TimeManager()
+        public TimeManager(Switch device) : base(device.System.KernelContext, "TimeServer")
         {
             StandardSteadyClock         = new StandardSteadyClockCore();
             TickBasedSteadyClock        = new TickBasedSteadyClockCore();
@@ -54,19 +43,59 @@ namespace Ryujinx.HLE.HOS.Services.Time
             EphemeralClockContextWriter = new EphemeralNetworkSystemClockContextWriter();
         }
 
-        public void Initialize(Switch device, Horizon system, KSharedMemory sharedMemory, ulong timeSharedMemoryAddress, int timeSharedMemorySize)
+        protected override void Initialize()
         {
-            SharedMemory.Initialize(device, sharedMemory, timeSharedMemoryAddress, timeSharedMemorySize);
+            SharedMemory.Initialize();
+            StandardUserSystemClock.CreateAutomaticCorrectionEvent();
 
-            // Here we use system on purpose as device. System isn't initialized at this point.
-            StandardUserSystemClock.CreateAutomaticCorrectionEvent(system);
+            // TODO: use set:sys (and get external clock source id from settings)
+            // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
+            UInt128 clockSourceId = new UInt128(Guid.NewGuid().ToByteArray());
+            IRtcManager.GetExternalRtcValue(out ulong rtcValue);
+
+            // We assume the rtc is system time.
+            TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
+
+            // Configure and setup internal offset
+            TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
+
+            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
+
+            if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
+            {
+                internalOffset = internalOffset.AddSeconds(3600L);
+            }
+            else if (!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
+            {
+                internalOffset = internalOffset.AddSeconds(-3600L);
+            }
+
+            internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
+
+            // First init the standard steady clock
+            SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
+            SetupStandardLocalSystemClock(null, new SystemClockContext(), systemTime.ToSeconds());
+
+            if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
+            {
+                TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
+
+                // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
+                StandardLocalSystemClock.GetClockContext(null, out SystemClockContext localSytemClockContext);
+                SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
+            }
+
+            SetupStandardUserSystemClock(null, false, SteadyClockTimePoint.GetRandom());
+
+            // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
+
+            SetupEphemeralNetworkSystemClock();
         }
 
         public void InitializeTimeZone(Switch device)
         {
             TimeZone.Initialize(this, device);
         }
-
 
         public void SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
         {

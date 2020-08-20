@@ -55,7 +55,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         public ProcessCreationFlags Flags { get; private set; }
 
-        private MemoryRegion _memRegion;
+        public MemoryRegion MemoryRegion { get; private set; }
+
+        public bool AslrEnabled { get; private set; }
 
         public KProcessCapabilities Capabilities { get; private set; }
 
@@ -111,11 +113,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             ReadOnlySpan<int> capabilities,
             KPageList pageList,
             KResourceLimit resourceLimit,
-            MemoryRegion memRegion,
+            MemoryRegion memoryRegion,
             IProcessContextFactory contextFactory)
         {
             ResourceLimit = resourceLimit;
-            _memRegion = memRegion;
+            MemoryRegion = memoryRegion;
             _contextFactory = contextFactory ?? new ProcessContextFactory();
 
             AddressSpaceType addrSpaceType = (AddressSpaceType)((int)(creationInfo.Flags & ProcessCreationFlags.AddressSpaceMask) >> (int)ProcessCreationFlags.AddressSpaceShift);
@@ -123,6 +125,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             InitializeMemoryManager(creationInfo.Flags);
 
             bool aslrEnabled = creationInfo.Flags.HasFlag(ProcessCreationFlags.EnableAslr);
+
+            AslrEnabled = aslrEnabled;
 
             ulong codeAddress = creationInfo.CodeAddress;
 
@@ -136,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 addrSpaceType,
                 aslrEnabled,
                 !aslrEnabled,
-                memRegion,
+                memoryRegion,
                 codeAddress,
                 codeSize,
                 memoryBlockAllocator);
@@ -185,15 +189,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             ProcessCreationInfo creationInfo,
             ReadOnlySpan<int> capabilities,
             KResourceLimit resourceLimit,
-            MemoryRegion memRegion,
+            MemoryRegion memoryRegion,
             IProcessContextFactory contextFactory,
             ThreadStart customThreadStart = null)
         {
             ResourceLimit = resourceLimit;
-            _memRegion = memRegion;
+            MemoryRegion = memoryRegion;
             _contextFactory = contextFactory ?? new ProcessContextFactory();
 
-            ulong personalMmHeapSize = GetPersonalMmHeapSize((ulong)creationInfo.SystemResourcePagesCount, memRegion);
+            ulong personalMmHeapSize = GetPersonalMmHeapSize((ulong)creationInfo.SystemResourcePagesCount, memoryRegion);
 
             ulong codePagesCount = (ulong)creationInfo.CodePagesCount;
 
@@ -236,6 +240,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             bool aslrEnabled = creationInfo.Flags.HasFlag(ProcessCreationFlags.EnableAslr);
 
+            AslrEnabled = aslrEnabled;
+
             ulong codeAddress = creationInfo.CodeAddress;
 
             ulong codeSize = codePagesCount * KMemoryManager.PageSize;
@@ -244,7 +250,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 addrSpaceType,
                 aslrEnabled,
                 !aslrEnabled,
-                memRegion,
+                memoryRegion,
                 codeAddress,
                 codeSize,
                 memoryBlockAllocator);
@@ -815,7 +821,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private ulong GetPersonalMmHeapSize()
         {
-            return GetPersonalMmHeapSize(PersonalMmHeapPagesCount, _memRegion);
+            return GetPersonalMmHeapSize(PersonalMmHeapPagesCount, MemoryRegion);
         }
 
         private static ulong GetPersonalMmHeapSize(ulong personalMmHeapPagesCount, MemoryRegion memRegion)

@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetTimeZoneService() -> object<nn::timesrv::detail::service::ITimeZoneService>
         public ResultCode GetTimeZoneService(ServiceCtx context)
         {
-            MakeObject(context, new ITimeZoneServiceForGlue(TimeManager.Instance.TimeZone, (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
+            MakeObject(context, new ITimeZoneServiceForGlue(context.Device.System.ServiceServer.TimeManager.TimeZone, (_permissions & TimePermissions.TimeZoneWritableMask) != 0));
 
             return ResultCode.Success;
         }

@@ -1,4 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
@@ -9,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
         private StandardNetworkSystemClockCore _networkSystemClockCore;
         private bool                           _autoCorrectionEnabled;
         private SteadyClockTimePoint           _autoCorrectionTime;
-        private KEvent                         _autoCorrectionEvent;
+        private SystemEventType                _autoCorrectionEvent;
 
         public StandardUserSystemClockCore(StandardLocalSystemClockCore localSystemClockCore, StandardNetworkSystemClockCore networkSystemClockCore) : base(localSystemClockCore.GetSteadyClockCore())
         {
@@ -17,7 +18,6 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _networkSystemClockCore = networkSystemClockCore;
             _autoCorrectionEnabled  = false;
             _autoCorrectionTime     = SteadyClockTimePoint.GetRandom();
-            _autoCorrectionEvent    = null;
         }
 
         protected override ResultCode Flush(SystemClockContext context)
@@ -62,9 +62,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return result;
         }
 
-        internal void CreateAutomaticCorrectionEvent(Horizon system)
+        internal void CreateAutomaticCorrectionEvent()
         {
-            _autoCorrectionEvent = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _autoCorrectionEvent, EventClearMode.AutoClear, true);
         }
 
         public ResultCode SetAutomaticCorrectionEnabled(KThread thread, bool autoCorrectionEnabled)
@@ -84,9 +84,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return _autoCorrectionEnabled;
         }
 
-        public KReadableEvent GetAutomaticCorrectionReadableEvent()
+        public int GetAutomaticCorrectionReadableEventHandle()
         {
-            return _autoCorrectionEvent.ReadableEvent;
+            return Os.GetReadableHandleOfSystemEvent(ref _autoCorrectionEvent);
         }
 
         public void SetAutomaticCorrectionUpdatedTime(SteadyClockTimePoint steadyClockTimePoint)
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
 
         public void SignalAutomaticCorrectionEvent()
         {
-            _autoCorrectionEvent.WritableEvent.Signal();
+            Os.SignalSystemEvent(ref _autoCorrectionEvent);
         }
     }
 }

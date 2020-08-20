@@ -16,12 +16,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
     [Service("time:su", TimePermissions.SystemUpdate)]
     class IStaticServiceForPsc : IpcService
     {
-        private TimeManager     _timeManager;
-        private TimePermissions _permissions;
+        private readonly TimeManager     _timeManager;
+        private readonly TimePermissions _permissions;
 
-        private int _timeSharedMemoryNativeHandle = 0;
-
-        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(TimeManager.Instance, permissions) { }
+        public IStaticServiceForPsc(ServiceCtx context, TimePermissions permissions) : this(context.Device.System.ServiceServer.TimeManager, permissions) { }
 
         public IStaticServiceForPsc(TimeManager manager, TimePermissions permissions)
         {
@@ -98,15 +96,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
         // GetSharedMemoryNativeHandle() -> handle<copy>
         public ResultCode GetSharedMemoryNativeHandle(ServiceCtx context)
         {
-            if (_timeSharedMemoryNativeHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_timeManager.SharedMemory.GetSharedMemory(), out _timeSharedMemoryNativeHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_timeSharedMemoryNativeHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_timeManager.SharedMemory.GetSharedMemoryHandle());
 
             return ResultCode.Success;
         }

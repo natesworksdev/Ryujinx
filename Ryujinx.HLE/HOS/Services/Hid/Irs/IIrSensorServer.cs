@@ -1,16 +1,12 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
-using System;
 
 namespace Ryujinx.HLE.HOS.Services.Hid.Irs
 {
     [Service("irs")]
     class IIrSensorServer : IpcService
     {
-        private int _irsensorSharedMemoryHandle = 0;
-
         public IIrSensorServer(ServiceCtx context) { }
 
         [Command(302)]
@@ -39,15 +35,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid.Irs
         // GetIrsensorSharedMemoryHandle(nn::applet::AppletResourceUserId, pid) -> handle<copy>
         public ResultCode GetIrsensorSharedMemoryHandle(ServiceCtx context)
         {
-            if (_irsensorSharedMemoryHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(context.Device.System.IirsSharedMem, out _irsensorSharedMemoryHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_irsensorSharedMemoryHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(context.Device.System.ServiceServer.HidServer.IrSharedMemoryHandle);
 
             return ResultCode.Success;
         }

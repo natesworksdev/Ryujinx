@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.Memory
 {
@@ -16,6 +18,17 @@ namespace Ryujinx.Memory
             _mm = mm;
             _va = va;
             Memory = memory;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public unsafe ref T GetRef<T>(int offset) where T : unmanaged
+        {
+            if ((uint)offset >= Memory.Length)
+            {
+                throw new ArgumentOutOfRangeException(nameof(offset));
+            }
+
+            return ref MemoryMarshal.Cast<byte, T>(Memory.Span.Slice(offset))[0];
         }
 
         public void Dispose()

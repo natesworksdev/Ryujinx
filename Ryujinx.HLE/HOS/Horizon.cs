@@ -5,9 +5,7 @@ using LibHac.FsSystem;
 using Ryujinx.Common;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.HOS.Font;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services;
@@ -17,30 +15,21 @@ using Ryujinx.HLE.HOS.Services.Bluetooth.BluetoothDriver;
 using Ryujinx.HLE.HOS.Services.Mii;
 using Ryujinx.HLE.HOS.Services.Nv;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
-using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
-using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Sm;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
-using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
-using Ryujinx.HLE.Utilities;
 using System;
 using System.IO;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS
 {
-    using TimeServiceManager = Services.Time.TimeManager;
-
     public class Horizon : IDisposable
     {
-        internal const int HidSize  = 0x40000;
-        internal const int FontSize = 0x1100000;
-        internal const int IirsSize = 0x8000;
-        internal const int TimeSize = 0x1000;
-
         internal KernelContext KernelContext { get; }
+
+        internal ServiceServer ServiceServer { get; }
 
         internal Switch Device { get; }
 
@@ -51,11 +40,6 @@ namespace Ryujinx.HLE.HOS
         internal AppletStateMgr AppletState { get; }
 
         internal BluetoothEventManager BluetoothEventManager { get; }
-
-        internal KSharedMemory HidSharedMem  { get; }
-        internal KSharedMemory FontSharedMem { get; }
-        internal KSharedMemory IirsSharedMem { get; }
-        internal SharedFontManager Font { get; }
 
         internal ContentManager ContentManager { get; }
 
@@ -76,8 +60,6 @@ namespace Ryujinx.HLE.HOS
 
         public int GlobalAccessLogMode { get; set; }
 
-        internal ulong HidBaseAddress { get; }
-
         internal NvHostSyncpt HostSyncpoint { get; }
 
         internal LibHac.Horizon LibHacHorizonServer { get; private set; }
@@ -87,38 +69,11 @@ namespace Ryujinx.HLE.HOS
         {
             KernelContext = new KernelContext(device, device.Memory);
 
+            ServiceServer = new ServiceServer(device);
+
             Device = device;
 
             State = new SystemStateMgr();
-
-            // Note: This is not really correct, but with HLE of services, the only memory
-            // region used that is used is Application, so we can use the other ones for anything.
-            KMemoryRegionManager region = KernelContext.MemoryRegions[(int)MemoryRegion.NvServices];
-
-            ulong hidPa  = region.Address;
-            ulong fontPa = region.Address + HidSize;
-            ulong iirsPa = region.Address + HidSize + FontSize;
-            ulong timePa = region.Address + HidSize + FontSize + IirsSize;
-
-            HidBaseAddress = hidPa - DramMemoryMap.DramBase;
-
-            KPageList hidPageList  = new KPageList();
-            KPageList fontPageList = new KPageList();
-            KPageList iirsPageList = new KPageList();
-            KPageList timePageList = new KPageList();
-
-            hidPageList .AddRange(hidPa,  HidSize  / KMemoryManager.PageSize);
-            fontPageList.AddRange(fontPa, FontSize / KMemoryManager.PageSize);
-            iirsPageList.AddRange(iirsPa, IirsSize / KMemoryManager.PageSize);
-            timePageList.AddRange(timePa, TimeSize / KMemoryManager.PageSize);
-
-            HidSharedMem  = new KSharedMemory(KernelContext, hidPageList,  0, 0, KMemoryPermission.Read);
-            FontSharedMem = new KSharedMemory(KernelContext, fontPageList, 0, 0, KMemoryPermission.Read);
-            IirsSharedMem = new KSharedMemory(KernelContext, iirsPageList, 0, 0, KMemoryPermission.Read);
-
-            KSharedMemory timeSharedMemory = new KSharedMemory(KernelContext, timePageList, 0, 0, KMemoryPermission.Read);
-
-            TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, timePa - DramMemoryMap.DramBase, TimeSize);
 
             AppletState = new AppletStateMgr(this);
 
@@ -126,56 +81,11 @@ namespace Ryujinx.HLE.HOS
 
             BluetoothEventManager = new BluetoothEventManager();
 
-            Font = new SharedFontManager(device, fontPa - DramMemoryMap.DramBase);
-
             VsyncEvent = new KEvent(KernelContext);
 
             DisplayResolutionChangeEvent = new KEvent(KernelContext);
 
             ContentManager = contentManager;
-
-            // TODO: use set:sys (and get external clock source id from settings)
-            // TODO: use "time!standard_steady_clock_rtc_update_interval_minutes" and implement a worker thread to be accurate.
-            UInt128 clockSourceId = new UInt128(Guid.NewGuid().ToByteArray());
-            IRtcManager.GetExternalRtcValue(out ulong rtcValue);
-
-            // We assume the rtc is system time.
-            TimeSpanType systemTime = TimeSpanType.FromSeconds((long)rtcValue);
-
-            // Configure and setup internal offset
-            TimeSpanType internalOffset = TimeSpanType.FromSeconds(ConfigurationState.Instance.System.SystemTimeOffset);
-
-            TimeSpanType systemTimeOffset = new TimeSpanType(systemTime.NanoSeconds + internalOffset.NanoSeconds);
-
-            if (systemTime.IsDaylightSavingTime() && !systemTimeOffset.IsDaylightSavingTime())
-            {
-                internalOffset = internalOffset.AddSeconds(3600L);
-            }
-            else if (!systemTime.IsDaylightSavingTime() && systemTimeOffset.IsDaylightSavingTime())
-            {
-                internalOffset = internalOffset.AddSeconds(-3600L);
-            }
-
-            internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
-
-            // First init the standard steady clock
-            TimeServiceManager.Instance.SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
-            TimeServiceManager.Instance.SetupStandardLocalSystemClock(null, new SystemClockContext(), systemTime.ToSeconds());
-
-            if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
-            {
-                TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
-
-                // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
-                TimeServiceManager.Instance.StandardLocalSystemClock.GetClockContext(null, out SystemClockContext localSytemClockContext);
-                TimeServiceManager.Instance.SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
-            }
-
-            TimeServiceManager.Instance.SetupStandardUserSystemClock(null, false, SteadyClockTimePoint.GetRandom());
-
-            // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
-
-            TimeServiceManager.Instance.SetupEphemeralNetworkSystemClock();
 
             DatabaseImpl.Instance.InitializeDatabase(device);
 
@@ -197,7 +107,7 @@ namespace Ryujinx.HLE.HOS
             sm.Server.InitDone.WaitOne();
             sm.Server.InitDone.Dispose();
 
-            ServiceDiscovery.DiscoverAll(Device);
+            ServiceServer.DiscoverAll();
         }
 
         public void LoadKip(string kipPath)

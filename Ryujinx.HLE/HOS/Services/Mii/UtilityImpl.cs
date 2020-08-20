@@ -1,5 +1,4 @@
 ﻿using Ryujinx.HLE.HOS.Services.Mii.Types;
-using Ryujinx.HLE.HOS.Services.Time;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using System;
 
@@ -17,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Mii
             _x = 123456789;
             _y = 362436069;
 
-            TimeSpanType time = TimeManager.Instance.TickBasedSteadyClock.GetCurrentRawTimePoint(null);
+            TimeSpanType time = new TimeSpanType(); // timeManager.TickBasedSteadyClock.GetCurrentRawTimePoint(null);
 
             _w = (uint)(time.NanoSeconds & uint.MaxValue);
             _z = (uint)((time.NanoSeconds >> 32) & uint.MaxValue);

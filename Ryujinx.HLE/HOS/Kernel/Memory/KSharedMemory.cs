@@ -1,29 +1,64 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     class KSharedMemory : KAutoObject
     {
-        private readonly KPageList _pageList;
+        private KPageList _pageList;
 
-        private readonly long _ownerPid;
+        private KResourceLimit _ownerResourceLimit;
 
-        private readonly KMemoryPermission _ownerPermission;
-        private readonly KMemoryPermission _userPermission;
+        private long _ownerPid;
 
-        public KSharedMemory(
-            KernelContext    context,
-            KPageList        pageList,
-            long             ownerPid,
-            KMemoryPermission ownerPermission,
-            KMemoryPermission userPermission) : base(context)
+        private KMemoryPermission _ownerPermission;
+        private KMemoryPermission _userPermission;
+
+        private bool _isInitialized;
+
+        public KSharedMemory(KernelContext context) : base(context)
         {
-            _pageList        = pageList;
-            _ownerPid        = ownerPid;
+        }
+
+        public KernelResult Initialize(KProcess owner, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
+        {
+            _ownerPid = owner.Pid;
+
             _ownerPermission = ownerPermission;
-            _userPermission  = userPermission;
+            _userPermission = userPermission;
+
+            ulong pagesCount = size / KMemoryManager.PageSize;
+
+            KResourceLimit resourceLimit = owner.ResourceLimit;
+
+            if (!resourceLimit.Reserve(LimitableResource.Memory, size))
+            {
+                return KernelResult.ResLimitExceeded;
+            }
+
+            KernelResult result = KernelContext.MemoryRegions[(int)owner.MemoryRegion].AllocatePages(pagesCount, !owner.AslrEnabled, out _pageList);
+
+            if (result != KernelResult.Success)
+            {
+                resourceLimit.Release(LimitableResource.Memory, size);
+
+                return result;
+            }
+
+            _ownerResourceLimit = resourceLimit;
+
+            _isInitialized = true;
+
+            for (LinkedListNode<KPageNode> node = _pageList.Nodes.First; node != null; node = node.Next)
+            {
+                KPageNode pageNode = node.Value;
+
+                KernelContext.Memory.ZeroFill(KMemoryManager.GetDramAddressFromPa(pageNode.Address), pageNode.PagesCount * KMemoryManager.PageSize);
+            }
+
+            return KernelResult.Success;
         }
 
         public KernelResult MapIntoProcess(
@@ -40,9 +75,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.InvalidSize;
             }
 
-            KMemoryPermission expectedPermission = process.Pid == _ownerPid
-                ? _ownerPermission
-                : _userPermission;
+            KMemoryPermission expectedPermission = process.Pid == _ownerPid ? _ownerPermission : _userPermission;
 
             if (permission != expectedPermission)
             {
@@ -52,11 +85,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             return memoryManager.MapPages(address, _pageList, MemoryState.SharedMemory, permission);
         }
 
-        public KernelResult UnmapFromProcess(
-            KMemoryManager   memoryManager,
-            ulong            address,
-            ulong            size,
-            KProcess         process)
+        public KernelResult UnmapFromProcess(KMemoryManager memoryManager, ulong address, ulong size, KProcess process)
         {
             ulong pagesCountRounded = BitUtils.DivRoundUp(size, KMemoryManager.PageSize);
 
@@ -66,6 +95,16 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
             }
 
             return memoryManager.UnmapPages(address, _pageList, MemoryState.SharedMemory);
+        }
+
+        protected override void Destroy()
+        {
+            if (_isInitialized)
+            {
+                ulong size = _pageList.GetPagesCount() * KMemoryManager.PageSize;
+
+                _ownerResourceLimit.Release(LimitableResource.Memory, size);
+            }
         }
     }
 }

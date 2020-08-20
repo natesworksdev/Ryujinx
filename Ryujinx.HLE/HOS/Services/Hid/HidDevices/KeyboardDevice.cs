@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public unsafe void Update(KeyboardInput keyState)
         {
-            ref ShMemKeyboard keyboard = ref _device.Hid.SharedMemory.Keyboard;
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref ShMemKeyboard keyboard = ref hidMemory.GetRef<HidSharedMemory>(0).Keyboard;
 
             int currentIndex = UpdateEntriesHeader(ref keyboard.Header, out int previousIndex);
 

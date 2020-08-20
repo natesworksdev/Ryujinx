@@ -98,6 +98,8 @@ namespace Ryujinx.HLE.HOS.Services
 
         private void ServerLoop()
         {
+            Initialize();
+
             if (SmObject != null)
             {
                 _context.Syscall.ManageNamedPort("sm:", 50, out int serverPortHandle);
@@ -184,6 +186,11 @@ namespace Ryujinx.HLE.HOS.Services
                     _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
                 }
             }
+        }
+
+        protected virtual void Initialize()
+        {
+            // Override to implement custom initialization logic.
         }
 
         private void PerformRegistration()

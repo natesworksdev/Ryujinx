@@ -1,12 +1,12 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Debugger.Profiler;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Ryujinx.Debugger.Profiler;
-using System.Reflection;
 using System.Linq;
+using System.Reflection;
 
 namespace Ryujinx.HLE.HOS.Services
 {

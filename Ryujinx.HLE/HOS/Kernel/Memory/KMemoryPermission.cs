@@ -3,7 +3,7 @@ using System;
 namespace Ryujinx.HLE.HOS.Kernel.Memory
 {
     [Flags]
-    enum KMemoryPermission : byte
+    enum KMemoryPermission
     {
         None = 0,
         Mask = 0xff,
@@ -13,6 +13,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
         Execute = 1 << 2,
 
         ReadAndWrite   = Read | Write,
-        ReadAndExecute = Read | Execute
+        ReadAndExecute = Read | Execute,
+
+        DontCare = 1 << 28
     }
 }

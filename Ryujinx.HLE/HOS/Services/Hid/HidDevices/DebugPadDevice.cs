@@ -6,7 +6,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public void Update()
         {
-            ref ShMemDebugPad debugPad = ref _device.Hid.SharedMemory.DebugPad;
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref ShMemDebugPad debugPad = ref hidMemory.GetRef<HidSharedMemory>(0).DebugPad;
 
             int currentIndex = UpdateEntriesHeader(ref debugPad.Header, out int previousIndex);
 

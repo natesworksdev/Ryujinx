@@ -105,7 +105,10 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     Logger.Warning?.Print(LogClass.Hid, $"ControllerType {config.ConfiguredType} (connected to {(PlayerIndex)i}) not supported by game. Removing...");
 
                     config.State = FilterState.Configured;
-                    _device.Hid.SharedMemory.Npads[i] = new ShMemNpad(); // Zero it
+
+                    using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+                    hidMemory.GetRef<HidSharedMemory>(0).Npads[i] = new ShMemNpad(); // Zero it
 
                     continue;
                 }
@@ -148,7 +151,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 player = PlayerIndex.Handheld;
             }
 
-            ref ShMemNpad controller = ref _device.Hid.SharedMemory.Npads[(int)player];
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref ShMemNpad controller = ref hidMemory.GetRef<HidSharedMemory>(0).Npads[(int)player];
 
             controller = new ShMemNpad(); // Zero it
 
@@ -269,7 +274,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 return;
             }
 
-            ref ShMemNpad  currentNpad   = ref _device.Hid.SharedMemory.Npads[(int)player];
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref ShMemNpad  currentNpad   = ref hidMemory.GetRef<HidSharedMemory>(0).Npads[(int)player];
             ref NpadLayout currentLayout = ref currentNpad.Layouts[(int)ControllerTypeToLayout(currentNpad.Header.Type)];
             ref NpadState  currentEntry  = ref currentLayout.Entries[(int)currentLayout.Header.LatestEntry];
 
@@ -286,7 +293,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         private void UpdateAllEntries()
         {
-            ref Array10<ShMemNpad> controllers = ref _device.Hid.SharedMemory.Npads;
+            using var hidMemory = _device.System.ServiceServer.HidServer.GetSharedMemory();
+
+            ref Array10<ShMemNpad> controllers = ref hidMemory.GetRef<HidSharedMemory>(0).Npads;
             for (int i = 0; i < controllers.Length; ++i)
             {
                 ref Array7<NpadLayout> layouts = ref controllers[i].Layouts;
