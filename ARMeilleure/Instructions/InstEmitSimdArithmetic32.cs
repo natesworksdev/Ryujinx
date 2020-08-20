@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
+using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
@@ -1092,10 +1093,6 @@ namespace ARMeilleure.Instructions
 
             if (op.F)
             {
-                if (op.Q && (op.Vd == 1 || op.Vm == 1))
-                {
-                    return;
-                }
                 int sizeF = op.Size & 1;
                 if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
                 {
@@ -1111,7 +1108,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                throw new NotImplementedException("Integer Vrintx not currently implemented.");
+                throw new NotImplementedException("Integer Vrintx_V not currently implemented.");
             }
         }
 
@@ -1119,17 +1116,24 @@ namespace ARMeilleure.Instructions
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
 
-            int sizeF = op.Size & 1;
-            if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
+            if (op.F)
             {
-                EmitScalarRoundOpF32(context, FPRoundingMode.ToNearest);
+                int sizeF = op.Size & 1;
+                if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
+                {
+                    EmitScalarRoundOpF32(context, FPRoundingMode.ToNearest);
+                }
+                else
+                {
+                    EmitScalarUnaryOpF32(context, (op1) =>
+                    {
+                        return EmitUnaryMathCall(context, nameof(Math.Round), op1);
+                    });
+                }
             }
             else
             {
-                EmitScalarUnaryOpF32(context, (op1) =>
-                {
-                    return EmitUnaryMathCall(context, nameof(Math.Round), op1);
-                });
+                throw new NotImplementedException("Integer Vrintx_S not currently implemented.");
             }
         }
 
@@ -1356,6 +1360,46 @@ namespace ARMeilleure.Instructions
             }
 
             return result;
+        }
+
+        private static void EmitScalarRoundOpF32(ArmEmitterContext context, FPRoundingMode roundMode)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
+            Operand n = GetVec(op.Vm);
+
+            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+
+            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+
+            if ((op.Size & 1) != 0)
+            {
+                res = context.VectorZeroUpper64(res);
+            }
+            else
+            {
+                res = context.VectorZeroUpper96(res);
+            }
+
+            context.Copy(GetVec(op.Vd), res);
+        }
+
+        private static void EmitVectorRoundOpF32(ArmEmitterContext context, FPRoundingMode roundMode)
+        {
+            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
+
+            Operand n = GetVec(op.Vm);
+
+            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
+
+            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
+
+            if (op.RegisterSize == RegisterSize.Simd64)
+            {
+                res = context.VectorZeroUpper64(res);
+            }
+
+            context.Copy(GetVec(op.Vd), res);
         }
     }
 }

@@ -598,6 +598,8 @@ namespace ARMeilleure.Instructions
         Vqrshrun,
         Vrev,
         Vrint,
+        Vrintx_S,
+        Vrintx_V,
         Vrshr,
         Vsel,
         Vshl,
