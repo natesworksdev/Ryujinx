@@ -105,12 +105,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="scaleFactor">The floating point scale factor to initialize with</param>
         /// <param name="scaleMode">The scale mode to initialize with</param>
         private Texture(
-            GpuContext  context,
-            TextureInfo info,
-            SizeInfo    sizeInfo,
-            int         firstLayer,
-            int         firstLevel,
-            float       scaleFactor,
+            GpuContext       context,
+            TextureInfo      info,
+            SizeInfo         sizeInfo,
+            int              firstLayer,
+            int              firstLevel,
+            float            scaleFactor,
             TextureScaleMode scaleMode)
         {
             InitializeTexture(context, info, sizeInfo);
@@ -717,9 +717,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if a view with the given parameters can be created from this texture, false otherwise</returns>
         public bool IsViewCompatible(
             TextureInfo info,
-            ulong size,
-            out int firstLayer,
-            out int firstLevel)
+            ulong       size,
+            out int     firstLayer,
+            out int     firstLevel)
         {
             return IsViewCompatible(info, size, isCopy: false, out firstLayer, out firstLevel);
         }
@@ -738,8 +738,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             TextureInfo info,
             ulong       size,
             bool        isCopy,
-            out         int firstLayer,
-            out         int firstLevel)
+            out int     firstLayer,
+            out int     firstLevel)
         {
             // Out of range.
             if (info.Address < Address || info.Address + size > EndAddress)

@@ -875,12 +875,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             // - If the parent format is not compressed, and the view is, the view
             // size is calculated as described on the first point, but the width and height
             // of the view must be also multiplied by the block width and height.
-            int width  = Math.Max(1, parent.Info.Width >> firstLevel);
+            int width  = Math.Max(1, parent.Info.Width  >> firstLevel);
             int height = Math.Max(1, parent.Info.Height >> firstLevel);
 
             if (parent.Info.FormatInfo.IsCompressed && !info.FormatInfo.IsCompressed)
             {
-                width  = BitUtils.DivRoundUp(width, parent.Info.FormatInfo.BlockWidth);
+                width  = BitUtils.DivRoundUp(width,  parent.Info.FormatInfo.BlockWidth);
                 height = BitUtils.DivRoundUp(height, parent.Info.FormatInfo.BlockHeight);
             }
             else if (!parent.Info.FormatInfo.IsCompressed && info.FormatInfo.IsCompressed)
@@ -953,16 +953,16 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // The shader will need the appropriate conversion code to compensate.
                 switch (formatInfo.Format)
                 {
-                    case Format.R8Snorm: formatInfo           = new FormatInfo(Format.R8Sint, 1, 1, 1); break;
-                    case Format.R16Snorm: formatInfo          = new FormatInfo(Format.R16Sint, 1, 1, 2); break;
-                    case Format.R8G8Snorm: formatInfo         = new FormatInfo(Format.R8G8Sint, 1, 1, 2); break;
-                    case Format.R16G16Snorm: formatInfo       = new FormatInfo(Format.R16G16Sint, 1, 1, 4); break;
-                    case Format.R8G8B8A8Snorm: formatInfo     = new FormatInfo(Format.R8G8B8A8Sint, 1, 1, 4); break;
-                    case Format.R16G16B16A16Snorm: formatInfo = new FormatInfo(Format.R16G16B16A16Sint, 1, 1, 8); break;
+                    case Format.R8Snorm:           formatInfo           = new FormatInfo(Format.R8Sint, 1, 1, 1); break;
+                    case Format.R16Snorm:          formatInfo           = new FormatInfo(Format.R16Sint, 1, 1, 2); break;
+                    case Format.R8G8Snorm:         formatInfo           = new FormatInfo(Format.R8G8Sint, 1, 1, 2); break;
+                    case Format.R16G16Snorm:       formatInfo           = new FormatInfo(Format.R16G16Sint, 1, 1, 4); break;
+                    case Format.R8G8B8A8Snorm:     formatInfo           = new FormatInfo(Format.R8G8B8A8Sint, 1, 1, 4); break;
+                    case Format.R16G16B16A16Snorm: formatInfo           = new FormatInfo(Format.R16G16B16A16Sint, 1, 1, 8); break;
                 }
             }
 
-            int width  = info.Width / info.SamplesInX;
+            int width  = info.Width  / info.SamplesInX;
             int height = info.Height / info.SamplesInY;
 
             int depth = info.GetDepth() * info.GetLayers();
