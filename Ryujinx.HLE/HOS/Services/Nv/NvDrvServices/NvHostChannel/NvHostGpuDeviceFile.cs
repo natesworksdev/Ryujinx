@@ -1,6 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
+﻿using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
 using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.Memory;
 using System;

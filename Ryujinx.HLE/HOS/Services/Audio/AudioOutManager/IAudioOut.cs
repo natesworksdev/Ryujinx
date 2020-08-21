@@ -1,9 +1,8 @@
 using Ryujinx.Audio;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Kernel;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager

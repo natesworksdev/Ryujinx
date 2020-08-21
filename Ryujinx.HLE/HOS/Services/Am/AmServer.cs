@@ -1,5 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+﻿using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Kernel;
 
 namespace Ryujinx.HLE.HOS.Services.Am
 {
@@ -12,9 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Am
         private SystemEventType _displayResolutionChangedEvent;
         private SignalableEvent _displayResolutionChangedEventSignalable;
 
-        public AmServer(KernelContext context) : base(context, "AmServer")
+        public AmServer(Switch device) : base(device, "AmServer")
         {
-            _device = context.Device;
+            _device = device;
         }
 
         protected override void Initialize()

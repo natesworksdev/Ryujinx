@@ -1,10 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;

@@ -3,7 +3,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel;
@@ -11,6 +10,7 @@ using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
+using Ryujinx.Horizon.Kernel;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
@@ -325,7 +325,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             _clientMemory = KernelStatic.GetAddressSpace(clientHandle);
 
-            context.Device.System.KernelContext.Syscall.GetProcessId(clientHandle, out _owner);
+            KernelStatic.Syscall.GetProcessId(clientHandle, out _owner);
 
             context.ResponseData.Write((uint)NvResult.Success);
 

@@ -440,7 +440,7 @@ namespace Ryujinx.HLE.HOS
 
             Ptc.Initialize(TitleIdText, DisplayVersion, EnablePtc && !modified);
 
-            ProgramLoader.LoadNsos(_device.System.KernelContext, metaData, executables: programs);
+            ProgramLoader.LoadNsos(_device, metaData, executables: programs);
         }
 
         public void LoadProgram(string filePath)
@@ -536,7 +536,7 @@ namespace Ryujinx.HLE.HOS
             TitleId = metaData.Aci0.TitleId;
             TitleIs64Bit = metaData.Is64Bit;
 
-            ProgramLoader.LoadNsos(_device.System.KernelContext, metaData, executables: executable);
+            ProgramLoader.LoadNsos(_device, metaData, executables: executable);
         }
 
         private Npdm GetDefaultNpdm()

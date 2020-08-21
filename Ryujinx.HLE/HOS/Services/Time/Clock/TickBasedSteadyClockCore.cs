@@ -1,6 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
-
-namespace Ryujinx.HLE.HOS.Services.Time.Clock
+﻿namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class TickBasedSteadyClockCore : SteadyClockCore
     {

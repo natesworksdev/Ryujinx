@@ -1,10 +1,10 @@
 ﻿using LibHac.FsSystem;
 using Ryujinx.Common;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
+using Ryujinx.Horizon.Kernel;
+using Ryujinx.Horizon.Kernel.Common;
+using Ryujinx.Horizon.Kernel.Memory;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,6 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
     [Service("ro:1")] // 7.0.0+
     class IRoInterface : IpcService, IDisposable
     {
+        private const int PageSize       = 0x1000;
         private const int MaxNrr         = 0x40;
         private const int MaxNro         = 0x40;
         private const int MaxMapRetries  = 0x200;
@@ -337,7 +338,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             ulong bssStart = dataStart + (ulong)relocatableObject.Data.Length;
 
-            ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, KMemoryManager.PageSize);
+            ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, PageSize);
 
             KernelResult result;
 

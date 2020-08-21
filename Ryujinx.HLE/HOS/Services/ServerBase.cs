@@ -1,8 +1,7 @@
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.Horizon.Kernel;
+using Ryujinx.Horizon.Kernel.Common;
+using Ryujinx.Horizon.Kernel.Process;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -30,8 +29,7 @@ namespace Ryujinx.HLE.HOS.Services
             0x01007FFF
         };
 
-        private readonly KernelContext _context;
-        private readonly KProcess _selfProcess;
+        private readonly Switch _device;
 
         private readonly List<int> _sessionHandles = new List<int>();
         private readonly List<int> _portHandles = new List<int>();
@@ -51,11 +49,11 @@ namespace Ryujinx.HLE.HOS.Services
         public IpcService SmObject { get; set; }
         public string Name { get; }
 
-        public ServerBase(KernelContext context, string name)
+        public ServerBase(Switch device, string name)
         {
+            _device = device;
             InitDone = new ManualResetEvent(false);
             Name = name;
-            _context = context;
 
             const ProcessCreationFlags flags =
                 ProcessCreationFlags.EnableAslr |
@@ -65,11 +63,8 @@ namespace Ryujinx.HLE.HOS.Services
 
             ProcessCreationInfo creationInfo = new ProcessCreationInfo("Service", 1, 0, 0x8000000, 1, flags, 0, 0);
 
-            context.Syscall.CreateProcess(creationInfo, DefaultCapabilities, out int handle, null, ServerLoop);
-
-            _selfProcess = context.Scheduler.GetCurrentProcess().HandleTable.GetKProcess(handle);
-
-            context.Syscall.StartProcess(handle, 44, 3, 0x1000);
+            KernelStatic.Syscall.CreateProcess(creationInfo, DefaultCapabilities, out int handle, null, ServerLoop);
+            KernelStatic.Syscall.StartProcess(handle, 44, 3, 0x1000);
         }
 
         public void SignalInitDone() => InitDone.Set();
@@ -102,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             if (SmObject != null)
             {
-                _context.Syscall.ManageNamedPort("sm:", 50, out int serverPortHandle);
+                KernelStatic.Syscall.ManageNamedPort("sm:", 50, out int serverPortHandle);
 
                 AddPort(serverPortHandle, SmObject);
 
@@ -116,17 +111,16 @@ namespace Ryujinx.HLE.HOS.Services
                 PerformRegistration();
             }
 
-            KThread thread = _context.Scheduler.GetCurrentThread();
-            ulong messagePtr = thread.TlsAddress;
-            _context.Syscall.SetHeapSize(0x200000, out ulong heapAddr);
+            ulong messagePtr = KernelStatic.GetTlsAddress();
+            KernelStatic.Syscall.SetHeapSize(0x200000, out ulong heapAddr);
 
-            _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
-            _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
-            _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
+            KernelStatic.AddressSpace.Write(messagePtr + 0x0, 0);
+            KernelStatic.AddressSpace.Write(messagePtr + 0x4, 2 << 10);
+            KernelStatic.AddressSpace.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
 
             int replyTargetHandle = 0;
 
-            while (thread.Context.Running)
+            while (true) // TODO: Use Thread.Running or something
             {
                 int[] portHandles = _portHandles.ToArray();
                 int[] sessionHandles = _sessionHandles.ToArray();
@@ -135,9 +129,10 @@ namespace Ryujinx.HLE.HOS.Services
                 portHandles.CopyTo(handles, 0);
                 sessionHandles.CopyTo(handles, portHandles.Length);
 
-                var rc = _context.Syscall.ReplyAndReceive(handles, replyTargetHandle, -1L, out int signaledIndex);
+                var rc = KernelStatic.Syscall.ReplyAndReceive(handles, replyTargetHandle, -1L, out int signaledIndex);
 
-                thread.HandlePostSyscall();
+                // TODO: Handle that as part of the syscall, leaving this here as a reminder...
+                // thread.HandlePostSyscall();
 
                 replyTargetHandle = 0;
 
@@ -156,7 +151,7 @@ namespace Ryujinx.HLE.HOS.Services
                     if (rc == KernelResult.Success)
                     {
                         // We got a new connection, accept the session to allow servicing future requests.
-                        if (_context.Syscall.AcceptSession(handles[signaledIndex], out int serverSessionHandle) == KernelResult.Success)
+                        if (KernelStatic.Syscall.AcceptSession(handles[signaledIndex], out int serverSessionHandle) == KernelResult.Success)
                         {
                             var obj = _ports[handles[signaledIndex]];
 
@@ -164,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services
                             {
                                 var serviceAttribute = info.Type.GetCustomAttributes<ServiceAttribute>().First(service => service.Name == info.Name);
 
-                                ServiceCtx context = new ServiceCtx(_context.Device, null, null, null, null, null);
+                                ServiceCtx context = new ServiceCtx(_device, null, null, null, null, null);
 
                                 var service = info.Parameter != null
                                     ? (IpcService)Activator.CreateInstance(info.Type, context, serviceAttribute.Parameter)
@@ -181,9 +176,9 @@ namespace Ryujinx.HLE.HOS.Services
                         }
                     }
 
-                    _selfProcess.CpuMemory.Write(messagePtr + 0x0, 0);
-                    _selfProcess.CpuMemory.Write(messagePtr + 0x4, 2 << 10);
-                    _selfProcess.CpuMemory.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
+                    KernelStatic.AddressSpace.Write(messagePtr + 0x0, 0);
+                    KernelStatic.AddressSpace.Write(messagePtr + 0x4, 2 << 10);
+                    KernelStatic.AddressSpace.Write(messagePtr + 0x8, heapAddr | ((ulong)PointerBufferSize << 48));
                 }
             }
         }
@@ -224,10 +219,9 @@ namespace Ryujinx.HLE.HOS.Services
                 request.RawData = ms.ToArray();
             }
 
-            KThread thread = _context.Scheduler.GetCurrentThread();
-            ulong messagePtr = thread.TlsAddress;
+            ulong messagePtr = KernelStatic.GetTlsAddress();
 
-            _selfProcess.CpuMemory.Write(messagePtr, request.GetBytes((long)messagePtr, 0));
+            KernelStatic.AddressSpace.Write(messagePtr, request.GetBytes((long)messagePtr, 0));
 
             KernelStatic.Syscall.SendSyncRequest(sessionHandle);
         }
@@ -260,17 +254,16 @@ namespace Ryujinx.HLE.HOS.Services
                 request.RawData = ms.ToArray();
             }
 
-            KThread thread = _context.Scheduler.GetCurrentThread();
-            ulong messagePtr = thread.TlsAddress;
+            ulong messagePtr = KernelStatic.GetTlsAddress();
             ulong messageSize = 0x100;
 
-            _selfProcess.CpuMemory.Write(messagePtr, request.GetBytes((long)messagePtr, 0));
+            KernelStatic.AddressSpace.Write(messagePtr, request.GetBytes((long)messagePtr, 0));
 
             KernelStatic.Syscall.SendSyncRequest(sessionHandle);
 
             byte[] reqData = new byte[messageSize];
 
-            _selfProcess.CpuMemory.Read(messagePtr, reqData);
+            KernelStatic.AddressSpace.Read(messagePtr, reqData);
 
             IpcMessage response = new IpcMessage(reqData, (long)messagePtr);
 
@@ -279,14 +272,12 @@ namespace Ryujinx.HLE.HOS.Services
 
         private bool Process(int serverSessionHandle, ulong recvListAddr)
         {
-            KProcess process = _context.Scheduler.GetCurrentProcess();
-            KThread thread = _context.Scheduler.GetCurrentThread();
-            ulong messagePtr = thread.TlsAddress;
+            ulong messagePtr = KernelStatic.GetTlsAddress();
             ulong messageSize = 0x100;
 
             byte[] reqData = new byte[messageSize];
 
-            process.CpuMemory.Read(messagePtr, reqData);
+            KernelStatic.AddressSpace.Read(messagePtr, reqData);
 
             IpcMessage request = new IpcMessage(reqData, (long)messagePtr);
             IpcMessage response = new IpcMessage();
@@ -331,8 +322,8 @@ namespace Ryujinx.HLE.HOS.Services
                         BinaryWriter resWriter = new BinaryWriter(resMs);
 
                         ServiceCtx context = new ServiceCtx(
-                            _context.Device,
-                            process.CpuMemory,
+                            _device,
+                            KernelStatic.AddressSpace,
                             request,
                             response,
                             reqReader,
@@ -364,7 +355,7 @@ namespace Ryujinx.HLE.HOS.Services
                         case 4:
                             int unknown = reqReader.ReadInt32();
 
-                            _context.Syscall.CreateSession(false, 0, out int dupServerSessionHandle, out int dupClientSessionHandle);
+                            KernelStatic.Syscall.CreateSession(false, 0, out int dupServerSessionHandle, out int dupClientSessionHandle);
 
                             AddSessionObj(dupServerSessionHandle, _sessions[serverSessionHandle]);
 
@@ -379,7 +370,7 @@ namespace Ryujinx.HLE.HOS.Services
                 }
                 else if (request.Type == IpcMessageType.CloseSession)
                 {
-                    _context.Syscall.CloseHandle(serverSessionHandle);
+                    KernelStatic.Syscall.CloseHandle(serverSessionHandle);
                     _sessionHandles.Remove(serverSessionHandle);
                     IpcService service = _sessions[serverSessionHandle];
                     if (service is IDisposable disposableObj)
@@ -394,7 +385,7 @@ namespace Ryujinx.HLE.HOS.Services
                     throw new NotImplementedException(request.Type.ToString());
                 }
 
-                process.CpuMemory.Write(messagePtr, response.GetBytes((long)messagePtr, recvListAddr | ((ulong)PointerBufferSize << 48)));
+                KernelStatic.AddressSpace.Write(messagePtr, response.GetBytes((long)messagePtr, recvListAddr | ((ulong)PointerBufferSize << 48)));
                 return shouldReply;
             }
         }

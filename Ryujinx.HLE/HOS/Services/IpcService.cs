@@ -2,6 +2,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Debugger.Profiler;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.Horizon.Kernel;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -169,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services
             }
             else
             {
-                context.Device.System.KernelContext.Syscall.CreateSession(false, 0, out int serverSessionHandle, out int clientSessionHandle);
+                KernelStatic.Syscall.CreateSession(false, 0, out int serverSessionHandle, out int clientSessionHandle);
 
                 obj.Server.AddSessionObj(serverSessionHandle, obj);
 

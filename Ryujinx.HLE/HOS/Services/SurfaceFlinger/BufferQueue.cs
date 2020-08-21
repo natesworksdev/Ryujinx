@@ -1,6 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Process;
-
-namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
+﻿namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 {
     class BufferQueue
     {

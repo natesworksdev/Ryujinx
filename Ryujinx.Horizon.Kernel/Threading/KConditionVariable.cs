@@ -1,0 +1,71 @@
+using System.Collections.Generic;
+using System.Threading;
+
+namespace Ryujinx.Horizon.Kernel.Threading
+{
+    static class KConditionVariable
+    {
+        public static void Wait(KernelContextInternal context, LinkedList<KThread> threadList, object mutex, long timeout)
+        {
+            KThread currentThread = context.Scheduler.GetCurrentThread();
+
+            context.CriticalSection.Enter();
+
+            Monitor.Exit(mutex);
+
+            currentThread.Withholder = threadList;
+
+            currentThread.Reschedule(ThreadSchedState.Paused);
+
+            currentThread.WithholderNode = threadList.AddLast(currentThread);
+
+            if (currentThread.ShallBeTerminated ||
+                currentThread.SchedFlags == ThreadSchedState.TerminationPending)
+            {
+                threadList.Remove(currentThread.WithholderNode);
+
+                currentThread.Reschedule(ThreadSchedState.Running);
+
+                currentThread.Withholder = null;
+
+                context.CriticalSection.Leave();
+            }
+            else
+            {
+                if (timeout > 0)
+                {
+                    context.TimeManager.ScheduleFutureInvocation(currentThread, timeout);
+                }
+
+                context.CriticalSection.Leave();
+
+                if (timeout > 0)
+                {
+                    context.TimeManager.UnscheduleFutureInvocation(currentThread);
+                }
+            }
+
+            Monitor.Enter(mutex);
+        }
+
+        public static void NotifyAll(KernelContextInternal context, LinkedList<KThread> threadList)
+        {
+            context.CriticalSection.Enter();
+
+            LinkedListNode<KThread> node = threadList.First;
+
+            for (; node != null; node = threadList.First)
+            {
+                KThread thread = node.Value;
+
+                threadList.Remove(thread.WithholderNode);
+
+                thread.Withholder = null;
+
+                thread.Reschedule(ThreadSchedState.Running);
+            }
+
+            context.CriticalSection.Leave();
+        }
+    }
+}

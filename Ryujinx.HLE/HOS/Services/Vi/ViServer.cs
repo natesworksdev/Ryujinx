@@ -1,5 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+﻿using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Kernel;
 
 namespace Ryujinx.HLE.HOS.Services.Vi
 {
@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
         private SystemEventType _vsyncEvent;
         private SignalableEvent _vsyncEventSignalable;
 
-        public ViServer(KernelContext context) : base(context, "ViServer")
+        public ViServer(Switch device) : base(device, "ViServer")
         {
         }
 

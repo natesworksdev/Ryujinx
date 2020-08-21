@@ -1,9 +1,9 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu;
 using Ryujinx.Graphics.Gpu.Synchronization;
-using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
 using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Kernel;
 using System;
 using System.Threading;
 

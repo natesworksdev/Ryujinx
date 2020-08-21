@@ -1,7 +1,6 @@
-using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator;
+using Ryujinx.Horizon.Kernel;
+using Ryujinx.Horizon.Kernel.Memory;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {

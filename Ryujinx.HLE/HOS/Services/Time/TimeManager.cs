@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Time
 
         // TODO: 9.0.0+ power states and alarms
 
-        public TimeManager(Switch device) : base(device.System.KernelContext, "TimeServer")
+        public TimeManager(Switch device) : base(device, "TimeServer")
         {
             StandardSteadyClock         = new StandardSteadyClockCore();
             TickBasedSteadyClock        = new TickBasedSteadyClockCore();

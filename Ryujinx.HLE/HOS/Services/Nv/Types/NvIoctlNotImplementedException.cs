@@ -1,5 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
+﻿using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
+using Ryujinx.Horizon.Kernel;
 using System;
 using System.Text;
 

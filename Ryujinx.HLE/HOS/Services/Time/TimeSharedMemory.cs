@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.Types;
 using Ryujinx.HLE.Utilities;
+using Ryujinx.Horizon.Kernel;
+using Ryujinx.Horizon.Kernel.Memory;
 
 namespace Ryujinx.HLE.HOS.Services.Time
 {

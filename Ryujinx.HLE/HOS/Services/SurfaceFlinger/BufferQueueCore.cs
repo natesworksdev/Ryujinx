@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
+using Ryujinx.Horizon.Kernel;
 using System;
 using System.Collections.Generic;
 using System.Threading;

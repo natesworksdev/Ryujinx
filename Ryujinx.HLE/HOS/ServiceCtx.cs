@@ -1,5 +1,4 @@
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Memory;
 using System.IO;
 

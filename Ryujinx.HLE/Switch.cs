@@ -29,7 +29,7 @@ namespace Ryujinx.HLE
 
         public VirtualFileSystem FileSystem { get; private set; }
 
-        public Horizon System { get; private set; }
+        public HOS.Horizon System { get; private set; }
 
         public ApplicationLoader Application { get; }
 
@@ -84,7 +84,7 @@ namespace Ryujinx.HLE
 
             Hid = new Hid(this);
 
-            System = new Horizon(this, contentManager);
+            System = new HOS.Horizon(this, contentManager);
             System.InitializeServices();
 
             Statistics = new PerformanceStatistics();

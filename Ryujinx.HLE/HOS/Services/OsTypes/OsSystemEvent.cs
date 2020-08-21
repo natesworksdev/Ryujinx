@@ -1,5 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Services.OsTypes.Impl;
+﻿using Ryujinx.HLE.HOS.Services.OsTypes.Impl;
+using Ryujinx.Horizon.Kernel.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.OsTypes

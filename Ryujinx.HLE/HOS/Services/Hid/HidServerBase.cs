@@ -1,12 +1,12 @@
-﻿using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Memory;
+﻿using Ryujinx.Horizon.Kernel;
+using Ryujinx.Horizon.Kernel.Memory;
 using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
     class HidServerBase : ServerBase
     {
-        private readonly KernelContext _context;
+        private readonly Switch _device;
 
         public IAddressSpaceManager HidAddressSpace { get; private set; }
 
@@ -22,9 +22,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         public int HidSharedMemoryHandle => _hidSharedMemoryHandle;
         public int IrSharedMemoryHandle => _irSharedMemoryHandle;
 
-        public HidServerBase(KernelContext context) : base(context, "HidServer")
+        public HidServerBase(Switch device) : base(device, "HidServer")
         {
-            _context = context;
+            _device = device;
         }
 
         protected override void Initialize()
@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 IrSharedMemorySize,
                 KMemoryPermission.ReadAndWrite);
 
-            _context.Device.Hid.InitDevices();
+            _device.Hid.InitDevices();
         }
 
         public WritableRegion GetSharedMemory()

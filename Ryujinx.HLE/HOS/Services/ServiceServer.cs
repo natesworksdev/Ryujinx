@@ -28,12 +28,12 @@ namespace Ryujinx.HLE.HOS.Services
         {
             var services = Assembly.GetExecutingAssembly().GetTypes().Where(type => type.GetCustomAttributes(typeof(ServiceAttribute), true).Length != 0);
 
-            ServerBase commonServer = new ServerBase(_device.System.KernelContext, "CommonServer");
-            AmServer = new AmServer(_device.System.KernelContext);
-            HidServer = new HidServerBase(_device.System.KernelContext);
+            ServerBase commonServer = new ServerBase(_device, "CommonServer");
+            AmServer = new AmServer(_device);
+            HidServer = new HidServerBase(_device);
             SharedFontManager = new SharedFontManager(_device);
             TimeManager = new TimeManager(_device);
-            ViServer = new ViServer(_device.System.KernelContext);
+            ViServer = new ViServer(_device);
 
             ServerBase PickServer(string name)
             {

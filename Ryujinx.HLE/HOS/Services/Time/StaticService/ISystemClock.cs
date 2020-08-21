@@ -2,6 +2,7 @@ using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
+using Ryujinx.Horizon.Kernel;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
@@ -12,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         private bool            _writePermission;
         private bool            _bypassUninitializedClock;
         private SystemEventType _operationEvent;
-
+        private bool            _operationEventRegistered;
         public ISystemClock(SystemClockCore clockCore, bool writePermission, bool bypassUninitializedClock)
         {
             _clockCore                    = clockCore;
@@ -104,6 +105,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         // GetOperationEventReadableHandle() -> handle<copy>
         public ResultCode GetOperationEventReadableHandle(ServiceCtx context)
         {
+            if (!_operationEventRegistered)
+            {
+                _operationEventRegistered = true;
+
+                _clockCore.RegisterOperationEvent(KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _operationEvent)));
+            }
+
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _operationEvent));
 
             return ResultCode.Success;

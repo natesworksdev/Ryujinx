@@ -1,19 +1,17 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
-using System;
+﻿using Ryujinx.Horizon.Kernel;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     abstract class SystemClockContextUpdateCallback
     {
-        private   List<KWritableEvent> _operationEventList;
-        protected SystemClockContext   _context;
-        private   bool                 _hasContext;
+        private   List<SignalableEvent> _operationEventList;
+        protected SystemClockContext    _context;
+        private   bool                  _hasContext;
 
         public SystemClockContextUpdateCallback()
         {
-            _operationEventList = new List<KWritableEvent>();
+            _operationEventList = new List<SignalableEvent>();
             _context            = new SystemClockContext();
             _hasContext         = false;
         }
@@ -28,23 +26,23 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return true;
         }
 
-        public void RegisterOperationEvent(KWritableEvent writableEvent)
+        public void RegisterOperationEvent(SignalableEvent signalableEvent)
         {
-            Monitor.Enter(_operationEventList);
-            _operationEventList.Add(writableEvent);
-            Monitor.Exit(_operationEventList);
+            lock (_operationEventList)
+            {
+                _operationEventList.Add(signalableEvent);
+            }
         }
 
         private void BroadcastOperationEvent()
         {
-            Monitor.Enter(_operationEventList);
-
-            foreach (KWritableEvent e in _operationEventList)
+            lock (_operationEventList)
             {
-                e.Signal();
+                foreach (SignalableEvent e in _operationEventList)
+                {
+                    e.Signal();
+                }
             }
-
-            Monitor.Exit(_operationEventList);
         }
 
         protected abstract ResultCode Update();

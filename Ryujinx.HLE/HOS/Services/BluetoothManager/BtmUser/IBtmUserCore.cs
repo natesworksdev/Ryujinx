@@ -1,6 +1,6 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Kernel.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser

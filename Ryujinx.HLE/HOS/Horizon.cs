@@ -5,9 +5,6 @@ using LibHac.FsSystem;
 using Ryujinx.Common;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.Services.Arp;
@@ -19,9 +16,9 @@ using Ryujinx.HLE.HOS.Services.Sm;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.HLE.Loaders.Executables;
+using Ryujinx.Horizon.Kernel;
 using System;
 using System.IO;
-using System.Threading;
 
 namespace Ryujinx.HLE.HOS
 {
@@ -45,9 +42,6 @@ namespace Ryujinx.HLE.HOS
 
         public Keyset KeySet => Device.FileSystem.KeySet;
 
-#pragma warning disable CS0649
-        private bool _hasStarted;
-#pragma warning restore CS0649
         private bool _isDisposed;
 
         public bool EnablePtc { get; set; }
@@ -63,7 +57,7 @@ namespace Ryujinx.HLE.HOS
 
         public Horizon(Switch device, ContentManager contentManager)
         {
-            KernelContext = new KernelContext(device, device.Memory);
+            KernelContext = new KernelContext(device.Memory);
 
             ServiceServer = new ServiceServer(device);
 
@@ -90,7 +84,9 @@ namespace Ryujinx.HLE.HOS
 
         public void InitializeServices()
         {
-            IUserInterface sm = new IUserInterface(KernelContext);
+            KernelStatic.SetKernelContext(KernelContext);
+
+            IUserInterface sm = new IUserInterface(Device);
 
             // Wait until SM server thread is done with initialization,
             // only then doing connections to SM is safe.
@@ -104,7 +100,7 @@ namespace Ryujinx.HLE.HOS
         {
             using IStorage kipFile = new LocalStorage(kipPath, FileAccess.Read);
 
-            ProgramLoader.LoadKip(KernelContext, new KipExecutable(kipFile));
+            ProgramLoader.LoadKip(Device, new KipExecutable(kipFile));
         }
 
         private void InitLibHacHorizon()
@@ -145,18 +141,12 @@ namespace Ryujinx.HLE.HOS
 
         public void EnableMultiCoreScheduling()
         {
-            if (!_hasStarted)
-            {
-                KernelContext.Scheduler.MultiCoreScheduling = true;
-            }
+            KernelContext.EnableMultiCoreScheduling();
         }
 
         public void DisableMultiCoreScheduling()
         {
-            if (!_hasStarted)
-            {
-                KernelContext.Scheduler.MultiCoreScheduling = false;
-            }
+            KernelContext.DisableMultiCoreScheduling();
         }
 
         public void Dispose()
@@ -174,36 +164,7 @@ namespace Ryujinx.HLE.HOS
 
                 SurfaceFlinger.Dispose();
 
-                KProcess terminationProcess = new KProcess(KernelContext);
-                KThread terminationThread = new KThread(KernelContext);
-
-                terminationThread.Initialize(0, 0, 0, 3, 0, terminationProcess, ThreadType.Kernel, () =>
-                {
-                    // Force all threads to exit.
-                    lock (KernelContext.Processes)
-                    {
-                        foreach (KProcess process in KernelContext.Processes.Values)
-                        {
-                            process.Terminate();
-                        }
-                    }
-
-                    // Exit ourself now!
-                    KernelContext.Scheduler.ExitThread(terminationThread);
-                    KernelContext.Scheduler.GetCurrentThread().Exit();
-                    KernelContext.Scheduler.RemoveThread(terminationThread);
-                });
-
-                terminationThread.Start();
-
-                // Wait until the thread is actually started.
-                while (terminationThread.HostThread.ThreadState == ThreadState.Unstarted)
-                {
-                    Thread.Sleep(10);
-                }
-
-                // Wait until the termination thread is done terminating all the other threads.
-                terminationThread.HostThread.Join();
+                KernelStatic.TerminateAllProcesses(KernelContext);
 
                 // Destroy nvservices channels as KThread could be waiting on some user events.
                 // This is safe as KThread that are likely to call ioctls are going to be terminated by the post handler hook on the SVC facade.

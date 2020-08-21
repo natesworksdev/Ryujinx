@@ -1,6 +1,6 @@
 ﻿using ARMeilleure.State;
 using Ryujinx.Cpu;
-using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.Horizon.Kernel.Process;
 using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS

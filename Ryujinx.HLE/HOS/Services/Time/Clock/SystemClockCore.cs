@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
+﻿using Ryujinx.Horizon.Kernel;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
@@ -96,11 +96,11 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _systemClockContextUpdateCallback = systemClockContextUpdateCallback;
         }
 
-        public void RegisterOperationEvent(KWritableEvent writableEvent)
+        public void RegisterOperationEvent(SignalableEvent signalableEvent)
         {
             if (_systemClockContextUpdateCallback != null)
             {
-                _systemClockContextUpdateCallback.RegisterOperationEvent(writableEvent);
+                _systemClockContextUpdateCallback.RegisterOperationEvent(signalableEvent);
             }
         }
 

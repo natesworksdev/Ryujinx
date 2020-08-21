@@ -1,8 +1,8 @@
 using Ryujinx.Audio;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager;
+using Ryujinx.Horizon.Kernel;
 
 namespace Ryujinx.HLE.HOS.Services.Audio
 {
@@ -25,8 +25,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio
             MakeObject(context, new IAudioRenderer(context.Device.System, memory, audioOut, Params));
 
             // Close transfer memory immediately as we don't use it.
-            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
-            context.Device.System.KernelContext.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[1]);
+            KernelStatic.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[0]);
+            KernelStatic.Syscall.CloseHandle(context.Request.HandleDesc.ToCopy[1]);
 
             return ResultCode.Success;
         }

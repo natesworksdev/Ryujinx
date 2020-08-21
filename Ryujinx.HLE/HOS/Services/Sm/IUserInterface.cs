@@ -1,6 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.Horizon.Kernel;
 using System.Collections.Concurrent;
 using System.IO;
 
@@ -12,11 +12,11 @@ namespace Ryujinx.HLE.HOS.Services.Sm
 
         private bool _isInitialized;
 
-        public IUserInterface(KernelContext context)
+        public IUserInterface(Switch device)
         {
             _registeredServices = new ConcurrentDictionary<string, int>();
 
-            TrySetServer(new ServerBase(context, "SmServer") { SmObject = this });
+            TrySetServer(new ServerBase(device, "SmServer") { SmObject = this });
         }
 
         [Command(0)]

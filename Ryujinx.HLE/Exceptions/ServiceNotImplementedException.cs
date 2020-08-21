@@ -1,11 +1,10 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services;
+using Ryujinx.Horizon.Kernel;
 using System;
 using System.Diagnostics;
-using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;

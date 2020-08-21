@@ -5,8 +5,8 @@ using LibHac.FsSystem.NcaUtils;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
-using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.Horizon.Kernel;
+using Ryujinx.Horizon.Kernel.Memory;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pl
         private ulong _sharedMemoryBaseAddress;
         public const int SharedMemorySize = 0x1100000;
 
-        public SharedFontManager(Switch device) : base(device.System.KernelContext, "SdbServer")
+        public SharedFontManager(Switch device) : base(device, "SdbServer")
         {
             _device = device;
         }
