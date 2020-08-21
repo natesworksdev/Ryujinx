@@ -6,6 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel
     {
         private readonly KWritableEvent _event;
         internal SignalableEvent(KWritableEvent writableEvent) => _event = writableEvent;
-        public void Signal() => _event.Signal();
+        public void Signal() => _event?.Signal();
+        public void Clear() => _event?.Clear();
     }
 }

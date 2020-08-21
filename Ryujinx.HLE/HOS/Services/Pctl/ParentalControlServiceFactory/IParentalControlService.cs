@@ -30,40 +30,33 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 return ResultCode.PermissionDenied;
             }
 
-            ResultCode resultCode = ResultCode.InvalidPid;
-
-            if (context.Process.Pid != 0)
+            if ((_permissionFlag & 0x40) == 0)
             {
-                if ((_permissionFlag & 0x40) == 0)
+                ulong titleId = ApplicationLaunchProperty.GetByPid(context).TitleId;
+
+                if (titleId != 0)
                 {
-                    ulong titleId = ApplicationLaunchProperty.GetByPid(context).TitleId;
+                    _titleId = titleId;
 
-                    if (titleId != 0)
-                    {
-                        _titleId = titleId;
-
-                        // TODO: Call nn::arp::GetApplicationControlProperty here when implemented, if it return ResultCode.Success we assign fields.
-                        _ratingAge                = Array.ConvertAll(context.Device.Application.ControlData.Value.RatingAge.ToArray(), Convert.ToInt32);
-                        _freeCommunicationEnabled = context.Device.Application.ControlData.Value.ParentalControl == LibHac.Ns.ParentalControlFlagValue.FreeCommunication;
-                    }
+                    // TODO: Call nn::arp::GetApplicationControlProperty here when implemented, if it return ResultCode.Success we assign fields.
+                    _ratingAge                = Array.ConvertAll(context.Device.Application.ControlData.Value.RatingAge.ToArray(), Convert.ToInt32);
+                    _freeCommunicationEnabled = context.Device.Application.ControlData.Value.ParentalControl == LibHac.Ns.ParentalControlFlagValue.FreeCommunication;
                 }
-
-                if (_titleId != 0)
-                {
-                    // TODO: Service store some private fields in another static object.
-
-                    if ((_permissionFlag & 0x8040) == 0)
-                    {
-                        // TODO: Service store TitleId and FreeCommunicationEnabled in another static object.
-                        //       When it's done it signal an event in this static object.
-                        Logger.Stub?.PrintStub(LogClass.ServicePctl);
-                    }
-                }
-
-                resultCode = ResultCode.Success;
             }
 
-            return resultCode;
+            if (_titleId != 0)
+            {
+                // TODO: Service store some private fields in another static object.
+
+                if ((_permissionFlag & 0x8040) == 0)
+                {
+                    // TODO: Service store TitleId and FreeCommunicationEnabled in another static object.
+                    //       When it's done it signal an event in this static object.
+                    Logger.Stub?.PrintStub(LogClass.ServicePctl);
+                }
+            }
+
+            return ResultCode.Success;
         }
 
         [Command(1001)]

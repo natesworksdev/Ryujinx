@@ -107,13 +107,9 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return _syscall.UnmapMemory(dst, src, size);
         }
 
-        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint address, [R(1)] out uint pageInfo)
+        public KernelResult QueryMemory32([R(0)] uint infoPtr, [R(1)] uint r1, [R(2)] uint address)
         {
-            KernelResult result = _syscall.QueryMemory(infoPtr, out ulong pageInfo64, address);
-
-            pageInfo = (uint)pageInfo64;
-
-            return result;
+            return _syscall.QueryMemory(infoPtr, r1, address);
         }
 
         public KernelResult MapSharedMemory32([R(0)] int handle, [R(1)] uint address, [R(2)] uint size, [R(3)] KMemoryPermission permission)

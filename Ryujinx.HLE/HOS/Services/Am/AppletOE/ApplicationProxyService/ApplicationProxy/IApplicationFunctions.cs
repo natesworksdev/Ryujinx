@@ -8,10 +8,8 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
@@ -22,21 +20,17 @@ using AccountUid = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy
 {
-    class IApplicationFunctions : IpcService
+    class IApplicationFunctions : IpcService, IDisposable
     {
-        private KEvent _gpuErrorDetectedSystemEvent;
-        private KEvent _friendInvitationStorageChannelEvent;
-        private KEvent _notificationStorageChannelEvent;
-
-        private int _gpuErrorDetectedSystemEventHandle;
-        private int _friendInvitationStorageChannelEventHandle;
-        private int _notificationStorageChannelEventHandle;
+        private SystemEventType _gpuErrorDetectedSystemEvent;
+        private SystemEventType _friendInvitationStorageChannelEvent;
+        private SystemEventType _notificationStorageChannelEvent;
 
         public IApplicationFunctions(Horizon system)
         {
-            _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
-            _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
-            _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _gpuErrorDetectedSystemEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _friendInvitationStorageChannelEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _notificationStorageChannelEvent, EventClearMode.AutoClear, true);
         }
 
         [Command(1)]
@@ -54,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
             Uid     userId  = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
-            TitleId titleId = new TitleId(context.Process.TitleId);
+            TitleId titleId = new TitleId(context.Device.Application.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
 
@@ -352,15 +346,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetGpuErrorDetectedSystemEvent() -> handle<copy>
         public ResultCode GetGpuErrorDetectedSystemEvent(ServiceCtx context)
         {
-            if (_gpuErrorDetectedSystemEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out _gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_gpuErrorDetectedSystemEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _gpuErrorDetectedSystemEvent));
 
             // NOTE: This is used by "sdk" NSO during applet-application initialization.
             //       A seperate thread is setup where event-waiting is handled.
@@ -373,15 +359,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetFriendInvitationStorageChannelEvent() -> handle<copy>
         public ResultCode GetFriendInvitationStorageChannelEvent(ServiceCtx context)
         {
-            if (_friendInvitationStorageChannelEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out _friendInvitationStorageChannelEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_friendInvitationStorageChannelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _friendInvitationStorageChannelEvent));
 
             return ResultCode.Success;
         }
@@ -390,17 +368,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetNotificationStorageChannelEvent() -> handle<copy>
         public ResultCode GetNotificationStorageChannelEvent(ServiceCtx context)
         {
-            if (_notificationStorageChannelEventHandle == 0)
-            {
-                if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out _notificationStorageChannelEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_notificationStorageChannelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _notificationStorageChannelEvent));
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _gpuErrorDetectedSystemEvent);
+            Os.DestroySystemEvent(ref _friendInvitationStorageChannelEvent);
+            Os.DestroySystemEvent(ref _notificationStorageChannelEvent);
         }
     }
 }

@@ -926,38 +926,14 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             return process.MemoryManager.Unmap(dst, src, size);
         }
 
-        public KernelResult QueryMemory(ulong infoPtr, out ulong pageInfo, ulong address)
+        public KernelResult QueryMemory(ulong infoPtr, ulong pageInfoPtr, ulong address)
         {
-            KernelResult result = QueryMemory(out MemoryInfo info, out pageInfo, address);
-
-            if (result != KernelResult.Success)
-            {
-                return result;
-            }
-
-            return KernelTransfer.KernelToUser(_context, infoPtr, info)
-                ? KernelResult.Success
-                : KernelResult.InvalidMemState;
+            return QueryProcessMemory(infoPtr, pageInfoPtr, KHandleTable.SelfProcessHandle, address);
         }
 
-        public KernelResult QueryMemory(out MemoryInfo info, out ulong pageInfo, ulong address)
+        public KernelResult QueryMemory(out MemoryInfo info, ulong address)
         {
-            KProcess process = _context.Scheduler.GetCurrentProcess();
-
-            KMemoryInfo blockInfo = process.MemoryManager.QueryMemory(address);
-
-            info = new MemoryInfo(
-                blockInfo.Address,
-                blockInfo.Size,
-                (int)blockInfo.State & 0xff,
-                (int)blockInfo.Attribute,
-                (int)blockInfo.Permission,
-                blockInfo.IpcRefCount,
-                blockInfo.DeviceRefCount);
-
-            pageInfo = 0;
-
-            return KernelResult.Success;
+            return QueryProcessMemory(out info, KHandleTable.SelfProcessHandle, address);
         }
 
         public KernelResult MapSharedMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
@@ -1364,6 +1340,45 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
             {
                 return currentProcess.MemoryManager.UnmapPages(dst, pageList, MemoryState.ProcessMemory);
             }
+        }
+
+        public KernelResult QueryProcessMemory(ulong infoPtr, ulong pageInfoPtr, int processHandle, ulong address)
+        {
+            KernelResult result = QueryProcessMemory(out MemoryInfo info, processHandle, address);
+
+            if (result != KernelResult.Success)
+            {
+                return result;
+            }
+
+            return KernelTransfer.KernelToUser(_context, infoPtr, info)
+                ? KernelResult.Success
+                : KernelResult.InvalidMemState;
+        }
+
+        public KernelResult QueryProcessMemory(out MemoryInfo info, int processHandle, ulong address)
+        {
+            KProcess process = _context.Scheduler.GetCurrentProcess().HandleTable.GetKProcess(processHandle);
+
+            if (process == null)
+            {
+                info = default;
+
+                return KernelResult.InvalidHandle;
+            }
+
+            KMemoryInfo blockInfo = process.MemoryManager.QueryMemory(address);
+
+            info = new MemoryInfo(
+                blockInfo.Address,
+                blockInfo.Size,
+                (int)blockInfo.State & 0xff,
+                (int)blockInfo.Attribute,
+                (int)blockInfo.Permission,
+                blockInfo.IpcRefCount,
+                blockInfo.DeviceRefCount);
+
+            return KernelResult.Success;
         }
 
         public KernelResult MapProcessCodeMemory(int processHandle, ulong dst, ulong src, ulong size)

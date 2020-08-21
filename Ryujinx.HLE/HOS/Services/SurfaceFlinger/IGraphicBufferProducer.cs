@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
 using System;
 using System.Runtime.CompilerServices;
@@ -94,11 +93,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return ResultCode.Success;
         }
 
-        public void GetNativeHandle(uint typeId, out KReadableEvent readableEvent)
+        public void GetNativeHandle(uint typeId, out int eventHandle)
         {
             if (typeId == 0xF)
             {
-                readableEvent = GetWaitBufferFreeEvent();
+                eventHandle = GetWaitBufferFreeEvent();
             }
             else
             {
@@ -273,7 +272,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        protected abstract KReadableEvent GetWaitBufferFreeEvent();
+        protected abstract int GetWaitBufferFreeEvent();
 
         public abstract Status RequestBuffer(int slot, out AndroidStrongPointer<GraphicBuffer> graphicBuffer);
 

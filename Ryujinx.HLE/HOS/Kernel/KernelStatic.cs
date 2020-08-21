@@ -20,6 +20,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             return new SignalableEvent(wEvent ?? throw new ArgumentException("Invalid handle."));
         }
 
+        public static IAddressSpaceManager GetAddressSpace(int processHandle)
+        {
+            return Context.Scheduler.GetCurrentProcess().HandleTable.GetKProcess(processHandle)?.CpuMemory;
+        }
+
         internal static void SetKernelContext(KernelContext context) => Context = context;
     }
 }

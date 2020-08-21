@@ -9,7 +9,6 @@ namespace Ryujinx.HLE.HOS
     class ServiceCtx
     {
         public Switch Device { get; }
-        public KProcess Process { get; }
         public IAddressSpaceManager Memory { get; }
         public KThread Thread { get; }
         public IpcMessage Request { get; }
@@ -19,7 +18,6 @@ namespace Ryujinx.HLE.HOS
 
         public ServiceCtx(
             Switch device,
-            KProcess process,
             IAddressSpaceManager memory,
             KThread thread,
             IpcMessage request,
@@ -28,7 +26,6 @@ namespace Ryujinx.HLE.HOS
             BinaryWriter responseData)
         {
             Device = device;
-            Process = process;
             Memory = memory;
             Thread = thread;
             Request = request;

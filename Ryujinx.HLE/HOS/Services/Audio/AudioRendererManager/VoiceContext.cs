@@ -1,5 +1,4 @@
 using Ryujinx.Audio.Adpcm;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.Memory;
 using System;
 
@@ -66,7 +65,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             _outStatus.VoiceDropsCount        = 0;
         }
 
-        public int[] GetBufferData(KProcess process, int maxSamples, out int samplesCount)
+        public int[] GetBufferData(IAddressSpaceManager memory, int maxSamples, out int samplesCount)
         {
             if (!Playing)
             {
@@ -79,7 +78,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             {
                 _bufferReload = false;
 
-                UpdateBuffer(process);
+                UpdateBuffer(memory);
             }
 
             WaveBuffer wb = WaveBuffers[_bufferIndex];
@@ -123,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             return output;
         }
 
-        private void UpdateBuffer(KProcess process)
+        private void UpdateBuffer(IAddressSpaceManager memory)
         {
             // TODO: Implement conversion for formats other
             // than interleaved stereo (2 channels).
@@ -132,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             if (wb.Position == 0)
             {
-                _samples = new int[0];
+                _samples = Array.Empty<int>();
 
                 return;
             }
@@ -147,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
                 {
                     for (int index = 0; index < samplesCount; index++)
                     {
-                        short sample = process.CpuMemory.Read<short>((ulong)(wb.Position + index * 2));
+                        short sample = memory.Read<short>((ulong)(wb.Position + index * 2));
 
                         _samples[index * 2 + 0] = sample;
                         _samples[index * 2 + 1] = sample;
@@ -157,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
                 {
                     for (int index = 0; index < samplesCount * 2; index++)
                     {
-                        _samples[index] = process.CpuMemory.Read<short>((ulong)(wb.Position + index * 2));
+                        _samples[index] = memory.Read<short>((ulong)(wb.Position + index * 2));
                     }
                 }
             }
@@ -165,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
             {
                 byte[] buffer = new byte[wb.Size];
 
-                process.CpuMemory.Read((ulong)wb.Position, buffer);
+                memory.Read((ulong)wb.Position, buffer);
 
                 _samples = AdpcmDecoder.Decode(buffer, AdpcmCtx);
             }

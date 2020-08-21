@@ -326,7 +326,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         {
             SaveDataFilter filter = new SaveDataFilter();
             filter.SetSaveDataType(SaveDataType.Cache);
-            filter.SetProgramId(new TitleId(context.Process.TitleId));
+            filter.SetProgramId(new TitleId(context.Device.Application.TitleId));
 
             // FS would query the User and SdCache space IDs to find where the existing cache is (if any). 
             // We always have the SD card inserted, so we can always use SdCache for now.

@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl
                     Signal();
                 }
 
-                Os.ClearSystemEvent(ref _event);
+                _signalableEvent.Clear();
             }
         }
 

@@ -3,9 +3,8 @@ using Ryujinx.Audio.Adpcm;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.Memory;
 using System;
@@ -24,9 +23,10 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
         // high latency).
         private const int MixBufferSamplesCount = 960;
 
-        private KEvent _updateEvent;
+        private SystemEventType _updateEvent;
+        private SignalableEvent _updateEventSignalable;
 
-        private KProcess _process;
+        private IAddressSpaceManager _memory;
 
         private IAalOutput _audioOut;
 
@@ -46,13 +46,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
         public IAudioRenderer(
             Horizon                system,
-            KProcess               process,
+            IAddressSpaceManager   memory,
             IAalOutput             audioOut,
             AudioRendererParameter rendererParams)
         {
-            _updateEvent = new KEvent(system.KernelContext);
+            Os.CreateSystemEvent(out _updateEvent, EventClearMode.AutoClear, true);
 
-            _process  = process;
+            _updateEventSignalable = KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _updateEvent));
+
+            _memory   = memory;
             _audioOut = audioOut;
             _params   = rendererParams;
 
@@ -114,7 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
         private void AudioCallback()
         {
-            _updateEvent.ReadableEvent.Signal();
+            _updateEventSignalable.Signal();
         }
 
         private static T[] CreateArray<T>(int size) where T : new()
@@ -311,12 +313,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
         // QuerySystemEvent() -> handle<copy, event>
         public ResultCode QuerySystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_updateEvent.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _updateEvent));
 
             return ResultCode.Success;
         }
@@ -335,7 +332,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
             for (int offset = 0; offset < size; offset += 2)
             {
-                context.Coefficients[offset >> 1] = _process.CpuMemory.Read<short>((ulong)(position + offset));
+                context.Coefficients[offset >> 1] = _memory.Read<short>((ulong)(position + offset));
             }
 
             return context;
@@ -369,7 +366,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
                 while (pendingSamples > 0)
                 {
-                    int[] samples = voice.GetBufferData(_process, pendingSamples, out int returnedSamples);
+                    int[] samples = voice.GetBufferData(_memory, pendingSamples, out int returnedSamples);
 
                     if (returnedSamples == 0)
                     {
@@ -440,15 +437,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRendererManager
 
         public void Dispose()
         {
-            Dispose(true);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _audioOut.CloseTrack(_track);
-            }
+            _audioOut.CloseTrack(_track);
+            Os.DestroySystemEvent(ref _updateEvent);
         }
     }
 }

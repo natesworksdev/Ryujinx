@@ -6,14 +6,14 @@ namespace Ryujinx.HLE.HOS.Services
 {
     static class Map
     {
-        private struct AddressSpaceRegion
+        public struct AddressSpaceRegion
         {
             public ulong Base;
             public ulong Size;
             public ulong End;
         }
 
-        private struct AddressSpaceInfo
+        public struct AddressSpaceInfo
         {
             public AddressSpaceRegion Heap;
             public AddressSpaceRegion Alias;
@@ -26,7 +26,8 @@ namespace Ryujinx.HLE.HOS.Services
         {
             address = 0;
 
-            KernelResult result = GetAddressSpaceInfo(out AddressSpaceInfo asInfo, CurrentProcessHandle);
+            KernelResult result = GetAddressSpaceInfo(out AddressSpaceInfo asInfo);
+
             if (result != KernelResult.Success)
             {
                 return result;
@@ -62,7 +63,7 @@ namespace Ryujinx.HLE.HOS.Services
                 }
                 else
                 {
-                    result = KernelStatic.Syscall.QueryMemory(out MemoryInfo info, out _, currentBase);
+                    result = KernelStatic.Syscall.QueryMemory(out MemoryInfo info, currentBase);
 
                     // TODO: Abort on failure above.
 
@@ -94,43 +95,49 @@ namespace Ryujinx.HLE.HOS.Services
             }
         }
 
-        private static KernelResult GetAddressSpaceInfo(out AddressSpaceInfo info, int processHandle)
+        public static KernelResult GetAddressSpaceInfo(out AddressSpaceInfo info, int processHandle = CurrentProcessHandle)
         {
             info = new AddressSpaceInfo();
 
             KernelResult result;
 
             result = KernelStatic.Syscall.GetInfo(InfoType.HeapRegionAddress, processHandle, 0, out info.Heap.Base);
+
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.HeapRegionSize, processHandle, 0, out info.Heap.Size);
+
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AliasRegionAddress, processHandle, 0, out info.Alias.Base);
+
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AliasRegionSize, processHandle, 0, out info.Alias.Size);
+
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AslrRegionAddress, processHandle, 0, out info.Aslr.Base);
+
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AslrRegionSize, processHandle, 0, out info.Aslr.Size);
+
             if (result != KernelResult.Success)
             {
                 return result;

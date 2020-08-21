@@ -1,9 +1,8 @@
 ﻿using LibHac.FsSystem;
 using Ryujinx.Common;
-using Ryujinx.Cpu;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
 using System;
@@ -29,7 +28,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         private List<NrrInfo> _nrrInfos;
         private List<NroInfo> _nroInfos;
 
-        private KProcess _owner;
+        private long _ownerPid;
+        private int _ownerProcessHandle;
 
         private static Random _random = new Random();
 
@@ -37,7 +37,6 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         {
             _nrrInfos = new List<NrrInfo>(MaxNrr);
             _nroInfos = new List<NroInfo>(MaxNro);
-            _owner    = null;
         }
 
         private ResultCode ParseNrr(out NrrInfo nrrInfo, ServiceCtx context, long nrrAddress, long nrrSize)
@@ -53,7 +52,9 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 return ResultCode.InvalidAddress;
             }
 
-            StructReader reader = new StructReader(context.Memory, nrrAddress);
+            var memory = KernelStatic.GetAddressSpace(_ownerProcessHandle);
+
+            StructReader reader = new StructReader(memory, nrrAddress);
             NrrHeader    header = reader.Read<NrrHeader>();
 
             if (header.Magic != NrrMagic)
@@ -71,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             {
                 byte[] temp = new byte[0x20];
 
-                context.Memory.Read((ulong)(nrrAddress + header.HashOffset + (i * 0x20)), temp);
+                memory.Read((ulong)(nrrAddress + header.HashOffset + (i * 0x20)), temp);
 
                 hashes.Add(temp);
             }
@@ -131,8 +132,10 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 return ResultCode.InvalidAddress;
             }
 
-            uint magic       = context.Memory.Read<uint>(nroAddress + 0x10);
-            uint nroFileSize = context.Memory.Read<uint>(nroAddress + 0x18);
+            var memory = KernelStatic.GetAddressSpace(_ownerProcessHandle);
+
+            uint magic       = memory.Read<uint>(nroAddress + 0x10);
+            uint nroFileSize = memory.Read<uint>(nroAddress + 0x18);
 
             if (magic != NroMagic || nroSize != nroFileSize)
             {
@@ -141,7 +144,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             byte[] nroData = new byte[nroSize];
 
-            context.Memory.Read(nroAddress, nroData);
+            memory.Read(nroAddress, nroData);
 
             byte[] nroHash = null;
 
@@ -176,7 +179,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             // Check if everything is contiguous.
             if (nro.RoOffset   != nro.TextOffset + nro.Text.Length ||
                 nro.DataOffset != nro.RoOffset   + nro.Ro.Length   ||
-                nroFileSize           != nro.DataOffset + nro.Data.Length)
+                nroFileSize    != nro.DataOffset + nro.Data.Length)
             {
                 return ResultCode.InvalidNro;
             }
@@ -204,17 +207,15 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        private ResultCode MapNro(KProcess process, NroInfo info, out ulong nroMappedAddress)
+        private ResultCode MapNro(int processHandle, NroInfo info, out ulong nroMappedAddress)
         {
-            KMemoryManager memMgr = process.MemoryManager;
-
             int retryCount = 0;
 
             nroMappedAddress = 0;
 
             while (retryCount++ < MaxMapRetries)
             {
-                ResultCode result = MapCodeMemoryInProcess(process, info.NroAddress, info.NroSize, out nroMappedAddress);
+                ResultCode result = MapCodeMemoryInProcess(processHandle, info.NroAddress, info.NroSize, out nroMappedAddress);
 
                 if (result != ResultCode.Success)
                 {
@@ -223,25 +224,29 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
                 if (info.BssSize > 0)
                 {
-                    KernelResult bssMappingResult = memMgr.MapProcessCodeMemory(nroMappedAddress + info.NroSize, info.BssAddress, info.BssSize);
+                    KernelResult bssMappingResult = KernelStatic.Syscall.MapProcessCodeMemory(
+                        processHandle,
+                        nroMappedAddress + info.NroSize,
+                        info.BssAddress,
+                        info.BssSize);
 
                     if (bssMappingResult == KernelResult.InvalidMemState)
                     {
-                        memMgr.UnmapProcessCodeMemory(nroMappedAddress + info.NroSize, info.BssAddress, info.BssSize);
-                        memMgr.UnmapProcessCodeMemory(nroMappedAddress, info.NroAddress, info.NroSize);
+                        KernelStatic.Syscall.UnmapProcessCodeMemory(processHandle, nroMappedAddress + info.NroSize, info.BssAddress, info.BssSize);
+                        KernelStatic.Syscall.UnmapProcessCodeMemory(processHandle, nroMappedAddress, info.NroAddress, info.NroSize);
 
                         continue;
                     }
                     else if (bssMappingResult != KernelResult.Success)
                     {
-                        memMgr.UnmapProcessCodeMemory(nroMappedAddress + info.NroSize, info.BssAddress, info.BssSize);
-                        memMgr.UnmapProcessCodeMemory(nroMappedAddress, info.NroAddress, info.NroSize);
+                        KernelStatic.Syscall.UnmapProcessCodeMemory(processHandle, nroMappedAddress + info.NroSize, info.BssAddress, info.BssSize);
+                        KernelStatic.Syscall.UnmapProcessCodeMemory(processHandle, nroMappedAddress, info.NroAddress, info.NroSize);
 
                         return (ResultCode)bssMappingResult;
                     }
                 }
 
-                if (CanAddGuardRegionsInProcess(process, nroMappedAddress, info.TotalSize))
+                if (CanAddGuardRegionsInProcess(processHandle, nroMappedAddress, info.TotalSize))
                 {
                     return ResultCode.Success;
                 }
@@ -250,17 +255,15 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.InsufficientAddressSpace;
         }
 
-        private bool CanAddGuardRegionsInProcess(KProcess process, ulong baseAddress, ulong size)
+        private bool CanAddGuardRegionsInProcess(int processHandle, ulong baseAddress, ulong size)
         {
-            KMemoryManager memMgr = process.MemoryManager;
+            KernelStatic.Syscall.QueryProcessMemory(out var memInfo, processHandle, baseAddress - 1);
 
-            KMemoryInfo memInfo = memMgr.QueryMemory(baseAddress - 1);
-
-            if (memInfo.State == MemoryState.Unmapped && baseAddress - GuardPagesSize >= memInfo.Address)
+            if (memInfo.State == 0 && baseAddress - GuardPagesSize >= memInfo.Address)
             {
-                memInfo = memMgr.QueryMemory(baseAddress + size);
+                KernelStatic.Syscall.QueryProcessMemory(out memInfo, processHandle, baseAddress + size);
 
-                if (memInfo.State == MemoryState.Unmapped)
+                if (memInfo.State == 0)
                 {
                     return baseAddress + size + GuardPagesSize <= memInfo.Address + memInfo.Size;
                 }
@@ -268,15 +271,15 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return false;
         }
 
-        private ResultCode MapCodeMemoryInProcess(KProcess process, ulong baseAddress, ulong size, out ulong targetAddress)
+        private ResultCode MapCodeMemoryInProcess(int processHandle, ulong baseAddress, ulong size, out ulong targetAddress)
         {
-            KMemoryManager memMgr = process.MemoryManager;
-
             targetAddress = 0;
 
             int retryCount;
 
-            ulong addressSpacePageLimit = (memMgr.GetAddrSpaceSize() - size) >> 12;
+            Map.GetAddressSpaceInfo(out var info, processHandle);
+
+            ulong addressSpacePageLimit = (info.Aslr.Size - size) >> 12;
 
             for (retryCount = 0; retryCount < MaxMapRetries; retryCount++)
             {
@@ -284,15 +287,22 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 {
                     ulong randomOffset = (ulong)(uint)_random.Next(0, (int)addressSpacePageLimit) << 12;
 
-                    targetAddress = memMgr.GetAddrSpaceBaseAddr() + randomOffset;
+                    targetAddress = info.Aslr.Base + randomOffset;
 
-                    if (memMgr.InsideAddrSpace(targetAddress, size) && !memMgr.InsideHeapRegion(targetAddress, size) && !memMgr.InsideAliasRegion(targetAddress, size))
+                    if (info.Heap.Size != 0 && (info.Heap.Base <= targetAddress + size - 1 && targetAddress <= info.Heap.End - 1))
                     {
-                        break;
+                        continue;
                     }
+
+                    if (info.Alias.Size != 0 && (info.Alias.Base <= targetAddress + size - 1 && targetAddress <= info.Alias.End - 1))
+                    {
+                        continue;
+                    }
+
+                    break;
                 }
 
-                KernelResult result = memMgr.MapProcessCodeMemory(targetAddress, baseAddress, size);
+                KernelResult result = KernelStatic.Syscall.MapProcessCodeMemory(processHandle, targetAddress, baseAddress, size);
 
                 if (result == KernelResult.InvalidMemState)
                 {
@@ -303,7 +313,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                     return (ResultCode)result;
                 }
 
-                if (!CanAddGuardRegionsInProcess(process, targetAddress, size))
+                if (!CanAddGuardRegionsInProcess(processHandle, targetAddress, size))
                 {
                     continue;
                 }
@@ -319,7 +329,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return ResultCode.Success;
         }
 
-        private KernelResult SetNroMemoryPermissions(KProcess process, IExecutable relocatableObject, ulong baseAddress)
+        private KernelResult SetNroMemoryPermissions(int processHandle, IExecutable relocatableObject, ulong baseAddress)
         {
             ulong textStart = baseAddress + (ulong)relocatableObject.TextOffset;
             ulong roStart   = baseAddress + (ulong)relocatableObject.RoOffset;
@@ -329,29 +339,23 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             ulong bssEnd = BitUtils.AlignUp(bssStart + (ulong)relocatableObject.BssSize, KMemoryManager.PageSize);
 
-            process.CpuMemory.Write(textStart, relocatableObject.Text);
-            process.CpuMemory.Write(roStart,   relocatableObject.Ro);
-            process.CpuMemory.Write(dataStart, relocatableObject.Data);
-
-            MemoryHelper.FillWithZeros(process.CpuMemory, (long)bssStart, (int)(bssEnd - bssStart));
-
             KernelResult result;
 
-            result = process.MemoryManager.SetProcessMemoryPermission(textStart, roStart - textStart, KMemoryPermission.ReadAndExecute);
+            result = KernelStatic.Syscall.SetProcessMemoryPermission(processHandle, textStart, roStart - textStart, KMemoryPermission.ReadAndExecute);
 
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
-            result = process.MemoryManager.SetProcessMemoryPermission(roStart, dataStart - roStart, KMemoryPermission.Read);
+            result = KernelStatic.Syscall.SetProcessMemoryPermission(processHandle, roStart, dataStart - roStart, KMemoryPermission.Read);
 
             if (result != KernelResult.Success)
             {
                 return result;
             }
 
-            return process.MemoryManager.SetProcessMemoryPermission(dataStart, bssEnd - dataStart, KMemoryPermission.ReadAndWrite);
+            return KernelStatic.Syscall.SetProcessMemoryPermission(processHandle, dataStart, bssEnd - dataStart, KMemoryPermission.ReadAndWrite);
         }
 
         private ResultCode RemoveNrrInfo(long nrrAddress)
@@ -377,14 +381,14 @@ namespace Ryujinx.HLE.HOS.Services.Ro
                 {
                     _nroInfos.Remove(info);
 
-                    return UnmapNroFromInfo(info);
+                    return UnmapNroFromInfo(_ownerProcessHandle, info);
                 }
             }
 
             return ResultCode.NotLoaded;
         }
 
-        private ResultCode UnmapNroFromInfo(NroInfo info)
+        private ResultCode UnmapNroFromInfo(int processHandle, NroInfo info)
         {
             ulong textSize = (ulong)info.Executable.Text.Length;
             ulong roSize   = (ulong)info.Executable.Ro.Length;
@@ -395,7 +399,8 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             if (info.Executable.BssSize != 0)
             {
-                result = _owner.MemoryManager.UnmapProcessCodeMemory(
+                result = KernelStatic.Syscall.UnmapProcessCodeMemory(
+                    processHandle,
                     info.NroMappedAddress + textSize + roSize + dataSize,
                     info.Executable.BssAddress,
                     bssSize);
@@ -403,14 +408,16 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             if (result == KernelResult.Success)
             {
-                result = _owner.MemoryManager.UnmapProcessCodeMemory(
+                result = KernelStatic.Syscall.UnmapProcessCodeMemory(
+                    processHandle,
                     info.NroMappedAddress + textSize + roSize,
                     info.Executable.SourceAddress + textSize + roSize,
                     dataSize);
 
                 if (result == KernelResult.Success)
                 {
-                    result = _owner.MemoryManager.UnmapProcessCodeMemory(
+                    result = KernelStatic.Syscall.UnmapProcessCodeMemory(
+                        processHandle,
                         info.NroMappedAddress,
                         info.Executable.SourceAddress,
                         textSize + roSize);
@@ -420,9 +427,9 @@ namespace Ryujinx.HLE.HOS.Services.Ro
             return (ResultCode)result;
         }
 
-        private ResultCode IsInitialized(KProcess process)
+        private ResultCode IsInitialized(long pid)
         {
-            if (_owner != null && _owner.Pid == process.Pid)
+            if (_ownerPid != 0 && _ownerPid == pid)
             {
                 return ResultCode.Success;
             }
@@ -434,7 +441,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         // LoadNro(u64, u64, u64, u64, u64, pid) -> u64
         public ResultCode LoadNro(ServiceCtx context)
         {
-            ResultCode result = IsInitialized(context.Process);
+            ResultCode result = IsInitialized(context.Request.HandleDesc.PId);
 
             // Zero
             context.RequestData.ReadUInt64();
@@ -448,17 +455,15 @@ namespace Ryujinx.HLE.HOS.Services.Ro
 
             if (result == ResultCode.Success)
             {
-                NroInfo info;
-
-                result = ParseNro(out info, context, nroHeapAddress, nroSize, bssHeapAddress, bssSize);
+                result = ParseNro(out NroInfo info, context, nroHeapAddress, nroSize, bssHeapAddress, bssSize);
 
                 if (result == ResultCode.Success)
                 {
-                    result = MapNro(context.Process, info, out nroMappedAddress);
+                    result = MapNro(_ownerProcessHandle, info, out nroMappedAddress);
 
                     if (result == ResultCode.Success)
                     {
-                        result = (ResultCode)SetNroMemoryPermissions(context.Process, info.Executable, nroMappedAddress);
+                        result = (ResultCode)SetNroMemoryPermissions(_ownerProcessHandle, info.Executable, nroMappedAddress);
 
                         if (result == ResultCode.Success)
                         {
@@ -479,7 +484,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         // UnloadNro(u64, u64, pid)
         public ResultCode UnloadNro(ServiceCtx context)
         {
-            ResultCode result = IsInitialized(context.Process);
+            ResultCode result = IsInitialized(context.Request.HandleDesc.PId);
 
             // Zero
             context.RequestData.ReadUInt64();
@@ -503,7 +508,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         // LoadNrr(u64, u64, u64, pid)
         public ResultCode LoadNrr(ServiceCtx context)
         {
-            ResultCode result = IsInitialized(context.Process);
+            ResultCode result = IsInitialized(context.Request.HandleDesc.PId);
 
             // pid placeholder, zero
             context.RequestData.ReadUInt64();
@@ -536,7 +541,7 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         // UnloadNrr(u64, u64, pid)
         public ResultCode UnloadNrr(ServiceCtx context)
         {
-            ResultCode result = IsInitialized(context.Process);
+            ResultCode result = IsInitialized(context.Request.HandleDesc.PId);
 
             // pid placeholder, zero
             context.RequestData.ReadUInt64();
@@ -557,15 +562,16 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         }
 
         [Command(4)]
-        // Initialize(u64, pid, KObject)
+        // Initialize(u64, pid, handle<copy>)
         public ResultCode Initialize(ServiceCtx context)
         {
-            if (_owner != null)
+            if (_ownerPid != 0)
             {
                 return ResultCode.InvalidSession;
             }
 
-            _owner = context.Process;
+            _ownerPid = context.Request.HandleDesc.PId;
+            _ownerProcessHandle = context.Request.HandleDesc.ToCopy[0];
 
             return ResultCode.Success;
         }
@@ -574,10 +580,12 @@ namespace Ryujinx.HLE.HOS.Services.Ro
         {
             foreach (NroInfo info in _nroInfos)
             {
-                UnmapNroFromInfo(info);
+                UnmapNroFromInfo(_ownerProcessHandle, info);
             }
 
             _nroInfos.Clear();
+
+            KernelStatic.Syscall.CloseHandle(_ownerProcessHandle);
         }
     }
 }

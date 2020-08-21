@@ -1,6 +1,4 @@
 ﻿using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types

@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
 using System;
 using System.Collections.Generic;
@@ -36,8 +37,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public readonly object Lock = new object();
 
-        private KEvent _waitBufferFreeEvent;
-        private KEvent _frameAvailableEvent;
+        private SystemEventType _waitBufferFreeEvent;
+        private SystemEventType _frameAvailableEvent;
+
+        private readonly SignalableEvent _waitBufferFreeEventSignalable;
+        private readonly SignalableEvent _frameAvailableEventSignalable;
 
         public long Owner { get; }
 
@@ -66,8 +70,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             // TODO: CreateGraphicBufferAlloc?
 
-            _waitBufferFreeEvent  = new KEvent(device.System.KernelContext);
-            _frameAvailableEvent = new KEvent(device.System.KernelContext);
+            Os.CreateSystemEvent(out _waitBufferFreeEvent, EventClearMode.AutoClear, true);
+            Os.CreateSystemEvent(out _frameAvailableEvent, EventClearMode.AutoClear, true);
+
+            _waitBufferFreeEventSignalable = KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _waitBufferFreeEvent));
+            _frameAvailableEventSignalable = KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _frameAvailableEvent));
 
             Owner = pid;
 
@@ -149,7 +156,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             if (EnableExternalEvent)
             {
-                _waitBufferFreeEvent.WritableEvent.Signal();
+                _waitBufferFreeEventSignalable.Signal();
             }
         }
 
@@ -157,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             if (EnableExternalEvent)
             {
-                _frameAvailableEvent.WritableEvent.Signal();
+                _frameAvailableEventSignalable.Signal();
             }
         }
 
@@ -254,7 +261,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _waitBufferFreeEvent.WritableEvent.Clear();
+                _waitBufferFreeEventSignalable.Clear();
             }
 
             if (needFrameAvailableSignal)
@@ -263,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
             else
             {
-                _frameAvailableEvent.WritableEvent.Clear();
+                _frameAvailableEventSignalable.Clear();
             }
         }
 
@@ -277,11 +284,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return ConsumerListener != null;
         }
 
-        public KReadableEvent GetWaitBufferFreeEvent()
+        public int GetWaitBufferFreeEvent()
         {
             lock (Lock)
             {
-                return _waitBufferFreeEvent.ReadableEvent;
+                return Os.GetReadableHandleOfSystemEvent(ref _waitBufferFreeEvent);
             }
         }
 

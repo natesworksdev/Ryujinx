@@ -3,7 +3,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel;
@@ -323,7 +323,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
             int clientHandle = context.Request.HandleDesc.ToCopy[0];
 
-            _clientMemory = context.Process.HandleTable.GetKProcess(clientHandle).CpuMemory;
+            _clientMemory = KernelStatic.GetAddressSpace(clientHandle);
 
             context.Device.System.KernelContext.Syscall.GetProcessId(clientHandle, out _owner);
 
@@ -384,9 +384,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 
                 if (errorCode == NvResult.Success)
                 {
-                    KSharedMemory sharedMemory = context.Process.HandleTable.GetObject<KSharedMemory>(sharedMemoryHandle);
-
-                    errorCode = ConvertInternalErrorCode(deviceFile.MapSharedMemory(sharedMemory, argument));
+                    errorCode = ConvertInternalErrorCode(deviceFile.MapSharedMemory(sharedMemoryHandle, argument));
                 }
             }
 

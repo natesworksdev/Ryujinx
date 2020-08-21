@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using Ryujinx.Memory;
@@ -11,7 +10,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 {
     class NvHostAsGpuDeviceFile : NvDeviceFile
     {
-        private static ConcurrentDictionary<KProcess, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<KProcess, AddressSpaceContext>();
+        private static ConcurrentDictionary<long, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<long, AddressSpaceContext>();
 
         public NvHostAsGpuDeviceFile(ServiceCtx context, IAddressSpaceManager memory, long owner) : base(context, owner) { }
 
@@ -80,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult AllocSpace(ref AllocSpaceArguments arguments)
         {
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context, Owner);
 
             ulong size = (ulong)arguments.Pages * (ulong)arguments.PageSize;
 
@@ -118,7 +117,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult FreeSpace(ref FreeSpaceArguments arguments)
         {
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context, Owner);
 
             NvInternalResult result = NvInternalResult.Success;
 
@@ -144,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult UnmapBuffer(ref UnmapBufferArguments arguments)
         {
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context, Owner);
 
             lock (addressSpaceContext)
             {
@@ -168,7 +167,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             const string mapErrorMsg = "Failed to map fixed buffer with offset 0x{0:x16}, size 0x{1:x16} and alignment 0x{2:x16}!";
 
-            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context);
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context, Owner);
 
             NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments.NvMapHandle, true);
 
@@ -290,7 +289,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
         {
             for (int index = 0; index < arguments.Length; index++)
             {
-                MemoryManager gmm = GetAddressSpaceContext(Context).Gmm;
+                MemoryManager gmm = GetAddressSpaceContext(Context, Owner).Gmm;
 
                 NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments[index].NvMapHandle, true);
 
@@ -320,9 +319,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         public override void Close() { }
 
-        public static AddressSpaceContext GetAddressSpaceContext(ServiceCtx context)
+        public static AddressSpaceContext GetAddressSpaceContext(ServiceCtx context, long pid)
         {
-            return _addressSpaceContextRegistry.GetOrAdd(context.Process, (key) => new AddressSpaceContext(context));
+            return _addressSpaceContextRegistry.GetOrAdd(pid, (key) => new AddressSpaceContext(context));
         }
     }
 }

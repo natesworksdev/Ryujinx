@@ -1,4 +1,3 @@
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using System.Collections.Concurrent;
 
@@ -6,20 +5,18 @@ namespace Ryujinx.HLE.HOS.SystemState
 {
     class AppletStateMgr
     {
+        private readonly Horizon _system;
+
         private ConcurrentQueue<MessageInfo> _messages;
 
         public FocusState FocusState { get; private set; }
-
-        public KEvent MessageEvent { get; }
 
         public IdDictionary AppletResourceUserIds { get; }
 
         public AppletStateMgr(Horizon system)
         {
+            _system = system;
             _messages = new ConcurrentQueue<MessageInfo>();
-
-            MessageEvent = new KEvent(system.KernelContext);
-
             AppletResourceUserIds = new IdDictionary();
         }
 
@@ -36,14 +33,14 @@ namespace Ryujinx.HLE.HOS.SystemState
         {
             _messages.Enqueue(message);
 
-            MessageEvent.ReadableEvent.Signal();
+            _system.ServiceServer.AmServer.SignalMessage();
         }
 
         public bool TryDequeueMessage(out MessageInfo message)
         {
             if (_messages.Count < 2)
             {
-                MessageEvent.ReadableEvent.Clear();
+                _system.ServiceServer.AmServer.ClearMessage();
             }
 
             return _messages.TryDequeue(out message);

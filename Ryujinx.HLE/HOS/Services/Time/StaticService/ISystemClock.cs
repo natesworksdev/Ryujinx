@@ -1,25 +1,25 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 {
-    class ISystemClock : IpcService
+    class ISystemClock : IpcService, IDisposable
     {
         private SystemClockCore _clockCore;
         private bool            _writePermission;
         private bool            _bypassUninitializedClock;
-        private int             _operationEventReadableHandle;
+        private SystemEventType _operationEvent;
 
         public ISystemClock(SystemClockCore clockCore, bool writePermission, bool bypassUninitializedClock)
         {
             _clockCore                    = clockCore;
             _writePermission              = writePermission;
             _bypassUninitializedClock     = bypassUninitializedClock;
-            _operationEventReadableHandle = 0;
+
+            Os.CreateSystemEvent(out _operationEvent, EventClearMode.AutoClear, true);
         }
 
         [Command(0)]
@@ -104,21 +104,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
         // GetOperationEventReadableHandle() -> handle<copy>
         public ResultCode GetOperationEventReadableHandle(ServiceCtx context)
         {
-            if (_operationEventReadableHandle == 0)
-            {
-                KEvent kEvent = new KEvent(context.Device.System.KernelContext);
-
-                _clockCore.RegisterOperationEvent(kEvent.WritableEvent);
-
-                if (context.Process.HandleTable.GenerateHandle(kEvent.ReadableEvent, out _operationEventReadableHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_operationEventReadableHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _operationEvent));
 
             return ResultCode.Success;
+        }
+
+        public void Dispose()
+        {
+            Os.DestroySystemEvent(ref _operationEvent);
         }
     }
 }

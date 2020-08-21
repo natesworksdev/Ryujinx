@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
@@ -822,7 +821,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return Status.Success;
         }
 
-        protected override KReadableEvent GetWaitBufferFreeEvent()
+        protected override int GetWaitBufferFreeEvent()
         {
             return Core.GetWaitBufferFreeEvent();
         }

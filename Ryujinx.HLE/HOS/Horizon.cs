@@ -43,10 +43,6 @@ namespace Ryujinx.HLE.HOS
 
         internal ContentManager ContentManager { get; }
 
-        internal KEvent VsyncEvent { get; }
-
-        internal KEvent DisplayResolutionChangeEvent { get; }
-
         public Keyset KeySet => Device.FileSystem.KeySet;
 
 #pragma warning disable CS0649
@@ -77,13 +73,7 @@ namespace Ryujinx.HLE.HOS
 
             AppletState = new AppletStateMgr(this);
 
-            AppletState.SetFocus(true);
-
             BluetoothEventManager = new BluetoothEventManager();
-
-            VsyncEvent = new KEvent(KernelContext);
-
-            DisplayResolutionChangeEvent = new KEvent(KernelContext);
 
             ContentManager = contentManager;
 
@@ -145,12 +135,12 @@ namespace Ryujinx.HLE.HOS
 
         public void SignalDisplayResolutionChange()
         {
-            DisplayResolutionChangeEvent.ReadableEvent.Signal();
+            ServiceServer.AmServer.SignalDisplayResolutionChanged();
         }
 
         public void SignalVsync()
         {
-            VsyncEvent.ReadableEvent.Signal();
+            ServiceServer.ViServer?.SignalVsync();
         }
 
         public void EnableMultiCoreScheduling()

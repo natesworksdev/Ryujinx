@@ -1,6 +1,7 @@
 using System;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.OsTypes;
 
 namespace Ryujinx.HLE.HOS.Services.Hid
 {
@@ -46,7 +47,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
         public PlayerIndex PrimaryController { get; set; } = PlayerIndex.Unknown;
 
-        private KEvent[] _styleSetUpdateEvents;
+        private readonly SystemEventType[] _styleSetUpdateEvents;
+        private readonly SignalableEvent[] _styleSetUpdateSignalableEvents;
 
         private static readonly Array3<BatteryCharge> _fullBattery;
 
@@ -54,11 +56,13 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             _configuredNpads = new NpadConfig[_maxControllers];
 
-            _styleSetUpdateEvents = new KEvent[_maxControllers];
+            _styleSetUpdateEvents = new SystemEventType[_maxControllers];
+            _styleSetUpdateSignalableEvents = new SignalableEvent[_maxControllers];
 
             for (int i = 0; i < _styleSetUpdateEvents.Length; ++i)
             {
-                _styleSetUpdateEvents[i] = new KEvent(_device.System.KernelContext);
+                Os.CreateSystemEvent(out _styleSetUpdateEvents[i], EventClearMode.AutoClear, true);
+                _styleSetUpdateSignalableEvents[i] = KernelStatic.GetSignalableEvent(Os.GetWritableHandleOfSystemEvent(ref _styleSetUpdateEvents[i]));
             }
 
             _fullBattery[0] = _fullBattery[1] = _fullBattery[2] = BatteryCharge.Percent100;
@@ -139,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        internal ref KEvent GetStyleSetUpdateEvent(PlayerIndex player)
+        internal ref SystemEventType GetStyleSetUpdateEvent(PlayerIndex player)
         {
             return ref _styleSetUpdateEvents[(int)player];
         }
@@ -229,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             _configuredNpads[(int)player].State = FilterState.Accepted;
 
-            _styleSetUpdateEvents[(int)player].ReadableEvent.Signal();
+            _styleSetUpdateSignalableEvents[(int)player].Signal();
 
             Logger.Info?.Print(LogClass.Hid, $"Connected ControllerType {type} to PlayerIndex {player}");
         }

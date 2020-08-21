@@ -1,7 +1,5 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.OsTypes;
 using System;
@@ -628,13 +626,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long        appletResourceUserId = context.RequestData.ReadInt64();
             long        npadStyleSet         = context.RequestData.ReadInt64();
 
-            KEvent evnt = context.Device.Hid.Npads.GetStyleSetUpdateEvent(npadId);
-            if (context.Process.HandleTable.GenerateHandle(evnt.ReadableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
+            ref SystemEventType evnt = ref context.Device.Hid.Npads.GetStyleSetUpdateEvent(npadId);
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref evnt));
 
             Logger.Stub?.PrintStub(LogClass.ServiceHid, new { appletResourceUserId, npadId, npadStyleSet });
 

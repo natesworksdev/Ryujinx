@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService
 
             if (queryCapability == PlayLogQueryCapability.None)
             {
-                filteredApplicationPlayStatistics = filteredApplicationPlayStatistics.Where(kv => kv.Value.TitleId == context.Process.TitleId);
+                filteredApplicationPlayStatistics = filteredApplicationPlayStatistics.Where(kv => kv.Value.TitleId == context.Device.Application.TitleId);
             }
             else // PlayLogQueryCapability.All
             {

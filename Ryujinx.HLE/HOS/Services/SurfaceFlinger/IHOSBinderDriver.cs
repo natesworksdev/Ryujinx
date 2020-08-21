@@ -1,6 +1,4 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Common;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
@@ -57,14 +55,9 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             uint typeId = context.RequestData.ReadUInt32();
 
-            GetNativeHandle(binderId, typeId, out KReadableEvent readableEvent);
+            GetNativeHandle(binderId, typeId, out int eventHandle);
 
-            if (context.Process.HandleTable.GenerateHandle(readableEvent, out int handle) != KernelResult.Success)
-            {
-                throw new InvalidOperationException("Out of handles!");
-            }
-
-            context.Response.HandleDesc = IpcHandleDesc.MakeMove(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeMove(eventHandle);
 
             return ResultCode.Success;
         }
@@ -97,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         protected abstract ResultCode AdjustRefcount(int binderId, int addVal, int type);
 
-        protected abstract void GetNativeHandle(int binderId, uint typeId, out KReadableEvent readableEvent);
+        protected abstract void GetNativeHandle(int binderId, uint typeId, out int eventHandle);
 
         protected abstract ResultCode OnTransact(int binderId, uint code, uint flags, ReadOnlySpan<byte> inputParcel, Span<byte> outputParcel);
     }

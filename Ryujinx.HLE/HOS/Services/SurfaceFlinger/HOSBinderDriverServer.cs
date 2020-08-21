@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Collections.Generic;
 
@@ -76,20 +75,20 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             return binder.AdjustRefcount(addVal, type);
         }
 
-        protected override void GetNativeHandle(int binderId, uint typeId, out KReadableEvent readableEvent)
+        protected override void GetNativeHandle(int binderId, uint typeId, out int eventHandle)
         {
             IBinder binder = GetBinderObjectById(binderId);
 
             if (binder == null)
             {
-                readableEvent = null;
+                eventHandle = 0;
 
                 Logger.Error?.Print(LogClass.SurfaceFlinger, $"Invalid binder id {binderId}");
 
                 return;
             }
 
-            binder.GetNativeHandle(typeId, out readableEvent);
+            binder.GetNativeHandle(typeId, out eventHandle);
         }
 
         protected override ResultCode OnTransact(int binderId, uint code, uint flags, ReadOnlySpan<byte> inputParcel, Span<byte> outputParcel)

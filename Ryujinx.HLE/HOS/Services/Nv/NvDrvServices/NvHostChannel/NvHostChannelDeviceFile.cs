@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             int                       headerSize           = Unsafe.SizeOf<MapCommandBufferArguments>();
             MapCommandBufferArguments commandBufferHeader  = MemoryMarshal.Cast<byte, MapCommandBufferArguments>(arguments)[0];
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
-            MemoryManager             gmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(Context).Gmm;
+            MemoryManager             gmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(Context, Owner).Gmm;
 
             foreach (ref CommandBufferHandle commandBufferEntry in commandBufferEntries)
             {
@@ -260,7 +260,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             int                       headerSize           = Unsafe.SizeOf<MapCommandBufferArguments>();
             MapCommandBufferArguments commandBufferHeader  = MemoryMarshal.Cast<byte, MapCommandBufferArguments>(arguments)[0];
             Span<CommandBufferHandle> commandBufferEntries = MemoryMarshal.Cast<byte, CommandBufferHandle>(arguments.Slice(headerSize)).Slice(0, commandBufferHeader.NumEntries);
-            MemoryManager             gmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(Context).Gmm;
+            MemoryManager             gmm                  = NvHostAsGpuDeviceFile.GetAddressSpaceContext(Context, Owner).Gmm;
 
             foreach (ref CommandBufferHandle commandBufferEntry in commandBufferEntries)
             {

@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
 
             byte[] buffer = new byte[data.SampleBufferSize];
 
-            context.Process.HandleTable.GetObject<KProcess>(_clientHandle).CpuMemory.Read(data.SampleBufferPtr, buffer);
+            KernelStatic.GetAddressSpace(_clientHandle).Read(data.SampleBufferPtr, buffer);
 
             _audioOut.AppendBuffer(_track, tag, buffer);
 

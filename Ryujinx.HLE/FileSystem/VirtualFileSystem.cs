@@ -108,7 +108,7 @@ namespace Ryujinx.HLE.FileSystem
 
             if (saveInfo.TitleId == 0 && saveInfo.SaveDataType == SaveDataType.SaveData)
             {
-                currentTitleId = context.Process.TitleId;
+                currentTitleId = context.Device.Application.TitleId;
             }
 
             if (saveInfo.SaveSpaceId == SaveSpaceId.NandUser)

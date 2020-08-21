@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
 using System.Runtime.CompilerServices;
 
@@ -9,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
     {
         ResultCode AdjustRefcount(int addVal, int type);
 
-        void GetNativeHandle(uint typeId, out KReadableEvent readableEvent);
+        void GetNativeHandle(uint typeId, out int eventHandle);
 
         ResultCode OnTransact(uint code, uint flags, ReadOnlySpan<byte> inputParcel, Span<byte> outputParcel)
         {
