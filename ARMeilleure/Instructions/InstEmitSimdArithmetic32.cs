@@ -268,8 +268,7 @@ namespace ARMeilleure.Instructions
             //TODO: Use FMA Instruction set.
             EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
             {
-                Operand result = EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul), op2, op3);
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub), result, op1);
+                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), context.Negate(op1), context.Multiply(op2, op3), op3);
             });
         }
 
