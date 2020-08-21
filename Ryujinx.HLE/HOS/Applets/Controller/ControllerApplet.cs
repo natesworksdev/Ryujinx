@@ -47,15 +47,25 @@ namespace Ryujinx.HLE.HOS.Applets
 
             ControllerSupportArgHeader argHeader;
 
-            if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArg>())
+            if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArgV7>())
             {
-                ControllerSupportArg arg = IApplet.ReadStruct<ControllerSupportArg>(controllerSupportArg);
+                ControllerSupportArgV7 arg = IApplet.ReadStruct<ControllerSupportArgV7>(controllerSupportArg);
                 argHeader = arg.Header;
+
+                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version 7 EnableExplainText={arg.EnableExplainText != 0}");
+                // Read enable text here?
+            }
+            else if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArgVPre7>())
+            {
+                ControllerSupportArgVPre7 arg = IApplet.ReadStruct<ControllerSupportArgVPre7>(controllerSupportArg);
+                argHeader = arg.Header;
+
+                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Pre-7 EnableExplainText={arg.EnableExplainText != 0}");
                 // Read enable text here?
             }
             else
             {
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"Unknown revision of ControllerSupportArg.");
+                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Unknown");
 
                 argHeader = IApplet.ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
