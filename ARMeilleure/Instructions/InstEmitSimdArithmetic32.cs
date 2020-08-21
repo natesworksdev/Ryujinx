@@ -1099,6 +1099,7 @@ namespace ARMeilleure.Instructions
         public static void Vrsqrte(ArmEmitterContext context)
         {
             OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
+
             if (op.F)
             {
                 int sizeF = op.Size & 1;
@@ -1251,7 +1252,7 @@ namespace ARMeilleure.Instructions
         private static void EmitSse41MaxMinNumOpF32(ArmEmitterContext context, bool isMaxNum, bool scalar)
         {
             IOpCode32Simd op = (IOpCode32Simd)context.CurrOp;
-            
+
             Func<Operand, Operand, Operand> genericEmit = (n, m) =>
             {
                 Operand nNum = context.Copy(n);
