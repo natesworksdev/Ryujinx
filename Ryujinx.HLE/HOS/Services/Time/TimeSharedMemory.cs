@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 using System.Threading;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.HLE.HOS.Services.Time.Types;
 using Ryujinx.HLE.Utilities;
@@ -44,19 +42,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
             return _sharedMemoryHandle;
         }
 
-        public void SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType currentTimePoint)
+        public void SetupStandardSteadyClock(UInt128 clockSourceId, TimeSpanType currentTimePoint)
         {
-            TimeSpanType ticksTimeSpan;
-
-            // As this may be called before the guest code, we support passing a null thread to make this api usable.
-            if (thread == null)
-            {
-                ticksTimeSpan = TimeSpanType.FromSeconds(0);
-            }
-            else
-            {
-                ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.CntpctEl0, thread.Context.CntfrqEl0);
-            }
+            TimeSpanType ticksTimeSpan = TimeSpanType.FromTimeSpan(ARMeilleure.State.ExecutionContext.ElapsedTime);
 
             SteadyClockContext context = new SteadyClockContext
             {
@@ -73,10 +61,10 @@ namespace Ryujinx.HLE.HOS.Services.Time
             WriteObjectToSharedMemory(AutomaticCorrectionEnabledOffset, 0, Convert.ToByte(isAutomaticCorrectionEnabled));
         }
 
-        public void SetSteadyClockRawTimePoint(KThread thread, TimeSpanType currentTimePoint)
+        public void SetSteadyClockRawTimePoint(TimeSpanType currentTimePoint)
         {
             SteadyClockContext context       = ReadObjectFromSharedMemory<SteadyClockContext>(SteadyClockContextOffset, 4);
-            TimeSpanType       ticksTimeSpan = TimeSpanType.FromTicks(thread.Context.CntpctEl0, thread.Context.CntfrqEl0);
+            TimeSpanType       ticksTimeSpan = TimeSpanType.FromTimeSpan(ARMeilleure.State.ExecutionContext.ElapsedTime);
 
             context.InternalOffset = (ulong)(currentTimePoint.NanoSeconds - ticksTimeSpan.NanoSeconds);
 

@@ -1,5 +1,4 @@
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.Memory;
 using System.IO;
@@ -10,7 +9,6 @@ namespace Ryujinx.HLE.HOS
     {
         public Switch Device { get; }
         public IAddressSpaceManager Memory { get; }
-        public KThread Thread { get; }
         public IpcMessage Request { get; }
         public IpcMessage Response { get; }
         public BinaryReader RequestData { get; }
@@ -19,7 +17,6 @@ namespace Ryujinx.HLE.HOS
         public ServiceCtx(
             Switch device,
             IAddressSpaceManager memory,
-            KThread thread,
             IpcMessage request,
             IpcMessage response,
             BinaryReader requestData,
@@ -27,7 +24,6 @@ namespace Ryujinx.HLE.HOS
         {
             Device = device;
             Memory = memory;
-            Thread = thread;
             Request = request;
             Response = response;
             RequestData = requestData;

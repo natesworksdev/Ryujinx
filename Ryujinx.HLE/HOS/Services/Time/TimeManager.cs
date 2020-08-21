@@ -1,7 +1,5 @@
 ﻿using Ryujinx.Configuration;
 using Ryujinx.HLE.Exceptions;
-using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Pcv.Bpc;
 using Ryujinx.HLE.HOS.Services.Settings;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
@@ -73,19 +71,19 @@ namespace Ryujinx.HLE.HOS.Services.Time
             internalOffset = new TimeSpanType(-internalOffset.NanoSeconds);
 
             // First init the standard steady clock
-            SetupStandardSteadyClock(null, clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
-            SetupStandardLocalSystemClock(null, new SystemClockContext(), systemTime.ToSeconds());
+            SetupStandardSteadyClock(clockSourceId, systemTime, internalOffset, TimeSpanType.Zero, false);
+            SetupStandardLocalSystemClock(new SystemClockContext(), systemTime.ToSeconds());
 
             if (NxSettings.Settings.TryGetValue("time!standard_network_clock_sufficient_accuracy_minutes", out object standardNetworkClockSufficientAccuracyMinutes))
             {
                 TimeSpanType standardNetworkClockSufficientAccuracy = new TimeSpanType((int)standardNetworkClockSufficientAccuracyMinutes * 60000000000);
 
                 // The network system clock needs a valid system clock, as such we setup this system clock using the local system clock.
-                StandardLocalSystemClock.GetClockContext(null, out SystemClockContext localSytemClockContext);
+                StandardLocalSystemClock.GetClockContext(out SystemClockContext localSytemClockContext);
                 SetupStandardNetworkSystemClock(localSytemClockContext, standardNetworkClockSufficientAccuracy);
             }
 
-            SetupStandardUserSystemClock(null, false, SteadyClockTimePoint.GetRandom());
+            SetupStandardUserSystemClock(false, SteadyClockTimePoint.GetRandom());
 
             // FIXME: TimeZone shoud be init here but it's actually done in ContentManager
 
@@ -97,13 +95,13 @@ namespace Ryujinx.HLE.HOS.Services.Time
             TimeZone.Initialize(this, device);
         }
 
-        public void SetupStandardSteadyClock(KThread thread, UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
+        public void SetupStandardSteadyClock(UInt128 clockSourceId, TimeSpanType setupValue, TimeSpanType internalOffset, TimeSpanType testOffset, bool isRtcResetDetected)
         {
             SetupInternalStandardSteadyClock(clockSourceId, setupValue, internalOffset, testOffset, isRtcResetDetected);
 
-            TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint(thread);
+            TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint();
 
-            SharedMemory.SetupStandardSteadyClock(thread, clockSourceId, currentTimePoint);
+            SharedMemory.SetupStandardSteadyClock(clockSourceId, currentTimePoint);
 
             // TODO: propagate IPC late binding of "time:s" and "time:p"
         }
@@ -125,18 +123,18 @@ namespace Ryujinx.HLE.HOS.Services.Time
             // TODO: propagate IPC late binding of "time:s" and "time:p"
         }
 
-        public void SetupStandardLocalSystemClock(KThread thread, SystemClockContext clockContext, long posixTime)
+        public void SetupStandardLocalSystemClock(SystemClockContext clockContext, long posixTime)
         {
             StandardLocalSystemClock.SetUpdateCallbackInstance(LocalClockContextWriter);
 
-            SteadyClockTimePoint currentTimePoint = StandardLocalSystemClock.GetSteadyClockCore().GetCurrentTimePoint(thread);
+            SteadyClockTimePoint currentTimePoint = StandardLocalSystemClock.GetSteadyClockCore().GetCurrentTimePoint();
             if (currentTimePoint.ClockSourceId == clockContext.SteadyTimePoint.ClockSourceId)
             {
                 StandardLocalSystemClock.SetSystemClockContext(clockContext);
             }
             else
             {
-                if (StandardLocalSystemClock.SetCurrentTime(thread, posixTime) != ResultCode.Success)
+                if (StandardLocalSystemClock.SetCurrentTime(posixTime) != ResultCode.Success)
                 {
                     throw new InternalServiceException("Cannot set current local time");
                 }
@@ -185,9 +183,9 @@ namespace Ryujinx.HLE.HOS.Services.Time
             // TODO: propagate IPC late binding of "time:s" and "time:p"
         }
 
-        public void SetupStandardUserSystemClock(KThread thread, bool isAutomaticCorrectionEnabled, SteadyClockTimePoint steadyClockTimePoint)
+        public void SetupStandardUserSystemClock(bool isAutomaticCorrectionEnabled, SteadyClockTimePoint steadyClockTimePoint)
         {
-            if (StandardUserSystemClock.SetAutomaticCorrectionEnabled(thread, isAutomaticCorrectionEnabled) != ResultCode.Success)
+            if (StandardUserSystemClock.SetAutomaticCorrectionEnabled(isAutomaticCorrectionEnabled) != ResultCode.Success)
             {
                 throw new InternalServiceException("Cannot set automatic user time correction state");
             }
@@ -200,13 +198,13 @@ namespace Ryujinx.HLE.HOS.Services.Time
             // TODO: propagate IPC late binding of "time:s" and "time:p"
         }
 
-        public void SetStandardSteadyClockRtcOffset(KThread thread, TimeSpanType rtcOffset)
+        public void SetStandardSteadyClockRtcOffset(TimeSpanType rtcOffset)
         {
             StandardSteadyClock.SetSetupValue(rtcOffset);
 
-            TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint(thread);
+            TimeSpanType currentTimePoint = StandardSteadyClock.GetCurrentRawTimePoint();
 
-            SharedMemory.SetSteadyClockRawTimePoint(thread, currentTimePoint);
+            SharedMemory.SetSteadyClockRawTimePoint(currentTimePoint);
         }
     }
 }

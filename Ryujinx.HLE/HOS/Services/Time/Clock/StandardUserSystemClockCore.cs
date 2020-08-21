@@ -26,15 +26,15 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             throw new NotImplementedException();
         }
 
-        public override ResultCode GetClockContext(KThread thread, out SystemClockContext context)
+        public override ResultCode GetClockContext(out SystemClockContext context)
         {
-            ResultCode result = ApplyAutomaticCorrection(thread, false);
+            ResultCode result = ApplyAutomaticCorrection(false);
 
             context = new SystemClockContext();
 
             if (result == ResultCode.Success)
             {
-                return _localSystemClockCore.GetClockContext(thread, out context);
+                return _localSystemClockCore.GetClockContext(out context);
             }
 
             return result;
@@ -45,13 +45,13 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             return ResultCode.NotImplemented;
         }
 
-        private ResultCode ApplyAutomaticCorrection(KThread thread, bool autoCorrectionEnabled)
+        private ResultCode ApplyAutomaticCorrection(bool autoCorrectionEnabled)
         {
             ResultCode result = ResultCode.Success;
 
-            if (_autoCorrectionEnabled != autoCorrectionEnabled && _networkSystemClockCore.IsClockSetup(thread))
+            if (_autoCorrectionEnabled != autoCorrectionEnabled && _networkSystemClockCore.IsClockSetup())
             {
-                result = _networkSystemClockCore.GetClockContext(thread, out SystemClockContext context);
+                result = _networkSystemClockCore.GetClockContext(out SystemClockContext context);
 
                 if (result == ResultCode.Success)
                 {
@@ -67,9 +67,9 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             Os.CreateSystemEvent(out _autoCorrectionEvent, EventClearMode.AutoClear, true);
         }
 
-        public ResultCode SetAutomaticCorrectionEnabled(KThread thread, bool autoCorrectionEnabled)
+        public ResultCode SetAutomaticCorrectionEnabled(bool autoCorrectionEnabled)
         {
-            ResultCode result = ApplyAutomaticCorrection(thread, autoCorrectionEnabled);
+            ResultCode result = ApplyAutomaticCorrection(autoCorrectionEnabled);
 
             if (result == ResultCode.Success)
             {

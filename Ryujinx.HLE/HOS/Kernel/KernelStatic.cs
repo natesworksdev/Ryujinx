@@ -25,6 +25,11 @@ namespace Ryujinx.HLE.HOS.Kernel
             return Context.Scheduler.GetCurrentProcess().HandleTable.GetKProcess(processHandle)?.CpuMemory;
         }
 
+        public static string GetGuestStackTrace()
+        {
+            return Context.Scheduler.GetCurrentThread().GetGuestStackTrace();
+        }
+
         internal static void SetKernelContext(KernelContext context) => Context = context;
     }
 }

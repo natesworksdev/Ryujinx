@@ -66,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.TimeZone
         {
             InitializeInstance(device.FileSystem, device.System.ContentManager, device.System.FsIntegrityCheckLevel);
 
-            SteadyClockTimePoint timeZoneUpdatedTimePoint = timeManager.StandardSteadyClock.GetCurrentTimePoint(null);
+            SteadyClockTimePoint timeZoneUpdatedTimePoint = timeManager.StandardSteadyClock.GetCurrentTimePoint();
 
             string deviceLocationName = SanityCheckDeviceLocationName();
 

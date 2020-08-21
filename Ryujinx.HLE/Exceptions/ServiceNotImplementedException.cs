@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Services;
 using System;
 using System.Diagnostics;
@@ -75,7 +76,7 @@ namespace Ryujinx.HLE.Exceptions
             }*/
 
             sb.AppendLine("Guest Stack Trace:");
-            sb.AppendLine(Context.Thread.GetGuestStackTrace());
+            sb.AppendLine(KernelStatic.GetGuestStackTrace());
 
             // Print buffer information
             if (Request.PtrBuff.Count > 0 ||

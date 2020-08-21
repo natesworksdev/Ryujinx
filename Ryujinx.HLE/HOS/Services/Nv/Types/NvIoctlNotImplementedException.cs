@@ -1,4 +1,5 @@
-﻿using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
+﻿using Ryujinx.HLE.HOS.Kernel;
+using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices;
 using System;
 using System.Text;
 
@@ -47,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.Types
             sb.AppendLine($"\tDirection: {Command.DirectionValue}");
 
             sb.AppendLine("Guest Stack Trace:");
-            sb.AppendLine(Context.Thread.GetGuestStackTrace());
+            sb.AppendLine(KernelStatic.GetGuestStackTrace());
 
             return sb.ToString();
         }

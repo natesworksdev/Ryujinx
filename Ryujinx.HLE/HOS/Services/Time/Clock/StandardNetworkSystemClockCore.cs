@@ -1,6 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Kernel.Threading;
-
-namespace Ryujinx.HLE.HOS.Services.Time.Clock
+﻿namespace Ryujinx.HLE.HOS.Services.Time.Clock
 {
     class StandardNetworkSystemClockCore : SystemClockCore
     {
@@ -11,14 +9,14 @@ namespace Ryujinx.HLE.HOS.Services.Time.Clock
             _standardNetworkClockSufficientAccuracy = new TimeSpanType(0);
         }
 
-        public bool IsStandardNetworkSystemClockAccuracySufficient(KThread thread)
+        public bool IsStandardNetworkSystemClockAccuracySufficient()
         {
             SteadyClockCore      steadyClockCore  = GetSteadyClockCore();
-            SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint(thread);
+            SteadyClockTimePoint currentTimePoint = steadyClockCore.GetCurrentTimePoint();
 
             bool isStandardNetworkClockSufficientAccuracy = false;
 
-            ResultCode result = GetClockContext(thread, out SystemClockContext context);
+            ResultCode result = GetClockContext(out SystemClockContext context);
 
             if (result == ResultCode.Success && context.SteadyTimePoint.GetSpanBetween(currentTimePoint, out long outSpan) == ResultCode.Success)
             {

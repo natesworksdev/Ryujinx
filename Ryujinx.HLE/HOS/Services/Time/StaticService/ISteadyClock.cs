@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            SteadyClockTimePoint currentTimePoint = _steadyClock.GetCurrentTimePoint(context.Thread);
+            SteadyClockTimePoint currentTimePoint = _steadyClock.GetCurrentTimePoint();
 
             context.ResponseData.WriteStruct(currentTimePoint);
 

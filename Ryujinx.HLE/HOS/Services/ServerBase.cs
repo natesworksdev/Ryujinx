@@ -164,7 +164,7 @@ namespace Ryujinx.HLE.HOS.Services
                             {
                                 var serviceAttribute = info.Type.GetCustomAttributes<ServiceAttribute>().First(service => service.Name == info.Name);
 
-                                ServiceCtx context = new ServiceCtx(_context.Device, null, null, null, null, null, null);
+                                ServiceCtx context = new ServiceCtx(_context.Device, null, null, null, null, null);
 
                                 var service = info.Parameter != null
                                     ? (IpcService)Activator.CreateInstance(info.Type, context, serviceAttribute.Parameter)
@@ -333,7 +333,6 @@ namespace Ryujinx.HLE.HOS.Services
                         ServiceCtx context = new ServiceCtx(
                             _context.Device,
                             process.CpuMemory,
-                            thread,
                             request,
                             response,
                             reqReader,

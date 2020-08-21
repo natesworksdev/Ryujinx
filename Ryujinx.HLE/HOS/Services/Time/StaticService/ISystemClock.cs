@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            ResultCode result = _clockCore.GetCurrentTime(context.Thread, out long posixTime);
+            ResultCode result = _clockCore.GetCurrentTime(out long posixTime);
 
             if (result == ResultCode.Success)
             {
@@ -57,7 +57,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
 
             long posixTime = context.RequestData.ReadInt64();
 
-            return _clockCore.SetCurrentTime(context.Thread, posixTime);
+            return _clockCore.SetCurrentTime(posixTime);
         }
 
         [Command(2)]
@@ -69,7 +69,7 @@ namespace Ryujinx.HLE.HOS.Services.Time.StaticService
                 return ResultCode.UninitializedClock;
             }
 
-            ResultCode result = _clockCore.GetClockContext(context.Thread, out SystemClockContext clockContext);
+            ResultCode result = _clockCore.GetClockContext(out SystemClockContext clockContext);
 
             if (result == ResultCode.Success)
             {
