@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     PlayerCountMin = playerMin,
                     PlayerCountMax = playerMax,
                     SupportedStyles = (ControllerType)privateArg.NpadStyleSet,
-                    SupportedPlayers = _system.Device.Hid.Npads.SupportedPlayers,
+                    SupportedPlayers = _system.Device.Hid.Npads.GetSupportedPlayers(),
                     IsDocked = _system.State.DockedMode
                 };
 

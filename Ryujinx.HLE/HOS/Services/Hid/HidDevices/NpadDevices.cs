@@ -9,38 +9,33 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 {
     public class NpadDevices : BaseDevice
     {
-        const BatteryCharge DefaultBatteryCharge = BatteryCharge.Percent100;
-
-        public const int MaxControllers = 9; // Players 1-8 and Handheld
-        private ControllerType[] _configuredTypes;
-        private KEvent[] _styleSetUpdateEvents;
+        private const BatteryCharge DefaultBatteryCharge = BatteryCharge.Percent100;
 
         private const int NoMatchNotifyFrequencyMs = 2000;
         private int _activeCount;
         private long _lastNotifyTimestamp;
 
+        public const int MaxControllers = 9; // Players 1-8 and Handheld
+        private ControllerType[] _configuredTypes;
+        private KEvent[] _styleSetUpdateEvents;
+        private bool[] _supportedPlayers;
+
         internal NpadJoyHoldType JoyHold { get; set; }
         internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
         internal ControllerType SupportedStyleSets { get; set; }
-        internal HashSet<PlayerIndex> SupportedPlayers { get; }
 
         public NpadDevices(Switch device, bool active = true) : base(device, active)
         {
             _configuredTypes = new ControllerType[MaxControllers];
 
-            _styleSetUpdateEvents = new KEvent[MaxControllers];
-
             SupportedStyleSets = ControllerType.Handheld | ControllerType.JoyconPair |
                                  ControllerType.JoyconLeft | ControllerType.JoyconRight |
                                  ControllerType.ProController;
 
-            SupportedPlayers = new HashSet<PlayerIndex>(new PlayerIndex[]
-            {
-                PlayerIndex.Player1, PlayerIndex.Player2, PlayerIndex.Player3, PlayerIndex.Player4,
-                PlayerIndex.Player5, PlayerIndex.Player6, PlayerIndex.Player7, PlayerIndex.Player8,
-                PlayerIndex.Handheld
-            });
+            _supportedPlayers = new bool[MaxControllers];
+            _supportedPlayers.AsSpan().Fill(true);
 
+            _styleSetUpdateEvents = new KEvent[MaxControllers];
             for (int i = 0; i < _styleSetUpdateEvents.Length; ++i)
             {
                 _styleSetUpdateEvents[i] = new KEvent(_device.System.KernelContext);
@@ -54,6 +49,27 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         internal ref KEvent GetStyleSetUpdateEvent(PlayerIndex player)
         {
             return ref _styleSetUpdateEvents[(int)player];
+        }
+
+        internal void ClearSupportedPlayers()
+        {
+            _supportedPlayers.AsSpan().Clear();
+        }
+
+        internal void SetSupportedPlayer(PlayerIndex player, bool supported = true)
+        {
+            _supportedPlayers[(int)player] = supported;
+        }
+
+        internal IEnumerable<PlayerIndex> GetSupportedPlayers()
+        {
+            for (int i = 0; i < _supportedPlayers.Length; ++i)
+            {
+                if (_supportedPlayers[i])
+                {
+                    yield return (PlayerIndex)i;
+                }
+            }
         }
 
         public bool Validate(int playerMin, int playerMax, ControllerType acceptedTypes, out int configuredCount, out PlayerIndex primaryIndex)
@@ -72,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 ControllerType currentType = _device.Hid.SharedMemory.Npads[i].Header.Type;
 
-                if (currentType != ControllerType.None && (npad & acceptedTypes) != 0 && SupportedPlayers.Contains((PlayerIndex)i))
+                if (currentType != ControllerType.None && (npad & acceptedTypes) != 0 && _supportedPlayers[i])
                 {
                     configuredCount++;
                     if (primaryIndex == PlayerIndex.Unknown)
@@ -152,7 +168,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 }
 
                 // Check StyleSet and PlayerSet
-                if ((config & SupportedStyleSets) == 0 || !SupportedPlayers.Contains((PlayerIndex)i))
+                if ((config & SupportedStyleSets) == 0 || !_supportedPlayers[i])
                 {
                     config = ControllerType.None;
                 }
@@ -162,7 +178,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             if (_activeCount == 0 && PerformanceCounter.ElapsedMilliseconds > _lastNotifyTimestamp + NoMatchNotifyFrequencyMs)
             {
-                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests '{SupportedStyleSets}' on '{string.Join(", ", SupportedPlayers)}'");
+                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests '{SupportedStyleSets}' on '{string.Join(", ", GetSupportedPlayers())}'");
                 _lastNotifyTimestamp = PerformanceCounter.ElapsedMilliseconds;
             }
         }

@@ -594,7 +594,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             NpadIdType[] supportedPlayerIds = new NpadIdType[arraySize];
 
-            context.Device.Hid.Npads.SupportedPlayers.Clear();
+            context.Device.Hid.Npads.ClearSupportedPlayers();
 
             for (int i = 0; i < arraySize; ++i)
             {
@@ -602,7 +602,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 if (id >= 0)
                 {
-                    context.Device.Hid.Npads.SupportedPlayers.Add(HidUtils.GetIndexFromNpadIdType(id));
+                    context.Device.Hid.Npads.SetSupportedPlayer(HidUtils.GetIndexFromNpadIdType(id));
                 }
 
                 supportedPlayerIds[i] = id;
