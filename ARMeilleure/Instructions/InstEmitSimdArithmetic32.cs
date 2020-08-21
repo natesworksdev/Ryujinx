@@ -1100,9 +1100,9 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    EmitVectorUnaryOpF32(context, (op1) =>
+                    EmitVectorBinaryOpF32(context, (op1, op2) =>
                     {
-                        return EmitUnaryMathCall(context, nameof(Math.Round), op1);
+                        return EmitUnaryMathCall(context, nameof(Math.Round), op2);
                     });
                 }
             }
@@ -1125,9 +1125,9 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    EmitScalarUnaryOpF32(context, (op1) =>
+                    EmitScalarBinaryOpF32(context, (op1, op2) =>
                     {
-                        return EmitUnaryMathCall(context, nameof(Math.Round), op1);
+                        return EmitUnaryMathCall(context, nameof(Math.Round), op2);
                     });
                 }
             }
