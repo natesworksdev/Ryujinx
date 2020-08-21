@@ -8,9 +8,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
         public IntentId IntentId;
         public ushort   Channel;
         public byte     NodeCountMax;
-        public byte     Unknown1;
+        public byte     Reserved1;
         public ushort   LocalCommunicationVersion;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 10)]
-        public byte[]   Unknown2;
+        public byte[]   Reserved2;
     }
 }

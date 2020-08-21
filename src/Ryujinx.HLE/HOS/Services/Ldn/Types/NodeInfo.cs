@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.Types
 {
-    [StructLayout(LayoutKind.Sequential, Size = 0x40, CharSet = CharSet.Ansi)]
+    [StructLayout(LayoutKind.Sequential, Size = 0x40)]
     struct NodeInfo
     {
         public uint   Ipv4Address;
@@ -12,9 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
         public byte   IsConnected;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x21)]
         public byte[] UserName;
-        public byte   Unknown1;
+        public byte   Reserved1;
         public ushort LocalCommunicationVersion;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x10)]
-        public byte[] Unknown2;
+        public byte[] Reserved2;
     }
 }

@@ -212,7 +212,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             SecurityParameter securityParameter = new SecurityParameter()
             {
-                Unknown   = new byte[0x10],
+                Data      = new byte[0x10],
                 SessionId = networkInfo.NetworkId.SessionId
             };
 
@@ -241,9 +241,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 IntentId                  = networkInfo.NetworkId.IntentId,
                 Channel                   = networkInfo.Common.Channel,
                 NodeCountMax              = networkInfo.Ldn.NodeCountMax,
-                Unknown1                  = 0x00,
+                Reserved1                 = 0x00,
                 LocalCommunicationVersion = (ushort)networkInfo.NetworkId.IntentId.LocalCommunicationId,
-                Unknown2                  = new byte[10]
+                Reserved2                 = new byte[10]
             };
 
             context.ResponseData.WriteStruct(networkConfig);
@@ -271,7 +271,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(101)]
-        // GetNetworkInfoLatestUpdate() -> (buffer<network_info<0x480>, 0x1a>, buffer<unknown, 0xa>)
+        // GetNetworkInfoLatestUpdate() -> (buffer<network_info<0x480>, 0x1a>, buffer<node_latest_update, 0xa>)
         public ResultCode GetNetworkInfoLatestUpdate(ServiceCtx context)
         {
             throw new NotImplementedException();
@@ -411,14 +411,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(202)]
-        // CreateNetwork(bytes<0x44, 2>, bytes<0x30, 1>, bytes<0x20, 8>)
+        // CreateNetwork(bytes<0x44, 2> security_config, bytes<0x30, 1> user_config, bytes<0x20, 8> network_config)
         public ResultCode CreateNetwork(ServiceCtx context)
         {
             return CreateNetworkImpl(context);
         }
 
         [Command(203)]
-        // CreateNetworkPrivate(bytes<0x44, 2>, bytes<0x20, 1>, bytes<0x30, 1>, bytes<0x20, 8>, buffer<unknown, 9>)
+        // CreateNetworkPrivate(bytes<0x44, 2> security_config, bytes<0x20, 1> security_parameter, bytes<0x30, 1>, bytes<0x20, 8> network_config, buffer<unknown, 9> address_entry, int count)
         public ResultCode CreateNetworkPrivate(ServiceCtx context)
         {
             return CreateNetworkImpl(context, true);
@@ -594,7 +594,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(208)]
-        // AddAcceptFilterEntry(bytes<6, 1>)
+        // AddAcceptFilterEntry(bytes<6, 1> mac_address)
         public ResultCode AddAcceptFilterEntry(ServiceCtx context)
         {
             if (_nifmResultCode != ResultCode.Success)
@@ -679,7 +679,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         }
 
         [Command(303)]
-        // ConnectPrivate(bytes<0x44, 2> security_config, bytes<0x20, 1> access_key, bytes<0x30, 1> user_config, u32 local_communication_version, u32 option_unknown, bytes<0x20, 8> unknown)
+        // ConnectPrivate(bytes<0x44, 2> security_config, bytes<0x20, 1> security_parameter, bytes<0x30, 1> user_config, u32 local_communication_version, u32 option_unknown, bytes<0x20, 8> network_config)
         public ResultCode ConnectPrivate(ServiceCtx context)
         {
             return ConnectImpl(context, true);

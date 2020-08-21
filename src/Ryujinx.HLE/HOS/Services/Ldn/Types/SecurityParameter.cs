@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     struct SecurityParameter
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x10)]
-        public byte[] Unknown;
+        public byte[] Data;
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 0x10)]
         public byte[] SessionId;
     }
