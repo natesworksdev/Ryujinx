@@ -263,6 +263,16 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vfnms(ArmEmitterContext context)
+        {
+            //TODO: Use FMA Instruction set.
+            EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
+            {
+                Operand result = EmitSoftFloatCall(context, nameof(SoftFloat32.FPMul), op2, op3);
+                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPSub), result, op1);
+            });
+        }
+
         public static void Vmov_S(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse2)
@@ -1089,7 +1099,6 @@ namespace ARMeilleure.Instructions
         public static void Vrsqrte(ArmEmitterContext context)
         {
             OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
-
             if (op.F)
             {
                 int sizeF = op.Size & 1;
@@ -1242,7 +1251,7 @@ namespace ARMeilleure.Instructions
         private static void EmitSse41MaxMinNumOpF32(ArmEmitterContext context, bool isMaxNum, bool scalar)
         {
             IOpCode32Simd op = (IOpCode32Simd)context.CurrOp;
-
+            
             Func<Operand, Operand, Operand> genericEmit = (n, m) =>
             {
                 Operand nNum = context.Copy(n);

@@ -565,6 +565,7 @@ namespace ARMeilleure.Instructions
         Vext,
         Vfma,
         Vfms,
+        Vfnms,
         Vld1,
         Vld2,
         Vld3,
