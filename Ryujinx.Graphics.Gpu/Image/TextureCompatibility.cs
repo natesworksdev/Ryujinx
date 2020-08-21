@@ -309,8 +309,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-
-
         /// <summary>
         /// Checks if the view format of the first texture format is compatible with the format of the second.
         /// In general, the formats are considered compatible if the bytes per pixel values are equal,
