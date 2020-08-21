@@ -953,11 +953,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // The shader will need the appropriate conversion code to compensate.
                 switch (formatInfo.Format)
                 {
-                    case Format.R8Snorm:           formatInfo = new FormatInfo(Format.R8Sint, 1, 1, 1); break;
-                    case Format.R16Snorm:          formatInfo = new FormatInfo(Format.R16Sint, 1, 1, 2); break;
-                    case Format.R8G8Snorm:         formatInfo = new FormatInfo(Format.R8G8Sint, 1, 1, 2); break;
-                    case Format.R16G16Snorm:       formatInfo = new FormatInfo(Format.R16G16Sint, 1, 1, 4); break;
-                    case Format.R8G8B8A8Snorm:     formatInfo = new FormatInfo(Format.R8G8B8A8Sint, 1, 1, 4); break;
+                    case Format.R8Snorm:           formatInfo = new FormatInfo(Format.R8Sint,           1, 1, 1); break;
+                    case Format.R16Snorm:          formatInfo = new FormatInfo(Format.R16Sint,          1, 1, 2); break;
+                    case Format.R8G8Snorm:         formatInfo = new FormatInfo(Format.R8G8Sint,         1, 1, 2); break;
+                    case Format.R16G16Snorm:       formatInfo = new FormatInfo(Format.R16G16Sint,       1, 1, 4); break;
+                    case Format.R8G8B8A8Snorm:     formatInfo = new FormatInfo(Format.R8G8B8A8Sint,     1, 1, 4); break;
                     case Format.R16G16B16A16Snorm: formatInfo = new FormatInfo(Format.R16G16B16A16Sint, 1, 1, 8); break;
                 }
             }
