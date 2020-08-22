@@ -2,10 +2,10 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
+using Ryujinx.Horizon.Kernel.Svc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 
 namespace Ryujinx.Horizon.Kernel.Threading

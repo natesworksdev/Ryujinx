@@ -4,14 +4,14 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 {
     public class CastExpression : BaseNode
     {
-        private string   _kind;
+        private string _kind;
         private BaseNode _to;
         private BaseNode _from;
 
         public CastExpression(string kind, BaseNode to, BaseNode from) : base(NodeType.CastExpression)
         {
             _kind = kind;
-            _to   = to;
+            _to = to;
             _from = from;
         }
 

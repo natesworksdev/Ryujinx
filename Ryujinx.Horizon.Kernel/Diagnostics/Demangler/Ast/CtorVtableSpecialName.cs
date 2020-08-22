@@ -9,7 +9,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 
         public CtorVtableSpecialName(BaseNode firstType, BaseNode secondType) : base(NodeType.CtorVtableSpecialName)
         {
-            _firstType  = firstType;
+            _firstType = firstType;
             _secondType = secondType;
         }
 

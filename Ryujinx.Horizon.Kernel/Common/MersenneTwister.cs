@@ -46,12 +46,12 @@ namespace Ryujinx.Horizon.Kernel.Common
             // If Range is already power of 2, subtract one to use log2(Range) directly.
             int rangeLog2 = nextRangeLog2 - (BitUtils.IsPowerOfTwo64(range) ? 1 : 0);
 
-            int parts       = rangeLog2 > 32 ? 2 : 1;
+            int parts = rangeLog2 > 32 ? 2 : 1;
             int bitsPerPart = rangeLog2 / parts;
 
             int fullParts = parts - (rangeLog2 - parts * bitsPerPart);
 
-            uint mask      = 0xffffffffu >> (32 - bitsPerPart);
+            uint mask = 0xffffffffu >> (32 - bitsPerPart);
             uint maskPlus1 = 0xffffffffu >> (31 - bitsPerPart);
 
             long randomNumber;
@@ -66,9 +66,9 @@ namespace Ryujinx.Horizon.Kernel.Common
         }
 
         private long GenRandomNumber(
-            int  parts,
-            int  fullParts,
-            int  bitsPerPart,
+            int parts,
+            int fullParts,
+            int bitsPerPart,
             uint mask,
             uint maskPlus1)
         {
@@ -79,13 +79,13 @@ namespace Ryujinx.Horizon.Kernel.Common
             for (; part < fullParts; part++)
             {
                 randomNumber <<= bitsPerPart;
-                randomNumber  |= GenRandomNumber() & mask;
+                randomNumber |= GenRandomNumber() & mask;
             }
 
             for (; part < parts; part++)
             {
                 randomNumber <<= bitsPerPart + 1;
-                randomNumber  |= GenRandomNumber() & maskPlus1;
+                randomNumber |= GenRandomNumber() & maskPlus1;
             }
 
             return randomNumber;

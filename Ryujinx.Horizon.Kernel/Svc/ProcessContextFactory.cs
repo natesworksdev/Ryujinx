@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Cpu;
 using Ryujinx.Memory;
 
-namespace Ryujinx.Horizon.Kernel.Process
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     class ProcessContextFactory : IProcessContextFactory
     {

@@ -2,7 +2,7 @@
 using Ryujinx.Memory;
 using System;
 
-namespace Ryujinx.Horizon.Kernel.Process
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     public interface IProcessContext : IDisposable
     {

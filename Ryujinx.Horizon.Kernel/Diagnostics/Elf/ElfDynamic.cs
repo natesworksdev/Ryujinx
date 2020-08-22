@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Elf
 
         public ElfDynamic(ElfDynamicTag tag, long value)
         {
-            Tag   = tag;
+            Tag = tag;
             Value = value;
         }
     }

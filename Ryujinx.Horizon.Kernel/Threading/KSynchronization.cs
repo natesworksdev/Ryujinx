@@ -65,8 +65,8 @@ namespace Ryujinx.Horizon.Kernel.Threading
                     syncNodes[index] = syncObjs[index].AddWaitingThread(currentThread);
                 }
 
-                currentThread.WaitingSync   = true;
-                currentThread.SignaledObj   = null;
+                currentThread.WaitingSync = true;
+                currentThread.SignaledObj = null;
                 currentThread.ObjSyncResult = result;
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
@@ -121,7 +121,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
                     if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
                     {
-                        thread.SignaledObj   = syncObj;
+                        thread.SignaledObj = syncObj;
                         thread.ObjSyncResult = KernelResult.Success;
 
                         thread.Reschedule(ThreadSchedState.Running);

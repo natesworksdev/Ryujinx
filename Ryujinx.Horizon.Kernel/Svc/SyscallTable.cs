@@ -6,13 +6,13 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Reflection.Emit;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     static class SyscallTable
     {
         private const int SvcFuncMaxArguments64 = 8;
         private const int SvcFuncMaxArguments32 = 4;
-        private const int SvcMax                = 0x80;
+        private const int SvcMax = 0x80;
 
         public static Action<Syscall32, ExecutionContext>[] SvcTable32 { get; }
         public static Action<Syscall64, ExecutionContext>[] SvcTable64 { get; }
@@ -175,11 +175,11 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 switch (Type.GetTypeCode(sourceType))
                 {
                     case TypeCode.UInt32: generator.Emit(OpCodes.Conv_U4); break;
-                    case TypeCode.Int32:  generator.Emit(OpCodes.Conv_I4); break;
+                    case TypeCode.Int32: generator.Emit(OpCodes.Conv_I4); break;
                     case TypeCode.UInt16: generator.Emit(OpCodes.Conv_U2); break;
-                    case TypeCode.Int16:  generator.Emit(OpCodes.Conv_I2); break;
-                    case TypeCode.Byte:   generator.Emit(OpCodes.Conv_U1); break;
-                    case TypeCode.SByte:  generator.Emit(OpCodes.Conv_I1); break;
+                    case TypeCode.Int16: generator.Emit(OpCodes.Conv_I2); break;
+                    case TypeCode.Byte: generator.Emit(OpCodes.Conv_U1); break;
+                    case TypeCode.SByte: generator.Emit(OpCodes.Conv_I1); break;
 
                     case TypeCode.Boolean:
                         generator.Emit(OpCodes.Conv_I4);
@@ -277,7 +277,7 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
 
                 argsFormat = argsFormat.Substring(0, argsFormat.Length - 1);
 
-               generator.Emit(OpCodes.Ldstr, argsFormat);
+                generator.Emit(OpCodes.Ldstr, argsFormat);
             }
             else
             {
@@ -451,8 +451,8 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
 
         private static void PrintResult(KernelResult result, string svcName)
         {
-            if (result != KernelResult.Success   &&
-                result != KernelResult.TimedOut  &&
+            if (result != KernelResult.Success &&
+                result != KernelResult.TimedOut &&
                 result != KernelResult.Cancelled &&
                 result != KernelResult.InvalidState)
             {

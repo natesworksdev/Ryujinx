@@ -8,7 +8,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
     {
         private KPageList _pageList;
 
-        private MemoryRegion _ownerRegion;
+        private KMemoryRegion _ownerRegion;
         private KResourceLimit _ownerResourceLimit;
 
         private long _ownerPid;
@@ -70,10 +70,10 @@ namespace Ryujinx.Horizon.Kernel.Memory
         }
 
         public KernelResult MapIntoProcess(
-            KMemoryManager   memoryManager,
-            ulong            address,
-            ulong            size,
-            KProcess         process,
+            KMemoryManager memoryManager,
+            ulong address,
+            ulong size,
+            KProcess process,
             KMemoryPermission permission)
         {
             ulong pagesCountRounded = BitUtils.DivRoundUp(size, KMemoryManager.PageSize);
@@ -90,7 +90,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
                 return KernelResult.InvalidPermission;
             }
 
-            return memoryManager.MapPages(address, _pageList, MemoryState.SharedMemory, permission);
+            return memoryManager.MapPages(address, _pageList, KMemoryState.SharedMemory, permission);
         }
 
         public KernelResult UnmapFromProcess(KMemoryManager memoryManager, ulong address, ulong size, KProcess process)
@@ -102,7 +102,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
                 return KernelResult.InvalidSize;
             }
 
-            return memoryManager.UnmapPages(address, _pageList, MemoryState.SharedMemory);
+            return memoryManager.UnmapPages(address, _pageList, KMemoryState.SharedMemory);
         }
 
         protected override void Destroy()

@@ -7,7 +7,7 @@ using Ryujinx.HLE.Loaders.Npdm;
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
-using Ryujinx.Horizon.Kernel.Process;
+using Ryujinx.Horizon.Kernel.Svc;
 
 namespace Ryujinx.HLE.HOS
 {

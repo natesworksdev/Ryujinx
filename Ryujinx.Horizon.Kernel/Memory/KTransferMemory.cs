@@ -70,9 +70,9 @@ namespace Ryujinx.Horizon.Kernel.Memory
                     return KernelResult.InvalidState;
                 }
 
-                MemoryState state = _ownerPermission == KMemoryPermission.None
-                    ? MemoryState.TransferMemoryIsolated
-                    : MemoryState.TransferMemory;
+                KMemoryState state = _ownerPermission == KMemoryPermission.None
+                    ? KMemoryState.TransferMemoryIsolated
+                    : KMemoryState.TransferMemory;
 
                 KProcess currentProcess = KernelContext.Scheduler.GetCurrentProcess();
 
@@ -100,9 +100,9 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
             lock (_lock)
             {
-                MemoryState state = _ownerPermission == KMemoryPermission.None
-                    ? MemoryState.TransferMemoryIsolated
-                    : MemoryState.TransferMemory;
+                KMemoryState state = _ownerPermission == KMemoryPermission.None
+                    ? KMemoryState.TransferMemoryIsolated
+                    : KMemoryState.TransferMemory;
 
                 KProcess currentProcess = KernelContext.Scheduler.GetCurrentProcess();
 

@@ -18,7 +18,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             ServerPort = new KServerPort(context, this);
             ClientPort = new KClientPort(context, this, maxSessions);
 
-            IsLight      = isLight;
+            IsLight = isLight;
             _nameAddress = nameAddress;
 
             _state = ChannelState.Open;

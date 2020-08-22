@@ -1,6 +1,6 @@
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Common;
-using Ryujinx.Horizon.Kernel.SupervisorCall;
+using Ryujinx.Horizon.Kernel.Svc;
 
 namespace Ryujinx.HLE.HOS.Services
 {

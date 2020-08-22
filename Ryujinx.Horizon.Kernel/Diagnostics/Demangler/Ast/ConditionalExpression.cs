@@ -10,9 +10,9 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 
         public ConditionalExpression(BaseNode conditionNode, BaseNode thenNode, BaseNode elseNode) : base(NodeType.ConditionalExpression)
         {
-            _thenNode      = thenNode;
+            _thenNode = thenNode;
             _conditionNode = conditionNode;
-            _elseNode      = elseNode;
+            _elseNode = elseNode;
         }
 
         public override void PrintLeft(TextWriter writer)

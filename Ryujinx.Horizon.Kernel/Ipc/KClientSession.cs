@@ -16,7 +16,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
         public KClientSession(KernelContextInternal context, KSession parent, KClientPort parentPort) : base(context)
         {
-            _parent    = parent;
+            _parent = parent;
             ParentPort = parentPort;
 
             parentPort?.IncrementReferenceCount();
@@ -35,7 +35,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             KernelContext.CriticalSection.Enter();
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.Success;
 
             KernelResult result = _parent.ServerSession.EnqueueRequest(request);

@@ -1,4 +1,4 @@
-﻿namespace Ryujinx.Horizon.Kernel.Process
+﻿namespace Ryujinx.Horizon.Kernel.Svc
 {
     public enum ProcessCreationFlags
     {

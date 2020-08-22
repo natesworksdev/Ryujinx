@@ -1,8 +1,7 @@
 ﻿using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
-using Ryujinx.Horizon.Kernel.Threading;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     class Syscall64
     {
@@ -112,8 +111,8 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
         public KernelResult SetMemoryAttribute64(
             [R(0)] ulong position,
             [R(1)] ulong size,
-            [R(2)] MemoryAttribute attributeMask,
-            [R(3)] MemoryAttribute attributeValue)
+            [R(2)] KMemoryAttribute attributeMask,
+            [R(3)] KMemoryAttribute attributeValue)
         {
             return _syscall.SetMemoryAttribute(position, size, attributeMask, attributeValue);
         }

@@ -1,6 +1,6 @@
 namespace Ryujinx.Horizon.Kernel.Memory
 {
-    enum MemoryOperation
+    enum KMemoryOperation
     {
         MapPa,
         MapVa,

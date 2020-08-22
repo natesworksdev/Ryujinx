@@ -1,5 +1,5 @@
 ﻿using Ryujinx.Cpu;
-using Ryujinx.Horizon.Kernel.Process;
+using Ryujinx.Horizon.Kernel.Svc;
 using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS

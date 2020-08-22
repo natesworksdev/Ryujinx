@@ -5,13 +5,13 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
     public class BinaryExpression : BaseNode
     {
         private BaseNode _leftPart;
-        private string   _name;
+        private string _name;
         private BaseNode _rightPart;
 
         public BinaryExpression(BaseNode leftPart, string name, BaseNode rightPart) : base(NodeType.BinaryExpression)
         {
-            _leftPart  = leftPart;
-            _name      = name;
+            _leftPart = leftPart;
+            _name = name;
             _rightPart = rightPart;
         }
 

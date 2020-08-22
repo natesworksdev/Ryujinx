@@ -1,4 +1,4 @@
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     public enum InfoType : uint
     {

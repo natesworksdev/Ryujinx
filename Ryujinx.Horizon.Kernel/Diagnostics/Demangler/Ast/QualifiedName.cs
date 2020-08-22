@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
         public QualifiedName(BaseNode qualifier, BaseNode name) : base(NodeType.QualifiedName)
         {
             _qualifier = qualifier;
-            _name      = name;
+            _name = name;
         }
 
         public override void PrintLeft(TextWriter writer)

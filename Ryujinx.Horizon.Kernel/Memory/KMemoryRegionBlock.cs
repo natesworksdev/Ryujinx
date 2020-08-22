@@ -5,12 +5,12 @@ namespace Ryujinx.Horizon.Kernel.Memory
         public long[][] Masks;
 
         public ulong FreeCount;
-        public int   MaxLevel;
+        public int MaxLevel;
         public ulong StartAligned;
         public ulong SizeInBlocksTruncated;
         public ulong SizeInBlocksRounded;
-        public int   Order;
-        public int   NextOrder;
+        public int Order;
+        public int NextOrder;
 
         public bool TryCoalesce(int index, int count)
         {

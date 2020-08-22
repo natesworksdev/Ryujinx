@@ -1,7 +1,7 @@
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Common;
-using Ryujinx.Horizon.Kernel.Process;
+using Ryujinx.Horizon.Kernel.Svc;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;

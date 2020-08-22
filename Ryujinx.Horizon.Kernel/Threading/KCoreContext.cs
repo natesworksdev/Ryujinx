@@ -14,12 +14,12 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
         public long TotalIdleTimeTicks { get; private set; } //TODO
 
-        public KThread CurrentThread  { get; private set; }
+        public KThread CurrentThread { get; private set; }
         public KThread SelectedThread { get; private set; }
 
         public KCoreContext(KScheduler scheduler, HleCoreManager coreManager)
         {
-            _scheduler   = scheduler;
+            _scheduler = scheduler;
             _coreManager = coreManager;
         }
 

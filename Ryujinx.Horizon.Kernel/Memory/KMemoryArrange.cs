@@ -2,9 +2,9 @@ namespace Ryujinx.Horizon.Kernel.Memory
 {
     class KMemoryArrange
     {
-        public KMemoryArrangeRegion Service     { get; private set; }
-        public KMemoryArrangeRegion NvServices  { get; private set; }
-        public KMemoryArrangeRegion Applet      { get; private set; }
+        public KMemoryArrangeRegion Service { get; private set; }
+        public KMemoryArrangeRegion NvServices { get; private set; }
+        public KMemoryArrangeRegion Applet { get; private set; }
         public KMemoryArrangeRegion Application { get; private set; }
 
         public KMemoryArrange(
@@ -13,9 +13,9 @@ namespace Ryujinx.Horizon.Kernel.Memory
             KMemoryArrangeRegion applet,
             KMemoryArrangeRegion application)
         {
-            Service     = service;
-            NvServices  = nvServices;
-            Applet      = applet;
+            Service = service;
+            NvServices = nvServices;
+            Applet = applet;
             Application = application;
         }
     }

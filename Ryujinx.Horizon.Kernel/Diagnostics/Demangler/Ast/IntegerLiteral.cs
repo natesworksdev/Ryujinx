@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
         public IntegerLiteral(string literalName, string literalValue) : base(NodeType.IntegerLiteral)
         {
             _literalValue = literalValue;
-            _literalName  = literalName;
+            _literalName = literalName;
         }
 
         public override void PrintLeft(TextWriter writer)

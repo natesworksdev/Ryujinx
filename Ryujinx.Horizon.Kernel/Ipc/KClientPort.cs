@@ -16,7 +16,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
         public KClientPort(KernelContextInternal context, KPort parent, int maxSessions) : base(context)
         {
             _maxSessions = maxSessions;
-            _parent      = parent;
+            _parent = parent;
         }
 
         public KernelResult Connect(out KClientSession clientSession)
@@ -128,7 +128,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             }
         }
 
-        public new static KernelResult RemoveName(KernelContextInternal context, string name)
+        public static new KernelResult RemoveName(KernelContextInternal context, string name)
         {
             KAutoObject foundObj = FindNamedObject(context, name);
 

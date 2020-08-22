@@ -4,6 +4,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
+using Ryujinx.Horizon.Kernel.Svc;
 using Ryujinx.Horizon.Kernel.Threading;
 using Ryujinx.Memory;
 using System;
@@ -37,7 +38,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
         public ulong PersonalMmHeapPagesCount { get; private set; }
 
-        public ProcessState State { get; private set; }
+        public KProcessState State { get; private set; }
 
         private object _processLock;
         private object _threadingLock;
@@ -54,7 +55,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
         public ProcessCreationFlags Flags { get; private set; }
 
-        public MemoryRegion MemoryRegion { get; private set; }
+        public KMemoryRegion MemoryRegion { get; private set; }
 
         public bool AslrEnabled { get; private set; }
 
@@ -112,7 +113,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             ReadOnlySpan<int> capabilities,
             KPageList pageList,
             KResourceLimit resourceLimit,
-            MemoryRegion memoryRegion,
+            KMemoryRegion memoryRegion,
             IProcessContextFactory contextFactory)
         {
             ResourceLimit = resourceLimit;
@@ -149,7 +150,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 return result;
             }
 
-            if (!MemoryManager.CanContain(codeAddress, codeSize, MemoryState.CodeStatic))
+            if (!MemoryManager.CanContain(codeAddress, codeSize, KMemoryState.CodeStatic))
             {
                 return KernelResult.InvalidMemRange;
             }
@@ -157,7 +158,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             result = MemoryManager.MapPages(
                 codeAddress,
                 pageList,
-                MemoryState.CodeStatic,
+                KMemoryState.CodeStatic,
                 KMemoryPermission.None);
 
             if (result != KernelResult.Success)
@@ -188,7 +189,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             ProcessCreationInfo creationInfo,
             ReadOnlySpan<int> capabilities,
             KResourceLimit resourceLimit,
-            MemoryRegion memoryRegion,
+            KMemoryRegion memoryRegion,
             IProcessContextFactory contextFactory,
             ThreadStart customThreadStart = null)
         {
@@ -261,7 +262,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 return result;
             }
 
-            if (!MemoryManager.CanContain(codeAddress, codeSize, MemoryState.CodeStatic))
+            if (!MemoryManager.CanContain(codeAddress, codeSize, KMemoryState.CodeStatic))
             {
                 CleanUpForError();
 
@@ -271,7 +272,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             result = MemoryManager.MapNewProcessCode(
                 codeAddress,
                 codePagesCount,
-                MemoryState.CodeStatic,
+                KMemoryState.CodeStatic,
                 KMemoryPermission.None);
 
             if (result != KernelResult.Success)
@@ -346,7 +347,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             Name = creationInfo.Name;
 
-            State = ProcessState.Created;
+            State = KProcessState.Created;
 
             _creationTimestamp = PerformanceCounter.ElapsedMilliseconds;
 
@@ -451,7 +452,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 true,
                 regionStart,
                 regionPagesCount,
-                MemoryState.ThreadLocal,
+                KMemoryState.ThreadLocal,
                 KMemoryPermission.ReadAndWrite,
                 out ulong tlsPageVa);
 
@@ -477,9 +478,8 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             KernelResult result = KernelResult.Success;
 
-            KTlsPageInfo pageInfo;
 
-            if (_fullTlsPages.TryGetValue(tlsPageAddr, out pageInfo))
+            if (_fullTlsPages.TryGetValue(tlsPageAddr, out KTlsPageInfo pageInfo))
             {
                 // TLS page was full, free slot and move to free pages tree.
                 _fullTlsPages.Remove(tlsPageAddr);
@@ -521,7 +521,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 throw new InvalidOperationException("Unexpected failure translating virtual address to physical.");
             }
 
-            KernelResult result = MemoryManager.UnmapForKernel(pageInfo.PageAddr, 1, MemoryState.ThreadLocal);
+            KernelResult result = MemoryManager.UnmapForKernel(pageInfo.PageAddr, 1, KMemoryState.ThreadLocal);
 
             if (result == KernelResult.Success)
             {
@@ -540,7 +540,7 @@ namespace Ryujinx.Horizon.Kernel.Process
         {
             lock (_processLock)
             {
-                if (State > ProcessState.CreatedAttached)
+                if (State > KProcessState.CreatedAttached)
                 {
                     return KernelResult.InvalidState;
                 }
@@ -602,7 +602,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                         ulong stackPagesCount = _mainThreadStackSize / KMemoryManager.PageSize;
 
-                        MemoryManager.UnmapForKernel(stackBottom, stackPagesCount, MemoryState.Stack);
+                        MemoryManager.UnmapForKernel(stackBottom, stackPagesCount, KMemoryState.Stack);
 
                         _mainThreadStackSize = 0;
                     }
@@ -627,7 +627,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                         false,
                         regionStart,
                         regionPagesCount,
-                        MemoryState.Stack,
+                        KMemoryState.Stack,
                         KMemoryPermission.ReadAndWrite,
                         out ulong stackBottom);
 
@@ -695,10 +695,10 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 mainThread.SetEntryArguments(0, mainThreadHandle);
 
-                ProcessState oldState = State;
-                ProcessState newState = State != ProcessState.Created
-                    ? ProcessState.Attached
-                    : ProcessState.Started;
+                KProcessState oldState = State;
+                KProcessState newState = State != KProcessState.Created
+                    ? KProcessState.Attached
+                    : KProcessState.Started;
 
                 SetState(newState);
 
@@ -722,7 +722,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             }
         }
 
-        private void SetState(ProcessState newState)
+        private void SetState(KProcessState newState)
         {
             if (State != newState)
             {
@@ -823,9 +823,9 @@ namespace Ryujinx.Horizon.Kernel.Process
             return GetPersonalMmHeapSize(PersonalMmHeapPagesCount, MemoryRegion);
         }
 
-        private static ulong GetPersonalMmHeapSize(ulong personalMmHeapPagesCount, MemoryRegion memRegion)
+        private static ulong GetPersonalMmHeapSize(ulong personalMmHeapPagesCount, KMemoryRegion memRegion)
         {
-            if (memRegion == MemoryRegion.Applet)
+            if (memRegion == KMemoryRegion.Applet)
             {
                 return 0;
             }
@@ -874,14 +874,14 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             lock (_processLock)
             {
-                if (State >= ProcessState.Started)
+                if (State >= KProcessState.Started)
                 {
-                    if (State == ProcessState.Started ||
-                        State == ProcessState.Crashed ||
-                        State == ProcessState.Attached ||
-                        State == ProcessState.DebugSuspended)
+                    if (State == KProcessState.Started ||
+                        State == KProcessState.Crashed ||
+                        State == KProcessState.Attached ||
+                        State == KProcessState.DebugSuspended)
                     {
-                        SetState(ProcessState.Exiting);
+                        SetState(KProcessState.Exiting);
 
                         shallTerminate = true;
                     }
@@ -917,13 +917,13 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             lock (_processLock)
             {
-                if (State >= ProcessState.Started)
+                if (State >= KProcessState.Started)
                 {
-                    if (State == ProcessState.Started ||
-                        State == ProcessState.Attached ||
-                        State == ProcessState.DebugSuspended)
+                    if (State == KProcessState.Started ||
+                        State == KProcessState.Attached ||
+                        State == KProcessState.DebugSuspended)
                     {
-                        SetState(ProcessState.Exiting);
+                        SetState(KProcessState.Exiting);
 
                         shallTerminate = true;
                     }
@@ -1008,7 +1008,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             KernelContext.CriticalSection.Enter();
 
-            SetState(ProcessState.Exited);
+            SetState(KProcessState.Exited);
 
             KernelContext.CriticalSection.Leave();
         }
@@ -1021,7 +1021,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             lock (_processLock)
             {
-                if (State != ProcessState.Exited && _signaled)
+                if (State != KProcessState.Exited && _signaled)
                 {
                     _signaled = false;
 
@@ -1071,6 +1071,9 @@ namespace Ryujinx.Horizon.Kernel.Process
             throw new Exception($"0x{e.Address:X} 0x{e.OpCode:X}");
         }
 
-        protected override void Destroy() => Context.Dispose();
+        protected override void Destroy()
+        {
+            Context.Dispose();
+        }
     }
 }

@@ -8,8 +8,8 @@ namespace Ryujinx.Horizon.Kernel.Process
 
         public int Index { get; private set; }
 
-        public ushort      HandleId { get; set; }
-        public KAutoObject Obj      { get; set; }
+        public ushort HandleId { get; set; }
+        public KAutoObject Obj { get; set; }
 
         public KHandleEntry(int index)
         {

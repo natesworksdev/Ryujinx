@@ -1,6 +1,6 @@
 using System;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     class InvalidSvcException : Exception
     {

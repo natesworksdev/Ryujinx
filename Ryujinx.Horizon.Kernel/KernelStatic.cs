@@ -1,5 +1,5 @@
 using Ryujinx.Horizon.Kernel.Process;
-using Ryujinx.Horizon.Kernel.SupervisorCall;
+using Ryujinx.Horizon.Kernel.Svc;
 using Ryujinx.Horizon.Kernel.Threading;
 using Ryujinx.Memory;
 using System;
@@ -73,7 +73,14 @@ namespace Ryujinx.Horizon.Kernel
             terminationThread.HostThread.Join();
         }
 
-        public static void SetKernelContext(KernelContext context) => Context = context.GetInternal();
-        internal static void SetKernelContext(KernelContextInternal context) => Context = context;
+        public static void SetKernelContext(KernelContext context)
+        {
+            Context = context.GetInternal();
+        }
+
+        internal static void SetKernelContext(KernelContextInternal context)
+        {
+            Context = context;
+        }
     }
 }

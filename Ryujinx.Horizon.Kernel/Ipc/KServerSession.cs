@@ -9,20 +9,20 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 {
     class KServerSession : KSynchronizationObject
     {
-        private static readonly MemoryState[] IpcMemoryStates = new MemoryState[]
+        private static readonly KMemoryState[] IpcMemoryStates = new KMemoryState[]
         {
-            MemoryState.IpcBuffer3,
-            MemoryState.IpcBuffer0,
-            MemoryState.IpcBuffer1,
-            (MemoryState)0xfffce5d4 //This is invalid, shouldn't be accessed.
+            KMemoryState.IpcBuffer3,
+            KMemoryState.IpcBuffer0,
+            KMemoryState.IpcBuffer1,
+            (KMemoryState)0xfffce5d4 //This is invalid, shouldn't be accessed.
         };
 
         private struct Message
         {
-            public ulong Address     { get; }
+            public ulong Address { get; }
             public ulong DramAddress { get; }
-            public ulong Size        { get; }
-            public bool  IsCustom    { get; }
+            public ulong Size { get; }
+            public bool IsCustom { get; }
 
             public Message(KThread thread, ulong customCmdBuffAddress, ulong customCmdBuffSize)
             {
@@ -31,7 +31,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 if (IsCustom)
                 {
                     Address = customCmdBuffAddress;
-                    Size    = customCmdBuffSize;
+                    Size = customCmdBuffSize;
 
                     KProcess process = thread.Owner;
 
@@ -39,16 +39,17 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 }
                 else
                 {
-                    Address     = thread.TlsAddress;
+                    Address = thread.TlsAddress;
                     DramAddress = thread.TlsDramAddress;
-                    Size        = 0x100;
+                    Size = 0x100;
                 }
             }
 
             public Message(KSessionRequest request) : this(
                 request.ClientThread,
                 request.CustomCmdBuffAddr,
-                request.CustomCmdBuffSize) { }
+                request.CustomCmdBuffSize)
+            { }
         }
 
         private struct MessageHeader
@@ -57,18 +58,18 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             public uint Word1 { get; }
             public uint Word2 { get; }
 
-            public uint PointerBuffersCount  { get; }
-            public uint SendBuffersCount     { get; }
-            public uint ReceiveBuffersCount  { get; }
+            public uint PointerBuffersCount { get; }
+            public uint SendBuffersCount { get; }
+            public uint ReceiveBuffersCount { get; }
             public uint ExchangeBuffersCount { get; }
 
             public uint RawDataSizeInWords { get; }
 
             public uint ReceiveListType { get; }
 
-            public uint MessageSizeInWords       { get; }
+            public uint MessageSizeInWords { get; }
             public uint ReceiveListOffsetInWords { get; }
-            public uint ReceiveListOffset        { get; }
+            public uint ReceiveListOffset { get; }
 
             public bool HasHandles { get; }
 
@@ -106,14 +107,14 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                     MoveHandlesCount = 0;
                 }
 
-                PointerBuffersCount  = (word0 >> 16) & 0xf;
-                SendBuffersCount     = (word0 >> 20) & 0xf;
-                ReceiveBuffersCount  = (word0 >> 24) & 0xf;
-                ExchangeBuffersCount =  word0 >> 28;
+                PointerBuffersCount = (word0 >> 16) & 0xf;
+                SendBuffersCount = (word0 >> 20) & 0xf;
+                ReceiveBuffersCount = (word0 >> 24) & 0xf;
+                ExchangeBuffersCount = word0 >> 28;
 
-                uint pointerDescSizeInWords  = PointerBuffersCount  * 2;
-                uint sendDescSizeInWords     = SendBuffersCount     * 3;
-                uint receiveDescSizeInWords  = ReceiveBuffersCount  * 3;
+                uint pointerDescSizeInWords = PointerBuffersCount * 2;
+                uint sendDescSizeInWords = SendBuffersCount * 3;
+                uint receiveDescSizeInWords = ReceiveBuffersCount * 3;
                 uint exchangeDescSizeInWords = ExchangeBuffersCount * 3;
 
                 RawDataSizeInWords = word1 & 0x3ff;
@@ -124,12 +125,12 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
                 uint paddingSizeInWords = HasHandles ? 3u : 2u;
 
-                MessageSizeInWords = pointerDescSizeInWords  +
-                                     sendDescSizeInWords     +
-                                     receiveDescSizeInWords  +
+                MessageSizeInWords = pointerDescSizeInWords +
+                                     sendDescSizeInWords +
+                                     receiveDescSizeInWords +
                                      exchangeDescSizeInWords +
-                                     RawDataSizeInWords      +
-                                     paddingSizeInWords      +
+                                     RawDataSizeInWords +
+                                     paddingSizeInWords +
                                      handleDescSizeInWords;
 
                 if (ReceiveListOffsetInWords == 0)
@@ -145,15 +146,15 @@ namespace Ryujinx.Horizon.Kernel.Ipc
         {
             public uint ReceiveIndex { get; }
 
-            public uint  BufferSize    { get; }
+            public uint BufferSize { get; }
             public ulong BufferAddress { get; set; }
 
             public PointerBufferDesc(ulong dword)
             {
                 ReceiveIndex = (uint)dword & 0xf;
-                BufferSize   = (uint)dword >> 16;
+                BufferSize = (uint)dword >> 16;
 
-                BufferAddress  = (dword >> 2)  & 0x70;
+                BufferAddress = (dword >> 2) & 0x70;
                 BufferAddress |= (dword >> 12) & 0xf;
 
                 BufferAddress = (BufferAddress << 32) | (dword >> 32);
@@ -163,7 +164,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             {
                 ulong dword = (ReceiveIndex & 0xf) | ((BufferSize & 0xffff) << 16);
 
-                dword |=  BufferAddress << 32;
+                dword |= BufferAddress << 32;
                 dword |= (BufferAddress >> 20) & 0xf000;
                 dword |= (BufferAddress >> 30) & 0xffc0;
 
@@ -214,7 +215,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
         public KernelResult Receive(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread  serverThread  = KernelContext.Scheduler.GetCurrentThread();
+            KThread serverThread = KernelContext.Scheduler.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
 
             KernelContext.CriticalSection.Enter();
@@ -240,7 +241,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 return KernelResult.PortRemoteClosed;
             }
 
-            KThread  clientThread  = request.ClientThread;
+            KThread clientThread = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
             KernelContext.CriticalSection.Leave();
@@ -414,7 +415,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         serverHeader.ReceiveListType,
                         clientHeader.MessageSizeInWords,
                         receiveList,
-                        ref       recvListDstOffset,
+                        ref recvListDstOffset,
                         out ulong recvListBufferAddress);
 
                     if (clientResult != KernelResult.Success)
@@ -428,11 +429,11 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         recvListBufferAddress,
                         descriptor.BufferSize,
                         descriptor.BufferAddress,
-                        MemoryState.IsPoolAllocated,
-                        MemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
                         KMemoryPermission.Read,
-                        MemoryAttribute.Uncached,
-                        MemoryAttribute.None);
+                        KMemoryAttribute.Uncached,
+                        KMemoryAttribute.None);
 
                     if (clientResult != KernelResult.Success)
                     {
@@ -455,7 +456,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             // Copy send, receive and exchange buffers.
             uint totalBuffersCount =
-                clientHeader.SendBuffersCount    +
+                clientHeader.SendBuffersCount +
                 clientHeader.ReceiveBuffersCount +
                 clientHeader.ExchangeBuffersCount;
 
@@ -467,11 +468,11 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 uint descWord1 = KernelContext.Memory.Read<uint>(clientDescAddress + 4);
                 uint descWord2 = KernelContext.Memory.Read<uint>(clientDescAddress + 8);
 
-                bool isSendDesc     = index <  clientHeader.SendBuffersCount;
+                bool isSendDesc = index < clientHeader.SendBuffersCount;
                 bool isExchangeDesc = index >= clientHeader.SendBuffersCount + clientHeader.ReceiveBuffersCount;
 
                 bool notReceiveDesc = isSendDesc || isExchangeDesc;
-                bool isReceiveDesc  = !notReceiveDesc;
+                bool isReceiveDesc = !notReceiveDesc;
 
                 KMemoryPermission permission = index >= clientHeader.SendBuffersCount
                     ? KMemoryPermission.ReadAndWrite
@@ -487,12 +488,12 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 {
                     ulong bufferAddress;
 
-                    bufferAddress  =   descWord2 >> 28;
+                    bufferAddress = descWord2 >> 28;
                     bufferAddress |= ((descWord2 >> 2) & 7) << 4;
 
                     bufferAddress = (bufferAddress << 32) | descWord1;
 
-                    MemoryState state = IpcMemoryStates[(descWord2 + 1) & 3];
+                    KMemoryState state = IpcMemoryStates[(descWord2 + 1) & 3];
 
                     clientResult = serverProcess.MemoryManager.MapBufferFromClientProcess(
                         bufferSize,
@@ -538,7 +539,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 descWord2 |= sizeHigh4 << 24;
 
                 descWord2 |= (uint)(dstAddress >> 34) & 0x3ffffffc;
-                descWord2 |= (uint)(dstAddress >> 4)  & 0xf0000000;
+                descWord2 |= (uint)(dstAddress >> 4) & 0xf0000000;
 
                 ulong serverDescAddress = serverMsg.Address + offset * 4;
 
@@ -567,11 +568,11 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         copyDst,
                         copySize,
                         copySrc,
-                        MemoryState.IsPoolAllocated,
-                        MemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
                         permission,
-                        MemoryAttribute.Uncached,
-                        MemoryAttribute.None);
+                        KMemoryAttribute.Uncached,
+                        KMemoryAttribute.None);
                 }
                 else
                 {
@@ -594,7 +595,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
         public KernelResult Reply(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread  serverThread  = KernelContext.Scheduler.GetCurrentThread();
+            KThread serverThread = KernelContext.Scheduler.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
 
             KernelContext.CriticalSection.Enter();
@@ -617,7 +618,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             KernelContext.CriticalSection.Leave();
 
-            KThread  clientThread  = request.ClientThread;
+            KThread clientThread = request.ClientThread;
             KProcess clientProcess = clientThread.Owner;
 
             Message clientMsg = new Message(request);
@@ -672,8 +673,8 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 return KernelResult.CmdBufferTooSmall;
             }
 
-            if (serverHeader.SendBuffersCount     != 0 ||
-                serverHeader.ReceiveBuffersCount  != 0 ||
+            if (serverHeader.SendBuffersCount != 0 ||
+                serverHeader.ReceiveBuffersCount != 0 ||
                 serverHeader.ExchangeBuffersCount != 0)
             {
                 CleanUpForError();
@@ -793,11 +794,11 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                     clientResult = clientProcess.MemoryManager.CopyDataFromCurrentProcess(
                         recvListBufferAddress,
                         descriptor.BufferSize,
-                        MemoryState.IsPoolAllocated,
-                        MemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
                         KMemoryPermission.Read,
-                        MemoryAttribute.Uncached,
-                        MemoryAttribute.None,
+                        KMemoryAttribute.Uncached,
+                        KMemoryAttribute.None,
                         descriptor.BufferAddress);
 
                     if (clientResult != KernelResult.Success)
@@ -824,7 +825,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             // Set send, receive and exchange buffer descriptors to zero.
             uint totalBuffersCount =
-                serverHeader.SendBuffersCount    +
+                serverHeader.SendBuffersCount +
                 serverHeader.ReceiveBuffersCount +
                 serverHeader.ExchangeBuffersCount;
 
@@ -856,11 +857,11 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                     clientResult = clientProcess.MemoryManager.CopyDataFromCurrentProcess(
                         copyDst,
                         copySize,
-                        MemoryState.IsPoolAllocated,
-                        MemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
+                        KMemoryState.IsPoolAllocated,
                         permission,
-                        MemoryAttribute.Uncached,
-                        MemoryAttribute.None,
+                        KMemoryAttribute.Uncached,
+                        KMemoryAttribute.None,
                         copySrc);
                 }
                 else
@@ -976,12 +977,12 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
         private KernelResult GetReceiveListAddress(
             PointerBufferDesc descriptor,
-            Message           message,
-            uint              recvListType,
-            uint              messageSizeInWords,
-            ulong[]           receiveList,
-            ref uint          dstOffset,
-            out ulong         address)
+            Message message,
+            uint recvListType,
+            uint messageSizeInWords,
+            ulong[] receiveList,
+            ref uint dstOffset,
+            out ulong address)
         {
             ulong recvListBufferAddress = address = 0;
 
@@ -997,7 +998,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 if (recvListType == 1)
                 {
                     recvListBaseAddr = message.Address + messageSizeInWords * 4;
-                    recvListEndAddr  = message.Address + message.Size;
+                    recvListEndAddr = message.Address + message.Size;
                 }
                 else /* if (recvListType == 2) */
                 {
@@ -1022,7 +1023,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 dstOffset = (uint)endAddress - (uint)recvListBaseAddr;
 
                 if (recvListBufferAddress + descriptor.BufferSize <= recvListBufferAddress ||
-                    recvListBufferAddress + descriptor.BufferSize >  recvListEndAddr)
+                    recvListBufferAddress + descriptor.BufferSize > recvListEndAddr)
                 {
                     return KernelResult.OutOfResource;
                 }
@@ -1247,7 +1248,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
         {
             if ((thread.SchedFlags & ThreadSchedState.LowMask) == ThreadSchedState.Paused)
             {
-                thread.SignaledObj   = null;
+                thread.SignaledObj = null;
                 thread.ObjSyncResult = result;
 
                 thread.Reschedule(ThreadSchedState.Running);

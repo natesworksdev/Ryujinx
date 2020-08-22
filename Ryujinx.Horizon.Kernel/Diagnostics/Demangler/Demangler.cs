@@ -1,15 +1,15 @@
-﻿using System;
+﻿using Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast;
 
 namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
 {
     class Demangler
     {
         private const string Base36 = "0123456789abcdefghijklmnopqrstuvwxyz";
-        private List<BaseNode> _substitutionList  = new List<BaseNode>();
+        private List<BaseNode> _substitutionList = new List<BaseNode>();
         private List<BaseNode> _templateParamList = new List<BaseNode>();
 
         private List<ForwardTemplateReference> _forwardTemplateReferenceList = new List<ForwardTemplateReference>();
@@ -24,9 +24,9 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
 
         public Demangler(string mangled)
         {
-            Mangled               = mangled;
-            _position             = 0;
-            _length               = mangled.Length;
+            Mangled = mangled;
+            _position = 0;
+            _length = mangled.Length;
             _canParseTemplateArgs = true;
         }
 
@@ -101,8 +101,8 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
 
         private int ParseSeqId()
         {
-            string part     = Mangled.Substring(_position);
-            int    seqIdLen = 0;
+            string part = Mangled.Substring(_position);
+            int seqIdLen = 0;
 
             for (; seqIdLen < part.Length; seqIdLen++)
             {
@@ -546,7 +546,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
                             _position += 2;
                             // FIXME: GNU c++flit returns this but that is not what is supposed to be returned.
                             return new NameType("half");
-                            // return new NameType("decimal16");
+                        // return new NameType("decimal16");
                         case 'i':
                             _position += 2;
                             return new NameType("char32_t");
@@ -560,7 +560,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
                             _position += 2;
                             // FIXME: GNU c++flit returns this but that is not what is supposed to be returned.
                             return new NameType("decltype(nullptr)");
-                            // return new NameType("std::nullptr_t");
+                        // return new NameType("std::nullptr_t");
                         case 't':
                         case 'T':
                             _position += 2;
@@ -900,8 +900,8 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
 
         private int ParsePositiveNumber()
         {
-            string part         = Mangled.Substring(_position);
-            int    numberLength = 0;
+            string part = Mangled.Substring(_position);
+            int numberLength = 0;
 
             for (; numberLength < part.Length; numberLength++)
             {
@@ -933,8 +933,8 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
                 return null;
             }
 
-            string part         = Mangled.Substring(_position);
-            int    numberLength = 0;
+            string part = Mangled.Substring(_position);
+            int numberLength = 0;
 
             for (; numberLength < part.Length; numberLength++)
             {
@@ -1057,15 +1057,15 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
                         case 'v':
                             _position += 2;
 
-                            bool canParseTemplateArgsBackup        = _canParseTemplateArgs;
+                            bool canParseTemplateArgsBackup = _canParseTemplateArgs;
                             bool canForwardTemplateReferenceBackup = _canForwardTemplateReference;
 
-                            _canParseTemplateArgs        = false;
+                            _canParseTemplateArgs = false;
                             _canForwardTemplateReference = canForwardTemplateReferenceBackup || context != null;
 
                             BaseNode type = ParseType();
 
-                            _canParseTemplateArgs        = canParseTemplateArgsBackup;
+                            _canParseTemplateArgs = canParseTemplateArgsBackup;
                             _canForwardTemplateReference = canForwardTemplateReferenceBackup;
 
                             if (type == null)
@@ -1334,7 +1334,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
 
             if (ConsumeIf("C"))
             {
-                bool isInherited  = ConsumeIf("I");
+                bool isInherited = ConsumeIf("I");
 
                 char ctorDtorType = Peek();
                 if (ctorDtorType != '1' && ctorDtorType != '2' && ctorDtorType != '3')
@@ -1434,9 +1434,9 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
                 return null;
             }
 
-            char foldKind       = Peek();
+            char foldKind = Peek();
             bool hasInitializer = foldKind == 'L' || foldKind == 'R';
-            bool isLeftFold     = foldKind == 'l' || foldKind == 'L';
+            bool isLeftFold = foldKind == 'l' || foldKind == 'L';
 
             if (!isLeftFold && !(foldKind == 'r' || foldKind == 'R'))
             {
@@ -1568,8 +1568,8 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
             if (isLeftFold && initializer != null)
             {
                 BaseNode temp = expression;
-                expression    = initializer;
-                initializer   = temp;
+                expression = initializer;
+                initializer = temp;
             }
 
             return new FoldExpression(isLeftFold, operatorName, new PackedTemplateParameterExpansion(expression), initializer);
@@ -1586,9 +1586,9 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
             }
 
             bool canParseTemplateArgsBackup = _canParseTemplateArgs;
-            _canParseTemplateArgs           = false;
-            BaseNode type                   = ParseType();
-            _canParseTemplateArgs           = canParseTemplateArgsBackup;
+            _canParseTemplateArgs = false;
+            BaseNode type = ParseType();
+            _canParseTemplateArgs = canParseTemplateArgsBackup;
 
             if (type == null)
             {
@@ -1730,14 +1730,14 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
         private BaseNode ParseNewExpression()
         {
             bool isGlobal = ConsumeIf("gs");
-            bool isArray  = Peek(1) == 'a';
+            bool isArray = Peek(1) == 'a';
 
             if (!ConsumeIf("nw") || !ConsumeIf("na"))
             {
                 return null;
             }
 
-            List<BaseNode> expressions  = new List<BaseNode>();
+            List<BaseNode> expressions = new List<BaseNode>();
             List<BaseNode> initializers = new List<BaseNode>();
 
             while (!ConsumeIf("_"))
@@ -3352,7 +3352,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler
         public static string Parse(string originalMangled)
         {
             Demangler instance = new Demangler(originalMangled);
-            BaseNode resNode   = instance.Parse();
+            BaseNode resNode = instance.Parse();
 
             if (resNode != null)
             {

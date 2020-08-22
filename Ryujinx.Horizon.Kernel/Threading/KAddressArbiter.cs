@@ -29,7 +29,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
             _context.CriticalSection.Enter();
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.Success;
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -57,7 +57,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 return KernelResult.InvalidHandle;
             }
 
-            currentThread.MutexAddress             = mutexAddress;
+            currentThread.MutexAddress = mutexAddress;
             currentThread.ThreadHandleForUserMutex = requesterHandle;
 
             mutexOwner.AddMutexWaiter(currentThread);
@@ -87,7 +87,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
             if (result != KernelResult.Success && newOwnerThread != null)
             {
-                newOwnerThread.SignaledObj   = null;
+                newOwnerThread.SignaledObj = null;
                 newOwnerThread.ObjSyncResult = result;
             }
 
@@ -99,14 +99,14 @@ namespace Ryujinx.Horizon.Kernel.Threading
         public KernelResult WaitProcessWideKeyAtomic(
             ulong mutexAddress,
             ulong condVarAddress,
-            int   threadHandle,
-            long  timeout)
+            int threadHandle,
+            long timeout)
         {
             _context.CriticalSection.Enter();
 
             KThread currentThread = _context.Scheduler.GetCurrentThread();
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             if (currentThread.ShallBeTerminated ||
@@ -126,9 +126,9 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 return result;
             }
 
-            currentThread.MutexAddress             = mutexAddress;
+            currentThread.MutexAddress = mutexAddress;
             currentThread.ThreadHandleForUserMutex = threadHandle;
-            currentThread.CondVarAddress           = condVarAddress;
+            currentThread.CondVarAddress = condVarAddress;
 
             _condVarThreads.Add(currentThread);
 
@@ -178,7 +178,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                     mutexValue |= HasListenersMask;
                 }
 
-                newOwnerThread.SignaledObj   = null;
+                newOwnerThread.SignaledObj = null;
                 newOwnerThread.ObjSyncResult = KernelResult.Success;
 
                 newOwnerThread.ReleaseAndResume();
@@ -232,7 +232,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             if (!currentProcess.CpuMemory.IsMapped(address))
             {
                 // Invalid address.
-                requester.SignaledObj   = null;
+                requester.SignaledObj = null;
                 requester.ObjSyncResult = KernelResult.InvalidMemState;
 
                 return null;
@@ -262,7 +262,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             if (mutexValue == 0)
             {
                 // We now own the mutex.
-                requester.SignaledObj   = null;
+                requester.SignaledObj = null;
                 requester.ObjSyncResult = KernelResult.Success;
 
                 requester.ReleaseAndResume();
@@ -282,7 +282,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             else
             {
                 // Invalid mutex owner.
-                requester.SignaledObj   = null;
+                requester.SignaledObj = null;
                 requester.ObjSyncResult = KernelResult.InvalidHandle;
 
                 requester.ReleaseAndResume();
@@ -305,7 +305,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 return KernelResult.ThreadTerminating;
             }
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             if (!KernelTransfer.UserToKernelInt32(_context, address, out int currentValue))
@@ -324,7 +324,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                     return KernelResult.TimedOut;
                 }
 
-                currentThread.MutexAddress         = address;
+                currentThread.MutexAddress = address;
                 currentThread.WaitingInArbitration = true;
 
                 InsertSortedByPriority(_arbiterThreads, currentThread);
@@ -364,9 +364,9 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
         public KernelResult WaitForAddressIfLessThan(
             ulong address,
-            int   value,
-            bool  shouldDecrement,
-            long  timeout)
+            int value,
+            bool shouldDecrement,
+            long timeout)
         {
             KThread currentThread = _context.Scheduler.GetCurrentThread();
 
@@ -380,7 +380,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 return KernelResult.ThreadTerminating;
             }
 
-            currentThread.SignaledObj   = null;
+            currentThread.SignaledObj = null;
             currentThread.ObjSyncResult = KernelResult.TimedOut;
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -406,7 +406,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                     return KernelResult.TimedOut;
                 }
 
-                currentThread.MutexAddress         = address;
+                currentThread.MutexAddress = address;
                 currentThread.WaitingInArbitration = true;
 
                 InsertSortedByPriority(_arbiterThreads, currentThread);
@@ -594,7 +594,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
             while (signaledThreads.TryDequeue(out KThread thread))
             {
-                thread.SignaledObj   = null;
+                thread.SignaledObj = null;
                 thread.ObjSyncResult = KernelResult.Success;
 
                 thread.ReleaseAndResume();

@@ -10,7 +10,7 @@ using Ryujinx.Memory;
 using System;
 using System.Threading;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     public class Syscall
     {
@@ -107,13 +107,13 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 resourceLimit = _context.ResourceLimit;
             }
 
-            MemoryRegion memRegion = (info.Flags & ProcessCreationFlags.PoolPartitionMask) switch
+            KMemoryRegion memRegion = (info.Flags & ProcessCreationFlags.PoolPartitionMask) switch
             {
-                ProcessCreationFlags.PoolPartitionApplication => MemoryRegion.Application,
-                ProcessCreationFlags.PoolPartitionApplet => MemoryRegion.Applet,
-                ProcessCreationFlags.PoolPartitionSystem => MemoryRegion.Service,
-                ProcessCreationFlags.PoolPartitionSystemNonSecure => MemoryRegion.NvServices,
-                _ => MemoryRegion.NvServices
+                ProcessCreationFlags.PoolPartitionApplication => KMemoryRegion.Application,
+                ProcessCreationFlags.PoolPartitionApplet => KMemoryRegion.Applet,
+                ProcessCreationFlags.PoolPartitionSystem => KMemoryRegion.Service,
+                ProcessCreationFlags.PoolPartitionSystemNonSecure => KMemoryRegion.NvServices,
+                _ => KMemoryRegion.NvServices
             };
 
             KernelResult result = process.Initialize(
@@ -821,8 +821,8 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
         public KernelResult SetMemoryAttribute(
             ulong position,
             ulong size,
-            MemoryAttribute attributeMask,
-            MemoryAttribute attributeValue)
+            KMemoryAttribute attributeMask,
+            KMemoryAttribute attributeValue)
         {
             if (!PageAligned(position))
             {
@@ -834,10 +834,10 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 return KernelResult.InvalidSize;
             }
 
-            MemoryAttribute attributes = attributeMask | attributeValue;
+            KMemoryAttribute attributes = attributeMask | attributeValue;
 
             if (attributes != attributeMask ||
-               (attributes | MemoryAttribute.Uncached) != MemoryAttribute.Uncached)
+               (attributes | KMemoryAttribute.Uncached) != KMemoryAttribute.Uncached)
             {
                 return KernelResult.InvalidCombination;
             }
@@ -1225,7 +1225,7 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 return KernelResult.InvalidHandle;
             }
 
-            if (!currentProcess.MemoryManager.CanContain(address, size, MemoryState.TransferMemoryIsolated))
+            if (!currentProcess.MemoryManager.CanContain(address, size, KMemoryState.TransferMemoryIsolated))
             {
                 return KernelResult.InvalidMemRange;
             }
@@ -1259,7 +1259,7 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 return KernelResult.InvalidHandle;
             }
 
-            if (!currentProcess.MemoryManager.CanContain(address, size, MemoryState.TransferMemoryIsolated))
+            if (!currentProcess.MemoryManager.CanContain(address, size, KMemoryState.TransferMemoryIsolated))
             {
                 return KernelResult.InvalidMemRange;
             }
@@ -1308,7 +1308,7 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 return KernelResult.InvalidMemState;
             }
 
-            if (!currentProcess.MemoryManager.CanContain(dst, size, MemoryState.ProcessMemory))
+            if (!currentProcess.MemoryManager.CanContain(dst, size, KMemoryState.ProcessMemory))
             {
                 return KernelResult.InvalidMemRange;
             }
@@ -1318,12 +1318,12 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
             KernelResult result = sourceProcess.MemoryManager.GetPages(
                 src,
                 size / KMemoryManager.PageSize,
-                MemoryState.MapProcessAllowed,
-                MemoryState.MapProcessAllowed,
+                KMemoryState.MapProcessAllowed,
+                KMemoryState.MapProcessAllowed,
                 KMemoryPermission.None,
                 KMemoryPermission.None,
-                MemoryAttribute.Mask,
-                MemoryAttribute.None,
+                KMemoryAttribute.Mask,
+                KMemoryAttribute.None,
                 pageList);
 
             if (result != KernelResult.Success)
@@ -1333,11 +1333,11 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
 
             if (map)
             {
-                return currentProcess.MemoryManager.MapPages(dst, pageList, MemoryState.ProcessMemory, KMemoryPermission.ReadAndWrite);
+                return currentProcess.MemoryManager.MapPages(dst, pageList, KMemoryState.ProcessMemory, KMemoryPermission.ReadAndWrite);
             }
             else
             {
-                return currentProcess.MemoryManager.UnmapPages(dst, pageList, MemoryState.ProcessMemory);
+                return currentProcess.MemoryManager.UnmapPages(dst, pageList, KMemoryState.ProcessMemory);
             }
         }
 
@@ -1626,7 +1626,7 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
                 currentThread.PrintGuestStackTrace();
 
                 // As the process is exiting, this is probably caused by emulation termination.
-                if (currentThread.Owner.State == ProcessState.Exiting)
+                if (currentThread.Owner.State == KProcessState.Exiting)
                 {
                     return;
                 }

@@ -10,7 +10,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
         public LocalName(BaseNode encoding, BaseNode entity) : base(NodeType.LocalName)
         {
             _encoding = encoding;
-            _entity   = entity;
+            _entity = entity;
         }
 
         public override void PrintLeft(TextWriter writer)

@@ -1,8 +1,7 @@
 ﻿using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
-using Ryujinx.Horizon.Kernel.Threading;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     class Syscall32
     {
@@ -91,8 +90,8 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
         public KernelResult SetMemoryAttribute32(
             [R(0)] uint position,
             [R(1)] uint size,
-            [R(2)] MemoryAttribute attributeMask,
-            [R(3)] MemoryAttribute attributeValue)
+            [R(2)] KMemoryAttribute attributeMask,
+            [R(3)] KMemoryAttribute attributeValue)
         {
             return _syscall.SetMemoryAttribute(position, size, attributeMask, attributeValue);
         }
@@ -349,9 +348,8 @@ namespace Ryujinx.Horizon.Kernel.SupervisorCall
 
         public KernelResult GetThreadId32([R(1)] int handle, [R(1)] out uint threadUidLow, [R(2)] out uint threadUidHigh)
         {
-            long threadUid;
 
-            KernelResult result = _syscall.GetThreadId(handle, out threadUid);
+            KernelResult result = _syscall.GetThreadId(handle, out long threadUid);
 
             threadUidLow = (uint)(threadUid >> 32);
             threadUidHigh = (uint)(threadUid & uint.MaxValue);

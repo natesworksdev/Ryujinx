@@ -9,7 +9,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
         public ulong Address { get; private set; }
         public ulong EndAddr { get; private set; }
-        public ulong Size    { get; private set; }
+        public ulong Size { get; private set; }
 
         private int _blockOrdersCount;
 
@@ -20,16 +20,17 @@ namespace Ryujinx.Horizon.Kernel.Memory
             _blocks = new KMemoryRegionBlock[BlockOrders.Length];
 
             Address = address;
-            Size    = size;
+            Size = size;
             EndAddr = endAddr;
 
             _blockOrdersCount = BlockOrders.Length;
 
             for (int blockIndex = 0; blockIndex < _blockOrdersCount; blockIndex++)
             {
-                _blocks[blockIndex] = new KMemoryRegionBlock();
-
-                _blocks[blockIndex].Order = BlockOrders[blockIndex];
+                _blocks[blockIndex] = new KMemoryRegionBlock
+                {
+                    Order = BlockOrders[blockIndex]
+                };
 
                 int nextOrder = blockIndex == _blockOrdersCount - 1 ? 0 : BlockOrders[blockIndex + 1];
 
@@ -43,7 +44,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
                     nextBlockSize = 1 << nextOrder;
                 }
 
-                ulong startAligned   = BitUtils.AlignDown(address, nextBlockSize);
+                ulong startAligned = BitUtils.AlignDown(address, nextBlockSize);
                 ulong endAddrAligned = BitUtils.AlignDown(endAddr, currBlockSize);
 
                 ulong sizeInBlocksTruncated = (endAddrAligned - startAligned) >> BlockOrders[blockIndex];
@@ -52,9 +53,9 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
                 ulong sizeInBlocksRounded = (endAddrRounded - startAligned) >> BlockOrders[blockIndex];
 
-                _blocks[blockIndex].StartAligned          = startAligned;
+                _blocks[blockIndex].StartAligned = startAligned;
                 _blocks[blockIndex].SizeInBlocksTruncated = sizeInBlocksTruncated;
-                _blocks[blockIndex].SizeInBlocksRounded   = sizeInBlocksRounded;
+                _blocks[blockIndex].SizeInBlocksRounded = sizeInBlocksRounded;
 
                 ulong currSizeInBlocks = sizeInBlocksRounded;
 
@@ -359,7 +360,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
             int blockIndex = _blockOrdersCount - 1;
 
-            ulong addressRounded   = 0;
+            ulong addressRounded = 0;
             ulong endAddrTruncated = 0;
 
             for (; blockIndex >= 0; blockIndex--)
@@ -368,7 +369,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
                 int blockSize = 1 << allocInfo.Order;
 
-                addressRounded   = BitUtils.AlignUp  (address, blockSize);
+                addressRounded = BitUtils.AlignUp(address, blockSize);
                 endAddrTruncated = BitUtils.AlignDown(endAddr, blockSize);
 
                 if (addressRounded < endAddrTruncated)

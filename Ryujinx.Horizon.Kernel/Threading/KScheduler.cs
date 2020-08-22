@@ -8,10 +8,10 @@ namespace Ryujinx.Horizon.Kernel.Threading
     partial class KScheduler : IDisposable
     {
         public const int PrioritiesCount = 64;
-        public const int CpuCoresCount   = 4;
+        public const int CpuCoresCount = 4;
 
         private const int PreemptionPriorityCores012 = 59;
-        private const int PreemptionPriorityCore3    = 63;
+        private const int PreemptionPriorityCore3 = 63;
 
         private readonly KernelContextInternal _context;
 
@@ -44,7 +44,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             PreemptThread(PreemptionPriorityCores012, 0);
             PreemptThread(PreemptionPriorityCores012, 1);
             PreemptThread(PreemptionPriorityCores012, 2);
-            PreemptThread(PreemptionPriorityCore3,    3);
+            PreemptThread(PreemptionPriorityCore3, 3);
 
             _context.CriticalSection.Leave();
         }

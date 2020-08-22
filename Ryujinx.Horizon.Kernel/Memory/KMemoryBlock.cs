@@ -5,39 +5,39 @@ namespace Ryujinx.Horizon.Kernel.Memory
     class KMemoryBlock
     {
         public ulong BaseAddress { get; private set; }
-        public ulong PagesCount  { get; private set; }
+        public ulong PagesCount { get; private set; }
 
-        public MemoryState      State            { get; private set; }
-        public KMemoryPermission Permission       { get; private set; }
-        public MemoryAttribute  Attribute        { get; private set; }
+        public KMemoryState State { get; private set; }
+        public KMemoryPermission Permission { get; private set; }
+        public KMemoryAttribute Attribute { get; private set; }
         public KMemoryPermission SourcePermission { get; private set; }
 
-        public int IpcRefCount    { get; private set; }
+        public int IpcRefCount { get; private set; }
         public int DeviceRefCount { get; private set; }
 
         public KMemoryBlock(
-            ulong            baseAddress,
-            ulong            pagesCount,
-            MemoryState      state,
+            ulong baseAddress,
+            ulong pagesCount,
+            KMemoryState state,
             KMemoryPermission permission,
-            MemoryAttribute  attribute,
-            int              ipcRefCount    = 0,
-            int              deviceRefCount = 0)
+            KMemoryAttribute attribute,
+            int ipcRefCount = 0,
+            int deviceRefCount = 0)
         {
-            BaseAddress    = baseAddress;
-            PagesCount     = pagesCount;
-            State          = state;
-            Attribute      = attribute;
-            Permission     = permission;
-            IpcRefCount    = ipcRefCount;
+            BaseAddress = baseAddress;
+            PagesCount = pagesCount;
+            State = state;
+            Attribute = attribute;
+            Permission = permission;
+            IpcRefCount = ipcRefCount;
             DeviceRefCount = deviceRefCount;
         }
 
-        public void SetState(KMemoryPermission permission, MemoryState state, MemoryAttribute attribute)
+        public void SetState(KMemoryPermission permission, KMemoryState state, KMemoryAttribute attribute)
         {
             Permission = permission;
-            State      = state;
-            Attribute &= MemoryAttribute.IpcAndDeviceMapped;
+            State = state;
+            Attribute &= KMemoryAttribute.IpcAndDeviceMapped;
             Attribute |= attribute;
         }
 
@@ -55,10 +55,10 @@ namespace Ryujinx.Horizon.Kernel.Memory
                 SourcePermission = Permission;
 
                 Permission &= ~KMemoryPermission.ReadAndWrite;
-                Permission |=  KMemoryPermission.ReadAndWrite & newPermission;
+                Permission |= KMemoryPermission.ReadAndWrite & newPermission;
             }
 
-            Attribute |= MemoryAttribute.IpcMapped;
+            Attribute |= KMemoryAttribute.IpcMapped;
         }
 
         public void RestoreIpcMappingPermission()
@@ -76,7 +76,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
                 SourcePermission = KMemoryPermission.None;
 
-                Attribute &= ~MemoryAttribute.IpcMapped;
+                Attribute &= ~KMemoryAttribute.IpcMapped;
             }
         }
 

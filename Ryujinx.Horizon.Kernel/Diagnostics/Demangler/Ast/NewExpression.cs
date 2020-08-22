@@ -5,7 +5,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
     public class NewExpression : BaseNode
     {
         private NodeArray _expressions;
-        private BaseNode  _typeNode;
+        private BaseNode _typeNode;
         private NodeArray _initializers;
 
         private bool _isGlobal;
@@ -13,11 +13,11 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 
         public NewExpression(NodeArray expressions, BaseNode typeNode, NodeArray initializers, bool isGlobal, bool isArrayExpression) : base(NodeType.NewExpression)
         {
-            _expressions       = expressions;
-            _typeNode          = typeNode;
-            _initializers      = initializers;
+            _expressions = expressions;
+            _typeNode = typeNode;
+            _initializers = initializers;
 
-            _isGlobal          = isGlobal;
+            _isGlobal = isGlobal;
             _isArrayExpression = isArrayExpression;
         }
 

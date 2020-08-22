@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false)]
     public class RAttribute : Attribute

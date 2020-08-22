@@ -4,13 +4,13 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 {
     public class ReferenceType : BaseNode
     {
-        private string   _reference;
+        private string _reference;
         private BaseNode _child;
 
         public ReferenceType(string reference, BaseNode child) : base(NodeType.ReferenceType)
         {
             _reference = reference;
-            _child     = child;
+            _child = child;
         }
 
         public override bool HasRightPart()

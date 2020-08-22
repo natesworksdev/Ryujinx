@@ -2,7 +2,7 @@ using ARMeilleure.State;
 using Ryujinx.Horizon.Kernel.Threading;
 using System;
 
-namespace Ryujinx.Horizon.Kernel.SupervisorCall
+namespace Ryujinx.Horizon.Kernel.Svc
 {
     partial class SyscallHandler
     {

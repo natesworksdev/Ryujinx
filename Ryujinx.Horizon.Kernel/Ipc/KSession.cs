@@ -1,6 +1,5 @@
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
-using System;
 
 namespace Ryujinx.Horizon.Kernel.Ipc
 {

@@ -4,15 +4,15 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 {
     public class EnclosedExpression : BaseNode
     {
-        private string   _prefix;
+        private string _prefix;
         private BaseNode _expression;
-        private string   _postfix;
+        private string _postfix;
 
         public EnclosedExpression(string prefix, BaseNode expression, string postfix) : base(NodeType.EnclosedExpression)
         {
-            _prefix     = prefix;
+            _prefix = prefix;
             _expression = expression;
-            _postfix    = postfix;
+            _postfix = postfix;
         }
 
         public override void PrintLeft(TextWriter writer)

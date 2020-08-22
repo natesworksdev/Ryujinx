@@ -8,11 +8,11 @@ namespace Ryujinx.Horizon.Kernel.Memory
         None = 0,
         Mask = 0xff,
 
-        Read    = 1 << 0,
-        Write   = 1 << 1,
+        Read = 1 << 0,
+        Write = 1 << 1,
         Execute = 1 << 2,
 
-        ReadAndWrite   = Read | Write,
+        ReadAndWrite = Read | Write,
         ReadAndExecute = Read | Execute,
 
         DontCare = 1 << 28

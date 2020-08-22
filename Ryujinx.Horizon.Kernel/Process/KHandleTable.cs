@@ -6,7 +6,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 {
     class KHandleTable
     {
-        public const int SelfThreadHandle  = (0x1ffff << 15) | 0;
+        public const int SelfThreadHandle = (0x1ffff << 15) | 0;
         public const int SelfProcessHandle = (0x1ffff << 15) | 1;
 
         private readonly KernelContextInternal _context;
@@ -80,7 +80,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 _nextFreeEntry = entry.Next;
 
-                entry.Obj      = obj;
+                entry.Obj = obj;
                 entry.HandleId = _idCounter;
 
                 _activeSlotsCount++;
@@ -142,7 +142,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             {
                 KHandleEntry entry = _table[index];
 
-                entry.Obj  = null;
+                entry.Obj = null;
                 entry.Next = _nextFreeEntry;
 
                 _nextFreeEntry = entry;
@@ -153,14 +153,14 @@ namespace Ryujinx.Horizon.Kernel.Process
 
         public void SetReservedHandleObj(int handle, KAutoObject obj)
         {
-            int index    = (handle >> 0) & 0x7fff;
+            int index = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
 
             lock (_table)
             {
                 KHandleEntry entry = _table[index];
 
-                entry.Obj      = obj;
+                entry.Obj = obj;
                 entry.HandleId = (ushort)handleId;
 
                 obj.IncrementReferenceCount();
@@ -176,7 +176,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 return false;
             }
 
-            int index    = (handle >> 0) & 0x7fff;
+            int index = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
 
             KAutoObject obj = null;
@@ -191,7 +191,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                     if ((obj = entry.Obj) != null && entry.HandleId == handleId)
                     {
-                        entry.Obj  = null;
+                        entry.Obj = null;
                         entry.Next = _nextFreeEntry;
 
                         _nextFreeEntry = entry;
@@ -213,7 +213,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
         public T GetObject<T>(int handle) where T : KAutoObject
         {
-            int index    = (handle >> 0) & 0x7fff;
+            int index = (handle >> 0) & 0x7fff;
             int handleId = (handle >> 15);
 
             lock (_table)
@@ -272,7 +272,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                         }
 
                         entry.Obj.DecrementReferenceCount();
-                        entry.Obj  = null;
+                        entry.Obj = null;
                         entry.Next = _nextFreeEntry;
 
                         _nextFreeEntry = entry;

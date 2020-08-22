@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
 using Ryujinx.Horizon.Kernel.Process;
-using Ryujinx.Horizon.Kernel.SupervisorCall;
+using Ryujinx.Horizon.Kernel.Svc;
 using Ryujinx.Horizon.Kernel.Threading;
 using Ryujinx.Memory;
 using System;

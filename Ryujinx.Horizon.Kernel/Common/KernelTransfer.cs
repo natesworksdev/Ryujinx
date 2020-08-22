@@ -33,7 +33,7 @@ namespace Ryujinx.Horizon.Kernel.Common
                 if (currentProcess.CpuMemory.IsMapped(address) &&
                     currentProcess.CpuMemory.IsMapped(address + 3))
                 {
-                    values[index]= currentProcess.CpuMemory.Read<int>(address);
+                    values[index] = currentProcess.CpuMemory.Read<int>(address);
                 }
                 else
                 {
@@ -61,8 +61,15 @@ namespace Ryujinx.Horizon.Kernel.Common
             return false;
         }
 
-        public static bool KernelToUserInt32(KernelContextInternal context, ulong address, int value)  => KernelToUser(context, address, value);
-        public static bool KernelToUserInt64(KernelContextInternal context, ulong address, long value) => KernelToUser(context, address, value);
+        public static bool KernelToUserInt32(KernelContextInternal context, ulong address, int value)
+        {
+            return KernelToUser(context, address, value);
+        }
+
+        public static bool KernelToUserInt64(KernelContextInternal context, ulong address, long value)
+        {
+            return KernelToUser(context, address, value);
+        }
 
         public static bool KernelToUser<T>(KernelContextInternal context, ulong address, T value) where T : unmanaged
         {

@@ -5,13 +5,13 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
 {
     public class InitListExpression : BaseNode
     {
-        private BaseNode       _typeNode;
+        private BaseNode _typeNode;
         private List<BaseNode> _nodes;
 
         public InitListExpression(BaseNode typeNode, List<BaseNode> nodes) : base(NodeType.InitListExpression)
         {
             _typeNode = typeNode;
-            _nodes    = nodes;
+            _nodes = nodes;
         }
 
         public override void PrintLeft(TextWriter writer)

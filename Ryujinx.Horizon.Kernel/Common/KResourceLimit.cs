@@ -20,8 +20,8 @@ namespace Ryujinx.Horizon.Kernel.Common
 
         public KResourceLimit(KernelContextInternal context) : base(context)
         {
-            _current  = new long[(int)LimitableResource.Count];
-            _limit    = new long[(int)LimitableResource.Count];
+            _current = new long[(int)LimitableResource.Count];
+            _limit = new long[(int)LimitableResource.Count];
             _current2 = new long[(int)LimitableResource.Count];
 
             _lock = new object();

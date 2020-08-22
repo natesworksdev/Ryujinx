@@ -24,7 +24,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             public Image(ulong baseAddress, ElfSymbol[] symbols)
             {
                 BaseAddress = baseAddress;
-                Symbols     = symbols;
+                Symbols = symbols;
             }
         }
 
@@ -118,7 +118,7 @@ namespace Ryujinx.Horizon.Kernel.Process
         {
             address -= image.BaseAddress;
 
-            int left  = 0;
+            int left = 0;
             int right = image.Symbols.Length - 1;
 
             while (left <= right)
@@ -131,14 +131,14 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 ulong endAddr = symbol.Value + symbol.Size;
 
-                if ((ulong)address >= symbol.Value && (ulong)address < endAddr)
+                if (address >= symbol.Value && address < endAddr)
                 {
                     name = symbol.Name;
 
                     return true;
                 }
 
-                if ((ulong)address < (ulong)symbol.Value)
+                if (address < symbol.Value)
                 {
                     right = middle - 1;
                 }
@@ -213,18 +213,18 @@ namespace Ryujinx.Horizon.Kernel.Process
         private void ScanMemoryForTextSegments()
         {
             ulong oldAddress = 0;
-            ulong address    = 0;
+            ulong address = 0;
 
             while (address >= oldAddress)
             {
                 KMemoryInfo info = _owner.MemoryManager.QueryMemory(address);
 
-                if (info.State == MemoryState.Reserved)
+                if (info.State == KMemoryState.Reserved)
                 {
                     break;
                 }
 
-                if (info.State == MemoryState.CodeStatic && info.Permission == KMemoryPermission.ReadAndExecute)
+                if (info.State == KMemoryState.CodeStatic && info.Permission == KMemoryPermission.ReadAndExecute)
                 {
                     LoadMod0Symbols(_owner.CpuMemory, info.Address);
                 }
@@ -253,12 +253,12 @@ namespace Ryujinx.Horizon.Kernel.Process
                 return;
             }
 
-            ulong dynamicOffset    = memory.Read<uint>(mod0Offset + 0x4)  + mod0Offset;
-            ulong bssStartOffset   = memory.Read<uint>(mod0Offset + 0x8)  + mod0Offset;
-            ulong bssEndOffset     = memory.Read<uint>(mod0Offset + 0xc)  + mod0Offset;
+            ulong dynamicOffset = memory.Read<uint>(mod0Offset + 0x4) + mod0Offset;
+            ulong bssStartOffset = memory.Read<uint>(mod0Offset + 0x8) + mod0Offset;
+            ulong bssEndOffset = memory.Read<uint>(mod0Offset + 0xc) + mod0Offset;
             ulong ehHdrStartOffset = memory.Read<uint>(mod0Offset + 0x10) + mod0Offset;
-            ulong ehHdrEndOffset   = memory.Read<uint>(mod0Offset + 0x14) + mod0Offset;
-            ulong modObjOffset     = memory.Read<uint>(mod0Offset + 0x18) + mod0Offset;
+            ulong ehHdrEndOffset = memory.Read<uint>(mod0Offset + 0x14) + mod0Offset;
+            ulong modObjOffset = memory.Read<uint>(mod0Offset + 0x18) + mod0Offset;
 
             bool isAArch32 = memory.Read<ulong>(dynamicOffset) > 0xFFFFFFFF || memory.Read<ulong>(dynamicOffset + 0x10) > 0xFFFFFFFF;
 
@@ -270,14 +270,14 @@ namespace Ryujinx.Horizon.Kernel.Process
                 if (isAArch32)
                 {
                     tagVal = memory.Read<uint>(dynamicOffset + 0);
-                    value  = memory.Read<uint>(dynamicOffset + 4);
+                    value = memory.Read<uint>(dynamicOffset + 4);
 
                     dynamicOffset += 0x8;
                 }
                 else
                 {
                     tagVal = memory.Read<ulong>(dynamicOffset + 0);
-                    value  = memory.Read<ulong>(dynamicOffset + 8);
+                    value = memory.Read<ulong>(dynamicOffset + 8);
 
                     dynamicOffset += 0x10;
                 }

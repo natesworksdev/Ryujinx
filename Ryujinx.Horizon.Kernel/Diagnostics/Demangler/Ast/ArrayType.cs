@@ -6,17 +6,17 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
     {
         private BaseNode _base;
         private BaseNode _dimensionExpression;
-        private string   _dimensionString;
+        private string _dimensionString;
 
         public ArrayType(BaseNode Base, BaseNode dimensionExpression = null) : base(NodeType.ArrayType)
         {
-            _base                = Base;
+            _base = Base;
             _dimensionExpression = dimensionExpression;
         }
 
         public ArrayType(BaseNode Base, string dimensionString) : base(NodeType.ArrayType)
         {
-            _base            = Base;
+            _base = Base;
             _dimensionString = dimensionString;
         }
 

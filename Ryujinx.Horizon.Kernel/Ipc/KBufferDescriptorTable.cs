@@ -15,27 +15,27 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
         public KBufferDescriptorTable()
         {
-            _sendBufferDescriptors     = new List<KBufferDescriptor>(MaxInternalBuffersCount);
-            _receiveBufferDescriptors  = new List<KBufferDescriptor>(MaxInternalBuffersCount);
+            _sendBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
+            _receiveBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
             _exchangeBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
         }
 
-        public KernelResult AddSendBuffer(ulong src, ulong dst, ulong size, MemoryState state)
+        public KernelResult AddSendBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
         {
             return Add(_sendBufferDescriptors, src, dst, size, state);
         }
 
-        public KernelResult AddReceiveBuffer(ulong src, ulong dst, ulong size, MemoryState state)
+        public KernelResult AddReceiveBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
         {
             return Add(_receiveBufferDescriptors, src, dst, size, state);
         }
 
-        public KernelResult AddExchangeBuffer(ulong src, ulong dst, ulong size, MemoryState state)
+        public KernelResult AddExchangeBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
         {
             return Add(_exchangeBufferDescriptors, src, dst, size, state);
         }
 
-        private KernelResult Add(List<KBufferDescriptor> list, ulong src, ulong dst, ulong size, MemoryState state)
+        private KernelResult Add(List<KBufferDescriptor> list, ulong src, ulong dst, ulong size, KMemoryState state)
         {
             if (list.Count < MaxInternalBuffersCount)
             {
@@ -63,26 +63,26 @@ namespace Ryujinx.Horizon.Kernel.Ipc
         {
             foreach (KBufferDescriptor desc in list)
             {
-                MemoryState stateMask;
+                KMemoryState stateMask;
 
                 switch (desc.State)
                 {
-                    case MemoryState.IpcBuffer0: stateMask = MemoryState.IpcSendAllowedType0; break;
-                    case MemoryState.IpcBuffer1: stateMask = MemoryState.IpcSendAllowedType1; break;
-                    case MemoryState.IpcBuffer3: stateMask = MemoryState.IpcSendAllowedType3; break;
+                    case KMemoryState.IpcBuffer0: stateMask = KMemoryState.IpcSendAllowedType0; break;
+                    case KMemoryState.IpcBuffer1: stateMask = KMemoryState.IpcSendAllowedType1; break;
+                    case KMemoryState.IpcBuffer3: stateMask = KMemoryState.IpcSendAllowedType3; break;
 
                     default: return KernelResult.InvalidCombination;
                 }
 
-                MemoryAttribute attributeMask = MemoryAttribute.Borrowed | MemoryAttribute.Uncached;
+                KMemoryAttribute attributeMask = KMemoryAttribute.Borrowed | KMemoryAttribute.Uncached;
 
-                if (desc.State == MemoryState.IpcBuffer0)
+                if (desc.State == KMemoryState.IpcBuffer0)
                 {
-                    attributeMask |= MemoryAttribute.DeviceMapped;
+                    attributeMask |= KMemoryAttribute.DeviceMapped;
                 }
 
                 ulong clientAddrTruncated = BitUtils.AlignDown(desc.ClientAddress, KMemoryManager.PageSize);
-                ulong clientAddrRounded   = BitUtils.AlignUp  (desc.ClientAddress, KMemoryManager.PageSize);
+                ulong clientAddrRounded = BitUtils.AlignUp(desc.ClientAddress, KMemoryManager.PageSize);
 
                 // Check if address is not aligned, in this case we need to perform 2 copies.
                 if (clientAddrTruncated != clientAddrRounded)
@@ -101,7 +101,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         stateMask,
                         KMemoryPermission.ReadAndWrite,
                         attributeMask,
-                        MemoryAttribute.None,
+                        KMemoryAttribute.None,
                         desc.ServerAddress);
 
                     if (result != KernelResult.Success)
@@ -114,7 +114,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 ulong serverEndAddr = desc.ServerAddress + desc.Size;
 
                 ulong clientEndAddrTruncated = BitUtils.AlignDown(clientEndAddr, KMemoryManager.PageSize);
-                ulong clientEndAddrRounded   = BitUtils.AlignUp  (clientEndAddr, KMemoryManager.PageSize);
+                ulong clientEndAddrRounded = BitUtils.AlignUp(clientEndAddr, KMemoryManager.PageSize);
                 ulong serverEndAddrTruncated = BitUtils.AlignDown(serverEndAddr, KMemoryManager.PageSize);
 
                 if (clientEndAddrTruncated < clientEndAddrRounded &&
@@ -127,7 +127,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         stateMask,
                         KMemoryPermission.ReadAndWrite,
                         attributeMask,
-                        MemoryAttribute.None,
+                        KMemoryAttribute.None,
                         serverEndAddrTruncated);
 
                     if (result != KernelResult.Success)

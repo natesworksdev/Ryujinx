@@ -99,7 +99,7 @@ namespace Ryujinx.Horizon.Kernel.Diagnostics.Demangler.Ast
             return null;
         }
 
-        public virtual void PrintRight(TextWriter writer) {}
+        public virtual void PrintRight(TextWriter writer) { }
 
         public override string ToString()
         {
