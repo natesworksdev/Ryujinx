@@ -1,7 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
-using System.Collections.Generic;
 
 namespace Ryujinx.Horizon.Kernel.Memory
 {
@@ -9,6 +8,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
     {
         private KPageList _pageList;
 
+        private MemoryRegion _ownerRegion;
         private KResourceLimit _ownerResourceLimit;
 
         private long _ownerPid;
@@ -25,6 +25,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
         public KernelResult Initialize(KProcess owner, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
         {
             _ownerPid = owner.Pid;
+            _ownerRegion = owner.MemoryRegion;
 
             _ownerPermission = ownerPermission;
             _userPermission = userPermission;
@@ -38,25 +39,32 @@ namespace Ryujinx.Horizon.Kernel.Memory
                 return KernelResult.ResLimitExceeded;
             }
 
-            KernelResult result = KernelContext.MemoryRegions[(int)owner.MemoryRegion].AllocatePages(pagesCount, !owner.AslrEnabled, out _pageList);
+            ulong address = KernelContext.MemoryRegions[(int)owner.MemoryRegion].AllocatePagesContiguous(pagesCount, !owner.AslrEnabled);
 
-            if (result != KernelResult.Success)
+            if (address == 0)
             {
                 resourceLimit.Release(LimitableResource.Memory, size);
 
-                return result;
+                return KernelResult.OutOfMemory;
             }
 
             _ownerResourceLimit = resourceLimit;
 
             _isInitialized = true;
 
-            for (LinkedListNode<KPageNode> node = _pageList.Nodes.First; node != null; node = node.Next)
+            KernelContext.Memory.ZeroFill(KMemoryManager.GetDramAddressFromPa(address), size);
+
+            _pageList = new KPageList();
+            _pageList.AddRange(address, pagesCount);
+
+            // TODO: This should be using non-contiguous allocation,
+            // but looks like it is not working properly right now. To be investigated later.
+            /* for (LinkedListNode<KPageNode> node = _pageList.Nodes.First; node != null; node = node.Next)
             {
                 KPageNode pageNode = node.Value;
 
                 KernelContext.Memory.ZeroFill(KMemoryManager.GetDramAddressFromPa(pageNode.Address), pageNode.PagesCount * KMemoryManager.PageSize);
-            }
+            } */
 
             return KernelResult.Success;
         }
@@ -104,6 +112,8 @@ namespace Ryujinx.Horizon.Kernel.Memory
                 ulong size = _pageList.GetPagesCount() * KMemoryManager.PageSize;
 
                 _ownerResourceLimit.Release(LimitableResource.Memory, size);
+
+                KernelContext.MemoryRegions[(int)_ownerRegion].FreePages(_pageList);
             }
         }
     }
