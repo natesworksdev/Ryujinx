@@ -456,11 +456,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             networkConfig.Channel       = CheckDevelopmentChannel(networkConfig.Channel);
             securityConfig.SecurityMode = CheckDevelopmentSecurityMode(securityConfig.SecurityMode);
 
-            if (networkConfig.NodeCountMax - 1 <= 7)
+            if (networkConfig.NodeCountMax <= 8)
             {
                 if ((((ulong)networkConfig.LocalCommunicationVersion) & 0x80000000) == 0)
                 {
-                    if (securityConfig.SecurityMode - 1 <= SecurityMode.Debug)
+                    if (securityConfig.SecurityMode <= SecurityMode.Retail)
                     {
                         if (securityConfig.Passphrase.Length <= 0x40)
                         {
@@ -767,7 +767,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            if (disconnectReason - 1 <= DisconnectReason.DisconnectedByUser)
+            if (disconnectReason <= DisconnectReason.DisconnectedBySystem)
             {
                 if (_state == NetworkState.StationConnected)
                 {
@@ -818,36 +818,49 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             switch (_state)
             {
-                case NetworkState.None:
-                    return ResultCode.Success;
+                case NetworkState.None: return ResultCode.Success;
                 case NetworkState.AccessPoint:
-                    CloseAccessPoint();
-                    break;
+                    {
+                        CloseAccessPoint();
+
+                        break;
+                    }
                 case NetworkState.AccessPointCreated:
-                    if (isCausedBySystem)
                     {
-                        disconnectReason = DisconnectReason.DestroyedBySystem;
+                        if (isCausedBySystem)
+                        {
+                            disconnectReason = DisconnectReason.DestroyedBySystem;
+                        }
+                        else
+                        {
+                            disconnectReason = DisconnectReason.DestroyedByUser;
+                        }
+
+                        DestroyNetworkImpl(disconnectReason);
+
+                        break;
                     }
-                    else
-                    {
-                        disconnectReason = DisconnectReason.DestroyedByUser;
-                    }
-                    DestroyNetworkImpl(disconnectReason);
-                    break;
                 case NetworkState.Station:
-                    CloseStation();
-                    break;
+                    {
+                        CloseStation();
+
+                        break;
+                    }
                 case NetworkState.StationConnected:
-                    if (isCausedBySystem)
                     {
-                        disconnectReason = DisconnectReason.DisconnectedBySystem;
+                        if (isCausedBySystem)
+                        {
+                            disconnectReason = DisconnectReason.DisconnectedBySystem;
+                        }
+                        else
+                        {
+                            disconnectReason = DisconnectReason.DisconnectedByUser;
+                        }
+
+                        DisconnectImpl(disconnectReason);
+
+                        break;
                     }
-                    else
-                    {
-                        disconnectReason = DisconnectReason.DisconnectedByUser;
-                    }
-                    DisconnectImpl(disconnectReason);
-                    break;
             }
 
             SetState(NetworkState.None);
@@ -888,8 +901,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                         MultiplayerMode mode = ConfigurationState.Instance.Multiplayer.Mode;
                         switch (mode)
                         {
-                            case MultiplayerMode.Dummy:
-                                NetworkClient = new DummyLdnClient();
+                            case MultiplayerMode.Disabled:
+                                NetworkClient = new DisabledLdnClient();
                                 break;
                         }
 

@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn
 {
-    class DummyLdnClient : INetworkClient
+    class DisabledLdnClient : INetworkClient
     {
         public event EventHandler<NetworkChangeEventArgs> NetworkChange;
 
@@ -23,34 +23,19 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn
             return true;
         }
 
-        public void DisconnectAndStop()
-        {
+        public void DisconnectAndStop() { }
 
-        }
-
-        public void DisconnectNetwork()
-        {
-
-        }
+        public void DisconnectNetwork() { }
 
         public NetworkInfo[] Scan(ushort channel, ScanFilter scanFilter)
         {
             return Array.Empty<NetworkInfo>();
         }
 
-        public void SetAdvertiseData(byte[] data)
-        {
+        public void SetAdvertiseData(byte[] data) { }
 
-        }
+        public void SetStationAcceptPolicy(AcceptPolicy acceptPolicy) { }
 
-        public void SetStationAcceptPolicy(AcceptPolicy acceptPolicy)
-        {
-
-        }
-
-        public void Dispose()
-        {
-
-        }
+        public void Dispose() { }
     }
 }

@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
+    // TODO: Remove that by using Ryujinx.Common
     static class LdnHelper
     {
         public static byte[] StructureToByteArray(object obj, int padding = 0)
@@ -32,14 +32,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             Marshal.FreeHGlobal(ptr);
 
             return str;
-        }
-
-        public static byte[] StringToByteArray(string hex)
-        {
-            return Enumerable.Range(0, hex.Length)
-                             .Where(x => x % 2 == 0)
-                             .Select(x => Convert.ToByte(hex.Substring(x, 2), 16))
-                             .ToArray();
         }
     }
 }
