@@ -20,7 +20,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private readonly Dictionary<int, ShaderBundleWrapper> _cpProgramsByHash;
         private readonly Dictionary<ulong, Dictionary<int, ShaderBundle>> _cpPrograms;
-        private readonly Dictionary<int, ShaderBundleWrapper> _gpProgramsByHash;
         private readonly Dictionary<ShaderAddresses, List<ShaderBundle>> _gpPrograms;
 
         /// <summary>
@@ -35,7 +34,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             _cpProgramsByHash = new Dictionary<int, ShaderBundleWrapper>();
             _cpPrograms = new Dictionary<ulong, Dictionary<int, ShaderBundle>>();
-            _gpProgramsByHash = new Dictionary<int, ShaderBundleWrapper>();
             _gpPrograms = new Dictionary<ShaderAddresses, List<ShaderBundle>>();
         }
 
