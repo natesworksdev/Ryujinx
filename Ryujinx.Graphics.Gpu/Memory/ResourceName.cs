@@ -8,6 +8,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         Buffer,
         Texture,
         TexturePool,
-        SamplerPool
+        SamplerPool,
+        Shader
     }
 }

@@ -289,15 +289,14 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 return true;
             }
 
-            ReadOnlySpan<byte> memoryCode = _context.MemoryManager.GetSpan(gpuVa, shader.Code.Length);
-
-            bool equals = memoryCode.SequenceEqual(shader.Code);
+            int isModified = _context.PhysicalMemory.QueryModified(gpuVa, (ulong) shader.Code.Length, Gpu.Memory.ResourceName.Shader);
+            bool equals = isModified == 0;
 
             if (equals && shader.Code2 != null)
             {
-                memoryCode = _context.MemoryManager.GetSpan(gpuVaA, shader.Code2.Length);
+                isModified = _context.PhysicalMemory.QueryModified(gpuVaA, (ulong)shader.Code2.Length, Gpu.Memory.ResourceName.Shader);
 
-                equals = memoryCode.SequenceEqual(shader.Code2);
+                return isModified == 0;
             }
 
             return equals;
