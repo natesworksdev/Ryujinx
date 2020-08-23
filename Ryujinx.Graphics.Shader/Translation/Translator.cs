@@ -62,6 +62,42 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new ShaderProgram(spInfo, config.Stage, glslCode, config.Size, sizeA);
         }
 
+        public static int DecodeShaderSize(ulong address, IGpuAccessor gpuAccessor, TranslationFlags flags)
+        {
+            Block[] cfg;
+
+            if ((flags & TranslationFlags.Compute) != 0)
+            {
+                cfg = Decoder.Decode(gpuAccessor, address);
+            }
+            else
+            {
+                cfg = Decoder.Decode(gpuAccessor, address + HeaderSize);
+            }
+
+            if (cfg == null)
+            {
+                gpuAccessor.Log("Invalid branch detected, failed to build CFG.");
+
+                return 0;
+            }
+
+            ulong maxEndAddress = 0;
+
+            for (int blkIndex = 0; blkIndex < cfg.Length; blkIndex++)
+            {
+                Block block = cfg[blkIndex];
+
+                if (maxEndAddress < block.EndAddress)
+                {
+                    maxEndAddress = block.EndAddress;
+                }
+            }
+
+            return (int)maxEndAddress + (flags.HasFlag(TranslationFlags.Compute) ? 0 : HeaderSize);
+
+        }
+
         private static Operation[] DecodeShader(ulong address, IGpuAccessor gpuAccessor, TranslationFlags flags, out ShaderConfig config)
         {
             Block[] cfg;

@@ -18,7 +18,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
         private readonly ShaderDumper _dumper;
 
-        private readonly Dictionary<ulong, List<ShaderBundle>> _cpPrograms;
+        private readonly Dictionary<int, ShaderBundleWrapper> _cpProgramsByHash;
+        private readonly Dictionary<ulong, Dictionary<int, ShaderBundle>> _cpPrograms;
+        private readonly Dictionary<int, ShaderBundleWrapper> _gpProgramsByHash;
         private readonly Dictionary<ShaderAddresses, List<ShaderBundle>> _gpPrograms;
 
         /// <summary>
@@ -31,7 +33,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             _dumper = new ShaderDumper();
 
-            _cpPrograms = new Dictionary<ulong, List<ShaderBundle>>();
+            _cpProgramsByHash = new Dictionary<int, ShaderBundleWrapper>();
+            _cpPrograms = new Dictionary<ulong, Dictionary<int, ShaderBundle>>();
+            _gpProgramsByHash = new Dictionary<int, ShaderBundleWrapper>();
             _gpPrograms = new Dictionary<ShaderAddresses, List<ShaderBundle>>();
         }
 
@@ -58,11 +62,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
             int localMemorySize,
             int sharedMemorySize)
         {
-            bool isCached = _cpPrograms.TryGetValue(gpuVa, out List<ShaderBundle> list);
+            bool isCached = _cpPrograms.TryGetValue(gpuVa, out Dictionary<int, ShaderBundle> list);
 
             if (isCached)
             {
-                foreach (ShaderBundle cachedCpShader in list)
+                foreach (ShaderBundle cachedCpShader in list.Values)
                 {
                     if (IsShaderEqual(cachedCpShader, gpuVa))
                     {
@@ -80,6 +84,26 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 localMemorySize,
                 sharedMemorySize);
 
+            int shaderHashCode = ComputeShaderHashCode(shader.Code);
+            bool isCachedElsewhere = _cpProgramsByHash.TryGetValue(shaderHashCode, out ShaderBundleWrapper bundleWrapper);
+
+            if(isCachedElsewhere)
+            {
+                if(!isCached)
+                {
+                    list = new Dictionary<int, ShaderBundle>();
+                    _cpPrograms[gpuVa] = list;
+                }
+
+                list.Add(shaderHashCode, bundleWrapper.shaderBundle);
+
+                Dictionary<int, ShaderBundle> previousList = _cpPrograms[bundleWrapper.shaderAddress];
+                previousList?.Remove(shaderHashCode);
+
+                bundleWrapper.shaderAddress = gpuVa;
+                return bundleWrapper.shaderBundle;
+            }
+
             shader.HostShader = _context.Renderer.CompileShader(shader.Program);
 
             IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
@@ -88,12 +112,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
             if (!isCached)
             {
-                list = new List<ShaderBundle>();
-
-                _cpPrograms.Add(gpuVa, list);
+                list = new Dictionary<int, ShaderBundle>();
+                _cpProgramsByHash[shaderHashCode] = new ShaderBundleWrapper(cpShader, gpuVa);
+                _cpPrograms[gpuVa] = list;
             }
-
-            list.Add(cpShader);
+            list[shaderHashCode] = cpShader;
 
             return cpShader;
         }
@@ -173,7 +196,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             if (!isCached)
             {
                 list = new List<ShaderBundle>();
-
                 _gpPrograms.Add(addresses, list);
             }
 
@@ -387,14 +409,29 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
+        /// Computes the hash code of a shader.
+        /// C# Hashes primitives by reference, so a manual implementation is required for element-based hashing.
+        /// </summary>
+        private int ComputeShaderHashCode(byte[] code)
+        {
+            unchecked
+            {
+                var result = 0;
+                foreach (byte b in code)
+                    result = (result * 31) ^ b;
+                return result;
+            }
+        }
+
+        /// <summary>
         /// Disposes the shader cache, deleting all the cached shaders.
         /// It's an error to use the shader cache after disposal.
         /// </summary>
         public void Dispose()
         {
-            foreach (List<ShaderBundle> list in _cpPrograms.Values)
+            foreach (Dictionary<int, ShaderBundle> list in _cpPrograms.Values)
             {
-                foreach (ShaderBundle bundle in list)
+                foreach (ShaderBundle bundle in list.Values)
                 {
                     bundle.Dispose();
                 }
