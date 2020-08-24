@@ -9,6 +9,7 @@ using OpenTK;
 using System;
 using System.IO;
 using System.Reflection;
+using Ryujinx.Ui.Diagnostic;
 
 namespace Ryujinx
 {
@@ -110,7 +111,7 @@ namespace Ryujinx
             bool hasAltProdKeys    = !AppDataManager.IsCustomBasePath && File.Exists(Path.Combine(AppDataManager.KeysDirPathAlt, "prod.keys"));
             if (!hasGlobalProdKeys && !hasAltProdKeys && !Migration.IsMigrationNeeded())
             {
-                GtkDialog.CreateWarningDialog("Key file was not found", "Please refer to `KEYS.md` for more info");
+                UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
             }
 
             MainWindow mainWindow = new MainWindow();
