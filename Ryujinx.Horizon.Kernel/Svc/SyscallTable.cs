@@ -1,4 +1,3 @@
-using ARMeilleure.State;
 using Ryujinx.Common.Logging;
 using Ryujinx.Horizon.Kernel.Common;
 using System;
@@ -14,13 +13,13 @@ namespace Ryujinx.Horizon.Kernel.Svc
         private const int SvcFuncMaxArguments32 = 4;
         private const int SvcMax = 0x80;
 
-        public static Action<Syscall32, ExecutionContext>[] SvcTable32 { get; }
-        public static Action<Syscall64, ExecutionContext>[] SvcTable64 { get; }
+        public static Action<Syscall32, IThreadContext>[] SvcTable32 { get; }
+        public static Action<Syscall64, IThreadContext>[] SvcTable64 { get; }
 
         static SyscallTable()
         {
-            SvcTable32 = new Action<Syscall32, ExecutionContext>[SvcMax];
-            SvcTable64 = new Action<Syscall64, ExecutionContext>[SvcMax];
+            SvcTable32 = new Action<Syscall32, IThreadContext>[SvcMax];
+            SvcTable64 = new Action<Syscall64, IThreadContext>[SvcMax];
 
             Dictionary<int, string> svcFuncs64 = new Dictionary<int, string>
             {
@@ -156,9 +155,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        private static Action<T, ExecutionContext> GenerateMethod<T>(string svcName, int registerCleanCount)
+        private static Action<T, IThreadContext> GenerateMethod<T>(string svcName, int registerCleanCount)
         {
-            Type[] argTypes = new Type[] { typeof(T), typeof(ExecutionContext) };
+            Type[] argTypes = new Type[] { typeof(T), typeof(IThreadContext) };
 
             DynamicMethod method = new DynamicMethod(svcName, null, argTypes);
 
@@ -266,9 +265,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     generator.Emit(OpCodes.Ldarg_1);
                     generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
 
-                    MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
+                    MethodInfo info = typeof(IThreadContext).GetMethod(nameof(IThreadContext.GetX));
 
-                    generator.Emit(OpCodes.Call, info);
+                    generator.Emit(OpCodes.Callvirt, info);
 
                     generator.Emit(OpCodes.Box, typeof(ulong));
 
@@ -313,9 +312,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                         generator.Emit(OpCodes.Ldarg_1);
                         generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
 
-                        MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
+                        MethodInfo info = typeof(IThreadContext).GetMethod(nameof(IThreadContext.GetX));
 
-                        generator.Emit(OpCodes.Call, info);
+                        generator.Emit(OpCodes.Callvirt, info);
 
                         ConvertToArgType(argType);
 
@@ -329,9 +328,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     generator.Emit(OpCodes.Ldarg_1);
                     generator.Emit(OpCodes.Ldc_I4, registerAttribute.Index);
 
-                    MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.GetX));
+                    MethodInfo info = typeof(IThreadContext).GetMethod(nameof(IThreadContext.GetX));
 
-                    generator.Emit(OpCodes.Call, info);
+                    generator.Emit(OpCodes.Callvirt, info);
 
                     ConvertToArgType(argType);
                 }
@@ -367,9 +366,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 ConvertToFieldType(retType);
 
-                MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
+                MethodInfo info = typeof(IThreadContext).GetMethod(nameof(IThreadContext.SetX));
 
-                generator.Emit(OpCodes.Call, info);
+                generator.Emit(OpCodes.Callvirt, info);
 
                 registerInUse |= 1u << 0;
             }
@@ -389,9 +388,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 ConvertToFieldType(local.LocalType);
 
-                MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
+                MethodInfo info = typeof(IThreadContext).GetMethod(nameof(IThreadContext.SetX));
 
-                generator.Emit(OpCodes.Call, info);
+                generator.Emit(OpCodes.Callvirt, info);
 
                 registerInUse |= 1u << attribute.Index;
             }
@@ -408,14 +407,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 generator.Emit(OpCodes.Ldc_I4, i);
                 generator.Emit(OpCodes.Ldc_I8, 0L);
 
-                MethodInfo info = typeof(ExecutionContext).GetMethod(nameof(ExecutionContext.SetX));
+                MethodInfo info = typeof(IThreadContext).GetMethod(nameof(IThreadContext.SetX));
 
-                generator.Emit(OpCodes.Call, info);
+                generator.Emit(OpCodes.Callvirt, info);
             }
 
             generator.Emit(OpCodes.Ret);
 
-            return (Action<T, ExecutionContext>)method.CreateDelegate(typeof(Action<T, ExecutionContext>));
+            return (Action<T, IThreadContext>)method.CreateDelegate(typeof(Action<T, IThreadContext>));
         }
 
         private static void CheckIfTypeIsSupported(Type type, string svcName)

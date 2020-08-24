@@ -1,4 +1,3 @@
-using ARMeilleure.State;
 using Ryujinx.Horizon.Kernel.Threading;
 using System;
 
@@ -17,28 +16,26 @@ namespace Ryujinx.Horizon.Kernel.Svc
             _syscall64 = new Syscall64(context.Syscall);
         }
 
-        public void SvcCall(object sender, InstExceptionEventArgs e)
+        public void CallSvc(IThreadContext context, int id)
         {
-            ExecutionContext context = (ExecutionContext)sender;
-
-            if (context.IsAarch32)
+            if (context.Is32Bit)
             {
-                var svcFunc = SyscallTable.SvcTable32[e.Id];
+                var svcFunc = SyscallTable.SvcTable32[id];
 
                 if (svcFunc == null)
                 {
-                    throw new NotImplementedException($"SVC 0x{e.Id:X4} is not implemented.");
+                    throw new NotImplementedException($"SVC 0x{id:X4} is not implemented.");
                 }
 
                 svcFunc(_syscall32, context);
             }
             else
             {
-                var svcFunc = SyscallTable.SvcTable64[e.Id];
+                var svcFunc = SyscallTable.SvcTable64[id];
 
                 if (svcFunc == null)
                 {
-                    throw new NotImplementedException($"SVC 0x{e.Id:X4} is not implemented.");
+                    throw new NotImplementedException($"SVC 0x{id:X4} is not implemented.");
                 }
 
                 svcFunc(_syscall64, context);

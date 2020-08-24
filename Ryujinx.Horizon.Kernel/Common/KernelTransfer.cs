@@ -1,4 +1,3 @@
-using Ryujinx.Cpu;
 using Ryujinx.Horizon.Kernel.Process;
 using System;
 using System.Runtime.CompilerServices;
@@ -44,21 +43,30 @@ namespace Ryujinx.Horizon.Kernel.Common
             return true;
         }
 
-        public static bool UserToKernelString(KernelContextInternal context, ulong address, int size, out string value)
+        public static bool UserToKernelString(KernelContextInternal context, ulong address, ulong size, out string value)
         {
             KProcess currentProcess = context.Scheduler.GetCurrentProcess();
 
-            if (currentProcess.CpuMemory.IsMapped(address) &&
-                currentProcess.CpuMemory.IsMapped(address + (ulong)size - 1))
-            {
-                value = MemoryHelper.ReadAsciiString(currentProcess.CpuMemory, (long)address, size);
+            value = string.Empty;
 
-                return true;
+            for (ulong offset = 0; offset < size; offset++)
+            {
+                if (!currentProcess.CpuMemory.IsMapped(address + offset))
+                {
+                    value = null;
+                    return false;
+                }
+
+                char chr = (char)currentProcess.CpuMemory.Read<byte>(address + offset);
+                if (chr == '\0')
+                {
+                    break;
+                }
+
+                value += chr;
             }
 
-            value = null;
-
-            return false;
+            return true;
         }
 
         public static bool KernelToUserInt32(KernelContextInternal context, ulong address, int value)

@@ -137,7 +137,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
         public void ExitThread(KThread thread)
         {
-            thread.Context.StopRunning();
+            thread.Context.Stop();
 
             CoreManager.Exit(thread.HostThread);
         }

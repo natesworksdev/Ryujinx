@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Ipc;
 using Ryujinx.Horizon.Kernel.Memory;
@@ -1614,7 +1613,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
         public ulong GetSystemTick()
         {
-            return _context.Scheduler.GetCurrentThread().Context.CntpctEl0;
+            return _context.Scheduler.GetCurrentThread().Context.Counter;
         }
 
         public void Break(ulong reason)
@@ -1643,13 +1642,21 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public void OutputDebugString(ulong strPtr, ulong size)
+        public KernelResult OutputDebugString(ulong strPtr, ulong size)
         {
-            KProcess process = _context.Scheduler.GetCurrentProcess();
+            if (size == 0)
+            {
+                return KernelResult.Success;
+            }
 
-            string str = MemoryHelper.ReadAsciiString(process.CpuMemory, (long)strPtr, (long)size);
+            if (!KernelTransfer.UserToKernelString(_context, strPtr, size, out string debugString))
+            {
+                return KernelResult.InvalidMemState;
+            }
 
-            Logger.Warning?.Print(LogClass.KernelSvc, str);
+            Logger.Warning?.Print(LogClass.KernelSvc, debugString);
+
+            return KernelResult.Success;
         }
 
         public KernelResult GetInfo(InfoType id, int handle, long subId, out ulong value)
@@ -2336,7 +2343,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             memory.Write(address + 0x100, thread.LastPc);
 
-            memory.Write(address + 0x108, (ulong)GetPsr(thread.Context));
+            memory.Write(address + 0x108, thread.Context.Cpsr);
 
             memory.Write(address + 0x110, thread.Context.GetV(0));
             memory.Write(address + 0x120, thread.Context.GetV(1));
@@ -2371,19 +2378,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
             memory.Write(address + 0x2f0, thread.Context.GetV(30));
             memory.Write(address + 0x300, thread.Context.GetV(31));
 
-            memory.Write(address + 0x310, (int)thread.Context.Fpcr);
-            memory.Write(address + 0x314, (int)thread.Context.Fpsr);
-            memory.Write(address + 0x318, thread.Context.Tpidr);
+            memory.Write(address + 0x310, thread.Context.Fpcr);
+            memory.Write(address + 0x314, thread.Context.Fpsr);
+            memory.Write(address + 0x318, thread.Context.TlsAddress);
 
             return KernelResult.Success;
-        }
-
-        private static int GetPsr(ARMeilleure.State.ExecutionContext context)
-        {
-            return (context.GetPstateFlag(ARMeilleure.State.PState.NFlag) ? (1 << (int)ARMeilleure.State.PState.NFlag) : 0) |
-                   (context.GetPstateFlag(ARMeilleure.State.PState.ZFlag) ? (1 << (int)ARMeilleure.State.PState.ZFlag) : 0) |
-                   (context.GetPstateFlag(ARMeilleure.State.PState.CFlag) ? (1 << (int)ARMeilleure.State.PState.CFlag) : 0) |
-                   (context.GetPstateFlag(ARMeilleure.State.PState.VFlag) ? (1 << (int)ARMeilleure.State.PState.VFlag) : 0);
         }
 
         // Thread synchronization

@@ -1,7 +1,5 @@
-using ARMeilleure.State;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
 using Ryujinx.Horizon.Kernel.Svc;
@@ -343,7 +341,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             UserExceptionContextAddress = userExceptionContextAddress;
 
-            MemoryHelper.FillWithZeros(CpuMemory, (long)userExceptionContextAddress, KTlsPageInfo.TlsEntrySize);
+            CpuMemory.Fill(userExceptionContextAddress, KTlsPageInfo.TlsEntrySize, 0);
 
             Name = creationInfo.Name;
 
@@ -464,7 +462,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             {
                 pageInfo = new KTlsPageInfo(tlsPageVa);
 
-                MemoryHelper.FillWithZeros(CpuMemory, (long)tlsPageVa, KMemoryManager.PageSize);
+                CpuMemory.Fill(tlsPageVa, KMemoryManager.PageSize, 0);
             }
 
             return result;
@@ -745,19 +743,6 @@ namespace Ryujinx.Horizon.Kernel.Process
             {
                 return thread.Initialize(entrypoint, argsPtr, stackTop, priority, cpuCore, this, ThreadType.User, null);
             }
-        }
-
-        public void SubscribeThreadEventHandlers(ARMeilleure.State.ExecutionContext context)
-        {
-            context.Interrupt += InterruptHandler;
-            context.SupervisorCall += KernelContext.SyscallHandler.SvcCall;
-            context.Undefined += UndefinedInstructionHandler;
-        }
-
-        private void InterruptHandler(object sender, EventArgs e)
-        {
-            KernelContext.Scheduler.ContextSwitch();
-            KernelContext.Scheduler.GetCurrentThread().HandlePostSyscall();
         }
 
         public void IncrementThreadCount()
@@ -1049,26 +1034,9 @@ namespace Ryujinx.Horizon.Kernel.Process
                 _ => 39
             };
 
-            Context = _contextFactory.Create(KernelContext.Memory, 1UL << addrSpaceBits, InvalidAccessHandler);
+            Context = _contextFactory.Create(KernelContext.Memory, 1UL << addrSpaceBits);
 
             MemoryManager = new KMemoryManager(KernelContext, CpuMemory);
-        }
-
-        private bool InvalidAccessHandler(ulong va)
-        {
-            KernelContext.Scheduler.GetCurrentThreadOrNull()?.PrintGuestStackTrace();
-
-            Logger.Error?.Print(LogClass.Cpu, $"Invalid memory access at virtual address 0x{va:X16}.");
-
-            return false;
-        }
-
-        private void UndefinedInstructionHandler(object sender, InstUndefinedEventArgs e)
-        {
-            KernelContext.Scheduler.GetCurrentThreadOrNull()?.PrintGuestStackTrace();
-
-            // TODO: Proper exception.
-            throw new Exception($"0x{e.Address:X} 0x{e.OpCode:X}");
         }
 
         protected override void Destroy()

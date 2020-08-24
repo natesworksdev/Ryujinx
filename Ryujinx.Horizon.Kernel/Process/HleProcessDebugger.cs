@@ -1,6 +1,7 @@
 using Ryujinx.Horizon.Kernel.Diagnostics.Demangler;
 using Ryujinx.Horizon.Kernel.Diagnostics.Elf;
 using Ryujinx.Horizon.Kernel.Memory;
+using Ryujinx.Horizon.Kernel.Svc;
 using Ryujinx.Memory;
 using System.Collections.Generic;
 using System.Linq;
@@ -39,7 +40,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             _images = new List<Image>();
         }
 
-        public string GetGuestStackTrace(ARMeilleure.State.ExecutionContext context)
+        public string GetGuestStackTrace(IThreadContext context)
         {
             EnsureLoaded();
 
@@ -74,7 +75,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
-            if (context.IsAarch32)
+            if (context.Is32Bit)
             {
                 ulong framePointer = context.GetX(11);
 

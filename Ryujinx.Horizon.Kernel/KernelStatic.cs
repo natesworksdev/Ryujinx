@@ -37,6 +37,17 @@ namespace Ryujinx.Horizon.Kernel
             return Context.Scheduler.GetCurrentThread().GetGuestStackTrace();
         }
 
+        public static void CallSvc(IThreadContext context, int id)
+        {
+            Context.SyscallHandler.CallSvc(context, id);
+        }
+
+        public static void InterruptServiceRoutine()
+        {
+            Context.Scheduler.ContextSwitch();
+            Context.Scheduler.GetCurrentThread().HandlePostSyscall();
+        }
+
         public static void TerminateAllProcesses(KernelContext context)
         {
             KernelContextInternal internalCtx = context.GetInternal();

@@ -1,5 +1,4 @@
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
 using Ryujinx.Horizon.Kernel.Svc;
@@ -18,7 +17,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
         public Thread HostThread { get; private set; }
 
-        public ARMeilleure.State.ExecutionContext Context { get; private set; }
+        public IThreadContext Context { get; private set; }
 
         public long AffinityMask { get; set; }
 
@@ -156,10 +155,10 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
                 TlsDramAddress = owner.MemoryManager.GetDramAddressFromVa(_tlsAddress);
 
-                MemoryHelper.FillWithZeros(owner.CpuMemory, (long)_tlsAddress, KTlsPageInfo.TlsEntrySize);
+                owner.CpuMemory.Fill(_tlsAddress, KTlsPageInfo.TlsEntrySize, 0);
             }
 
-            bool is64Bits;
+            bool is64Bit;
 
             if (owner != null)
             {
@@ -168,24 +167,23 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 owner.IncrementReferenceCount();
                 owner.IncrementThreadCount();
 
-                is64Bits = owner.Flags.HasFlag(ProcessCreationFlags.Is64Bit);
+                is64Bit = owner.Flags.HasFlag(ProcessCreationFlags.Is64Bit);
             }
             else
             {
-                is64Bits = true;
+                is64Bit = true;
             }
 
             HostThread = new Thread(ThreadStart);
 
-            Context = CpuContext.CreateExecutionContext();
+            bool is32Bit = !is64Bit;
 
-            bool isAarch32 = !Owner.Flags.HasFlag(ProcessCreationFlags.Is64Bit);
-
-            Context.IsAarch32 = isAarch32;
+            // TODO: We should be able to assume that Context is non-null after we get rid of the dummy process.
+            Context = owner?.Context?.CreateThreadContext(19200000, _tlsAddress, is32Bit) ?? new ThreadContext(19200000, _tlsAddress, is32Bit);
 
             Context.SetX(0, argsPtr);
 
-            if (isAarch32)
+            if (is32Bit)
             {
                 Context.SetX(13, (uint)stackTop);
             }
@@ -193,11 +191,6 @@ namespace Ryujinx.Horizon.Kernel.Threading
             {
                 Context.SetX(31, stackTop);
             }
-
-            Context.CntfrqEl0 = 19200000;
-            Context.Tpidr = (long)_tlsAddress;
-
-            owner.SubscribeThreadEventHandlers(Context);
 
             ThreadUid = KernelContext.NewThreadUid();
 

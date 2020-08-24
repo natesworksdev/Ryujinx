@@ -1,8 +1,7 @@
-﻿using ARMeilleure.State;
-using Ryujinx.Memory;
+﻿using Ryujinx.Memory;
 using System;
 
-namespace Ryujinx.Horizon.Kernel.Svc
+namespace Ryujinx.Horizon.Kernel
 {
     class ProcessContext : IProcessContext
     {
@@ -13,13 +12,18 @@ namespace Ryujinx.Horizon.Kernel.Svc
             AddressSpace = asManager;
         }
 
-        public void Execute(ExecutionContext context, ulong codeAddress)
+        public IThreadContext CreateThreadContext(ulong timerFrequency, ulong tlsAddress, bool is32Bit)
+        {
+            return new ThreadContext(timerFrequency, tlsAddress, is32Bit);
+        }
+
+        public void Execute(IThreadContext context, ulong codeAddress)
         {
             throw new NotSupportedException();
         }
 
         public void Dispose()
         {
-        }
+        }        
     }
 }

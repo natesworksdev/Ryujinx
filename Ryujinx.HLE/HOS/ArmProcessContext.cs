@@ -1,6 +1,5 @@
-﻿using ARMeilleure.State;
-using Ryujinx.Cpu;
-using Ryujinx.Horizon.Kernel.Svc;
+﻿using Ryujinx.Cpu;
+using Ryujinx.Horizon.Kernel;
 using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS
@@ -18,7 +17,19 @@ namespace Ryujinx.HLE.HOS
             _cpuContext = new CpuContext(memoryManager);
         }
 
-        public void Execute(ExecutionContext context, ulong codeAddress) => _cpuContext.Execute(context, codeAddress);
-        public void Dispose() => _memoryManager.Dispose();
+        public IThreadContext CreateThreadContext(ulong timerFrequency, ulong tlsAddress, bool is32Bit)
+        {
+            return new ArmThreadContext(timerFrequency, tlsAddress, is32Bit);
+        }
+
+        public void Execute(IThreadContext context, ulong codeAddress)
+        {
+            _cpuContext.Execute(((ArmThreadContext)context).Internal, codeAddress);
+        }
+
+        public void Dispose()
+        {
+            _memoryManager.Dispose();
+        }
     }
 }
