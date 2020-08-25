@@ -16,7 +16,7 @@
 </p>
 
 <h5 align="center">
-    As of August 2020, Ryujinx goes past menus and in-game on over 1,500 commercial titles. Of those, more than half are considered playable. See the compatiblity list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
+    As of August 2020, Ryujinx goes past menus and in-game on over 1,500 commercial titles. Of those, more than half are considered playable. See the compatibility list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
 </h5>
 
 ## Usage
@@ -51,13 +51,13 @@ Download the ZIP Tarball. Then extract it to a directory of your choice.
 Build the App using a Command prompt in the project directory. You can quickly access it by holding shift in explorer (in the Ryujinx directory) then right clicking, and typing the following command:  
 Run `dotnet build -c Release -r win-x64` inside the Ryujinx project folder to build Ryujinx binaries.
 
-Every file related to Ryujinx is stored in the `Ryujinx` folder. This folder is located in the user folder, which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
+Ryujinx system files are stored in the `Ryujinx` folder. This folder is located in the user folder, which can be accessed by clicking `Open Ryujinx Folder` under the File menu in the GUI.
 
 ## Features
 
  - **Audio**
 
-   Audio output is entirely supported, audio input (microphone) isn't supported. We use C# wrappers for [OpenAL](https://openal.org/downloads/OpenAL11CoreSDK.zip) (installation needed), and [libsoundio](http://libsound.io/) as the fallback.
+   Audio output is entirely supported, audio input (microphone) isn't supported. We use C# wrappers for [OpenAL](https://openal.org/downloads/oalinst.zip) (installation needed), and [libsoundio](http://libsound.io/) as the fallback.
 
 - **CPU**
 
@@ -91,7 +91,7 @@ Don't hesitate to open a new issue if a game isn't already on there.
 
 ## Help
 
-If you have homebrew or a particular game marked playable or in-game in our compatibility list that doesn't work within the emulator, you can contact us through our [Discord server](https://discord.gg/N2FmfVc). We'll take note of whatever is causing the app/game to not work, put it on the watch list and fix it at a later date.
+If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, you can contact us through our [Discord server](https://discord.gg/N2FmfVc). We'll take note of whatever is causing the app/game to not work, put it on the watch list and fix it at a later date.
 
 If you need help with setting up Ryujinx, you can ask questions in the #support channel of our [Discord server](https://discord.gg/N2FmfVc).
 
