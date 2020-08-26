@@ -1,35 +1,57 @@
 using Gtk;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE;
+using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.FileSystem.Content;
 using Ryujinx.HLE.HOS.Applets;
 using System;
 using System.Threading;
+
+using System.Linq;
 
 namespace Ryujinx.Ui
 {
     internal class GtkHostUiHandler : IHostUiHandler
     {
         private readonly Window _parent;
+        private readonly VirtualFileSystem _vfs;
+        private readonly ContentManager _contentManager;
 
-        public GtkHostUiHandler(Window parent)
+        public GtkHostUiHandler(Window parent, VirtualFileSystem vfs, ContentManager contentManager)
         {
             _parent = parent;
+            _vfs = vfs;
+            _contentManager = contentManager;
         }
 
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)
         {
-            string playerCount = args.PlayerCountMin == args.PlayerCountMax
-                ? $"exactly {args.PlayerCountMin}"
-                : $"{args.PlayerCountMin}-{args.PlayerCountMax}";
+            ManualResetEvent closeEvent = new ManualResetEvent(false);
 
-            string message =
-                $"Application requests <b>{playerCount}</b> player(s) with:\n\n"
-                + $"<tt><b>TYPES:</b> {args.SupportedStyles}</tt>\n\n"
-                + $"<tt><b>PLAYERS:</b> {string.Join(", ", args.SupportedPlayers)}</tt>\n\n"
-                + (args.IsDocked ? "Docked mode set. <tt>Handheld</tt> is also invalid.\n\n" : "")
-                + "<i>Please reconfigure Input now and then press OK.</i>";
+            if (SettingsWindow.IsOpen)
+            {
+                Logger.Error?.Print(LogClass.Application, "Controller Applet requested Input Settings window but it's already open");
+                Thread.Sleep(1000); // Wait to prevent spam
+                return true;
+            }
 
-            return DisplayMessageDialog("Controller Applet", message);
+            Application.Invoke(delegate
+            {
+                SettingsWindow window = null;
+                try
+                {
+                    window = new SettingsWindow(_vfs, _contentManager, args, closeEvent);
+                    window.Show();
+                }
+                catch (Exception e)
+                {
+                    closeEvent.Set();
+                    throw e;
+                }
+            });
+
+            closeEvent.WaitOne();
+            return true;
         }
 
         public bool DisplayMessageDialog(string title, string message)

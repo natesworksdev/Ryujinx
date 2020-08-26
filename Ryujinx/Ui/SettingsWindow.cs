@@ -4,6 +4,7 @@ using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration.System;
+using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.FileSystem;
 using System;
@@ -11,6 +12,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Reflection;
+using System.Threading;
 using System.Threading.Tasks;
 
 using GUI = Gtk.Builder.ObjectAttribute;
@@ -24,10 +26,12 @@ namespace Ryujinx.Ui
         private readonly ListStore              _audioBackendStore;
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string>        _validTzRegions;
+        private readonly ManualResetEvent       _closeEvent;
 
         private long _systemTimeOffset;
 
 #pragma warning disable CS0649, IDE0044
+        [GUI] Notebook        _notebook;
         [GUI] CheckButton     _errorLogToggle;
         [GUI] CheckButton     _warningLogToggle;
         [GUI] CheckButton     _infoLogToggle;
@@ -72,18 +76,118 @@ namespace Ryujinx.Ui
         [GUI] ComboBoxText    _anisotropy;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
-        [GUI] ToggleButton    _configureController1;
-        [GUI] ToggleButton    _configureController2;
-        [GUI] ToggleButton    _configureController3;
-        [GUI] ToggleButton    _configureController4;
-        [GUI] ToggleButton    _configureController5;
-        [GUI] ToggleButton    _configureController6;
-        [GUI] ToggleButton    _configureController7;
-        [GUI] ToggleButton    _configureController8;
-        [GUI] ToggleButton    _configureControllerH;
+        [GUI] Label           _playerLabel1;
+        [GUI] Label           _playerLabel2;
+        [GUI] Label           _playerLabel3;
+        [GUI] Label           _playerLabel4;
+        [GUI] Label           _playerLabel5;
+        [GUI] Label           _playerLabel6;
+        [GUI] Label           _playerLabel7;
+        [GUI] Label           _playerLabel8;
+        [GUI] Label           _playerLabelH;
+        [GUI] Label           _controllerLabel1;
+        [GUI] Label           _controllerLabel2;
+        [GUI] Label           _controllerLabel3;
+        [GUI] Label           _controllerLabel4;
+        [GUI] Label           _controllerLabel5;
+        [GUI] Label           _controllerLabel6;
+        [GUI] Label           _controllerLabel7;
+        [GUI] Label           _controllerLabel8;
+        [GUI] ToggleButton    _playerButton1;
+        [GUI] ToggleButton    _playerButton2;
+        [GUI] ToggleButton    _playerButton3;
+        [GUI] ToggleButton    _playerButton4;
+        [GUI] ToggleButton    _playerButton5;
+        [GUI] ToggleButton    _playerButton6;
+        [GUI] ToggleButton    _playerButton7;
+        [GUI] ToggleButton    _playerButton8;
+        [GUI] ToggleButton    _playerButtonH;
+        [GUI] Label           _inputHelpText;
 #pragma warning restore CS0649, IDE0044
 
+        public static bool IsOpen { get; private set; }
+
         public SettingsWindow(VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager) : this(new Builder("Ryujinx.Ui.SettingsWindow.glade"), virtualFileSystem, contentManager) { }
+
+        public SettingsWindow(VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager, ControllerAppletUiArgs args, ManualResetEvent closeEvent) : this(new Builder("Ryujinx.Ui.SettingsWindow.glade"), virtualFileSystem, contentManager)
+        {
+            _closeEvent = closeEvent;
+
+            // Select Input and disable other tabs
+            for (int i = 0; i < 5; i++)
+            {
+                _notebook.GetNthPage(i).Sensitive = false;
+            }
+            _notebook.CurrentPage = 1;
+            _notebook.GetNthPage(1).Sensitive = true;
+
+
+            string playerCount = args.IsSinglePlayer
+                ? $"<b>single-player mode</b>"
+                : args.PlayerCountMin == args.PlayerCountMax
+                ? $"<b>exactly {args.PlayerCountMin}</b> player(s)"
+                : $"<b>{args.PlayerCountMin}-{args.PlayerCountMax}</b> player(s)";
+
+            string message =
+                $"Application requests {playerCount} with:\n\n"
+                + $"<tt><b>TYPES:</b> {args.SupportedStyles}</tt>\n";
+
+            _inputHelpText.Visible = true;
+            _inputHelpText.Markup = message;
+
+            Label[] labels = new Label[]
+            { 
+                _playerLabel1, _playerLabel2, _playerLabel3, _playerLabel4,
+                _playerLabel5, _playerLabel6, _playerLabel7, _playerLabel8
+            };
+
+            Button[] buttons = new Button[]
+            { 
+                _playerButton1, _playerButton2, _playerButton3, _playerButton4,
+                _playerButton5, _playerButton6, _playerButton7, _playerButton8
+            };
+
+            Label[] controllers = new Label[]
+            { 
+                _controllerLabel1, _controllerLabel2, _controllerLabel3, _controllerLabel4,
+                _controllerLabel5, _controllerLabel6, _controllerLabel7, _controllerLabel8
+            };
+
+            for (int i = 0; i < labels.Length; ++i)
+            {
+                string foreground = "";
+                if (i < args.IdentificationColors.Length)
+                {
+                    uint color = args.IdentificationColors[i];
+                    if ((color>>24) != 0)
+                    {
+                        foreground = $"foreground='#{color&0xff:X2}{(color>>8)&0xff:X2}{(color>>16)&0xff:X2}'";
+                    }
+                }
+
+                string text = $"<span weight='bold' {foreground}>Player {i+1}</span>";
+
+                if (i >= args.PlayerCountMax)
+                {
+                    labels[i].Sensitive = false;
+                    if (controllers[i].Text == "Disabled") buttons[i].Sensitive = false;
+                }
+
+                if (i < args.ExplainTexts.Length && !string.IsNullOrWhiteSpace(args.ExplainTexts[i]))
+                {
+                    text += $"\n{args.ExplainTexts[i]}";
+                }
+
+                labels[i].Markup = text;
+            }
+
+
+            if (!args.IsSinglePlayer || args.IsDocked)
+            {
+                _playerLabelH.Sensitive = false;
+                _playerButtonH.Sensitive = false;
+            }
+        }
 
         private SettingsWindow(Builder builder, VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager) : base(builder.GetObject("_settingsWin").Handle)
         {
@@ -98,16 +202,21 @@ namespace Ryujinx.Ui
 
             _validTzRegions = new HashSet<string>(_timeZoneContentManager.LocationNameCache.Length, StringComparer.Ordinal); // Zone regions are identifiers. Must match exactly.
 
+            IsOpen = true;
+
             //Bind Events
-            _configureController1.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player1);
-            _configureController2.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player2);
-            _configureController3.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player3);
-            _configureController4.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player4);
-            _configureController5.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player5);
-            _configureController6.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player6);
-            _configureController7.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player7);
-            _configureController8.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player8);
-            _configureControllerH.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Handheld);
+            DeleteEvent += (sender, args) => CloseToggle_Activated(sender, null);
+            ConfigurationState.Instance.Hid.InputConfig.Event += InputConfig_Changed;
+
+            _playerButton1.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player1);
+            _playerButton2.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player2);
+            _playerButton3.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player3);
+            _playerButton4.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player4);
+            _playerButton5.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player5);
+            _playerButton6.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player6);
+            _playerButton7.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player7);
+            _playerButton8.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Player8);
+            _playerButtonH.Pressed += (sender, args) => ConfigureController_Pressed(sender, args, PlayerIndex.Handheld);
             _systemTimeZoneEntry.FocusOutEvent += TimeZoneEntry_FocusOut;
 
             _resScaleCombo.Changed += (sender, args) => _resScaleText.Visible = _resScaleCombo.ActiveId == "-1";
@@ -317,6 +426,8 @@ namespace Ryujinx.Ui
                     _ => throw new ArgumentOutOfRangeException()
                 };
             });
+
+            UpdateInputLabels();
         }
 
         private void UpdateSystemTimeSpinners()
@@ -368,6 +479,40 @@ namespace Ryujinx.Ui
             return ((string)compl.Model.GetValue(iter, 1)).Contains(key, StringComparison.OrdinalIgnoreCase) || // region
                    ((string)compl.Model.GetValue(iter, 2)).StartsWith(key, StringComparison.OrdinalIgnoreCase) || // abbr
                    ((string)compl.Model.GetValue(iter, 0)).Substring(3).StartsWith(key); // offset
+        }
+
+        private void UpdateInputLabels()
+        {
+            Label[] labels = new Label[]
+            { 
+                _controllerLabel1, _controllerLabel2, _controllerLabel3, _controllerLabel4,
+                _controllerLabel5, _controllerLabel6, _controllerLabel7, _controllerLabel8
+            };
+
+            foreach (var label in labels)
+            {
+                label.Text = "Disabled";
+            }
+
+            foreach(var input in ConfigurationState.Instance.Hid.InputConfig.Value)
+            {
+                if ((int)input.PlayerIndex < labels.Length)
+                {
+                    labels[(int)input.PlayerIndex].Text = input.ControllerType switch
+                    {
+                        ControllerType.JoyconPair => "Joycon Pair",
+                        ControllerType.JoyconLeft => "Joycon Left",
+                        ControllerType.JoyconRight => "Joycon Right",
+                        ControllerType.ProController => "Pro Controller",
+                        _ => "Unknown"
+                    };
+                }
+            }
+        }
+
+        private void InputConfig_Changed(object sender, Common.ReactiveEventArgs<List<InputConfig>> args)
+        {
+            UpdateInputLabels();
         }
 
         private void SystemTimeSpin_ValueChanged(Object sender, EventArgs e)
@@ -560,11 +705,17 @@ namespace Ryujinx.Ui
             MainWindow.SaveConfig();
             MainWindow.UpdateGraphicsConfig();
             MainWindow.ApplyTheme();
+            IsOpen = false;
+            ConfigurationState.Instance.Hid.InputConfig.Event -= InputConfig_Changed;
+            _closeEvent?.Set();
             Dispose();
         }
 
         private void CloseToggle_Activated(object sender, EventArgs args)
         {
+            IsOpen = false;
+            ConfigurationState.Instance.Hid.InputConfig.Event -= InputConfig_Changed;
+            _closeEvent?.Set();
             Dispose();
         }
     }

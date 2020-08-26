@@ -12,7 +12,6 @@ namespace Ryujinx.HLE.HOS.Applets
         public byte EnableLeftJustify;
         public byte EnablePermitJoyDual;
         public byte EnableSingleMode;
-        public byte EnableIdentificationColor;
     }
 #pragma warning restore CS0649
 }

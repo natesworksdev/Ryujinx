@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _supportedPlayers[(int)player] = supported;
         }
 
-        internal IEnumerable<PlayerIndex> GetSupportedPlayers()
+        private IEnumerable<PlayerIndex> GetSupportedPlayers()
         {
             for (int i = 0; i < _supportedPlayers.Length; ++i)
             {
@@ -72,13 +72,22 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        public bool Validate(int playerMin, int playerMax, ControllerType acceptedTypes, out int configuredCount, out PlayerIndex primaryIndex)
+        public bool Validate(int playerMin, int playerMax, bool enableSingleMode,
+                             ControllerType supportedStyleSets, IList<PlayerIndex> supportedPlayersList,
+                             out int configuredCount, out PlayerIndex primaryIndex)
         {
             primaryIndex = PlayerIndex.Unknown;
             configuredCount = 0;
 
+            supportedPlayersList.Clear();
+
             for (int i = 0; i < MaxControllers; ++i)
             {
+                if (_supportedPlayers[i] && (enableSingleMode || (PlayerIndex)i != PlayerIndex.Handheld))
+                {
+                    supportedPlayersList.Add((PlayerIndex)i);
+                }
+
                 ControllerType npad = _configuredTypes[i];
 
                 if (npad == ControllerType.Handheld && _device.System.State.DockedMode)
@@ -88,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 ControllerType currentType = _device.Hid.SharedMemory.Npads[i].Header.Type;
 
-                if (currentType != ControllerType.None && (npad & acceptedTypes) != 0 && _supportedPlayers[i])
+                if (currentType != ControllerType.None && (npad & supportedStyleSets) != 0 && _supportedPlayers[i])
                 {
                     configuredCount++;
                     if (primaryIndex == PlayerIndex.Unknown)

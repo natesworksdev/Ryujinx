@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -46,22 +47,26 @@ namespace Ryujinx.HLE.HOS.Applets
             byte[] controllerSupportArg = _normalSession.Pop();
 
             ControllerSupportArgHeader argHeader;
+            string[] texts = new string[0];
+            uint[] colors = new uint[0];
 
             if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArgV7>())
             {
                 ControllerSupportArgV7 arg = IApplet.ReadStruct<ControllerSupportArgV7>(controllerSupportArg);
                 argHeader = arg.Header;
+                texts = arg.GetExplainTexts();
+                colors = arg.GetIdentificationColors();
 
                 Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version 7 EnableExplainText={arg.EnableExplainText != 0}");
-                // Read enable text here?
             }
             else if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArgVPre7>())
             {
                 ControllerSupportArgVPre7 arg = IApplet.ReadStruct<ControllerSupportArgVPre7>(controllerSupportArg);
                 argHeader = arg.Header;
+                texts = arg.GetExplainTexts();
+                colors = arg.GetIdentificationColors();
 
                 Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Pre-7 EnableExplainText={arg.EnableExplainText != 0}");
-                // Read enable text here?
             }
             else
             {
@@ -70,28 +75,49 @@ namespace Ryujinx.HLE.HOS.Applets
                 argHeader = IApplet.ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
 
+            bool enableSingleMode = argHeader.EnableSingleMode != 0;
             int playerMin = argHeader.PlayerCountMin;
             int playerMax = argHeader.PlayerCountMax;
+            ControllerType supportedStyleSet = (ControllerType)privateArg.NpadStyleSet;
+            List<PlayerIndex> supportedPlayers = new List<PlayerIndex>(9);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {playerMin} {playerMax} {argHeader.EnableTakeOverConnection} {argHeader.EnableSingleMode}");
+            if (enableSingleMode)
+            {
+                playerMin = playerMax = 1; // Force single player if enableSingleMode is true
+            }
+            else
+            {
+                supportedStyleSet &= ~ControllerType.Handheld; // Remove handheld if it's false
+            }
 
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {playerMin} {playerMax} {enableSingleMode} {argHeader.EnableTakeOverConnection}");
+
+            ControllerAppletUiArgs uiArgs = new ControllerAppletUiArgs
+            {
+                PlayerCountMin = playerMin,
+                PlayerCountMax = playerMax,
+                SupportedStyles = supportedStyleSet,
+                SupportedPlayers = supportedPlayers,
+                IsDocked = _system.State.DockedMode,
+                IsSinglePlayer = enableSingleMode,
+                IdentificationColors = colors,
+                ExplainTexts = texts
+            };
+
+            bool valid = false;
             int configuredCount = 0;
             PlayerIndex primaryIndex = PlayerIndex.Unknown;
-            while (!_system.Device.Hid.Npads.Validate(playerMin, playerMax, (ControllerType)privateArg.NpadStyleSet, out configuredCount, out primaryIndex))
-            {
-                ControllerAppletUiArgs uiArgs = new ControllerAppletUiArgs
-                {
-                    PlayerCountMin = playerMin,
-                    PlayerCountMax = playerMax,
-                    SupportedStyles = (ControllerType)privateArg.NpadStyleSet,
-                    SupportedPlayers = _system.Device.Hid.Npads.GetSupportedPlayers(),
-                    IsDocked = _system.State.DockedMode
-                };
 
-                if (!_system.Device.UiHandler.DisplayMessageDialog(uiArgs))
-                {
-                    break;
-                }
+            do
+            {
+                _system.Device.UiHandler.DisplayMessageDialog(uiArgs);
+                valid = _system.Device.Hid.Npads.Validate(playerMin, playerMax, enableSingleMode, supportedStyleSet, supportedPlayers, out configuredCount, out primaryIndex);
+            } while (!valid);
+
+            // TODO: Add validation to Settings Window
+            if (!valid || primaryIndex == PlayerIndex.Unknown)
+            {
+                Logger.Warning?.Print(LogClass.ServiceHid, $"Cancelled Controller Applet without resolving issue. Application may crash.");
             }
 
             ControllerSupportResultInfo result = new ControllerSupportResultInfo
