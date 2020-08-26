@@ -2,6 +2,7 @@ using LibHac.Common;
 using LibHac.Fs;
 using LibHac.FsSystem;
 using LibHac.FsSystem.RomFs;
+using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Loaders.Mods;
 using Ryujinx.HLE.Loaders.Executables;
@@ -105,7 +106,9 @@ namespace Ryujinx.HLE.HOS
 
         private static bool StrEquals(string s1, string s2) => string.Equals(s1, s2, StringComparison.OrdinalIgnoreCase);
 
-        public void EnsureBaseDirStructure(string modsBasePath)
+        public string GetModsBasePath() => EnsureBaseDirStructure(AppDataManager.GetModsPath());
+
+        private string EnsureBaseDirStructure(string modsBasePath)
         {
             var modsDir = new DirectoryInfo(modsBasePath);
             modsDir.Create();
@@ -114,6 +117,8 @@ namespace Ryujinx.HLE.HOS
             modsDir.CreateSubdirectory(AmsNsoPatchDir);
             modsDir.CreateSubdirectory(AmsNroPatchDir);
             // modsDir.CreateSubdirectory(AmsKipPatchDir); // uncomment when KIPs are supported
+
+            return modsDir.FullName;
         }
 
         private static DirectoryInfo FindTitleDir(DirectoryInfo contentsDir, string titleId)
