@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 
 namespace Ryujinx.Horizon.Kernel.Memory
@@ -87,7 +88,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
             }
         }
 
-        public KernelResult AllocatePages(ulong pagesCount, bool backwards, out KPageList pageList)
+        public Result AllocatePages(ulong pagesCount, bool backwards, out KPageList pageList)
         {
             lock (_blocks)
             {
@@ -103,7 +104,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
             }
         }
 
-        private KernelResult AllocatePagesImpl(ulong pagesCount, bool backwards, out KPageList pageList)
+        private Result AllocatePagesImpl(ulong pagesCount, bool backwards, out KPageList pageList)
         {
             pageList = new KPageList();
 
@@ -142,9 +143,9 @@ namespace Ryujinx.Horizon.Kernel.Memory
 
                     // Add new allocated page(s) to the pages list.
                     // If an error occurs, then free all allocated pages and fail.
-                    KernelResult result = pageList.AddRange(address, blockPagesCount);
+                    Result result = pageList.AddRange(address, blockPagesCount);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         FreePages(address, blockPagesCount);
 
@@ -163,7 +164,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
             // Success case, all requested pages were allocated successfully.
             if (pagesCount == 0)
             {
-                return KernelResult.Success;
+                return Result.Success;
             }
 
             // Error case, free allocated pages and return out of memory.

@@ -1,14 +1,14 @@
-﻿using Ryujinx.Horizon.Kernel.Common;
+﻿using Ryujinx.Horizon.Common;
 
-namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
+namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 {
     static class InterProcessEvent
     {
-        public static KernelResult Create(ref InterProcessEventType ipEvent, EventClearMode clearMode)
+        public static Result Create(ref InterProcessEventType ipEvent, EventClearMode clearMode)
         {
-            KernelResult result = InterProcessEventImpl.Create(out int writableHandle, out int readableHandle);
+            Result result = InterProcessEventImpl.Create(out int writableHandle, out int readableHandle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
                 readableHandle,
                 writableHandle);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         public static void Destroy(ref InterProcessEventType ipEvent)

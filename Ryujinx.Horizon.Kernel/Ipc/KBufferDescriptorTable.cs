@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
 using System.Collections.Generic;
@@ -20,38 +21,38 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             _exchangeBufferDescriptors = new List<KBufferDescriptor>(MaxInternalBuffersCount);
         }
 
-        public KernelResult AddSendBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
+        public Result AddSendBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
         {
             return Add(_sendBufferDescriptors, src, dst, size, state);
         }
 
-        public KernelResult AddReceiveBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
+        public Result AddReceiveBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
         {
             return Add(_receiveBufferDescriptors, src, dst, size, state);
         }
 
-        public KernelResult AddExchangeBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
+        public Result AddExchangeBuffer(ulong src, ulong dst, ulong size, KMemoryState state)
         {
             return Add(_exchangeBufferDescriptors, src, dst, size, state);
         }
 
-        private KernelResult Add(List<KBufferDescriptor> list, ulong src, ulong dst, ulong size, KMemoryState state)
+        private Result Add(List<KBufferDescriptor> list, ulong src, ulong dst, ulong size, KMemoryState state)
         {
             if (list.Count < MaxInternalBuffersCount)
             {
                 list.Add(new KBufferDescriptor(src, dst, size, state));
 
-                return KernelResult.Success;
+                return Result.Success;
             }
 
             return KernelResult.OutOfMemory;
         }
 
-        public KernelResult CopyBuffersToClient(KMemoryManager memoryManager)
+        public Result CopyBuffersToClient(KMemoryManager memoryManager)
         {
-            KernelResult result = CopyToClient(memoryManager, _receiveBufferDescriptors);
+            Result result = CopyToClient(memoryManager, _receiveBufferDescriptors);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -59,7 +60,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             return CopyToClient(memoryManager, _exchangeBufferDescriptors);
         }
 
-        private KernelResult CopyToClient(KMemoryManager memoryManager, List<KBufferDescriptor> list)
+        private Result CopyToClient(KMemoryManager memoryManager, List<KBufferDescriptor> list)
         {
             foreach (KBufferDescriptor desc in list)
             {
@@ -94,7 +95,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         copySize = desc.Size;
                     }
 
-                    KernelResult result = memoryManager.CopyDataFromCurrentProcess(
+                    Result result = memoryManager.CopyDataFromCurrentProcess(
                         desc.ClientAddress,
                         copySize,
                         stateMask,
@@ -104,7 +105,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         KMemoryAttribute.None,
                         desc.ServerAddress);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         return result;
                     }
@@ -120,7 +121,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                 if (clientEndAddrTruncated < clientEndAddrRounded &&
                     (clientAddrTruncated == clientAddrRounded || clientAddrTruncated < clientEndAddrTruncated))
                 {
-                    KernelResult result = memoryManager.CopyDataFromCurrentProcess(
+                    Result result = memoryManager.CopyDataFromCurrentProcess(
                         clientEndAddrTruncated,
                         clientEndAddr - clientEndAddrTruncated,
                         stateMask,
@@ -130,28 +131,28 @@ namespace Ryujinx.Horizon.Kernel.Ipc
                         KMemoryAttribute.None,
                         serverEndAddrTruncated);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         return result;
                     }
                 }
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult UnmapServerBuffers(KMemoryManager memoryManager)
+        public Result UnmapServerBuffers(KMemoryManager memoryManager)
         {
-            KernelResult result = UnmapServer(memoryManager, _sendBufferDescriptors);
+            Result result = UnmapServer(memoryManager, _sendBufferDescriptors);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = UnmapServer(memoryManager, _receiveBufferDescriptors);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -159,36 +160,36 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             return UnmapServer(memoryManager, _exchangeBufferDescriptors);
         }
 
-        private KernelResult UnmapServer(KMemoryManager memoryManager, List<KBufferDescriptor> list)
+        private Result UnmapServer(KMemoryManager memoryManager, List<KBufferDescriptor> list)
         {
             foreach (KBufferDescriptor descriptor in list)
             {
-                KernelResult result = memoryManager.UnmapNoAttributeIfStateEquals(
+                Result result = memoryManager.UnmapNoAttributeIfStateEquals(
                     descriptor.ServerAddress,
                     descriptor.Size,
                     descriptor.State);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     return result;
                 }
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult RestoreClientBuffers(KMemoryManager memoryManager)
+        public Result RestoreClientBuffers(KMemoryManager memoryManager)
         {
-            KernelResult result = RestoreClient(memoryManager, _sendBufferDescriptors);
+            Result result = RestoreClient(memoryManager, _sendBufferDescriptors);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = RestoreClient(memoryManager, _receiveBufferDescriptors);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -196,22 +197,22 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             return RestoreClient(memoryManager, _exchangeBufferDescriptors);
         }
 
-        private KernelResult RestoreClient(KMemoryManager memoryManager, List<KBufferDescriptor> list)
+        private Result RestoreClient(KMemoryManager memoryManager, List<KBufferDescriptor> list)
         {
             foreach (KBufferDescriptor descriptor in list)
             {
-                KernelResult result = memoryManager.UnmapIpcRestorePermission(
+                Result result = memoryManager.UnmapIpcRestorePermission(
                     descriptor.ClientAddress,
                     descriptor.Size,
                     descriptor.State);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     return result;
                 }
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
     }
 }

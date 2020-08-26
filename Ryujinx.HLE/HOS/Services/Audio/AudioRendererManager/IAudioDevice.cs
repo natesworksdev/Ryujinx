@@ -1,6 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.Text;

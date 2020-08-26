@@ -1,10 +1,11 @@
 ﻿using System;
 
-namespace Ryujinx.Horizon.Kernel.Common
+namespace Ryujinx.Horizon.Common
 {
-    struct OnScopeExit : IDisposable
+    public struct OnScopeExit : IDisposable
     {
         private readonly Action _action;
+
         public OnScopeExit(Action action)
         {
             _action = action;

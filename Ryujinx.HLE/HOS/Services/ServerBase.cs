@@ -1,6 +1,6 @@
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel;
-using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Svc;
 using System;
 using System.Buffers.Binary;
@@ -136,7 +136,7 @@ namespace Ryujinx.HLE.HOS.Services
 
                 replyTargetHandle = 0;
 
-                if (rc == KernelResult.Success && signaledIndex >= portHandles.Length)
+                if (rc == Result.Success && signaledIndex >= portHandles.Length)
                 {
                     // We got a IPC request, process it, pass to the appropriate service if needed.
                     int signaledHandle = handles[signaledIndex];
@@ -148,10 +148,10 @@ namespace Ryujinx.HLE.HOS.Services
                 }
                 else
                 {
-                    if (rc == KernelResult.Success)
+                    if (rc == Result.Success)
                     {
                         // We got a new connection, accept the session to allow servicing future requests.
-                        if (KernelStatic.Syscall.AcceptSession(handles[signaledIndex], out int serverSessionHandle) == KernelResult.Success)
+                        if (KernelStatic.Syscall.AcceptSession(handles[signaledIndex], out int serverSessionHandle) == Result.Success)
                         {
                             var obj = _ports[handles[signaledIndex]];
 

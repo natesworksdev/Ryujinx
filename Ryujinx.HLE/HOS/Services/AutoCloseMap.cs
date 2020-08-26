@@ -1,5 +1,5 @@
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel;
-using Ryujinx.Horizon.Kernel.Common;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services
@@ -7,7 +7,7 @@ namespace Ryujinx.HLE.HOS.Services
     struct AutoCloseMap : IDisposable
     {
         private int _processHandle;
-        public KernelResult Result { get; }
+        public Result Result { get; }
         private ulong _mappedAddress;
         private ulong _baseAddress;
         private ulong _size;

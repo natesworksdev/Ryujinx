@@ -1,6 +1,6 @@
 using System;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Horizon.Kernel;
 
 namespace Ryujinx.HLE.HOS.Services.Hid

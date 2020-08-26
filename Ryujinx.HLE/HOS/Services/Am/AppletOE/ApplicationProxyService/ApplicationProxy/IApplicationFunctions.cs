@@ -8,7 +8,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.Storage;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.HLE.HOS.Services.Sdb.Pdm.QueryService;
 using Ryujinx.HLE.HOS.SystemState;
 using Ryujinx.Horizon.Kernel;

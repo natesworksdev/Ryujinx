@@ -2,7 +2,7 @@ using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.Account.Acc;
 using Ryujinx.HLE.HOS.Services.Friend.ServiceCreator.NotificationService;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 using System.Collections.Generic;
 

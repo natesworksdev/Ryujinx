@@ -2,7 +2,7 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator.Types;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 using System.IO;
 

@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Svc;
@@ -22,13 +23,13 @@ namespace Ryujinx.HLE.HOS.Services
 
         private const int CurrentProcessHandle = unchecked((int)0xffff8001);
 
-        public static KernelResult LocateMappableSpace(out ulong address, ulong size)
+        public static Result LocateMappableSpace(out ulong address, ulong size)
         {
             address = 0;
 
-            KernelResult result = GetAddressSpaceInfo(out AddressSpaceInfo asInfo);
+            Result result = GetAddressSpaceInfo(out AddressSpaceInfo asInfo);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -70,7 +71,7 @@ namespace Ryujinx.HLE.HOS.Services
                     if (info.State == 0 && info.Address - currentBase + info.Size >= size)
                     {
                         address = currentBase;
-                        return KernelResult.Success;
+                        return Result.Success;
                     }
 
                     if (currentBase >= info.Address + info.Size)
@@ -95,50 +96,50 @@ namespace Ryujinx.HLE.HOS.Services
             }
         }
 
-        public static KernelResult GetAddressSpaceInfo(out AddressSpaceInfo info, int processHandle = CurrentProcessHandle)
+        public static Result GetAddressSpaceInfo(out AddressSpaceInfo info, int processHandle = CurrentProcessHandle)
         {
             info = new AddressSpaceInfo();
 
-            KernelResult result;
+            Result result;
 
             result = KernelStatic.Syscall.GetInfo(InfoType.HeapRegionAddress, processHandle, 0, out info.Heap.Base);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.HeapRegionSize, processHandle, 0, out info.Heap.Size);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AliasRegionAddress, processHandle, 0, out info.Alias.Base);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AliasRegionSize, processHandle, 0, out info.Alias.Size);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AslrRegionAddress, processHandle, 0, out info.Aslr.Base);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = KernelStatic.Syscall.GetInfo(InfoType.AslrRegionSize, processHandle, 0, out info.Aslr.Size);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -147,7 +148,7 @@ namespace Ryujinx.HLE.HOS.Services
             info.Alias.End = info.Alias.Base + info.Alias.Size;
             info.Aslr.End = info.Aslr.Base + info.Aslr.Size;
 
-            return KernelResult.Success;
+            return Result.Success;
         }
     }
 }

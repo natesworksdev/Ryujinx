@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
 using System.Threading;
@@ -19,7 +20,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             _parent = parent;
         }
 
-        public KernelResult Connect(out KClientSession clientSession)
+        public Result Connect(out KClientSession clientSession)
         {
             clientSession = null;
 
@@ -40,9 +41,9 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             KSession session = new KSession(KernelContext, this);
 
-            KernelResult result = _parent.EnqueueIncomingSession(session.ServerSession);
+            Result result = _parent.EnqueueIncomingSession(session.ServerSession);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 session.ClientSession.DecrementReferenceCount();
                 session.ServerSession.DecrementReferenceCount();
@@ -55,7 +56,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             return result;
         }
 
-        public KernelResult ConnectLight(out KLightClientSession clientSession)
+        public Result ConnectLight(out KLightClientSession clientSession)
         {
             clientSession = null;
 
@@ -76,9 +77,9 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             KLightSession session = new KLightSession(KernelContext);
 
-            KernelResult result = _parent.EnqueueIncomingLightSession(session.ServerSession);
+            Result result = _parent.EnqueueIncomingLightSession(session.ServerSession);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 session.ClientSession.DecrementReferenceCount();
                 session.ServerSession.DecrementReferenceCount();
@@ -128,7 +129,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             }
         }
 
-        public static new KernelResult RemoveName(KernelContextInternal context, string name)
+        public static new Result RemoveName(KernelContextInternal context, string name)
         {
             KAutoObject foundObj = FindNamedObject(context, name);
 

@@ -1,5 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Memory;
 using System;
 

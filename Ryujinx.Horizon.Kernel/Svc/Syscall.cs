@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Ipc;
 using Ryujinx.Horizon.Kernel.Memory;
@@ -22,7 +23,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
         // Process
 
-        public KernelResult GetProcessId(int handle, out long pid)
+        public Result GetProcessId(int handle, out long pid)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
@@ -43,11 +44,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
             pid = process?.Pid ?? 0;
 
             return process != null
-                ? KernelResult.Success
+                ? Result.Success
                 : KernelResult.InvalidHandle;
         }
 
-        public KernelResult CreateProcess(
+        public Result CreateProcess(
             ProcessCreationInfo info,
             ReadOnlySpan<int> capabilities,
             out int handle,
@@ -115,7 +116,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 _ => KMemoryRegion.NvServices
             };
 
-            KernelResult result = process.Initialize(
+            Result result = process.Initialize(
                 info,
                 capabilities,
                 resourceLimit,
@@ -123,7 +124,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 contextFactory,
                 customThreadStart);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -133,7 +134,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return handleTable.GenerateHandle(process, out handle);
         }
 
-        public KernelResult StartProcess(int handle, int priority, int cpuCore, ulong mainThreadStackSize)
+        public Result StartProcess(int handle, int priority, int cpuCore, ulong mainThreadStackSize)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess().HandleTable.GetObject<KProcess>(handle);
 
@@ -154,21 +155,21 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             process.DefaultCpuCore = cpuCore;
 
-            KernelResult result = process.Start(priority, mainThreadStackSize);
+            Result result = process.Start(priority, mainThreadStackSize);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             process.IncrementReferenceCount();
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         // IPC
 
-        public KernelResult ConnectToNamedPort(ulong namePtr, out int handle)
+        public Result ConnectToNamedPort(ulong namePtr, out int handle)
         {
             handle = 0;
 
@@ -180,7 +181,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return ConnectToNamedPort(name, out handle);
         }
 
-        public KernelResult ConnectToNamedPort(string name, out int handle)
+        public Result ConnectToNamedPort(string name, out int handle)
         {
             handle = 0;
 
@@ -198,16 +199,16 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = currentProcess.HandleTable.ReserveHandle(out handle);
+            Result result = currentProcess.HandleTable.ReserveHandle(out handle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = clientPort.Connect(out KClientSession clientSession);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 currentProcess.HandleTable.CancelHandleReservation(handle);
 
@@ -221,7 +222,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult SendSyncRequest(int handle)
+        public Result SendSyncRequest(int handle)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
@@ -235,7 +236,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return session.SendSyncRequest();
         }
 
-        public KernelResult SendSyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle)
+        public Result SendSyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle)
         {
             if (!PageAligned(messagePtr))
             {
@@ -254,9 +255,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
+            Result result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -272,9 +273,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 result = session.SendSyncRequest(messagePtr, messageSize);
             }
 
-            KernelResult result2 = currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
+            Result result2 = currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 result = result2;
             }
@@ -282,7 +283,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult SendAsyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle, out int doneEventHandle)
+        public Result SendAsyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle, out int doneEventHandle)
         {
             doneEventHandle = 0;
 
@@ -303,9 +304,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
+            Result result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -331,18 +332,18 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 result = currentProcess.HandleTable.GenerateHandle(doneEvent.ReadableEvent, out doneEventHandle);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     result = session.SendAsyncRequest(doneEvent.WritableEvent, messagePtr, messageSize);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         currentProcess.HandleTable.CloseHandle(doneEventHandle);
                     }
                 }
             }
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 resourceLimit?.Release(LimitableResource.Event, 1);
 
@@ -352,7 +353,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult CreateSession(
+        public Result CreateSession(
             bool isLight,
             ulong namePtr,
             out int serverSessionHandle,
@@ -370,7 +371,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 return KernelResult.ResLimitExceeded;
             }
 
-            KernelResult result;
+            Result result;
 
             if (isLight)
             {
@@ -378,11 +379,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     result = currentProcess.HandleTable.GenerateHandle(session.ClientSession, out clientSessionHandle);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         currentProcess.HandleTable.CloseHandle(serverSessionHandle);
 
@@ -399,11 +400,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 result = currentProcess.HandleTable.GenerateHandle(session.ServerSession, out serverSessionHandle);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     result = currentProcess.HandleTable.GenerateHandle(session.ClientSession, out clientSessionHandle);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         currentProcess.HandleTable.CloseHandle(serverSessionHandle);
 
@@ -418,7 +419,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult AcceptSession(int portHandle, out int sessionHandle)
+        public Result AcceptSession(int portHandle, out int sessionHandle)
         {
             sessionHandle = 0;
 
@@ -431,9 +432,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 return KernelResult.InvalidHandle;
             }
 
-            KernelResult result = currentProcess.HandleTable.ReserveHandle(out int handle);
+            Result result = currentProcess.HandleTable.ReserveHandle(out int handle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -457,7 +458,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 sessionHandle = handle;
 
-                result = KernelResult.Success;
+                result = Result.Success;
             }
             else
             {
@@ -469,7 +470,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult ReplyAndReceive(
+        public Result ReplyAndReceive(
             ulong handlesPtr,
             int handlesCount,
             int replyTargetHandle,
@@ -507,7 +508,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return ReplyAndReceive(handles, replyTargetHandle, timeout, out handleIndex);
         }
 
-        public KernelResult ReplyAndReceive(ReadOnlySpan<int> handles, int replyTargetHandle, long timeout, out int handleIndex)
+        public Result ReplyAndReceive(ReadOnlySpan<int> handles, int replyTargetHandle, long timeout, out int handleIndex)
         {
             handleIndex = 0;
 
@@ -527,7 +528,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 syncObjs[index] = obj;
             }
 
-            KernelResult result = KernelResult.Success;
+            Result result = Result.Success;
 
             if (replyTargetHandle != 0)
             {
@@ -543,9 +544,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
-                while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+                while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == Result.Success)
                 {
                     KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
 
@@ -564,7 +565,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult ReplyAndReceiveWithUserBuffer(
+        public Result ReplyAndReceiveWithUserBuffer(
             ulong handlesPtr,
             ulong messagePtr,
             ulong messageSize,
@@ -594,9 +595,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 return KernelResult.UserCopyFailed;
             }
 
-            KernelResult result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
+            Result result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -640,9 +641,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
-                while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == KernelResult.Success)
+                while ((result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex)) == Result.Success)
                 {
                     KServerSession session = currentProcess.HandleTable.GetObject<KServerSession>(handles[handleIndex]);
 
@@ -663,7 +664,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult CreatePort(
+        public Result CreatePort(
             int maxSessions,
             bool isLight,
             ulong namePtr,
@@ -681,16 +682,16 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = currentProcess.HandleTable.GenerateHandle(port.ClientPort, out clientPortHandle);
+            Result result = currentProcess.HandleTable.GenerateHandle(port.ClientPort, out clientPortHandle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = currentProcess.HandleTable.GenerateHandle(port.ServerPort, out serverPortHandle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 currentProcess.HandleTable.CloseHandle(clientPortHandle);
             }
@@ -698,7 +699,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult ManageNamedPort(ulong namePtr, int maxSessions, out int handle)
+        public Result ManageNamedPort(ulong namePtr, int maxSessions, out int handle)
         {
             handle = 0;
 
@@ -715,7 +716,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return ManageNamedPort(name, maxSessions, out handle);
         }
 
-        public KernelResult ManageNamedPort(string name, int maxSessions, out int handle)
+        public Result ManageNamedPort(string name, int maxSessions, out int handle)
         {
             handle = 0;
 
@@ -733,16 +734,16 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = currentProcess.HandleTable.GenerateHandle(port.ServerPort, out handle);
+            Result result = currentProcess.HandleTable.GenerateHandle(port.ServerPort, out handle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = port.ClientPort.SetName(name);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 currentProcess.HandleTable.CloseHandle(handle);
             }
@@ -750,7 +751,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult ConnectToPort(int clientPortHandle, out int clientSessionHandle)
+        public Result ConnectToPort(int clientPortHandle, out int clientSessionHandle)
         {
             clientSessionHandle = 0;
 
@@ -763,9 +764,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 return KernelResult.InvalidHandle;
             }
 
-            KernelResult result = currentProcess.HandleTable.ReserveHandle(out int handle);
+            Result result = currentProcess.HandleTable.ReserveHandle(out int handle);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -785,7 +786,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 session = clientSession;
             }
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 currentProcess.HandleTable.CancelHandleReservation(handle);
 
@@ -803,7 +804,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
         // Memory
 
-        public KernelResult SetHeapSize(ulong size, out ulong position)
+        public Result SetHeapSize(ulong size, out ulong position)
         {
             if ((size & 0xfffffffe001fffff) != 0)
             {
@@ -817,7 +818,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return process.MemoryManager.SetHeapSize(size, out position);
         }
 
-        public KernelResult SetMemoryAttribute(
+        public Result SetMemoryAttribute(
             ulong position,
             ulong size,
             KMemoryAttribute attributeMask,
@@ -843,7 +844,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = process.MemoryManager.SetMemoryAttribute(
+            Result result = process.MemoryManager.SetMemoryAttribute(
                 position,
                 size,
                 attributeMask,
@@ -852,7 +853,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult MapMemory(ulong dst, ulong src, ulong size)
+        public Result MapMemory(ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(src | dst))
             {
@@ -888,7 +889,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return process.MemoryManager.Map(dst, src, size);
         }
 
-        public KernelResult UnmapMemory(ulong dst, ulong src, ulong size)
+        public Result UnmapMemory(ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(src | dst))
             {
@@ -924,17 +925,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return process.MemoryManager.Unmap(dst, src, size);
         }
 
-        public KernelResult QueryMemory(ulong infoPtr, ulong pageInfoPtr, ulong address)
+        public Result QueryMemory(ulong infoPtr, ulong pageInfoPtr, ulong address)
         {
             return QueryProcessMemory(infoPtr, pageInfoPtr, KHandleTable.SelfProcessHandle, address);
         }
 
-        public KernelResult QueryMemory(out MemoryInfo info, ulong address)
+        public Result QueryMemory(out MemoryInfo info, ulong address)
         {
             return QueryProcessMemory(out info, KHandleTable.SelfProcessHandle, address);
         }
 
-        public KernelResult MapSharedMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
+        public Result MapSharedMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
         {
             if (!PageAligned(address))
             {
@@ -980,7 +981,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 permission);
         }
 
-        public KernelResult UnmapSharedMemory(int handle, ulong address, ulong size)
+        public Result UnmapSharedMemory(int handle, ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
@@ -1020,7 +1021,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 currentProcess);
         }
 
-        public KernelResult CreateTransferMemory(ulong address, ulong size, KMemoryPermission permission, out int handle)
+        public Result CreateTransferMemory(ulong address, ulong size, KMemoryPermission permission, out int handle)
         {
             handle = 0;
 
@@ -1067,9 +1068,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KTransferMemory transferMemory = new KTransferMemory(_context);
 
-            KernelResult result = transferMemory.Initialize(address, size, permission);
+            Result result = transferMemory.Initialize(address, size, permission);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 CleanUpForError();
 
@@ -1083,7 +1084,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult MapPhysicalMemory(ulong address, ulong size)
+        public Result MapPhysicalMemory(ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
@@ -1118,7 +1119,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return process.MemoryManager.MapPhysicalMemory(address, size);
         }
 
-        public KernelResult UnmapPhysicalMemory(ulong address, ulong size)
+        public Result UnmapPhysicalMemory(ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
@@ -1153,7 +1154,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return process.MemoryManager.UnmapPhysicalMemory(address, size);
         }
 
-        public KernelResult CreateSharedMemory(out int handle, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
+        public Result CreateSharedMemory(out int handle, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
         {
             handle = 0;
 
@@ -1181,9 +1182,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = sharedMemory.Initialize(currentProcess, size, ownerPermission, userPermission);
+            Result result = sharedMemory.Initialize(currentProcess, size, ownerPermission, userPermission);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -1191,7 +1192,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return currentProcess.HandleTable.GenerateHandle(sharedMemory, out handle);
         }
 
-        public KernelResult MapTransferMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
+        public Result MapTransferMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
         {
             if (!PageAligned(address))
             {
@@ -1232,7 +1233,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return transferMemory.Map(address, size, permission);
         }
 
-        public KernelResult UnmapTransferMemory(int handle, ulong address, ulong size)
+        public Result UnmapTransferMemory(int handle, ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
@@ -1266,17 +1267,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return transferMemory.Unmap(address, size);
         }
 
-        public KernelResult MapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
+        public Result MapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
         {
             return MapOrUnmapProcessMemory(dst, processHandle, src, size, map: true);
         }
 
-        public KernelResult UnmapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
+        public Result UnmapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
         {
             return MapOrUnmapProcessMemory(dst, processHandle, src, size, map: false);
         }
 
-        private KernelResult MapOrUnmapProcessMemory(ulong dst, int processHandle, ulong src, ulong size, bool map)
+        private Result MapOrUnmapProcessMemory(ulong dst, int processHandle, ulong src, ulong size, bool map)
         {
             if (!PageAligned(dst) || !PageAligned(src))
             {
@@ -1314,7 +1315,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KPageList pageList = new KPageList();
 
-            KernelResult result = sourceProcess.MemoryManager.GetPages(
+            Result result = sourceProcess.MemoryManager.GetPages(
                 src,
                 size / KMemoryManager.PageSize,
                 KMemoryState.MapProcessAllowed,
@@ -1325,7 +1326,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 KMemoryAttribute.None,
                 pageList);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -1340,21 +1341,21 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult QueryProcessMemory(ulong infoPtr, ulong pageInfoPtr, int processHandle, ulong address)
+        public Result QueryProcessMemory(ulong infoPtr, ulong pageInfoPtr, int processHandle, ulong address)
         {
-            KernelResult result = QueryProcessMemory(out MemoryInfo info, processHandle, address);
+            Result result = QueryProcessMemory(out MemoryInfo info, processHandle, address);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             return KernelTransfer.KernelToUser(_context, infoPtr, info)
-                ? KernelResult.Success
+                ? Result.Success
                 : KernelResult.InvalidMemState;
         }
 
-        public KernelResult QueryProcessMemory(out MemoryInfo info, int processHandle, ulong address)
+        public Result QueryProcessMemory(out MemoryInfo info, int processHandle, ulong address)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess().HandleTable.GetKProcess(processHandle);
 
@@ -1376,10 +1377,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 blockInfo.IpcRefCount,
                 blockInfo.DeviceRefCount);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult MapProcessCodeMemory(int processHandle, ulong dst, ulong src, ulong size)
+        public Result MapProcessCodeMemory(int processHandle, ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(dst) || !PageAligned(src))
             {
@@ -1416,7 +1417,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return targetProcess.MemoryManager.MapProcessCodeMemory(dst, src, size);
         }
 
-        public KernelResult UnmapProcessCodeMemory(int handle, ulong dst, ulong src, ulong size)
+        public Result UnmapProcessCodeMemory(int handle, ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(dst) || !PageAligned(src))
             {
@@ -1453,7 +1454,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return targetProcess.MemoryManager.UnmapProcessCodeMemory(dst, src, size);
         }
 
-        public KernelResult SetProcessMemoryPermission(int handle, ulong src, ulong size, KMemoryPermission permission)
+        public Result SetProcessMemoryPermission(int handle, ulong src, ulong size, KMemoryPermission permission)
         {
             if (!PageAligned(src))
             {
@@ -1497,19 +1498,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
         // System
 
-        public KernelResult TerminateProcess(int handle)
+        public Result TerminateProcess(int handle)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
             process = process.HandleTable.GetObject<KProcess>(handle);
 
-            KernelResult result;
+            Result result;
 
             if (process != null)
             {
                 if (process == _context.Scheduler.GetCurrentProcess())
                 {
-                    result = KernelResult.Success;
+                    result = Result.Success;
                     process.DecrementToZeroWhileTerminatingCurrent();
                 }
                 else
@@ -1531,19 +1532,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
             _context.Scheduler.GetCurrentProcess().TerminateCurrentProcess();
         }
 
-        public KernelResult SignalEvent(int handle)
+        public Result SignalEvent(int handle)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
             KWritableEvent writableEvent = process.HandleTable.GetObject<KWritableEvent>(handle);
 
-            KernelResult result;
+            Result result;
 
             if (writableEvent != null)
             {
                 writableEvent.Signal();
 
-                result = KernelResult.Success;
+                result = Result.Success;
             }
             else
             {
@@ -1553,9 +1554,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult ClearEvent(int handle)
+        public Result ClearEvent(int handle)
         {
-            KernelResult result;
+            Result result;
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -1575,20 +1576,20 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult CloseHandle(int handle)
+        public Result CloseHandle(int handle)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            return currentProcess.HandleTable.CloseHandle(handle) ? KernelResult.Success : KernelResult.InvalidHandle;
+            return currentProcess.HandleTable.CloseHandle(handle) ? Result.Success : KernelResult.InvalidHandle;
         }
 
-        public KernelResult ResetSignal(int handle)
+        public Result ResetSignal(int handle)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             KReadableEvent readableEvent = currentProcess.HandleTable.GetObject<KReadableEvent>(handle);
 
-            KernelResult result;
+            Result result;
 
             if (readableEvent != null)
             {
@@ -1642,11 +1643,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult OutputDebugString(ulong strPtr, ulong size)
+        public Result OutputDebugString(ulong strPtr, ulong size)
         {
             if (size == 0)
             {
-                return KernelResult.Success;
+                return Result.Success;
             }
 
             if (!KernelTransfer.UserToKernelString(_context, strPtr, size, out string debugString))
@@ -1656,10 +1657,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             Logger.Warning?.Print(LogClass.KernelSvc, debugString);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult GetInfo(InfoType id, int handle, long subId, out ulong value)
+        public Result GetInfo(InfoType id, int handle, long subId, out ulong value)
         {
             value = 0;
 
@@ -1776,9 +1777,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
                             KHandleTable handleTable = currentProcess.HandleTable;
                             KResourceLimit resourceLimit = currentProcess.ResourceLimit;
 
-                            KernelResult result = handleTable.GenerateHandle(resourceLimit, out int resLimHandle);
+                            Result result = handleTable.GenerateHandle(resourceLimit, out int resLimHandle);
 
-                            if (result != KernelResult.Success)
+                            if (result != Result.Success)
                             {
                                 return result;
                             }
@@ -1847,7 +1848,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                         if (subId != -1 && subId != currentCore)
                         {
-                            return KernelResult.Success;
+                            return Result.Success;
                         }
 
                         KCoreContext coreContext = _context.Scheduler.CoreContexts[currentCore];
@@ -1876,22 +1877,22 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 default: return KernelResult.InvalidEnumValue;
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult CreateEvent(out int wEventHandle, out int rEventHandle)
+        public Result CreateEvent(out int wEventHandle, out int rEventHandle)
         {
             KEvent Event = new KEvent(_context);
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            KernelResult result = process.HandleTable.GenerateHandle(Event.WritableEvent, out wEventHandle);
+            Result result = process.HandleTable.GenerateHandle(Event.WritableEvent, out wEventHandle);
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 result = process.HandleTable.GenerateHandle(Event.ReadableEvent, out rEventHandle);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     process.HandleTable.CloseHandle(wEventHandle);
                 }
@@ -1904,7 +1905,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult GetProcessList(ulong address, int maxCount, out int count)
+        public Result GetProcessList(ulong address, int maxCount, out int count)
         {
             count = 0;
 
@@ -1950,10 +1951,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             count = copyCount;
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult GetSystemInfo(uint id, int handle, long subId, out long value)
+        public Result GetSystemInfo(uint id, int handle, long subId, out long value)
         {
             value = 0;
 
@@ -2006,12 +2007,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         // Thread
 
-        public KernelResult CreateThread(
+        public Result CreateThread(
             ulong entrypoint,
             ulong argsPtr,
             ulong stackTop,
@@ -2048,7 +2049,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             KThread thread = new KThread(_context);
 
-            KernelResult result = currentProcess.InitializeThread(
+            Result result = currentProcess.InitializeThread(
                 thread,
                 entrypoint,
                 argsPtr,
@@ -2056,7 +2057,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 priority,
                 cpuCore);
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2072,7 +2073,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult StartThread(int handle)
+        public Result StartThread(int handle)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2082,9 +2083,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 thread.IncrementReferenceCount();
 
-                KernelResult result = thread.Start();
+                Result result = thread.Start();
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     thread.IncrementReferenceCount();
                 }
@@ -2127,7 +2128,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult GetThreadPriority(int handle, out int priority)
+        public Result GetThreadPriority(int handle, out int priority)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2137,7 +2138,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 priority = thread.DynamicPriority;
 
-                return KernelResult.Success;
+                return Result.Success;
             }
             else
             {
@@ -2147,7 +2148,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult SetThreadPriority(int handle, int priority)
+        public Result SetThreadPriority(int handle, int priority)
         {
             // TODO: NPDM check.
 
@@ -2162,10 +2163,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             thread.SetPriority(priority);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult GetThreadCoreMask(int handle, out int preferredCore, out long affinityMask)
+        public Result GetThreadCoreMask(int handle, out int preferredCore, out long affinityMask)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2176,7 +2177,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 preferredCore = thread.PreferredCore;
                 affinityMask = thread.AffinityMask;
 
-                return KernelResult.Success;
+                return Result.Success;
             }
             else
             {
@@ -2187,7 +2188,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult SetThreadCoreMask(int handle, int preferredCore, long affinityMask)
+        public Result SetThreadCoreMask(int handle, int preferredCore, long affinityMask)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
@@ -2240,7 +2241,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return _context.Scheduler.GetCurrentThread().CurrentCore;
         }
 
-        public KernelResult GetThreadId(int handle, out long threadUid)
+        public Result GetThreadId(int handle, out long threadUid)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2250,7 +2251,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 threadUid = thread.ThreadUid;
 
-                return KernelResult.Success;
+                return Result.Success;
             }
             else
             {
@@ -2260,7 +2261,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult SetThreadActivity(int handle, bool pause)
+        public Result SetThreadActivity(int handle, bool pause)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2284,7 +2285,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return thread.SetActivity(pause);
         }
 
-        public KernelResult GetThreadContext3(ulong address, int handle)
+        public Result GetThreadContext3(ulong address, int handle)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
             KThread currentThread = _context.Scheduler.GetCurrentThread();
@@ -2382,12 +2383,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
             memory.Write(address + 0x314, thread.Context.Fpsr);
             memory.Write(address + 0x318, thread.Context.TlsAddress);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         // Thread synchronization
 
-        public KernelResult WaitSynchronization(out int handleIndex, ulong handlesPtr, int handlesCount, long timeout)
+        public Result WaitSynchronization(out int handleIndex, ulong handlesPtr, int handlesCount, long timeout)
         {
             handleIndex = 0;
 
@@ -2434,7 +2435,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        public KernelResult WaitSynchronization(out int handleIndex, ReadOnlySpan<int> handles, long timeout)
+        public Result WaitSynchronization(out int handleIndex, ReadOnlySpan<int> handles, long timeout)
         {
             handleIndex = 0;
 
@@ -2479,11 +2480,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            KernelResult result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex);
+            Result result = _context.Synchronization.WaitFor(syncObjs, timeout, out handleIndex);
 
             if (result == KernelResult.PortRemoteClosed)
             {
-                result = KernelResult.Success;
+                result = Result.Success;
             }
 
             for (int index = 0; index < handles.Length; index++)
@@ -2494,7 +2495,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return result;
         }
 
-        public KernelResult CancelSynchronization(int handle)
+        public Result CancelSynchronization(int handle)
         {
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
@@ -2507,10 +2508,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             thread.CancelSynchronization();
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
+        public Result ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
         {
             if (IsPointingInsideKernel(mutexAddress))
             {
@@ -2527,7 +2528,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
         }
 
-        public KernelResult ArbitrateUnlock(ulong mutexAddress)
+        public Result ArbitrateUnlock(ulong mutexAddress)
         {
             if (IsPointingInsideKernel(mutexAddress))
             {
@@ -2544,7 +2545,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return currentProcess.AddressArbiter.ArbitrateUnlock(mutexAddress);
         }
 
-        public KernelResult WaitProcessWideKeyAtomic(
+        public Result WaitProcessWideKeyAtomic(
             ulong mutexAddress,
             ulong condVarAddress,
             int handle,
@@ -2569,16 +2570,16 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 timeout);
         }
 
-        public KernelResult SignalProcessWideKey(ulong address, int count)
+        public Result SignalProcessWideKey(ulong address, int count)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             currentProcess.AddressArbiter.SignalProcessWideKey(address, count);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult WaitForAddress(ulong address, ArbitrationType type, int value, long timeout)
+        public Result WaitForAddress(ulong address, ArbitrationType type, int value, long timeout)
         {
             if (IsPointingInsideKernel(address))
             {
@@ -2604,7 +2605,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             };
         }
 
-        public KernelResult SignalToAddress(ulong address, SignalType type, int value, int count)
+        public Result SignalToAddress(ulong address, SignalType type, int value, int count)
         {
             if (IsPointingInsideKernel(address))
             {
@@ -2642,7 +2643,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
         // Resource limit.
 
-        public KernelResult GetResourceLimitLimitValue(out long limit, int handle, LimitableResource resource)
+        public Result GetResourceLimitLimitValue(out long limit, int handle, LimitableResource resource)
         {
             limit = 0;
 
@@ -2660,10 +2661,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             limit = resourceLimit.GetLimitValue(resource);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult GetResourceLimitCurrentValue(out long value, int handle, LimitableResource resource)
+        public Result GetResourceLimitCurrentValue(out long value, int handle, LimitableResource resource)
         {
             value = 0;
 
@@ -2681,17 +2682,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             value = resourceLimit.GetCurrentValue(resource);
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult CreateResourceLimit(out int handle)
+        public Result CreateResourceLimit(out int handle)
         {
             KResourceLimit resourceLimit = new KResourceLimit(_context);
 
             return _context.Scheduler.GetCurrentProcess().HandleTable.GenerateHandle(resourceLimit, out handle);
         }
 
-        public KernelResult SetResourceLimitLimitValue(int handle, LimitableResource resource, long limit)
+        public Result SetResourceLimitLimitValue(int handle, LimitableResource resource, long limit)
         {
             if ((uint)resource >= (uint)LimitableResource.Count)
             {

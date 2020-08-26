@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using System;
 using System.Collections.Generic;
@@ -155,6 +156,8 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
+        private const BindingFlags StaticNonPublic = BindingFlags.NonPublic | BindingFlags.Static;
+
         private static Action<T, IThreadContext> GenerateMethod<T>(string svcName, int registerCleanCount)
         {
             Type[] argTypes = new Type[] { typeof(T), typeof(IThreadContext) };
@@ -190,6 +193,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             void ConvertToFieldType(Type sourceType)
             {
+                if (sourceType == typeof(Result))
+                {
+                    generator.Emit(OpCodes.Call, typeof(SyscallTable).GetMethod(nameof(GetResultCode), StaticNonPublic));
+                    return;
+                }
+
                 CheckIfTypeIsSupported(sourceType, svcName);
 
                 switch (Type.GetTypeCode(sourceType))
@@ -231,8 +240,6 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     byRefArgsCount++;
                 }
             }
-
-            BindingFlags staticNonPublic = BindingFlags.NonPublic | BindingFlags.Static;
 
             // Print all the arguments for debugging purposes.
             int inputArgsCount = methodArgs.Length - byRefArgsCount;
@@ -285,7 +292,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 generator.Emit(OpCodes.Ldstr, svcName);
             }
 
-            MethodInfo printArgsMethod = typeof(SyscallTable).GetMethod(nameof(PrintArguments), staticNonPublic);
+            MethodInfo printArgsMethod = typeof(SyscallTable).GetMethod(nameof(PrintArguments), StaticNonPublic);
 
             generator.Emit(OpCodes.Call, printArgsMethod);
 
@@ -341,9 +348,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
             Type retType = methodInfo.ReturnType;
 
             // Print result code.
-            if (retType == typeof(KernelResult))
+            if (retType == typeof(Result))
             {
-                MethodInfo printResultMethod = typeof(SyscallTable).GetMethod(nameof(PrintResult), staticNonPublic);
+                MethodInfo printResultMethod = typeof(SyscallTable).GetMethod(nameof(PrintResult), StaticNonPublic);
 
                 generator.Emit(OpCodes.Dup);
                 generator.Emit(OpCodes.Ldstr, svcName);
@@ -355,7 +362,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
             // Save return value into register X0 (when the method has a return value).
             if (retType != typeof(void))
             {
-                CheckIfTypeIsSupported(retType, svcName);
+                if (retType != typeof(Result))
+                {
+                    CheckIfTypeIsSupported(retType, svcName);
+                }
 
                 LocalBuilder tempLocal = generator.DeclareLocal(retType);
 
@@ -433,7 +443,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     return;
             }
 
-            throw new InvalidSvcException($"Method \"{svcName}\" has a invalid ref type \"{type.Name}\".");
+            throw new InvalidSvcException($"Method \"{svcName}\" has a invalid type \"{type.Name}\".");
         }
 
         private static void PrintArguments(object[] argValues, string formatOrSvcName)
@@ -448,9 +458,9 @@ namespace Ryujinx.Horizon.Kernel.Svc
             }
         }
 
-        private static void PrintResult(KernelResult result, string svcName)
+        private static void PrintResult(Result result, string svcName)
         {
-            if (result != KernelResult.Success &&
+            if (result != Result.Success &&
                 result != KernelResult.TimedOut &&
                 result != KernelResult.Cancelled &&
                 result != KernelResult.InvalidState)
@@ -461,6 +471,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 Logger.Debug?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
             }
+        }
+
+        private static int GetResultCode(Result result)
+        {
+            return result.ErrorCode;
         }
     }
 }

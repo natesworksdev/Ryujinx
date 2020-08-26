@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 
 namespace Ryujinx.Horizon.Kernel.Ipc
@@ -24,9 +25,9 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             _state = ChannelState.Open;
         }
 
-        public KernelResult EnqueueIncomingSession(KServerSession session)
+        public Result EnqueueIncomingSession(KServerSession session)
         {
-            KernelResult result;
+            Result result;
 
             KernelContext.CriticalSection.Enter();
 
@@ -34,7 +35,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             {
                 ServerPort.EnqueueIncomingSession(session);
 
-                result = KernelResult.Success;
+                result = Result.Success;
             }
             else
             {
@@ -46,9 +47,9 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             return result;
         }
 
-        public KernelResult EnqueueIncomingLightSession(KLightServerSession session)
+        public Result EnqueueIncomingLightSession(KLightServerSession session)
         {
-            KernelResult result;
+            Result result;
 
             KernelContext.CriticalSection.Enter();
 
@@ -56,7 +57,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             {
                 ServerPort.EnqueueIncomingLightSession(session);
 
-                result = KernelResult.Success;
+                result = Result.Success;
             }
             else
             {

@@ -56,7 +56,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Nvdec.H264
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Graphics.Video", "Ryujinx.Graphics.Video\Ryujinx.Graphics.Video.csproj", "{FD4A2C14-8E3D-4957-ABBE-3C38897B3E2D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Horizon.Kernel", "Ryujinx.Horizon.Kernel\Ryujinx.Horizon.Kernel.csproj", "{E97670D0-23F6-4DA2-A218-D934AD982751}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon.Kernel", "Ryujinx.Horizon.Kernel\Ryujinx.Horizon.Kernel.csproj", "{E97670D0-23F6-4DA2-A218-D934AD982751}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon.Common", "Ryujinx.Horizon.Common\Ryujinx.Horizon.Common.csproj", "{37474915-DF84-4638-9A8C-51982A5632AE}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Horizon", "Ryujinx.Horizon\Ryujinx.Horizon.csproj", "{50081930-D1B8-4967-99FB-A08E336247AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -266,6 +270,22 @@ Global
 		{E97670D0-23F6-4DA2-A218-D934AD982751}.Profile Release|Any CPU.Build.0 = Release|Any CPU
 		{E97670D0-23F6-4DA2-A218-D934AD982751}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E97670D0-23F6-4DA2-A218-D934AD982751}.Release|Any CPU.Build.0 = Release|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Profile Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Profile Debug|Any CPU.Build.0 = Debug|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Profile Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Profile Release|Any CPU.Build.0 = Release|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{37474915-DF84-4638-9A8C-51982A5632AE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Profile Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Profile Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Profile Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Profile Release|Any CPU.Build.0 = Release|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50081930-D1B8-4967-99FB-A08E336247AF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

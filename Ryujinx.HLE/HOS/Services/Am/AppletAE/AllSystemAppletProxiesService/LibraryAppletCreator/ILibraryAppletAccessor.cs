@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.LibraryAppletCreator

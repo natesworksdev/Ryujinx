@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Threading;
 using System.Collections.Generic;
 
@@ -142,7 +143,7 @@ namespace Ryujinx.Horizon.Kernel.Common
             }
         }
 
-        public KernelResult SetLimitValue(LimitableResource resource, long limit)
+        public Result SetLimitValue(LimitableResource resource, long limit)
         {
             int index = GetIndex(resource);
 
@@ -152,7 +153,7 @@ namespace Ryujinx.Horizon.Kernel.Common
                 {
                     _limit[index] = limit;
 
-                    return KernelResult.Success;
+                    return Result.Success;
                 }
                 else
                 {

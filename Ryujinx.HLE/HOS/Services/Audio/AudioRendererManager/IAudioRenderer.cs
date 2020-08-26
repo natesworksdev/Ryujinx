@@ -3,7 +3,7 @@ using Ryujinx.Audio.Adpcm;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.HLE.Utilities;
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Memory;

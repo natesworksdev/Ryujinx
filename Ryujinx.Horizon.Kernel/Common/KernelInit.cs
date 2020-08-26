@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Memory;
 using System;
 
@@ -7,9 +8,9 @@ namespace Ryujinx.Horizon.Kernel.Common
     {
         public static void InitializeResourceLimit(KResourceLimit resourceLimit)
         {
-            void EnsureSuccess(KernelResult result)
+            void EnsureSuccess(Result result)
             {
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     throw new InvalidOperationException($"Unexpected result \"{result}\".");
                 }

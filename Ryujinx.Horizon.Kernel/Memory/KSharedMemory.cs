@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
 
@@ -22,7 +23,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
         {
         }
 
-        public KernelResult Initialize(KProcess owner, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
+        public Result Initialize(KProcess owner, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
         {
             _ownerPid = owner.Pid;
             _ownerRegion = owner.MemoryRegion;
@@ -66,10 +67,10 @@ namespace Ryujinx.Horizon.Kernel.Memory
                 KernelContext.Memory.ZeroFill(KMemoryManager.GetDramAddressFromPa(pageNode.Address), pageNode.PagesCount * KMemoryManager.PageSize);
             } */
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult MapIntoProcess(
+        public Result MapIntoProcess(
             KMemoryManager memoryManager,
             ulong address,
             ulong size,
@@ -93,7 +94,7 @@ namespace Ryujinx.Horizon.Kernel.Memory
             return memoryManager.MapPages(address, _pageList, KMemoryState.SharedMemory, permission);
         }
 
-        public KernelResult UnmapFromProcess(KMemoryManager memoryManager, ulong address, ulong size, KProcess process)
+        public Result UnmapFromProcess(KMemoryManager memoryManager, ulong address, ulong size, KProcess process)
         {
             ulong pagesCountRounded = BitUtils.DivRoundUp(size, KMemoryManager.PageSize);
 

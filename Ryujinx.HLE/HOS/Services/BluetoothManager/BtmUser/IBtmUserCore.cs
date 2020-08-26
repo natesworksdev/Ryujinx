@@ -1,6 +1,5 @@
 ﻿using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.OsTypes;
-using Ryujinx.Horizon.Kernel.Common;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
@@ -24,11 +23,9 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         // AcquireBleScanEvent() -> (byte<1>, handle<copy>)
         public ResultCode AcquireBleScanEvent(ServiceCtx context)
         {
-            KernelResult result = KernelResult.Success;
-
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleScanEvent));
 
-            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
+            context.ResponseData.Write(1);
 
             return ResultCode.Success;
         }
@@ -37,11 +34,9 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         // AcquireBleConnectionEvent() -> (byte<1>, handle<copy>)
         public ResultCode AcquireBleConnectionEvent(ServiceCtx context)
         {
-            KernelResult result = KernelResult.Success;
-
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleConnectionEvent));
 
-            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
+            context.ResponseData.Write(1);
 
             return ResultCode.Success;
         }
@@ -50,11 +45,9 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         // AcquireBleServiceDiscoveryEvent() -> (byte<1>, handle<copy>)
         public ResultCode AcquireBleServiceDiscoveryEvent(ServiceCtx context)
         {
-            KernelResult result = KernelResult.Success;
-
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleServiceDiscoveryEvent));
 
-            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
+            context.ResponseData.Write(1);
 
             return ResultCode.Success;
         }
@@ -63,11 +56,9 @@ namespace Ryujinx.HLE.HOS.Services.BluetoothManager.BtmUser
         // AcquireBleMtuConfigEvent() -> (byte<1>, handle<copy>)
         public ResultCode AcquireBleMtuConfigEvent(ServiceCtx context)
         {
-            KernelResult result = KernelResult.Success;
-
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(Os.GetReadableHandleOfSystemEvent(ref _bleMtuConfigEvent));
 
-            context.ResponseData.Write(result == KernelResult.Success ? 1 : 0);
+            context.ResponseData.Write(1);
 
             return ResultCode.Success;
         }

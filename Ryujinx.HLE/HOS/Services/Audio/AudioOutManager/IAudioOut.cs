@@ -1,7 +1,7 @@
 using Ryujinx.Audio;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Horizon.Kernel;
 using System;
 

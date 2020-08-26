@@ -1,6 +1,6 @@
-﻿namespace Ryujinx.HLE.HOS.Services.OsTypes
+﻿namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    struct InterProcessEventType
+    public struct InterProcessEventType
     {
         public enum InitializationState : byte
         {

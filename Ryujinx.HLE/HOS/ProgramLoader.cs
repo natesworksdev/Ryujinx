@@ -4,6 +4,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Loaders.Npdm;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
@@ -75,9 +76,9 @@ namespace Ryujinx.HLE.HOS
 
             KMemoryRegionManager region = device.System.KernelContext.MemoryRegions[(int)memoryRegion];
 
-            KernelResult result = region.AllocatePages((ulong)codePagesCount, false, out KPageList pageList);
+            Result result = region.AllocatePages((ulong)codePagesCount, false, out KPageList pageList);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
@@ -96,7 +97,7 @@ namespace Ryujinx.HLE.HOS
                 memoryRegion,
                 processContextFactory);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
@@ -105,7 +106,7 @@ namespace Ryujinx.HLE.HOS
 
             result = LoadIntoMemory(process, kip, codeBaseAddress);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
@@ -116,7 +117,7 @@ namespace Ryujinx.HLE.HOS
 
             result = process.Start(kip.Priority, (ulong)kip.StackSize);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process start returned error \"{result}\".");
 
@@ -184,15 +185,54 @@ namespace Ryujinx.HLE.HOS
 
             int personalMmHeapPagesCount = metaData.PersonalMmHeapSize / PageSize;
 
-            KernelResult result = KernelStatic.Syscall.CreateResourceLimit(out int resourceLimitHandle);
+            Result result = KernelStatic.Syscall.CreateResourceLimit(out int resourceLimitHandle);
 
-            result |= KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Memory, 0xcd500000L);
-            result |= KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Thread, 608);
-            result |= KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Event, 700);
-            result |= KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.TransferMemory, 128);
-            result |= KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Session, 894);
+            if (result != Result.Success)
+            {
+                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed creating resource limit.");
 
-            if (result != KernelResult.Success)
+                return false;
+            }
+
+            result = KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Memory, 0xcd500000L);
+
+            if (result != Result.Success)
+            {
+                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
+
+                return false;
+            }
+
+            result = KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Thread, 608);
+
+            if (result != Result.Success)
+            {
+                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
+
+                return false;
+            }
+
+            result = KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Event, 700);
+
+            if (result != Result.Success)
+            {
+                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
+
+                return false;
+            }
+
+            result = KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.TransferMemory, 128);
+
+            if (result != Result.Success)
+            {
+                Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
+
+                return false;
+            }
+
+            result = KernelStatic.Syscall.SetResourceLimitLimitValue(resourceLimitHandle, LimitableResource.Session, 894);
+
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
 
@@ -219,7 +259,7 @@ namespace Ryujinx.HLE.HOS
                 out int processHandle,
                 processContextFactory);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
@@ -232,7 +272,7 @@ namespace Ryujinx.HLE.HOS
 
                 result = LoadIntoMemory(processHandle, executables[index], nsoBase[index]);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
@@ -246,7 +286,7 @@ namespace Ryujinx.HLE.HOS
                 metaData.DefaultCpuId,
                 (ulong)metaData.MainThreadStackSize);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process start returned error \"{result}\".");
 
@@ -256,7 +296,7 @@ namespace Ryujinx.HLE.HOS
             return true;
         }
 
-        private static KernelResult LoadIntoMemory(int processHandle, IExecutable image, ulong baseAddress)
+        private static Result LoadIntoMemory(int processHandle, IExecutable image, ulong baseAddress)
         {
             ulong textStart = baseAddress + (ulong)image.TextOffset;
             ulong roStart   = baseAddress + (ulong)image.RoOffset;
@@ -278,11 +318,11 @@ namespace Ryujinx.HLE.HOS
 
             MemoryHelper.FillWithZeros(memory, (long)bssStart, image.BssSize);
 
-            KernelResult SetProcessMemoryPermission(ulong address, ulong size, KMemoryPermission permission)
+            Result SetProcessMemoryPermission(ulong address, ulong size, KMemoryPermission permission)
             {
                 if (size == 0)
                 {
-                    return KernelResult.Success;
+                    return Result.Success;
                 }
 
                 size = BitUtils.AlignUp(size, PageSize);
@@ -290,16 +330,16 @@ namespace Ryujinx.HLE.HOS
                 return KernelStatic.Syscall.SetProcessMemoryPermission(processHandle, address, size, permission);
             }
 
-            KernelResult result = SetProcessMemoryPermission(textStart, (ulong)image.Text.Length, KMemoryPermission.ReadAndExecute);
+            Result result = SetProcessMemoryPermission(textStart, (ulong)image.Text.Length, KMemoryPermission.ReadAndExecute);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = SetProcessMemoryPermission(roStart, (ulong)image.Ro.Length, KMemoryPermission.Read);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }

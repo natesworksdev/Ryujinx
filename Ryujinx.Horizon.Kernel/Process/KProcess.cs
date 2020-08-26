@@ -1,5 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
 using Ryujinx.Horizon.Kernel.Svc;
@@ -106,7 +107,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             Debugger = new HleProcessDebugger(this);
         }
 
-        public KernelResult InitializeKip(
+        public Result InitializeKip(
             ProcessCreationInfo creationInfo,
             ReadOnlySpan<int> capabilities,
             KPageList pageList,
@@ -134,7 +135,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 ? KernelContext.LargeMemoryBlockAllocator
                 : KernelContext.SmallMemoryBlockAllocator;
 
-            KernelResult result = MemoryManager.InitializeForProcess(
+            Result result = MemoryManager.InitializeForProcess(
                 addrSpaceType,
                 aslrEnabled,
                 !aslrEnabled,
@@ -143,7 +144,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 codeSize,
                 memoryBlockAllocator);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -159,14 +160,14 @@ namespace Ryujinx.Horizon.Kernel.Process
                 KMemoryState.CodeStatic,
                 KMemoryPermission.None);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
 
             result = Capabilities.InitializeForKernel(capabilities, MemoryManager);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -183,7 +184,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             return result;
         }
 
-        public KernelResult Initialize(
+        public Result Initialize(
             ProcessCreationInfo creationInfo,
             ReadOnlySpan<int> capabilities,
             KResourceLimit resourceLimit,
@@ -244,7 +245,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             ulong codeSize = codePagesCount * KMemoryManager.PageSize;
 
-            KernelResult result = MemoryManager.InitializeForProcess(
+            Result result = MemoryManager.InitializeForProcess(
                 addrSpaceType,
                 aslrEnabled,
                 !aslrEnabled,
@@ -253,7 +254,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 codeSize,
                 memoryBlockAllocator);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 CleanUpForError();
 
@@ -273,7 +274,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 KMemoryState.CodeStatic,
                 KMemoryPermission.None);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 CleanUpForError();
 
@@ -282,7 +283,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             result = Capabilities.InitializeForUser(capabilities, MemoryManager);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 CleanUpForError();
 
@@ -298,7 +299,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             result = ParseProcessInfo(creationInfo);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 CleanUpForError();
             }
@@ -308,7 +309,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             return result;
         }
 
-        private KernelResult ParseProcessInfo(ProcessCreationInfo creationInfo)
+        private Result ParseProcessInfo(ProcessCreationInfo creationInfo)
         {
             // Ensure that the current kernel version is equal or above to the minimum required.
             uint requiredKernelVersionMajor = (uint)Capabilities.KernelReleaseVersion >> 19;
@@ -332,9 +333,9 @@ namespace Ryujinx.Horizon.Kernel.Process
                 }
             }
 
-            KernelResult result = AllocateThreadLocalStorage(out ulong userExceptionContextAddress);
+            Result result = AllocateThreadLocalStorage(out ulong userExceptionContextAddress);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 return result;
             }
@@ -376,14 +377,14 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             GenerateRandomEntropy();
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult AllocateThreadLocalStorage(out ulong address)
+        public Result AllocateThreadLocalStorage(out ulong address)
         {
             KernelContext.CriticalSection.Enter();
 
-            KernelResult result;
+            Result result;
 
             if (_freeTlsPages.Count > 0)
             {
@@ -402,14 +403,14 @@ namespace Ryujinx.Horizon.Kernel.Process
                     _fullTlsPages.Add(pageInfo.PageAddr, pageInfo);
                 }
 
-                result = KernelResult.Success;
+                result = Result.Success;
             }
             else
             {
                 // Otherwise, we need to create a new one.
                 result = AllocateTlsPage(out KTlsPageInfo pageInfo);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     if (!pageInfo.TryGetFreePage(out address))
                     {
@@ -429,7 +430,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             return result;
         }
 
-        private KernelResult AllocateTlsPage(out KTlsPageInfo pageInfo)
+        private Result AllocateTlsPage(out KTlsPageInfo pageInfo)
         {
             pageInfo = default;
 
@@ -443,7 +444,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
             ulong regionPagesCount = regionSize / KMemoryManager.PageSize;
 
-            KernelResult result = MemoryManager.AllocateOrMapPa(
+            Result result = MemoryManager.AllocateOrMapPa(
                 1,
                 KMemoryManager.PageSize,
                 tlsPagePa,
@@ -454,7 +455,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 KMemoryPermission.ReadAndWrite,
                 out ulong tlsPageVa);
 
-            if (result != KernelResult.Success)
+            if (result != Result.Success)
             {
                 KernelContext.UserSlabHeapPages.Free(tlsPagePa);
             }
@@ -468,13 +469,13 @@ namespace Ryujinx.Horizon.Kernel.Process
             return result;
         }
 
-        public KernelResult FreeThreadLocalStorage(ulong tlsSlotAddr)
+        public Result FreeThreadLocalStorage(ulong tlsSlotAddr)
         {
             ulong tlsPageAddr = BitUtils.AlignDown(tlsSlotAddr, KMemoryManager.PageSize);
 
             KernelContext.CriticalSection.Enter();
 
-            KernelResult result = KernelResult.Success;
+            Result result = Result.Success;
 
 
             if (_fullTlsPages.TryGetValue(tlsPageAddr, out KTlsPageInfo pageInfo))
@@ -503,7 +504,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                     FreeTlsPage(pageInfo);
 
-                    return KernelResult.Success;
+                    return Result.Success;
                 }
             }
 
@@ -512,16 +513,16 @@ namespace Ryujinx.Horizon.Kernel.Process
             return result;
         }
 
-        private KernelResult FreeTlsPage(KTlsPageInfo pageInfo)
+        private Result FreeTlsPage(KTlsPageInfo pageInfo)
         {
             if (!MemoryManager.TryConvertVaToPa(pageInfo.PageAddr, out ulong tlsPagePa))
             {
                 throw new InvalidOperationException("Unexpected failure translating virtual address to physical.");
             }
 
-            KernelResult result = MemoryManager.UnmapForKernel(pageInfo.PageAddr, 1, KMemoryState.ThreadLocal);
+            Result result = MemoryManager.UnmapForKernel(pageInfo.PageAddr, 1, KMemoryState.ThreadLocal);
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 KernelContext.UserSlabHeapPages.Free(tlsPagePa);
             }
@@ -534,7 +535,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             // TODO.
         }
 
-        public KernelResult Start(int mainThreadPriority, ulong stackSize)
+        public Result Start(int mainThreadPriority, ulong stackSize)
         {
             lock (_processLock)
             {
@@ -582,7 +583,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                     }
                 }
 
-                KernelResult result;
+                Result result;
 
                 KThread mainThread = null;
 
@@ -629,7 +630,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                         KMemoryPermission.ReadAndWrite,
                         out ulong stackBottom);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         CleanUpForError();
 
@@ -645,7 +646,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 result = MemoryManager.SetHeapCapacity(heapCapacity);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     CleanUpForError();
 
@@ -656,7 +657,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 result = HandleTable.Initialize(Capabilities.HandleTableSize);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     CleanUpForError();
 
@@ -675,7 +676,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                     ThreadType.User,
                     _customThreadStart);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     CleanUpForError();
 
@@ -684,7 +685,7 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 result = HandleTable.GenerateHandle(mainThread, out int mainThreadHandle);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     CleanUpForError();
 
@@ -702,14 +703,14 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 result = mainThread.Start();
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     SetState(oldState);
 
                     CleanUpForError();
                 }
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     mainThread.IncrementReferenceCount();
                 }
@@ -731,7 +732,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             }
         }
 
-        public KernelResult InitializeThread(
+        public Result InitializeThread(
             KThread thread,
             ulong entrypoint,
             ulong argsPtr,
@@ -849,9 +850,9 @@ namespace Ryujinx.Horizon.Kernel.Process
             return _signaled;
         }
 
-        public KernelResult Terminate()
+        public Result Terminate()
         {
-            KernelResult result;
+            Result result;
 
             bool shallTerminate = false;
 
@@ -871,7 +872,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                         shallTerminate = true;
                     }
 
-                    result = KernelResult.Success;
+                    result = Result.Success;
                 }
                 else
                 {
@@ -998,9 +999,9 @@ namespace Ryujinx.Horizon.Kernel.Process
             KernelContext.CriticalSection.Leave();
         }
 
-        public KernelResult ClearIfNotExited()
+        public Result ClearIfNotExited()
         {
-            KernelResult result;
+            Result result;
 
             KernelContext.CriticalSection.Enter();
 
@@ -1010,7 +1011,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 {
                     _signaled = false;
 
-                    result = KernelResult.Success;
+                    result = Result.Success;
                 }
                 else
                 {

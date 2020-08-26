@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
 using Ryujinx.Horizon.Kernel.Svc;
@@ -62,7 +63,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
         private ThreadSchedState _forcePauseFlags;
 
-        public KernelResult ObjSyncResult { get; set; }
+        public Result ObjSyncResult { get; set; }
 
         public int DynamicPriority { get; set; }
         public int CurrentCore { get; set; }
@@ -113,7 +114,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             _mutexWaiters = new LinkedList<KThread>();
         }
 
-        public KernelResult Initialize(
+        public Result Initialize(
             ulong entrypoint,
             ulong argsPtr,
             ulong stackTop,
@@ -148,7 +149,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
             if (type == ThreadType.User)
             {
-                if (owner.AllocateThreadLocalStorage(out _tlsAddress) != KernelResult.Success)
+                if (owner.AllocateThreadLocalStorage(out _tlsAddress) != Result.Success)
                 {
                     return KernelResult.OutOfMemory;
                 }
@@ -210,7 +211,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                     {
                         KernelContext.CriticalSection.Leave();
 
-                        return KernelResult.Success;
+                        return Result.Success;
                     }
 
                     _forcePauseFlags |= ThreadSchedState.ProcessPauseFlag;
@@ -221,10 +222,10 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 }
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        public KernelResult Start()
+        public Result Start()
         {
             if (!KernelContext.KernelInitialized)
             {
@@ -240,7 +241,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 KernelContext.CriticalSection.Leave();
             }
 
-            KernelResult result = KernelResult.ThreadTerminating;
+            Result result = KernelResult.ThreadTerminating;
 
             KernelContext.CriticalSection.Enter();
 
@@ -268,7 +269,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
                         SetNewSchedFlags(ThreadSchedState.Running);
 
-                        result = KernelResult.Success;
+                        result = Result.Success;
 
                         break;
                     }
@@ -422,7 +423,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
-        public KernelResult Sleep(long timeout)
+        public Result Sleep(long timeout)
         {
             KernelContext.CriticalSection.Enter();
 
@@ -447,7 +448,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
                 KernelContext.TimeManager.UnscheduleFutureInvocation(this);
             }
 
-            return 0;
+            return Result.Success;
         }
 
         public void Yield()
@@ -616,9 +617,9 @@ namespace Ryujinx.Horizon.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
-        public KernelResult SetActivity(bool pause)
+        public Result SetActivity(bool pause)
         {
-            KernelResult result = KernelResult.Success;
+            Result result = Result.Success;
 
             KernelContext.CriticalSection.Enter();
 
@@ -711,7 +712,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
             KernelContext.CriticalSection.Leave();
         }
 
-        public KernelResult SetCoreAndAffinityMask(int newCore, long newAffinityMask)
+        public Result SetCoreAndAffinityMask(int newCore, long newAffinityMask)
         {
             KernelContext.CriticalSection.Enter();
 
@@ -764,7 +765,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
 
             KernelContext.CriticalSection.Leave();
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         private static int HighestSetCore(long mask)
@@ -1196,7 +1197,7 @@ namespace Ryujinx.Horizon.Kernel.Threading
         {
             Owner?.RemoveThread(this);
 
-            if (_tlsAddress != 0 && Owner.FreeThreadLocalStorage(_tlsAddress) != KernelResult.Success)
+            if (_tlsAddress != 0 && Owner.FreeThreadLocalStorage(_tlsAddress) != Result.Success)
             {
                 throw new InvalidOperationException("Unexpected failure freeing thread local storage.");
             }

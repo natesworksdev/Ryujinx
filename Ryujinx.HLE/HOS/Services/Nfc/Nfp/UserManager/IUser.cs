@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Services.Hid.HidServer;
 using Ryujinx.HLE.HOS.Services.Nfc.Nfp.UserManager;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 using System.Collections.Generic;
 

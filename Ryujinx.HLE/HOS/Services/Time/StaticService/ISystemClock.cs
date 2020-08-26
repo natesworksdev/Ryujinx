@@ -1,6 +1,6 @@
 using Ryujinx.Common;
 using Ryujinx.HLE.HOS.Ipc;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.HLE.HOS.Services.Time.Clock;
 using Ryujinx.Horizon.Kernel;
 using System;

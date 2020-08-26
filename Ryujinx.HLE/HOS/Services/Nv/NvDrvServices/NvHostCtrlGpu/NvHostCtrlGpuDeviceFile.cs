@@ -1,6 +1,6 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu.Types;
-using Ryujinx.HLE.HOS.Services.OsTypes;
+using Ryujinx.Horizon.Sdk.OsTypes;
 using Ryujinx.Memory;
 using System;
 using System.Diagnostics;

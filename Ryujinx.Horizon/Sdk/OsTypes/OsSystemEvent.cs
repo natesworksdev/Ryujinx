@@ -1,20 +1,20 @@
-﻿using Ryujinx.HLE.HOS.Services.OsTypes.Impl;
-using Ryujinx.Horizon.Kernel.Common;
+﻿using Ryujinx.Horizon.Sdk.OsTypes.Impl;
+using Ryujinx.Horizon.Common;
 using System;
 
-namespace Ryujinx.HLE.HOS.Services.OsTypes
+namespace Ryujinx.Horizon.Sdk.OsTypes
 {
-    static partial class Os
+    public static partial class Os
     {
-        public static KernelResult CreateSystemEvent(out SystemEventType sysEvent, EventClearMode clearMode, bool interProcess)
+        public static Result CreateSystemEvent(out SystemEventType sysEvent, EventClearMode clearMode, bool interProcess)
         {
             sysEvent = new SystemEventType();
 
             if (interProcess)
             {
-                KernelResult result = InterProcessEvent.Create(ref sysEvent.InterProcessEvent, clearMode);
+                Result result = InterProcessEvent.Create(ref sysEvent.InterProcessEvent, clearMode);
 
-                if (result != KernelResult.Success)
+                if (result != Result.Success)
                 {
                     return result;
                 }
@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes
                 throw new NotImplementedException();
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         public static void DestroySystemEvent(ref SystemEventType sysEvent)

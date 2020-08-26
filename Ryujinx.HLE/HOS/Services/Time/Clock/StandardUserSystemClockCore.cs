@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Services.OsTypes;
+﻿using Ryujinx.Horizon.Sdk.OsTypes;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Time.Clock

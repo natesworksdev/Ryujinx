@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Memory;
 using Ryujinx.Horizon.Kernel.Threading;
@@ -25,7 +26,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             IrqAccessMask = new byte[0x80];
         }
 
-        public KernelResult InitializeForKernel(ReadOnlySpan<int> capabilities, KMemoryManager memoryManager)
+        public Result InitializeForKernel(ReadOnlySpan<int> capabilities, KMemoryManager memoryManager)
         {
             AllowedCpuCoresMask = 0xf;
             AllowedThreadPriosMask = -1;
@@ -35,12 +36,12 @@ namespace Ryujinx.Horizon.Kernel.Process
             return Parse(capabilities, memoryManager);
         }
 
-        public KernelResult InitializeForUser(ReadOnlySpan<int> capabilities, KMemoryManager memoryManager)
+        public Result InitializeForUser(ReadOnlySpan<int> capabilities, KMemoryManager memoryManager)
         {
             return Parse(capabilities, memoryManager);
         }
 
-        private KernelResult Parse(ReadOnlySpan<int> capabilities, KMemoryManager memoryManager)
+        private Result Parse(ReadOnlySpan<int> capabilities, KMemoryManager memoryManager)
         {
             int mask0 = 0;
             int mask1 = 0;
@@ -51,9 +52,9 @@ namespace Ryujinx.Horizon.Kernel.Process
 
                 if (((cap + 1) & ~cap) != 0x40)
                 {
-                    KernelResult result = ParseCapability(cap, ref mask0, ref mask1, memoryManager);
+                    Result result = ParseCapability(cap, ref mask0, ref mask1, memoryManager);
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         return result;
                     }
@@ -96,7 +97,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                         ? KMemoryPermission.Read
                         : KMemoryPermission.ReadAndWrite;
 
-                    KernelResult result;
+                    Result result;
 
                     if ((cap >> 31) != 0)
                     {
@@ -107,17 +108,17 @@ namespace Ryujinx.Horizon.Kernel.Process
                         result = memoryManager.MapIoMemory(address, size, perm);
                     }
 
-                    if (result != KernelResult.Success)
+                    if (result != Result.Success)
                     {
                         return result;
                     }
                 }
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
-        private KernelResult ParseCapability(int cap, ref int mask0, ref int mask1, KMemoryManager memoryManager)
+        private Result ParseCapability(int cap, ref int mask0, ref int mask1, KMemoryManager memoryManager)
         {
             int code = (cap + 1) & ~cap;
 
@@ -127,7 +128,7 @@ namespace Ryujinx.Horizon.Kernel.Process
             }
             else if (code == 0)
             {
-                return KernelResult.Success;
+                return Result.Success;
             }
 
             int codeMask = 1 << (32 - BitUtils.CountLeadingZeros32(code + 1));
@@ -300,7 +301,7 @@ namespace Ryujinx.Horizon.Kernel.Process
                 default: return KernelResult.InvalidCapability;
             }
 
-            return KernelResult.Success;
+            return Result.Success;
         }
 
         private static long GetMaskFromMinMax(int min, int max)

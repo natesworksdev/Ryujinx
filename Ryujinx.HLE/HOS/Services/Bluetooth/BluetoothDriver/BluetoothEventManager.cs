@@ -1,4 +1,4 @@
-﻿using Ryujinx.HLE.HOS.Services.OsTypes;
+﻿using Ryujinx.Horizon.Sdk.OsTypes;
 
 namespace Ryujinx.HLE.HOS.Services.Bluetooth.BluetoothDriver
 {

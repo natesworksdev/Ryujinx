@@ -1,3 +1,4 @@
+using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
 using Ryujinx.Horizon.Kernel.Process;
 using Ryujinx.Horizon.Kernel.Threading;
@@ -27,7 +28,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             CreatorProcess.IncrementReferenceCount();
         }
 
-        public KernelResult SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
+        public Result SendSyncRequest(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
             KThread currentThread = KernelContext.Scheduler.GetCurrentThread();
 
@@ -36,13 +37,13 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             KernelContext.CriticalSection.Enter();
 
             currentThread.SignaledObj = null;
-            currentThread.ObjSyncResult = KernelResult.Success;
+            currentThread.ObjSyncResult = Result.Success;
 
-            KernelResult result = _parent.ServerSession.EnqueueRequest(request);
+            Result result = _parent.ServerSession.EnqueueRequest(request);
 
             KernelContext.CriticalSection.Leave();
 
-            if (result == KernelResult.Success)
+            if (result == Result.Success)
             {
                 result = currentThread.ObjSyncResult;
             }
@@ -50,7 +51,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
             return result;
         }
 
-        public KernelResult SendAsyncRequest(KWritableEvent asyncEvent, ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
+        public Result SendAsyncRequest(KWritableEvent asyncEvent, ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
             KThread currentThread = KernelContext.Scheduler.GetCurrentThread();
 
@@ -58,7 +59,7 @@ namespace Ryujinx.Horizon.Kernel.Ipc
 
             KernelContext.CriticalSection.Enter();
 
-            KernelResult result = _parent.ServerSession.EnqueueRequest(request);
+            Result result = _parent.ServerSession.EnqueueRequest(request);
 
             KernelContext.CriticalSection.Leave();
 

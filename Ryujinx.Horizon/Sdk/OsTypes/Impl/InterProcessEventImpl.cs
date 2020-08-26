@@ -1,49 +1,42 @@
-﻿using Ryujinx.Horizon.Kernel;
+﻿using Ryujinx.Horizon.Common;
+using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Common;
 using System;
 
-namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
+namespace Ryujinx.Horizon.Sdk.OsTypes.Impl
 {
-    class InterProcessEventImpl
+    static class InterProcessEventImpl
     {
-        public static KernelResult Create(out int writableHandle, out int readableHandle)
+        public static Result Create(out int writableHandle, out int readableHandle)
         {
-            KernelResult result = KernelStatic.Syscall.CreateEvent(out writableHandle, out readableHandle);
+            Result result = KernelStatic.Syscall.CreateEvent(out writableHandle, out readableHandle);
 
             if (result == KernelResult.OutOfResource)
             {
-                // TODO: Return OS out of resource error.
-            }
-            else if (result != KernelResult.Success)
-            {
-                // TODO: Abort.
+                return OsResult.OutOfResource;
             }
 
-            return KernelResult.Success;
+            result.AbortOnFailure();
+
+            return Result.Success;
         }
 
         public static void Close(int handle)
         {
             if (handle != 0)
             {
-                KernelStatic.Syscall.CloseHandle(handle);
-
-                // TODO: Abort on error.
+                KernelStatic.Syscall.CloseHandle(handle).AbortOnFailure();
             }
         }
 
         public static void Signal(int handle)
         {
-            KernelStatic.Syscall.SignalEvent(handle);
-
-            // TODO: Abort on error.
+            KernelStatic.Syscall.SignalEvent(handle).AbortOnFailure();
         }
 
         public static void Clear(int handle)
         {
-            KernelStatic.Syscall.ClearEvent(handle);
-
-            // TODO: Abort on error.
+            KernelStatic.Syscall.ClearEvent(handle).AbortOnFailure();
         }
 
         public static void Wait(int handle, bool autoClear)
@@ -54,9 +47,9 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
 
             while (true)
             {
-                KernelResult result = KernelStatic.Syscall.WaitSynchronization(out _, handles, -1L);
+                Result result = KernelStatic.Syscall.WaitSynchronization(out _, handles, -1L);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     if (autoClear)
                     {
@@ -67,13 +60,13 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
                             continue;
                         }
 
-                        // TODO: Abort here on failure.
+                        result.AbortOnFailure();
                     }
 
                     return;
                 }
 
-                // TODO: Abort here if result is not "Cancelled".
+                result.AbortUnless(KernelResult.Cancelled);
             }
         }
 
@@ -81,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
         {
             if (autoClear)
             {
-                return KernelStatic.Syscall.ResetSignal(handle) == KernelResult.Success;
+                return KernelStatic.Syscall.ResetSignal(handle) == Result.Success;
             }
 
             Span<int> handles = stackalloc int[1];
@@ -90,9 +83,9 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
 
             while (true)
             {
-                KernelResult result = KernelStatic.Syscall.WaitSynchronization(out _, handles, 0);
+                Result result = KernelStatic.Syscall.WaitSynchronization(out _, handles, 0);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     return true;
                 }
@@ -101,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
                     return false;
                 }
 
-                // TODO: Abort here if result is not "Cancelled".
+                result.AbortUnless(KernelResult.Cancelled);
             }
         }
 
@@ -115,9 +108,9 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
 
             while (true)
             {
-                KernelResult result = KernelStatic.Syscall.WaitSynchronization(out _, handles, timeoutNs);
+                Result result = KernelStatic.Syscall.WaitSynchronization(out _, handles, timeoutNs);
 
-                if (result == KernelResult.Success)
+                if (result == Result.Success)
                 {
                     if (autoClear)
                     {
@@ -128,7 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
                             continue;
                         }
 
-                        // TODO: Abort here on failure.
+                        result.AbortOnFailure();
                     }
 
                     return true;
@@ -138,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.OsTypes.Impl
                     return false;
                 }
 
-                // TODO: Abort here if result is not "Cancelled".
+                result.AbortUnless(KernelResult.Cancelled);
             }
         }
     }
