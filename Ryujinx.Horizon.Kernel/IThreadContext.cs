@@ -8,6 +8,8 @@ namespace Ryujinx.Horizon.Kernel
         ulong Frequency { get; }
         ulong Counter { get; }
 
+        bool Running { get; }
+
         ulong TlsAddress { get; }
 
         int Fpcr { get; }

@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services
                 PerformRegistration();
             }
 
-            ulong messagePtr = KernelStatic.GetTlsAddress();
+            ulong messagePtr = KernelStatic.GetThreadContext().TlsAddress;
             KernelStatic.Syscall.SetHeapSize(0x200000, out ulong heapAddr);
 
             KernelStatic.AddressSpace.Write(messagePtr + 0x0, 0);
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             int replyTargetHandle = 0;
 
-            while (true) // TODO: Use Thread.Running or something
+            while (KernelStatic.GetThreadContext().Running)
             {
                 int[] portHandles = _portHandles.ToArray();
                 int[] sessionHandles = _sessionHandles.ToArray();
@@ -219,7 +219,7 @@ namespace Ryujinx.HLE.HOS.Services
                 request.RawData = ms.ToArray();
             }
 
-            ulong messagePtr = KernelStatic.GetTlsAddress();
+            ulong messagePtr = KernelStatic.GetThreadContext().TlsAddress;
 
             KernelStatic.AddressSpace.Write(messagePtr, request.GetBytes((long)messagePtr, 0));
 
@@ -254,7 +254,7 @@ namespace Ryujinx.HLE.HOS.Services
                 request.RawData = ms.ToArray();
             }
 
-            ulong messagePtr = KernelStatic.GetTlsAddress();
+            ulong messagePtr = KernelStatic.GetThreadContext().TlsAddress;
             ulong messageSize = 0x100;
 
             KernelStatic.AddressSpace.Write(messagePtr, request.GetBytes((long)messagePtr, 0));
@@ -272,7 +272,7 @@ namespace Ryujinx.HLE.HOS.Services
 
         private bool Process(int serverSessionHandle, ulong recvListAddr)
         {
-            ulong messagePtr = KernelStatic.GetTlsAddress();
+            ulong messagePtr = KernelStatic.GetThreadContext().TlsAddress;
             ulong messageSize = 0x100;
 
             byte[] reqData = new byte[messageSize];

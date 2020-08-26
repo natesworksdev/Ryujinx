@@ -3,7 +3,6 @@ using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.Horizon.Kernel;
-using Ryujinx.Horizon.Kernel.Svc;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
@@ -16,6 +15,8 @@ namespace Ryujinx.HLE.HOS
 
         public ulong Frequency => Internal.CntfrqEl0;
         public ulong Counter => Internal.CntpctEl0;
+
+        public bool Running => Internal.Running;
 
         public ulong TlsAddress => (ulong)Internal.Tpidr;
 

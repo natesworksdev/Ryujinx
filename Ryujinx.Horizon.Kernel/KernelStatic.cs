@@ -27,9 +27,9 @@ namespace Ryujinx.Horizon.Kernel
             return Context.Scheduler.GetCurrentProcess().HandleTable.GetKProcess(processHandle)?.CpuMemory;
         }
 
-        public static ulong GetTlsAddress()
+        public static IThreadContext GetThreadContext()
         {
-            return Context.Scheduler.GetCurrentThread().TlsAddress;
+            return Context.Scheduler.GetCurrentThread().Context;
         }
 
         public static string GetGuestStackTrace()

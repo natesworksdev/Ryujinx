@@ -8,6 +8,8 @@ namespace Ryujinx.Horizon.Kernel
         public ulong Frequency { get; }
         public ulong Counter => throw new NotImplementedException();
 
+        public bool Running { get; private set; } = true;
+
         public ulong TlsAddress { get; }
 
         public int Fpcr => 0;
@@ -47,6 +49,7 @@ namespace Ryujinx.Horizon.Kernel
 
         public void Stop()
         {
+            Running = false;
         }
 
         public void Dispose()
