@@ -26,7 +26,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private const bool   IS_DEVELOPMENT      = false;
 
         private KEvent _stateChangeEvent;
-        private int    _stateChangeEventHandle = 0;
 
         private NetworkState     _state;
         private DisconnectReason _disconnectReason;
@@ -255,15 +254,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // AttachStateChangeEvent() -> handle<copy>
         public ResultCode AttachStateChangeEvent(ServiceCtx context)
         {
-            if (_stateChangeEventHandle == 0)
+            if (context.Process.HandleTable.GenerateHandle(_stateChangeEvent.ReadableEvent, out int stateChangeEventHandle) != KernelResult.Success)
             {
-                if (context.Process.HandleTable.GenerateHandle(_stateChangeEvent.ReadableEvent, out _stateChangeEventHandle) != KernelResult.Success)
-                {
-                    throw new InvalidOperationException("Out of handles!");
-                }
+                throw new InvalidOperationException("Out of handles!");
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_stateChangeEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(stateChangeEventHandle);
 
             // Return ResultCode.InvalidArgument if handle is null, doesn't occur in our case since we already throw an Exception.
 
