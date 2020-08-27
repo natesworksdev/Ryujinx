@@ -266,10 +266,21 @@ namespace ARMeilleure.Instructions
         public static void Vfnms(ArmEmitterContext context)
         {
             //TODO: Use FMA Instruction set.
-            EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+            int size = op.Size;
+
+            if (size == 2 || size == 3)
             {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), context.Negate(op1), op2, op3);
-            });
+                EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    if (size == 2)
+                    {
+                        return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), context.Negate(op1), op2, op3);
+                    }
+
+                    return EmitSoftFloatCall(context, nameof(SoftFloat64.FPMulAdd), context.Negate(op1), op2, op3);
+                });
+            }
         }
 
         public static void Vmov_S(ArmEmitterContext context)
