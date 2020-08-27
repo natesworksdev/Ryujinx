@@ -1,17 +1,14 @@
-using Ryujinx.Horizon.Kernel.Threading;
 using System;
 
 namespace Ryujinx.Horizon.Kernel.Svc
 {
     partial class SyscallHandler
     {
-        private readonly KernelContextInternal _context;
         private readonly Syscall32 _syscall32;
         private readonly Syscall64 _syscall64;
 
         public SyscallHandler(KernelContextInternal context)
         {
-            _context = context;
             _syscall32 = new Syscall32(context.Syscall);
             _syscall64 = new Syscall64(context.Syscall);
         }
@@ -40,15 +37,6 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 svcFunc(_syscall64, context);
             }
-
-            PostSvcHandler();
-        }
-
-        private void PostSvcHandler()
-        {
-            KThread currentThread = _context.Scheduler.GetCurrentThread();
-
-            currentThread.HandlePostSyscall();
         }
     }
 }
