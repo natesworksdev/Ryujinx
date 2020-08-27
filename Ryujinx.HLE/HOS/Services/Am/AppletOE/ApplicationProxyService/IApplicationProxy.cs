@@ -25,7 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService
         // GetSelfController() -> object<nn::am::service::ISelfController>
         public ResultCode GetSelfController(ServiceCtx context)
         {
-            MakeObject(context, new ISelfController(context.Device.System));
+            MakeObject(context, new ISelfController(context.Device.System, _pid));
 
             return ResultCode.Success;
         }

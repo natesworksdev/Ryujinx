@@ -8,6 +8,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 {
     class ISelfController : IpcService
     {
+        private readonly long _pid;
+
         private KEvent _libraryAppletLaunchableEvent;
         private int    _libraryAppletLaunchableEventHandle;
 
@@ -33,9 +35,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private uint _screenShotImageOrientation = 0;
         private uint _idleTimeDetectionExtension = 0;
 
-        public ISelfController(Horizon system)
+        public ISelfController(Horizon system, long pid)
         {
             _libraryAppletLaunchableEvent = new KEvent(system.KernelContext);
+            _pid = pid;
         }
 
         [Command(0)]
@@ -214,9 +217,23 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // CreateManagedDisplayLayer() -> u64
         public ResultCode CreateManagedDisplayLayer(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            context.Device.System.SurfaceFlinger.CreateLayer(_pid, out long layerId);
 
-            context.ResponseData.Write(0L);
+            context.ResponseData.Write(layerId);
+
+            return ResultCode.Success;
+        }
+
+        [Command(44)] // 10.0.0+
+        // CreateManagedDisplaySeparableLayer() -> (u64, u64)
+        public ResultCode CreateManagedDisplaySeparableLayer(ServiceCtx context)
+        {
+            // NOTE: first create the recoding layer and then the display one because right now Surface Flinger only use the last id.
+            context.Device.System.SurfaceFlinger.CreateLayer(_pid, out long recordingLayerId);
+            context.Device.System.SurfaceFlinger.CreateLayer(_pid, out long displayLayerId);
+
+            context.ResponseData.Write(displayLayerId);
+            context.ResponseData.Write(recordingLayerId);
 
             return ResultCode.Success;
         }
