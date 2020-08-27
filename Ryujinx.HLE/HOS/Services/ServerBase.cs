@@ -131,9 +131,6 @@ namespace Ryujinx.HLE.HOS.Services
 
                 var rc = KernelStatic.Syscall.ReplyAndReceive(handles, replyTargetHandle, -1L, out int signaledIndex);
 
-                // TODO: Handle that as part of the syscall, leaving this here as a reminder...
-                // thread.HandlePostSyscall();
-
                 replyTargetHandle = 0;
 
                 if (rc == Result.Success && signaledIndex >= portHandles.Length)

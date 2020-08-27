@@ -8,6 +8,7 @@ using Ryujinx.Horizon.Kernel.Process;
 using Ryujinx.Horizon.Kernel.Threading;
 using Ryujinx.Memory;
 using System;
+using System.Runtime.CompilerServices;
 using System.Threading;
 
 namespace Ryujinx.Horizon.Kernel.Svc
@@ -19,6 +20,28 @@ namespace Ryujinx.Horizon.Kernel.Svc
         internal Syscall(KernelContextInternal context)
         {
             _context = context;
+        }
+
+        private Result CheckResult(Result result, [CallerMemberName] string svcName = null)
+        {
+            _context.Scheduler.GetCurrentThread().HandlePostSyscall();
+
+            // Filter out some errors that are expected to occur under normal operation,
+            // this avoids false warnings.
+            if (result.IsFailure &&
+                result != KernelResult.TimedOut &&
+                result != KernelResult.Cancelled &&
+                result != KernelResult.PortRemoteClosed &&
+                result != KernelResult.InvalidState)
+            {
+                Logger.Warning?.Print(LogClass.KernelSvc, $"{svcName} returned error {result}.");
+            }
+            else
+            {
+                Logger.Debug?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
+            }
+
+            return result;
         }
 
         // Process
@@ -43,9 +66,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             pid = process?.Pid ?? 0;
 
-            return process != null
-                ? Result.Success
-                : KernelResult.InvalidHandle;
+            return CheckResult(process != null ? Result.Success : KernelResult.InvalidHandle);
         }
 
         public Result CreateProcess(
@@ -59,30 +80,30 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((info.Flags & ~ProcessCreationFlags.All) != 0)
             {
-                return KernelResult.InvalidEnumValue;
+                return CheckResult(KernelResult.InvalidEnumValue);
             }
 
             // TODO: Address space check.
 
             if ((info.Flags & ProcessCreationFlags.PoolPartitionMask) > ProcessCreationFlags.PoolPartitionSystemNonSecure)
             {
-                return KernelResult.InvalidEnumValue;
+                return CheckResult(KernelResult.InvalidEnumValue);
             }
 
             if ((info.CodeAddress & 0x1fffff) != 0)
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (info.CodePagesCount < 0 || info.SystemResourcePagesCount < 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (info.Flags.HasFlag(ProcessCreationFlags.OptimizeMemoryAllocation) &&
                 !info.Flags.HasFlag(ProcessCreationFlags.IsApplication))
             {
-                return KernelResult.InvalidThread;
+                return CheckResult(KernelResult.InvalidThread);
             }
 
             KHandleTable handleTable = _context.Scheduler.GetCurrentProcess().HandleTable;
@@ -99,7 +120,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 if (resourceLimit == null)
                 {
-                    return KernelResult.InvalidHandle;
+                    return CheckResult(KernelResult.InvalidHandle);
                 }
             }
             else
@@ -126,12 +147,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             _context.Processes.TryAdd(process.Pid, process);
 
-            return handleTable.GenerateHandle(process, out handle);
+            return CheckResult(handleTable.GenerateHandle(process, out handle));
         }
 
         public Result StartProcess(int handle, int priority, int cpuCore, ulong mainThreadStackSize)
@@ -140,17 +161,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (process == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if ((uint)cpuCore >= KScheduler.CpuCoresCount || !process.IsCpuCoreAllowed(cpuCore))
             {
-                return KernelResult.InvalidCpuCore;
+                return CheckResult(KernelResult.InvalidCpuCore);
             }
 
             if ((uint)priority >= KScheduler.PrioritiesCount || !process.IsPriorityAllowed(priority))
             {
-                return KernelResult.InvalidPriority;
+                return CheckResult(KernelResult.InvalidPriority);
             }
 
             process.DefaultCpuCore = cpuCore;
@@ -159,12 +180,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             process.IncrementReferenceCount();
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         // IPC
@@ -175,10 +196,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!KernelTransfer.UserToKernelString(_context, namePtr, 12, out string name))
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
-            return ConnectToNamedPort(name, out handle);
+            return CheckResult(ConnectToNamedPort(name, out handle));
         }
 
         public Result ConnectToNamedPort(string name, out int handle)
@@ -187,14 +208,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (name.Length > 11)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             KAutoObject autoObj = KAutoObject.FindNamedObject(_context, name);
 
             if (!(autoObj is KClientPort clientPort))
             {
-                return KernelResult.NotFound;
+                return CheckResult(KernelResult.NotFound);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -203,7 +224,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             result = clientPort.Connect(out KClientSession clientSession);
@@ -212,14 +233,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 currentProcess.HandleTable.CancelHandleReservation(handle);
 
-                return result;
+                return CheckResult(result);
             }
 
             currentProcess.HandleTable.SetReservedHandleObj(handle, clientSession);
 
             clientSession.DecrementReferenceCount();
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result SendSyncRequest(int handle)
@@ -230,27 +251,27 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (session == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
-            return session.SendSyncRequest();
+            return CheckResult(session.SendSyncRequest());
         }
 
         public Result SendSyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle)
         {
             if (!PageAligned(messagePtr))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(messageSize) || messageSize == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (messagePtr + messageSize <= messagePtr)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -259,7 +280,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             KClientSession session = currentProcess.HandleTable.GetObject<KClientSession>(handle);
@@ -280,7 +301,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 result = result2;
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result SendAsyncRequestWithUserBuffer(ulong messagePtr, ulong messageSize, int handle, out int doneEventHandle)
@@ -289,17 +310,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!PageAligned(messagePtr))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(messageSize) || messageSize == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (messagePtr + messageSize <= messagePtr)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -308,7 +329,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             KResourceLimit resourceLimit = currentProcess.ResourceLimit;
@@ -317,7 +338,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
-                return KernelResult.ResLimitExceeded;
+                return CheckResult(KernelResult.ResLimitExceeded);
             }
 
             KClientSession session = currentProcess.HandleTable.GetObject<KClientSession>(handle);
@@ -350,7 +371,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result CreateSession(
@@ -368,7 +389,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (resourceLimit != null && !resourceLimit.Reserve(LimitableResource.Session, 1))
             {
-                return KernelResult.ResLimitExceeded;
+                return CheckResult(KernelResult.ResLimitExceeded);
             }
 
             Result result;
@@ -416,7 +437,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 session.ClientSession.DecrementReferenceCount();
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result AcceptSession(int portHandle, out int sessionHandle)
@@ -429,14 +450,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (serverPort == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             Result result = currentProcess.HandleTable.ReserveHandle(out int handle);
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             KAutoObject session;
@@ -467,7 +488,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 result = KernelResult.NotFound;
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result ReplyAndReceive(
@@ -481,7 +502,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((uint)handlesCount > 0x40)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -490,22 +511,22 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(handlesPtr, copySize))
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
             if (handlesPtr + copySize < handlesPtr)
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
             int[] handles = new int[handlesCount];
 
             if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
-            return ReplyAndReceive(handles, replyTargetHandle, timeout, out handleIndex);
+            return CheckResult(ReplyAndReceive(handles, replyTargetHandle, timeout, out handleIndex));
         }
 
         public Result ReplyAndReceive(ReadOnlySpan<int> handles, int replyTargetHandle, long timeout, out int handleIndex)
@@ -522,7 +543,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 if (obj == null)
                 {
-                    return KernelResult.InvalidHandle;
+                    return CheckResult(KernelResult.InvalidHandle);
                 }
 
                 syncObjs[index] = obj;
@@ -562,7 +583,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result ReplyAndReceiveWithUserBuffer(
@@ -578,7 +599,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((uint)handlesCount > 0x40)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -587,19 +608,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(handlesPtr, copySize))
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
             if (handlesPtr + copySize < handlesPtr)
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
             Result result = currentProcess.MemoryManager.BorrowIpcBuffer(messagePtr, messageSize);
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             int[] handles = new int[handlesCount];
@@ -608,7 +629,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
             KSynchronizationObject[] syncObjs = new KSynchronizationObject[handlesCount];
@@ -621,7 +642,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 {
                     currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
-                    return KernelResult.InvalidHandle;
+                    return CheckResult(KernelResult.InvalidHandle);
                 }
 
                 syncObjs[index] = obj;
@@ -661,7 +682,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             currentProcess.MemoryManager.UnborrowIpcBuffer(messagePtr, messageSize);
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result CreatePort(
@@ -675,7 +696,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (maxSessions < 1)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             KPort port = new KPort(_context, maxSessions, isLight, (long)namePtr);
@@ -686,7 +707,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             result = currentProcess.HandleTable.GenerateHandle(port.ServerPort, out serverPortHandle);
@@ -696,7 +717,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 currentProcess.HandleTable.CloseHandle(clientPortHandle);
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result ManageNamedPort(ulong namePtr, int maxSessions, out int handle)
@@ -705,15 +726,15 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!KernelTransfer.UserToKernelString(_context, namePtr, 12, out string name))
             {
-                return KernelResult.UserCopyFailed;
+                return CheckResult(KernelResult.UserCopyFailed);
             }
 
             if (name.Length > 11)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
-            return ManageNamedPort(name, maxSessions, out handle);
+            return CheckResult(ManageNamedPort(name, maxSessions, out handle));
         }
 
         public Result ManageNamedPort(string name, int maxSessions, out int handle)
@@ -722,12 +743,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (maxSessions < 0)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             if (maxSessions == 0)
             {
-                return KAutoObject.RemoveName(_context, name);
+                return CheckResult(KAutoObject.RemoveName(_context, name));
             }
 
             KPort port = new KPort(_context, maxSessions, false, 0);
@@ -738,7 +759,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             result = port.ClientPort.SetName(name);
@@ -748,7 +769,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 currentProcess.HandleTable.CloseHandle(handle);
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result ConnectToPort(int clientPortHandle, out int clientSessionHandle)
@@ -761,14 +782,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (clientPort == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             Result result = currentProcess.HandleTable.ReserveHandle(out int handle);
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             KAutoObject session;
@@ -790,7 +811,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 currentProcess.HandleTable.CancelHandleReservation(handle);
 
-                return result;
+                return CheckResult(result);
             }
 
             currentProcess.HandleTable.SetReservedHandleObj(handle, session);
@@ -799,7 +820,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             clientSessionHandle = handle;
 
-            return result;
+            return CheckResult(result);
         }
 
         // Memory
@@ -810,12 +831,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 position = 0;
 
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            return process.MemoryManager.SetHeapSize(size, out position);
+            return CheckResult(process.MemoryManager.SetHeapSize(size, out position));
         }
 
         public Result SetMemoryAttribute(
@@ -826,12 +847,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
         {
             if (!PageAligned(position))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             KMemoryAttribute attributes = attributeMask | attributeValue;
@@ -839,7 +860,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             if (attributes != attributeMask ||
                (attributes | KMemoryAttribute.Uncached) != KMemoryAttribute.Uncached)
             {
-                return KernelResult.InvalidCombination;
+                return CheckResult(KernelResult.InvalidCombination);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
@@ -850,111 +871,111 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 attributeMask,
                 attributeValue);
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result MapMemory(ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(src | dst))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (src + size <= src || dst + size <= dst)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(src, size))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (currentProcess.MemoryManager.OutsideStackRegion(dst, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion(dst, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion(dst, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            return process.MemoryManager.Map(dst, src, size);
+            return CheckResult(process.MemoryManager.Map(dst, src, size));
         }
 
         public Result UnmapMemory(ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(src | dst))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (src + size <= src || dst + size <= dst)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(src, size))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (currentProcess.MemoryManager.OutsideStackRegion(dst, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion(dst, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion(dst, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            return process.MemoryManager.Unmap(dst, src, size);
+            return CheckResult(process.MemoryManager.Unmap(dst, src, size));
         }
 
         public Result QueryMemory(ulong infoPtr, ulong pageInfoPtr, ulong address)
         {
-            return QueryProcessMemory(infoPtr, pageInfoPtr, KHandleTable.SelfProcessHandle, address);
+            return CheckResult(QueryProcessMemory(infoPtr, pageInfoPtr, KHandleTable.SelfProcessHandle, address));
         }
 
         public Result QueryMemory(out MemoryInfo info, ulong address)
         {
-            return QueryProcessMemory(out info, KHandleTable.SelfProcessHandle, address);
+            return CheckResult(QueryProcessMemory(out info, KHandleTable.SelfProcessHandle, address));
         }
 
         public Result MapSharedMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
         {
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (address + size <= address)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if ((permission | KMemoryPermission.Write) != KMemoryPermission.ReadAndWrite)
             {
-                return KernelResult.InvalidPermission;
+                return CheckResult(KernelResult.InvalidPermission);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -963,14 +984,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (sharedMemory == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (currentProcess.MemoryManager.IsInvalidRegion(address, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion(address, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion(address, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             return sharedMemory.MapIntoProcess(
@@ -985,17 +1006,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
         {
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (address + size <= address)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1004,14 +1025,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (sharedMemory == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (currentProcess.MemoryManager.IsInvalidRegion(address, size) ||
                 currentProcess.MemoryManager.InsideHeapRegion(address, size) ||
                 currentProcess.MemoryManager.InsideAliasRegion(address, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             return sharedMemory.UnmapFromProcess(
@@ -1027,22 +1048,22 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (address + size <= address)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (permission > KMemoryPermission.ReadAndWrite || permission == KMemoryPermission.Write)
             {
-                return KernelResult.InvalidPermission;
+                return CheckResult(KernelResult.InvalidPermission);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
@@ -1051,7 +1072,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (resourceLimit != null && !resourceLimit.Reserve(LimitableResource.TransferMemory, 1))
             {
-                return KernelResult.ResLimitExceeded;
+                return CheckResult(KernelResult.ResLimitExceeded);
             }
 
             void CleanUpForError()
@@ -1063,7 +1084,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 CleanUpForError();
 
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KTransferMemory transferMemory = new KTransferMemory(_context);
@@ -1074,84 +1095,84 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 CleanUpForError();
 
-                return result;
+                return CheckResult(result);
             }
 
             result = process.HandleTable.GenerateHandle(transferMemory, out handle);
 
             transferMemory.DecrementReferenceCount();
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result MapPhysicalMemory(ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (address + size <= address)
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if ((currentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
-                return KernelResult.InvalidState;
+                return CheckResult(KernelResult.InvalidState);
             }
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(address, size) ||
                  currentProcess.MemoryManager.OutsideAliasRegion(address, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            return process.MemoryManager.MapPhysicalMemory(address, size);
+            return CheckResult(process.MemoryManager.MapPhysicalMemory(address, size));
         }
 
         public Result UnmapPhysicalMemory(ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (address + size <= address)
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
             if ((currentProcess.PersonalMmHeapPagesCount & 0xfffffffffffff) == 0)
             {
-                return KernelResult.InvalidState;
+                return CheckResult(KernelResult.InvalidState);
             }
 
             if (!currentProcess.MemoryManager.InsideAddrSpace(address, size) ||
                  currentProcess.MemoryManager.OutsideAliasRegion(address, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KProcess process = _context.Scheduler.GetCurrentProcess();
 
-            return process.MemoryManager.UnmapPhysicalMemory(address, size);
+            return CheckResult(process.MemoryManager.UnmapPhysicalMemory(address, size));
         }
 
         public Result CreateSharedMemory(out int handle, ulong size, KMemoryPermission ownerPermission, KMemoryPermission userPermission)
@@ -1160,20 +1181,20 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (!PageAligned(size) || size == 0 || size >= 0x100000000UL)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (ownerPermission != KMemoryPermission.Read &&
                 ownerPermission != KMemoryPermission.ReadAndWrite)
             {
-                return KernelResult.InvalidPermission;
+                return CheckResult(KernelResult.InvalidPermission);
             }
 
             if (userPermission != KMemoryPermission.DontCare &&
                 userPermission != KMemoryPermission.Read &&
                 userPermission != KMemoryPermission.ReadAndWrite)
             {
-                return KernelResult.InvalidPermission;
+                return CheckResult(KernelResult.InvalidPermission);
             }
 
             KSharedMemory sharedMemory = new KSharedMemory(_context);
@@ -1186,34 +1207,34 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
-            return currentProcess.HandleTable.GenerateHandle(sharedMemory, out handle);
+            return CheckResult(currentProcess.HandleTable.GenerateHandle(sharedMemory, out handle));
         }
 
         public Result MapTransferMemory(int handle, ulong address, ulong size, KMemoryPermission permission)
         {
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (size + address <= address)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (permission != KMemoryPermission.None &&
                 permission != KMemoryPermission.Read &&
                 permission != KMemoryPermission.ReadAndWrite)
             {
-                return KernelResult.InvalidState;
+                return CheckResult(KernelResult.InvalidState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1222,32 +1243,32 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (transferMemory == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (!currentProcess.MemoryManager.CanContain(address, size, KMemoryState.TransferMemoryIsolated))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
-            return transferMemory.Map(address, size, permission);
+            return CheckResult(transferMemory.Map(address, size, permission));
         }
 
         public Result UnmapTransferMemory(int handle, ulong address, ulong size)
         {
             if (!PageAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (size + address <= address)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1256,42 +1277,42 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (transferMemory == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (!currentProcess.MemoryManager.CanContain(address, size, KMemoryState.TransferMemoryIsolated))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
-            return transferMemory.Unmap(address, size);
+            return CheckResult(transferMemory.Unmap(address, size));
         }
 
         public Result MapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
         {
-            return MapOrUnmapProcessMemory(dst, processHandle, src, size, map: true);
+            return CheckResult(MapOrUnmapProcessMemory(dst, processHandle, src, size, map: true));
         }
 
         public Result UnmapProcessMemory(ulong dst, int processHandle, ulong src, ulong size)
         {
-            return MapOrUnmapProcessMemory(dst, processHandle, src, size, map: false);
+            return CheckResult(MapOrUnmapProcessMemory(dst, processHandle, src, size, map: false));
         }
 
         private Result MapOrUnmapProcessMemory(ulong dst, int processHandle, ulong src, ulong size, bool map)
         {
             if (!PageAligned(dst) || !PageAligned(src))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (size + dst <= dst || size + src <= src)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1300,17 +1321,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (sourceProcess == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (!sourceProcess.MemoryManager.InsideAddrSpace(src, size))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (!currentProcess.MemoryManager.CanContain(dst, size, KMemoryState.ProcessMemory))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             KPageList pageList = new KPageList();
@@ -1328,16 +1349,16 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             if (map)
             {
-                return currentProcess.MemoryManager.MapPages(dst, pageList, KMemoryState.ProcessMemory, KMemoryPermission.ReadAndWrite);
+                return CheckResult(currentProcess.MemoryManager.MapPages(dst, pageList, KMemoryState.ProcessMemory, KMemoryPermission.ReadAndWrite));
             }
             else
             {
-                return currentProcess.MemoryManager.UnmapPages(dst, pageList, KMemoryState.ProcessMemory);
+                return CheckResult(currentProcess.MemoryManager.UnmapPages(dst, pageList, KMemoryState.ProcessMemory));
             }
         }
 
@@ -1347,7 +1368,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (result != Result.Success)
             {
-                return result;
+                return CheckResult(result);
             }
 
             return KernelTransfer.KernelToUser(_context, infoPtr, info)
@@ -1363,7 +1384,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 info = default;
 
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             KMemoryInfo blockInfo = process.MemoryManager.QueryMemory(address);
@@ -1377,19 +1398,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 blockInfo.IpcRefCount,
                 blockInfo.DeviceRefCount);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result MapProcessCodeMemory(int processHandle, ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(dst) || !PageAligned(src))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1398,7 +1419,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (targetProcess == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (targetProcess.MemoryManager.OutsideAddrSpace(dst, size) ||
@@ -1406,27 +1427,27 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 targetProcess.MemoryManager.InsideAliasRegion(dst, size) ||
                 targetProcess.MemoryManager.InsideHeapRegion(dst, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             if (size + dst <= dst || size + src <= src)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
-            return targetProcess.MemoryManager.MapProcessCodeMemory(dst, src, size);
+            return CheckResult(targetProcess.MemoryManager.MapProcessCodeMemory(dst, src, size));
         }
 
         public Result UnmapProcessCodeMemory(int handle, ulong dst, ulong src, ulong size)
         {
             if (!PageAligned(dst) || !PageAligned(src))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1435,7 +1456,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (targetProcess == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (targetProcess.MemoryManager.OutsideAddrSpace(dst, size) ||
@@ -1443,27 +1464,27 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 targetProcess.MemoryManager.InsideAliasRegion(dst, size) ||
                 targetProcess.MemoryManager.InsideHeapRegion(dst, size))
             {
-                return KernelResult.InvalidMemRange;
+                return CheckResult(KernelResult.InvalidMemRange);
             }
 
             if (size + dst <= dst || size + src <= src)
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
-            return targetProcess.MemoryManager.UnmapProcessCodeMemory(dst, src, size);
+            return CheckResult(targetProcess.MemoryManager.UnmapProcessCodeMemory(dst, src, size));
         }
 
         public Result SetProcessMemoryPermission(int handle, ulong src, ulong size, KMemoryPermission permission)
         {
             if (!PageAligned(src))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             if (!PageAligned(size) || size == 0)
             {
-                return KernelResult.InvalidSize;
+                return CheckResult(KernelResult.InvalidSize);
             }
 
             if (permission != KMemoryPermission.None &&
@@ -1471,7 +1492,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 permission != KMemoryPermission.ReadAndWrite &&
                 permission != KMemoryPermission.ReadAndExecute)
             {
-                return KernelResult.InvalidPermission;
+                return CheckResult(KernelResult.InvalidPermission);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1480,20 +1501,20 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (targetProcess == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (targetProcess.MemoryManager.OutsideAddrSpace(src, size))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
-            return targetProcess.MemoryManager.SetProcessMemoryPermission(src, size, permission);
+            return CheckResult(targetProcess.MemoryManager.SetProcessMemoryPermission(src, size, permission));
         }
 
-        private static bool PageAligned(ulong position)
+        private static bool PageAligned(ulong address)
         {
-            return (position & (KMemoryManager.PageSize - 1)) == 0;
+            return(address & (KMemoryManager.PageSize - 1)) == 0;
         }
 
         // System
@@ -1524,7 +1545,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 result = KernelResult.InvalidHandle;
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public void ExitProcess()
@@ -1551,7 +1572,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 result = KernelResult.InvalidHandle;
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result ClearEvent(int handle)
@@ -1573,14 +1594,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 result = writableEvent.Clear();
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result CloseHandle(int handle)
         {
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            return currentProcess.HandleTable.CloseHandle(handle) ? Result.Success : KernelResult.InvalidHandle;
+            return CheckResult(currentProcess.HandleTable.CloseHandle(handle) ? Result.Success : KernelResult.InvalidHandle);
         }
 
         public Result ResetSignal(int handle)
@@ -1609,12 +1630,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public ulong GetSystemTick()
         {
-            return _context.Scheduler.GetCurrentThread().Context.Counter;
+            ulong sytemTick = _context.Scheduler.GetCurrentThread().Context.Counter;
+
+            // We need to call this so that it handles post-syscall work.
+            CheckResult(Result.Success);
+
+            return sytemTick;
         }
 
         public void Break(ulong reason)
@@ -1647,17 +1673,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
         {
             if (size == 0)
             {
-                return Result.Success;
+                return CheckResult(Result.Success);
             }
 
             if (!KernelTransfer.UserToKernelString(_context, strPtr, size, out string debugString))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             Logger.Warning?.Print(LogClass.KernelSvc, debugString);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result GetInfo(InfoType id, int handle, long subId, out ulong value)
@@ -1687,7 +1713,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (subId != 0)
                         {
-                            return KernelResult.InvalidCombination;
+                            return CheckResult(KernelResult.InvalidCombination);
                         }
 
                         KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1696,7 +1722,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                         if (process == null)
                         {
-                            return KernelResult.InvalidHandle;
+                            return CheckResult(KernelResult.InvalidHandle);
                         }
 
                         switch (id)
@@ -1745,12 +1771,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (handle != 0)
                         {
-                            return KernelResult.InvalidHandle;
+                            return CheckResult(KernelResult.InvalidHandle);
                         }
 
                         if (subId != 0)
                         {
-                            return KernelResult.InvalidCombination;
+                            return CheckResult(KernelResult.InvalidCombination);
                         }
 
                         value = _context.Scheduler.GetCurrentProcess().Debug ? 1u : 0u;
@@ -1762,12 +1788,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (handle != 0)
                         {
-                            return KernelResult.InvalidHandle;
+                            return CheckResult(KernelResult.InvalidHandle);
                         }
 
                         if (subId != 0)
                         {
-                            return KernelResult.InvalidCombination;
+                            return CheckResult(KernelResult.InvalidCombination);
                         }
 
                         KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1781,7 +1807,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                             if (result != Result.Success)
                             {
-                                return result;
+                                return CheckResult(result);
                             }
 
                             value = (uint)resLimHandle;
@@ -1794,14 +1820,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (handle != 0)
                         {
-                            return KernelResult.InvalidHandle;
+                            return CheckResult(KernelResult.InvalidHandle);
                         }
 
                         int currentCore = _context.Scheduler.GetCurrentThread().CurrentCore;
 
                         if (subId != -1 && subId != currentCore)
                         {
-                            return KernelResult.InvalidCombination;
+                            return CheckResult(KernelResult.InvalidCombination);
                         }
 
                         value = (ulong)_context.Scheduler.CoreContexts[currentCore].TotalIdleTimeTicks;
@@ -1813,12 +1839,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (handle != 0)
                         {
-                            return KernelResult.InvalidHandle;
+                            return CheckResult(KernelResult.InvalidHandle);
                         }
 
                         if ((ulong)subId > 3)
                         {
-                            return KernelResult.InvalidCombination;
+                            return CheckResult(KernelResult.InvalidCombination);
                         }
 
                         KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -1832,14 +1858,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (subId < -1 || subId > 3)
                         {
-                            return KernelResult.InvalidCombination;
+                            return CheckResult(KernelResult.InvalidCombination);
                         }
 
                         KThread thread = _context.Scheduler.GetCurrentProcess().HandleTable.GetKThread(handle);
 
                         if (thread == null)
                         {
-                            return KernelResult.InvalidHandle;
+                            return CheckResult(KernelResult.InvalidHandle);
                         }
 
                         KThread currentThread = _context.Scheduler.GetCurrentThread();
@@ -1848,7 +1874,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                         if (subId != -1 && subId != currentCore)
                         {
-                            return Result.Success;
+                            return CheckResult(Result.Success);
                         }
 
                         KCoreContext coreContext = _context.Scheduler.CoreContexts[currentCore];
@@ -1874,10 +1900,10 @@ namespace Ryujinx.Horizon.Kernel.Svc
                         break;
                     }
 
-                default: return KernelResult.InvalidEnumValue;
+                default: return CheckResult(KernelResult.InvalidEnumValue);
             }
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result CreateEvent(out int wEventHandle, out int rEventHandle)
@@ -1902,7 +1928,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 rEventHandle = 0;
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result GetProcessList(ulong address, int maxCount, out int count)
@@ -1911,7 +1937,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((maxCount >> 28) != 0)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             if (maxCount != 0)
@@ -1922,12 +1948,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 if (address + copySize <= address)
                 {
-                    return KernelResult.InvalidMemState;
+                    return CheckResult(KernelResult.InvalidMemState);
                 }
 
                 if (currentProcess.MemoryManager.OutsideAddrSpace(address, copySize))
                 {
-                    return KernelResult.InvalidMemState;
+                    return CheckResult(KernelResult.InvalidMemState);
                 }
             }
 
@@ -1941,7 +1967,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                     {
                         if (!KernelTransfer.KernelToUserInt64(_context, address + (ulong)copyCount * 8, process.Pid))
                         {
-                            return KernelResult.UserCopyFailed;
+                            return CheckResult(KernelResult.UserCopyFailed);
                         }
                     }
 
@@ -1951,7 +1977,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             count = copyCount;
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result GetSystemInfo(uint id, int handle, long subId, out long value)
@@ -1960,19 +1986,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (id > 2)
             {
-                return KernelResult.InvalidEnumValue;
+                return CheckResult(KernelResult.InvalidEnumValue);
             }
 
             if (handle != 0)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (id < 2)
             {
                 if ((ulong)subId > 3)
                 {
-                    return KernelResult.InvalidCombination;
+                    return CheckResult(KernelResult.InvalidCombination);
                 }
 
                 KMemoryRegionManager region = _context.MemoryRegions[subId];
@@ -1997,7 +2023,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 if ((ulong)subId > 1)
                 {
-                    return KernelResult.InvalidCombination;
+                    return CheckResult(KernelResult.InvalidCombination);
                 }
 
                 switch (subId)
@@ -2007,7 +2033,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 }
             }
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         // Thread
@@ -2031,12 +2057,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((uint)cpuCore >= KScheduler.CpuCoresCount || !currentProcess.IsCpuCoreAllowed(cpuCore))
             {
-                return KernelResult.InvalidCpuCore;
+                return CheckResult(KernelResult.InvalidCpuCore);
             }
 
             if ((uint)priority >= KScheduler.PrioritiesCount || !currentProcess.IsPriorityAllowed(priority))
             {
-                return KernelResult.InvalidPriority;
+                return CheckResult(KernelResult.InvalidPriority);
             }
 
             long timeout = KTimeManager.ConvertMillisecondsToNanoseconds(100);
@@ -2044,7 +2070,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             if (currentProcess.ResourceLimit != null &&
                !currentProcess.ResourceLimit.Reserve(LimitableResource.Thread, 1, timeout))
             {
-                return KernelResult.ResLimitExceeded;
+                return CheckResult(KernelResult.ResLimitExceeded);
             }
 
             KThread thread = new KThread(_context);
@@ -2070,7 +2096,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             thread.DecrementReferenceCount();
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result StartThread(int handle)
@@ -2092,11 +2118,11 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 thread.DecrementReferenceCount();
 
-                return result;
+                return CheckResult(result);
             }
             else
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
         }
 
@@ -2138,13 +2164,13 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 priority = thread.DynamicPriority;
 
-                return Result.Success;
+                return CheckResult(Result.Success);
             }
             else
             {
                 priority = 0;
 
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
         }
 
@@ -2158,12 +2184,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (thread == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             thread.SetPriority(priority);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result GetThreadCoreMask(int handle, out int preferredCore, out long affinityMask)
@@ -2177,14 +2203,14 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 preferredCore = thread.PreferredCore;
                 affinityMask = thread.AffinityMask;
 
-                return Result.Success;
+                return CheckResult(Result.Success);
             }
             else
             {
                 preferredCore = 0;
                 affinityMask = 0;
 
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
         }
 
@@ -2203,24 +2229,24 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 if ((currentProcess.Capabilities.AllowedCpuCoresMask | affinityMask) !=
                      currentProcess.Capabilities.AllowedCpuCoresMask)
                 {
-                    return KernelResult.InvalidCpuCore;
+                    return CheckResult(KernelResult.InvalidCpuCore);
                 }
 
                 if (affinityMask == 0)
                 {
-                    return KernelResult.InvalidCombination;
+                    return CheckResult(KernelResult.InvalidCombination);
                 }
 
                 if ((uint)preferredCore > 3)
                 {
                     if ((preferredCore | 2) != -1)
                     {
-                        return KernelResult.InvalidCpuCore;
+                        return CheckResult(KernelResult.InvalidCpuCore);
                     }
                 }
                 else if ((affinityMask & (1 << preferredCore)) == 0)
                 {
-                    return KernelResult.InvalidCombination;
+                    return CheckResult(KernelResult.InvalidCombination);
                 }
             }
 
@@ -2230,15 +2256,20 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (thread == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
-            return thread.SetCoreAndAffinityMask(preferredCore, affinityMask);
+            return CheckResult(thread.SetCoreAndAffinityMask(preferredCore, affinityMask));
         }
 
         public int GetCurrentProcessorNumber()
         {
-            return _context.Scheduler.GetCurrentThread().CurrentCore;
+            int currentCore = _context.Scheduler.GetCurrentThread().CurrentCore;
+
+            // We need to call this so that it handles post-syscall work.
+            CheckResult(Result.Success);
+
+            return currentCore;
         }
 
         public Result GetThreadId(int handle, out long threadUid)
@@ -2251,13 +2282,13 @@ namespace Ryujinx.Horizon.Kernel.Svc
             {
                 threadUid = thread.ThreadUid;
 
-                return Result.Success;
+                return CheckResult(Result.Success);
             }
             else
             {
                 threadUid = 0;
 
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
         }
 
@@ -2269,20 +2300,20 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (thread == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (thread.Owner != process)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (thread == _context.Scheduler.GetCurrentThread())
             {
-                return KernelResult.InvalidThread;
+                return CheckResult(KernelResult.InvalidThread);
             }
 
-            return thread.SetActivity(pause);
+            return CheckResult(thread.SetActivity(pause));
         }
 
         public Result GetThreadContext3(ulong address, int handle)
@@ -2294,17 +2325,17 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (thread == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (thread.Owner != currentProcess)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             if (currentThread == thread)
             {
-                return KernelResult.InvalidThread;
+                return CheckResult(KernelResult.InvalidThread);
             }
 
             IAddressSpaceManager memory = currentProcess.CpuMemory;
@@ -2383,7 +2414,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
             memory.Write(address + 0x314, thread.Context.Fpsr);
             memory.Write(address + 0x318, thread.Context.TlsAddress);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         // Thread synchronization
@@ -2394,7 +2425,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((uint)handlesCount > KThread.MaxWaitSyncObjects)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             KThread currentThread = _context.Scheduler.GetCurrentThread();
@@ -2405,33 +2436,33 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
                 if (currentProcess.MemoryManager.AddrSpaceStart > handlesPtr)
                 {
-                    return KernelResult.UserCopyFailed;
+                    return CheckResult(KernelResult.UserCopyFailed);
                 }
 
                 long handlesSize = handlesCount * 4;
 
                 if (handlesPtr + (ulong)handlesSize <= handlesPtr)
                 {
-                    return KernelResult.UserCopyFailed;
+                    return CheckResult(KernelResult.UserCopyFailed);
                 }
 
                 if (handlesPtr + (ulong)handlesSize - 1 > currentProcess.MemoryManager.AddrSpaceEnd - 1)
                 {
-                    return KernelResult.UserCopyFailed;
+                    return CheckResult(KernelResult.UserCopyFailed);
                 }
 
                 Span<int> handles = new Span<int>(currentThread.WaitSyncHandles).Slice(0, handlesCount);
 
                 if (!KernelTransfer.UserToKernelInt32Array(_context, handlesPtr, handles))
                 {
-                    return KernelResult.UserCopyFailed;
+                    return CheckResult(KernelResult.UserCopyFailed);
                 }
 
-                return WaitSynchronization(out handleIndex, handles, timeout);
+                return CheckResult(WaitSynchronization(out handleIndex, handles, timeout));
             }
             else
             {
-                return WaitSynchronization(out handleIndex, Span<int>.Empty, timeout);
+                return CheckResult(WaitSynchronization(out handleIndex, Span<int>.Empty, timeout));
             }
         }
 
@@ -2441,7 +2472,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (handles.Length > KThread.MaxWaitSyncObjects)
             {
-                return KernelResult.MaximumExceeded;
+                return CheckResult(KernelResult.MaximumExceeded);
             }
 
             KThread currentThread = _context.Scheduler.GetCurrentThread();
@@ -2476,7 +2507,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                         currentThread.WaitSyncObjects[index].DecrementReferenceCount();
                     }
 
-                    return KernelResult.InvalidHandle;
+                    return CheckResult(KernelResult.InvalidHandle);
                 }
             }
 
@@ -2492,7 +2523,7 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 currentThread.WaitSyncObjects[index].DecrementReferenceCount();
             }
 
-            return result;
+            return CheckResult(result);
         }
 
         public Result CancelSynchronization(int handle)
@@ -2503,46 +2534,46 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if (thread == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             thread.CancelSynchronization();
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result ArbitrateLock(int ownerHandle, ulong mutexAddress, int requesterHandle)
         {
             if (IsPointingInsideKernel(mutexAddress))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (IsAddressNotWordAligned(mutexAddress))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            return currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle);
+            return CheckResult(currentProcess.AddressArbiter.ArbitrateLock(ownerHandle, mutexAddress, requesterHandle));
         }
 
         public Result ArbitrateUnlock(ulong mutexAddress)
         {
             if (IsPointingInsideKernel(mutexAddress))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (IsAddressNotWordAligned(mutexAddress))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
 
-            return currentProcess.AddressArbiter.ArbitrateUnlock(mutexAddress);
+            return CheckResult(currentProcess.AddressArbiter.ArbitrateUnlock(mutexAddress));
         }
 
         public Result WaitProcessWideKeyAtomic(
@@ -2553,12 +2584,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
         {
             if (IsPointingInsideKernel(mutexAddress))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (IsAddressNotWordAligned(mutexAddress))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -2576,19 +2607,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             currentProcess.AddressArbiter.SignalProcessWideKey(address, count);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result WaitForAddress(ulong address, ArbitrationType type, int value, long timeout)
         {
             if (IsPointingInsideKernel(address))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (IsAddressNotWordAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -2609,12 +2640,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
         {
             if (IsPointingInsideKernel(address))
             {
-                return KernelResult.InvalidMemState;
+                return CheckResult(KernelResult.InvalidMemState);
             }
 
             if (IsAddressNotWordAligned(address))
             {
-                return KernelResult.InvalidAddress;
+                return CheckResult(KernelResult.InvalidAddress);
             }
 
             KProcess currentProcess = _context.Scheduler.GetCurrentProcess();
@@ -2631,12 +2662,12 @@ namespace Ryujinx.Horizon.Kernel.Svc
             };
         }
 
-        private bool IsPointingInsideKernel(ulong address)
+        private static bool IsPointingInsideKernel(ulong address)
         {
             return (address + 0x1000000000) < 0xffffff000;
         }
 
-        private bool IsAddressNotWordAligned(ulong address)
+        private static bool IsAddressNotWordAligned(ulong address)
         {
             return (address & 3) != 0;
         }
@@ -2649,19 +2680,19 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((uint)resource >= (uint)LimitableResource.Count)
             {
-                return KernelResult.InvalidEnumValue;
+                return CheckResult(KernelResult.InvalidEnumValue);
             }
 
             KResourceLimit resourceLimit = _context.Scheduler.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
 
             if (resourceLimit == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             limit = resourceLimit.GetLimitValue(resource);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result GetResourceLimitCurrentValue(out long value, int handle, LimitableResource resource)
@@ -2670,43 +2701,43 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             if ((uint)resource >= (uint)LimitableResource.Count)
             {
-                return KernelResult.InvalidEnumValue;
+                return CheckResult(KernelResult.InvalidEnumValue);
             }
 
             KResourceLimit resourceLimit = _context.Scheduler.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
 
             if (resourceLimit == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
             value = resourceLimit.GetCurrentValue(resource);
 
-            return Result.Success;
+            return CheckResult(Result.Success);
         }
 
         public Result CreateResourceLimit(out int handle)
         {
             KResourceLimit resourceLimit = new KResourceLimit(_context);
 
-            return _context.Scheduler.GetCurrentProcess().HandleTable.GenerateHandle(resourceLimit, out handle);
+            return CheckResult(_context.Scheduler.GetCurrentProcess().HandleTable.GenerateHandle(resourceLimit, out handle));
         }
 
         public Result SetResourceLimitLimitValue(int handle, LimitableResource resource, long limit)
         {
             if ((uint)resource >= (uint)LimitableResource.Count)
             {
-                return KernelResult.InvalidEnumValue;
+                return CheckResult(KernelResult.InvalidEnumValue);
             }
 
             KResourceLimit resourceLimit = _context.Scheduler.GetCurrentProcess().HandleTable.GetObject<KResourceLimit>(handle);
 
             if (resourceLimit == null)
             {
-                return KernelResult.InvalidHandle;
+                return CheckResult(KernelResult.InvalidHandle);
             }
 
-            return resourceLimit.SetLimitValue(resource, limit);
+            return CheckResult(resourceLimit.SetLimitValue(resource, limit));
         }
     }
 }

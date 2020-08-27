@@ -347,16 +347,6 @@ namespace Ryujinx.Horizon.Kernel.Svc
 
             Type retType = methodInfo.ReturnType;
 
-            // Print result code.
-            if (retType == typeof(Result))
-            {
-                MethodInfo printResultMethod = typeof(SyscallTable).GetMethod(nameof(PrintResult), StaticNonPublic);
-
-                generator.Emit(OpCodes.Dup);
-                generator.Emit(OpCodes.Ldstr, svcName);
-                generator.Emit(OpCodes.Call, printResultMethod);
-            }
-
             uint registerInUse = 0;
 
             // Save return value into register X0 (when the method has a return value).
@@ -455,21 +445,6 @@ namespace Ryujinx.Horizon.Kernel.Svc
             else
             {
                 Logger.Debug?.Print(LogClass.KernelSvc, formatOrSvcName);
-            }
-        }
-
-        private static void PrintResult(Result result, string svcName)
-        {
-            if (result != Result.Success &&
-                result != KernelResult.TimedOut &&
-                result != KernelResult.Cancelled &&
-                result != KernelResult.InvalidState)
-            {
-                Logger.Warning?.Print(LogClass.KernelSvc, $"{svcName} returned error {result}.");
-            }
-            else
-            {
-                Logger.Debug?.Print(LogClass.KernelSvc, $"{svcName} returned result {result}.");
             }
         }
 
