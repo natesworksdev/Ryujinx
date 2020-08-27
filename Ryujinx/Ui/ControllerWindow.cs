@@ -603,7 +603,7 @@ namespace Ryujinx.Ui
 
         private string GetProfileBasePath()
         {
-            string path = AppDataManager.GetProfilesPath();
+            string path = AppDataManager.ProfilesDirPath;
 
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {

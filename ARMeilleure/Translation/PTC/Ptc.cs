@@ -125,8 +125,8 @@ namespace ARMeilleure.Translation.PTC
 
             if (enabled)
             {
-                string workPathActual = Path.Combine(AppDataManager.GetGamesPath(), TitleIdText, "cache", "cpu", ActualDir);
-                string workPathBackup = Path.Combine(AppDataManager.GetGamesPath(), TitleIdText, "cache", "cpu", BackupDir);
+                string workPathActual = Path.Combine(AppDataManager.GamesDirPath, TitleIdText, "cache", "cpu", ActualDir);
+                string workPathBackup = Path.Combine(AppDataManager.GamesDirPath, TitleIdText, "cache", "cpu", BackupDir);
 
                 if (!Directory.Exists(workPathActual))
                 {

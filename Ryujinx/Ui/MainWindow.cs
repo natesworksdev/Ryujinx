@@ -874,7 +874,7 @@ namespace Ryujinx.Ui
         {
             Process.Start(new ProcessStartInfo()
             {
-                FileName        = AppDataManager.GetBasePath(),
+                FileName        = AppDataManager.BaseDirPath,
                 UseShellExecute = true,
                 Verb            = "open"
             });
@@ -1114,7 +1114,7 @@ namespace Ryujinx.Ui
 
         private void Update_Pressed(object sender, EventArgs args)
         {
-            string ryuUpdater = System.IO.Path.Combine(AppDataManager.GetBasePath(), "RyuUpdater.exe");
+            string ryuUpdater = System.IO.Path.Combine(AppDataManager.BaseDirPath, "RyuUpdater.exe");
 
             try
             {

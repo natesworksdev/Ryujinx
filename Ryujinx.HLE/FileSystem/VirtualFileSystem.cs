@@ -75,7 +75,7 @@ namespace Ryujinx.HLE.FileSystem
             return fullPath;
         }
 
-        internal string GetBasePath() => AppDataManager.GetBasePath();
+        internal string GetBasePath() => AppDataManager.BaseDirPath;
         internal string GetSdCardPath() => MakeFullPath(SdCardPath);
         public string GetNandPath() => MakeFullPath(NandPath);
 
@@ -228,10 +228,10 @@ namespace Ryujinx.HLE.FileSystem
 
             if (!AppDataManager.IsCustomBasePath)
             {
-                LoadSetAtPath(AppDataManager.GetAlternateKeysPath());
+                LoadSetAtPath(AppDataManager.KeysDirPathAlt);
             }
 
-            LoadSetAtPath(AppDataManager.GetKeysPath());
+            LoadSetAtPath(AppDataManager.KeysDirPath);
 
             void LoadSetAtPath(string basePath)
             {

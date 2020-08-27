@@ -111,7 +111,6 @@ namespace Ryujinx.HLE.HOS
         private string EnsureBaseDirStructure(string modsBasePath)
         {
             var modsDir = new DirectoryInfo(modsBasePath);
-            modsDir.Create();
 
             modsDir.CreateSubdirectory(AmsContentsDir);
             modsDir.CreateSubdirectory(AmsNsoPatchDir);

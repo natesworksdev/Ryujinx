@@ -75,7 +75,7 @@ namespace Ryujinx
             DiscordIntegrationModule.Initialize();
 
             string localConfigurationPath   = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Config.json");
-            string appDataConfigurationPath = Path.Combine(AppDataManager.GetBasePath(), "Config.json");
+            string appDataConfigurationPath = Path.Combine(AppDataManager.BaseDirPath, "Config.json");
 
             // Now load the configuration as the other subsystems are now registered
             if (File.Exists(localConfigurationPath))
@@ -109,8 +109,8 @@ namespace Ryujinx
 
             Application.Init();
 
-            bool hasGlobalProdKeys = File.Exists(Path.Combine(AppDataManager.GetKeysPath(), "prod.keys"));
-            bool hasAltProdKeys    = !AppDataManager.IsCustomBasePath && File.Exists(Path.Combine(AppDataManager.GetAlternateKeysPath(), "prod.keys"));
+            bool hasGlobalProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
+            bool hasAltProdKeys    = !AppDataManager.IsCustomBasePath && File.Exists(Path.Combine(AppDataManager.KeysDirPathAlt, "prod.keys"));
             if (!hasGlobalProdKeys && !hasAltProdKeys && !Migration.IsMigrationNeeded())
             {
                 GtkDialog.CreateWarningDialog("Key file was not found", "Please refer to `KEYS.md` for more info");
@@ -140,7 +140,7 @@ namespace Ryujinx
 
             if (AppDataManager.IsCustomBasePath)
             {
-                Logger.Notice.Print(LogClass.Application, $"Custom Data Directory: {AppDataManager.GetBasePath()}");
+                Logger.Notice.Print(LogClass.Application, $"Custom Data Directory: {AppDataManager.BaseDirPath}");
             }
         }
 

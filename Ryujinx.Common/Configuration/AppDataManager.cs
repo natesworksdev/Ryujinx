@@ -8,37 +8,37 @@ namespace Ryujinx.Common.Configuration
     {
         private static readonly string _defaultBaseDirPath;
 
-        private static string _baseDirPath = null;
-        private static string _gamesDirPath;
-        private static string _profilesDirPath;
-        private static string _keysDirPath;
-
         private const string DefaultBaseDir = "Ryujinx";
-        public const string DefaultNandDir = "bis";
-        public const string DefaultSdcardDir = "sdcard";
-        private const string DefaultModsDir = "mods";
 
-        // GamesDir, ProfilesDir and KeysDir are always part of Base Directory
+        // The following 3 are always part of Base Directory
         private const string GamesDir = "games";
         private const string ProfilesDir = "profiles";
         private const string KeysDir = "system";
 
-        // TODO: Actually implement these into VFS
-        public static string CustomNandPath { get; set; }
-        public static string CustomSdCardPath { get; set; }
-        public static string CustomModsPath { get; set; }
-
-
         public static bool IsCustomBasePath { get; private set; }
+        public static string BaseDirPath { get; private set; }
+        public static string GamesDirPath { get; private set; }
+        public static string ProfilesDirPath { get; private set; }
+        public static string KeysDirPath { get; private set; }
+        public static string KeysDirPathAlt { get; }
+
+        public const string DefaultNandDir = "bis";
+        public const string DefaultSdcardDir = "sdcard";
+        private const string DefaultModsDir = "mods";
+
+        public static string CustomModsPath { get; set; }
+        public static string CustomNandPath { get; set; } // TODO: Actually implement this into VFS
+        public static string CustomSdCardPath { get; set; } // TODO: Actually implement this into VFS
 
         static AppDataManager()
         {
             _defaultBaseDirPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), DefaultBaseDir);
+            KeysDirPathAlt = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch");
         }
 
         public static void Initialize(string baseDirPath)
         {
-            _baseDirPath = _defaultBaseDirPath;
+            BaseDirPath = _defaultBaseDirPath;
 
             if (baseDirPath != null && baseDirPath != _defaultBaseDirPath)
             {
@@ -48,7 +48,7 @@ namespace Ryujinx.Common.Configuration
                 }
                 else
                 {
-                    _baseDirPath = baseDirPath;
+                    BaseDirPath = baseDirPath;
                     IsCustomBasePath = true;
                 }
             }
@@ -58,21 +58,12 @@ namespace Ryujinx.Common.Configuration
 
         private static void SetupBasePaths()
         {
-            Directory.CreateDirectory(_baseDirPath);
-            Directory.CreateDirectory(_gamesDirPath = Path.Combine(_baseDirPath, GamesDir));
-            Directory.CreateDirectory(_profilesDirPath = Path.Combine(_baseDirPath, ProfilesDir));
-            Directory.CreateDirectory(_keysDirPath = Path.Combine(_baseDirPath, KeysDir));
+            Directory.CreateDirectory(BaseDirPath);
+            Directory.CreateDirectory(GamesDirPath = Path.Combine(BaseDirPath, GamesDir));
+            Directory.CreateDirectory(ProfilesDirPath = Path.Combine(BaseDirPath, ProfilesDir));
+            Directory.CreateDirectory(KeysDirPath = Path.Combine(BaseDirPath, KeysDir));
         }
 
-        public static string GetBasePath() => _baseDirPath;
-        public static string GetGamesPath() => _gamesDirPath;
-        public static string GetProfilesPath() => _profilesDirPath;
-        public static string GetKeysPath() => _keysDirPath;
-
-        public static string GetAlternateKeysPath() => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".switch");
-
-        public static string GetNandPath() => Directory.CreateDirectory(Path.Combine(_baseDirPath, DefaultNandDir)).FullName;
-        public static string GetSdCardPath() => Directory.CreateDirectory(Path.Combine(_baseDirPath, DefaultSdcardDir)).FullName;
-        public static string GetModsPath() => Directory.CreateDirectory(Path.Combine(_baseDirPath, DefaultModsDir)).FullName;
+        public static string GetModsPath() => CustomModsPath ?? Directory.CreateDirectory(Path.Combine(BaseDirPath, DefaultModsDir)).FullName;
     }
 }

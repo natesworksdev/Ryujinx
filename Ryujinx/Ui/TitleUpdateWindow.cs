@@ -41,7 +41,7 @@ namespace Ryujinx.Ui
 
             _titleId                     = titleId;
             _virtualFileSystem           = virtualFileSystem;
-            _updateJsonPath              = System.IO.Path.Combine(AppDataManager.GetGamesPath(), _titleId, "updates.json");
+            _updateJsonPath              = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleId, "updates.json");
             _radioButtonToPathDictionary = new Dictionary<RadioButton, string>();
 
             try
