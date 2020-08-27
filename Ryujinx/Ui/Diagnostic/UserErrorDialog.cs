@@ -22,7 +22,7 @@ namespace Ryujinx.Ui.Diagnostic
 
             AddButton("OK", OkResponseId);
 
-            bool isInSetupGuide = IsConveredBySetupGuide(error);
+            bool isInSetupGuide = IsCoveredBySetupGuide(error);
 
             if (isInSetupGuide)
             {
@@ -82,12 +82,13 @@ namespace Ryujinx.Ui.Diagnostic
             }
         }
 
-        private static bool IsConveredBySetupGuide(UserError error)
+        private static bool IsCoveredBySetupGuide(UserError error)
         {
             switch (error)
             {
                 case UserError.NoKeys:
                 case UserError.NoFirmware:
+                case UserError.FirmwareParsingFailed:
                     return true;
                 default:
                     return false;
@@ -96,7 +97,7 @@ namespace Ryujinx.Ui.Diagnostic
 
         private static string GetSetupGuideUrl(UserError error)
         {
-            if (!IsConveredBySetupGuide(error))
+            if (!IsCoveredBySetupGuide(error))
             {
                 return null;
             }
