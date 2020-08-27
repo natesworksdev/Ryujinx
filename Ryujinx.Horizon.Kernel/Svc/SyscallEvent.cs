@@ -1,14 +1,7 @@
-﻿using Ryujinx.Common;
-using Ryujinx.Common.Logging;
-using Ryujinx.Horizon.Common;
+﻿using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel.Common;
-using Ryujinx.Horizon.Kernel.Ipc;
-using Ryujinx.Horizon.Kernel.Memory;
 using Ryujinx.Horizon.Kernel.Process;
 using Ryujinx.Horizon.Kernel.Threading;
-using Ryujinx.Memory;
-using System;
-using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Horizon.Kernel.Svc
 {
