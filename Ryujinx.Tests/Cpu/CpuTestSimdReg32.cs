@@ -369,12 +369,12 @@ namespace Ryujinx.Tests.Cpu
         public void Vnmfs([Values(0u)] uint rd,
                          [Values(1u, 0u)] uint rn,
                          [Values(2u, 0u)] uint rm,
-                         [Values(1u, 2u, 3u)] uint size,
+                         [Values(2u, 3u)] uint size,
                          [Random(RndCnt)] ulong z,
                          [Random(RndCnt)] ulong a,
                          [Random(RndCnt)] ulong b)
         {
-            uint opcode = 0xe900900; // VNMFS.F16 D0, D0, D0
+            uint opcode = 0xe900A00; // VNMFS.F32 D0, D0, D0
 
             opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
