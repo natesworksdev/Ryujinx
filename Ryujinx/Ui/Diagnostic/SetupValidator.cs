@@ -77,7 +77,7 @@ namespace Ryujinx.Ui.Diagnostic
 
                             return true;
                         }
-                        catch (Exception) {}
+                        catch (Exception) { }
                     }
 
                     outError = error;

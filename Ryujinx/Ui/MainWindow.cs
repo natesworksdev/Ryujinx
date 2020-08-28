@@ -378,7 +378,6 @@ namespace Ryujinx.Ui
                                 SecondaryText = $"Would you like to install the firmware embedded in this game? (Firmware {firmwareVersion.VersionString})"
                             };
 
-
                             if (shouldInstallFirmwareDialog.Run() != (int)ResponseType.Yes)
                             {
                                 shouldInstallFirmwareDialog.Dispose();
