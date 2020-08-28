@@ -29,9 +29,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
 
         public IApplicationFunctions(Horizon system)
         {
-            _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
+            _gpuErrorDetectedSystemEvent = new KEvent(system.KernelContext);
             _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
-            _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
+            _notificationStorageChannelEvent = new KEvent(system.KernelContext);
         }
 
         [Command(1)]
@@ -48,7 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // EnsureSaveData(nn::account::Uid) -> u64
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
-            Uid     userId  = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+            Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
             ApplicationId applicationId = new ApplicationId(context.Process.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
@@ -62,7 +62,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
 
                 // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
-                control.UserAccountSaveDataSize        = 0x4000;
+                control.UserAccountSaveDataSize = 0x4000;
                 control.UserAccountSaveDataJournalSize = 0x4000;
 
                 Logger.Warning?.Print(LogClass.ServiceAm,
@@ -87,7 +87,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // TODO: When above calls are implemented, switch to using ns:am
 
             long desiredLanguageCode = context.Device.System.State.DesiredLanguageCode;
-            
+
             int supportedLanguages = (int)context.Device.Application.ControlData.Value.SupportedLanguages;
             int firstSupported = BitOperations.TrailingZeroCount(supportedLanguages);
 
@@ -210,10 +210,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
         public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
         {
-            int   width                 = context.RequestData.ReadInt32();
-            int   height                = context.RequestData.ReadInt32();
-            ulong transferMemorySize    = context.RequestData.ReadUInt64();
-            int   transferMemoryHandle  = context.Request.HandleDesc.ToCopy[0];
+            int width = context.RequestData.ReadInt32();
+            int height = context.RequestData.ReadInt32();
+            ulong transferMemorySize = context.RequestData.ReadUInt64();
+            int transferMemoryHandle = context.Request.HandleDesc.ToCopy[0];
             ulong transferMemoryAddress = context.Process.HandleTable.GetObject<KTransferMemory>(transferMemoryHandle).Address;
 
             ResultCode resultCode = ResultCode.InvalidParameters;
@@ -258,12 +258,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
         public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
         {
-            long frameBufferPos   = context.Request.SendBuff[0].Position;
-            long frameBufferSize  = context.Request.SendBuff[0].Size;
-            int  x                = context.RequestData.ReadInt32();
-            int  y                = context.RequestData.ReadInt32();
-            int  width            = context.RequestData.ReadInt32();
-            int  height           = context.RequestData.ReadInt32();
+            long frameBufferPos = context.Request.SendBuff[0].Position;
+            long frameBufferSize = context.Request.SendBuff[0].Size;
+            int x = context.RequestData.ReadInt32();
+            int y = context.RequestData.ReadInt32();
+            int width = context.RequestData.ReadInt32();
+            int height = context.RequestData.ReadInt32();
             uint windowOriginMode = context.RequestData.ReadUInt32();
 
             ResultCode resultCode = ResultCode.InvalidParameters;
@@ -272,7 +272,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             {
                 ResultCode result = SetApplicationCopyrightImageImpl(x, y, width, height, frameBufferPos, frameBufferSize, windowOriginMode);
 
-                if (resultCode != ResultCode.Success)
+                if (result != ResultCode.Success)
                 {
                     resultCode = result;
                 }
