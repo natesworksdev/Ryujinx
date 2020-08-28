@@ -111,9 +111,12 @@ namespace Ryujinx.Common.Logging
                 1000,
                 AsyncLogTargetOverflowAction.Discard));
 
-            // Enable critical levels to print logs before configuration is loaded
-            Error = new Log(LogLevel.Error);
             Notice = new Log(LogLevel.Notice);
+            
+            // Enable important log levels before configuration is loaded
+            Error = new Log(LogLevel.Error);
+            Warning = new Log(LogLevel.Warning);
+            Info = new Log(LogLevel.Info);
         }
 
         public static void RestartTime()
