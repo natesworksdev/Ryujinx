@@ -13,6 +13,8 @@ namespace Ryujinx.HLE.HOS.SystemState
 
         public IdDictionary AppletResourceUserIds { get; }
 
+        public long ApplicationPid { get; set; }
+
         public AppletStateMgr(Horizon system)
         {
             _system = system;

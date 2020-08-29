@@ -140,6 +140,20 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return _syscall.UnmapPhysicalMemory(address, size);
         }
 
+        public Result SetProcessMemoryPermission32(
+            [R(0)] int handle,
+            [R(1)] uint sizeLow,
+            [R(2)] uint srcLow,
+            [R(3)] uint srcHigh,
+            [R(4)] uint sizeHigh,
+            [R(5)] KMemoryPermission permission)
+        {
+            ulong src = srcLow | ((ulong)srcHigh << 32);
+            ulong size = sizeLow | ((ulong)sizeHigh << 32);
+
+            return _syscall.SetProcessMemoryPermission(handle, src, size, permission);
+        }
+
         public Result MapProcessCodeMemory32([R(0)] int handle, [R(1)] uint srcLow, [R(2)] uint dstLow, [R(3)] uint dstHigh, [R(4)] uint srcHigh, [R(5)] uint sizeLow, [R(6)] uint sizeHigh)
         {
             ulong src = srcLow | ((ulong)srcHigh << 32);
@@ -156,20 +170,6 @@ namespace Ryujinx.Horizon.Kernel.Svc
             ulong size = sizeLow | ((ulong)sizeHigh << 32);
 
             return _syscall.UnmapProcessCodeMemory(handle, dst, src, size);
-        }
-
-        public Result SetProcessMemoryPermission32(
-            [R(0)] int handle,
-            [R(1)] uint sizeLow,
-            [R(2)] uint srcLow,
-            [R(3)] uint srcHigh,
-            [R(4)] uint sizeHigh,
-            [R(5)] KMemoryPermission permission)
-        {
-            ulong src = srcLow | ((ulong)srcHigh << 32);
-            ulong size = sizeLow | ((ulong)sizeHigh << 32);
-
-            return _syscall.SetProcessMemoryPermission(handle, src, size, permission);
         }
 
         // System

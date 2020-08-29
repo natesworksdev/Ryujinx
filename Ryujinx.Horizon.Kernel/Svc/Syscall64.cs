@@ -161,6 +161,21 @@ namespace Ryujinx.Horizon.Kernel.Svc
             return _syscall.UnmapPhysicalMemory(address, size);
         }
 
+        public Result MapProcessMemory64([R(0)] ulong dst, [R(1)] int processHandle, [R(2)] ulong src, [R(3)] ulong size)
+        {
+            return _syscall.MapProcessMemory(dst, processHandle, src, size);
+        }
+
+        public Result UnmapProcessMemory64([R(0)] ulong dst, [R(1)] int processHandle, [R(2)] ulong src, [R(3)] ulong size)
+        {
+            return _syscall.UnmapProcessMemory(dst, processHandle, src, size);
+        }
+
+        public Result SetProcessMemoryPermission64([R(0)] int handle, [R(1)] ulong src, [R(2)] ulong size, [R(3)] KMemoryPermission permission)
+        {
+            return _syscall.SetProcessMemoryPermission(handle, src, size, permission);
+        }
+
         public Result MapProcessCodeMemory64([R(0)] int handle, [R(1)] ulong dst, [R(2)] ulong src, [R(3)] ulong size)
         {
             return _syscall.MapProcessCodeMemory(handle, dst, src, size);
@@ -169,11 +184,6 @@ namespace Ryujinx.Horizon.Kernel.Svc
         public Result UnmapProcessCodeMemory64([R(0)] int handle, [R(1)] ulong dst, [R(2)] ulong src, [R(3)] ulong size)
         {
             return _syscall.UnmapProcessCodeMemory(handle, dst, src, size);
-        }
-
-        public Result SetProcessMemoryPermission64([R(0)] int handle, [R(1)] ulong src, [R(2)] ulong size, [R(3)] KMemoryPermission permission)
-        {
-            return _syscall.SetProcessMemoryPermission(handle, src, size, permission);
         }
 
         // System

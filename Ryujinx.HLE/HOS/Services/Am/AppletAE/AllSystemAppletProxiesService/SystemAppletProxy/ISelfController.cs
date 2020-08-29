@@ -206,7 +206,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
-            context.ResponseData.Write(0L);
+            context.ResponseData.Write(1L);
 
             return ResultCode.Success;
         }

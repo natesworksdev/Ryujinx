@@ -79,6 +79,8 @@ namespace Ryujinx.Horizon.Kernel.Svc
                 { 0x71, nameof(Syscall64.ManageNamedPort64)                },
                 { 0x72, nameof(Syscall64.ConnectToPort64)                  },
                 { 0x73, nameof(Syscall64.SetProcessMemoryPermission64)     },
+                { 0x74, nameof(Syscall64.MapProcessMemory64)               },
+                { 0x75, nameof(Syscall64.UnmapProcessMemory64)             },
                 { 0x77, nameof(Syscall64.MapProcessCodeMemory64)           },
                 { 0x78, nameof(Syscall64.UnmapProcessCodeMemory64)         },
                 { 0x7B, nameof(Syscall64.TerminateProcess64)               }

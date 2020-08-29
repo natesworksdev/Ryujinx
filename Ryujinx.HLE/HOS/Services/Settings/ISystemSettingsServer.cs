@@ -5,6 +5,7 @@ using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.SystemState;
 using System;
 using System.IO;
@@ -30,6 +31,8 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         {
             long replyPos  = context.Request.RecvListBuff[0].Position;
             long replySize = context.Request.RecvListBuff[0].Size;
+
+            context.Response.PtrBuff[0] = new IpcPtrBuffDesc(replyPos, 0, 0x100);
 
             byte[] firmwareData = GetFirmwareData(context.Device);
 

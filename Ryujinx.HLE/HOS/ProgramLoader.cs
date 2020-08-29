@@ -266,6 +266,17 @@ namespace Ryujinx.HLE.HOS
                 return false;
             }
 
+            result = KernelStatic.Syscall.GetProcessId(processHandle, out long pid);
+
+            if (result != Result.Success)
+            {
+                Logger.Error?.Print(LogClass.Loader, $"Getting process PID returned error \"{result}\".");
+
+                return false;
+            }
+
+            device.System.AppletState.ApplicationPid = pid;
+
             for (int index = 0; index < executables.Length; index++)
             {
                 Logger.Info?.Print(LogClass.Loader, $"Loading image {index} at 0x{nsoBase[index]:x16}...");
