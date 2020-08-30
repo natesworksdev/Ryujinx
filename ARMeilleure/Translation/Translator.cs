@@ -17,8 +17,6 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
-        private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
-
         private readonly IMemoryManager _memory;
 
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
@@ -149,14 +147,8 @@ namespace ARMeilleure.Translation
             return nextAddr;
         }
 
-        internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode)
+        internal TranslatedFunction GetOrTranslate(ulong address, ExecutionMode mode, bool hintRejit = false)
         {
-            // TODO: Investigate how we should handle code at unaligned addresses.
-            // Currently, those low bits are used to store special flags.
-            bool isCallTarget = (address & CallFlag) != 0;
-
-            address &= ~CallFlag;
-
             if (!_funcs.TryGetValue(address, out TranslatedFunction func))
             {
                 func = Translate(_memory, _jumpTable, address, mode, highCq: false);
@@ -175,10 +167,9 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            if (isCallTarget && func.ShouldRejit())
+            if (hintRejit && func.ShouldRejit())
             {
                 _backgroundStack.Push(new RejitRequest(address, mode));
-
                 _backgroundTranslatorEvent.Set();
             }
 
