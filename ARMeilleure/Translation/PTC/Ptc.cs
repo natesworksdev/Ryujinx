@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Memory;
+using ARMeilleure.Translation.Cache;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using System;

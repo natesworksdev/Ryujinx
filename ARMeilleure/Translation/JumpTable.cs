@@ -1,5 +1,6 @@
 ﻿using ARMeilleure.Diagnostics;
 using ARMeilleure.Memory;
+using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -9,8 +10,6 @@ using System.Threading;
 
 namespace ARMeilleure.Translation
 {
-    using PTC;
-
     class JumpTable
     {
         // The jump table is a block of (guestAddress, hostAddress) function mappings.
@@ -47,24 +46,24 @@ namespace ARMeilleure.Translation
         private readonly ReservedRegion _jumpRegion;
         private readonly ReservedRegion _dynamicRegion;
 
-        private int _tableEnd    = 0;
+        private int _tableEnd = 0;
         private int _dynTableEnd = 0;
 
-        public IntPtr JumpPointer    => _jumpRegion.Pointer;
+        public IntPtr JumpPointer => _jumpRegion.Pointer;
         public IntPtr DynamicPointer => _dynamicRegion.Pointer;
 
-        public int TableEnd    => _tableEnd;
+        public int TableEnd => _tableEnd;
         public int DynTableEnd => _dynTableEnd;
 
-        public ConcurrentDictionary<ulong, TranslatedFunction> Targets    { get; }
-        public ConcurrentDictionary<ulong, LinkedList<int>>    Dependants { get; } // TODO: Attach to TranslatedFunction or a wrapper class.
+        public ConcurrentDictionary<ulong, TranslatedFunction> Targets { get; }
+        public ConcurrentDictionary<ulong, LinkedList<int>> Dependants { get; } // TODO: Attach to TranslatedFunction or a wrapper class.
 
         public JumpTable(IJitMemoryAllocator allocator)
         {
-            _jumpRegion    = new ReservedRegion(allocator, JumpTableByteSize);
+            _jumpRegion = new ReservedRegion(allocator, JumpTableByteSize);
             _dynamicRegion = new ReservedRegion(allocator, DynamicTableByteSize);
 
-            Targets    = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            Targets = new ConcurrentDictionary<ulong, TranslatedFunction>();
             Dependants = new ConcurrentDictionary<ulong, LinkedList<int>>();
 
             Symbols.Add((ulong)_jumpRegion.Pointer.ToInt64(), JumpTableByteSize, JumpTableStride, "JMP_TABLE");
@@ -73,7 +72,7 @@ namespace ARMeilleure.Translation
 
         public void Initialize(PtcJumpTable ptcJumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
-            _tableEnd    = ptcJumpTable.TableEnd;
+            _tableEnd = ptcJumpTable.TableEnd;
             _dynTableEnd = ptcJumpTable.DynTableEnd;
 
             foreach (ulong guestAddress in ptcJumpTable.Targets)
@@ -115,7 +114,7 @@ namespace ARMeilleure.Translation
             }
         }
 
-        public int ReserveTableEntry(long ownerAddress, long address, bool isJump)
+        public int ReserveTableEntry(ulong address, bool isJump)
         {
             int entry = Interlocked.Increment(ref _tableEnd);
 
@@ -124,13 +123,13 @@ namespace ARMeilleure.Translation
             // Is the address we have already registered? If so, put the function address in the jump table.
             // If not, it will point to the direct call stub.
             long value = DirectCallStubs.DirectCallStub(isJump).ToInt64();
-            if (Targets.TryGetValue((ulong)address, out TranslatedFunction func))
+            if (Targets.TryGetValue(address, out TranslatedFunction func))
             {
                 value = func.FuncPtr.ToInt64();
             }
 
             // Make sure changes to the function at the target address update this jump table entry.
-            LinkedList<int> targetDependants = Dependants.GetOrAdd((ulong)address, (addr) => new LinkedList<int>());
+            LinkedList<int> targetDependants = Dependants.GetOrAdd(address, (addr) => new LinkedList<int>());
             lock (targetDependants)
             {
                 targetDependants.AddLast(entry);
@@ -138,7 +137,7 @@ namespace ARMeilleure.Translation
 
             IntPtr addr = GetEntryAddressJumpTable(entry);
 
-            Marshal.WriteInt64(addr, 0, address);
+            Marshal.WriteInt64(addr, 0, (long)address);
             Marshal.WriteInt64(addr, 8, value);
 
             return entry;

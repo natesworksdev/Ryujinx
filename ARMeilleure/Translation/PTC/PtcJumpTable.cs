@@ -8,13 +8,13 @@ namespace ARMeilleure.Translation.PTC
     [Serializable]
     class PtcJumpTable
     {
-        private readonly List<KeyValuePair<long, DirectHostAddress>>   _jumpTable;
+        private readonly List<KeyValuePair<long, DirectHostAddress>> _jumpTable;
         private readonly List<KeyValuePair<long, IndirectHostAddress>> _dynamicTable;
 
         private readonly List<ulong> _targets;
         private readonly Dictionary<ulong, LinkedList<int>> _dependants;
 
-        public int TableEnd    => _jumpTable.Count;
+        public int TableEnd => _jumpTable.Count;
         public int DynTableEnd => _dynamicTable.Count;
 
         public List<ulong> Targets => _targets;
@@ -22,10 +22,10 @@ namespace ARMeilleure.Translation.PTC
 
         public PtcJumpTable()
         {
-            _jumpTable    = new List<KeyValuePair<long, DirectHostAddress>>();
+            _jumpTable = new List<KeyValuePair<long, DirectHostAddress>>();
             _dynamicTable = new List<KeyValuePair<long, IndirectHostAddress>>();
 
-            _targets    = new List<ulong>();
+            _targets = new List<ulong>();
             _dependants = new Dictionary<ulong, LinkedList<int>>();
         }
 
@@ -150,7 +150,7 @@ namespace ARMeilleure.Translation.PTC
                 IntPtr addr = jumpTable.GetEntryAddressJumpTable(entry);
 
                 long guestAddress = Marshal.ReadInt64(addr, 0);
-                long hostAddress  = Marshal.ReadInt64(addr, 8);
+                long hostAddress = Marshal.ReadInt64(addr, 8);
 
                 DirectHostAddress directHostAddress;
 
@@ -185,7 +185,7 @@ namespace ARMeilleure.Translation.PTC
                 IntPtr addr = jumpTable.GetEntryAddressDynamicTable(entry);
 
                 long guestAddress = Marshal.ReadInt64(addr, 0);
-                long hostAddress  = Marshal.ReadInt64(addr, 8);
+                long hostAddress = Marshal.ReadInt64(addr, 8);
 
                 IndirectHostAddress indirectHostAddress;
 

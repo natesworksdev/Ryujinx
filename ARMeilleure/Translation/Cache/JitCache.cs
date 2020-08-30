@@ -1,11 +1,12 @@
 using ARMeilleure.CodeGen;
+using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.Memory;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 
-namespace ARMeilleure.Translation
+namespace ARMeilleure.Translation.Cache
 {
     static class JitCache
     {
@@ -16,9 +17,10 @@ namespace ARMeilleure.Translation
         private const int CacheSize = 2047 * 1024 * 1024;
 
         private static ReservedRegion _jitRegion;
-        private static int _offset;
 
-        private static readonly List<JitCacheEntry> _cacheEntries = new List<JitCacheEntry>();
+        private static CacheMemoryAllocator _cacheAllocator;
+
+        private static readonly List<CacheEntry> _cacheEntries = new List<CacheEntry>();
 
         private static readonly object _lock = new object();
         private static bool _initialized;
@@ -33,14 +35,11 @@ namespace ARMeilleure.Translation
 
                 _jitRegion = new ReservedRegion(allocator, CacheSize);
 
+                _cacheAllocator = new CacheMemoryAllocator(CacheSize);
+
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    _jitRegion.ExpandIfNeeded((ulong)PageSize);
-
-                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize);
-
-                    // The first page is used for the table based SEH structs.
-                    _offset = PageSize;
+                    JitUnwindWindows.InstallFunctionTableHandler(_jitRegion.Pointer, CacheSize, _jitRegion.Pointer + Allocate(PageSize));
                 }
 
                 _initialized = true;
@@ -63,9 +62,26 @@ namespace ARMeilleure.Translation
 
                 ReprotectRange(funcOffset, code.Length);
 
-                Add(new JitCacheEntry(funcOffset, code.Length, func.UnwindInfo));
+                Add(funcOffset, code.Length, func.UnwindInfo);
 
                 return funcPtr;
+            }
+        }
+
+        public static void Unmap(IntPtr pointer)
+        {
+            lock (_lock)
+            {
+                Debug.Assert(_initialized);
+
+                int funcOffset = (int)(pointer.ToInt64() - _jitRegion.Pointer.ToInt64());
+
+                bool result = TryFind(funcOffset, out CacheEntry entry);
+                Debug.Assert(result);
+
+                _cacheAllocator.Free(funcOffset, AlignCodeSize(entry.Size));
+
+                Remove(funcOffset);
             }
         }
 
@@ -96,46 +112,73 @@ namespace ARMeilleure.Translation
 
         private static int Allocate(int codeSize)
         {
-            codeSize = checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
+            codeSize = AlignCodeSize(codeSize);
 
-            int allocOffset = _offset;
+            int allocOffset = _cacheAllocator.Allocate(codeSize);
 
-            _offset += codeSize;
-
-            if (_offset > CacheSize)
+            if (allocOffset < 0)
             {
                 throw new OutOfMemoryException("JIT Cache exhausted.");
             }
 
-            _jitRegion.ExpandIfNeeded((ulong)_offset);
+            _jitRegion.ExpandIfNeeded((ulong)allocOffset + (ulong)codeSize);
 
             return allocOffset;
         }
 
-        private static void Add(JitCacheEntry entry)
+        private static int AlignCodeSize(int codeSize)
         {
-            _cacheEntries.Add(entry);
+            return checked(codeSize + (CodeAlignment - 1)) & ~(CodeAlignment - 1);
         }
 
-        public static bool TryFind(int offset, out JitCacheEntry entry)
+        private static void Add(int offset, int size, UnwindInfo unwindInfo)
+        {
+            CacheEntry entry = new CacheEntry(offset, size, unwindInfo);
+
+            int index = _cacheEntries.BinarySearch(entry);
+
+            if (index < 0)
+            {
+                index = ~index;
+            }
+
+            _cacheEntries.Insert(index, entry);
+        }
+
+        private static void Remove(int offset)
+        {
+            int index = _cacheEntries.BinarySearch(new CacheEntry(offset, 0, default));
+
+            if (index < 0)
+            {
+                index = ~index - 1;
+            }
+
+            if (index >= 0)
+            {
+                _cacheEntries.RemoveAt(index);
+            }
+        }
+
+        public static bool TryFind(int offset, out CacheEntry entry)
         {
             lock (_lock)
             {
-                foreach (JitCacheEntry cacheEntry in _cacheEntries)
+                int index = _cacheEntries.BinarySearch(new CacheEntry(offset, 0, default));
+
+                if (index < 0)
                 {
-                    int endOffset = cacheEntry.Offset + cacheEntry.Size;
+                    index = ~index - 1;
+                }
 
-                    if (offset >= cacheEntry.Offset && offset < endOffset)
-                    {
-                        entry = cacheEntry;
-
-                        return true;
-                    }
+                if (index >= 0)
+                {
+                    entry = _cacheEntries[index];
+                    return true;
                 }
             }
 
             entry = default;
-
             return false;
         }
     }

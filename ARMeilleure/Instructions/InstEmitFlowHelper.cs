@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
 using ARMeilleure.Translation.PTC;
-using System;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -326,7 +325,7 @@ namespace ARMeilleure.Instructions
             // TODO: Constant folding. Indirect calls are slower in the best case and emit more code so we want to 
             // avoid them when possible.
             bool isConst = address.Kind == OperandKind.Constant;
-            long constAddr = (long)address.Value;
+            ulong constAddr = address.Value;
 
             if (!context.HighCq)
             {
@@ -357,7 +356,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                int entry = context.JumpTable.ReserveTableEntry(context.BaseAddress & (~3L), constAddr, isJump);
+                int entry = context.JumpTable.ReserveTableEntry(constAddr, isJump);
 
                 int jumpOffset = entry * JumpTable.JumpTableStride + 8; // Offset directly to the host address.
 

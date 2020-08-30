@@ -4,6 +4,8 @@ using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using ARMeilleure.Translation.Cache;
+using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Concurrent;
 using System.Threading;
@@ -13,8 +15,6 @@ using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.Translation
 {
-    using PTC;
-
     public class Translator
     {
         private const ulong CallFlag = InstEmitFlowHelper.CallFlag;
@@ -161,7 +161,13 @@ namespace ARMeilleure.Translation
             {
                 func = Translate(_memory, _jumpTable, address, mode, highCq: false);
 
-                _funcs.TryAdd(address, func);
+                TranslatedFunction getFunc = _funcs.GetOrAdd(address, func);
+
+                if (getFunc != func)
+                {
+                    RemoveFromJitCacheUnsafe(func);
+                    func = getFunc;
+                }
 
                 if (PtcProfiler.Enabled)
                 {
@@ -181,7 +187,7 @@ namespace ARMeilleure.Translation
 
         internal static TranslatedFunction Translate(IMemoryManager memory, JumpTable jumpTable, ulong address, ExecutionMode mode, bool highCq)
         {
-            ArmEmitterContext context = new ArmEmitterContext(memory, jumpTable, (long)address, highCq, Aarch32Mode.User);
+            ArmEmitterContext context = new ArmEmitterContext(memory, jumpTable, address, highCq, Aarch32Mode.User);
 
             PrepareOperandPool(highCq);
             PrepareOperationPool(highCq);
@@ -321,6 +327,11 @@ namespace ARMeilleure.Translation
             context.Store(countAddr, count);
 
             context.MarkLabel(lblExit);
+        }
+
+        private static void RemoveFromJitCacheUnsafe(TranslatedFunction func)
+        {
+            JitCache.Unmap(func.FuncPtr);
         }
     }
 }
