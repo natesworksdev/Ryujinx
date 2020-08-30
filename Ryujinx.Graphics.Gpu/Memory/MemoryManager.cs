@@ -340,12 +340,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
 
             if (_pageTable[l0] == null)
             {
                 return false;
             }
+            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
 
             return _pageTable[l0][l1] != PteUnmapped;
         }
@@ -358,12 +358,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private ulong GetPte(ulong gpuVa)
         {
             ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
 
             if (_pageTable[l0] == null)
             {
                 return PteUnmapped;
             }
+            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
 
             return _pageTable[l0][l1];
         }
