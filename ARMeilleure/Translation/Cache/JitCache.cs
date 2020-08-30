@@ -58,9 +58,11 @@ namespace ARMeilleure.Translation.Cache
 
                 IntPtr funcPtr = _jitRegion.Pointer + funcOffset;
 
+                ReprotectAsWritable(funcOffset, code.Length);
+
                 Marshal.Copy(code, 0, funcPtr, code.Length);
 
-                ReprotectRange(funcOffset, code.Length);
+                ReprotectAsExecutable(funcOffset, code.Length);
 
                 Add(funcOffset, code.Length, func.UnwindInfo);
 
@@ -85,29 +87,24 @@ namespace ARMeilleure.Translation.Cache
             }
         }
 
-        private static void ReprotectRange(int offset, int size)
+        private static void ReprotectAsWritable(int offset, int size)
         {
-            // Map pages that are already full as RX.
-            // Map pages that are not full yet as RWX.
-            // On unix, the address must be page aligned.
             int endOffs = offset + size;
 
-            int pageStart = offset  & ~PageMask;
-            int pageEnd   = endOffs & ~PageMask;
+            int regionStart = offset & ~PageMask;
+            int regionEnd = (endOffs + PageMask) & ~PageMask;
 
-            int fullPagesSize = pageEnd - pageStart;
+            _jitRegion.Block.MapAsRwx((ulong)regionStart, (ulong)(regionEnd - regionStart));
+        }
 
-            if (fullPagesSize != 0)
-            {
-                _jitRegion.Block.MapAsRx((ulong)pageStart, (ulong)fullPagesSize);
-            }
+        private static void ReprotectAsExecutable(int offset, int size)
+        {
+            int endOffs = offset + size;
 
-            int remaining = endOffs - pageEnd;
+            int regionStart = offset & ~PageMask;
+            int regionEnd = (endOffs + PageMask) & ~PageMask;
 
-            if (remaining != 0)
-            {
-                _jitRegion.Block.MapAsRwx((ulong)pageEnd, (ulong)remaining);
-            }
+            _jitRegion.Block.MapAsRx((ulong)regionStart, (ulong)(regionEnd - regionStart));
         }
 
         private static int Allocate(int codeSize)

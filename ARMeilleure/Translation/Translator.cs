@@ -8,6 +8,7 @@ using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Threading;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -20,10 +21,11 @@ namespace ARMeilleure.Translation
         private readonly IMemoryManager _memory;
 
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
+        private readonly ConcurrentQueue<KeyValuePair<ulong, IntPtr>> _oldFuncs;
 
         private readonly ConcurrentStack<RejitRequest> _backgroundStack;
-
         private readonly AutoResetEvent _backgroundTranslatorEvent;
+        private readonly ReaderWriterLock _backgroundTranslatorLock;
 
         private readonly JumpTable _jumpTable;
 
@@ -37,10 +39,11 @@ namespace ARMeilleure.Translation
             _memory = memory;
 
             _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
+            _oldFuncs = new ConcurrentQueue<KeyValuePair<ulong, IntPtr>>();
 
             _backgroundStack = new ConcurrentStack<RejitRequest>();
-
             _backgroundTranslatorEvent = new AutoResetEvent(false);
+            _backgroundTranslatorLock = new ReaderWriterLock();
 
             _jumpTable = new JumpTable(allocator);
 
@@ -58,11 +61,17 @@ namespace ARMeilleure.Translation
         {
             while (_threadCount != 0)
             {
+                _backgroundTranslatorLock.AcquireReaderLock(Timeout.Infinite);
+
                 if (_backgroundStack.TryPop(out RejitRequest request))
                 {
                     TranslatedFunction func = Translate(_memory, _jumpTable, request.Address, request.Mode, highCq: true);
 
-                    _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) => func);
+                    _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) =>
+                    {
+                        _oldFuncs.Enqueue(new KeyValuePair<ulong, IntPtr>(key, oldFunc.FuncPtr));
+                        return func;
+                    });
 
                     _jumpTable.RegisterFunction(request.Address, func);
 
@@ -70,9 +79,12 @@ namespace ARMeilleure.Translation
                     {
                         PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
                     }
+
+                    _backgroundTranslatorLock.ReleaseReaderLock();
                 }
                 else
                 {
+                    _backgroundTranslatorLock.ReleaseReaderLock();
                     _backgroundTranslatorEvent.WaitOne();
                 }
             }
@@ -131,6 +143,8 @@ namespace ARMeilleure.Translation
             if (Interlocked.Decrement(ref _threadCount) == 0)
             {
                 _backgroundTranslatorEvent.Set();
+
+                ClearJitCache();
             }
         }
 
@@ -157,7 +171,7 @@ namespace ARMeilleure.Translation
 
                 if (getFunc != func)
                 {
-                    RemoveFromJitCacheUnsafe(func);
+                    JitCache.Unmap(func.FuncPtr);
                     func = getFunc;
                 }
 
@@ -320,9 +334,31 @@ namespace ARMeilleure.Translation
             context.MarkLabel(lblExit);
         }
 
-        private static void RemoveFromJitCacheUnsafe(TranslatedFunction func)
+        private void ClearJitCache()
         {
-            JitCache.Unmap(func.FuncPtr);
+            // Ensure no attempt will be made to compile new functions due to rejit.
+            ClearRejitQueue();
+
+            foreach (var kv in _funcs)
+            {
+                JitCache.Unmap(kv.Value.FuncPtr);
+                _jumpTable.RemoveFunctionEntries(kv.Key);
+            }
+
+            _funcs.Clear();
+
+            while (_oldFuncs.TryDequeue(out var kv))
+            {
+                JitCache.Unmap(kv.Value);
+                _jumpTable.RemoveFunctionEntries(kv.Key);
+            }
+        }
+
+        private void ClearRejitQueue()
+        {
+            _backgroundTranslatorLock.AcquireWriterLock(Timeout.Infinite);
+            _backgroundStack.Clear();
+            _backgroundTranslatorLock.ReleaseWriterLock();
         }
     }
 }

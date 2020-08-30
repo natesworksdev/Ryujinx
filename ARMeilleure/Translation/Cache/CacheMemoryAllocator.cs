@@ -1,45 +1,49 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ARMeilleure.Translation.Cache
 {
     class CacheMemoryAllocator
     {
-        private struct MemoryBlock
+        private struct MemoryBlock : IComparable<MemoryBlock>
         {
-            public int Offset;
-            public int Size;
+            public int Offset { get; }
+            public int Size { get; }
 
             public MemoryBlock(int offset, int size)
             {
                 Offset = offset;
                 Size = size;
             }
+
+            public int CompareTo([AllowNull] MemoryBlock other)
+            {
+                return Offset.CompareTo(other.Offset);
+            }
         }
 
-        private readonly LinkedList<MemoryBlock> _blocks = new LinkedList<MemoryBlock>();
+        private readonly List<MemoryBlock> _blocks = new List<MemoryBlock>();
 
         public CacheMemoryAllocator(int capacity)
         {
-            _blocks.AddFirst(new MemoryBlock(0, capacity));
+            _blocks.Add(new MemoryBlock(0, capacity));
         }
 
         public int Allocate(int size)
         {
-            for (LinkedListNode<MemoryBlock> node = _blocks.First; node != null; node = node.Next)
+            for (int i = 0; i < _blocks.Count; i++)
             {
-                MemoryBlock block = node.Value;
+                MemoryBlock block = _blocks[i];
 
                 if (block.Size > size)
                 {
-                    int offset = block.Offset;
-                    block.Offset+= size;
-                    block.Size -= size;
-                    node.Value = block;
-                    return offset;
+                    _blocks[i] = new MemoryBlock(block.Offset + size, block.Size - size);
+                    return block.Offset;
                 }
                 else if (block.Size == size)
                 {
-                    _blocks.Remove(node);
+                    _blocks.RemoveAt(i);
                     return block.Offset;
                 }
             }
@@ -50,51 +54,43 @@ namespace ARMeilleure.Translation.Cache
 
         public void Free(int offset, int size)
         {
-            if (!TryCoalesce(offset, size))
-            {
-                for (LinkedListNode<MemoryBlock> node = _blocks.First; node != null; node = node.Next)
-                {
-                    MemoryBlock block = node.Value;
-
-                    if (block.Size <= size)
-                    {
-                        _blocks.AddBefore(node, new MemoryBlock(offset, size));
-                        break;
-                    }
-                    else if (node.Next == null)
-                    {
-                        _blocks.AddLast(new MemoryBlock(offset, size));
-                    }
-                }
-            }
+            Insert(new MemoryBlock(offset, size));
         }
 
-        private bool TryCoalesce(int offset, int size)
+        private void Insert(MemoryBlock block)
         {
-            int freedEnd = offset + size;
+            int index = _blocks.BinarySearch(block);
 
-            for (LinkedListNode<MemoryBlock> node = _blocks.First; node != null; node = node.Next)
+            if (index < 0)
             {
-                MemoryBlock block = node.Value;
+                index = ~index;
+            }
 
-                int end = block.Offset + block.Size;
+            if (index < _blocks.Count)
+            {
+                MemoryBlock next = _blocks[index];
 
-                if (end == offset)
+                int endOffs = block.Offset + block.Size;
+
+                if (next.Offset == endOffs)
                 {
-                    block.Size += size;
-                    node.Value = block;
-                    return true;
-                }
-                else if (freedEnd == block.Offset)
-                {
-                    block.Offset -= size;
-                    block.Size += size;
-                    node.Value = block;
-                    return true;
+                    block = new MemoryBlock(block.Offset, block.Size + next.Size);
+                    _blocks.RemoveAt(index);
                 }
             }
 
-            return false;
+            if (index > 0)
+            {
+                MemoryBlock prev = _blocks[index - 1];
+
+                if (prev.Offset + prev.Size == block.Offset)
+                {
+                    block = new MemoryBlock(block.Offset - prev.Size, block.Size + prev.Size);
+                    _blocks.RemoveAt(--index);
+                }
+            }
+
+            _blocks.Insert(index, block);
         }
     }
 }

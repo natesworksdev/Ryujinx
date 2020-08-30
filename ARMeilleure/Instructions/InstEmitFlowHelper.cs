@@ -2,6 +2,7 @@ using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.State;
 using ARMeilleure.Translation;
+using ARMeilleure.Translation.Cache;
 using ARMeilleure.Translation.PTC;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
@@ -141,7 +142,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
-            bool isRecursive = immediate == (ulong)context.BaseAddress;
+            bool isRecursive = immediate == (ulong)context.EntryAddress;
 
             EmitJumpTableBranch(context, Const(immediate), isRecursive);
         }
@@ -330,7 +331,7 @@ namespace ARMeilleure.Instructions
             else if (!isConst)
             {
                 // Virtual branch/call - store first used addresses on a small table for fast lookup.
-                int entry = context.JumpTable.ReserveDynamicEntry(isJump);
+                int entry = context.JumpTable.ReserveDynamicEntry(context.EntryAddress, isJump);
 
                 int jumpOffset = entry * JumpTable.JumpTableStride * JumpTable.DynamicTableElems;
 
@@ -350,7 +351,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                int entry = context.JumpTable.ReserveTableEntry(constAddr, isJump);
+                int entry = context.JumpTable.ReserveTableEntry(context.EntryAddress, constAddr, isJump);
 
                 int jumpOffset = entry * JumpTable.JumpTableStride + 8; // Offset directly to the host address.
 
