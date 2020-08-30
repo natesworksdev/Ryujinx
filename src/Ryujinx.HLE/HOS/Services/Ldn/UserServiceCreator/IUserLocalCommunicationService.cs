@@ -13,6 +13,7 @@ using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn;
 using System;
 using System.Net;
 using System.Net.NetworkInformation;
+using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
@@ -241,7 +242,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 Channel                   = networkInfo.Common.Channel,
                 NodeCountMax              = networkInfo.Ldn.NodeCountMax,
                 Reserved1                 = 0x00,
-                LocalCommunicationVersion = (ushort)networkInfo.NetworkId.IntentId.LocalCommunicationId,
+                LocalCommunicationVersion = networkInfo.Ldn.Nodes[0].LocalCommunicationVersion,
                 Reserved2                 = new byte[10]
             };
 
@@ -336,7 +337,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                             }
                             else
                             {
-                                resultCode = _station.Scan(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
+                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
 
                                 context.ResponseData.Write(counter);
                             }
@@ -350,6 +351,30 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
 
             return resultCode;
+        }
+
+        private ResultCode ScanInternal(MemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
+        {
+            long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
+            long maxGames = bufferSize / networkInfoSize;
+
+            MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
+
+            NetworkInfo[] availableGames = NetworkClient.Scan(channel, scanFilter);
+
+            counter = 0;
+
+            foreach (NetworkInfo networkInfo in availableGames)
+            {
+                MemoryHelper.Write(memory, bufferPosition + (networkInfoSize * counter), networkInfo);
+
+                if (++counter >= maxGames)
+                {
+                    break;
+                }
+            }
+
+            return ResultCode.Success;
         }
 
         [Command(200)]
@@ -424,15 +449,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         {
             SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
 
-            if (isPrivate)
-            {
-                // TODO: Find the unknown struct in buffer<unknown, 9> (PtrBuff[0], size 0x60). And how we should use it.
-                throw new NotImplementedException();
-
-                // NOTE: The accessKey is used to encrypt the passphrase.
-                //       Service use random bytes to encrypt the passphrase when the network isn't private.
-                // byte[] accessKey = context.RequestData.ReadBytes(0x20);
-            }
+            SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
             UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
             context.RequestData.ReadUInt32(); // Alignment?
@@ -462,7 +479,23 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                         {
                             if (_state == NetworkState.AccessPoint)
                             {
-                                _accessPoint.CreateNetwork(securityConfig, userConfig, networkConfig);
+                                if (isPrivate)
+                                {
+                                    long bufferPosition = context.Request.PtrBuff[0].Position;
+                                    long bufferSize = context.Request.PtrBuff[0].Size;
+
+                                    byte[] addressListBytes = new byte[bufferSize];
+
+                                    context.Memory.Read((ulong)bufferPosition, addressListBytes);
+
+                                    AddressList addressList = LdnHelper.FromBytes<AddressList>(addressListBytes);
+
+                                    _accessPoint.CreateNetworkPrivate(securityConfig, securityParameter, userConfig, networkConfig, addressList);
+                                }
+                                else
+                                {
+                                    _accessPoint.CreateNetwork(securityConfig, userConfig, networkConfig);
+                                }
 
                                 return ResultCode.Success;
                             }
@@ -525,11 +558,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return _nifmResultCode;
             }
 
-            // TODO: Search the node with the provided ID and reject it.
-            //       Store disconnectedReason in _disconnectReason.
-            //       Returns ResultCode.NodeNotFound if node is not found in the list.
+            if (_state != NetworkState.AccessPointCreated)
+            {
+                return ResultCode.InvalidState; // Must be network host to reject nodes.
+            }
 
-            throw new NotImplementedException();
+            return NetworkClient.Reject(disconnectReason, nodeId);
         }
 
         [Command(206)]
@@ -684,29 +718,30 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private ResultCode ConnectImpl(ServiceCtx context, bool isPrivate = false)
         {
             SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
-
-            if (isPrivate)
-            {
-                // TODO: Find the unknown struct in the last bytes<0x20, 8> and don't handle the buffer instead.
-                throw new NotImplementedException();
-
-                // NOTE: The accessKey is used to encrypt the passphrase.
-                //       Service use random bytes to encrypt the passphrase when the network isn't private.
-                // byte[] accessKey = context.RequestData.ReadBytes(0x20);
-            }
+            SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
             UserConfig userConfig                = context.RequestData.ReadStruct<UserConfig>();
             uint       localCommunicationVersion = context.RequestData.ReadUInt32();
             uint       optionUnknown             = context.RequestData.ReadUInt32();
 
-            long bufferPosition = context.Request.PtrBuff[0].Position;
-            long bufferSize     = context.Request.PtrBuff[0].Size;
+            NetworkConfig networkConfig = new NetworkConfig();
+            NetworkInfo networkInfo = new NetworkInfo();
+            if (isPrivate)
+            {
+                context.RequestData.ReadUInt32(); // Padding.
+                networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
+            }
+            else
+            {
+                long bufferPosition = context.Request.PtrBuff[0].Position;
+                long bufferSize = context.Request.PtrBuff[0].Size;
 
-            byte[] networkInfoBytes = new byte[bufferSize];
+                byte[] networkInfoBytes = new byte[bufferSize];
 
-            context.Memory.Read((ulong)bufferPosition, networkInfoBytes);
+                context.Memory.Read((ulong)bufferPosition, networkInfoBytes);
 
-            NetworkInfo networkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBytes);
+                networkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBytes);
+            }
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkInfo.NetworkId.IntentId.LocalCommunicationId);
             if (!isLocalCommunicationIdValid)
@@ -739,7 +774,14 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                             }
                             else
                             {
-                                resultCode = _station.Connect(securityConfig, userConfig, localCommunicationVersion, optionUnknown, networkInfo);
+                                if (isPrivate)
+                                {
+                                    resultCode = _station.ConnectPrivate(securityConfig, securityParameter, userConfig, localCommunicationVersion, optionUnknown, networkConfig);
+                                }
+                                else
+                                {
+                                    resultCode = _station.Connect(securityConfig, userConfig, localCommunicationVersion, optionUnknown, networkInfo);
+                                }
                             }
                         }
                     }
@@ -786,7 +828,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // InitializeOld(pid)
         public ResultCode InitializeOld(ServiceCtx context)
         {
-            return InitializeImpl(context.Process.Pid, NIFM_REQUEST_ID);
+            return InitializeImpl(context, context.Process.Pid, NIFM_REQUEST_ID);
         }
 
         [Command(401)]
@@ -878,10 +920,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             //       This call twice InitializeImpl(): A first time with NIFM_REQUEST_ID, if its failed a second time with nifm_request_id = 1.
             //       Since we proxy connections, we don't needs to get the ip_address, subnet_mask and nifm_request_id.
 
-            return InitializeImpl(context.Process.Pid, NIFM_REQUEST_ID);
+            return InitializeImpl(context, context.Process.Pid, NIFM_REQUEST_ID);
         }
 
-        public ResultCode InitializeImpl(long pid, int nifmRequestId)
+        public ResultCode InitializeImpl(ServiceCtx context, long pid, int nifmRequestId)
         {
             ResultCode resultCode = ResultCode.InvalidArgument;
 
@@ -901,6 +943,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                                 NetworkClient = new DisabledLdnClient();
                                 break;
                         }
+
+                        NetworkClient.SetGameVersion(context.Device.Application.ControlData.Value.DisplayVersion.Value.ToArray());
 
                         resultCode = ResultCode.Success;
 

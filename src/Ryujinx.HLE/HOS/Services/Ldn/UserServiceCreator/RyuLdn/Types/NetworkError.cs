@@ -12,6 +12,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types
         VersionTooLow,
         VersionTooHigh,
 
+        ConnectFailure,
+        ConnectNotFound,
+        ConnectTimeout,
+        ConnectRejected,
+
+        RejectFailed,
+
         Unknown = -1
     }
 

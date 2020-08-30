@@ -1,5 +1,6 @@
 using Ryujinx.HLE.HOS.Services.Ldn.Types;
 using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.Network.Types;
+using Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator.RyuLdn.Types;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
@@ -42,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 } 
                 else
                 {
-                    _parent.SetDisconnectReason(DisconnectReason.DestroyedBySystem);
+                    _parent.SetDisconnectReason(e.DisconnectReasonOrDefault(DisconnectReason.DestroyedBySystem));
                 }
             }
             else
@@ -77,6 +78,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             };
 
             bool success = _parent.NetworkClient.CreateNetwork(request, _advertiseData);
+
+            return success ? ResultCode.Success : ResultCode.InvalidState;
+        }
+
+        public ResultCode CreateNetworkPrivate(SecurityConfig securityConfig, SecurityParameter securityParameter, UserConfig userConfig, NetworkConfig networkConfig, AddressList addressList)
+        {
+            CreateAccessPointPrivateRequest request = new CreateAccessPointPrivateRequest
+            {
+                SecurityConfig = securityConfig,
+                SecurityParameter = securityParameter,
+                UserConfig = userConfig,
+                NetworkConfig = networkConfig,
+                AddressList = addressList,
+            };
+
+            bool success = _parent.NetworkClient.CreateNetworkPrivate(request, _advertiseData);
 
             return success ? ResultCode.Success : ResultCode.InvalidState;
         }
