@@ -592,9 +592,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             long appletResourceUserId = context.RequestData.ReadInt64();
             long arraySize = context.Request.PtrBuff[0].Size / 4;
 
-            NpadIdType[] supportedPlayerIds = new NpadIdType[arraySize];
-
-            context.Device.Hid.Npads.ClearSupportedPlayers();
+            Span<bool> supportedPlayers = stackalloc bool[NpadDevices.MaxControllers];
+            Span<NpadIdType> supportedPlayerIds = stackalloc NpadIdType[(int)arraySize];
 
             for (int i = 0; i < arraySize; ++i)
             {
@@ -602,13 +601,15 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
                 if (id >= 0)
                 {
-                    context.Device.Hid.Npads.SetSupportedPlayer(HidUtils.GetIndexFromNpadIdType(id));
+                    supportedPlayers[(int)HidUtils.GetIndexFromNpadIdType(id)] = true;
                 }
 
                 supportedPlayerIds[i] = id;
             }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"{arraySize} " + string.Join(",", supportedPlayerIds));
+            context.Device.Hid.Npads.SetSupportedPlayers(supportedPlayers);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"{arraySize} " + string.Join(",", supportedPlayerIds.ToArray()));
 
             return ResultCode.Success;
         }
@@ -1005,11 +1006,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         {
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            byte[] vibrationDeviceHandleBuffer = new byte[context.Request.PtrBuff[0].Size];
+            Span<byte> vibrationDeviceHandleBuffer = stackalloc byte[(int)context.Request.PtrBuff[0].Size];
 
             context.Memory.Read((ulong)context.Request.PtrBuff[0].Position, vibrationDeviceHandleBuffer);
 
-            byte[] vibrationValueBuffer = new byte[context.Request.PtrBuff[1].Size];
+            Span<byte> vibrationValueBuffer = stackalloc byte[(int)context.Request.PtrBuff[1].Size];
 
             context.Memory.Read((ulong)context.Request.PtrBuff[1].Position, vibrationValueBuffer);
 

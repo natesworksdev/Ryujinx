@@ -53,14 +53,9 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ref _styleSetUpdateEvents[(int)player];
         }
 
-        internal void ClearSupportedPlayers()
+        internal void SetSupportedPlayers(ReadOnlySpan<bool> players)
         {
-            _supportedPlayers.AsSpan().Clear();
-        }
-
-        internal void SetSupportedPlayer(PlayerIndex player, bool supported = true)
-        {
-            _supportedPlayers[(int)player] = supported;
+            players.CopyTo(_supportedPlayers.AsSpan());
         }
 
         internal ReadOnlySpan<bool> GetSupportedPlayers()
