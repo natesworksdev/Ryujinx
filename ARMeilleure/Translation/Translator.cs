@@ -9,6 +9,7 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -69,7 +70,7 @@ namespace ARMeilleure.Translation
 
                     _funcs.AddOrUpdate(request.Address, func, (key, oldFunc) =>
                     {
-                        _oldFuncs.Enqueue(new KeyValuePair<ulong, IntPtr>(key, oldFunc.FuncPtr));
+                        EnqueueForDeletion(key, oldFunc);
                         return func;
                     });
 
@@ -212,7 +213,9 @@ namespace ARMeilleure.Translation
                 context.Branch(context.GetLabel(address));
             }
 
-            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
+            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Range funcRange);
+
+            ulong funcSize = funcRange.End - funcRange.Start;
 
             Logger.EndPass(PassName.Translation);
 
@@ -238,21 +241,46 @@ namespace ARMeilleure.Translation
                 {
                     func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
 
-                    Ptc.WriteInfoCodeReloc((long)address, highCq, ptcInfo);
+                    Ptc.WriteInfoCodeReloc(address, funcSize, highCq, ptcInfo);
                 }
             }
 
             ResetOperandPool(highCq);
             ResetOperationPool(highCq);
 
-            return new TranslatedFunction(func, highCq);
+            return new TranslatedFunction(func, funcSize, highCq);
         }
 
-        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)
+        private struct Range
         {
+            public ulong Start { get; }
+            public ulong End { get; }
+
+            public Range(ulong start, ulong end)
+            {
+                Start = start;
+                End = end;
+            }
+        }
+
+        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks, out Range range)
+        {
+            ulong rangeStart = ulong.MaxValue;
+            ulong rangeEnd = 0;
+
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 Block block = blocks[blkIndex];
+
+                if (rangeStart > block.Address)
+                {
+                    rangeStart = block.Address;
+                }
+
+                if (rangeEnd < block.EndAddress)
+                {
+                    rangeEnd = block.EndAddress;
+                }
 
                 context.CurrBlock = block;
 
@@ -303,6 +331,8 @@ namespace ARMeilleure.Translation
                 }
             }
 
+            range = new Range(rangeStart, rangeEnd);
+
             return context.GetControlFlowGraph();
         }
 
@@ -332,6 +362,36 @@ namespace ARMeilleure.Translation
             context.Store(countAddr, count);
 
             context.MarkLabel(lblExit);
+        }
+
+        public void InvalidateJitCacheRegion(ulong address, ulong size)
+        {
+            static bool OverlapsWith(ulong funcAddress, ulong funcSize, ulong address, ulong size)
+            {
+                return funcAddress < address + size && address < funcAddress + funcSize;
+            }
+
+            var toDelete = _funcs.Where(x => OverlapsWith(x.Key, x.Value.GuestSize, address, size)).ToArray();
+
+            if (toDelete.Length != 0)
+            {
+                // If rejit is running, stop it as it may be trying to rejit the functions we are
+                // supposed to remove.
+                ClearRejitQueue();
+            }
+
+            foreach (var kv in toDelete)
+            {
+                if (_funcs.TryRemove(kv.Key, out TranslatedFunction func))
+                {
+                    EnqueueForDeletion(kv.Key, func);
+                }
+            }
+        }
+
+        private void EnqueueForDeletion(ulong guestAddress, TranslatedFunction func)
+        {
+            _oldFuncs.Enqueue(new KeyValuePair<ulong, IntPtr>(guestAddress, func.FuncPtr));
         }
 
         private void ClearJitCache()

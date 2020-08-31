@@ -12,12 +12,14 @@ namespace ARMeilleure.Translation
 
         private int _callCount;
 
+        public ulong GuestSize { get; }
         public bool HighCq { get; }
         public IntPtr FuncPtr { get; }
 
-        public TranslatedFunction(GuestFunction func, bool highCq)
+        public TranslatedFunction(GuestFunction func, ulong guestSize, bool highCq)
         {
             _func = func;
+            GuestSize = guestSize;
             HighCq = highCq;
             FuncPtr = Marshal.GetFunctionPointerForDelegate(func);
         }
