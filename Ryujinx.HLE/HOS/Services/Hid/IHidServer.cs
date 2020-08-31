@@ -559,12 +559,15 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             ControllerType type = (ControllerType)context.RequestData.ReadInt32();
             long appletResourceUserId = context.RequestData.ReadInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { 
-                    appletResourceUserId, 
-                    type 
-                });
+            if (context.Device.Hid.Npads.SupportedStyleSets != type)
+            {
+                Logger.Stub?.Print(LogClass.ServiceHid, "", new { 
+                        appletResourceUserId, 
+                        type 
+                    });
 
-            context.Device.Hid.Npads.SupportedStyleSets = type;
+                context.Device.Hid.Npads.SupportedStyleSets = type;
+            }
 
             return ResultCode.Success;
         }
@@ -721,7 +724,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             context.ResponseData.Write((long)context.Device.Hid.Npads.JoyHold);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { 
+            Logger.Debug?.PrintStub(LogClass.ServiceHid, new { 
                     appletResourceUserId, 
                     context.Device.Hid.Npads.JoyHold 
                 });
@@ -912,7 +915,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.ResponseData.Write((int)deviceInfo.DeviceType);
             context.ResponseData.Write((int)deviceInfo.Position);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new { vibrationDeviceHandle, deviceInfo.DeviceType, deviceInfo.Position });
+            Logger.Debug?.PrintStub(LogClass.ServiceHid, new { vibrationDeviceHandle, deviceInfo.DeviceType, deviceInfo.Position });
 
             return ResultCode.Success;
         }
@@ -957,7 +960,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             context.ResponseData.Write(_vibrationValue.AmplitudeHigh);
             context.ResponseData.Write(_vibrationValue.FrequencyHigh);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, new {
+            Logger.Debug?.PrintStub(LogClass.ServiceHid, new {
                 appletResourceUserId,
                 vibrationDeviceHandle,
                 _vibrationValue.AmplitudeLow,
