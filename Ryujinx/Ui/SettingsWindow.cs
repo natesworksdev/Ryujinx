@@ -27,6 +27,7 @@ namespace Ryujinx.Ui
         private readonly TimeZoneContentManager _timeZoneContentManager;
         private readonly HashSet<string>        _validTzRegions;
         private readonly ManualResetEvent       _closeEvent;
+        private readonly bool[] _enabledControllers;
 
         private long _systemTimeOffset;
 
@@ -93,6 +94,7 @@ namespace Ryujinx.Ui
         [GUI] Label           _controllerLabel6;
         [GUI] Label           _controllerLabel7;
         [GUI] Label           _controllerLabel8;
+        [GUI] Label           _controllerLabelH;
         [GUI] ToggleButton    _playerButton1;
         [GUI] ToggleButton    _playerButton2;
         [GUI] ToggleButton    _playerButton3;
@@ -121,36 +123,33 @@ namespace Ryujinx.Ui
             _notebook.CurrentPage = 1;
             _notebook.GetNthPage(1).Sensitive = true;
 
-
             string playerCount = args.IsSinglePlayer
                 ? $"<b>single-player mode</b>"
                 : args.PlayerCountMin == args.PlayerCountMax
                 ? $"<b>exactly {args.PlayerCountMin}</b> player(s)"
                 : $"<b>{args.PlayerCountMin}-{args.PlayerCountMax}</b> player(s)";
 
+            string exactPair = (!args.PermitJoyDual && args.SupportedStyles == (HLE.HOS.Services.Hid.ControllerType.JoyconLeft | HLE.HOS.Services.Hid.ControllerType.JoyconRight))
+                ? "<tt> (only in left-right pairs)</tt>"
+                : "";
+
             string message =
                 $"Application requests {playerCount} with:\n\n"
-                + $"<tt><b>TYPES:</b> {args.SupportedStyles}</tt>\n";
+                + $"<tt><b>TYPES:</b> {args.SupportedStyles}</tt>{exactPair}";
 
             _inputHelpText.Visible = true;
             _inputHelpText.Markup = message;
 
             Label[] labels = new Label[]
-            { 
+            {
                 _playerLabel1, _playerLabel2, _playerLabel3, _playerLabel4,
                 _playerLabel5, _playerLabel6, _playerLabel7, _playerLabel8
             };
 
             Button[] buttons = new Button[]
-            { 
+            {
                 _playerButton1, _playerButton2, _playerButton3, _playerButton4,
                 _playerButton5, _playerButton6, _playerButton7, _playerButton8
-            };
-
-            Label[] controllers = new Label[]
-            { 
-                _controllerLabel1, _controllerLabel2, _controllerLabel3, _controllerLabel4,
-                _controllerLabel5, _controllerLabel6, _controllerLabel7, _controllerLabel8
             };
 
             for (int i = 0; i < labels.Length; ++i)
@@ -159,18 +158,18 @@ namespace Ryujinx.Ui
                 if (i < args.IdentificationColors.Length)
                 {
                     uint color = args.IdentificationColors[i];
-                    if ((color>>24) != 0)
+                    if ((color >> 24) != 0)
                     {
-                        foreground = $"foreground='#{color&0xff:X2}{(color>>8)&0xff:X2}{(color>>16)&0xff:X2}'";
+                        foreground = $"foreground='#{color & 0xff:X2}{(color >> 8) & 0xff:X2}{(color >> 16) & 0xff:X2}'";
                     }
                 }
 
-                string text = $"<span weight='bold' {foreground}>Player {i+1}</span>";
+                string text = $"<span weight='bold' {foreground}>Player {i + 1}</span>";
 
                 if (i >= args.PlayerCountMax)
                 {
                     labels[i].Sensitive = false;
-                    if (controllers[i].Text == "Disabled") buttons[i].Sensitive = false;
+                    if (!_enabledControllers[i]) buttons[i].Sensitive = false;
                 }
 
                 if (i < args.ExplainTexts.Length && !string.IsNullOrWhiteSpace(args.ExplainTexts[i]))
@@ -181,11 +180,10 @@ namespace Ryujinx.Ui
                 labels[i].Markup = text;
             }
 
-
-            if (!args.IsSinglePlayer || args.IsDocked)
+            if (!args.IsSinglePlayer || args.IsDocked || (args.SupportedStyles & HLE.HOS.Services.Hid.ControllerType.Handheld) == 0)
             {
                 _playerLabelH.Sensitive = false;
-                _playerButtonH.Sensitive = false;
+                if (!_enabledControllers[(int)PlayerIndex.Handheld]) _playerButtonH.Sensitive = false;
             }
         }
 
@@ -427,6 +425,7 @@ namespace Ryujinx.Ui
                 };
             });
 
+            _enabledControllers = new bool[(int)PlayerIndex.Handheld + 1];
             UpdateInputLabels();
         }
 
@@ -486,8 +485,11 @@ namespace Ryujinx.Ui
             Label[] labels = new Label[]
             { 
                 _controllerLabel1, _controllerLabel2, _controllerLabel3, _controllerLabel4,
-                _controllerLabel5, _controllerLabel6, _controllerLabel7, _controllerLabel8
+                _controllerLabel5, _controllerLabel6, _controllerLabel7, _controllerLabel8,
+                _controllerLabelH
             };
+
+            _enabledControllers.AsSpan().Clear();
 
             foreach (var label in labels)
             {
@@ -496,8 +498,16 @@ namespace Ryujinx.Ui
 
             foreach(var input in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
+                if (input.PlayerIndex == PlayerIndex.Handheld)
+                {
+                    _enabledControllers[(int)PlayerIndex.Handheld] = true;
+                    _controllerLabelH.Text = "Enabled";
+                    continue;
+                }
+
                 if ((int)input.PlayerIndex < labels.Length)
                 {
+                    _enabledControllers[(int)input.PlayerIndex] = true;
                     labels[(int)input.PlayerIndex].Text = input.ControllerType switch
                     {
                         ControllerType.JoyconPair => "Joycon Pair",

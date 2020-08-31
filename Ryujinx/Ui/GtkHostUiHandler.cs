@@ -7,8 +7,6 @@ using Ryujinx.HLE.HOS.Applets;
 using System;
 using System.Threading;
 
-using System.Linq;
-
 namespace Ryujinx.Ui
 {
     internal class GtkHostUiHandler : IHostUiHandler
@@ -24,7 +22,7 @@ namespace Ryujinx.Ui
             _contentManager = contentManager;
         }
 
-        public bool DisplayMessageDialog(ControllerAppletUiArgs args)
+        public void DisplayControllerApplet(ControllerAppletUiArgs args)
         {
             ManualResetEvent closeEvent = new ManualResetEvent(false);
 
@@ -32,7 +30,7 @@ namespace Ryujinx.Ui
             {
                 Logger.Error?.Print(LogClass.Application, "Controller Applet requested Input Settings window but it's already open");
                 Thread.Sleep(1000); // Wait to prevent spam
-                return true;
+                return;
             }
 
             Application.Invoke(delegate
@@ -51,7 +49,7 @@ namespace Ryujinx.Ui
             });
 
             closeEvent.WaitOne();
-            return true;
+            return;
         }
 
         public bool DisplayMessageDialog(string title, string message)

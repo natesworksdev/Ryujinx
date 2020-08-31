@@ -8,9 +8,9 @@ namespace Ryujinx.HLE.HOS.Applets
         public int PlayerCountMin;
         public int PlayerCountMax;
         public ControllerType SupportedStyles;
-        public IEnumerable<PlayerIndex> SupportedPlayers;
         public bool IsDocked;
         public bool IsSinglePlayer;
+        public bool PermitJoyDual;
         public uint[] IdentificationColors;
         public string[] ExplainTexts;
     }

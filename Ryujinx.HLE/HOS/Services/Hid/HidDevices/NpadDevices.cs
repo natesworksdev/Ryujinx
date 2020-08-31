@@ -20,6 +20,8 @@ namespace Ryujinx.HLE.HOS.Services.Hid
         private KEvent[] _styleSetUpdateEvents;
         private bool[] _supportedPlayers;
 
+        private bool _forceRemap = false;
+
         internal NpadJoyHoldType JoyHold { get; set; }
         internal bool SixAxisActive = false; // TODO: link to hidserver when implemented
         internal ControllerType SupportedStyleSets { get; set; }
@@ -61,7 +63,12 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             _supportedPlayers[(int)player] = supported;
         }
 
-        private IEnumerable<PlayerIndex> GetSupportedPlayers()
+        internal ReadOnlySpan<bool> GetSupportedPlayers()
+        {
+            return _supportedPlayers;
+        }
+
+        private IEnumerable<PlayerIndex> EnumerateSupportedPlayers()
         {
             for (int i = 0; i < _supportedPlayers.Length; ++i)
             {
@@ -72,25 +79,17 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             }
         }
 
-        public bool Validate(int playerMin, int playerMax, bool enableSingleMode,
-                             ControllerType supportedStyleSets, IList<PlayerIndex> supportedPlayersList,
+        public bool ValidateApplet(int playerMin, int playerMax, bool enableSingleMode, ControllerType supportedStyleSets,
                              out int configuredCount, out PlayerIndex primaryIndex)
         {
             primaryIndex = PlayerIndex.Unknown;
             configuredCount = 0;
 
-            supportedPlayersList.Clear();
-
             for (int i = 0; i < MaxControllers; ++i)
             {
-                if (_supportedPlayers[i] && (enableSingleMode || (PlayerIndex)i != PlayerIndex.Handheld))
-                {
-                    supportedPlayersList.Add((PlayerIndex)i);
-                }
-
                 ControllerType npad = _configuredTypes[i];
 
-                if (npad == ControllerType.Handheld && _device.System.State.DockedMode)
+                if (npad == ControllerType.Handheld)
                 {
                     continue;
                 }
@@ -107,12 +106,33 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 }
             }
 
-            if (configuredCount < playerMin || configuredCount > playerMax || primaryIndex == PlayerIndex.Unknown)
+            bool configuredHH = _device.Hid.SharedMemory.Npads[(int)PlayerIndex.Handheld].Header.Type == ControllerType.Handheld;
+
+            if (configuredHH && enableSingleMode)
+            {
+                if (configuredCount == 0)
+                {
+                    configuredCount++;
+                }
+                if (primaryIndex == PlayerIndex.Unknown)
+                {
+                    primaryIndex = PlayerIndex.Handheld;
+                }
+            }
+
+            if (configuredCount < playerMin || configuredCount > playerMax
+                || primaryIndex == PlayerIndex.Unknown
+                || (!enableSingleMode && configuredHH))
             {
                 return false;
             }
 
             return true;
+        }
+
+        public void RequestRemap()
+        {
+            _forceRemap = true;
         }
 
         public void Configure(params ControllerConfig[] configs)
@@ -185,9 +205,11 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                 SetupNpad((PlayerIndex)i, config);
             }
 
+            _forceRemap = false;
+
             if (_activeCount == 0 && PerformanceCounter.ElapsedMilliseconds > _lastNotifyTimestamp + NoMatchNotifyFrequencyMs)
             {
-                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests '{SupportedStyleSets}' on '{string.Join(", ", GetSupportedPlayers())}'");
+                Logger.Warning?.Print(LogClass.Hid, $"No matching controllers found. Application requests '{SupportedStyleSets}' on '{string.Join(", ", EnumerateSupportedPlayers())}'");
                 _lastNotifyTimestamp = PerformanceCounter.ElapsedMilliseconds;
             }
         }
@@ -198,7 +220,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
 
             ControllerType oldType = controller.Header.Type;
 
-            if (oldType == type)
+            if (oldType == type && !_forceRemap)
             {
                 return; // Already configured
             }

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -33,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Applets
             byte[] controllerSupportArgPrivate = _normalSession.Pop();
             ControllerSupportArgPrivate privateArg = IApplet.ReadStruct<ControllerSupportArgPrivate>(controllerSupportArgPrivate);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ArgPriv {privateArg.PrivateSize} {privateArg.ArgSize} {privateArg.Mode} " +
+            Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerApplet ArgPriv {privateArg.PrivateSize} {privateArg.ArgSize} {privateArg.Mode} " +
                         $"HoldType:{(NpadJoyHoldType)privateArg.NpadJoyHoldType} StyleSets:{(ControllerType)privateArg.NpadStyleSet}");
 
             if (privateArg.Mode != ControllerSupportMode.ShowControllerSupport)
@@ -57,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 texts = arg.GetExplainTexts();
                 colors = arg.GetIdentificationColors();
 
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version 7 EnableExplainText={arg.EnableExplainText != 0}");
+                Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerSupportArg Version 7 EnableExplainText={arg.EnableExplainText != 0}");
             }
             else if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArgVPre7>())
             {
@@ -66,11 +65,11 @@ namespace Ryujinx.HLE.HOS.Applets
                 texts = arg.GetExplainTexts();
                 colors = arg.GetIdentificationColors();
 
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Pre-7 EnableExplainText={arg.EnableExplainText != 0}");
+                Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerSupportArg Version Pre-7 EnableExplainText={arg.EnableExplainText != 0}");
             }
             else
             {
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Unknown");
+                Logger.Stub?.PrintStub(LogClass.ServiceHid, "ControllerSupportArg Version Unknown");
 
                 argHeader = IApplet.ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
@@ -79,27 +78,21 @@ namespace Ryujinx.HLE.HOS.Applets
             int playerMin = argHeader.PlayerCountMin;
             int playerMax = argHeader.PlayerCountMax;
             ControllerType supportedStyleSet = (ControllerType)privateArg.NpadStyleSet;
-            List<PlayerIndex> supportedPlayers = new List<PlayerIndex>(9);
 
             if (enableSingleMode)
             {
                 playerMin = playerMax = 1; // Force single player if enableSingleMode is true
             }
-            else
-            {
-                supportedStyleSet &= ~ControllerType.Handheld; // Remove handheld if it's false
-            }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {playerMin} {playerMax} {enableSingleMode} {argHeader.EnableTakeOverConnection}");
+            Logger.Stub?.Print(LogClass.ServiceHid, "ControllerApplet Arg", new { playerMin, playerMax, enableSingleMode, argHeader.EnableTakeOverConnection, argHeader.EnablePermitJoyDual });
 
             ControllerAppletUiArgs uiArgs = new ControllerAppletUiArgs
             {
                 PlayerCountMin = playerMin,
                 PlayerCountMax = playerMax,
                 SupportedStyles = supportedStyleSet,
-                SupportedPlayers = supportedPlayers,
-                IsDocked = _system.State.DockedMode,
                 IsSinglePlayer = enableSingleMode,
+                PermitJoyDual = argHeader.EnablePermitJoyDual != 0,
                 IdentificationColors = colors,
                 ExplainTexts = texts
             };
@@ -110,14 +103,28 @@ namespace Ryujinx.HLE.HOS.Applets
 
             do
             {
-                _system.Device.UiHandler.DisplayMessageDialog(uiArgs);
-                valid = _system.Device.Hid.Npads.Validate(playerMin, playerMax, enableSingleMode, supportedStyleSet, supportedPlayers, out configuredCount, out primaryIndex);
+                uiArgs.IsDocked = _system.State.DockedMode;
+                bool isHHPlayerSupported = _system.Device.Hid.Npads.GetSupportedPlayers()[(int)PlayerIndex.Handheld];
+
+                if (!enableSingleMode || uiArgs.IsDocked || !isHHPlayerSupported)
+                {
+                    uiArgs.SupportedStyles = supportedStyleSet & ~ControllerType.Handheld; // Remove handheld if it's false
+                }
+
+                _system.Device.UiHandler.DisplayControllerApplet(uiArgs);
+
+                // TODO: Add validation to Settings Window
+                valid = _system.Device.Hid.Npads.ValidateApplet(playerMin, playerMax, enableSingleMode, uiArgs.SupportedStyles, out configuredCount, out primaryIndex);
             } while (!valid);
 
-            // TODO: Add validation to Settings Window
             if (!valid || primaryIndex == PlayerIndex.Unknown)
             {
-                Logger.Warning?.Print(LogClass.ServiceHid, $"Cancelled Controller Applet without resolving issue. Application may crash.");
+                Logger.Warning?.Print(LogClass.ServiceHid, "Cancelled Controller Applet without resolving issue. Application may crash.");
+            }
+
+            if (argHeader.EnableTakeOverConnection == 0)
+            {
+                _system.Device.Hid.Npads.RequestRemap();
             }
 
             ControllerSupportResultInfo result = new ControllerSupportResultInfo
@@ -126,7 +133,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex)
             };
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ReturnResult {result.PlayerCount} {result.SelectedId}");
+            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ReturnResult", new { result.PlayerCount, result.SelectedId });
 
             _normalSession.Push(BuildResponse(result));
             AppletStateChanged?.Invoke(this, null);

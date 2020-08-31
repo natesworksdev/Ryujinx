@@ -579,7 +579,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -659,7 +658,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -739,7 +737,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -819,7 +816,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -845,53 +841,6 @@
                               <packing>
                                 <property name="left_attach">3</property>
                                 <property name="top_attach">0</property>
-                              </packing>
-                            </child>
-                            <child>
-                              <object class="GtkBox">
-                                <property name="width_request">90</property>
-                                <property name="height_request">130</property>
-                                <property name="visible">True</property>
-                                <property name="can_focus">False</property>
-                                <property name="orientation">vertical</property>
-                                <child>
-                                  <object class="GtkLabel" id="_playerLabelH">
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">False</property>
-                                    <property name="valign">start</property>
-                                    <property name="margin_top">15</property>
-                                    <property name="label" translatable="yes">Handheld</property>
-                                    <property name="justify">center</property>
-                                    <property name="yalign">0.5</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">True</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">0</property>
-                                  </packing>
-                                </child>
-                                <child>
-                                  <object class="GtkToggleButton" id="_playerButtonH">
-                                    <property name="label" translatable="yes">Configure</property>
-                                    <property name="visible">True</property>
-                                    <property name="can_focus">True</property>
-                                    <property name="receives_default">True</property>
-                                    <property name="margin_start">60</property>
-                                    <property name="margin_end">60</property>
-                                    <property name="margin_bottom">15</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">False</property>
-                                    <property name="pack_type">end</property>
-                                    <property name="position">1</property>
-                                  </packing>
-                                </child>
-                              </object>
-                              <packing>
-                                <property name="left_attach">1</property>
-                                <property name="top_attach">4</property>
-                                <property name="width">2</property>
                               </packing>
                             </child>
                             <child>
@@ -946,7 +895,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -1026,7 +974,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -1106,7 +1053,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -1186,7 +1132,6 @@
                                             <property name="name">5</property>
                                             <property name="visible">True</property>
                                             <property name="can_focus">False</property>
-                                            <property name="label" translatable="yes">Pro Controller</property>
                                             <attributes>
                                               <attribute name="style" value="italic"/>
                                             </attributes>
@@ -1234,6 +1179,88 @@
                                 <property name="left_attach">0</property>
                                 <property name="top_attach">3</property>
                                 <property name="width">4</property>
+                              </packing>
+                            </child>
+                            <child>
+                              <object class="GtkBox">
+                                <property name="width_request">90</property>
+                                <property name="height_request">130</property>
+                                <property name="visible">True</property>
+                                <property name="can_focus">False</property>
+                                <property name="orientation">vertical</property>
+                                <child>
+                                  <object class="GtkLabel" id="_playerLabelH">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">False</property>
+                                    <property name="valign">start</property>
+                                    <property name="margin_top">15</property>
+                                    <property name="label" translatable="yes">Handheld</property>
+                                    <property name="justify">center</property>
+                                    <property name="yalign">0.5</property>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">True</property>
+                                    <property name="fill">True</property>
+                                    <property name="position">0</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkToggleButton" id="_playerButtonH">
+                                    <property name="visible">True</property>
+                                    <property name="can_focus">True</property>
+                                    <property name="receives_default">True</property>
+                                    <property name="margin_start">60</property>
+                                    <property name="margin_end">60</property>
+                                    <property name="margin_bottom">15</property>
+                                    <child>
+                                      <object class="GtkBox">
+                                        <property name="visible">True</property>
+                                        <property name="can_focus">False</property>
+                                        <property name="orientation">vertical</property>
+                                        <child>
+                                          <object class="GtkLabel">
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <property name="margin_bottom">5</property>
+                                            <property name="label" translatable="yes">Configure</property>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="position">0</property>
+                                          </packing>
+                                        </child>
+                                        <child>
+                                          <object class="GtkLabel" id="_controllerLabelH">
+                                            <property name="name">5</property>
+                                            <property name="visible">True</property>
+                                            <property name="can_focus">False</property>
+                                            <attributes>
+                                              <attribute name="style" value="italic"/>
+                                            </attributes>
+                                          </object>
+                                          <packing>
+                                            <property name="expand">False</property>
+                                            <property name="fill">True</property>
+                                            <property name="pack_type">end</property>
+                                            <property name="position">1</property>
+                                          </packing>
+                                        </child>
+                                      </object>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">False</property>
+                                    <property name="pack_type">end</property>
+                                    <property name="position">1</property>
+                                  </packing>
+                                </child>
+                              </object>
+                              <packing>
+                                <property name="left_attach">1</property>
+                                <property name="top_attach">4</property>
+                                <property name="width">2</property>
                               </packing>
                             </child>
                             <child>

@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Applets
 {
 #pragma warning disable CS0649
     // (1.0.0+ version)
-    [StructLayout(LayoutKind.Sequential, Pack=1)]
+    [StructLayout(LayoutKind.Sequential, Pack = 1)]
     unsafe struct ControllerSupportArgVPre7 : IControllerSupportArg
     {
         const int MaxPlayers = 4;
@@ -44,7 +44,7 @@ namespace Ryujinx.HLE.HOS.Applets
             }
 
             uint[] colors = new uint[MaxPlayers];
-            for (int i=0; i< MaxPlayers; ++i)
+            for (int i = 0; i < MaxPlayers; ++i)
             {
                 colors[i] = IdentificationColor[i];
             }

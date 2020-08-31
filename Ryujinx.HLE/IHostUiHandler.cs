@@ -18,9 +18,8 @@ namespace Ryujinx.HLE
         bool DisplayMessageDialog(string title, string message);
 
         /// <summary>
-        /// Displays a Message Dialog box specific to Controller Applet and blocks until it is closed.
+        /// Opens a Dialog to configure controllers when an application requests Controller Applet
         /// </summary>
-        /// <returns>True when OK is pressed, False otherwise.</returns>
-        bool DisplayMessageDialog(ControllerAppletUiArgs args);
+        void DisplayControllerApplet(ControllerAppletUiArgs args);
     }
 }
