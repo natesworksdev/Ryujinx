@@ -344,7 +344,7 @@ namespace Ryujinx.Configuration
         public ReactiveObject<bool> EnableDiscordIntegration { get; private set; }
 
         /// <summary>
-        /// Checks for updates when ryujinx starts when enabled
+        /// Checks for updates when Ryujinx starts when enabled
         /// </summary>
         public ReactiveObject<bool> CheckUpdatesOnStart { get; private set; }
 

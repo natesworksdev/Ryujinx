@@ -27,8 +27,9 @@ namespace Ryujinx
         private static string _buildUrl;
 
         private const string MasterUrl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
+        private const string BuildBaseUrl = "https://ci.appveyor.com/api/buildjobs";
 
-        public async static void BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
+        public static async void BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
             if (Running) return;
 
@@ -60,13 +61,13 @@ namespace Ryujinx
 
                     _jobId    = (string)buildToken["jobs"][0]["jobId"];
                     _buildVer = (string)buildToken["version"];
-                    _buildUrl = "https://ci.appveyor.com/api/buildjobs/" + _jobId + "/artifacts/ryujinx-" + _buildVer + "-" + _platformExt;
+                    _buildUrl = $"{BuildBaseUrl}/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
                 }
             }
             catch (Exception exception)
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
-                GtkDialog.CreateErrorDialog($"An error has occured when trying to get release information from GitHub.");
+                GtkDialog.CreateErrorDialog("An error has occured when trying to get release information from GitHub.");
 
                 return;
             }
