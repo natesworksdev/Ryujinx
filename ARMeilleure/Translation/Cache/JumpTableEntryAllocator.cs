@@ -47,7 +47,8 @@ namespace ARMeilleure.Translation.Cache
 
                 _freeHint = entryIndex + 1;
 
-                Debug.Assert(_bitmap.Set(entryIndex));
+                bool wasSet = _bitmap.Set(entryIndex);
+                Debug.Assert(wasSet);
 
                 return entryIndex;
             }
