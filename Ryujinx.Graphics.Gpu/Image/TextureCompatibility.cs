@@ -227,7 +227,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
         }
 
-
         /// <summary>
         /// Gets the aligned sizes of the specified texture information.
         /// The alignment depends on the texture layout and format bytes per pixel.
