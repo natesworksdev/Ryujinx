@@ -49,18 +49,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                             selectedCount++;
                         }
                     }
-
-                    if (selectedCount == 0)
+                    
+                    switch (selectedCount)
                     {
-                        CoreManager.Reset(Thread.CurrentThread);
-                    }
-                    else if (selectedCount == 1)
-                    {
-                        CoreManager.Set(Thread.CurrentThread);
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException("Thread scheduled in more than one core!");
+                        case 0: CoreManager.Reset(Thread.CurrentThread); break;
+                        case 1: CoreManager.Set(Thread.CurrentThread); break;
+                        default: throw new InvalidOperationException("Thread scheduled in more than one core!");
                     }
                 }
                 else
