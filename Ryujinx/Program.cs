@@ -1,15 +1,15 @@
 using ARMeilleure.Translation.PTC;
 using Gtk;
+using OpenTK;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.SystemInfo;
 using Ryujinx.Configuration;
 using Ryujinx.Ui;
-using OpenTK;
+using Ryujinx.Ui.Diagnostic;
 using System;
 using System.IO;
 using System.Reflection;
-using Ryujinx.Ui.Diagnostic;
 
 namespace Ryujinx
 {
