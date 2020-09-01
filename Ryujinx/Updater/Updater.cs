@@ -25,9 +25,8 @@ namespace Ryujinx
         private static string _buildVer;
         private static string _platformExt;
         private static string _buildUrl;
-
-        private const string MasterUrl = "https://ci.appveyor.com/api/projects/gdkchan/ryujinx/branch/master";
-        private const string BuildBaseUrl = "https://ci.appveyor.com/api/buildjobs";
+        
+        private const string AppveyorApiUrl = "https://ci.appveyor.com/api";
 
         public static async void BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
@@ -55,13 +54,13 @@ namespace Ryujinx
             {
                 using (WebClient jsonClient = new WebClient())
                 {
-                    string  fetchedJson = await jsonClient.DownloadStringTaskAsync(MasterUrl);
+                    string  fetchedJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/projects/gdkchan/ryujinx/branch/master");
                     JObject jsonRoot    = JObject.Parse(fetchedJson);
                     JToken  buildToken  = jsonRoot["build"];
 
                     _jobId    = (string)buildToken["jobs"][0]["jobId"];
                     _buildVer = (string)buildToken["version"];
-                    _buildUrl = $"{BuildBaseUrl}/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
+                    _buildUrl = $"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
                 }
             }
             catch (Exception exception)
