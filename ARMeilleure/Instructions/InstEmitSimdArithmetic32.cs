@@ -1087,53 +1087,41 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Vrintx_V(ArmEmitterContext context)
-        {
+        public static void Vrintx_V(ArmEmitterContext context) {
+
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
 
-            if (op.F)
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                int sizeF = op.Size & 1;
-                if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
-                {
-                    EmitVectorRoundOpF32(context, FPRoundingMode.ToNearest);
-                }
-                else
-                {
-                    EmitVectorBinaryOpF32(context, (op1, op2) =>
-                    {
-                        return EmitUnaryMathCall(context, nameof(Math.Round), op2);
-                    });
-                }
+                EmitVectorUnaryOpF32(context, Intrinsic.X86Roundps, 0);
             }
             else
             {
-                throw new NotImplementedException("Integer Vrintx_V not currently implemented.");
+                EmitVectorBinaryOpF32(context, (op1, op2) =>
+                {
+                    return EmitUnaryMathCall(context, nameof(Math.Round), op2);
+                });
             }
         }
 
         public static void Vrintx_S(ArmEmitterContext context)
         {
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
-
-            if (op.F)
+            
+            if (Optimizations.FastFP && Optimizations.UseSse2)
             {
-                int sizeF = op.Size & 1;
-                if (Optimizations.FastFP && Optimizations.UseSse2 && sizeF == 0)
+                if(op.Size == 2)
                 {
-                    EmitScalarRoundOpF32(context, FPRoundingMode.ToNearest);
+                    EmitScalarUnaryOpF32(context, Intrinsic.X86Roundss, 0);
                 }
                 else
                 {
-                    EmitScalarBinaryOpF32(context, (op1, op2) =>
-                    {
-                        return EmitUnaryMathCall(context, nameof(Math.Round), op2);
-                    });
+                    EmitScalarUnaryOpF32(context, Intrinsic.X86Roundsd, 0);
                 }
             }
             else
             {
-                throw new NotImplementedException("Integer Vrintx_S not currently implemented.");
+                EmitSoftFloatCall(context, nameof(SoftFloat32.fpRo))
             }
         }
 

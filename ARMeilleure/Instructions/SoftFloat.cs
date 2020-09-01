@@ -1555,6 +1555,85 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        private static float FPRound(float value, ExecutionContext context, FPRoundingMode roundingMode)
+        {
+            return FPRoundBase(value, context, roundingMode, false);
+        }
+
+        private static float FPRoundBase(float value, ExecutionContext context, FPRoundingMode roundingMode, bool isBFloat16)
+        {
+            value = FPUnpack(value, out FPType type, out bool sign, out uint bits, context, context.Fpcr);
+
+            
+        }
+        public static float FPRoundInt(float value, FPRoundingMode roundingMode, Boolean exact)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.Fpcr;
+
+            float result = 0;
+
+            value = value.FPUnpack(out FPType fpType, out bool sign, out uint op1, context, fpcr);
+            
+            switch(fpType)
+            {
+                case FPType.SNaN:
+                case FPType.QNaN:
+                    result = FPProcessNaN(fpType, op1, context, fpcr);
+                    break;
+                case FPType.Infinity:
+                    result = FPInfinity(sign);
+                    break;
+                case FPType.Zero:
+                    result = FPZero(sign);
+                    break;
+                default:
+                    int int_result = (int) Math.Floor((double)value);
+                    float error = value - int_result;
+                    Boolean round_up = false;
+
+                    switch(roundingMode)
+                    {
+                        case FPRoundingMode.ToNearest:
+                            round_up = (error >= 0.5);
+                            break;
+                        case FPRoundingMode.TowardsPlusInfinity:
+                            round_up = (error != 0.0);
+                            break;
+                        case FPRoundingMode.TowardsMinusInfinity:
+                            round_up = false;
+                            break;
+                        case FPRoundingMode.TowardsZero:
+                            round_up = (error != 0.0 && int_result < 0);
+                            break;
+                    }
+
+                    if(round_up)
+                    {
+                        int_result++;
+                    }
+
+                    float real_result = (float)int_result;
+
+                    if(real_result == 0.0)
+                    {
+                        result = FPZero(sign);
+                    }
+                    else
+                    {
+                        result = FPRound(value, fpcr, roundingMode);
+                    }
+
+                    if(error != 0.0 && exact)
+                    {
+                        FPProcessException(FPException.Inexact, context, fpcr);
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
         public static float FPRSqrtStep(float value1, float value2)
         {
             ExecutionContext context = NativeInterface.GetContext();
