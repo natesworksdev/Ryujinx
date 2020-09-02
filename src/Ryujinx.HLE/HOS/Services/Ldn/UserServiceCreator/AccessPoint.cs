@@ -26,7 +26,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         {
             _parent.NetworkClient.DisconnectNetwork();
 
-            _parent.NetworkClient.NetworkChange += NetworkChanged;
+            _parent.NetworkClient.NetworkChange -= NetworkChanged;
         }
 
         private void NetworkChanged(object sender, RyuLdn.NetworkChangeEventArgs e)
