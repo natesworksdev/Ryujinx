@@ -21,7 +21,7 @@ addons:
       - ccache
       - libsdl2-dev
       - libalut-dev
-      #- dotnet-sdk
+      - libglib2.0-0
       - libopenal-dev
 install: 
   - mkdir -p "$HOME/.ccache"
