@@ -25,7 +25,7 @@ addons:
       - libopenal-dev
 install: 
   - mkdir -p "$HOME/.ccache"
-  - dotnet restore -c Release
+  - dotnet restore
   - dotnet publish -c Release -r linux-x64 -v n
 script: 
   - ls -al
