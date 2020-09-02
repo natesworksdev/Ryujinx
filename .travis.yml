@@ -31,13 +31,14 @@ script:
   - ls -al ${pwd}
   - chmod +x $TRAVIS_BUILD_DIR/.travis/appimage.sh
   - $TRAVIS_BUILD_DIR/.travis/appimage.sh
-  - ls -al Ryujinx/bin/Release/netcoreapp3.1/linux-x64/publish/
+  - mkdir artifacts/
+  - cp $TRAVIS_BUILD_DIR/Ryujinx-x86_64.AppImage* artifacts/
 after_success: 
   - ls -al artifacts/
   - cd artifacts/
-  #- wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
-  #- chmod a+x upload.sh
-  #- bash upload.sh PCSX2*
+  - wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  - chmod a+x upload.sh
+  - bash upload.sh Ryujinx-x86_64.AppImage*
 branches: 
   except: 
     - /^(?i:continuous.*)$/
