@@ -327,19 +327,12 @@ namespace ARMeilleure.Instructions
         public static void Vrint_X(ArmEmitterContext context)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
-
-            if (Optimizations.UseSse2)
-            {
-                EmitScalarUnaryOpSimd32(context, (m) =>
-                {
-                    Intrinsic inst = (op.Size & 1) == 0 ? Intrinsic.X86Roundss : Intrinsic.X86Roundsd;
-                    return context.AddIntrinsic(inst, m, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
-                });
-            }
-            else
-            {
-                EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Round), op1));
-            }
+            OperandType floatSize = op.RegisterSize == RegisterSize.Int64 ? OperandType.FP64 : OperandType.FP32;
+            
+            Operand toConvert = ExtractScalar(context, floatSize, op.Vm);
+            toConvert = EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt), toConvert);
+                
+            InsertScalar(context, op.Vd, toConvert);
         }
 
         // VRINTZ (floating-point).

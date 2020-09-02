@@ -1555,6 +1555,203 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
+        private static float FPRound(float value, ExecutionContext context)
+        {
+            return FPRoundBase(value, context);
+        }
+
+        private static float FPRoundBase(float real, ExecutionContext context)
+        {
+            const int minimumExp = -126;
+
+            const int e = 8;
+            const int f = 23;
+
+            bool sign;
+            double mantissa;
+
+            if (real < 0f)
+            {
+                sign = true;
+                mantissa = -real;
+            }
+            else
+            {
+                sign = false;
+                mantissa = real;
+            }
+
+            int exponent = 0;
+
+            while (mantissa < 1f)
+            {
+                mantissa *= 2f;
+                exponent--;
+            }
+
+            while (mantissa >= 2f)
+            {
+                mantissa /= 2f;
+                exponent++;
+            }
+
+            if ((context.Fpcr & FPCR.Fz) != 0 && exponent < minimumExp)
+            {
+                context.Fpsr |= FPSR.Ufc;
+
+                return FPZero(sign);
+            }
+
+            uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
+
+            if (biasedExp == 0u)
+            {
+                mantissa /= Math.Pow(2f, minimumExp - exponent);
+            }
+
+            uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2f, f));
+            double error = mantissa * Math.Pow(2f, f) - (double)intMant;
+
+            if (biasedExp == 0u && (error != 0f || (context.Fpcr & FPCR.Ufe) != 0))
+            {
+                FPProcessException(FPException.Underflow, context, context.Fpcr);
+            }
+
+            bool overflowToInf;
+            bool roundUp;
+
+            switch (context.Fpcr.GetRoundingMode())
+            {
+                default:
+                case FPRoundingMode.ToNearest:
+                    roundUp = (error > 0.5f || (error == 0.5f && (intMant & 1u) == 1u));
+                    overflowToInf = true;
+                    break;
+
+                case FPRoundingMode.TowardsPlusInfinity:
+                    roundUp = (error != 0f && !sign);
+                    overflowToInf = !sign;
+                    break;
+
+                case FPRoundingMode.TowardsMinusInfinity:
+                    roundUp = (error != 0f && sign);
+                    overflowToInf = sign;
+                    break;
+
+                case FPRoundingMode.TowardsZero:
+                    roundUp = false;
+                    overflowToInf = false;
+                    break;
+            }
+
+            if (roundUp)
+            {
+                intMant++;
+
+                if (intMant == 1u << f)
+                {
+                    biasedExp = 1u;
+                }
+
+                if (intMant == 1u << (f + 1))
+                {
+                    biasedExp++;
+                    intMant >>= 1;
+                }
+            }
+
+            float result;
+
+            if (biasedExp >= (1u << e) - 1u)
+            {
+                result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
+
+                FPProcessException(FPException.Overflow, context, context.Fpcr);
+
+                error = 1f;
+            }
+            else
+            {
+                result = BitConverter.Int32BitsToSingle(
+                    (int)((sign ? 1u : 0u) << 31 | (biasedExp & 0xFFu) << 23 | (intMant & 0x007FFFFFu)));
+            }
+
+            if (error != 0f)
+            {
+                FPProcessException(FPException.Inexact, context, context.Fpcr);
+            }
+
+            return result;
+        }
+        public static float FPRoundInt(float value)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.Fpcr;
+            FPRoundingMode roundingMode = fpcr.GetRoundingMode();
+
+            float result;
+
+            value.FPUnpack(out FPType fpType, out bool sign, out uint op, context, fpcr);
+            
+            switch(fpType)
+            {
+                case FPType.SNaN:
+                case FPType.QNaN:
+                    result = FPProcessNaN(fpType, op, context, fpcr);
+                    break;
+                case FPType.Infinity:
+                    result = FPInfinity(sign);
+                    break;
+                case FPType.Zero:
+                    result = FPZero(sign);
+                    break;
+                default:
+                    int int_result = (int) Math.Floor(value);
+                    float error = value - int_result;
+                    bool round_up = false;
+
+                    switch(roundingMode)
+                    {
+                        case FPRoundingMode.ToNearest:
+                            round_up = (error >= 0.5);
+                            break;
+                        case FPRoundingMode.TowardsPlusInfinity:
+                            round_up = (error != 0.0);
+                            break;
+                        case FPRoundingMode.TowardsMinusInfinity:
+                            round_up = false;
+                            break;
+                        case FPRoundingMode.TowardsZero:
+                            round_up = (error != 0.0 && int_result < 0);
+                            break;
+                    }
+
+                    if(round_up)
+                    {
+                        int_result++;
+                    }
+
+                    float real_result = int_result;
+
+                    if(real_result == 0.0)
+                    {
+                        result = FPZero(sign);
+                    }
+                    else
+                    {
+                        result = FPRound(value, context);
+                    }
+
+                    if(error != 0.0)
+                    {
+                        FPProcessException(FPException.Inexact, context, fpcr);
+                    }
+                    break;
+            }
+
+            return result;
+        }
+
         public static float FPRSqrtStep(float value1, float value2)
         {
             ExecutionContext context = NativeInterface.GetContext();
@@ -2740,6 +2937,203 @@ namespace ARMeilleure.Instructions
 
                 result = BitConverter.Int64BitsToDouble(
                     (long)((sign ? 1ul : 0ul) << 63 | (notExp == 0x7FFul ? maxExp : notExp) << 52));
+            }
+
+            return result;
+        }
+
+        private static double FPRound(double value, ExecutionContext context)
+        {
+            return FPRoundBase(value, context);
+        }
+
+        private static double FPRoundBase(double real, ExecutionContext context)
+        {
+            const int minimumExp = -1022;
+
+            const int e = 11;
+            const int f = 52;
+
+            bool sign;
+            double mantissa;
+
+            if (real < 0d)
+            {
+                sign = true;
+                mantissa = -real;
+            }
+            else
+            {
+                sign = false;
+                mantissa = real;
+            }
+
+            int exponent = 0;
+
+            while (mantissa < 1d)
+            {
+                mantissa *= 2d;
+                exponent--;
+            }
+
+            while (mantissa >= 2d)
+            {
+                mantissa /= 2d;
+                exponent++;
+            }
+
+            if ((context.Fpcr & FPCR.Fz) != 0 && exponent < minimumExp)
+            {
+                context.Fpsr |= FPSR.Ufc;
+
+                return FPZero(sign);
+            }
+
+            uint biasedExp = (uint)Math.Max(exponent - minimumExp + 1, 0);
+
+            if (biasedExp == 0u)
+            {
+                mantissa /= Math.Pow(2d, minimumExp - exponent);
+            }
+
+            uint intMant = (uint)Math.Floor(mantissa * Math.Pow(2d, f));
+            double error = mantissa * Math.Pow(2d, f) - (double)intMant;
+
+            if (biasedExp == 0u && (error != 0d || (context.Fpcr & FPCR.Ufe) != 0))
+            {
+                FPProcessException(FPException.Underflow, context, context.Fpcr);
+            }
+
+            bool overflowToInf;
+            bool roundUp;
+
+            switch (context.Fpcr.GetRoundingMode())
+            {
+                default:
+                case FPRoundingMode.ToNearest:
+                    roundUp = (error > 0.5d || (error == 0.5d && (intMant & 1u) == 1u));
+                    overflowToInf = true;
+                    break;
+
+                case FPRoundingMode.TowardsPlusInfinity:
+                    roundUp = (error != 0d && !sign);
+                    overflowToInf = !sign;
+                    break;
+
+                case FPRoundingMode.TowardsMinusInfinity:
+                    roundUp = (error != 0d && sign);
+                    overflowToInf = sign;
+                    break;
+
+                case FPRoundingMode.TowardsZero:
+                    roundUp = false;
+                    overflowToInf = false;
+                    break;
+            }
+
+            if (roundUp)
+            {
+                intMant++;
+
+                if (intMant == 1u << f)
+                {
+                    biasedExp = 1u;
+                }
+
+                if (intMant == 1u << (f + 1))
+                {
+                    biasedExp++;
+                    intMant >>= 1;
+                }
+            }
+
+            double result;
+
+            if (biasedExp >= (1u << e) - 1u)
+            {
+                result = overflowToInf ? FPInfinity(sign) : FPMaxNormal(sign);
+
+                FPProcessException(FPException.Overflow, context, context.Fpcr);
+
+                error = 1d;
+            }
+            else
+            {
+                result = BitConverter.Int64BitsToDouble(
+                    (int)((sign ? 1u : 0u) << 31 | (biasedExp & 0xFFu) << 23 | (intMant & 0x007FFFFFu)));
+            }
+
+            if (error != 0d)
+            {
+                FPProcessException(FPException.Inexact, context, context.Fpcr);
+            }
+
+            return result;
+        }
+        public static double FPRoundInt(double value)
+        {
+            ExecutionContext context = NativeInterface.GetContext();
+            FPCR fpcr = context.Fpcr;
+            FPRoundingMode roundingMode = fpcr.GetRoundingMode();
+
+            double result;
+
+            value.FPUnpack(out FPType fpType, out bool sign, out ulong op, context, fpcr);
+
+            switch (fpType)
+            {
+                case FPType.SNaN:
+                case FPType.QNaN:
+                    result = FPProcessNaN(fpType, op, context, fpcr);
+                    break;
+                case FPType.Infinity:
+                    result = FPInfinity(sign);
+                    break;
+                case FPType.Zero:
+                    result = FPZero(sign);
+                    break;
+                default:
+                    long int_result = (long)Math.Floor(value);
+                    double error = value - int_result;
+                    bool round_up = false;
+
+                    switch (roundingMode)
+                    {
+                        case FPRoundingMode.ToNearest:
+                            round_up = (error >= 0.5);
+                            break;
+                        case FPRoundingMode.TowardsPlusInfinity:
+                            round_up = (error != 0.0);
+                            break;
+                        case FPRoundingMode.TowardsMinusInfinity:
+                            round_up = false;
+                            break;
+                        case FPRoundingMode.TowardsZero:
+                            round_up = (error != 0.0 && int_result < 0);
+                            break;
+                    }
+
+                    if (round_up)
+                    {
+                        int_result++;
+                    }
+
+                    float real_result = int_result;
+
+                    if (real_result == 0.0)
+                    {
+                        result = FPZero(sign);
+                    }
+                    else
+                    {
+                        result = FPRound(value, context);
+                    }
+
+                    if (error != 0.0)
+                    {
+                        FPProcessException(FPException.Inexact, context, fpcr);
+                    }
+                    break;
             }
 
             return result;
