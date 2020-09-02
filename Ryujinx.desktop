@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Icon=Ryujinx
+Exec=Ryujinx
+Terminal=false
+Type=Application
+Categories=Game;Emulator;
+Name=Ryujinx
+GenericName=Switch Emulator
+Comment=A Switch Emulator
