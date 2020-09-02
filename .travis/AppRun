@@ -1,14 +1,15 @@
 #!/bin/bash
 
-mkdir -p $HOME/.local/share/icons/hicolor/scalable/apps && cp $APPDIR/yuzu.svg $HOME/.local/share/icons/hicolor/scalable/apps
+mkdir -p $HOME/.local/share/icons/hicolor/scalable/apps && cp $APPDIR/Ryujinx.png $HOME/.local/share/icons/hicolor/scalable/apps
+mkdir -p $XDG_CONFIG_HOME/Ryujinx/Logs
 
-GITVER=`wget -qO- https://www.github.com/pineappleEA/Pineapple-Linux-Binary/releases/tag/continuous | grep pineappleEA/Pineapple-Linux-Binary/commit/ | cut -d '"' -f 2 | cut -d '/' -f 5 | awk '!x[$0]++'` 
+GITVER=`wget -qO- https://www.github.com/qurious-pixel/Ryujinx/releases/tag/continuous | grep qurious-pixel/Ryujinx/commit/ | cut -d '"' -f 2 | cut -d '/' -f 5 | awk '!x[$0]++'` 
 APPVER=`cat $APPDIR/version.txt`
 
 if [[ -z "$GITVER" ]]; then
-	$APPDIR/AppRun-patched
+	$APPDIR/AppRun-patched > $XDG_CONFIG_HOME/Ryujinx/Logs/$(date '+%Y%m%d%H%M%S').log
 elif [ "$GITVER" = "$APPVER" ]; then
-	$APPDIR/usr/bin/yuzu
+	$APPDIR/AppRun-patched > $XDG_CONFIG_HOME/Ryujinx/Logs/$(date '+%Y%m%d%H%M%S').log
 else
 	$APPDIR/update.sh
 fi
