@@ -1087,42 +1087,19 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Vrintx_V(ArmEmitterContext context) {
-
+        public static void Vrintx_V(ArmEmitterContext context) 
+        { 
             OpCode32Simd op = (OpCode32Simd)context.CurrOp;
 
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if(op.Size == 1u || op.Size == 2u)
             {
-                EmitVectorUnaryOpF32(context, Intrinsic.X86Roundps, 0);
-            }
-            else
-            {
-                EmitVectorBinaryOpF32(context, (op1, op2) =>
-                {
-                    return EmitUnaryMathCall(context, nameof(Math.Round), op2);
-                });
+                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt));
             }
         }
 
         public static void Vrintx_S(ArmEmitterContext context)
         {
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
-            
-            if (Optimizations.FastFP && Optimizations.UseSse2)
-            {
-                if(op.Size == 2)
-                {
-                    EmitScalarUnaryOpF32(context, Intrinsic.X86Roundss, 0);
-                }
-                else
-                {
-                    EmitScalarUnaryOpF32(context, Intrinsic.X86Roundsd, 0);
-                }
-            }
-            else
-            {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.fpRo))
-            }
+            EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt));   
         }
 
         public static void Vrsqrte(ArmEmitterContext context)
