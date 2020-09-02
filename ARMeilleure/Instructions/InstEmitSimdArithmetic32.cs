@@ -1093,13 +1093,19 @@ namespace ARMeilleure.Instructions
 
             if(op.Size == 1u || op.Size == 2u)
             {
-                EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt));
+                EmitVectorUnaryOpF32(context, (op1) =>
+                {
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt), op1);
+                });
             }
         }
 
         public static void Vrintx_S(ArmEmitterContext context)
         {
-            EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt));   
+            EmitScalarUnaryOpF32(context, (op1) =>
+            {
+                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt), op1);
+            });
         }
 
         public static void Vrsqrte(ArmEmitterContext context)
