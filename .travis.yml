@@ -20,16 +20,18 @@ addons:
       - ccache
       - libsdl2-dev
       - libalut-dev
+      - dotnet-sdk
+      - openal
 install: 
   - mkdir -p "$HOME/.ccache"
   #- docker pull quriouspixel/pcsx2:18.04
   #- docker run -u root --env-file .travis/appimage/travis-ci.env -v $(pwd):/pcsx2 -v "$HOME/.ccache":/root/.ccache quriouspixel/pcsx2:18.04 /bin/bash /pcsx2/.travis/appimage/docker.sh
 script: 
   - ls -al
-  - mkdir build
-  - cd build
-  - cmake .. -GNinja
-  - ninja
+  - donet build -c Release
+  - ls -al
+  #- cmake .. -GNinja
+  #- ninja
 after_success: 
   - ls -al artifacts/
   - cd artifacts/
