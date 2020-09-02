@@ -22,7 +22,7 @@ namespace Ryujinx.Common.Logging
         public FileLogTarget(string path, string name, FileShare fileShare, FileMode fileMode)
         {
             // Ensure directory is present
-            DirectoryInfo logDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Logs"));
+            DirectoryInfo logDir = new DirectoryInfo(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Ryujinx/Logs"));
             logDir.Create();
 
             // Clean up old logs, should only keep 3
