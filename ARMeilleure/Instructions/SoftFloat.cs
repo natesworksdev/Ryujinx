@@ -1558,12 +1558,12 @@ namespace ARMeilleure.Instructions
             return result;
         }
 
-        private static float FPRound(float value, ExecutionContext context, FPRoundingMode roundingMode)
+        private static float FPRound(float value, ExecutionContext context)
         {
-            return FPRoundBase(value, context, roundingMode, false);
+            return FPRoundBase(value, context);
         }
 
-        private static float FPRoundBase(float real, ExecutionContext context, FPRoundingMode roundingMode, bool isBFloat16)
+        private static float FPRoundBase(float real, ExecutionContext context)
         {
             const int minimumExp = -126;
 
@@ -1742,7 +1742,7 @@ namespace ARMeilleure.Instructions
                     }
                     else
                     {
-                        result = FPRound(value, context, roundingMode);
+                        result = FPRound(value, context);
                     }
 
                     if(error != 0.0)
