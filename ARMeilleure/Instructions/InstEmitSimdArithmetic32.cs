@@ -1,6 +1,5 @@
 ﻿using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
-using ARMeilleure.State;
 using ARMeilleure.Translation;
 using System;
 using System.Diagnostics;
@@ -1310,46 +1309,6 @@ namespace ARMeilleure.Instructions
             }
 
             return result;
-        }
-
-        private static void EmitScalarRoundOpF32(ArmEmitterContext context, FPRoundingMode roundMode)
-        {
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
-
-            Operand n = GetVec(op.Vm);
-
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
-
-            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
-
-            if ((op.Size & 1) != 0)
-            {
-                res = context.VectorZeroUpper64(res);
-            }
-            else
-            {
-                res = context.VectorZeroUpper96(res);
-            }
-
-            context.Copy(GetVec(op.Vd), res);
-        }
-
-        private static void EmitVectorRoundOpF32(ArmEmitterContext context, FPRoundingMode roundMode)
-        {
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
-
-            Operand n = GetVec(op.Vm);
-
-            Intrinsic inst = (op.Size & 1) != 0 ? Intrinsic.X86Roundpd : Intrinsic.X86Roundps;
-
-            Operand res = context.AddIntrinsic(inst, n, Const(X86GetRoundControl(roundMode)));
-
-            if (op.RegisterSize == RegisterSize.Simd64)
-            {
-                res = context.VectorZeroUpper64(res);
-            }
-
-            context.Copy(GetVec(op.Vd), res);
         }
     }
 }
