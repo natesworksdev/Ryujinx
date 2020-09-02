@@ -1,0 +1,14 @@
+#!/bin/bash
+
+mkdir -p $HOME/.local/share/icons/hicolor/scalable/apps && cp $APPDIR/yuzu.svg $HOME/.local/share/icons/hicolor/scalable/apps
+
+GITVER=`wget -qO- https://www.github.com/pineappleEA/Pineapple-Linux-Binary/releases/tag/continuous | grep pineappleEA/Pineapple-Linux-Binary/commit/ | cut -d '"' -f 2 | cut -d '/' -f 5 | awk '!x[$0]++'` 
+APPVER=`cat $APPDIR/version.txt`
+
+if [[ -z "$GITVER" ]]; then
+	$APPDIR/AppRun-patched
+elif [ "$GITVER" = "$APPVER" ]; then
+	$APPDIR/usr/bin/yuzu
+else
+	$APPDIR/update.sh
+fi
