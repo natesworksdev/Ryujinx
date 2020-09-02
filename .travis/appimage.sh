@@ -5,7 +5,8 @@ cp Ryujinx/bin/Release/netcoreapp3.1/linux-x64/publish/* AppDir/usr/bin/
 cp Ryujinx/Ui/assets/Icon.png AppDir/Ryujinx.png
 cp Ryujinx.desktop AppDir/Ryujinx.desktop
 cp .travis/update.sh AppDir/update.sh
-curl -sL https://github.com/RPCS3/AppImageKit-checkrt/releases/download/continuous2/AppRun-patched-x86_64 -o AppDir/AppRun
+cp .travis/AppRun AppDir/AppRun
+curl -sL https://github.com/RPCS3/AppImageKit-checkrt/releases/download/continuous2/AppRun-patched-x86_64 -o AppDir/AppRun-patched
 curl -sL https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-x86_64 -o ./AppDir/runtime
 mkdir -p AppDir/usr/share/applications && cp ./AppDir/Ryujinx.desktop ./AppDir/usr/share/applications
 mkdir -p AppDir/usr/share/icons && cp ./AppDir/Ryujinx.png ./AppDir/usr/share/icons
@@ -21,6 +22,7 @@ cp .travis/Config.json ./AppDir/usr/share/
 #printf "#include <bits/stdc++.h>\nint main(){std::make_exception_ptr(0);std::pmr::get_default_resource();}" | $CXX -x c++ -std=c++2a -o $HOME/squashfs-root/usr/optional/checker -
 
 chmod a+x ./AppDir/AppRun
+chmod a+x ./AppDir/AppRun-patched
 chmod a+x ./AppDir/runtime
 chmod a+x ./AppDir/usr/bin/Ryujinx
 chmod a+x ./AppDir/update.sh
