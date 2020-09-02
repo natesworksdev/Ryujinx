@@ -2,6 +2,7 @@
 
 mkdir -p $HOME/.local/share/icons/hicolor/scalable/apps && cp $APPDIR/Ryujinx.png $HOME/.local/share/icons/hicolor/scalable/apps
 mkdir -p $XDG_CONFIG_HOME/Ryujinx/Logs
+cp $AppDir/usr/share/Config.json $XDG_CONFIG_HOME/Ryujinx
 
 GITVER=`wget -qO- https://www.github.com/qurious-pixel/Ryujinx/releases/tag/continuous | grep qurious-pixel/Ryujinx/commit/ | cut -d '"' -f 2 | cut -d '/' -f 5 | awk '!x[$0]++'` 
 APPVER=`cat $APPDIR/version.txt`
