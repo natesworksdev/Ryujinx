@@ -1,6 +1,5 @@
 sudo: false
 services: docker
-language: cpp
 cache: ccache
 dotnet: 3.0
 git:
