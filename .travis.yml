@@ -24,9 +24,7 @@ addons:
       - libopenal-dev
 install: 
   - mkdir -p "$HOME/.ccache"
-  - dotnet restore
-  #- docker pull quriouspixel/pcsx2:18.04
-  #- docker run -u root --env-file .travis/appimage/travis-ci.env -v $(pwd):/pcsx2 -v "$HOME/.ccache":/root/.ccache quriouspixel/pcsx2:18.04 /bin/bash /pcsx2/.travis/appimage/docker.sh
+  #- dotnet restore
 script: 
   - ls -al
   - dotnet build -c Release
