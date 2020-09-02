@@ -3,7 +3,7 @@
 mkdir -p AppDir/usr/bin
 cp Ryujinx/bin/Release/netcoreapp3.1/linux-x64/publish/* AppDir/usr/bin/
 cp Ryujinx/Ui/assets/Icon.png AppDir/Ryujinx.png
-curl -sL https://github.com/RPCS3/AppImageKit-checkrt/releases/download/continuous2/AppRun-patched-x86_64 -o AppRun/AppRun
+curl -sL https://github.com/RPCS3/AppImageKit-checkrt/releases/download/continuous2/AppRun-patched-x86_64 -o AppDir/AppRun
 curl -sL https://github.com/AppImage/AppImageKit/releases/download/continuous/runtime-x86_64 -o ./AppDir/runtime
 mkdir -p AppDir/usr/share/applications && cp ./AppDir/Ryujinx.desktop ./AppDir/usr/share/applications
 mkdir -p AppDir/usr/share/icons && cp ./AppDir/Ryujinx.png ./AppDir/usr/share/icons
