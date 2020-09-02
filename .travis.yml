@@ -2,8 +2,7 @@ sudo: false
 services: docker
 language: cpp
 cache: ccache
-compiler: 
-  - gcc
+dotnet: 3.0
 git:
   clone: true
   submodules: true
@@ -20,8 +19,8 @@ addons:
       - ccache
       - libsdl2-dev
       - libalut-dev
-      - dotnet-sdk
-      - openal
+      #- dotnet-sdk
+      - libopenal-dev
 install: 
   - mkdir -p "$HOME/.ccache"
   #- docker pull quriouspixel/pcsx2:18.04
