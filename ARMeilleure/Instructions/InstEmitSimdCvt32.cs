@@ -323,6 +323,25 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        // VRINTX (floating-point).
+        public static void Vrint_X(ArmEmitterContext context)
+        {
+            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
+
+            if (Optimizations.UseSse2)
+            {
+                EmitScalarUnaryOpSimd32(context, (m) =>
+                {
+                    Intrinsic inst = (op.Size & 1) == 0 ? Intrinsic.X86Roundss : Intrinsic.X86Roundsd;
+                    return context.AddIntrinsic(inst, m, Const(X86GetRoundControl(FPRoundingMode.ToNearest)));
+                });
+            }
+            else
+            {
+                EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Round), op1));
+            }
+        }
+
         // VRINTZ (floating-point).
         public static void Vrint_Z(ArmEmitterContext context)
         {

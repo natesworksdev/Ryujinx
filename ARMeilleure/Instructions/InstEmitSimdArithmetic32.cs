@@ -1087,27 +1087,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Vrintx_V(ArmEmitterContext context) 
-        { 
-            OpCode32Simd op = (OpCode32Simd)context.CurrOp;
-
-            if(op.Size == 1u || op.Size == 2u)
-            {
-                EmitVectorUnaryOpF32(context, (op1) =>
-                {
-                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt), op1);
-                });
-            }
-        }
-
-        public static void Vrintx_S(ArmEmitterContext context)
-        {
-            EmitScalarUnaryOpF32(context, (op1) =>
-            {
-                return EmitSoftFloatCall(context, nameof(SoftFloat32.FPRoundInt), op1);
-            });
-        }
-
         public static void Vrsqrte(ArmEmitterContext context)
         {
             OpCode32SimdSqrte op = (OpCode32SimdSqrte)context.CurrOp;
