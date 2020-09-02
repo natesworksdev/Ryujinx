@@ -1,0 +1,43 @@
+sudo: false
+services: docker
+language: cpp
+cache: ccache
+compiler: 
+  - gcc
+git:
+  clone: true
+  submodules: true
+  depth: 3
+addons: 
+  apt: 
+    sources:
+    packages: 
+      - p7zip-full
+      - cmake
+      - ninja-build
+      - zenity
+      - fuse
+      - ccache
+install: 
+  - mkdir -p "$HOME/.ccache"
+  #- docker pull quriouspixel/pcsx2:18.04
+  #- docker run -u root --env-file .travis/appimage/travis-ci.env -v $(pwd):/pcsx2 -v "$HOME/.ccache":/root/.ccache quriouspixel/pcsx2:18.04 /bin/bash /pcsx2/.travis/appimage/docker.sh
+script: 
+  - ls -al
+after_success: 
+  - ls -al artifacts/
+  - cd artifacts/
+  #- wget -c https://github.com/probonopd/uploadtool/raw/master/upload.sh
+  #- chmod a+x upload.sh
+  #- bash upload.sh PCSX2*
+branches: 
+  except: 
+    - /^(?i:continuous.*)$/
+deploy: 
+  api_key: $GITHUB_TOKEN
+  file: artifacts/*
+  file_glob: true
+  provider: releases
+  skip_cleanup: true
+  true: 
+    tags: true
