@@ -657,7 +657,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Be aware that this is an expensive operation, avoid calling it unless strictly needed.
         /// This may cause data corruption if the memory is already being used for something else on the CPU side.
         /// </summary>
-        public void Flush(bool blacklist = true)
+        /// <param name="tracked">Whether or not the flush triggers write tracking. If it doesn't, the texture will not be blacklisted for scaling either.</param>
+        public void Flush(bool tracked = true)
         {
             IsModified = false;
 
@@ -666,7 +667,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return; // Flushing this format is not supported, as it may have been converted to another host format.
             }
 
-            _context.PhysicalMemory.WriteUntracked(Address, GetTextureDataFromGpu(blacklist));
+            if (tracked)
+            {
+                _context.PhysicalMemory.Write(Address, GetTextureDataFromGpu(tracked));
+            }
+            else
+            {
+                _context.PhysicalMemory.WriteUntracked(Address, GetTextureDataFromGpu(tracked));
+            }
         }
 
         /// <summary>

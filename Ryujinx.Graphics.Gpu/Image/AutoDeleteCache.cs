@@ -45,7 +45,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (oldestTexture.IsModified)
                 {
-                    oldestTexture.Flush(false); // The texture must be flushed if it falls out of the auto delete cache.
+                    // The texture must be flushed if it falls out of the auto delete cache.
+                    // Flushes out of the auto delete cache do not trigger write tracking,
+                    // as it is expected that other overlapping textures exist that have more up-to-date contents.
+                    oldestTexture.Flush(false); 
                 }
 
                 _textures.RemoveFirst();
