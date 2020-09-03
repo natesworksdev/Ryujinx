@@ -2,7 +2,6 @@
 using Ryujinx.Graphics.OpenGL.Image;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -22,12 +21,7 @@ namespace Ryujinx.Graphics.OpenGL
         private const int DisposedLiveFrames = 2;
 
         private readonly object _lock = new object();
-        private readonly Dictionary<uint, List<DisposedTexture>> _textures = new Dictionary<uint, List<DisposedTexture>>();
-
-        private uint GetTextureKey(TextureCreateInfo info)
-        {
-            return ((uint)info.Width) | ((uint)info.Height << 16);
-        }
+        private readonly Dictionary<TextureCreateInfo, List<DisposedTexture>> _textures = new Dictionary<TextureCreateInfo, List<DisposedTexture>>();
 
         /// <summary>
         /// Add a texture that is not being used anymore to the resource pool to be used later.
@@ -38,13 +32,11 @@ namespace Ryujinx.Graphics.OpenGL
         {
             lock (_lock)
             {
-                uint key = GetTextureKey(view.Info);
-
                 List<DisposedTexture> list;
-                if (!_textures.TryGetValue(key, out list))
+                if (!_textures.TryGetValue(view.Info, out list))
                 {
                     list = new List<DisposedTexture>();
-                    _textures.Add(key, list);
+                    _textures.Add(view.Info, list);
                 }
 
                 list.Add(new DisposedTexture()
@@ -67,17 +59,15 @@ namespace Ryujinx.Graphics.OpenGL
         {
             lock (_lock)
             {
-                uint key = GetTextureKey(info);
-
                 List<DisposedTexture> list;
-                if (!_textures.TryGetValue(key, out list))
+                if (!_textures.TryGetValue(info, out list))
                 {
                     return null;
                 }
 
                 foreach (DisposedTexture texture in list)
                 {
-                    if (texture.View.Info.Equals(info) && scaleFactor == texture.ScaleFactor)
+                    if (scaleFactor == texture.ScaleFactor)
                     {
                         list.Remove(texture);
                         return texture.View;
