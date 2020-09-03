@@ -371,6 +371,12 @@ namespace ARMeilleure.Translation
                 return funcAddress < address + size && address < funcAddress + funcSize;
             }
 
+            // Make a copy of all overlapping functions, as we can't otherwise
+            // remove elements from the collection we are iterating.
+            // Doing that before clearing the rejit queue is fine, even
+            // if a function is translated after this, it would only replace
+            // a existing function, as rejit is only triggered on functions
+            // that were already executed before.
             var toDelete = _funcs.Where(x => OverlapsWith(x.Key, x.Value.GuestSize, address, size)).ToArray();
 
             if (toDelete.Length != 0)

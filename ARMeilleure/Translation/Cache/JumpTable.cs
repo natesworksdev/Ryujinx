@@ -16,8 +16,6 @@ namespace ARMeilleure.Translation.Cache
         // reserved specifically for each call.
         // The _dependants dictionary can be used to update the hostAddress for any functions that change.
 
-        private const int DynamicEntryTag = 1 << 31;
-
         public const int JumpTableStride = 16; // 8 byte guest address, 8 byte host address.
 
         private const int JumpTableSize = 1048576;
@@ -43,6 +41,8 @@ namespace ARMeilleure.Translation.Cache
 
         private const int DynamicTableSize = 1048576;
         private const int DynamicTableByteSize = DynamicTableSize * DynamicTableStride;
+
+        private const int DynamicEntryTag = 1 << 31;
 
         private readonly ReservedRegion _jumpRegion;
         private readonly ReservedRegion _dynamicRegion;
@@ -195,8 +195,11 @@ namespace ARMeilleure.Translation.Cache
                     {
                         IntPtr addr = GetEntryAddressDynamicTable(entry);
 
-                        Marshal.WriteInt64(addr, 0, 0L);
-                        Marshal.WriteInt64(addr, 8, 0L);
+                        for (int j = 0; j < DynamicTableElems; j++)
+                        {
+                            Marshal.WriteInt64(addr + j * JumpTableStride, 0, 0L);
+                            Marshal.WriteInt64(addr + j * JumpTableStride, 8, 0L);
+                        }
 
                         DynTable.FreeEntry(entry);
                     }
