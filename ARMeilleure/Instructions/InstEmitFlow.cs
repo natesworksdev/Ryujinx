@@ -31,7 +31,14 @@ namespace ARMeilleure.Instructions
 
             context.Copy(GetIntOrZR(context, RegisterAlias.Lr), Const(op.Address + 4));
 
-            EmitCall(context, (ulong)op.Immediate);
+            if (op.Immediate != context.BaseAddress)
+            {
+                EmitCall(context, (ulong)op.Immediate);
+            }
+            else
+            {
+                context.Return(Const((ulong)op.Immediate));
+            }
         }
 
         public static void Blr(ArmEmitterContext context)
