@@ -386,7 +386,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // Swizzles after the number of components a format defines are "undefined".
             // We allow these to not be equal under certain circumstances.
             // This can only happen when there are less than 4 components in a format.
-            // It tends to happen when depth textures are sampled.
+            // It tends to happen when float depth textures are sampled.
 
             bool lhsDefined = (swizzleLhs - SwizzleComponent.Red) < lhsComponents;
             bool rhsDefined = (swizzleRhs - SwizzleComponent.Red) < rhsComponents;
@@ -403,7 +403,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 // Undefined swizzle can be matched by a forced value (0, 1), exact equality, or expected value.
                 // For example, R___ matches R001, RGBA but not RBGA.
-                return defined == undefined || defined < SwizzleComponent.Red || undefined == SwizzleComponent.Red + component;
+                return defined == undefined || defined < SwizzleComponent.Red || defined == SwizzleComponent.Red + component;
             }
         }
 
