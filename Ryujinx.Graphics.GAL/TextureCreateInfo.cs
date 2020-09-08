@@ -119,7 +119,7 @@ namespace Ryujinx.Graphics.GAL
 
         public override int GetHashCode()
         {
-            return Width | (Height << 16);
+            return HashCode.Combine(Width, Height);
         }
 
         bool IEquatable<TextureCreateInfo>.Equals(TextureCreateInfo other)
