@@ -11,6 +11,7 @@ using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using ZRA.NET.Streaming;
 
@@ -160,7 +161,8 @@ namespace Ryujinx.Ui
 
                         TreeIter? parentIter = null;
 
-                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.*ca"))
+                        IEnumerable<DirectoryEntryEx> fileEntries = pfs.EnumerateEntries("/", "*.nca").Concat(pfs.EnumerateEntries("/", "*.zca"));
+                        foreach (DirectoryEntryEx fileEntry in fileEntries)
                         {
                             pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 

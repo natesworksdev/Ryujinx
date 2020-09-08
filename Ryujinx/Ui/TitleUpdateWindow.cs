@@ -12,6 +12,7 @@ using Ryujinx.HLE.FileSystem;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using ZRA.NET.Streaming;
 
@@ -86,7 +87,8 @@ namespace Ryujinx.Ui
 
                     _virtualFileSystem.ImportTickets(nsp);
 
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.*ca"))
+                    IEnumerable<DirectoryEntryEx> fileEntries = nsp.EnumerateEntries("/", "*.nca").Concat(nsp.EnumerateEntries("/", "*.zca"));
+                    foreach (DirectoryEntryEx fileEntry in fileEntries)
                     {
                         nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 

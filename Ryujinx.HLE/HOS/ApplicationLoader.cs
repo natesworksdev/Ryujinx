@@ -89,7 +89,8 @@ namespace Ryujinx.HLE.HOS
 
             _fileSystem.ImportTickets(fs);
 
-            foreach (DirectoryEntryEx fileEntry in fs.EnumerateEntries("/", "*.*ca"))
+            IEnumerable<DirectoryEntryEx> fileEntries = fs.EnumerateEntries("/", "*.nca").Concat(fs.EnumerateEntries("/", "*.zca"));
+            foreach (DirectoryEntryEx fileEntry in fileEntries)
             {
                 fs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
@@ -243,7 +244,8 @@ namespace Ryujinx.HLE.HOS
 
                     _fileSystem.ImportTickets(nsp);
 
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.*ca"))
+                    IEnumerable<DirectoryEntryEx> fileEntries = nsp.EnumerateEntries("/", "*.nca").Concat(nsp.EnumerateEntries("/", "*.zca"));
+                    foreach (DirectoryEntryEx fileEntry in fileEntries)
                     {
                         nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
                         

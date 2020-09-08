@@ -13,6 +13,7 @@ using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Json;
@@ -487,7 +488,8 @@ namespace Ryujinx.Ui
             _virtualFileSystem.ImportTickets(pfs);
 
             // Find the Control NCA and store it in variable called controlNca
-            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.*ca"))
+            IEnumerable<DirectoryEntryEx> fileEntries = pfs.EnumerateEntries("/", "*.nca").Concat(pfs.EnumerateEntries("/", "*.zca"));
+            foreach (DirectoryEntryEx fileEntry in fileEntries)
             {
                 pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
@@ -667,7 +669,8 @@ namespace Ryujinx.Ui
 
                     _virtualFileSystem.ImportTickets(nsp);
 
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.*ca"))
+                    IEnumerable<DirectoryEntryEx> fileEntries = nsp.EnumerateEntries("/", "*.nca").Concat(nsp.EnumerateEntries("/", "*.zca"));
+                    foreach (DirectoryEntryEx fileEntry in fileEntries)
                     {
                         nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 

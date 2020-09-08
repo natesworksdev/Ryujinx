@@ -1,4 +1,4 @@
-﻿using Gtk;
+using Gtk;
 using LibHac;
 using LibHac.Account;
 using LibHac.Common;
@@ -19,8 +19,10 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
+using ZRA.NET.Streaming;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
 
@@ -78,7 +80,7 @@ namespace Ryujinx.Ui
             };
 
             string ext    = System.IO.Path.GetExtension(_gameTableStore.GetValue(_rowIter, 9).ToString()).ToLower();
-            bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci";
+            bool   hasNca = ext == ".nca" || ext == ".nsp" || ext == ".pfs0" || ext == ".xci" || ext == ".zca" || ext == ".zci" || ext == ".zsp";
 
             MenuItem extractMenu = new MenuItem("Extract Data");
 
@@ -287,11 +289,13 @@ namespace Ryujinx.Ui
 
                         if ((System.IO.Path.GetExtension(sourceFile).ToLower() == ".nsp")  ||
                             (System.IO.Path.GetExtension(sourceFile).ToLower() == ".pfs0") ||
-                            (System.IO.Path.GetExtension(sourceFile).ToLower() == ".xci"))
+                            (System.IO.Path.GetExtension(sourceFile).ToLower() == ".xci") ||
+                            (System.IO.Path.GetExtension(sourceFile).ToLower() == ".zci") ||
+                            (System.IO.Path.GetExtension(sourceFile).ToLower() == ".zsp"))
                         {
                             PartitionFileSystem pfs;
 
-                            if (System.IO.Path.GetExtension(sourceFile) == ".xci")
+                            if (System.IO.Path.GetExtension(sourceFile) == ".xci" || System.IO.Path.GetExtension(sourceFile) == ".zci")
                             {
                                 Xci xci = new Xci(_virtualFileSystem.KeySet, file.AsStorage());
 
@@ -302,11 +306,16 @@ namespace Ryujinx.Ui
                                 pfs = new PartitionFileSystem(file.AsStorage());
                             }
 
-                            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+                            IEnumerable<DirectoryEntryEx> fileEntries = pfs.EnumerateEntries("/", "*.nca").Concat(pfs.EnumerateEntries("/", "*.zca"));
+                            foreach (DirectoryEntryEx fileEntry in fileEntries)
                             {
                                 pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                                IStorage ncaStorage = System.IO.Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                                    ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                                    : ncaFile.AsStorage();
+
+                                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
 
                                 if (nca.Header.ContentType == NcaContentType.Program)
                                 {
@@ -326,6 +335,10 @@ namespace Ryujinx.Ui
                         else if (System.IO.Path.GetExtension(sourceFile).ToLower() == ".nca")
                         {
                             mainNca = new Nca(_virtualFileSystem.KeySet, file.AsStorage());
+                        }
+                        else if (System.IO.Path.GetExtension(sourceFile).ToLower() == ".zca")
+                        {
+                            mainNca = new Nca(_virtualFileSystem.KeySet, new ZraDecompressionStream(file).AsStorage());
                         }
 
                         if (mainNca == null)
@@ -353,11 +366,16 @@ namespace Ryujinx.Ui
 
                                 _virtualFileSystem.ImportTickets(nsp);
 
-                                foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
+                                IEnumerable<DirectoryEntryEx> fileEntries = nsp.EnumerateEntries("/", "*.nca").Concat(nsp.EnumerateEntries("/", "*.zca"));
+                                foreach (DirectoryEntryEx fileEntry in fileEntries)
                                 {
                                     nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                                    Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
+                                    IStorage ncaStorage = System.IO.Path.GetExtension(fileEntry.Name).ToLower() == ".zca"
+                                        ? new ZraDecompressionStream(ncaFile.AsStream()).AsStorage()
+                                        : ncaFile.AsStorage();
+
+                                    Nca nca = new Nca(_virtualFileSystem.KeySet, ncaStorage);
 
                                     if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
                                     {
