@@ -82,12 +82,12 @@ namespace Ryujinx.Graphics.Gpu.State
             return format switch
             {
                 RtFormat.D32Float          => new FormatInfo(Format.D32Float,          1, 1, 4,  1),
-                RtFormat.D16Unorm          => new FormatInfo(Format.D16Unorm,          1, 1, 2,  4),
-                RtFormat.D24UnormS8Uint    => new FormatInfo(Format.D24UnormS8Uint,    1, 1, 4,  4),
-                RtFormat.D24Unorm          => new FormatInfo(Format.D24UnormS8Uint,    1, 1, 4,  4),
-                RtFormat.S8UintD24Unorm    => new FormatInfo(Format.D24UnormS8Uint,    1, 1, 4,  4),
+                RtFormat.D16Unorm          => new FormatInfo(Format.D16Unorm,          1, 1, 2,  1),
+                RtFormat.D24UnormS8Uint    => new FormatInfo(Format.D24UnormS8Uint,    1, 1, 4,  2),
+                RtFormat.D24Unorm          => new FormatInfo(Format.D24UnormS8Uint,    1, 1, 4,  1),
+                RtFormat.S8UintD24Unorm    => new FormatInfo(Format.D24UnormS8Uint,    1, 1, 4,  2),
                 RtFormat.S8Uint            => new FormatInfo(Format.S8Uint,            1, 1, 1,  1),
-                RtFormat.D32FloatS8Uint    => new FormatInfo(Format.D32FloatS8Uint,    1, 1, 8,  4),
+                RtFormat.D32FloatS8Uint    => new FormatInfo(Format.D32FloatS8Uint,    1, 1, 8,  2),
                 RtFormat.R32G32B32A32Float => new FormatInfo(Format.R32G32B32A32Float, 1, 1, 16, 4),
                 RtFormat.R32G32B32A32Sint  => new FormatInfo(Format.R32G32B32A32Sint,  1, 1, 16, 4),
                 RtFormat.R32G32B32A32Uint  => new FormatInfo(Format.R32G32B32A32Uint,  1, 1, 16, 4),
