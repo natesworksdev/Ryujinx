@@ -278,6 +278,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             width  <<= _firstLevel;
             height <<= _firstLevel;
+            int blockWidth = Info.FormatInfo.BlockWidth;
+            int blockHeight = Info.FormatInfo.BlockHeight;
 
             if (Info.Target == Target.Texture3D)
             {
@@ -288,7 +290,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 depthOrLayers = _viewStorage.Info.DepthOrLayers;
             }
 
-            _viewStorage.RecreateStorageOrView(width, height, depthOrLayers);
+            _viewStorage.RecreateStorageOrView(width, height, blockWidth, blockHeight, depthOrLayers);
 
             foreach (Texture view in _viewStorage._views)
             {
@@ -306,8 +308,26 @@ namespace Ryujinx.Graphics.Gpu.Image
                     viewDepthOrLayers = view.Info.DepthOrLayers;
                 }
 
-                view.RecreateStorageOrView(viewWidth, viewHeight, viewDepthOrLayers);
+                view.RecreateStorageOrView(viewWidth, viewHeight, blockWidth, blockHeight, viewDepthOrLayers);
             }
+        }
+
+        /// <summary>
+        /// Recreates the texture storage (or view, in the case of child textures) of this texture.
+        /// This allows recreating the texture with a new size.
+        /// A copy is automatically performed from the old to the new texture.
+        /// </summary>
+        /// <param name="width">The new texture width</param>
+        /// <param name="height">The new texture height</param>
+        /// <param name="width">The block width related to the given width</param>
+        /// <param name="height">The block height related to the given height</param>
+        /// <param name="depthOrLayers">The new texture depth (for 3D textures) or layers (for layered textures)</param>
+        private void RecreateStorageOrView(int width, int height, int blockWidth, int blockHeight, int depthOrLayers)
+        {
+            RecreateStorageOrView(
+                BitUtils.DivRoundUp(width * Info.FormatInfo.BlockWidth, blockWidth),
+                BitUtils.DivRoundUp(height * Info.FormatInfo.BlockHeight, blockHeight), 
+                depthOrLayers);
         }
 
         /// <summary>
