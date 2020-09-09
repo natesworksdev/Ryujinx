@@ -848,8 +848,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             TextureViewCompatibility result = TextureViewCompatibility.Full;
 
-            result = TextureCompatibility.PropagateViewCompatability(result, TextureCompatibility.ViewSizeMatches(Info, info, firstLevel));
-            result = TextureCompatibility.PropagateViewCompatability(result, TextureCompatibility.ViewTargetCompatible(Info, info));
+            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewSizeMatches(Info, info, firstLevel));
+            result = TextureCompatibility.PropagateViewCompatibility(result, TextureCompatibility.ViewTargetCompatible(Info, info));
 
             return (Info.SamplesInX == info.SamplesInX &&
                     Info.SamplesInY == info.SamplesInY) ? result : TextureViewCompatibility.Incompatible;

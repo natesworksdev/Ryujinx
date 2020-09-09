@@ -152,7 +152,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="first">The first compatibility level</param>
         /// <param name="second">The second compatibility level</param>
         /// <returns>The minimum compatibility level of two provided view compatibility results</returns>
-        public static TextureViewCompatibility PropagateViewCompatability(TextureViewCompatibility first, TextureViewCompatibility second)
+        public static TextureViewCompatibility PropagateViewCompatibility(TextureViewCompatibility first, TextureViewCompatibility second)
         {
             if (first == TextureViewCompatibility.Incompatible || second == TextureViewCompatibility.Incompatible)
             {

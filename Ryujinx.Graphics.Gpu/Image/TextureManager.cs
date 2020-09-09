@@ -16,9 +16,9 @@ namespace Ryujinx.Graphics.Gpu.Image
     {
         private struct OverlapInfo
         {
-            public TextureViewCompatibility Compatibility;
-            public int FirstLayer;
-            public int FirstLevel;
+            public TextureViewCompatibility Compatibility { get; }
+            public int FirstLayer { get; }
+            public int FirstLevel { get; }
 
             public OverlapInfo(TextureViewCompatibility compatibility, int firstLayer, int firstLevel)
             {
