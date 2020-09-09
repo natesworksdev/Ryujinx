@@ -276,10 +276,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="depthOrLayers">The new texture depth (for 3D textures) or layers (for layered textures)</param>
         public void ChangeSize(int width, int height, int depthOrLayers)
         {
-            width  <<= _firstLevel;
-            height <<= _firstLevel;
             int blockWidth = Info.FormatInfo.BlockWidth;
             int blockHeight = Info.FormatInfo.BlockHeight;
+
+            width  <<= _firstLevel;
+            height <<= _firstLevel;
 
             if (Info.Target == Target.Texture3D)
             {
@@ -1078,7 +1079,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             DeleteIfNotUsed();
 
-            return newRefCount == 0;
+            return newRefCount <= 0;
         }
 
         /// <summary>
