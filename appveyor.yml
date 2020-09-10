@@ -28,9 +28,13 @@ build_script:
     #7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
     
     bash -c "echo $env:APPVEYOR_BUILD_FOLDER" 
+    
     bash -c "ls -al $pwd"
+    
     bash -c "ls -al $env:APPVEYOR_BUILD_FOLDER"
+    
     -sh: echo $env:APPVEYOR_BUILD_FOLDER
+    
     -sh: echo $pwd
     
 artifacts:
