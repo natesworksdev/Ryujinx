@@ -13,25 +13,28 @@ build_script:
 - ps: >-
     dotnet --version
 
-    dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
+    #dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
 
     dotnet publish -c $env:config -r linux-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
 
-    dotnet publish -c $env:config -r osx-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
+    #dotnet publish -c $env:config -r osx-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
 
-    7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\win-x64\publish\
+    #7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\win-x64\publish\
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\linux-x64\publish\
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar.gz ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar
 
-    7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
+    #7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
     
-    bash -c "chmod +x $env:APPVEYOR_BUILD_FOLDER/appimage.sh" 
-    bash -c "$env:APPVEYOR_BUILD_FOLDER/appimage.sh"
+    bash -c "echo $env:APPVEYOR_BUILD_FOLDER" 
+    bash -c "ls -al $pwd"
+    bash -c "ls -al $env:APPVEYOR_BUILD_FOLDER"
+    -sh: echo $env:APPVEYOR_BUILD_FOLDER
+    -sh: echo $pwd
     
 artifacts:
-- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-win_x64.zip
+#- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-win_x64.zip
 - path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-linux_x64.tar.gz
-- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-osx_x64.zip
-- path: Ryujinx-x86_64.AppImage
+#- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-osx_x64.zip
+#- path: Ryujinx-x86_64.AppImage
