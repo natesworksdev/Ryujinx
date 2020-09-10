@@ -27,15 +27,15 @@ build_script:
 
     #7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
     
-    bash -c "echo $env:APPVEYOR_BUILD_FOLDER" 
+    bash -c "ls -al C:\\projects\\ryujinx\\" 
     
-    bash -c "ls -al $pwd"
+    $pwd
     
-    bash -c "ls -al $env:APPVEYOR_BUILD_FOLDER"
+    bash -c "chmod +x C:\\projects\\ryujinx\\appimage.sh"
     
-    -sh: echo $env:APPVEYOR_BUILD_FOLDER
+    bash -c "sh C:\\projects\\ryujinx\\appimage.sh"
     
-    -sh: echo $pwd
+    bash -c "ls -al C:\\projects\\ryujinx\\"
     
 artifacts:
 #- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-win_x64.zip
