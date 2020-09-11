@@ -268,24 +268,13 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseSse2)
             {
                 OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
-                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
-                {
-                    Operand mask = X86GetScalar(context, -0f);
-                    Operand neg, mul;
 
-                    if (op.Size == 2)
-                    {
-                        neg = context.AddIntrinsic(Intrinsic.X86Xorps, mask, op1);
-                        mul = context.AddIntrinsic(Intrinsic.X86Mulss, op2, op3);
-                        return context.AddIntrinsic(Intrinsic.X86Addss, neg, mul);
-                    }
-                    else
-                    {
-                        neg = context.AddIntrinsic(Intrinsic.X86Xorpd, mask, op1);
-                        mul = context.AddIntrinsic(Intrinsic.X86Mulsd, op2, op3);
-                        return context.AddIntrinsic(Intrinsic.X86Addsd, neg, mul);
-                    }
-                });
+                bool doublePrecision = (op.Size & 1) != 0;
+                OperandType type = doublePrecision ? OperandType.FP64 : OperandType.FP32;
+                Operand dest = ExtractScalar(context, type, op.Vd);
+
+                InsertScalar(context, op.Vd, context.Negate(dest));
+                EmitScalarTernaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd, Intrinsic.X86Addss, Intrinsic.X86Addsd);
             }
             else
             {

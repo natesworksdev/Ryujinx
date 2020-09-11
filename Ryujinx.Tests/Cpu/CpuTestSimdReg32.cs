@@ -365,16 +365,17 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VNMFS.<size> <Vd>, <Vm>, <Vn>")]
-        public void Vnmfs([Values(0u)] uint rd,
-                         [Values(1u, 0u)] uint rn,
-                         [Values(2u, 0u)] uint rm,
+        [Test, Pairwise, Description("VFNMS.<size> <Sd>, <Sm>, <Sn>")]
+        public void Vfnms([Values(0u, 1u, 4u, 8u, 15u)] uint rd,
+                         [Values(0u, 1u, 4u, 8u, 15u)] uint rn,
+                         [Values(0u, 1u, 4u, 8u, 15u)] uint rm,
                          [Values(2u, 3u)] uint size,
                          [Random(RndCnt)] ulong z,
                          [Random(RndCnt)] ulong a,
                          [Random(RndCnt)] ulong b)
         {
-            uint opcode = 0xe900A00; // VNMFS.F32 D0, D0, D0
+
+            uint opcode = 0xee900a00; // VNMFS.F32 S0, S0, S0
 
             opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
             opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
