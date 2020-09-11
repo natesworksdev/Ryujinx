@@ -55,8 +55,14 @@ for:
       cat << 'EOF' > ./AppDir/AppRun 
       #!/bin/bash
       #
-      cp $APPDIR/usr/share/Config.json $XDG_CONFIG_HOME/Ryujinx
+      if [ ! -f $XDG_CONFIG_HOME/Ryujinx/Config.json ]
+      then
+      mkdir -p $XDG_CONFIG_HOME/Ryujinx/
+      cp $APPDIR/usr/share/Config.json $XDG_CONFIG_HOME/Ryujinx/
       $APPDIR/AppRun1
+      else
+      $APPDIR/AppRun1
+      fi
       EOF
       
       chmod a+x ./AppDir/AppRun ;
