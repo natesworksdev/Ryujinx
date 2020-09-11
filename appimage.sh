@@ -15,6 +15,8 @@ chmod a+x ./AppDir/AppRun
 chmod a+x ./AppDir/runtime
 chmod a+x ./AppDir/usr/bin/Ryujinx
 
-wget "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
+curl -sLO "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage"
 chmod a+x appimagetool-x86_64.AppImage
+
 ./appimagetool-x86_64.AppImage AppDir/
+mv Ryujinx-x86_64.AppImage ryujinx$config_name$APPVEYOR_BUILD_VERSION-linux_x64.AppImage

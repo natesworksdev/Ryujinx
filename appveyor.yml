@@ -2,43 +2,47 @@ version: 1.0.{build}
 branches:
   only:
   - master
-image: 
+  - appveyor4
+image:
   - Visual Studio 2019
+  - Ubuntu
 environment:
   appveyor_dotnet_runtime: netcoreapp3.1
   matrix:
     - config: Release
       config_name: '-'
+cache:
+- Ryujinx/bin -> appimage.sh
 build_script:
 - ps: >-
     dotnet --version
 
-    #dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
+    dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
 
     dotnet publish -c $env:config -r linux-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
 
-    #dotnet publish -c $env:config -r osx-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
+    dotnet publish -c $env:config -r osx-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
 
-    #7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\win-x64\publish\
+    if ($isWindows) {
+    
+    7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\win-x64\publish\
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\linux-x64\publish\
 
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar.gz ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar
 
-    #7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
+    7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
     
-    bash -c "ls -al C:\\projects\\ryujinx\\" 
+    } else {
     
-    $pwd
+    chmod a+x appimage.sh
     
-    bash -c "chmod +x C:\\projects\\ryujinx\\appimage.sh"
+    bash appimage.sh
     
-    bash -c "sh C:\\projects\\ryujinx\\appimage.sh"
-    
-    bash -c "ls -al C:\\projects\\ryujinx\\"
+    }    
     
 artifacts:
-#- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-win_x64.zip
+- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-win_x64.zip
 - path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-linux_x64.tar.gz
-#- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-osx_x64.zip
-#- path: Ryujinx-x86_64.AppImage
+- path: ryujinx%config_name%%APPVEYOR_BUILD_VERSION%-osx_x64.zip
+- path: ryujinx$config_name$APPVEYOR_BUILD_VERSION-linux_x64.AppImage
