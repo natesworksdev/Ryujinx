@@ -273,7 +273,7 @@ namespace ARMeilleure.Instructions
                     Operand mask = X86GetScalar(context, -0f);
                     Operand neg, mul;
 
-                    if (op.Size == 2u)
+                    if (op.Size == 2)
                     {
                         neg = context.AddIntrinsic(Intrinsic.X86Xorps, mask, op1);
                         mul = context.AddIntrinsic(Intrinsic.X86Mulss, op2, op3);
