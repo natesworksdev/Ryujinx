@@ -14,19 +14,13 @@ environment:
 build_script:
 - ps: >-
     dotnet --version
-
     dotnet publish -c $env:config -r win-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
-
     dotnet publish -c $env:config -r linux-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
-
     dotnet publish -c $env:config -r osx-x64 /p:Version=$env:APPVEYOR_BUILD_VERSION
     
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-win_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\win-x64\publish\
-
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\linux-x64\publish\
-
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar.gz ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-linux_x64.tar
-
     7z a ryujinx$env:config_name$env:APPVEYOR_BUILD_VERSION-osx_x64.zip $env:APPVEYOR_BUILD_FOLDER\Ryujinx\bin\$env:config\$env:appveyor_dotnet_runtime\osx-x64\publish\
     
 for:
@@ -35,7 +29,7 @@ for:
     only:
       - image: Ubuntu
   build_script:
-
+    - |-
       dotnet publish -c $config -r linux-x64 /p:Version=$APPVEYOR_BUILD_VERSION
       
       mkdir -p AppDir/usr/bin ;
@@ -48,25 +42,23 @@ for:
       mkdir -p AppDir/usr/share/icons && cp ./AppDir/Ryujinx.png ./AppDir/usr/share/icons ;
       mkdir -p AppDir/usr/share/icons/hicolor/scalable/apps && cp ./AppDir/Ryujinx.png ./AppDir/usr/share/icons/hicolor/scalable/apps ;
       mkdir -p AppDir/usr/share/pixmaps && cp ./AppDir/Ryujinx.png ./AppDir/usr/share/pixmaps ;
-
-      # Logging workaround
+      
+      # Logging Work Around
       cp Ryujinx/Config.json ./AppDir/usr/share/ ;
-      sed -i -e 's#"enable_file_log":true,#"enable_file_log":false,#g' ./AppDir/usr/share/Config.json ;
-      cat << EOF > ./AppDir/AppRun
+      sed -i -e 's#"enable_file_log": true,#"enable_file_log": false,#g' ./AppDir/usr/share/Config.json ;      
+      cat << 'EOF' > ./AppDir/AppRun 
       #!/bin/bash
       #
       cp $APPDIR/usr/share/Config.json $XDG_CONFIG_HOME/Ryujinx
       $APPDIR/AppRun1
-      EOF ;
-
+      EOF
+      
       chmod a+x ./AppDir/AppRun ;
       chmod a+x ./AppDir/AppRun1 ;
       chmod a+x ./AppDir/runtime ;
       chmod a+x ./AppDir/usr/bin/Ryujinx ;
-
       curl -sLO "https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage" ;
       chmod a+x appimagetool-x86_64.AppImage ;
-
       ./appimagetool-x86_64.AppImage AppDir/ ;
       mv Ryujinx-x86_64.AppImage ryujinx$config_name$APPVEYOR_BUILD_VERSION-linux_x64.AppImage 
     
