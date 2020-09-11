@@ -55,6 +55,7 @@ for:
       cat << 'EOF' > ./AppDir/AppRun 
       #!/bin/bash
       #
+      if [ -z $XDG_CONFIG_HOME ]; then XDG_CONFIG_HOME=$HOME/.config ; fi
       if [ ! -f $XDG_CONFIG_HOME/Ryujinx/Config.json ]
       then
       mkdir -p $XDG_CONFIG_HOME/Ryujinx/
