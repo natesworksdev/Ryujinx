@@ -1,245 +1,220 @@
 using Gtk;
-using LibHac.Common;
-using LibHac.Fs;
-using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
-using LibHac.FsSystem.NcaUtils;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.IO;
+using Ryujinx.Common.IO.Abstractions;
+using Ryujinx.Extensions;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.Loaders.Dlc;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 
-using GUI        = Gtk.Builder.ObjectAttribute;
+using GUI = Gtk.Builder.ObjectAttribute;
 using JsonHelper = Ryujinx.Common.Utilities.JsonHelper;
 
 namespace Ryujinx.Ui.Windows
 {
     public class DlcWindow : Window
     {
-        private readonly VirtualFileSystem  _virtualFileSystem;
-        private readonly string             _titleId;
-        private readonly string             _dlcJsonPath;
-        private readonly List<DlcContainer> _dlcContainerList;
+        private readonly VirtualFileSystem _virtualFileSystem;
+        private readonly string _titleId;
+        private readonly string _dlcJsonPath;
+        private readonly ILocalStorageManagement _localStorageManagement;
+        private readonly TreeStore _treeModel;
 
 #pragma warning disable CS0649, IDE0044
-        [GUI] Label         _baseTitleInfoLabel;
-        [GUI] TreeView      _dlcTreeView;
+        [GUI] Label _baseTitleInfoLabel;
+        [GUI] TreeView _dlcTreeView;
         [GUI] TreeSelection _dlcTreeSelection;
 #pragma warning restore CS0649, IDE0044
 
-        public DlcWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName) : this(new Builder("Ryujinx.Ui.Windows.DlcWindow.glade"), virtualFileSystem, titleId, titleName) { }
+        private enum TreeStoreColumn
+        {
+            Enabled = 0,
+            TitleId = 1,
+            Path = 2
+        }
 
-        private DlcWindow(Builder builder, VirtualFileSystem virtualFileSystem, string titleId, string titleName) : base(builder.GetObject("_dlcWindow").Handle)
+        public DlcWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName) 
+            : this(new Builder("Ryujinx.Ui.Windows.DlcWindow.glade"), virtualFileSystem, new LocalStorageManagement(), titleId, titleName) { }
+
+        private DlcWindow(Builder builder, VirtualFileSystem virtualFileSystem, ILocalStorageManagement localStorageManagement, string titleId, string titleName) 
+            : base(builder.GetObject("_dlcWindow").Handle)
         {
             builder.Autoconnect(this);
 
-            _titleId                 = titleId;
-            _virtualFileSystem       = virtualFileSystem;
-            _dlcJsonPath             = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleId, "dlc.json");
+            _titleId = titleId;
+            _virtualFileSystem = virtualFileSystem;
+            _dlcJsonPath = System.IO.Path.Combine(AppDataManager.GamesDirPath, _titleId, "dlc.json");
             _baseTitleInfoLabel.Text = $"DLC Available for {titleName} [{titleId.ToUpper()}]";
+            _localStorageManagement = localStorageManagement;
 
-            try
+            _treeModel = new TreeStore(typeof(bool), typeof(string), typeof(string));
+
+            LoadDlcTree();
+        }
+
+        private void LoadDlcTree()
+        {
+            _dlcTreeView.Model = _treeModel;
+
+            _dlcTreeView.AppendColumn(TreeStoreColumn.Enabled.ToString(), GetEnableCellRenderToggle(), "active", (int)TreeStoreColumn.Enabled);
+            _dlcTreeView.AppendColumn(TreeStoreColumn.TitleId.ToString(), new CellRendererText(), "text", (int)TreeStoreColumn.TitleId);
+            _dlcTreeView.AppendColumn(TreeStoreColumn.Path.ToString(), new CellRendererText(), "text", (int)TreeStoreColumn.Path);
+
+            var dlcContainerLoader = new DlcContainerLoader(_dlcJsonPath, _localStorageManagement);
+
+            foreach (var dlcContainer in dlcContainerLoader.Load())
             {
-                _dlcContainerList = JsonHelper.DeserializeFromFile<List<DlcContainer>>(_dlcJsonPath);
-            }
-            catch
-            {
-                _dlcContainerList = new List<DlcContainer>();
-            }
-            
-            _dlcTreeView.Model = new TreeStore(typeof(bool), typeof(string), typeof(string));
-
-            CellRendererToggle enableToggle = new CellRendererToggle();
-            enableToggle.Toggled += (sender, args) =>
-            {
-                _dlcTreeView.Model.GetIter(out TreeIter treeIter, new TreePath(args.Path));
-                bool newValue = !(bool)_dlcTreeView.Model.GetValue(treeIter, 0);
-                _dlcTreeView.Model.SetValue(treeIter, 0, newValue);
-
-                if (_dlcTreeView.Model.IterChildren(out TreeIter childIter, treeIter))
-                {
-                    do
-                    {
-                        _dlcTreeView.Model.SetValue(childIter, 0, newValue);
-                    }
-                    while (_dlcTreeView.Model.IterNext(ref childIter));
-                }
-            };
-
-            _dlcTreeView.AppendColumn("Enabled", enableToggle,           "active", 0);
-            _dlcTreeView.AppendColumn("TitleId", new CellRendererText(), "text",   1);
-            _dlcTreeView.AppendColumn("Path",    new CellRendererText(), "text",   2);
-
-            foreach (DlcContainer dlcContainer in _dlcContainerList)
-            {
-                TreeIter parentIter = ((TreeStore)_dlcTreeView.Model).AppendValues(false, "", dlcContainer.Path);
+                var parentIter = _treeModel.AppendValues(false, "", dlcContainer.Path);
 
                 using FileStream containerFile = File.OpenRead(dlcContainer.Path);
                 PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
                 _virtualFileSystem.ImportTickets(pfs);
 
-                foreach (DlcNca dlcNca in dlcContainer.DlcNcaList)
+                var allChildrenEnabled = true;
+
+                var dlcNcaLoader = new DlcNcaLoader(_titleId, dlcContainer.Path, _localStorageManagement, _virtualFileSystem);
+
+                foreach (var dlcNca in dlcNcaLoader.Load())
                 {
-                    pfs.OpenFile(out IFile ncaFile, dlcNca.Path.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-                    Nca nca = TryCreateNca(ncaFile.AsStorage(), dlcContainer.Path);
-                    
-                    if (nca != null)
+                    var savedDlcNca = dlcContainer.DlcNcaList.FirstOrDefault(d => d.TitleId == dlcNca.TitleId);
+
+                    if (!savedDlcNca.Enabled)
                     {
-                        ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter, dlcNca.Enabled, nca.Header.TitleId.ToString("X16"), dlcNca.Path);
+                        allChildrenEnabled = false;
                     }
+
+                    _treeModel.AppendValues(parentIter, savedDlcNca.Enabled, dlcNca.TitleId.ToString("X16"), dlcNca.Path);
                 }
+
+                _treeModel.SetValue(parentIter, (int)TreeStoreColumn.Enabled, allChildrenEnabled);
             }
         }
 
-        private Nca TryCreateNca(IStorage ncaStorage, string containerPath)
+        private CellRendererToggle GetEnableCellRenderToggle()
         {
-            try
-            {
-                return new Nca(_virtualFileSystem.KeySet, ncaStorage);
-            }
-            catch (Exception exception)
-            {
-                GtkDialog.CreateErrorDialog($"{exception.Message}. Errored File: {containerPath}");
-            }
+            var enableToggle = new CellRendererToggle();
 
-            return null;
+            enableToggle.Toggled += (sender, args) =>
+            {
+                _treeModel.GetIter(out TreeIter treeIter, new TreePath(args.Path));
+                var newValue = !(bool)_treeModel.GetValue(treeIter, (int)TreeStoreColumn.Enabled);
+                _treeModel.SetValue(treeIter, (int)TreeStoreColumn.Enabled, newValue);
+
+                if (_treeModel.IterHasChild(treeIter))
+                {
+                    _treeModel.ForEachChildren(treeIter, c => _treeModel.SetValue(c, (int)TreeStoreColumn.Enabled, newValue));
+                }                    
+                else
+                {
+                    if (_treeModel.IterParent(out var parentIter, treeIter))
+                    {
+                        var totalChildren = 0;
+                        var totalEnabled = 0;
+
+                        _treeModel.ForEachChildren(parentIter, c =>
+                        {
+                            totalChildren++;
+
+                            if ((bool)_treeModel.GetValue(c, (int)TreeStoreColumn.Enabled))
+                            {
+                                totalEnabled++;
+                            }                                
+                        });
+
+                        _treeModel.SetValue(parentIter, (int)TreeStoreColumn.Enabled, totalEnabled == totalChildren);
+                    }
+                }
+            };
+
+            return enableToggle;
         }
 
         private void AddButton_Clicked(object sender, EventArgs args)
         {
-            FileChooserDialog fileChooser = new FileChooserDialog("Select DLC files", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept)
+            using var fileChooser = new FileChooserDialog("Select DLC files", this, FileChooserAction.Open, "Cancel", ResponseType.Cancel, "Add", ResponseType.Accept)
             {
                 SelectMultiple = true,
-                Filter         = new FileFilter()
+                Filter = new FileFilter()
             };
             fileChooser.SetPosition(WindowPosition.Center);
             fileChooser.Filter.AddPattern("*.nsp");
 
-            if (fileChooser.Run() == (int)ResponseType.Accept)
+            if (fileChooser.Run() != (int)ResponseType.Accept)
             {
-                foreach (string containerPath in fileChooser.Filenames)
+                return;
+            }
+            
+            foreach (string containerPath in fileChooser.Filenames.Where(f => _localStorageManagement.Exists(f)))
+            {
+                var dlcLoader = new DlcNcaLoader(_titleId, containerPath, _localStorageManagement, _virtualFileSystem);
+
+                var dlcNcas = dlcLoader.Load();
+                if (!dlcNcas.Any())
                 {
-                    if (!File.Exists(containerPath))
-                    {
-                        return;
-                    }
+                    GtkDialog.CreateErrorDialog($"The file {containerPath} does not contain DLC for the selected title!");
+                    break;
+                }
 
-                    using (FileStream containerFile = File.OpenRead(containerPath))
-                    {
-                        PartitionFileSystem pfs = new PartitionFileSystem(containerFile.AsStorage());
-                        bool containsDlc = false;
+                TreeIter? parentIter = null;
 
-                        _virtualFileSystem.ImportTickets(pfs);
-
-                        TreeIter? parentIter = null;
-
-                        foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
-                        {
-                            pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                            Nca nca = TryCreateNca(ncaFile.AsStorage(), containerPath);
-
-                            if (nca == null) continue;
-
-                            if (nca.Header.ContentType == NcaContentType.PublicData)
-                            {
-                                if ((nca.Header.TitleId & 0xFFFFFFFFFFFFE000).ToString("x16") != _titleId)
-                                {
-                                    break;
-                                }
-
-                                parentIter ??= ((TreeStore)_dlcTreeView.Model).AppendValues(true, "", containerPath);
-
-                                ((TreeStore)_dlcTreeView.Model).AppendValues(parentIter.Value, true, nca.Header.TitleId.ToString("X16"), fileEntry.FullPath);
-                                containsDlc = true;
-                            }
-                        }
-
-                        if (!containsDlc)
-                        {
-                            GtkDialog.CreateErrorDialog("The specified file does not contain DLC for the selected title!");
-                        }
-                    }
+                foreach (var nca in dlcNcas)
+                {
+                    parentIter ??= _treeModel.AppendValues(true, "", containerPath);
+                    _treeModel.AppendValues(parentIter.Value, true, nca.TitleId.ToString("X16"), nca.Path);
                 }
             }
-
-            fileChooser.Dispose();
         }
 
         private void RemoveButton_Clicked(object sender, EventArgs args)
         {
-            if (_dlcTreeSelection.GetSelected(out ITreeModel treeModel, out TreeIter treeIter))
+            if (_dlcTreeSelection.GetSelected(out _, out TreeIter treeIter))
             {
                 if (_dlcTreeView.Model.IterParent(out TreeIter parentIter, treeIter) && _dlcTreeView.Model.IterNChildren(parentIter) <= 1)
                 {
-                    ((TreeStore)treeModel).Remove(ref parentIter);
+                    _treeModel.Remove(ref parentIter);
                 }
                 else
                 {
-                    ((TreeStore)treeModel).Remove(ref treeIter);
+                    _treeModel.Remove(ref treeIter);
                 }
             }
         }
-        
-        private void RemoveAllButton_Clicked(object sender, EventArgs args)
-        {
-            List<TreeIter> toRemove = new List<TreeIter>();
 
-            if (_dlcTreeView.Model.GetIterFirst(out TreeIter iter))
-            {
-                do
-                {
-                    toRemove.Add(iter);
-                } 
-                while (_dlcTreeView.Model.IterNext(ref iter));
-            }
-
-            foreach (TreeIter i in toRemove)
-            {
-                TreeIter j = i;
-                ((TreeStore)_dlcTreeView.Model).Remove(ref j);
-            }
-        }
+        private void RemoveAllButton_Clicked(object sender, EventArgs args) => _treeModel.Clear();
 
         private void SaveButton_Clicked(object sender, EventArgs args)
         {
-            _dlcContainerList.Clear();
+            var dlcContainerList = new List<DlcContainer>();
 
-            if (_dlcTreeView.Model.GetIterFirst(out TreeIter parentIter))
+            _treeModel.ForEach((parentIter) =>
             {
-                do
+                var dlcContainer = new DlcContainer
                 {
-                    if (_dlcTreeView.Model.IterChildren(out TreeIter childIter, parentIter))
-                    {
-                        DlcContainer dlcContainer = new DlcContainer
-                        {
-                            Path       = (string)_dlcTreeView.Model.GetValue(parentIter, 2),
-                            DlcNcaList = new List<DlcNca>()
-                        };
+                    Path = (string)_treeModel.GetValue(parentIter, (int)TreeStoreColumn.Path),
+                    DlcNcaList = new List<DlcNca>()
+                };
 
-                        do
-                        {
-                            dlcContainer.DlcNcaList.Add(new DlcNca
-                            {
-                                Enabled = (bool)_dlcTreeView.Model.GetValue(childIter, 0),
-                                TitleId = Convert.ToUInt64(_dlcTreeView.Model.GetValue(childIter, 1).ToString(), 16),
-                                Path    = (string)_dlcTreeView.Model.GetValue(childIter, 2)
-                            });
-                        }
-                        while (_dlcTreeView.Model.IterNext(ref childIter));
+                _treeModel.ForEachChildren(parentIter, (ncaIter) =>
+                {
+                    dlcContainer.DlcNcaList.Add(new DlcNca(
+                        enabled: (bool)_treeModel.GetValue(ncaIter, (int)TreeStoreColumn.Enabled),
+                        titleId: Convert.ToUInt64(_treeModel.GetValue(ncaIter, (int)TreeStoreColumn.TitleId).ToString(), 16),
+                        path: (string)_treeModel.GetValue(ncaIter, (int)TreeStoreColumn.Path)
+                    ));
+                });
 
-                        _dlcContainerList.Add(dlcContainer);
-                    }
-                }
-                while (_dlcTreeView.Model.IterNext(ref parentIter));
-            }
+                dlcContainerList.Add(dlcContainer);
+            });
 
             using (FileStream dlcJsonStream = File.Create(_dlcJsonPath, 4096, FileOptions.WriteThrough))
             {
-                dlcJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_dlcContainerList, true)));
+                dlcJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(dlcContainerList, true)));
             }
 
             Dispose();
