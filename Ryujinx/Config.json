@@ -19,7 +19,7 @@
   "system_time_offset": 0,
   "docked_mode": false,
   "enable_discord_integration": true,
-  "check_updates_on_start": false,
+  "check_updates_on_start": true,
   "enable_vsync": true,
   "enable_multicore_scheduling": true,
   "enable_ptc": false,

@@ -19,7 +19,7 @@ namespace Ryujinx
 
         private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
-        private static readonly string UpdatePublishDir = Path.Combine(Path.GetTempPath(), "Ryujinx", "update", "publish");
+        private static readonly string UpdatePublishDir = Path.Combine(UpdateDir, "publish");
 
         private static string _jobId;
         private static string _buildVer;
@@ -49,6 +49,33 @@ namespace Ryujinx
                 _platformExt = "linux_x64.tar.gz";
             }
 
+            Version newVersion;
+            Version currentVersion;
+
+            try
+            {
+                currentVersion = Version.Parse(Program.Version);
+            }
+            catch
+            {
+                GtkDialog.CreateWarningDialog("Failed to convert the current Ryujinx version.", "Cancelling Update!");
+                Logger.Error?.Print(LogClass.Application, "Failed to convert the current Ryujinx version!");
+
+                return;
+            }
+
+            try
+            {
+                newVersion = Version.Parse(_buildVer);
+            }
+            catch
+            {
+                GtkDialog.CreateWarningDialog("Failed to convert the received Ryujinx version from AppVeyor.", "Cancelling Update!");
+                Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from AppVeyor!");
+
+                return;
+            }
+
             // Get latest version number from Appveyor
             try
             {
@@ -66,21 +93,9 @@ namespace Ryujinx
             catch (Exception exception)
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
-                GtkDialog.CreateErrorDialog("An error has occured when trying to get release information from GitHub.");
+                GtkDialog.CreateErrorDialog("An error has occurred when trying to get release information from AppVeyor.");
 
                 return;
-            }
-
-            Version newVersion     = Version.Parse(_buildVer);
-            Version currentVersion = Version.Parse("0.0.0");
-
-            try
-            {
-                currentVersion = Version.Parse(Program.Version);
-            }
-            catch
-            {
-                Logger.Warning?.Print(LogClass.Application, "Failed to convert current Ryujinx version. Defaulting to 0.0.0");
             }
 
             if (newVersion <= currentVersion)
