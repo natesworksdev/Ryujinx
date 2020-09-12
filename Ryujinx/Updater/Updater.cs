@@ -64,18 +64,6 @@ namespace Ryujinx
                 return;
             }
 
-            try
-            {
-                newVersion = Version.Parse(_buildVer);
-            }
-            catch
-            {
-                GtkDialog.CreateWarningDialog("Failed to convert the received Ryujinx version from AppVeyor.", "Cancelling Update!");
-                Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from AppVeyor!");
-
-                return;
-            }
-
             // Get latest version number from Appveyor
             try
             {
@@ -94,6 +82,18 @@ namespace Ryujinx
             {
                 Logger.Error?.Print(LogClass.Application, exception.Message);
                 GtkDialog.CreateErrorDialog("An error has occurred when trying to get release information from AppVeyor.");
+
+                return;
+            }
+
+            try
+            {
+                newVersion = Version.Parse(_buildVer);
+            }
+            catch
+            {
+                GtkDialog.CreateWarningDialog("Failed to convert the received Ryujinx version from AppVeyor.", "Cancelling Update!");
+                Logger.Error?.Print(LogClass.Application, "Failed to convert the received Ryujinx version from AppVeyor!");
 
                 return;
             }
