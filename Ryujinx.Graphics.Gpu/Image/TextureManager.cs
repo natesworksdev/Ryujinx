@@ -900,6 +900,67 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Tries to find an existing texture matching the given buffer copy destination. If none is found, returns null.
+        /// </summary>
+        /// <param name="tex"></param>
+        /// <param name="param"></param>
+        /// <param name="swizzle"></param>
+        /// <returns></returns>
+        public Texture FindTexture(CopyBufferTexture tex, CopyBufferParams param, CopyBufferSwizzle swizzle, bool linear)
+        {
+            ulong address = _context.MemoryManager.Translate(param.DstAddress.Pack());
+
+            if (address == MemoryManager.BadAddress)
+            {
+                return null;
+            }
+
+            int bpp = swizzle.UnpackDstComponentsCount() * swizzle.UnpackComponentSize();
+
+            int addressMatches = _textures.FindOverlaps(address, ref _textureOverlaps);
+
+            for (int i = 0; i < addressMatches; i++)
+            {
+                Texture texture = _textureOverlaps[i];
+                FormatInfo format = texture.Info.FormatInfo;
+
+                if (texture.Info.DepthOrLayers > 1)
+                {
+                    continue;
+                }
+
+                bool match;
+
+                if (linear)
+                {
+                    // Size is not available for linear textures. Use the stride and end of the copy region instead.
+
+                    match = texture.Info.IsLinear && texture.Info.Stride == param.DstStride && tex.RegionY + param.YCount <= texture.Info.Height;
+                }
+                else
+                {
+                    // Bpp may be a mismatch between the target texture and the param. 
+                    // Due to the way linear strided and block layouts work, widths can be multiplied by Bpp for comparison.
+
+                    bool sizeMatch = tex.Width * bpp == texture.Info.Width * format.BytesPerPixel && tex.Height == texture.Info.Height;
+                    bool formatMatch = !texture.Info.IsLinear &&
+                                        texture.Info.GobBlocksInTileX == tex.MemoryLayout.UnpackGobBlocksInX() &&
+                                        texture.Info.GobBlocksInY == tex.MemoryLayout.UnpackGobBlocksInY() &&
+                                        texture.Info.GobBlocksInZ == tex.MemoryLayout.UnpackGobBlocksInZ();
+
+                    match = sizeMatch && formatMatch;
+                }
+
+                if (match)
+                {
+                    return texture;
+                }
+            }
+
+            return null;
+        }
+
+        /// <summary>
         /// Checks if a texture was modified by the host GPU.
         /// </summary>
         /// <param name="texture">Texture to be checked</param>

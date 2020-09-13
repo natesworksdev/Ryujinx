@@ -331,7 +331,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             RecreateStorageOrView(
                 BitUtils.DivRoundUp(width * Info.FormatInfo.BlockWidth, blockWidth),
-                BitUtils.DivRoundUp(height * Info.FormatInfo.BlockHeight, blockHeight), 
+                BitUtils.DivRoundUp(height * Info.FormatInfo.BlockHeight, blockHeight),
                 depthOrLayers);
         }
 
@@ -590,6 +590,19 @@ namespace Ryujinx.Graphics.Gpu.Image
             IsModified = false;
 
             data = ConvertToHostCompatibleFormat(data);
+
+            HostTexture.SetData(data);
+
+            _hasData = true;
+        }
+
+        public void SetData(ReadOnlySpan<byte> data)
+        {
+            BlacklistScale();
+
+            _memoryTracking?.Reprotect();
+
+            IsModified = false;
 
             HostTexture.SetData(data);
 
