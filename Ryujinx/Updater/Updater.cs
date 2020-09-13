@@ -8,6 +8,7 @@ using Ryujinx.Ui;
 using System;
 using System.IO;
 using System.Net;
+using System.Net.NetworkInformation;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 
@@ -28,7 +29,7 @@ namespace Ryujinx
         
         private const string AppveyorApiUrl = "https://ci.appveyor.com/api";
 
-        public static async void BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
+        public static async Task BeginParse(MainWindow mainWindow, bool showVersionUpToDate)
         {
             if (Running) return;
 
@@ -116,7 +117,7 @@ namespace Ryujinx
             updateDialog.Show();
         }
 
-        public async static void UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl)
+        public static async Task UpdateRyujinx(UpdateDialog updateDialog, string downloadUrl)
         {
             // Empty update dir, although it shouldn't ever have anything inside it
             if (Directory.Exists(UpdateDir))
@@ -270,6 +271,41 @@ namespace Ryujinx
             updateDialog.ProgressBar.Hide();
             updateDialog.YesButton.Show();
             updateDialog.NoButton.Show();
+        }
+
+        public static bool CanUpdate(bool showWarnings)
+        {
+            if (RuntimeInformation.OSArchitecture != Architecture.X64)
+            {
+                if (showWarnings)
+                {
+                    GtkDialog.CreateWarningDialog("You are not running a supported system architecture!", "(Only x64 systems are supported!)");
+                }
+
+                return false;
+            }
+
+            if (!NetworkInterface.GetIsNetworkAvailable())
+            {
+                if (showWarnings)
+                {
+                    GtkDialog.CreateWarningDialog("You are not connected to the Internet!", "Please verify that you have a working Internet connection!");
+                }
+
+                return false;
+            }
+
+            if (Program.Version.Contains("dirty"))
+            {
+                if (showWarnings)
+                {
+                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+                }
+
+                return false;
+            }
+
+            return true;
         }
 
         private static void MoveAllFilesOver(string root, string dest, UpdateDialog dialog)

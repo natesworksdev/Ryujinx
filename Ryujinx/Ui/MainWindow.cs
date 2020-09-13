@@ -15,9 +15,7 @@ using Ryujinx.Ui.Diagnostic;
 using System;
 using System.Diagnostics;
 using System.IO;
-using System.Net.NetworkInformation;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -1126,46 +1124,9 @@ namespace Ryujinx.Ui
             settingsWin.Show();
         }
 
-        public bool CanDoUpdate(bool showWarnings)
-        {
-            if (RuntimeInformation.OSArchitecture != Architecture.X64)
-            {
-                if (showWarnings)
-                {
-                    GtkDialog.CreateWarningDialog("You are not running a supported system architecture!", "(Only x64 systems are supported!)");
-                }
-
-                return false;
-            }
-
-            if (!NetworkInterface.GetIsNetworkAvailable())
-            {
-                if (showWarnings)
-                {
-                    GtkDialog.CreateWarningDialog("You are not connected to the Internet!", "Please verify that you have a working Internet connection!");
-                }
-
-                return false;
-            }
-
-            string ryuVer = Assembly.GetEntryAssembly().GetCustomAttribute<AssemblyInformationalVersionAttribute>().InformationalVersion;
-
-            if (ryuVer.Contains("dirty"))
-            {
-                if (showWarnings)
-                {
-                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
-                }
-
-                return false;
-            }
-
-            return true;
-        }
-
         private void Update_Pressed(object sender, EventArgs args)
         {
-            if (CanDoUpdate(true))
+            if (Updater.CanUpdate(true))
             {
                 Updater.BeginParse(this, true);
             }
