@@ -1033,11 +1033,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             IsModified = true;
             _everModified = true;
 
-            if (_viewStorage != this)
-            {
-                _viewStorage.SignalModified();
-            }
-
             _memoryTracking?.RegisterAction(ExternalFlush);
         }
 
