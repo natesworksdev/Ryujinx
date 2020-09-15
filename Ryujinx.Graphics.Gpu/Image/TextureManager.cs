@@ -967,7 +967,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the texture was modified by the host GPU, false otherwise</returns>
         public bool IsTextureModified(Texture texture)
         {
-            return _modified.Contains(texture);
+            return texture.IsModified;
         }
 
         /// <summary>

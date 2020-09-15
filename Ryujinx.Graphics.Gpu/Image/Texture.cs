@@ -238,9 +238,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _viewStorage.AddView(texture);
 
-            _memoryTracking?.Dispose();
-            _memoryTracking = null;
-
             return texture;
         }
 
@@ -250,6 +247,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The child texture</param>
         private void AddView(Texture texture)
         {
+            _memoryTracking?.Dispose();
+            _memoryTracking = null;
+
             _views.Add(texture);
 
             texture._viewStorage = this;
@@ -549,7 +549,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the texture was modified, false otherwise.</returns>
         public bool ConsumeModified()
         {
-            bool wasDirty = _memoryTracking?.Dirty ?? false;
+            bool wasDirty = _memoryTracking?.Dirty ?? true;
 
             _memoryTracking?.Reprotect();
 
@@ -577,10 +577,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     return;
                 }
 
-                // Right now the target can recover from having data set into it.
-                // Avoids issues with closeby/overlapping textures dirtying each other's pages.
-
-                SetScale(1f); //BlacklistScale();
+                BlacklistScale();
             }
 
             _memoryTracking?.Reprotect();
@@ -705,7 +702,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void ExternalFlush(ulong address, ulong size)
         {
-            if (!IsModified)
+            if (!IsModified || _memoryTracking == null)
             {
                 return;
             }
@@ -1006,6 +1003,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="firstLevel">The first level of the view</param>
         public void ReplaceView(Texture parent, TextureInfo info, ITexture hostTexture, int firstLayer, int firstLevel)
         {
+            parent._viewStorage.SynchronizeMemory();
             ReplaceStorage(hostTexture);
 
             _firstLayer = parent._firstLayer + firstLayer;
@@ -1045,6 +1043,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             IsModified = true;
             _everModified = true;
+
+            if (_viewStorage != this)
+            {
+                _viewStorage.SignalModified();
+            }
 
             _memoryTracking?.RegisterAction(ExternalFlush);
         }
