@@ -861,6 +861,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // of the 3D texture to the newly created 3D texture.
                 if (info.Target == Target.Texture3D)
                 {
+                    texture.DisableMemoryTracking();
                     for (int index = 0; index < viewCompatible; index++)
                     {
                         Texture overlap = _textureOverlaps[index];

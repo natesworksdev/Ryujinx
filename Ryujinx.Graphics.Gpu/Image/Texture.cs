@@ -247,8 +247,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The child texture</param>
         private void AddView(Texture texture)
         {
-            _memoryTracking?.Dispose();
-            _memoryTracking = null;
+            DisableMemoryTracking();
 
             _views.Add(texture);
 
@@ -315,6 +314,16 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 view.RecreateStorageOrView(viewWidth, viewHeight, blockWidth, blockHeight, viewDepthOrLayers);
             }
+        }
+
+        /// <summary>
+        /// Disables memory tracking on this texture. Currently used for view containers, as we assume their views are covering all memory regions.
+        /// Textures with disabled memory tracking also cannot flush in most circumstances.
+        /// </summary>
+        public void DisableMemoryTracking()
+        {
+            _memoryTracking?.Dispose();
+            _memoryTracking = null;
         }
 
         /// <summary>
@@ -1023,17 +1032,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _depth  = info.GetDepth();
             _layers = info.GetLayers();
-
-            /*
-
-            if (_memoryTracking != null) {
-                _memoryTracking.Dispose();
-                _memoryTracking = _context.PhysicalMemory.BeginTracking(Address, Size);
-
-                if (_viewStorage != this || _views.Count == 0) _memoryTracking.Reprotect();
-            }
-
-            */
         }
 
         /// <summary>
