@@ -704,15 +704,6 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            if (configurationFileFormat.Version < 13)
-            {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 13.");
-
-                configurationFileFormat.CheckUpdatesOnStart = true;
-
-                configurationFileUpdated = true;
-            }
-
             if (configurationFileFormat.Version < 14)
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 14.");
