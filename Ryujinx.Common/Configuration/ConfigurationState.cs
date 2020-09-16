@@ -713,6 +713,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 14)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 14.");
+
+                configurationFileFormat.CheckUpdatesOnStart = true;
+
+                configurationFileUpdated = true;
+            }
+
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(configurationFileFormat.ControllerConfig);
             inputConfig.AddRange(configurationFileFormat.KeyboardConfig);

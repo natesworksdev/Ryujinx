@@ -144,7 +144,7 @@ namespace Ryujinx
                 await client.DownloadFileTaskAsync(downloadUrl, updateFile);
             }
 
-            //Extract Update
+            // Extract Update
             updateDialog.MainText.Text     = "Extracting Update...";
             updateDialog.ProgressBar.Value = 0;
 
