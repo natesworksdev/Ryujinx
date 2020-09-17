@@ -147,28 +147,51 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Checks if the view sizes of a two given texture informations match.
+        /// Obtain the minimum compatibility level of two provided view compatibility results.
+        /// </summary>
+        /// <param name="first">The first compatibility level</param>
+        /// <param name="second">The second compatibility level</param>
+        /// <returns>The minimum compatibility level of two provided view compatibility results</returns>
+        public static TextureViewCompatibility PropagateViewCompatibility(TextureViewCompatibility first, TextureViewCompatibility second)
+        {
+            if (first == TextureViewCompatibility.Incompatible || second == TextureViewCompatibility.Incompatible)
+            {
+                return TextureViewCompatibility.Incompatible;
+            }
+            else if (first == TextureViewCompatibility.CopyOnly || second == TextureViewCompatibility.CopyOnly)
+            {
+                return TextureViewCompatibility.CopyOnly;
+            }
+            else
+            {
+                return TextureViewCompatibility.Full;
+            }
+        }
+
+        /// <summary>
+        /// Checks if the sizes of two given textures are view compatible.
         /// </summary>
         /// <param name="lhs">Texture information of the texture view</param>
         /// <param name="rhs">Texture information of the texture view to match against</param>
         /// <param name="level">Mipmap level of the texture view in relation to this texture</param>
-        /// <param name="isCopy">True to check for copy compatibility rather than view compatibility</param>
         /// <returns>True if the sizes are compatible, false otherwise</returns>
-        public static bool ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level, bool isCopy)
+        public static TextureViewCompatibility ViewSizeMatches(TextureInfo lhs, TextureInfo rhs, int level)
         {
             Size size = GetAlignedSize(lhs, level);
 
             Size otherSize = GetAlignedSize(rhs);
 
+            TextureViewCompatibility result = TextureViewCompatibility.Full;
+
             // For copies, we can copy a subset of the 3D texture slices,
             // so the depth may be different in this case.
-            if (!isCopy && rhs.Target == Target.Texture3D && size.Depth != otherSize.Depth)
+            if (rhs.Target == Target.Texture3D && size.Depth != otherSize.Depth)
             {
-                return false;
+                result = TextureViewCompatibility.CopyOnly;
             }
 
-            return size.Width  == otherSize.Width &&
-                   size.Height == otherSize.Height;
+            return (size.Width  == otherSize.Width &&
+                    size.Height == otherSize.Height) ? result : TextureViewCompatibility.Incompatible;
         }
 
         /// <summary>
@@ -330,38 +353,91 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="rhs">Texture information of the texture view</param>
         /// <param name="isCopy">True to check for copy rather than view compatibility</param>
         /// <returns>True if the targets are compatible, false otherwise</returns>
-        public static bool ViewTargetCompatible(TextureInfo lhs, TextureInfo rhs, bool isCopy)
+        public static TextureViewCompatibility ViewTargetCompatible(TextureInfo lhs, TextureInfo rhs)
         {
+            bool result = false;
             switch (lhs.Target)
             {
                 case Target.Texture1D:
                 case Target.Texture1DArray:
-                    return rhs.Target == Target.Texture1D ||
-                           rhs.Target == Target.Texture1DArray;
+                    result = rhs.Target == Target.Texture1D ||
+                             rhs.Target == Target.Texture1DArray;
+                    break;
 
                 case Target.Texture2D:
-                    return rhs.Target == Target.Texture2D ||
-                           rhs.Target == Target.Texture2DArray;
+                    result = rhs.Target == Target.Texture2D ||
+                             rhs.Target == Target.Texture2DArray;
+                    break;
 
                 case Target.Texture2DArray:
                 case Target.Cubemap:
                 case Target.CubemapArray:
-                    return rhs.Target == Target.Texture2D ||
-                           rhs.Target == Target.Texture2DArray ||
-                           rhs.Target == Target.Cubemap ||
-                           rhs.Target == Target.CubemapArray;
+                    result = rhs.Target == Target.Texture2D ||
+                             rhs.Target == Target.Texture2DArray ||
+                             rhs.Target == Target.Cubemap ||
+                             rhs.Target == Target.CubemapArray;
+                    break;
 
                 case Target.Texture2DMultisample:
                 case Target.Texture2DMultisampleArray:
-                    return rhs.Target == Target.Texture2DMultisample ||
-                           rhs.Target == Target.Texture2DMultisampleArray;
+                    result = rhs.Target == Target.Texture2DMultisample ||
+                             rhs.Target == Target.Texture2DMultisampleArray;
+                    break;
 
                 case Target.Texture3D:
-                    return rhs.Target == Target.Texture3D ||
-                          (rhs.Target == Target.Texture2D && isCopy);
+                    if (rhs.Target == Target.Texture2D)
+                    {
+                        return TextureViewCompatibility.CopyOnly;
+                    }
+
+                    result = rhs.Target == Target.Texture3D;
+                    break;
             }
 
-            return false;
+            return result ? TextureViewCompatibility.Full : TextureViewCompatibility.Incompatible;
+        }
+
+        /// <summary>
+        /// Checks if a swizzle component in two textures functionally match, taking into account if the components are defined.
+        /// </summary>
+        /// <param name="lhs">Texture information to compare</param>
+        /// <param name="rhs">Texture information to compare with</param>
+        /// <param name="swizzleLhs">Swizzle component for the first texture</param>
+        /// <param name="swizzleRhs">Swizzle component for the second texture</param>
+        /// <param name="component">Component index, starting at 0 for red</param>
+        /// <returns>True if the swizzle components functionally match, false othersize</returns>
+        private static bool SwizzleComponentMatches(TextureInfo lhs, TextureInfo rhs, SwizzleComponent swizzleLhs, SwizzleComponent swizzleRhs, int component)
+        {
+            int lhsComponents = lhs.FormatInfo.Components;
+            int rhsComponents = rhs.FormatInfo.Components;
+
+            if (lhsComponents == 4 && rhsComponents == 4)
+            {
+                return swizzleLhs == swizzleRhs;
+            }
+
+            // Swizzles after the number of components a format defines are "undefined".
+            // We allow these to not be equal under certain circumstances.
+            // This can only happen when there are less than 4 components in a format.
+            // It tends to happen when float depth textures are sampled.
+
+            bool lhsDefined = (swizzleLhs - SwizzleComponent.Red) < lhsComponents;
+            bool rhsDefined = (swizzleRhs - SwizzleComponent.Red) < rhsComponents;
+
+            if (lhsDefined == rhsDefined)
+            {
+                // If both are undefined, return true. Otherwise just check if they're equal.
+                return lhsDefined ? swizzleLhs == swizzleRhs : true;
+            }
+            else
+            {
+                SwizzleComponent defined = lhsDefined ? swizzleLhs : swizzleRhs;
+                SwizzleComponent undefined = lhsDefined ? swizzleRhs : swizzleLhs;
+
+                // Undefined swizzle can be matched by a forced value (0, 1), exact equality, or expected value.
+                // For example, R___ matches R001, RGBA but not RBGA.
+                return defined == undefined || defined < SwizzleComponent.Red || defined == SwizzleComponent.Red + component;
+            }
         }
 
         /// <summary>
@@ -373,10 +449,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         public static bool SamplerParamsMatches(TextureInfo lhs, TextureInfo rhs)
         {
             return lhs.DepthStencilMode == rhs.DepthStencilMode &&
-                   lhs.SwizzleR         == rhs.SwizzleR &&
-                   lhs.SwizzleG         == rhs.SwizzleG &&
-                   lhs.SwizzleB         == rhs.SwizzleB &&
-                   lhs.SwizzleA         == rhs.SwizzleA;
+                   SwizzleComponentMatches(lhs, rhs, lhs.SwizzleR, rhs.SwizzleR, 0) &&
+                   SwizzleComponentMatches(lhs, rhs, lhs.SwizzleG, rhs.SwizzleG, 1) &&
+                   SwizzleComponentMatches(lhs, rhs, lhs.SwizzleB, rhs.SwizzleB, 2) &&
+                   SwizzleComponentMatches(lhs, rhs, lhs.SwizzleA, rhs.SwizzleA, 3);
         }
 
         /// <summary>
