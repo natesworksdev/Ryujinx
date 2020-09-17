@@ -492,21 +492,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             _context.Renderer.Pipeline.SetDepthMode(depthMode);
 
-            YControl yControl = state.Get<YControl>(MethodOffset.YControl);
+            var yControl = state.Get<YControl> (MethodOffset.YControl);
+            var face     = state.Get<FaceState>(MethodOffset.FaceState);
 
-            bool   flipY  = yControl.HasFlag(YControl.NegateY);
-            Origin origin = yControl.HasFlag(YControl.TriangleRastFlip) ? Origin.LowerLeft : Origin.UpperLeft;
+            UpdateFrontFace(yControl, face.FrontFace);
 
-            _context.Renderer.Pipeline.SetOrigin(origin);
-
-            // The triangle rast flip flag only affects rasterization, the viewport is not flipped.
-            // Setting the origin mode to upper left on the host, however, not only affects rasterization,
-            // but also flips the viewport.
-            // We negate the effects of flipping the viewport by flipping it again using the viewport swizzle.
-            if (origin == Origin.UpperLeft)
-            {
-                flipY = !flipY;
-            }
+            bool flipY = yControl.HasFlag(YControl.NegateY);
 
             Span<Viewport> viewports = stackalloc Viewport[Constants.TotalViewports];
 
@@ -515,11 +506,24 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 var transform = state.Get<ViewportTransform>(MethodOffset.ViewportTransform, index);
                 var extents   = state.Get<ViewportExtents>  (MethodOffset.ViewportExtents,   index);
 
-                float x = transform.TranslateX - MathF.Abs(transform.ScaleX);
-                float y = transform.TranslateY - MathF.Abs(transform.ScaleY);
+                float scaleX = MathF.Abs(transform.ScaleX);
+                float scaleY = transform.ScaleY;
 
-                float width  = MathF.Abs(transform.ScaleX) * 2;
-                float height = MathF.Abs(transform.ScaleY) * 2;
+                if (flipY)
+                {
+                    scaleY = -scaleY;
+                }
+
+                if (!_context.Capabilities.SupportsViewportSwizzle && transform.UnpackSwizzleY() == ViewportSwizzle.NegativeY)
+                {
+                    scaleY = -scaleY;
+                }
+
+                float x = transform.TranslateX - scaleX;
+                float y = transform.TranslateY - scaleY;
+
+                float width  = scaleX * 2;
+                float height = scaleY * 2;
 
                 float scale = TextureManager.RenderTargetScale;
                 if (scale != 1f)
@@ -536,26 +540,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 ViewportSwizzle swizzleY = transform.UnpackSwizzleY();
                 ViewportSwizzle swizzleZ = transform.UnpackSwizzleZ();
                 ViewportSwizzle swizzleW = transform.UnpackSwizzleW();
-
-                if (transform.ScaleX < 0)
-                {
-                    swizzleX ^= ViewportSwizzle.NegativeFlag;
-                }
-
-                if (flipY)
-                {
-                    swizzleY ^= ViewportSwizzle.NegativeFlag;
-                }
-
-                if (transform.ScaleY < 0)
-                {
-                    swizzleY ^= ViewportSwizzle.NegativeFlag;
-                }
-
-                if (transform.ScaleZ < 0)
-                {
-                    swizzleZ ^= ViewportSwizzle.NegativeFlag;
-                }
 
                 viewports[index] = new Viewport(
                     region,
@@ -832,11 +816,29 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="state">Current GPU state</param>
         private void UpdateFaceState(GpuState state)
         {
-            var face = state.Get<FaceState>(MethodOffset.FaceState);
+            var yControl = state.Get<YControl> (MethodOffset.YControl);
+            var face     = state.Get<FaceState>(MethodOffset.FaceState);
 
             _context.Renderer.Pipeline.SetFaceCulling(face.CullEnable, face.CullFace);
 
-            _context.Renderer.Pipeline.SetFrontFace(face.FrontFace);
+            UpdateFrontFace(yControl, face.FrontFace);
+        }
+
+        /// <summary>
+        /// Updates the front face based on the current front face and the origin.
+        /// </summary>
+        /// <param name="yControl">Y control register value, where the origin is located</param>
+        /// <param name="frontFace">Front face</param>
+        private void UpdateFrontFace(YControl yControl, FrontFace frontFace)
+        {
+            bool isUpperLeftOrigin = !yControl.HasFlag(YControl.TriangleRastFlip);
+
+            if (isUpperLeftOrigin)
+            {
+                frontFace = frontFace == FrontFace.CounterClockwise ? FrontFace.Clockwise : FrontFace.CounterClockwise;
+            }
+
+            _context.Renderer.Pipeline.SetFrontFace(frontFace);
         }
 
         /// <summary>

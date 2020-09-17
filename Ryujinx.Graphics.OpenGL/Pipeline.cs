@@ -39,6 +39,7 @@ namespace Ryujinx.Graphics.OpenGL
         private TextureBase _rtColor0Texture;
         private TextureBase _rtDepthTexture;
 
+        private FrontFaceDirection _frontFace;
         private ClipOrigin _clipOrigin;
         private ClipDepthMode _clipDepthMode;
 
@@ -48,7 +49,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private bool _tfEnabled;
 
-        ColorF _blendConstant = new ColorF(0, 0, 0, 0);
+        private ColorF _blendConstant;
 
         internal Pipeline()
         {
@@ -676,7 +677,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SetFrontFace(FrontFace frontFace)
         {
-            GL.FrontFace(frontFace.Convert());
+            SetFrontFace(_frontFace = frontFace.Convert());
         }
 
         public void SetImage(int index, ShaderStage stage, ITexture texture)
@@ -704,13 +705,6 @@ namespace Ryujinx.Graphics.OpenGL
             EnsureVertexArray();
 
             _vertexArray.SetIndexBuffer(buffer.Handle);
-        }
-
-        public void SetOrigin(Origin origin)
-        {
-            ClipOrigin clipOrigin = origin == Origin.UpperLeft ? ClipOrigin.UpperLeft : ClipOrigin.LowerLeft;
-
-            SetOrigin(clipOrigin);
         }
 
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
@@ -1030,7 +1024,9 @@ namespace Ryujinx.Graphics.OpenGL
                 Viewport viewport = viewports[index];
 
                 viewportArray[viewportElemIndex + 0] = viewport.Region.X;
-                viewportArray[viewportElemIndex + 1] = viewport.Region.Y;
+                viewportArray[viewportElemIndex + 1] = viewport.Region.Y + (viewport.Region.Height < 0 ? viewport.Region.Height : 0);
+                viewportArray[viewportElemIndex + 2] = viewport.Region.Width;
+                viewportArray[viewportElemIndex + 3] = MathF.Abs(viewport.Region.Height);
 
                 if (HwCapabilities.SupportsViewportSwizzle)
                 {
@@ -1042,12 +1038,13 @@ namespace Ryujinx.Graphics.OpenGL
                         viewport.SwizzleW.Convert());
                 }
 
-                viewportArray[viewportElemIndex + 2] = MathF.Abs(viewport.Region.Width);
-                viewportArray[viewportElemIndex + 3] = MathF.Abs(viewport.Region.Height);
-
                 depthRangeArray[index * 2 + 0] = viewport.DepthNear;
                 depthRangeArray[index * 2 + 1] = viewport.DepthFar;
             }
+
+            bool flipY = viewports.Length != 0 && viewports[0].Region.Height < 0;
+
+            SetOrigin(flipY ? ClipOrigin.UpperLeft : ClipOrigin.LowerLeft);
 
             GL.ViewportArray(first, viewports.Length, viewportArray);
 
@@ -1097,7 +1094,22 @@ namespace Ryujinx.Graphics.OpenGL
                 _clipOrigin = origin;
 
                 GL.ClipControl(origin, _clipDepthMode);
+
+                SetFrontFace(_frontFace);
             }
+        }
+
+        private void SetFrontFace(FrontFaceDirection frontFace)
+        {
+            // Changing clip origin will also change the front face to compensate
+            // for the flipped viewport, we flip it again here to compensate as
+            // this effect is undesirable for us.
+            if (_clipOrigin == ClipOrigin.UpperLeft)
+            {
+                frontFace = frontFace == FrontFaceDirection.Ccw ? FrontFaceDirection.Cw : FrontFaceDirection.Ccw;
+            }
+
+            GL.FrontFace(frontFace);
         }
 
         private void EnsureVertexArray()
