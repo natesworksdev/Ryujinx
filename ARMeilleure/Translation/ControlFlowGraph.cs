@@ -7,10 +7,13 @@ namespace ARMeilleure.Translation
 {
     class ControlFlowGraph
     {
+        private BasicBlock[] _postOrderBlocks;
+        private int[] _postOrderMap;
+
         public BasicBlock Entry { get; }
         public IntrusiveList<BasicBlock> Blocks { get; }
-        public BasicBlock[] PostOrderBlocks { get; private set; }
-        public int[] PostOrderMap { get; private set; }
+        public BasicBlock[] PostOrderBlocks => _postOrderBlocks;
+        public int[] PostOrderMap => _postOrderMap; 
 
         public ControlFlowGraph(BasicBlock entry, IntrusiveList<BasicBlock> blocks)
         {
@@ -30,19 +33,8 @@ namespace ARMeilleure.Translation
             var visited = new HashSet<BasicBlock>();
             var blockStack = new Stack<BasicBlock>();
 
-            static T[] Initialize<T>(T[] array, int length)
-            {
-                if (array == null || array.Length != length)
-                {
-                    array = new T[length];
-                }
-                
-                // No need to clear the array because all its elements will be written to anyways.
-                return array;
-            }
-
-            PostOrderBlocks = Initialize(PostOrderBlocks, Blocks.Count);
-            PostOrderMap = Initialize(PostOrderMap, Blocks.Count);
+            Array.Resize(ref _postOrderBlocks, Blocks.Count);
+            Array.Resize(ref _postOrderMap, Blocks.Count);
 
             visited.Add(Entry);
             blockStack.Push(Entry);
