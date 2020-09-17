@@ -41,14 +41,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [Command(2)]
-        // ListAllUsers() -> array<nn::account::Uid, 0xa>
+        // ListAllUsers() -> buffer<nn::account::Uid, 0xa>
         public ResultCode ListAllUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.State.Account.GetAllUsers());
         }
 
         [Command(3)]
-        // ListOpenUsers() -> array<nn::account::Uid, 0xa>
+        // ListOpenUsers() -> buffer<nn::account::Uid, 0xa>
         public ResultCode ListOpenUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.State.Account.GetOpenedUsers());
@@ -272,6 +272,31 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
             return ResultCode.Success;
+        }
+
+        [Command(131)] // 6.0.0+
+        // ListOpenContextStoredUsers() -> buffer<nn::account::Uid, 0xa>
+        public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
+        {
+            long outputPosition = context.Request.RecvListBuff[0].Position;
+            long outputSize     = context.Request.RecvListBuff[0].Size;
+
+            MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
+
+            // TODO: This seems to write stored userids of the OpenContext in the buffer. We needs to determine them.
+            
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+
+            return ResultCode.Success;
+        }
+
+        [Command(141)] // 6.0.0+
+        // ListQualifiedUsers() -> buffer<nn::account::Uid, 0xa>
+        public ResultCode ListQualifiedUsers(ServiceCtx context)
+        {
+            // TODO: Determine how users are "qualified". We assume all users are "qualified" for now.
+
+            return WriteUserList(context, context.Device.System.State.Account.GetAllUsers());
         }
 
         [Command(150)] // 6.0.0+
