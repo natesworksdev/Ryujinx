@@ -1502,7 +1502,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             return ResultCode.Success;
         }
 
-        [Command(1002)]
+        [Command(1002)] // 9.0.0+
         // SetTouchScreenConfiguration(nn::hid::TouchScreenConfigurationForNx, nn::applet::AppletResourceUserId)
         public ResultCode SetTouchScreenConfiguration(ServiceCtx context)
         {

@@ -41,14 +41,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [Command(2)]
-        // ListAllUsers() -> buffer<nn::account::Uid, 0xa>
+        // ListAllUsers() -> array<nn::account::Uid, 0xa>
         public ResultCode ListAllUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.State.Account.GetAllUsers());
         }
 
         [Command(3)]
-        // ListOpenUsers() -> buffer<nn::account::Uid, 0xa>
+        // ListOpenUsers() -> array<nn::account::Uid, 0xa>
         public ResultCode ListOpenUsers(ServiceCtx context)
         {
             return WriteUserList(context, context.Device.System.State.Account.GetOpenedUsers());
@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [Command(131)] // 6.0.0+
-        // ListOpenContextStoredUsers() -> buffer<nn::account::Uid, 0xa>
+        // ListOpenContextStoredUsers() -> array<nn::account::Uid, 0xa>
         public ResultCode ListOpenContextStoredUsers(ServiceCtx context)
         {
             long outputPosition = context.Request.RecvListBuff[0].Position;
@@ -291,7 +291,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [Command(141)] // 6.0.0+
-        // ListQualifiedUsers() -> buffer<nn::account::Uid, 0xa>
+        // ListQualifiedUsers() -> array<nn::account::Uid, 0xa>
         public ResultCode ListQualifiedUsers(ServiceCtx context)
         {
             // TODO: Determine how users are "qualified". We assume all users are "qualified" for now.
