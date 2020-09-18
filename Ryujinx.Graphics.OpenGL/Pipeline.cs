@@ -571,20 +571,6 @@ namespace Ryujinx.Graphics.OpenGL
             GL.Enable(IndexedEnableCap.Blend, index);
         }
 
-        public void SetLogicOpState(bool enable, LogicalOp op)
-        {
-            if (enable)
-            {
-                GL.Enable(EnableCap.ColorLogicOp);
-
-                GL.LogicOp((LogicOp)op.Convert());
-            }
-            else
-            {
-                GL.Disable(EnableCap.ColorLogicOp);
-            }
-        }
-
         public void SetDepthBias(PolygonModeMask enables, float factor, float units, float clamp)
         {
             if ((enables & PolygonModeMask.Point) != 0)
@@ -705,6 +691,20 @@ namespace Ryujinx.Graphics.OpenGL
             EnsureVertexArray();
 
             _vertexArray.SetIndexBuffer(buffer.Handle);
+        }
+
+        public void SetLogicOpState(bool enable, LogicalOp op)
+        {
+            if (enable)
+            {
+                GL.Enable(EnableCap.ColorLogicOp);
+
+                GL.LogicOp((LogicOp)op.Convert());
+            }
+            else
+            {
+                GL.Disable(EnableCap.ColorLogicOp);
+            }
         }
 
         public void SetPointParameters(float size, bool isProgramPointSize, bool enablePointSprite, Origin origin)
