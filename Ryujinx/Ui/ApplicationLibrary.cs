@@ -5,8 +5,8 @@ using LibHac.Fs.Fsa;
 using LibHac.FsSystem;
 using LibHac.FsSystem.NcaUtils;
 using LibHac.Ns;
-using Ryujinx.Common.Logging;
 using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.Loaders.Npdm;
@@ -39,10 +39,12 @@ namespace Ryujinx.Ui
         public static IEnumerable<string> GetFilesInDirectory(string directory)
         {
             Stack<string> stack = new Stack<string>();
+
             stack.Push(directory);
+
             while (stack.Count > 0)
             {
-                string dir = stack.Pop();
+                string   dir     = stack.Pop();
                 string[] content = { };
 
                 try
@@ -57,7 +59,9 @@ namespace Ryujinx.Ui
                 if (content.Length > 0)
                 {
                     foreach (string file in content)
+                    {
                         yield return file;
+                    }
                 }
 
                 try
@@ -72,7 +76,9 @@ namespace Ryujinx.Ui
                 if (content.Length > 0)
                 {
                     foreach (string subdir in content)
+                    {
                         stack.Push(subdir);
+                    }
                 }
             }
         }
@@ -94,6 +100,7 @@ namespace Ryujinx.Ui
 
             // Builds the applications list with paths to found applications
             List<string> applications = new List<string>();
+
             foreach (string appDir in appDirs)
             {
                 
@@ -128,6 +135,7 @@ namespace Ryujinx.Ui
                 string developer       = "Unknown";
                 string version         = "0";
                 byte[] applicationIcon = null;
+
                 BlitStruct<ApplicationControlProperty> controlHolder = new BlitStruct<ApplicationControlProperty>(1);
 
                 try
@@ -462,6 +470,12 @@ namespace Ryujinx.Ui
 
                 if (nca.Header.ContentType == NcaContentType.Control)
                 {
+                    // Check the program index in the title id to get the main NCA
+                    if (nca.Header.TitleId.ToString("x16").Substring(14) != "00")
+                    {
+                        break;
+                    }
+
                     controlNca = nca;
                 }
             }
@@ -574,6 +588,7 @@ namespace Ryujinx.Ui
                     if (!((U8Span)controlTitle.Name).IsEmpty())
                     {
                         titleName = controlTitle.Name.ToString();
+
                         break;
                     }
                 }
@@ -586,6 +601,7 @@ namespace Ryujinx.Ui
                     if (!((U8Span)controlTitle.Publisher).IsEmpty())
                     {
                         publisher = controlTitle.Publisher.ToString();
+
                         break;
                     }
                 }
@@ -665,8 +681,7 @@ namespace Ryujinx.Ui
                         }
                         catch (MissingKeyException exception)
                         {
-                            Logger.Warning?.Print(LogClass.Application,
-                                $"Your key set is missing a key with the name: {exception.Name}. Errored File: {updatePath}");
+                            Logger.Warning?.Print(LogClass.Application, $"Your key set is missing a key with the name: {exception.Name}. Errored File: {updatePath}");
 
                             break;
                         }
