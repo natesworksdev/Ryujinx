@@ -522,10 +522,10 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     // It is setup like so by said APIs:
                     // If depth mode is ZeroToOne:
                     //  TranslateZ = Near
-                    //  ScaleZ =  Far - Near
+                    //  ScaleZ = Far - Near
                     // If depth mode is MinusOneToOne:
                     //  TranslateZ = (Near + Far) / 2
-                    //  ScaleZ =  (Far - Near) / 2
+                    //  ScaleZ = (Far - Near) / 2
                     // DepthNear/Far are sorted such as that Near is always less than Far.
                     DepthMode depthMode = extents.DepthNear != transform.TranslateZ &&
                                           extents.DepthFar  != transform.TranslateZ ? DepthMode.MinusOneToOne : DepthMode.ZeroToOne;
