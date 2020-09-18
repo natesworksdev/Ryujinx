@@ -488,10 +488,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="state">Current GPU state</param>
         private void UpdateViewportTransform(GpuState state)
         {
-            DepthMode depthMode = state.Get<DepthMode>(MethodOffset.DepthMode);
-
-            _context.Renderer.Pipeline.SetDepthMode(depthMode);
-
             var yControl = state.Get<YControl> (MethodOffset.YControl);
             var face     = state.Get<FaceState>(MethodOffset.FaceState);
 
@@ -517,6 +513,24 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 if (!_context.Capabilities.SupportsViewportSwizzle && transform.UnpackSwizzleY() == ViewportSwizzle.NegativeY)
                 {
                     scaleY = -scaleY;
+                }
+
+                if (index == 0)
+                {
+                    // Try to guess the depth mode being used on the high level API
+                    // based on current transform.
+                    // It is setup like so by said APIs:
+                    // If depth mode is ZeroToOne:
+                    //  TranslateZ = Near
+                    //  ScaleZ =  Far - Near
+                    // If depth mode is MinusOneToOne:
+                    //  TranslateZ = (Near + Far) / 2
+                    //  ScaleZ =  (Far - Near) / 2
+                    // DepthNear/Far are sorted such as that Near is always less than Far.
+                    DepthMode depthMode = extents.DepthNear != transform.TranslateZ &&
+                                          extents.DepthFar  != transform.TranslateZ ? DepthMode.MinusOneToOne : DepthMode.ZeroToOne;
+
+                    _context.Renderer.Pipeline.SetDepthMode(depthMode);
                 }
 
                 float x = transform.TranslateX - scaleX;
