@@ -555,14 +555,17 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 ViewportSwizzle swizzleZ = transform.UnpackSwizzleZ();
                 ViewportSwizzle swizzleW = transform.UnpackSwizzleW();
 
-                viewports[index] = new Viewport(
-                    region,
-                    swizzleX,
-                    swizzleY,
-                    swizzleZ,
-                    swizzleW,
-                    extents.DepthNear,
-                    extents.DepthFar);
+                float depthNear = extents.DepthNear;
+                float depthFar  = extents.DepthFar;
+
+                if (transform.ScaleZ < 0)
+                {
+                    float temp = depthNear;
+                    depthNear  = depthFar;
+                    depthFar   = temp;
+                }
+
+                viewports[index] = new Viewport(region, swizzleX, swizzleY, swizzleZ, swizzleW, depthNear, depthFar);
             }
 
             _context.Renderer.Pipeline.SetViewports(0, viewports);
