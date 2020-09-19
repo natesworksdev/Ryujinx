@@ -44,6 +44,7 @@ namespace Ryujinx.Ui
 
         private static bool _updatingGameTable;
         private static bool _gameLoaded;
+        private static string _gamePath;
         private static bool _ending;
 
 #pragma warning disable CS0169, CS0649, IDE0044
@@ -186,6 +187,7 @@ namespace Ryujinx.Ui
             _statusBar.Hide();
 
             _uiHandler = new GtkHostUiHandler(this);
+            _gamePath = null;
         }
 
         private void MainWindow_WindowStateEvent(object o, WindowStateEventArgs args)
@@ -490,6 +492,7 @@ namespace Ryujinx.Ui
                 }
 
                 _emulationContext = device;
+                _gamePath = path;
 
                 _deviceExitStatus.Reset();
 
@@ -594,6 +597,7 @@ namespace Ryujinx.Ui
                 UpdateGameTable();
 
                 Task.Run(RefreshFirmwareLabel);
+                Task.Run(HandleRelaunch);
 
                 _stopEmulation.Sensitive            = false;
                 _firmwareInstallFile.Sensitive      = true;
@@ -950,6 +954,21 @@ namespace Ryujinx.Ui
 
                 return false;
             }));
+        }
+
+        private void HandleRelaunch()
+        {
+            // If the previous index isn't -1, that mean we are relaunching.
+            if (_userchannelPersistance.PreviousIndex != -1)
+            {
+                LoadApplication(_gamePath);
+            }
+            else
+            {
+                // otherwise, clear state.
+                _userchannelPersistance = new UserChannelPersistance();
+                _gamePath = null;
+            }
         }
 
         private void HandleInstallerDialog(FileChooserDialog fileChooser)
