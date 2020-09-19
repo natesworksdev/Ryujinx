@@ -11,6 +11,7 @@ using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.FileSystem.Content;
+using Ryujinx.HLE.HOS;
 using Ryujinx.Ui.Diagnostic;
 using System;
 using System.Diagnostics;
@@ -27,12 +28,15 @@ namespace Ryujinx.Ui
     {
         private static VirtualFileSystem _virtualFileSystem;
         private static ContentManager    _contentManager;
+        private static UserChannelPersistance _userchannelPersistance;
 
         private static WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
         private static HLE.Switch _emulationContext;
 
         private static GlRenderer _glWidget;
         private static GtkHostUiHandler _uiHandler;
+
+        public static GlRenderer GlWidget => _glWidget;
 
         private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
 
@@ -110,6 +114,7 @@ namespace Ryujinx.Ui
             }
 
             _virtualFileSystem = VirtualFileSystem.CreateInstance();
+            _userchannelPersistance = new UserChannelPersistance();
             _contentManager    = new ContentManager(_virtualFileSystem);
 
             if (migrationNeeded)
@@ -278,7 +283,7 @@ namespace Ryujinx.Ui
         {
             _virtualFileSystem.Reload();
 
-            HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, InitializeRenderer(), InitializeAudioEngine())
+            HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, _userchannelPersistance, InitializeRenderer(), InitializeAudioEngine())
             {
                 UiHandler = _uiHandler
             };

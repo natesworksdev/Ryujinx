@@ -126,5 +126,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             return ResultCode.Success;
         }
+
+        [Command(160)]
+        // StoreOpenContext()
+        public ResultCode StoreOpenContext(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+
+            return ResultCode.Success;
+        }
     }
 }

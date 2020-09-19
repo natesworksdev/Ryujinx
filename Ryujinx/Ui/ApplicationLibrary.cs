@@ -9,6 +9,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS;
 using Ryujinx.HLE.Loaders.Npdm;
 using System;
 using System.Collections.Generic;
@@ -456,29 +457,7 @@ namespace Ryujinx.Ui
 
         private static void GetControlFsAndTitleId(PartitionFileSystem pfs, out IFileSystem controlFs, out string titleId)
         {
-            Nca controlNca = null;
-
-            // Add keys to key set if needed
-            _virtualFileSystem.ImportTickets(pfs);
-
-            // Find the Control NCA and store it in variable called controlNca
-            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
-            {
-                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                Nca nca = new Nca(_virtualFileSystem.KeySet, ncaFile.AsStorage());
-
-                if (nca.Header.ContentType == NcaContentType.Control)
-                {
-                    // Check the program index in the title id to get the main NCA
-                    if (nca.Header.TitleId.ToString("x16").Substring(14) != "00")
-                    {
-                        break;
-                    }
-
-                    controlNca = nca;
-                }
-            }
+            (_, _, Nca controlNca) = ApplicationLoader.GetGameData(_virtualFileSystem, pfs, 0);
 
             // Return the ControlFS
             controlFs = controlNca?.OpenFileSystem(NcaSectionType.Data, IntegrityCheckLevel.None);

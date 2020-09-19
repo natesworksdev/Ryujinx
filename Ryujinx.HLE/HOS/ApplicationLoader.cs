@@ -77,19 +77,26 @@ namespace Ryujinx.HLE.HOS
             LoadExeFs(codeFs, metaData);
         }
 
-        private (Nca main, Nca patch, Nca control) GetGameData(PartitionFileSystem pfs)
+        public static (Nca main, Nca patch, Nca control) GetGameData(VirtualFileSystem fileSystem, PartitionFileSystem pfs, int programIndex)
         {
             Nca mainNca    = null;
             Nca patchNca   = null;
             Nca controlNca = null;
 
-            _fileSystem.ImportTickets(pfs);
+            fileSystem.ImportTickets(pfs);
 
             foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
             {
                 pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                Nca nca = new Nca(_fileSystem.KeySet, ncaFile.AsStorage());
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.AsStorage());
+
+                int ncaProgramIndex = (int)(nca.Header.TitleId & 0xF);
+
+                if (ncaProgramIndex != programIndex)
+                {
+                    continue;
+                }
 
                 if (nca.Header.ContentType == NcaContentType.Program)
                 {
@@ -101,12 +108,6 @@ namespace Ryujinx.HLE.HOS
                     }
                     else
                     {
-                        // Check the program index in the title id to get the main NCA
-                        if (nca.Header.TitleId.ToString("x16").Substring(14) != "00")
-                        {
-                            break;
-                        }
-
                         mainNca = nca;
                     }
                 }
@@ -139,7 +140,7 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                (mainNca, patchNca, controlNca) = GetGameData(securePartition);
+                (mainNca, patchNca, controlNca) = GetGameData(_fileSystem, securePartition, _device.UserChannelPersistance.Index);
             }
             catch (Exception e)
             {
@@ -173,7 +174,7 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                (mainNca, patchNca, controlNca) = GetGameData(nsp);
+                (mainNca, patchNca, controlNca) = GetGameData(_fileSystem, nsp, _device.UserChannelPersistance.Index);
             }
             catch (Exception e)
             {
