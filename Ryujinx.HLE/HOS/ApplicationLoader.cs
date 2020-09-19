@@ -120,6 +120,60 @@ namespace Ryujinx.HLE.HOS
             return (mainNca, patchNca, controlNca);
         }
 
+        public static (Nca patch, Nca control) GetGameUpdateDataFromPartition(VirtualFileSystem fileSystem, PartitionFileSystem pfs, string titleId)
+        {
+            Nca patchNca = null;
+            Nca controlNca = null;
+
+            fileSystem.ImportTickets(pfs);
+
+            foreach (DirectoryEntryEx fileEntry in pfs.EnumerateEntries("/", "*.nca"))
+            {
+                pfs.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+
+                Nca nca = new Nca(fileSystem.KeySet, ncaFile.AsStorage());
+
+                if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != titleId)
+                {
+                    break;
+                }
+
+                if (nca.Header.ContentType == NcaContentType.Program)
+                {
+                    patchNca = nca;
+                }
+                else if (nca.Header.ContentType == NcaContentType.Control)
+                {
+                    controlNca = nca;
+                }
+            }
+
+            return (patchNca, controlNca);
+        }
+
+        public static (Nca patch, Nca control) GetGameUpdateData(VirtualFileSystem fileSystem, string titleId, out string updatePath)
+        {
+            updatePath = null;
+
+            // Load update informations if existing.
+            string titleUpdateMetadataPath = Path.Combine(AppDataManager.GamesDirPath, titleId, "updates.json");
+
+            if (File.Exists(titleUpdateMetadataPath))
+            {
+                updatePath = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(titleUpdateMetadataPath).Selected;
+
+                if (File.Exists(updatePath))
+                {
+                    FileStream file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
+                    PartitionFileSystem nsp = new PartitionFileSystem(file.AsStorage());
+
+                    return GetGameUpdateDataFromPartition(fileSystem, nsp, titleId);
+                }
+            }
+
+            return (null, null);
+        }
+
         public void LoadXci(string xciFile)
         {
             FileStream file = new FileStream(xciFile, FileMode.Open, FileAccess.Read);
@@ -224,41 +278,16 @@ namespace Ryujinx.HLE.HOS
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
-            // Load Update
-            string titleUpdateMetadataPath = Path.Combine(AppDataManager.GamesDirPath, mainNca.Header.TitleId.ToString("x16"), "updates.json");
+            (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), out _);
 
-            if (File.Exists(titleUpdateMetadataPath))
+            if (updatePatchNca != null)
             {
-                string updatePath = JsonHelper.DeserializeFromFile<TitleUpdateMetadata>(titleUpdateMetadataPath).Selected;
+                patchNca = updatePatchNca;
+            }
 
-                if (File.Exists(updatePath))
-                {
-                    FileStream          file = new FileStream(updatePath, FileMode.Open, FileAccess.Read);
-                    PartitionFileSystem nsp  = new PartitionFileSystem(file.AsStorage());
-
-                    _fileSystem.ImportTickets(nsp);
-
-                    foreach (DirectoryEntryEx fileEntry in nsp.EnumerateEntries("/", "*.nca"))
-                    {
-                        nsp.OpenFile(out IFile ncaFile, fileEntry.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
-
-                        Nca nca = new Nca(_fileSystem.KeySet, ncaFile.AsStorage());
-
-                        if ($"{nca.Header.TitleId.ToString("x16")[..^3]}000" != mainNca.Header.TitleId.ToString("x16"))
-                        {
-                            break;
-                        }
-
-                        if (nca.Header.ContentType == NcaContentType.Program)
-                        {
-                            patchNca = nca;
-                        }
-                        else if (nca.Header.ContentType == NcaContentType.Control)
-                        {
-                            controlNca = nca;
-                        }
-                    }
-                }
+            if (updateControlNca != null)
+            {
+                controlNca = updateControlNca;
             }
 
             // Load Aoc
