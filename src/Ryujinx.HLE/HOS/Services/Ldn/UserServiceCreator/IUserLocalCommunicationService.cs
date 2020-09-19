@@ -241,7 +241,6 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 IntentId                  = networkInfo.NetworkId.IntentId,
                 Channel                   = networkInfo.Common.Channel,
                 NodeCountMax              = networkInfo.Ldn.NodeCountMax,
-                Reserved1                 = 0x00,
                 LocalCommunicationVersion = networkInfo.Ldn.Nodes[0].LocalCommunicationVersion,
                 Reserved2                 = new byte[10]
             };
@@ -356,7 +355,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         private ResultCode ScanInternal(MemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
         {
             long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
-            long maxGames = bufferSize / networkInfoSize;
+            long maxGames        = bufferSize / networkInfoSize;
 
             MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
 
@@ -373,6 +372,30 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     break;
                 }
             }
+
+            return ResultCode.Success;
+        }
+
+        [Command(104)] // 5.0.0+
+        // SetWirelessControllerRestriction(u32 wireless_controller_restriction)
+        public ResultCode SetWirelessControllerRestriction(ServiceCtx context)
+        {
+            // NOTE: Return ResultCode.InvalidArgument if an internal IPAddress is null, doesn't occur in our case.
+
+            uint wirelessControllerRestriction = context.RequestData.ReadUInt32();
+
+            if (wirelessControllerRestriction > 1)
+            {
+                return ResultCode.InvalidArgument;
+            }
+
+            if (_state != NetworkState.Initialized)
+            {
+                return ResultCode.InvalidState;
+            }
+
+            // NOTE: WirelessControllerRestriction value is used for the btm service in SetWlanMode call.
+            //       Since we use our own implementation we can do nothing here.
 
             return ResultCode.Success;
         }
@@ -447,8 +470,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public ResultCode CreateNetworkImpl(ServiceCtx context, bool isPrivate = false)
         {
-            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
-
+            SecurityConfig    securityConfig    = context.RequestData.ReadStruct<SecurityConfig>();
             SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
             UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
@@ -717,7 +739,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private ResultCode ConnectImpl(ServiceCtx context, bool isPrivate = false)
         {
-            SecurityConfig securityConfig = context.RequestData.ReadStruct<SecurityConfig>();
+            SecurityConfig    securityConfig    = context.RequestData.ReadStruct<SecurityConfig>();
             SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
             UserConfig userConfig                = context.RequestData.ReadStruct<UserConfig>();
@@ -725,16 +747,18 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             uint       optionUnknown             = context.RequestData.ReadUInt32();
 
             NetworkConfig networkConfig = new NetworkConfig();
-            NetworkInfo networkInfo = new NetworkInfo();
+            NetworkInfo   networkInfo   = new NetworkInfo();
+
             if (isPrivate)
             {
                 context.RequestData.ReadUInt32(); // Padding.
+
                 networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
             }
             else
             {
                 long bufferPosition = context.Request.PtrBuff[0].Position;
-                long bufferSize = context.Request.PtrBuff[0].Size;
+                long bufferSize     = context.Request.PtrBuff[0].Size;
 
                 byte[] networkInfoBytes = new byte[bufferSize];
 
