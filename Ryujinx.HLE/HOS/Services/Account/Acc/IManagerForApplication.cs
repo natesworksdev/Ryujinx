@@ -127,7 +127,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        [Command(160)]
+        [Command(160)] // 5.0.0+
         // StoreOpenContext()
         public ResultCode StoreOpenContext(ServiceCtx context)
         {
