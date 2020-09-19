@@ -265,16 +265,21 @@ namespace ARMeilleure.Instructions
 
         public static void Vfnms(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (Optimizations.FastFP && Optimizations.UseFma)
             {
                 OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
-                bool doublePrecision = (op.Size & 1) != 0;
-                OperandType type = doublePrecision ? OperandType.FP64 : OperandType.FP32;
-                Operand dest = ExtractScalar(context, type, op.Vd);
-
-                InsertScalar(context, op.Vd, context.Negate(dest));
-                EmitScalarTernaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd, Intrinsic.X86Addss, Intrinsic.X86Addsd);
+                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    if((op.Size & 1) == 0)
+                    {
+                        return context.AddIntrinsic(Intrinsic.X86Fmaddss, context.Negate(op1), op2, op3);
+                    }
+                    else
+                    {
+                        return context.AddIntrinsic(Intrinsic.X86Fmaddsd, context.Negate(op1), op2, op3);
+                    }
+                });
             }
             else
             {
