@@ -366,9 +366,9 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VFNMS.<size> <Sd>, <Sm>, <Sn>")]
-        public void Vfnms([Values(0u, 1u, 4u, 8u, 15u)] uint rd,
-                         [Values(0u, 1u, 4u, 8u, 15u)] uint rn,
-                         [Values(0u, 1u, 4u, 8u, 15u)] uint rm,
+        public void Vfnms([Values(0u, 1u, 4u)] uint rd,
+                         [Values(0u, 1u, 4u)] uint rn,
+                         [Values(0u, 1u, 4u)] uint rm,
                          [Values(2u, 3u)] uint size,
                          [Random(RndCnt)] ulong z,
                          [Random(RndCnt)] ulong a,
