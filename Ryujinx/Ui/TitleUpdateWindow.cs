@@ -86,7 +86,7 @@ namespace Ryujinx.Ui
 
                     try
                     {
-                        (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId);
+                        (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateDataFromPartition(_virtualFileSystem, nsp, _titleId, 0);
 
                         if (controlNca != null && patchNca != null)
                         {

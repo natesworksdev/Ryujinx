@@ -610,7 +610,7 @@ namespace Ryujinx.Ui
 
             try
             {
-                (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, titleId, out updatePath);
+                (Nca patchNca, Nca controlNca) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, titleId, 0, out updatePath);
 
                 if (patchNca != null && controlNca != null)
                 {

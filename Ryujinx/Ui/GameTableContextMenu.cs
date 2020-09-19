@@ -247,7 +247,7 @@ namespace Ryujinx.Ui
             return workingPath;
         }
 
-        private void ExtractSection(NcaSectionType ncaSectionType)
+        private void ExtractSection(NcaSectionType ncaSectionType, int programIndex = 0)
         {
             FileChooserDialog fileChooser = new FileChooserDialog("Choose the folder to extract into", null, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Extract", ResponseType.Accept);
             fileChooser.SetPosition(WindowPosition.Center);
@@ -342,7 +342,7 @@ namespace Ryujinx.Ui
                         }
 
 
-                        (Nca updatePatchNca, _) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), out _);
+                        (Nca updatePatchNca, _) = ApplicationLoader.GetGameUpdateData(_virtualFileSystem, mainNca.Header.TitleId.ToString("x16"), programIndex, out _);
 
                         if (updatePatchNca != null)
                         {
