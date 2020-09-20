@@ -28,7 +28,7 @@ namespace Ryujinx.Ui
     {
         private static VirtualFileSystem _virtualFileSystem;
         private static ContentManager    _contentManager;
-        private static UserChannelPersistance _userchannelPersistance;
+        private static UserChannelPersistence _userChannelPersistence;
 
         private static WindowsMultimediaTimerResolution _windowsMultimediaTimerResolution;
         private static HLE.Switch _emulationContext;
@@ -115,7 +115,7 @@ namespace Ryujinx.Ui
             }
 
             _virtualFileSystem = VirtualFileSystem.CreateInstance();
-            _userchannelPersistance = new UserChannelPersistance();
+            _userChannelPersistence = new UserChannelPersistence();
             _contentManager    = new ContentManager(_virtualFileSystem);
 
             if (migrationNeeded)
@@ -285,7 +285,7 @@ namespace Ryujinx.Ui
         {
             _virtualFileSystem.Reload();
 
-            HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, _userchannelPersistance, InitializeRenderer(), InitializeAudioEngine())
+            HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, _userChannelPersistence, InitializeRenderer(), InitializeAudioEngine())
             {
                 UiHandler = _uiHandler
             };
@@ -959,14 +959,14 @@ namespace Ryujinx.Ui
         private void HandleRelaunch()
         {
             // If the previous index isn't -1, that mean we are relaunching.
-            if (_userchannelPersistance.PreviousIndex != -1)
+            if (_userChannelPersistence.PreviousIndex != -1)
             {
                 LoadApplication(_gamePath);
             }
             else
             {
                 // otherwise, clear state.
-                _userchannelPersistance = new UserChannelPersistance();
+                _userChannelPersistence = new UserChannelPersistence();
                 _gamePath = null;
             }
         }

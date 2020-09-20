@@ -189,8 +189,6 @@ namespace Ryujinx.HLE.HOS
                 }
             }
 
-
-
             return (null, null);
         }
 
@@ -214,7 +212,7 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                (mainNca, patchNca, controlNca) = GetGameData(_fileSystem, securePartition, _device.UserChannelPersistance.Index);
+                (mainNca, patchNca, controlNca) = GetGameData(_fileSystem, securePartition, _device.UserChannelPersistence.Index);
             }
             catch (Exception e)
             {
@@ -248,7 +246,7 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                (mainNca, patchNca, controlNca) = GetGameData(_fileSystem, nsp, _device.UserChannelPersistance.Index);
+                (mainNca, patchNca, controlNca) = GetGameData(_fileSystem, nsp, _device.UserChannelPersistence.Index);
             }
             catch (Exception e)
             {
@@ -298,7 +296,7 @@ namespace Ryujinx.HLE.HOS
             IStorage    dataStorage = null;
             IFileSystem codeFs      = null;
 
-            (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistance.Index, out _);
+            (Nca updatePatchNca, Nca updateControlNca) = GetGameUpdateData(_fileSystem, mainNca.Header.TitleId.ToString("x16"), _device.UserChannelPersistence.Index, out _);
 
             if (updatePatchNca != null)
             {
@@ -374,9 +372,9 @@ namespace Ryujinx.HLE.HOS
                 ControlData.ByteSpan.Clear();
             }
 
-            // NOTE: Nintendo doesn't guarrante that the display version will be updated on sub programs when updating a multi program application.
+            // NOTE: Nintendo doesn't guarantee that the display version will be updated on sub programs when updating a multi program application.
             // BODY: As such, to avoid PTC cache confusion, we only trust the the program 0 display version when launching a sub program.
-            if (updateProgram0ControlNca != null && _device.UserChannelPersistance.Index != 0)
+            if (updateProgram0ControlNca != null && _device.UserChannelPersistence.Index != 0)
             {
                 string dummyTitleName = "";
                 BlitStruct<ApplicationControlProperty> dummyControl = new BlitStruct<ApplicationControlProperty>(1);

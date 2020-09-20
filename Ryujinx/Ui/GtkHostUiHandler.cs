@@ -125,7 +125,7 @@ namespace Ryujinx.Ui
 
         public void ExecuteProgram(HLE.Switch device, ProgramSpecifyKind kind, ulong value)
         {
-            device.UserChannelPersistance.ExecuteProgram(kind, value);
+            device.UserChannelPersistence.ExecuteProgram(kind, value);
             MainWindow.GlWidget?.Exit();
         }
     }

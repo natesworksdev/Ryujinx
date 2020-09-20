@@ -4,14 +4,14 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS
 {
-    public class UserChannelPersistance
+    public class UserChannelPersistence
     {
         private Stack<byte[]> _userChannelStorages;
         public int PreviousIndex { get; private set; }
         public int Index { get; private set; }
         public ProgramSpecifyKind Kind { get; private set; }
 
-        public UserChannelPersistance()
+        public UserChannelPersistence()
         {
             _userChannelStorages = new Stack<byte[]>();
             Kind = ProgramSpecifyKind.ExecuteProgram;

@@ -35,7 +35,7 @@ namespace Ryujinx.HLE
 
         public PerformanceStatistics Statistics { get; private set; }
 
-        public UserChannelPersistance UserChannelPersistance { get; }
+        public UserChannelPersistence UserChannelPersistence { get; }
 
         public Hid Hid { get; private set; }
 
@@ -43,7 +43,7 @@ namespace Ryujinx.HLE
 
         public bool EnableDeviceVsync { get; set; } = true;
 
-        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistance userChannelPersistance, IRenderer renderer, IAalOutput audioOut)
+        public Switch(VirtualFileSystem fileSystem, ContentManager contentManager, UserChannelPersistence userChannelPersistence, IRenderer renderer, IAalOutput audioOut)
         {
             if (renderer == null)
             {
@@ -55,12 +55,12 @@ namespace Ryujinx.HLE
                 throw new ArgumentNullException(nameof(audioOut));
             }
 
-            if (userChannelPersistance == null)
+            if (userChannelPersistence == null)
             {
-                throw new ArgumentNullException(nameof(userChannelPersistance));
+                throw new ArgumentNullException(nameof(userChannelPersistence));
             }
 
-            UserChannelPersistance = userChannelPersistance;
+            UserChannelPersistence = userChannelPersistence;
 
             AudioOut = audioOut;
 
