@@ -2,7 +2,9 @@
 using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
+using System.Threading;
 
 namespace Ryujinx.Memory.Tests
 {
@@ -10,24 +12,19 @@ namespace Ryujinx.Memory.Tests
     {
         private const int RndCnt = 3;
 
-        // Test summary:
-        // Multithreading
-        // Multi Region Handle Dirty Flags
-        // Read Action triggers once
-        // Unmapping removes tracking regions
-        // Disposing tracking regions removes handles (?)
-
         private const ulong MemorySize = 0x8000;
         private const int PageSize = 4096;
 
         private MemoryBlock _memoryBlock;
         private MemoryTracking _tracking;
+        private MockVirtualMemoryManager _memoryManager;
 
         [SetUp]
         public void Setup()
         {
             _memoryBlock = new MemoryBlock(MemorySize);
-            _tracking = new MemoryTracking(new MockVirtualMemoryManager(MemorySize, PageSize), _memoryBlock, PageSize);
+            _memoryManager = new MockVirtualMemoryManager(MemorySize, PageSize);
+            _tracking = new MemoryTracking(_memoryManager, _memoryBlock, PageSize);
         }
 
         [TearDown]
@@ -36,10 +33,17 @@ namespace Ryujinx.Memory.Tests
             _memoryBlock.Dispose();
         }
 
-        private bool TestSingleWrite(RegionHandle handle, ulong address, ulong size)
+        private bool TestSingleWrite(RegionHandle handle, ulong address, ulong size, bool physical = false)
         {
             handle.Reprotect();
-            _tracking.VirtualMemoryEvent(address, size, true);
+            if (physical)
+            {
+                _tracking.PhysicalMemoryEvent(address, true);
+            }
+            else
+            {
+                _tracking.VirtualMemoryEvent(address, size, true);
+            }
             return handle.Dirty;
         }
 
@@ -89,6 +93,14 @@ namespace Ryujinx.Memory.Tests
 
             bool dirtyAfterReprotect2 = handle.Dirty;
             Assert.False(dirtyAfterReprotect2); // Handle is no longer dirty.
+
+            handle.Dispose();
+
+            bool dirtyAfterDispose = TestSingleWrite(handle, 0, 4);
+            Assert.False(dirtyAfterDispose); // Handle cannot be triggered when disposed
+
+            bool dirtyAfterDispose2 = TestSingleWrite(handle, 0, 4, true);
+            Assert.False(dirtyAfterDispose2);
         }
 
         [Test]
@@ -183,6 +195,199 @@ namespace Ryujinx.Memory.Tests
 
             bool alignedAfterTriggers = TestSingleWrite(handle, alignedEnd, 1);
             Assert.False(alignedAfterTriggers);
+        }
+
+        [Test, Timeout(1000)]
+        public void Multithreading()
+        {
+            // Multithreading sanity test
+            // Multiple threads can easily read/write memory regions from any existing handle.
+            // Handles can also be owned by different threads, though they should have one owner thread.
+            // Handles can be created and disposed at any time, by any thread.
+
+            // This test should not throw or deadlock due to invalid state.
+
+            const int threadCount = 3;
+            const int handlesPerThread = 16;
+            long finishedTime = 0;
+
+            RegionHandle[] handles = new RegionHandle[threadCount * handlesPerThread];
+            Random globalRand = new Random();
+
+            for (int i = 0; i < handles.Length; i++)
+            {
+                handles[i] = _tracking.BeginTracking((ulong)i * PageSize, PageSize);
+                handles[i].Reprotect();
+            }
+
+            List<Thread> testThreads = new List<Thread>();
+
+            // Dirty flag consumer threads
+            int dirtyFlagReprotects = 0;
+            for (int i = 0; i < threadCount; i++)
+            {
+                int randSeed = i;
+                testThreads.Add(new Thread(() =>
+                {
+                    int handleBase = randSeed * handlesPerThread;
+                    while (Stopwatch.GetTimestamp() < finishedTime)
+                    {
+                        Random random = new Random(randSeed);
+                        RegionHandle handle = handles[handleBase + random.Next(handlesPerThread)];
+
+                        if (handle.Dirty)
+                        {
+                            handle.Reprotect();
+                            Interlocked.Increment(ref dirtyFlagReprotects);
+                        }
+                    }
+                }));
+            }
+
+            // Write trigger threads
+            int writeTriggers = 0;
+            for (int i = 0; i < threadCount; i++)
+            {
+                int randSeed = i;
+                testThreads.Add(new Thread(() =>
+                {
+                    Random random = new Random(randSeed);
+                    ulong handleBase = (ulong)(randSeed * handlesPerThread * PageSize);
+                    while (Stopwatch.GetTimestamp() < finishedTime)
+                    {
+                        _tracking.VirtualMemoryEvent(handleBase + (ulong)random.Next(PageSize * handlesPerThread), PageSize / 2, true);
+                        Interlocked.Increment(ref writeTriggers);
+                    }
+                }));
+            }
+
+            // Handle create/delete threads
+            int handleLifecycles = 0;
+            for (int i = 0; i < threadCount; i++)
+            {
+                int randSeed = i;
+                testThreads.Add(new Thread(() =>
+                {
+                    int maxAddress = threadCount * handlesPerThread * PageSize;
+                    Random random = new Random(randSeed + 512);
+                    while (Stopwatch.GetTimestamp() < finishedTime)
+                    {
+                        RegionHandle handle = _tracking.BeginTracking((ulong)random.Next(maxAddress), (ulong)random.Next(65536));
+
+                        handle.Dispose();
+
+                        Interlocked.Increment(ref handleLifecycles);
+                    }
+                }));
+            }
+
+            finishedTime = Stopwatch.GetTimestamp() + Stopwatch.Frequency / 10; // Run for 100ms;
+
+            foreach (Thread thread in testThreads)
+            {
+                thread.Start();
+            }
+
+            foreach (Thread thread in testThreads)
+            {
+                thread.Join();
+            }
+
+            Assert.Greater(dirtyFlagReprotects, 10);
+            Assert.Greater(writeTriggers, 10);
+            Assert.Greater(handleLifecycles, 10);
+        }
+
+        [Test]
+        public void ReadActionThreadConsumption()
+        {
+            // Read actions should only be triggered once for each registration.
+            // The implementation should use an interlocked exchange to make sure other threads can't get the action.
+
+            RegionHandle handle = _tracking.BeginTracking(0, PageSize);
+
+            int triggeredCount = 0;
+            int registeredCount = 0;
+            int signalThreadsDone = 0;
+            bool isRegistered = false;
+
+            Action registerReadAction = () =>
+            {
+                registeredCount++;
+                handle.RegisterAction((address, size) =>
+                {
+                    isRegistered = false;
+                    Interlocked.Increment(ref triggeredCount);
+                });
+            };
+
+            const int threadCount = 16;
+            const int iterationCount = 10000;
+            Thread[] signalThreads = new Thread[threadCount];
+
+            for (int i = 0; i < threadCount; i++)
+            {
+                int randSeed = i;
+                signalThreads[i] = new Thread(() =>
+                {
+                    Random random = new Random(randSeed);
+                    for (int j = 0; j < iterationCount; j++)
+                    {
+                        _tracking.VirtualMemoryEvent((ulong)random.Next(PageSize), 4, false);
+                    }
+                    Interlocked.Increment(ref signalThreadsDone);
+                });
+            }
+
+            for (int i = 0; i < threadCount; i++)
+            {
+                signalThreads[i].Start();
+            }
+
+            while (signalThreadsDone != -1)
+            {
+                if (signalThreadsDone == threadCount)
+                {
+                    signalThreadsDone = -1;
+                }
+
+                if (!isRegistered)
+                {
+                    isRegistered = true;
+                    registerReadAction();
+                }
+            }
+
+            // The action should trigger exactly once for every registration,
+            // then we register once after all the threads signalling it cease.
+            Assert.AreEqual(registeredCount, triggeredCount + 1);
+        }
+
+        [Test]
+        public void PhysicalMemoryMapping()
+        {
+            // Tracking is done in the virtual space usually, but we also support tracking on physical regions.
+            // The physical regions that make up a virtual region are determined when the region is created,
+            // or when a mapping changes.
+
+            // These tests verify that the region cannot be signalled after unmapping, and can after remapping.
+
+            RegionHandle handle = _tracking.BeginTracking(PageSize, PageSize);
+
+            Assert.True(handle.Dirty);
+
+            bool trackedWriteTriggers = TestSingleWrite(handle, PageSize, 1, true);
+            Assert.True(trackedWriteTriggers);
+
+            _memoryManager.NoMappings = true;
+            _tracking.Unmap(PageSize, PageSize);
+            bool unmappedWriteTriggers = TestSingleWrite(handle, PageSize, 1, true);
+            Assert.False(unmappedWriteTriggers);
+
+            _memoryManager.NoMappings = false;
+            _tracking.Map(PageSize, PageSize, PageSize);
+            bool remappedWriteTriggers = TestSingleWrite(handle, PageSize, 1, true);
+            Assert.True(remappedWriteTriggers);
         }
     }
 }

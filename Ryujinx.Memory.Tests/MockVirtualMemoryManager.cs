@@ -7,6 +7,8 @@ namespace Ryujinx.Memory.Tests
 {
     class MockVirtualMemoryManager : IVirtualMemoryManager
     {
+        public bool NoMappings;
+
         public MockVirtualMemoryManager(ulong size, int pageSize)
         {
 
@@ -14,7 +16,7 @@ namespace Ryujinx.Memory.Tests
 
         public (ulong address, ulong size)[] GetPhysicalRegions(ulong va, ulong size)
         {
-            return new (ulong address, ulong size)[] { (va, size) };
+            return NoMappings ? new (ulong address, ulong size)[0] : new (ulong address, ulong size)[] { (va, size) };
         }
 
         public void Reprotect(ulong va, ulong size, MemoryPermission protection)
