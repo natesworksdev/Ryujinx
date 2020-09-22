@@ -57,6 +57,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     throw new NotImplementedException($"Unknown LaunchParameterKind {kind}");
             }
 
+            if (storageData == null)
+            {
+                return ResultCode.NotAvailable;
+            }
+
             MakeObject(context, new AppletAE.IStorage(storageData));
 
             return ResultCode.Success;
