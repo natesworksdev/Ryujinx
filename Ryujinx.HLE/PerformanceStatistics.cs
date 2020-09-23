@@ -10,13 +10,22 @@ namespace Ryujinx.HLE
         private const int FrameTypeSystem = 0;
         private const int FrameTypeGame   = 1;
 
+        private const int PercentTypeFifo = 0;
+
         private double[] _averageFrameRate;
         private double[] _accumulatedFrameTime;
         private double[] _previousFrameTime;
 
+        private double[] _averagePercent;
+        private double[] _accumulatedPercent;
+        private double[] _percentLastEndTime;
+        private double[] _percentStartTime;
+
         private long[] _framesRendered;
+        private long[] _percentCount;
 
         private object[] _frameLock;
+        private object[] _percentLock;
 
         private double _ticksToSeconds;
 
@@ -30,9 +39,16 @@ namespace Ryujinx.HLE
             _accumulatedFrameTime = new double[2];
             _previousFrameTime    = new double[2];
 
-            _framesRendered = new long[2];
+            _averagePercent     = new double[1];
+            _accumulatedPercent = new double[1];
+            _percentLastEndTime = new double[1];
+            _percentStartTime   = new double[1];
 
-            _frameLock = new object[] { new object(), new object() };
+            _framesRendered = new long[2];
+            _percentCount   = new long[1];
+
+            _frameLock   = new object[] { new object(), new object() };
+            _percentLock = new object[] { new object() };
 
             _executionTime = new Stopwatch();
 
@@ -53,6 +69,7 @@ namespace Ryujinx.HLE
         {
             CalculateAverageFrameRate(FrameTypeSystem);
             CalculateAverageFrameRate(FrameTypeGame);
+            CalculateAveragePercent(PercentTypeFifo);
         }
 
         private void CalculateAverageFrameRate(int frameType)
@@ -74,6 +91,30 @@ namespace Ryujinx.HLE
             }
         }
 
+        private void CalculateAveragePercent(int percentType)
+        {
+            double percent = 0;
+
+            if (_accumulatedPercent[percentType] > 0)
+            {
+                percent = _accumulatedPercent[percentType] / _percentCount[percentType];
+
+                if (double.IsNaN(percent))
+                {
+                    percent = 0;
+                }
+            }
+
+            lock (_percentLock[percentType])
+            {
+                _averagePercent[percentType] = percent;
+
+                _percentCount[percentType] = 0;
+
+                _accumulatedPercent[percentType] = 0;
+            }
+        }
+
         private double LinearInterpolate(double old, double New)
         {
             return old * (1.0 - FrameRateWeight) + New * FrameRateWeight;
@@ -87,6 +128,42 @@ namespace Ryujinx.HLE
         public void RecordGameFrameTime()
         {
             RecordFrameTime(FrameTypeGame);
+        }
+
+        public void RecordFifoStart()
+        {
+            StartPercentTime(PercentTypeFifo);
+        }
+
+        public void RecordFifoEnd()
+        {
+            EndPercentTime(PercentTypeFifo);
+        }
+
+        private void StartPercentTime(int percentType)
+        {
+            double currentTime = _executionTime.ElapsedTicks * _ticksToSeconds;
+
+            _percentStartTime[percentType] = currentTime;
+        }
+
+        private void EndPercentTime(int percentType)
+        {
+            double currentTime = _executionTime.ElapsedTicks * _ticksToSeconds;
+
+            double elapsedTime = currentTime - _percentLastEndTime[percentType];
+            double elapsedActiveTime = currentTime - _percentStartTime[percentType];
+
+            double percentActive = (elapsedActiveTime / elapsedTime) * 100;
+
+            lock (_percentLock[percentType])
+            {
+                _accumulatedPercent[percentType] += percentActive;
+
+                _percentCount[percentType]++;
+            }
+
+            _percentLastEndTime[percentType] = currentTime;
         }
 
         private void RecordFrameTime(int frameType)
@@ -113,6 +190,11 @@ namespace Ryujinx.HLE
         public double GetGameFrameRate()
         {
             return _averageFrameRate[FrameTypeGame];
+        }
+
+        public double GetFifoPercent()
+        {
+            return _averagePercent[PercentTypeFifo];
         }
     }
 }

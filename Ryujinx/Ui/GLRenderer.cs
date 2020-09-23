@@ -339,7 +339,9 @@ namespace Ryujinx.Ui
 
                 if (_device.WaitFifo())
                 {
+                    _device.Statistics.RecordFifoStart();
                     _device.ProcessFrame();
+                    _device.Statistics.RecordFifoEnd();
                 }
 
                 string dockedMode = ConfigurationState.Instance.System.EnableDockedMode ? "Docked" : "Handheld";
@@ -358,7 +360,7 @@ namespace Ryujinx.Ui
                     StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                         _device.EnableDeviceVsync,
                         dockedMode,
-                        $"Host: {_device.Statistics.GetSystemFrameRate():00.00} FPS",
+                        $"Fifo: {_device.Statistics.GetFifoPercent():0.00} %",
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
                         $"GPU:  {_renderer.GpuVendor}"));
 
