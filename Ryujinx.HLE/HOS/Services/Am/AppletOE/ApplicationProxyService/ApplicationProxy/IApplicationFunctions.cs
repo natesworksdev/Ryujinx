@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     storageData = StorageHelper.MakeLaunchParams(context.Device.System.State.Account.LastOpenedUser);
                     break;
                 case LaunchParameterKind.Unknown:
-                    throw new NotImplementedException($"Unknown LaunchParameterKind {kind}");
+                    throw new NotImplementedException($"Unknown LaunchParameterKind.");
 
                 default:
                     return ResultCode.ObjectInvalid;
