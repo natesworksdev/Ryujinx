@@ -53,8 +53,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     // Only the first 0x18 bytes of the Data seems to be actually used.
                     storageData = StorageHelper.MakeLaunchParams(context.Device.System.State.Account.LastOpenedUser);
                     break;
-                default:
+                case LaunchParameterKind.Unknown:
                     throw new NotImplementedException($"Unknown LaunchParameterKind {kind}");
+
+                default:
+                    return ResultCode.ObjectInvalid;
             }
 
             if (storageData == null)
