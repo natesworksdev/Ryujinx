@@ -142,7 +142,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
-            bool isRecursive = immediate == (ulong)context.EntryAddress;
+            bool isRecursive = immediate == context.EntryAddress;
 
             EmitJumpTableBranch(context, Const(immediate), isRecursive);
         }
