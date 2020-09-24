@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
     {
         private IdDictionary _displays;
 
-        public IApplicationDisplayService()
+        public IApplicationDisplayService() : base(new ServerBase("DisplayServer"))
         {
             _displays = new IdDictionary();
         }
