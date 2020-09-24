@@ -3,7 +3,6 @@ using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Text;
 using System.Threading;
 
 namespace Ryujinx.Memory.Tests
@@ -281,7 +280,7 @@ namespace Ryujinx.Memory.Tests
                 }));
             }
 
-            finishedTime = Stopwatch.GetTimestamp() + Stopwatch.Frequency / 10; // Run for 100ms;
+            finishedTime = Stopwatch.GetTimestamp() + Stopwatch.Frequency / 2; // Run for 500ms;
 
             foreach (Thread thread in testThreads)
             {
