@@ -307,7 +307,7 @@ namespace ARMeilleure.Decoders
             SetA64("x00111100x110000000000xxxxxxxxxx", InstName.Fcvtms_Gp,       InstEmit.Fcvtms_Gp,       typeof(OpCodeSimdCvt));
             SetA64("x00111100x110001000000xxxxxxxxxx", InstName.Fcvtmu_Gp,       InstEmit.Fcvtmu_Gp,       typeof(OpCodeSimdCvt));
             SetA64("0x0011100x100001011010xxxxxxxxxx", InstName.Fcvtn_V,         InstEmit.Fcvtn_V,         typeof(OpCodeSimd));
-            SetA64("010111100x100001101010xxxxxxxxxx", InstName.Fcvtns_S,        InstEmit.Fcvtns_S,        typeof(OpCodeSimd));
+            SetA64("x001111000100000000000xxxxxxxxxx", InstName.Fcvtns_S,        InstEmit.Fcvtns_S,        typeof(OpCodeSimd));
             SetA64("0>0011100<100001101010xxxxxxxxxx", InstName.Fcvtns_V,        InstEmit.Fcvtns_V,        typeof(OpCodeSimd));
             SetA64("011111100x100001101010xxxxxxxxxx", InstName.Fcvtnu_S,        InstEmit.Fcvtnu_S,        typeof(OpCodeSimd));
             SetA64("0>1011100<100001101010xxxxxxxxxx", InstName.Fcvtnu_V,        InstEmit.Fcvtnu_V,        typeof(OpCodeSimd));
