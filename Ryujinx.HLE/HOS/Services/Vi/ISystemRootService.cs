@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Vi
     [Service("vi:s")]
     class ISystemRootService : IpcService
     {
-        public ISystemRootService(ServiceCtx context) { }
+        public ISystemRootService(ServiceCtx context) : base(new ServerBase("ViServerS")) { }
 
         [Command(1)]
         // GetDisplayService(u32) -> object<nn::visrv::sf::IApplicationDisplayService>
