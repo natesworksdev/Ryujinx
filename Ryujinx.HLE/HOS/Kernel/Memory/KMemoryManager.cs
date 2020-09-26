@@ -1785,7 +1785,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 {
                     ulong unusedSizeBefore = address - addressTruncated;
 
-                    _context.Memory.ZeroFill(dstFirstPagePa, unusedSizeBefore);
+                    _context.Memory.ZeroFill(GetDramAddressFromPa(dstFirstPagePa), unusedSizeBefore);
 
                     ulong copySize = addressRounded <= endAddr ? addressRounded - address : size;
 
@@ -1804,7 +1804,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
                 if (unusedSizeAfter != 0)
                 {
-                    _context.Memory.ZeroFill(firstPageFillAddress, unusedSizeAfter);
+                    _context.Memory.ZeroFill(GetDramAddressFromPa(firstPageFillAddress), unusedSizeAfter);
                 }
 
                 if (pages.AddRange(dstFirstPagePa, 1) != KernelResult.Success)
@@ -1866,7 +1866,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                     unusedSizeAfter = PageSize;
                 }
 
-                _context.Memory.ZeroFill(lastPageFillAddr, unusedSizeAfter);
+                _context.Memory.ZeroFill(GetDramAddressFromPa(lastPageFillAddr), unusedSizeAfter);
 
                 if (pages.AddRange(dstLastPagePa, 1) != KernelResult.Success)
                 {
