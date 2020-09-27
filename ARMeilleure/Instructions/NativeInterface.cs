@@ -216,7 +216,7 @@ namespace ARMeilleure.Instructions
 
         public static void MarkRegionAsModified(ulong address, ulong size, bool write)
         {
-            GetMemoryManager().MarkRegionAsModified(address, size, write);
+            GetMemoryManager().SignalMemoryTracking(address, size, write);
         }
 
         public static void ThrowInvalidMemoryAccess(ulong address)

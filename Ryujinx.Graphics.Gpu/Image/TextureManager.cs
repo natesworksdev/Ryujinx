@@ -745,7 +745,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     texture = overlap.CreateView(info, sizeInfo, firstLayer, firstLevel);
 
-                    if (IsTextureModified(overlap))
+                    if (overlap.IsModified)
                     {
                         texture.SignalModified();
                     }
@@ -849,7 +849,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // Inherit modification from overlapping texture, do that before replacing
                     // the view since the replacement operation removes it from the list.
-                    if (IsTextureModified(overlap))
+                    if (overlap.IsModified)
                     {
                         texture.SignalModified();
                     }
@@ -861,7 +861,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // of the 3D texture to the newly created 3D texture.
                 if (info.Target == Target.Texture3D)
                 {
+                    // TODO: This copy can currently only happen when the 3D texture is created.
+                    // If a game clears and redraws the slices, we won't be able to copy the new data to the 3D texture.
+                    // Disable tracking to try keep at least the original data in there for as long as possible.
                     texture.DisableMemoryTracking();
+
                     for (int index = 0; index < viewCompatible; index++)
                     {
                         Texture overlap = _textureOverlaps[index];
@@ -873,7 +877,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                             overlap.HostTexture.CopyTo(texture.HostTexture, oInfo.FirstLayer, oInfo.FirstLevel);
 
-                            if (IsTextureModified(overlap))
+                            if (overlap.IsModified)
                             {
                                 texture.SignalModified();
                             }
@@ -959,31 +963,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Checks if a texture was modified by the host GPU.
-        /// </summary>
-        /// <param name="texture">Texture to be checked</param>
-        /// <returns>True if the texture was modified by the host GPU, false otherwise</returns>
-        public bool IsTextureModified(Texture texture)
-        {
-            return texture.IsModified;
-        }
-
-        /// <summary>
-        /// Signaled when a cache texture is modified, and adds it to a set to be enumerated when flushing textures.
-        /// </summary>
-        /// <param name="texture">The texture that was modified.</param>
-        private void CacheTextureModified(Texture texture)
-        {
-            texture.IsModified = true;
-            _modified.Add(texture);
-
-            if (texture.Info.IsLinear)
-            {
-                _modifiedLinear.Add(texture);
-            }
         }
 
         /// <summary>

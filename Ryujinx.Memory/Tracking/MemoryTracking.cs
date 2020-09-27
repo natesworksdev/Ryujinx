@@ -44,8 +44,6 @@ namespace Ryujinx.Memory.Tracking
 
             _virtualRegions = new NonOverlappingRangeList<VirtualRegion>();
             _physicalRegions = new NonOverlappingRangeList<PhysicalRegion>();
-
-            // _block.RegisterTrackingAction(PhysicalMemoryEvent);
         }
 
         private (ulong address, ulong size) PageAlign(ulong address, ulong size)

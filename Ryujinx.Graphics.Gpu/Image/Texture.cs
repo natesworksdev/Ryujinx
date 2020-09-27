@@ -41,11 +41,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TextureScaleMode ScaleMode { get; private set; }
 
         /// <summary>
-        /// Set when a texture has been modified since it was last flushed.
+        /// Set when a texture has been modified ny the Host GPU since it was last flushed.
         /// </summary>
         public bool IsModified { get; internal set; }
-
-        private bool _everModified;
 
         private int _depth;
         private int _layers;
@@ -72,11 +70,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Intrusive linked list node used on the auto deletion texture cache.
         /// </summary>
         public LinkedListNode<Texture> CacheNode { get; set; }
-
-        /// <summary>
-        /// Indicates if the texture is now invalid.
-        /// </summary>
-        public bool Invalidated { get; private set; }
 
         /// <summary>
         /// Event to fire when texture data is disposed.
@@ -554,6 +547,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Checks if the memory for this texture was modified, and returns true if it was. 
         /// The modified flags are consumed as a result.
+        /// If there is no memory tracking for this texture, it will always report as modified.
         /// </summary>
         /// <returns>True if the texture was modified, false otherwise.</returns>
         public bool ConsumeModified()
@@ -706,7 +700,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         /// <summary>
         /// Flushes the texture data, to be called from an external thread.
-        /// The Host backend must ensure that we have shared access to the resource from this thread.
+        /// The host backend must ensure that we have shared access to the resource from this thread.
         /// This is used when flushing from memory access handlers.
         /// </summary>
         public void ExternalFlush(ulong address, ulong size)
@@ -716,20 +710,23 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
+            // NOTE: Remove before PR merge (useful for testing, but can spam a lot)
             string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
-            Logger.Warning?.Print(LogClass.Gpu, $"Flushing texture {texInfo} at ({Address.ToString("x8")}, {Size.ToString("x8")}");
+            Logger.Warning?.Print(LogClass.Gpu, $"Flushing texture {texInfo} at ({Address.ToString("x8")}, {Size.ToString("x8")})");
 
             _context.Renderer.BackgroundContextAction(() =>
             {
                 IsModified = false;
                 if (Info.FormatInfo.Format.IsAstc())
                 {
+                    // ASTC textures are not in their original format, so cannot be flushed.
                     return;
                 }
 
                 ITexture texture = HostTexture;
                 if (ScaleFactor != 1f)
                 {
+                    // If needed, create a texture to flush back to host at 1x scale.
                     texture = _flushHostTexture = GetScaledHostTexture(1f, _flushHostTexture);
                 }
 
@@ -1040,7 +1037,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void SignalModified()
         {
             IsModified = true;
-            _everModified = true;
 
             if (_viewStorage != this)
             {

@@ -1,12 +1,12 @@
 using ARMeilleure.Memory;
+using Ryujinx.Cpu.Tracking;
 using Ryujinx.Memory;
+using Ryujinx.Memory.Tracking;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using Ryujinx.Memory.Tracking;
-using Ryujinx.Cpu.Tracking;
 
 namespace Ryujinx.Cpu
 {
@@ -62,7 +62,6 @@ namespace Ryujinx.Cpu
             AddressSpaceBits = asBits;
             _addressSpaceSize = asSize;
             _backingMemory = backingMemory;
-
             _pageTable = new MemoryBlock((asSize / PageSize) * PteSize);
 
             Tracking = new MemoryTracking(this, backingMemory, PageSize);
@@ -133,7 +132,7 @@ namespace Ryujinx.Cpu
         /// <returns>The data</returns>
         public T ReadTracked<T>(ulong va) where T : unmanaged
         {
-            MarkRegionAsModified(va, (ulong)Unsafe.SizeOf<T>(), false);
+            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), false);
             return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>()))[0];
         }
 
@@ -173,7 +172,7 @@ namespace Ryujinx.Cpu
                 return;
             }
 
-            MarkRegionAsModified(va, (ulong)data.Length, true);
+            SignalMemoryTracking(va, (ulong)data.Length, true);
 
             WriteImpl(va, data);
         }
@@ -261,7 +260,6 @@ namespace Ryujinx.Cpu
 
             if (IsContiguousAndMapped(va, size))
             {
-                //MarkRegionAsModified(va, (ulong)size, false);
                 return _backingMemory.GetSpan(GetPhysicalAddressInternal(va), size);
             }
             else
@@ -324,7 +322,7 @@ namespace Ryujinx.Cpu
                 ThrowMemoryNotContiguous();
             }
 
-            MarkRegionAsModified(va, (ulong)Unsafe.SizeOf<T>(), true);
+            SignalMemoryTracking(va, (ulong)Unsafe.SizeOf<T>(), true);
 
             return ref _backingMemory.GetRef<T>(GetPhysicalAddressInternal(va));
         }
@@ -423,8 +421,6 @@ namespace Ryujinx.Cpu
                 return;
             }
 
-            //MarkRegionAsModified(va, (ulong)data.Length, false);
-
             try
             {
                 int offset = 0, size;
@@ -521,6 +517,7 @@ namespace Ryujinx.Cpu
             }
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
+            long invTagMask = ~(0xffffL << 48);
 
             while (va < endVa)
             {
@@ -532,7 +529,7 @@ namespace Ryujinx.Cpu
                 {
                     pte = Volatile.Read(ref pageRef);
                 }
-                while (Interlocked.CompareExchange(ref pageRef, (pte & ~(0xffffL << 48)) | tag, pte) != pte);
+                while (Interlocked.CompareExchange(ref pageRef, (pte & invTagMask) | tag, pte) != pte);
 
                 va += PageSize;
             }
@@ -562,7 +559,7 @@ namespace Ryujinx.Cpu
         }
 
         /// <summary>
-        /// /// Obtains a smart memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
+        /// Obtains a smart memory tracking handle for the given virtual region, with a specified granularity. This should be disposed when finished with.
         /// </summary>
         /// <param name="address">CPU virtual address of the region</param>
         /// <param name="size">Size of the region</param>
@@ -573,16 +570,16 @@ namespace Ryujinx.Cpu
             return new CpuSmartMultiRegionHandle(Tracking.BeginSmartGranularTracking(address, size, granularity));
         }
 
-        /// Marks a region of memory as modified by the CPU.
+        /// <summary>
+        /// Alerts the memory tracking that a given region has been read from or written to.
+        /// This should be called before read/write is performed.
         /// </summary>
         /// <param name="va">Virtual address of the region</param>
         /// <param name="size">Size of the region</param>
-        public void MarkRegionAsModified(ulong va, ulong size, bool write)
+        public void SignalMemoryTracking(ulong va, ulong size, bool write)
         {
-            // We emulate guard pages for software memory access.
-            // Ideally we'd just want to use the host guarded memory, but entering our exception handler
-            // from managed and then calling a managed function would call a native -> managed transition
-            // from a "managed" state, leading to an engine execution exception.
+            // We emulate guard pages for software memory access. This makes for an easy transition to
+            // tracking using host guard pages in future, but also supporting platforms where this is not possible.
 
             // Write tag includes read protection, since we don't have any read actions that aren't performed before write too.
             long tag = (write ? 3L : 1L) << 48;

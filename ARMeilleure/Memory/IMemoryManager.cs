@@ -16,6 +16,6 @@ namespace ARMeilleure.Memory
 
         bool IsMapped(ulong va);
 
-        void MarkRegionAsModified(ulong va, ulong size, bool write);
+        void SignalMemoryTracking(ulong va, ulong size, bool write);
     }
 }
