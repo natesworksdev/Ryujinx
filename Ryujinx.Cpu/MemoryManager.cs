@@ -583,7 +583,6 @@ namespace Ryujinx.Cpu
 
             // Write tag includes read protection, since we don't have any read actions that aren't performed before write too.
             long tag = (write ? 3L : 1L) << 48;
-            long invTag = ~tag;
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
 
@@ -593,17 +592,13 @@ namespace Ryujinx.Cpu
 
                 long pte;
 
-                do
-                {
-                    pte = Volatile.Read(ref pageRef);
+                pte = Volatile.Read(ref pageRef);
 
-                    if ((pte & tag) != 0)
-                    {
-                        Tracking.VirtualMemoryEvent(va, size, write);
-                        return;
-                    }
+                if ((pte & tag) != 0)
+                {
+                    Tracking.VirtualMemoryEvent(va, size, write);
+                    break;
                 }
-                while (Interlocked.CompareExchange(ref pageRef, pte & invTag, pte) != pte);
 
                 va += PageSize;
             }
