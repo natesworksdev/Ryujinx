@@ -14,6 +14,8 @@ namespace Ryujinx.Memory.Range
 
         private readonly List<T> _items;
 
+        public int Count => _items.Count;
+
         /// <summary>
         /// Creates a new range list.
         /// </summary>

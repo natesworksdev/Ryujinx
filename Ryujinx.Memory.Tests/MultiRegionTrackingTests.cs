@@ -82,7 +82,7 @@ namespace Ryujinx.Memory.Tests
             return regionCount;
         }
 
-        private void PreparePages(IMultiRegionHandle handle, int pageCount)
+        private void PreparePages(IMultiRegionHandle handle, int pageCount, ulong address = 0)
         {
             Random random = new Random();
 
@@ -90,11 +90,11 @@ namespace Ryujinx.Memory.Tests
             RandomOrder(random, Enumerable.Range(0, pageCount).ToList(), (i) =>
             {
                 ulong resultAddress = ulong.MaxValue;
-                handle.QueryModified((ulong)i * PageSize, PageSize, (address, range) =>
+                handle.QueryModified((ulong)i * PageSize + address, PageSize, (address, range) =>
                 {
                     resultAddress = address;
                 });
-                Assert.AreEqual(resultAddress, (ulong)i * PageSize);
+                Assert.AreEqual(resultAddress, (ulong)i * PageSize + address);
             });
         }
 
@@ -247,6 +247,37 @@ namespace Ryujinx.Memory.Tests
 
                 expectedAddress += (ulong)(PageSize * (region + 1));
             });
+        }
+
+        [Test]
+        public void DisposeMultiHandles([Values] bool smart)
+        {
+            // Create and initialize two overlapping Multi Region Handles, with PageSize granularity.
+            const int pageCount = 32;
+            const int overlapStart = 16;
+
+            Assert.AreEqual((0, 0), _tracking.GetRegionCounts());
+
+            IMultiRegionHandle handleLow = GetGranular(smart, 0, PageSize * pageCount, PageSize);
+            PreparePages(handleLow, pageCount);
+
+            Assert.AreEqual((pageCount, pageCount), _tracking.GetRegionCounts());
+
+            IMultiRegionHandle handleHigh = GetGranular(smart, PageSize * overlapStart, PageSize * pageCount, PageSize);
+            PreparePages(handleHigh, pageCount, PageSize * overlapStart);
+
+            // Combined pages (and assuming overlapStart <= pageCount) should be pageCount after overlapStart.
+            int totalPages = overlapStart + pageCount;
+
+            Assert.AreEqual((totalPages, totalPages), _tracking.GetRegionCounts());
+
+            handleLow.Dispose(); // After disposing one, the pages for the other remain.
+
+            Assert.AreEqual((pageCount, pageCount), _tracking.GetRegionCounts());
+
+            handleHigh.Dispose(); // After disposing the other, there are no pages left.
+
+            Assert.AreEqual((0, 0), _tracking.GetRegionCounts());
         }
     }
 }

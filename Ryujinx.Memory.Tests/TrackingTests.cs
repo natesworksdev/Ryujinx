@@ -388,5 +388,38 @@ namespace Ryujinx.Memory.Tests
             bool remappedWriteTriggers = TestSingleWrite(handle, PageSize, 1, true);
             Assert.True(remappedWriteTriggers);
         }
+
+        [Test]
+        public void DisposeHandles()
+        {
+            // Ensure that disposed handles correctly remove their virtual and physical regions.
+
+            RegionHandle handle = _tracking.BeginTracking(0, PageSize);
+            handle.Reprotect();
+
+            Assert.AreEqual((1, 1), _tracking.GetRegionCounts());
+
+            handle.Dispose();
+
+            Assert.AreEqual((0, 0), _tracking.GetRegionCounts());
+
+            // Two handles, small entirely contains big.
+            // We expect there to be three regions after creating both, one for the small region and two covering the big one around it.
+            // Regions are always split to avoid overlapping, which is why there are three instead of two.
+
+            RegionHandle handleSmall = _tracking.BeginTracking(PageSize, PageSize);
+            RegionHandle handleBig = _tracking.BeginTracking(0, PageSize * 4);
+
+            Assert.AreEqual((3, 3), _tracking.GetRegionCounts());
+
+            // After disposing the big region, only the small one will remain.
+            handleBig.Dispose();
+
+            Assert.AreEqual((1, 1), _tracking.GetRegionCounts());
+
+            handleSmall.Dispose();
+
+            Assert.AreEqual((0, 0), _tracking.GetRegionCounts());
+        }
     }
 }

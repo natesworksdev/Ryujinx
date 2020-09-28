@@ -305,5 +305,18 @@ namespace Ryujinx.Memory.Tracking
         {
             _memoryManager.Reprotect(region.Address, region.Size, permission);
         }
+
+        /// <summary>
+        /// Returns the number of virtual and physical regions currently being tracked.
+        /// Useful for tests and metrics.
+        /// </summary>
+        /// <returns>The number of virtual regions, and the number of physical regions</returns>
+        public (int VirtualCount, int PhysicalCount) GetRegionCounts()
+        {
+            lock (TrackingLock)
+            {
+                return (_virtualRegions.Count, _physicalRegions.Count);
+            }
+        }
     }
 }
