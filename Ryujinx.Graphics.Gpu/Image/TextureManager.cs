@@ -735,8 +735,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int index = 0; index < overlapsCount; index++)
             {
                 Texture overlap = _textureOverlaps[index];
+                TextureViewCompatibility overlapCompatibility = overlap.IsViewCompatible(info, size, out int firstLayer, out int firstLevel);
 
-                if (overlap.IsViewCompatible(info, size, out int firstLayer, out int firstLevel) == TextureViewCompatibility.Full)
+                if (overlapCompatibility == TextureViewCompatibility.Full)
                 {
                     if (!isSamplerTexture)
                     {
@@ -759,6 +760,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
 
                     break;
+                } 
+                else if (overlapCompatibility == TextureViewCompatibility.CopyOnly)
+                {
+                    // TODO: Copy rules for targets created after the container texture. See below.
+                    overlap.DisableMemoryTracking();
                 }
             }
 
@@ -859,7 +865,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 // If the texture is a 3D texture, we need to additionally copy any slice
                 // of the 3D texture to the newly created 3D texture.
-                if (info.Target == Target.Texture3D)
+                if (info.Target == Target.Texture3D && viewCompatible > 0)
                 {
                     // TODO: This copy can currently only happen when the 3D texture is created.
                     // If a game clears and redraws the slices, we won't be able to copy the new data to the 3D texture.
