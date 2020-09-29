@@ -14,23 +14,26 @@ namespace Ryujinx.HLE.Exceptions
     [Serializable]
     internal class ServiceNotImplementedException : Exception
     {
+        public IIpcService Service { get; }
         public ServiceCtx Context { get; }
         public IpcMessage Request { get; }
 
-        public ServiceNotImplementedException(ServiceCtx context)
-            : this(context, "The service call is not implemented.")
+        public ServiceNotImplementedException(IIpcService service, ServiceCtx context)
+            : this(service, context, "The service call is not implemented.")
         { }
 
-        public ServiceNotImplementedException(ServiceCtx context, string message)
+        public ServiceNotImplementedException(IIpcService service, ServiceCtx context, string message)
             : base(message)
         {
+            Service = service;
             Context = context;
             Request = context.Request;
         }
 
-        public ServiceNotImplementedException(ServiceCtx context, string message, Exception inner)
+        public ServiceNotImplementedException(IIpcService service, ServiceCtx context, string message, Exception inner)
             : base(message, inner)
         {
+            Service = service;
             Context = context;
             Request = context.Request;
         }
@@ -57,22 +60,21 @@ namespace Ryujinx.HLE.Exceptions
             // Print the IPC command details (service name, command ID, and handler)
             (Type callingType, MethodBase callingMethod) = WalkStackTrace(new StackTrace(this));
 
-            /*if (callingType != null && callingMethod != null)
+            if (callingType != null && callingMethod != null)
             {
-                var ipcService  = Context.Session.Service;
-                var ipcCommands = ipcService.Commands;
+                var ipcCommands = Service.Commands;
 
                 // Find the handler for the method called
-                var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value as MethodBase == callingMethod);
+                var ipcHandler   = ipcCommands.FirstOrDefault(x => x.Value == callingMethod);
                 var ipcCommandId = ipcHandler.Key;
                 var ipcMethod    = ipcHandler.Value;
 
                 if (ipcMethod != null)
                 {
-                    sb.AppendLine($"Service Command: {ipcService.GetType().FullName}: {ipcCommandId} ({ipcMethod.Name})");
+                    sb.AppendLine($"Service Command: {Service.GetType().FullName}: {ipcCommandId} ({ipcMethod.Name})");
                     sb.AppendLine();
                 }
-            }*/
+            }
 
             sb.AppendLine("Guest Stack Trace:");
             sb.AppendLine(Context.Thread.GetGuestStackTrace());
