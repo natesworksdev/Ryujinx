@@ -40,10 +40,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(raIndex++, RegisterType.Gpr));
             }
 
-            bool isArray = op.Dimensions == ImageDimensions.Image1DArray ||
-                           op.Dimensions == ImageDimensions.Image2DArray;
-
-            Operand arrayIndex = isArray ? Ra() : null;
+            Operand arrayIndex = type.HasFlag(SamplerType.Array) ? Ra() : null;
 
             List<Operand> sourcesList = new List<Operand>();
 
@@ -63,10 +60,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 sourcesList.Add(Const(0));
 
-                type = SamplerType.Texture2D;
+                type &= ~SamplerType.Mask;
+                type |= SamplerType.Texture2D;
             }
 
-            if (isArray)
+            if (type.HasFlag(SamplerType.Array))
             {
                 sourcesList.Add(arrayIndex);
 
@@ -195,10 +193,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(rbIndex++, RegisterType.Gpr));
             }
 
-            bool isArray = op.Dimensions == ImageDimensions.Image1DArray ||
-                           op.Dimensions == ImageDimensions.Image2DArray;
-
-            Operand arrayIndex = isArray ? Ra() : null;
+            Operand arrayIndex = type.HasFlag(SamplerType.Array) ? Ra() : null;
 
             List<Operand> sourcesList = new List<Operand>();
 
@@ -218,10 +213,11 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 sourcesList.Add(Const(0));
 
-                type = SamplerType.Texture2D;
+                type &= ~SamplerType.Mask;
+                type |= SamplerType.Texture2D;
             }
 
-            if (isArray)
+            if (type.HasFlag(SamplerType.Array))
             {
                 sourcesList.Add(arrayIndex);
 
@@ -371,11 +367,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 flags = ConvertTextureFlags(texsOp.Target);
 
-                if (texsOp.Target == TextureTarget.Texture1DLodZero && context.Config.GpuAccessor.QueryIsTextureBuffer(texsOp.Immediate))
-                {
-                    type = SamplerType.TextureBuffer;
-                    flags &= ~TextureFlags.LodLevel;
-                }
+                // We don't need to handle 1D -> Buffer conversions here as
+                // only texture sample with integer coordinates can ever use buffer targets.
 
                 if ((type & SamplerType.Array) != 0)
                 {
@@ -403,17 +396,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         case TextureTarget.Texture1DLodZero:
                             sourcesList.Add(Ra());
 
-                            if (type != SamplerType.TextureBuffer)
+                            if (Sample1DAs2D)
                             {
-                                if (Sample1DAs2D)
-                                {
-                                    sourcesList.Add(ConstF(0));
-                                    type &= ~SamplerType.Mask;
-                                    type |= SamplerType.Texture2D;
-                                }
-
                                 sourcesList.Add(ConstF(0));
+                                type &= ~SamplerType.Mask;
+                                type |= SamplerType.Texture2D;
                             }
+
+                            sourcesList.Add(ConstF(0));
                             break;
 
                         case TextureTarget.Texture2D:
@@ -1345,15 +1335,13 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static SamplerType ConvertSamplerType(ImageDimensions target)
         {
-            // Note: The caller sets the array flag as necessary,
-            // it expects the value returned to be without it.
             return target switch
             {
                 ImageDimensions.Image1D      => SamplerType.Texture1D,
                 ImageDimensions.ImageBuffer  => SamplerType.TextureBuffer,
-                ImageDimensions.Image1DArray => SamplerType.Texture1D,
+                ImageDimensions.Image1DArray => SamplerType.Texture1D | SamplerType.Array,
                 ImageDimensions.Image2D      => SamplerType.Texture2D,
-                ImageDimensions.Image2DArray => SamplerType.Texture2D,
+                ImageDimensions.Image2DArray => SamplerType.Texture2D | SamplerType.Array,
                 ImageDimensions.Image3D      => SamplerType.Texture3D,
                 _                            => SamplerType.None
             };
