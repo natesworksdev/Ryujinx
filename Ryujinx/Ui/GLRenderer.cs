@@ -360,8 +360,8 @@ namespace Ryujinx.Ui
                     StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                         _device.EnableDeviceVsync,
                         dockedMode,
-                        $"Fifo: {_device.Statistics.GetFifoPercent():0.00} %",
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
+                        $"Fifo: {_device.Statistics.GetFifoPercent():0.00} %",
                         $"GPU:  {_renderer.GpuVendor}"));
 
                     _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);

@@ -93,21 +93,18 @@ namespace Ryujinx.HLE
 
         private void CalculateAveragePercent(int percentType)
         {
-            double percent = 0;
+            // If start time is non-zero, a percent reading is still being measured.
+            // If there aren't any readings, the default should be 100% if still being measured, or 0% if not.
+            double percent = (_percentStartTime[percentType] == 0) ? 0 : 100;
 
-            if (_accumulatedPercent[percentType] > 0)
+            if (_percentCount[percentType] > 0)
             {
                 percent = _accumulatedPercent[percentType] / _percentCount[percentType];
-
-                if (double.IsNaN(percent))
-                {
-                    percent = 0;
-                }
             }
 
             lock (_percentLock[percentType])
             {
-                _averagePercent[percentType] = percent;
+                _averagePercent[percentType] = double.IsNaN(percent) ? 0 : percent;
 
                 _percentCount[percentType] = 0;
 
@@ -164,6 +161,7 @@ namespace Ryujinx.HLE
             }
 
             _percentLastEndTime[percentType] = currentTime;
+            _percentStartTime[percentType] = 0;
         }
 
         private void RecordFrameTime(int frameType)
