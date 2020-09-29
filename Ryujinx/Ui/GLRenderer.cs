@@ -359,7 +359,7 @@ namespace Ryujinx.Ui
                         _device.EnableDeviceVsync,
                         dockedMode,
                         $"Game: {_device.Statistics.GetGameFrameRate():00.00} FPS",
-                        $"Fifo: {_device.Statistics.GetFifoPercent():0.00} %",
+                        $"FIFO: {_device.Statistics.GetFifoPercent():0.00} %",
                         $"GPU:  {_renderer.GpuVendor}"));
 
                     _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
