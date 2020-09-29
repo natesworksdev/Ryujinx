@@ -56,7 +56,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            if (Sample1DAs2D && type == SamplerType.Texture1D)
+            if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
                 sourcesList.Add(Const(0));
 
@@ -209,7 +209,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            if (Sample1DAs2D && type == SamplerType.Texture1D)
+            if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
                 sourcesList.Add(Const(0));
 
