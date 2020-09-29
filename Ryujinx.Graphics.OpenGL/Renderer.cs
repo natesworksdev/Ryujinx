@@ -138,30 +138,13 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void BackgroundContextAction(Action action)
         {
-            GraphicsContext backgroundContext = _window.BackgroundContext;
-            lock (backgroundContext)
+            if (GraphicsContext.CurrentContext != null)
             {
-                if (GraphicsContext.CurrentContext != null)
-                {
-                    action(); // We have a context already - use that (assuming it is the main one).
-                }
-                else
-                {
-                    while (true)
-                    {
-                        try
-                        {
-                            backgroundContext.MakeCurrent(_window.BackgroundWindow);
-                            break;
-                        } 
-                        catch (GraphicsContextException)
-                        {
-                            // Continue until we can get the background context.
-                        }
-                    }
-                    action();
-                    backgroundContext.MakeCurrent(null);
-                }
+                action(); // We have a context already - use that (assuming it is the main one).
+            }
+            else
+            {
+                _window.BackgroundContext.Invoke(action);
             }
         }
 

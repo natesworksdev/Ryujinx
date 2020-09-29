@@ -20,8 +20,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private int _copyFramebufferHandle;
 
-        internal IWindowInfo BackgroundWindow { get; private set; }
-        internal GraphicsContext BackgroundContext { get; private set; }
+        internal BackgroundContextWorker BackgroundContext { get; private set; }
 
         public Window(Renderer renderer)
         {
@@ -169,19 +168,13 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void InitializeBackgroundContext(IGraphicsContext baseContext)
         {
-            GameWindow win = new GameWindow(
-                100, 100, GraphicsMode.Default, 
-                "Background Window", OpenTK.GameWindowFlags.FixedWindow, OpenTK.DisplayDevice.Default, 
-                3, 3, GraphicsContextFlags.ForwardCompatible, baseContext, false);
-
-            win.Visible = false;
-
-            BackgroundWindow = win.WindowInfo;
-            BackgroundContext = (GraphicsContext)win.Context;
+            BackgroundContext = new BackgroundContextWorker(baseContext);
         }
 
         public void Dispose()
         {
+            BackgroundContext.Dispose();
+
             if (_copyFramebufferHandle != 0)
             {
                 GL.DeleteFramebuffer(_copyFramebufferHandle);

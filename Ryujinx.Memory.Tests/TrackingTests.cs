@@ -206,7 +206,7 @@ namespace Ryujinx.Memory.Tests
 
             // This test should not throw or deadlock due to invalid state.
 
-            const int threadCount = 3;
+            const int threadCount = 1;
             const int handlesPerThread = 16;
             long finishedTime = 0;
 
