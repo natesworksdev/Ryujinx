@@ -399,6 +399,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                             if (Sample1DAs2D)
                             {
                                 sourcesList.Add(ConstF(0));
+
                                 type &= ~SamplerType.Mask;
                                 type |= SamplerType.Texture2D;
                             }
@@ -475,6 +476,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                             if (Sample1DAs2D)
                             {
                                 sourcesList.Add(ConstF(0));
+
                                 type &= ~SamplerType.Mask;
                                 type |= SamplerType.Texture2D;
                             }
@@ -489,6 +491,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                         if (Sample1DAs2D)
                         {
                             sourcesList.Add(ConstF(0));
+
                             type &= ~SamplerType.Mask;
                             type |= SamplerType.Texture2D;
                         }
