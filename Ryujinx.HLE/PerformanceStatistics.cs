@@ -76,13 +76,13 @@ namespace Ryujinx.HLE
         {
             double frameRate = 0;
 
-            if (_accumulatedFrameTime[frameType] > 0)
-            {
-                frameRate = _framesRendered[frameType] / _accumulatedFrameTime[frameType];
-            }
-
             lock (_frameLock[frameType])
             {
+                if (_accumulatedFrameTime[frameType] > 0)
+                {
+                    frameRate = _framesRendered[frameType] / _accumulatedFrameTime[frameType];
+                }
+
                 _averageFrameRate[frameType] = LinearInterpolate(_averageFrameRate[frameType], frameRate);
 
                 _framesRendered[frameType] = 0;
@@ -97,13 +97,13 @@ namespace Ryujinx.HLE
             // If there aren't any readings, the default should be 100% if still being measured, or 0% if not.
             double percent = (_percentStartTime[percentType] == 0) ? 0 : 100;
 
-            if (_percentCount[percentType] > 0)
-            {
-                percent = _accumulatedPercent[percentType] / _percentCount[percentType];
-            }
-
             lock (_percentLock[percentType])
             {
+                if (_percentCount[percentType] > 0)
+                {
+                    percent = _accumulatedPercent[percentType] / _percentCount[percentType];
+                }
+
                 _averagePercent[percentType] = double.IsNaN(percent) ? 0 : percent;
 
                 _percentCount[percentType] = 0;
@@ -112,9 +112,9 @@ namespace Ryujinx.HLE
             }
         }
 
-        private double LinearInterpolate(double old, double New)
+        private double LinearInterpolate(double lhs, double rhs)
         {
-            return old * (1.0 - FrameRateWeight) + New * FrameRateWeight;
+            return lhs * (1.0 - FrameRateWeight) + rhs * FrameRateWeight;
         }
 
         public void RecordSystemFrameTime()
