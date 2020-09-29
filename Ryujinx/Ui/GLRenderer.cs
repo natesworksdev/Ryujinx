@@ -355,8 +355,6 @@ namespace Ryujinx.Ui
                 {
                     _device.PresentFrame(SwapBuffers);
 
-                    _device.Statistics.RecordSystemFrameTime();
-
                     StatusUpdatedEvent?.Invoke(this, new StatusUpdatedEventArgs(
                         _device.EnableDeviceVsync,
                         dockedMode,

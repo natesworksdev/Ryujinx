@@ -7,8 +7,7 @@ namespace Ryujinx.HLE
     {
         private const double FrameRateWeight = 0.5;
 
-        private const int FrameTypeSystem = 0;
-        private const int FrameTypeGame   = 1;
+        private const int FrameTypeGame   = 0;
 
         private const int PercentTypeFifo = 0;
 
@@ -35,19 +34,19 @@ namespace Ryujinx.HLE
 
         public PerformanceStatistics()
         {
-            _averageFrameRate     = new double[2];
-            _accumulatedFrameTime = new double[2];
-            _previousFrameTime    = new double[2];
+            _averageFrameRate     = new double[1];
+            _accumulatedFrameTime = new double[1];
+            _previousFrameTime    = new double[1];
 
             _averagePercent     = new double[1];
             _accumulatedPercent = new double[1];
             _percentLastEndTime = new double[1];
             _percentStartTime   = new double[1];
 
-            _framesRendered = new long[2];
+            _framesRendered = new long[1];
             _percentCount   = new long[1];
 
-            _frameLock   = new object[] { new object(), new object() };
+            _frameLock   = new object[] { new object() };
             _percentLock = new object[] { new object() };
 
             _executionTime = new Stopwatch();
@@ -67,7 +66,6 @@ namespace Ryujinx.HLE
 
         private void ResetTimerElapsed(object sender, ElapsedEventArgs e)
         {
-            CalculateAverageFrameRate(FrameTypeSystem);
             CalculateAverageFrameRate(FrameTypeGame);
             CalculateAveragePercent(PercentTypeFifo);
         }
@@ -104,7 +102,7 @@ namespace Ryujinx.HLE
                     percent = _accumulatedPercent[percentType] / _percentCount[percentType];
                 }
 
-                _averagePercent[percentType] = double.IsNaN(percent) ? 0 : percent;
+                _averagePercent[percentType] = percent;
 
                 _percentCount[percentType] = 0;
 
@@ -115,11 +113,6 @@ namespace Ryujinx.HLE
         private double LinearInterpolate(double lhs, double rhs)
         {
             return lhs * (1.0 - FrameRateWeight) + rhs * FrameRateWeight;
-        }
-
-        public void RecordSystemFrameTime()
-        {
-            RecordFrameTime(FrameTypeSystem);
         }
 
         public void RecordGameFrameTime()
@@ -178,11 +171,6 @@ namespace Ryujinx.HLE
 
                 _framesRendered[frameType]++;
             }
-        }
-
-        public double GetSystemFrameRate()
-        {
-            return _averageFrameRate[FrameTypeSystem];
         }
 
         public double GetGameFrameRate()
