@@ -1345,7 +1345,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         private static SamplerType ConvertSamplerType(ImageDimensions target)
         {
-            // Note: The caller sets the array flag is necessary,
+            // Note: The caller sets the array flag as necessary,
             // it expects the value returned to be without it.
             return target switch
             {
