@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Services
 
             int replyTargetHandle = 0;
 
-            while (thread.Context.Running)
+            while (true)
             {
                 int[] handles = _portHandles.ToArray();
 
@@ -122,6 +122,11 @@ namespace Ryujinx.HLE.HOS.Services
                 var rc = _context.Syscall.ReplyAndReceive(handles, replyTargetHandle, 1000000L, out int signaledIndex);
 
                 thread.HandlePostSyscall();
+
+                if (!thread.Context.Running)
+                {
+                    break;
+                }
 
                 replyTargetHandle = 0;
 

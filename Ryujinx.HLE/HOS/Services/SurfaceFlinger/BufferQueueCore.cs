@@ -41,6 +41,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public long Owner { get; }
 
+        public bool Active { get; private set; }
+
         public const int BufferHistoryArraySize = 8;
 
         public BufferQueueCore(Switch device, long pid)
@@ -70,6 +72,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _frameAvailableEvent = new KEvent(device.System.KernelContext);
 
             Owner = pid;
+
+            Active = true;
 
             BufferHistory        = new BufferInfo[BufferHistoryArraySize];
             EnableExternalEvent  = true;
@@ -161,6 +165,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
+        public void PrepareForExit()
+        {
+            // TODO: Should be removed once we have actual condition variables
+            // implemented using the Horizon kernel.
+            lock (Lock)
+            {
+                Active = false;
+
+                Monitor.PulseAll(Lock);
+            }
+        }
+
         // TODO: Find an accurate way to handle a regular condvar here as this will wake up unwanted threads in some edge cases.
         public void SignalDequeueEvent()
         {
@@ -169,7 +185,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void WaitDequeueEvent()
         {
-            Monitor.Wait(Lock);
+            lock (Lock)
+            {
+                if (Active)
+                {
+                    Monitor.Wait(Lock);
+                }
+            }
         }
 
         public void SignalIsAllocatingEvent()
@@ -179,7 +201,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void WaitIsAllocatingEvent()
         {
-            Monitor.Wait(Lock);
+            lock (Lock)
+            {
+                if (Active)
+                {
+                    Monitor.Wait(Lock);
+                }
+            }
         }
 
         public void FreeBufferLocked(int slot)

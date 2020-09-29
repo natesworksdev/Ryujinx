@@ -1,10 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -40,6 +37,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             public int                    ProducerBinderId;
             public IGraphicBufferProducer Producer;
             public BufferItemConsumer     Consumer;
+            public BufferQueueCore        Core;
             public long                   Owner;
         }
 
@@ -127,13 +125,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             {
                 Logger.Info?.Print(LogClass.SurfaceFlinger, $"Creating layer {layerId}");
 
-                BufferQueue.CreateBufferQueue(_device, pid, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
+                BufferQueueCore core = BufferQueue.CreateBufferQueue(_device, pid, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
 
                 _layers.Add(layerId, new Layer
                 {
                     ProducerBinderId = HOSBinderDriverServer.RegisterBinderObject(producer),
                     Producer         = producer,
                     Consumer         = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
+                    Core             = core,
                     Owner            = pid
                 });
 
@@ -345,6 +344,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public void Dispose()
         {
             _isRunning = false;
+
+            foreach (Layer layer in _layers.Values)
+            {
+                layer.Core.PrepareForExit();
+            }
         }
 
         public void OnFrameAvailable(ref BufferItem item)

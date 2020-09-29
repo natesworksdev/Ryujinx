@@ -321,6 +321,14 @@ namespace Ryujinx.Audio.Renderer.Server
         {
             if (disposing)
             {
+                lock (_audioProcessorLock)
+                {
+                    if (_isRunning)
+                    {
+                        StopLocked();
+                    }
+                }
+
                 Processor.Dispose();
 
                 foreach (HardwareDevice device in OutputDevices)
