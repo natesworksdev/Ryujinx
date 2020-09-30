@@ -137,7 +137,7 @@ namespace ARMeilleure.Translation
             {
                 address = ExecuteSingle(context, address);
             }
-            while (context.Running && (address & ~1UL) != 0);
+            while (context.Running && address != 0);
 
             NativeInterface.UnregisterThread();
 
