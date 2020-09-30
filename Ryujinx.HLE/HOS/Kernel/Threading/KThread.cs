@@ -1151,6 +1151,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private void ThreadStart()
         {
+            KernelStatic.SetKernelContext(KernelContext);
+
             if (_customThreadStart != null)
             {
                 _customThreadStart();

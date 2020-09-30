@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.SurfaceFlinger.Types;
 using System;
@@ -167,8 +168,6 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void PrepareForExit()
         {
-            // TODO: Should be removed once we have actual condition variables
-            // implemented using the Horizon kernel.
             lock (Lock)
             {
                 Active = false;
@@ -185,13 +184,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void WaitDequeueEvent()
         {
-            lock (Lock)
-            {
-                if (Active)
-                {
-                    Monitor.Wait(Lock);
-                }
-            }
+            Monitor.Exit(Lock);
+
+            KernelStatic.YieldUntilCompletion(WaitForLock);
+
+            Monitor.Enter(Lock);
         }
 
         public void SignalIsAllocatingEvent()
@@ -201,12 +198,18 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         public void WaitIsAllocatingEvent()
         {
+            Monitor.Exit(Lock);
+
+            KernelStatic.YieldUntilCompletion(WaitForLock);
+
+            Monitor.Enter(Lock);
+        }
+
+        private void WaitForLock()
+        {
             lock (Lock)
             {
-                if (Active)
-                {
-                    Monitor.Wait(Lock);
-                }
+                Monitor.Wait(Lock);
             }
         }
 
