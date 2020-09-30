@@ -272,14 +272,17 @@ namespace ARMeilleure.Translation
             {
                 Block block = blocks[blkIndex];
 
-                if (rangeStart > block.Address)
+                if (!block.Exit)
                 {
-                    rangeStart = block.Address;
-                }
+                    if (rangeStart > block.Address)
+                    {
+                        rangeStart = block.Address;
+                    }
 
-                if (rangeEnd < block.EndAddress)
-                {
-                    rangeEnd = block.EndAddress;
+                    if (rangeEnd < block.EndAddress)
+                    {
+                        rangeEnd = block.EndAddress;
+                    }
                 }
 
                 context.CurrBlock = block;
