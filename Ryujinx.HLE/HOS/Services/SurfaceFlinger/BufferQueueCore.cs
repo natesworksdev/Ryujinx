@@ -209,7 +209,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             lock (Lock)
             {
-                Monitor.Wait(Lock);
+                if (Active)
+                {
+                    Monitor.Wait(Lock);
+                }
             }
         }
 
