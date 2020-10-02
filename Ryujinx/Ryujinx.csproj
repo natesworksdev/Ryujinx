@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
@@ -42,6 +42,7 @@
     <None Remove="Ui\ProfileDialog.glade" />
     <None Remove="Ui\SettingsWindow.glade" />
     <None Remove="Ui\TitleUpdateWindow.glade" />
+    <None Remove="Ui\UpdateDialog.glade" />
   </ItemGroup>
 
   <ItemGroup>
@@ -66,15 +67,18 @@
     <EmbeddedResource Include="Ui\SettingsWindow.glade" />
     <EmbeddedResource Include="Ui\DlcWindow.glade" />
     <EmbeddedResource Include="Ui\TitleUpdateWindow.glade" />
+    <EmbeddedResource Include="Updater\UpdateDialog.glade" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Crc32.NET" Version="1.2.0" />
     <PackageReference Include="DiscordRichPresence" Version="1.0.150" />
     <PackageReference Include="GLWidget" Version="1.0.2" />
     <PackageReference Include="GtkSharp" Version="3.22.25.56" />
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.3.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.5.12" />
+    <PackageReference Include="SharpZipLib" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -40,6 +40,7 @@ namespace Ryujinx.Ui
         [GUI] ComboBoxText    _graphicsDebugLevel;
         [GUI] CheckButton     _dockedModeToggle;
         [GUI] CheckButton     _discordToggle;
+        [GUI] CheckButton     _checkUpdatesToggle;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _multiSchedToggle;
         [GUI] CheckButton     _ptcToggle;
@@ -81,6 +82,7 @@ namespace Ryujinx.Ui
         [GUI] ToggleButton    _configureController7;
         [GUI] ToggleButton    _configureController8;
         [GUI] ToggleButton    _configureControllerH;
+
 #pragma warning restore CS0649, IDE0044
 
         public SettingsWindow(VirtualFileSystem virtualFileSystem, HLE.FileSystem.Content.ContentManager contentManager) : this(new Builder("Ryujinx.Ui.SettingsWindow.glade"), virtualFileSystem, contentManager) { }
@@ -168,6 +170,11 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.EnableDiscordIntegration)
             {
                 _discordToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.CheckUpdatesOnStart)
+            {
+                _checkUpdatesToggle.Click();
             }
 
             if (ConfigurationState.Instance.Graphics.EnableVsync)
@@ -519,6 +526,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value        = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
             ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
+            ConfigurationState.Instance.CheckUpdatesOnStart.Value              = _checkUpdatesToggle.Active;
             ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
             ConfigurationState.Instance.System.EnableMulticoreScheduling.Value = _multiSchedToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
