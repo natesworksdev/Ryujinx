@@ -17,6 +17,6 @@ jobs:
       with:
         dotnet-version: 3.1.x
     - name: Install dotnet format
-      run: dotnet update -g dotnet-format
+      run: dotnet tool update -g dotnet-format
     - name: Check Format
       run: dotnet format -w Ryujinx.sln --check --dry-run --verbosity diagnostic
