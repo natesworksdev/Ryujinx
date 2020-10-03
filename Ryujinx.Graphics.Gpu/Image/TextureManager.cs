@@ -952,8 +952,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     // Bpp may be a mismatch between the target texture and the param. 
                     // Due to the way linear strided and block layouts work, widths can be multiplied by Bpp for comparison.
+                    // Note: tex.Width is the aligned texture size. Prefer param.XCount, as the destination should be a texture with that exact size.
 
-                    bool sizeMatch = tex.Width * bpp == texture.Info.Width * format.BytesPerPixel && tex.Height == texture.Info.Height;
+                    bool sizeMatch = param.XCount * bpp == texture.Info.Width * format.BytesPerPixel && tex.Height == texture.Info.Height;
                     bool formatMatch = !texture.Info.IsLinear &&
                                         texture.Info.GobBlocksInTileX == tex.MemoryLayout.UnpackGobBlocksInX() &&
                                         texture.Info.GobBlocksInY == tex.MemoryLayout.UnpackGobBlocksInY() &&

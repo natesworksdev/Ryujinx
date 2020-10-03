@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;
 using System;
@@ -7,6 +8,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
 {
     partial class Methods
     {
+        private const int StrideAlignment = 32;
+        private const int GobAlignment = 64;
+
         /// <summary>
         /// Determine if a buffer-to-texture region covers the entirety of a texture.
         /// </summary>
@@ -20,15 +24,17 @@ namespace Ryujinx.Graphics.Gpu.Engine
         {
             if (linear)
             {
+                int alignWidth = StrideAlignment / bpp;
                 return tex.RegionX  == 0 &&
                        tex.RegionY  == 0 &&
-                       stride / bpp == cbp.XCount;
+                       stride / bpp == BitUtils.AlignUp(cbp.XCount, alignWidth);
             }
             else
             {
+                int alignWidth = GobAlignment / bpp;
                 return tex.RegionX == 0 &&
                        tex.RegionY == 0 &&
-                       tex.Width   == cbp.XCount &&
+                       tex.Width   == BitUtils.AlignUp(cbp.XCount, alignWidth) &&
                        tex.Height  == cbp.YCount;
             }
         }
