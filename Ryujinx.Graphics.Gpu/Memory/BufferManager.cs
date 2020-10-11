@@ -17,6 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private const ulong BufferAlignmentSize = 0x1000;
         private const ulong BufferAlignmentMask = BufferAlignmentSize - 1;
+        private const ulong BufferMaxSizeGrowth = 0x200000;
 
         private GpuContext _context;
 
@@ -370,7 +371,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 alignedEndAddress += BufferAlignmentSize;
             }
 
-            CreateBufferAligned(alignedAddress, alignedEndAddress - alignedAddress);
+            CreateBufferAligned(alignedAddress, alignedEndAddress - alignedAddress, true);
         }
 
         /// <summary>
@@ -380,7 +381,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Address of the buffer in guest memory</param>
         /// <param name="size">Size in bytes of the buffer</param>
-        private void CreateBufferAligned(ulong address, ulong size)
+        /// <param name="tryResize">True to attempt increasing the buffer size to avoid future reallocations, false otherwise</param>
+        private void CreateBufferAligned(ulong address, ulong size, bool tryResize)
         {
             int overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
 
@@ -401,6 +403,29 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                         address    = Math.Min(address,    buffer.Address);
                         endAddress = Math.Max(endAddress, buffer.EndAddress);
+                    }
+
+                    if (tryResize)
+                    {
+                        // Make the buffer a bit larger than requested.
+                        // This helps to prevent potential future re-allocations
+                        // if the application is using sequential pages in memory
+                        // as buffer.
+                        size = endAddress - address;
+
+                        ulong growth = Math.Min(size >> 1, BufferMaxSizeGrowth);
+                        ulong idealSize = (size + growth + BufferAlignmentMask) & ~(ulong)BufferAlignmentMask;
+
+                        if (idealSize != size)
+                        {
+                            CreateBufferAligned(address, idealSize, false);
+                            return;
+                        }
+                    }
+
+                    for (int index = 0; index < overlapsCount; index++)
+                    {
+                        Buffer buffer = _bufferOverlaps[index];
 
                         buffer.SynchronizeMemory(buffer.Address, buffer.Size);
 
