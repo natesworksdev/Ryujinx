@@ -407,6 +407,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
 
                     Buffer newBuffer = new Buffer(_context, address, endAddress - address);
+                    newBuffer.SynchronizeMemory(address, endAddress - address);
 
                     _buffers.Add(newBuffer);
 

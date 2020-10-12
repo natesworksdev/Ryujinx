@@ -249,13 +249,19 @@ namespace Ryujinx.Cpu
         /// </remarks>
         /// <param name="va">Virtual address of the data</param>
         /// <param name="size">Size of the data</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
         /// <returns>A read-only span of the data</returns>
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
-        public ReadOnlySpan<byte> GetSpan(ulong va, int size)
+        public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
             if (size == 0)
             {
                 return ReadOnlySpan<byte>.Empty;
+            }
+
+            if (tracked)
+            {
+                SignalMemoryTracking(va, (ulong)size, false);
             }
 
             if (IsContiguousAndMapped(va, size))

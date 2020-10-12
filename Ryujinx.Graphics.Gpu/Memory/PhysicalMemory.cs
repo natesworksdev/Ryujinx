@@ -30,10 +30,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the range</param>
         /// <param name="size">Size in bytes to be range</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
         /// <returns>A read only span of the data at the specified memory location</returns>
-        public ReadOnlySpan<byte> GetSpan(ulong address, int size)
+        public ReadOnlySpan<byte> GetSpan(ulong address, int size, bool tracked = false)
         {
-            return _cpuMemory.GetSpan(address, size);
+            return _cpuMemory.GetSpan(address, size, tracked);
         }
 
         /// <summary>
@@ -63,7 +64,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Address to write into</param>
         /// <param name="data">Data to be written</param>
-        public void Write(ulong address, ReadOnlySpan<byte> data, bool tracked = true)
+        public void Write(ulong address, ReadOnlySpan<byte> data)
         {
             _cpuMemory.Write(address, data);
         }
