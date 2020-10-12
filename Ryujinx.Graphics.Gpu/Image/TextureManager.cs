@@ -51,9 +51,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private readonly AutoDeleteCache _cache;
 
-        private readonly HashSet<Texture> _modified;
-        private readonly HashSet<Texture> _modifiedLinear;
-
         /// <summary>
         /// The scaling factor applied to all currently bound render targets.
         /// </summary>
@@ -82,9 +79,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             _overlapInfo = new OverlapInfo[OverlapsBufferInitialCapacity];
 
             _cache = new AutoDeleteCache();
-
-            _modified = new HashSet<Texture>(new ReferenceEqualityComparer<Texture>());
-            _modifiedLinear = new HashSet<Texture>(new ReferenceEqualityComparer<Texture>());
         }
 
         /// <summary>
@@ -897,7 +891,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (!isSamplerTexture)
             {
                 _cache.Add(texture);
-                texture.Disposed += CacheTextureDisposed;
             }
 
             lock (_textures)
@@ -970,20 +963,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return null;
-        }
-
-        /// <summary>
-        /// Signaled when a cache texture is disposed, so it can be removed from the set of modified textures if present.
-        /// </summary>
-        /// <param name="texture">The texture that was diosposed.</param>
-        private void CacheTextureDisposed(Texture texture)
-        {
-            _modified.Remove(texture);
-
-            if (texture.Info.IsLinear)
-            {
-                _modifiedLinear.Remove(texture);
-            }
         }
 
         /// <summary>
@@ -1132,38 +1111,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Flushes all the textures in the cache that have been modified since the last call.
-        /// </summary>
-        public void Flush()
-        {
-            foreach (Texture texture in _modifiedLinear)
-            {
-                if (texture.IsModified)
-                {
-                    texture.Flush();
-                }
-            }
-
-            _modifiedLinear.Clear();
-        }
-
-        /// <summary>
-        /// Flushes the textures in the cache inside a given range that have been modified since the last call.
-        /// </summary>
-        /// <param name="address">The range start address</param>
-        /// <param name="size">The range size</param>
-        public void Flush(ulong address, ulong size)
-        {
-            foreach (Texture texture in _modified)
-            {
-                if (texture.OverlapsWith(address, size) && texture.IsModified)
-                {
-                    texture.Flush();
-                }
-            }
-        }
-
-        /// <summary>
         /// Removes a texture from the cache.
         /// </summary>
         /// <remarks>
@@ -1189,7 +1136,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 foreach (Texture texture in _textures)
                 {
-                    _modified.Remove(texture);
                     texture.Dispose();
                 }
             }

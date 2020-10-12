@@ -1163,7 +1163,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="argument">Method call argument (unused)</param>
         private void InvalidateTextures(GpuState state, int argument)
         {
-            TextureManager.Flush();
+            // Used to flush all modified textures, but they are now flushed when the CPU read happens.
         }
 
         /// <summary>
