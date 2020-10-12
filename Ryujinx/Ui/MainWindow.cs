@@ -792,7 +792,7 @@ namespace Ryujinx.Ui
         {
             Application.Invoke(delegate
             {
-                _hostStatus.Text = args.HostStatus;
+                _hostStatus.Text = args.FifoStatus;
                 _gameStatus.Text = args.GameStatus;
                 _gpuName.Text    = args.GpuName;
                 _dockedMode.Text = args.DockedMode;

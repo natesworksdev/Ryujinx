@@ -8,7 +8,6 @@ namespace Ryujinx.HLE
         private const double FrameRateWeight = 0.5;
 
         private const int FrameTypeGame   = 0;
-
         private const int PercentTypeFifo = 0;
 
         private double[] _averageFrameRate;
