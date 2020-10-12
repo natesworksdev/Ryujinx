@@ -272,7 +272,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets a bit mask indicating which coompute uniform buffers are currently bound.
+        /// Gets a bit mask indicating which compute uniform buffers are currently bound.
         /// </summary>
         /// <returns>Mask where each bit set indicates a bound constant buffer</returns>
         public uint GetComputeUniformBufferUseMask()
