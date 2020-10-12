@@ -575,6 +575,8 @@ namespace Ryujinx.Graphics.OpenGL
                 return false;
             }
 
+            EnsureFramebuffer();
+
             _framebuffer.SetDualSourceBlend(
                 IsDualSource(blend.ColorSrcFactor) ||
                 IsDualSource(blend.ColorDstFactor) ||
