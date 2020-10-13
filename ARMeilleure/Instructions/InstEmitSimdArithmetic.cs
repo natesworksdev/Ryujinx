@@ -380,7 +380,7 @@ namespace ARMeilleure.Instructions
 
         public static void Faddp_V(ArmEmitterContext context)
         {
-            if (Optimizations.FastFP && Optimizations.UseSse2)
+            if (false && Optimizations.UseSse2)
             {
                 EmitSse2VectorPairwiseOpF(context, (op1, op2) =>
                 {
