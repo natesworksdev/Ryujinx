@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using Ryujinx.Common;
+using System.Diagnostics;
 using System.Timers;
 
 namespace Ryujinx.HLE
@@ -27,8 +28,6 @@ namespace Ryujinx.HLE
 
         private double _ticksToSeconds;
 
-        private Stopwatch _executionTime;
-
         private Timer _resetTimer;
 
         public PerformanceStatistics()
@@ -48,10 +47,6 @@ namespace Ryujinx.HLE
             _frameLock   = new object[] { new object() };
             _percentLock = new object[] { new object() };
 
-            _executionTime = new Stopwatch();
-
-            _executionTime.Start();
-
             _resetTimer = new Timer(1000);
 
             _resetTimer.Elapsed += ResetTimerElapsed;
@@ -60,7 +55,7 @@ namespace Ryujinx.HLE
 
             _resetTimer.Start();
 
-            _ticksToSeconds = 1.0 / Stopwatch.Frequency;
+            _ticksToSeconds = 1.0 / PerformanceCounter.TicksPerSecond;
         }
 
         private void ResetTimerElapsed(object sender, ElapsedEventArgs e)
@@ -131,14 +126,14 @@ namespace Ryujinx.HLE
 
         private void StartPercentTime(int percentType)
         {
-            double currentTime = _executionTime.ElapsedTicks * _ticksToSeconds;
+            double currentTime = PerformanceCounter.ElapsedTicks * _ticksToSeconds;
 
             _percentStartTime[percentType] = currentTime;
         }
 
         private void EndPercentTime(int percentType)
         {
-            double currentTime = _executionTime.ElapsedTicks * _ticksToSeconds;
+            double currentTime = PerformanceCounter.ElapsedTicks * _ticksToSeconds;
 
             double elapsedTime = currentTime - _percentLastEndTime[percentType];
             double elapsedActiveTime = currentTime - _percentStartTime[percentType];
@@ -158,7 +153,7 @@ namespace Ryujinx.HLE
 
         private void RecordFrameTime(int frameType)
         {
-            double currentFrameTime = _executionTime.ElapsedTicks * _ticksToSeconds;
+            double currentFrameTime = PerformanceCounter.ElapsedTicks * _ticksToSeconds;
 
             double elapsedFrameTime = currentFrameTime - _previousFrameTime[frameType];
 
