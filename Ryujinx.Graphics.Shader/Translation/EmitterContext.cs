@@ -126,7 +126,10 @@ namespace Ryujinx.Graphics.Shader.Translation
                         }
                     }
 
-                    regIndexBase += 4;
+                    if (target.Enabled)
+                    {
+                        regIndexBase += 4;
+                    }
                 }
             }
         }
