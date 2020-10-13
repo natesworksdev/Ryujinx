@@ -91,6 +91,8 @@ namespace Ryujinx.Graphics.OpenGL
         public void Dispose()
         {
             _running = false;
+            _signal.Set();
+
             _disposed.WaitOne();
         }
     }

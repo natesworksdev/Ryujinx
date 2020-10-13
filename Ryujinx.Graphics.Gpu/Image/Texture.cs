@@ -41,7 +41,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TextureScaleMode ScaleMode { get; private set; }
 
         /// <summary>
-        /// Set when a texture has been modified ny the Host GPU since it was last flushed.
+        /// Set when a texture has been modified by the Host GPU since it was last flushed.
         /// </summary>
         public bool IsModified { get; internal set; }
 
