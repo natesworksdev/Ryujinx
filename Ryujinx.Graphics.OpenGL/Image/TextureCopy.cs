@@ -8,9 +8,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
     {
         private readonly Renderer _renderer;
 
-        [ThreadStatic]
         private int _srcFramebuffer;
-        [ThreadStatic]
         private int _dstFramebuffer;
 
         private int _copyPboHandle;

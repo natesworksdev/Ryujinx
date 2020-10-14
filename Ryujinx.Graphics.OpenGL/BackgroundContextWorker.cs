@@ -9,6 +9,9 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class BackgroundContextWorker : IDisposable
     {
+        [ThreadStatic]
+        public static bool InBackground;
+
         private GameWindow _window;
         private GraphicsContext _context;
         private Thread _thread;
@@ -27,6 +30,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             _window.Visible = false;
             _context = (GraphicsContext)_window.Context;
+            _context.MakeCurrent(null);
 
             _running = true;
 
@@ -40,6 +44,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void Run()
         {
+            InBackground = true;
             _context.MakeCurrent(_window.WindowInfo);
 
             while (_running)

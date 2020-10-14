@@ -22,7 +22,9 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IWindow Window => _window;
 
-        internal TextureCopy TextureCopy { get; }
+        private TextureCopy _textureCopy;
+        private TextureCopy _backgroundTextureCopy;
+        internal TextureCopy TextureCopy => BackgroundContextWorker.InBackground ? _backgroundTextureCopy : _textureCopy;
 
         internal ResourcePool ResourcePool { get; }
 
@@ -35,7 +37,8 @@ namespace Ryujinx.Graphics.OpenGL
             _pipeline = new Pipeline();
             _counters = new Counters();
             _window = new Window(this);
-            TextureCopy = new TextureCopy(this);
+            _textureCopy = new TextureCopy(this);
+            _backgroundTextureCopy = new TextureCopy(this);
             ResourcePool = new ResourcePool();
         }
 
@@ -155,7 +158,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
-            TextureCopy.Dispose();
+            _textureCopy.Dispose();
+            _backgroundTextureCopy.Dispose();
             ResourcePool.Dispose();
             _pipeline.Dispose();
             _window.Dispose();

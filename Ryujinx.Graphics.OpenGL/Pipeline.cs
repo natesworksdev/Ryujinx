@@ -52,8 +52,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         private ColorF _blendConstant;
 
-        private Thread _mainThread;
-
         internal Pipeline()
         {
             _rasterizerDiscard = false;
@@ -1158,7 +1156,6 @@ namespace Ryujinx.Graphics.OpenGL
                 _framebuffer = new Framebuffer();
 
                 int boundHandle = _framebuffer.Bind();
-                _mainThread = Thread.CurrentThread;
                 _boundDrawFramebuffer = _boundReadFramebuffer = boundHandle;
 
                 GL.Enable(EnableCap.FramebufferSrgb);
@@ -1167,7 +1164,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         internal (int drawHandle, int readHandle) GetBoundFramebuffers()
         {
-            if (Thread.CurrentThread != _mainThread)
+            if (BackgroundContextWorker.InBackground)
             {
                 return (0, 0);
             }
