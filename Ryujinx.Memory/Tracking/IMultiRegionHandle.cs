@@ -22,6 +22,8 @@ namespace Ryujinx.Memory.Tracking
         /// The range is aligned to the level of granularity of the contained handles.
         /// Contiguous modified regions are combined.
         /// </summary>
+        /// <param name="address">Start address of the range</param>
+        /// <param name="size">Size of the range</param>
         /// <param name="modifiedAction">Action to perform for modified regions</param>
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction);
 
@@ -32,7 +34,10 @@ namespace Ryujinx.Memory.Tracking
         /// The range is aligned to the level of granularity of the contained handles.
         /// Contiguous modified regions are combined.
         /// </summary>
+        /// <param name="address">Start address of the range</param>
+        /// <param name="size">Size of the range</param>
         /// <param name="modifiedAction">Action to perform for modified regions</param>
+        /// <param name="sequenceNumber">Current sequence number</param>
         public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction, int sequenceNumber);
 
         /// <summary>

@@ -3,7 +3,7 @@ namespace Ryujinx.Memory.Range
     /// <summary>
     /// Range of memory.
     /// </summary>
-    interface IRange
+    public interface IRange
     {
         ulong Address { get; }
         ulong Size { get; }

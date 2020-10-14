@@ -2,6 +2,7 @@ using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Memory.Range;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Memory

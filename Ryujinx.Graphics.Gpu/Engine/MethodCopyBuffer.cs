@@ -17,7 +17,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
         /// <param name="cbp">Copy command parameters</param>
         /// <param name="tex">Texture to compare</param>
         /// <param name="linear">True if the texture is linear, false if block linear</param>
-        /// <param name="bpp">Texture bits per pixel</param>
+        /// <param name="bpp">Texture bytes per pixel</param>
         /// <param name="stride">Texture stride</param>
         /// <returns></returns>
         private bool IsTextureCopyComplete(CopyBufferParams cbp, CopyBufferTexture tex, bool linear, int bpp, int stride)

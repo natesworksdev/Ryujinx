@@ -3,6 +3,10 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Memory.Range
 {
+    /// <summary>
+    /// A range list that assumes ranges are non-overlapping, with list items that can be split in two to avoid overlaps.
+    /// </summary>
+    /// <typeparam name="T">Type of the range.</typeparam>
     class NonOverlappingRangeList<T> : RangeList<T> where T : INonOverlappingRange
     {
         /// <summary>
@@ -93,7 +97,7 @@ namespace Ryujinx.Memory.Range
         /// <returns>The new region (high part)</returns>
         private T Split(T region, ulong splitAddress)
         {
-            Remove(region); // TODO: Is this necessary?
+            Remove(region);
 
             T newRegion = (T)region.Split(splitAddress);
             Add(region);

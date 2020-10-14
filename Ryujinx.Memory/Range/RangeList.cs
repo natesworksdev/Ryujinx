@@ -8,7 +8,7 @@ namespace Ryujinx.Memory.Range
     /// Sorted list of ranges that supports binary search.
     /// </summary>
     /// <typeparam name="T">Type of the range.</typeparam>
-    class RangeList<T> : IEnumerable<T> where T : IRange
+    public class RangeList<T> : IEnumerable<T> where T : IRange
     {
         private const int ArrayGrowthSize = 32;
 

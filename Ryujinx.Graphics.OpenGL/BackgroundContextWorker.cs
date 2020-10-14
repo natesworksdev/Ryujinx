@@ -15,7 +15,6 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _running;
 
         private AutoResetEvent _signal;
-        private ManualResetEvent _disposed;
         private Queue<Action> _work;
         private ObjectPool<ManualResetEventSlim> _invokePool;
 
@@ -32,7 +31,6 @@ namespace Ryujinx.Graphics.OpenGL
             _running = true;
 
             _signal = new AutoResetEvent(false);
-            _disposed = new ManualResetEvent(false);
             _work = new Queue<Action>();
             _invokePool = new ObjectPool<ManualResetEventSlim>(() => new ManualResetEventSlim(), 10);
 
@@ -64,7 +62,6 @@ namespace Ryujinx.Graphics.OpenGL
             }
 
             _window.Dispose();
-            _disposed.Set();
         }
 
         public void Invoke(Action action)
@@ -93,7 +90,8 @@ namespace Ryujinx.Graphics.OpenGL
             _running = false;
             _signal.Set();
 
-            _disposed.WaitOne();
+            _thread.Join();
+            _signal.Dispose();
         }
     }
 }

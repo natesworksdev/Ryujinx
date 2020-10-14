@@ -1,5 +1,6 @@
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Memory.Range;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -57,7 +58,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (_useGranular)
             {
-                _memoryTrackingGranular = context.PhysicalMemory.BeginSmartGranularTracking(address, size, 4096);
+                _memoryTrackingGranular = context.PhysicalMemory.BeginSmartGranularTracking(address, size);
             }
             else
             {

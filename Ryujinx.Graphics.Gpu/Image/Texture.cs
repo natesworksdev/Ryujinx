@@ -2,9 +2,9 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Graphics.Texture.Astc;
+using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -463,7 +463,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="scale">Scale factor</param>
         /// <param name="storage">Texture to use instead of creating one</param>
-        /// <returns></returns>
+        /// <returns>A host texture containing a scaled version of this texture</returns>
         private ITexture GetScaledHostTexture(float scale, ITexture storage = null)
         {
             if (storage == null)
@@ -547,8 +547,10 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Checks if the memory for this texture was modified, and returns true if it was. 
         /// The modified flags are consumed as a result.
-        /// If there is no memory tracking for this texture, it will always report as modified.
         /// </summary>
+        /// <remarks>
+        /// If there is no memory tracking for this texture, it will always report as modified.
+        /// </remarks>
         /// <returns>True if the texture was modified, false otherwise.</returns>
         public bool ConsumeModified()
         {

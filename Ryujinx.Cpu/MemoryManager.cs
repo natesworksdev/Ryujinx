@@ -506,12 +506,12 @@ namespace Ryujinx.Cpu
         }
 
         /// <summary>
-        /// Reprotect a region of virtual memory. Sets software protection bits.
+        /// Reprotect a region of virtual memory for tracking. Sets software protection bits.
         /// </summary>
         /// <param name="va">Virtual address base</param>
         /// <param name="size">Size of the region to protect</param>
         /// <param name="protection">Memory protection to set</param>
-        public void Reprotect(ulong va, ulong size, MemoryPermission protection)
+        public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection)
         {
             // Protection is inverted on software pages, since the default value is 0.
             protection = (~protection) & MemoryPermission.ReadAndWrite;

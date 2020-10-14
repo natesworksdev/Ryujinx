@@ -214,7 +214,7 @@ namespace ARMeilleure.Instructions
         }
         #endregion
 
-        public static void MarkRegionAsModified(ulong address, ulong size, bool write)
+        public static void SignalMemoryTracking(ulong address, ulong size, bool write)
         {
             GetMemoryManager().SignalMemoryTracking(address, size, write);
         }

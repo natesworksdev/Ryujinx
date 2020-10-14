@@ -108,7 +108,7 @@ namespace Ryujinx.Memory.Tracking
         /// </summary>
         /// <param name="va">Starting virtual memory address of the handle</param>
         /// <param name="size">Size of the handle's memory region</param>
-        /// <returns></returns>
+        /// <returns>A list of virtual regions within the given range</returns>
         internal List<VirtualRegion> GetVirtualRegionsForHandle(ulong va, ulong size)
         {
             List<VirtualRegion> result = new List<VirtualRegion>();
@@ -119,7 +119,7 @@ namespace Ryujinx.Memory.Tracking
 
         /// <summary>
         /// Get a list of physical regions that a virtual region covers.
-        /// Note that this becomes outdated if the virtual or physical regions are unmapped or remapped..
+        /// Note that this becomes outdated if the virtual or physical regions are unmapped or remapped.
         /// </summary>
         /// <param name="va">Virtual memory address</param>
         /// <param name="size">Size of the virtual region</param>
@@ -210,7 +210,6 @@ namespace Ryujinx.Memory.Tracking
         /// Signal that a physical memory event happened at the given location.
         /// </summary>
         /// <param name="address">Physical address accessed</param>
-        /// <param name="size">Size of the region affected in bytes</param>
         /// <param name="write">Whether the region was written to or read</param>
         /// <returns>True if the event triggered any tracking regions, false otherwise</returns>
         public bool PhysicalMemoryEvent(ulong address, bool write)
@@ -225,7 +224,7 @@ namespace Ryujinx.Memory.Tracking
 
                 if (count == 0)
                 {
-                    _block.Reprotect(address & ~(ulong)(_pageSize - 1), 4096, MemoryPermission.ReadAndWrite);
+                    _block.Reprotect(address & ~(ulong)(_pageSize - 1), (ulong)_pageSize, MemoryPermission.ReadAndWrite);
                     return false; // We can't handle this - unprotect and return.
                 }
 
@@ -269,7 +268,7 @@ namespace Ryujinx.Memory.Tracking
 
                 if (count == 0)
                 {
-                    _memoryManager.Reprotect(address & ~(ulong)(_pageSize - 1), 4096, MemoryPermission.ReadAndWrite);
+                    _memoryManager.TrackingReprotect(address & ~(ulong)(_pageSize - 1), (ulong)_pageSize, MemoryPermission.ReadAndWrite);
                     return false; // We can't handle this - it's probably a real invalid access.
                 }
 
@@ -303,7 +302,7 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="permission">Memory permission to protect with</param>
         internal void ProtectVirtualRegion(VirtualRegion region, MemoryPermission permission)
         {
-            _memoryManager.Reprotect(region.Address, region.Size, permission);
+            _memoryManager.TrackingReprotect(region.Address, region.Size, permission);
         }
 
         /// <summary>

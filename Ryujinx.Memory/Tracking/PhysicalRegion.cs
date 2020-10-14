@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Memory.Tracking
 {
+    /// <summary>
+    /// A region of physical memory.
+    /// </summary>
     class PhysicalRegion : AbstractRegion
     {
         public List<VirtualRegion> VirtualParents = new List<VirtualRegion>();

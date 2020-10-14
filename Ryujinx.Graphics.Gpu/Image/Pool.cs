@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             Address = address;
             Size    = size;
 
-            _memoryTracking = context.PhysicalMemory.BeginGranularTracking(address, size, 4096);
+            _memoryTracking = context.PhysicalMemory.BeginGranularTracking(address, size);
         }
 
         /// <summary>

@@ -3,6 +3,9 @@ using System.Collections.Generic;
 
 namespace Ryujinx.Memory.Tracking
 {
+    /// <summary>
+    /// A region of virtual memory.
+    /// </summary>
     class VirtualRegion : AbstractRegion
     {
         public List<RegionHandle> Handles = new List<RegionHandle>();
