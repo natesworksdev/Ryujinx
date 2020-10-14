@@ -5,8 +5,19 @@ namespace Ryujinx.Memory.Range
     /// </summary>
     public interface IRange
     {
+        /// <summary>
+        /// Base address.
+        /// </summary>
         ulong Address { get; }
+
+        /// <summary>
+        /// Size of the range.
+        /// </summary>
         ulong Size { get; }
+
+        /// <summary>
+        /// End address.
+        /// </summary>
         ulong EndAddress { get; }
 
         /// <summary>

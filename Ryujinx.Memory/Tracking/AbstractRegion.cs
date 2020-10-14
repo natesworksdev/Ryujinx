@@ -2,6 +2,9 @@
 
 namespace Ryujinx.Memory.Tracking
 {
+    /// <summary>
+    /// A region of memory.
+    /// </summary>
     abstract class AbstractRegion : INonOverlappingRange
     {
         /// <summary>
