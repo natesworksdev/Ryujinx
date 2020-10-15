@@ -37,29 +37,23 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
                 PhiFunctions.Remove(blocks);
 
-                List<Operand> callOutOperands = new List<Operand>();
-
                 for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
                 {
                     BasicBlock block = blocks[blkIndex];
 
                     context.EnterBlock(block);
 
-                    foreach (INode node in block.Operations)
+                    for (LinkedListNode<INode> opNode = block.Operations.First; opNode != null; opNode = opNode.Next)
                     {
-                        Operation operation = (Operation)node;
+                        Operation operation = (Operation)opNode.Value;
 
                         if (IsBranchInst(operation.Inst))
                         {
                             context.LeaveBlock(block, operation);
                         }
-                        else if (operation.Inst == Instruction.CallOutArgument)
+                        else if (operation.Inst != Instruction.CallOutArgument)
                         {
-                            callOutOperands.Add(operation.Dest);
-                        }
-                        else
-                        {
-                            AddOperation(context, operation, callOutOperands);
+                            AddOperation(context, opNode);
                         }
                     }
                 }
@@ -74,16 +68,28 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return context.Info;
         }
 
-        private static void AddOperation(StructuredProgramContext context, Operation operation, List<Operand> callOutOperands)
+        private static void AddOperation(StructuredProgramContext context, LinkedListNode<INode> opNode)
         {
+            Operation operation = (Operation)opNode.Value;
+
             Instruction inst = operation.Inst;
 
             bool isCall = inst == Instruction.Call;
 
             int sourcesCount = operation.SourcesCount;
 
+            List<Operand> callOutOperands = new List<Operand>();
+
             if (isCall)
             {
+                LinkedListNode<INode> scan = opNode.Next;
+
+                while (scan != null && scan.Value is Operation nextOp && nextOp.Inst == Instruction.CallOutArgument)
+                {
+                    callOutOperands.Add(nextOp.Dest);
+                    scan = scan.Next;
+                }
+
                 sourcesCount += callOutOperands.Count;
             }
 

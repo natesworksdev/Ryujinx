@@ -308,20 +308,13 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                         operation.AppendOperands(regs);
 
-                        LinkedListNode<INode> prevNode = null;
+                        LinkedListNode<INode> nextNode = null;
 
                         for (int i = 0; i < fru.OutArguments.Length; i++)
                         {
                             Operation callOutArgOp = new Operation(Instruction.CallOutArgument, OperandHelper.Register(fru.OutArguments[i]));
 
-                            if (prevNode == null)
-                            {
-                                prevNode = block.Operations.AddBefore(node, callOutArgOp);
-                            }
-                            else
-                            {
-                                prevNode = block.Operations.AddAfter(prevNode, callOutArgOp);
-                            }
+                            node = block.Operations.AddAfter(node, callOutArgOp);
                         }
                     }
                 }
