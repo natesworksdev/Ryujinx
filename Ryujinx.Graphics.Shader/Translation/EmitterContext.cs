@@ -13,17 +13,22 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public ShaderConfig Config { get; }
 
+        public bool IsNonMain { get; }
+
         private List<Operation> _operations;
 
         private Dictionary<ulong, Operand> _labels;
+        private Dictionary<ulong, int> _funcs;
 
-        public EmitterContext(ShaderConfig config)
+        public EmitterContext(ShaderConfig config, bool isNonMain)
         {
             Config = config;
+            IsNonMain = isNonMain;
 
             _operations = new List<Operation>();
 
             _labels = new Dictionary<ulong, Operand>();
+            _funcs = new Dictionary<ulong, int>();
         }
 
         public Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
@@ -69,6 +74,16 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return label;
+        }
+
+        public void AddFunction(ulong address, int id)
+        {
+            _funcs.Add(address, id);
+        }
+
+        public int GetFunctionId(ulong address)
+        {
+            return _funcs[address];
         }
 
         public void PrepareForReturn()
