@@ -24,7 +24,7 @@ namespace Ryujinx.Graphics.Shader.Decoders
                 }
             }
 
-            EnqueueFunction(0);
+            funcQueue.Enqueue(0);
 
             while (funcQueue.TryDequeue(out ulong funcAddress))
             {

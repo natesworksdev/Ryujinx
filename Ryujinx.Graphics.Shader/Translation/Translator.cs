@@ -105,40 +105,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             return new ShaderProgram(spInfo, config.Stage, glslCode, config.Size, sizeA);
         }
 
-        private static void RemoveUnreachable(ref BasicBlock[] blocks)
-        {
-            bool modified;
-
-            do
-            {
-                modified = false;
-
-                for (int i = 0; i < blocks.Length; i++)
-                {
-                    if (blocks[i] != null && !blocks[i].Reachable)
-                    {
-                        blocks[i].Next = null;
-                        blocks[i].Branch = null;
-                        blocks[i] = null;
-                        modified = true;
-                    }
-                }
-            }
-            while (modified);
-
-            int j = 0;
-
-            for (int i = 0; i < blocks.Length; i++)
-            {
-                if (blocks[i] != null)
-                {
-                    blocks[j++] = blocks[i];
-                }
-            }
-
-            Array.Resize(ref blocks, j);
-        }
-
         private static FunctionCode[] DecodeShader(ulong address, IGpuAccessor gpuAccessor, TranslationFlags flags, out ShaderConfig config)
         {
             Block[][] cfg;
