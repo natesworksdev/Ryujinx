@@ -129,18 +129,20 @@ namespace Ryujinx.Graphics.Shader.Translation
                 return Array.Empty<FunctionCode>();
             }
 
+            Dictionary<ulong, int> funcIds = new Dictionary<ulong, int>();
+
+            for (int funcIndex = 0; funcIndex < cfg.Length; funcIndex++)
+            {
+                funcIds.Add(cfg[funcIndex][0].Address, funcIndex);
+            }
+
             List<FunctionCode> funcs = new List<FunctionCode>();
 
             ulong maxEndAddress = 0;
 
             for (int funcIndex = 0; funcIndex < cfg.Length; funcIndex++)
             {
-                EmitterContext context = new EmitterContext(config, funcIndex != 0);
-
-                for (int funcId = 0; funcId < cfg.Length; funcId++)
-                {
-                    context.AddFunction(cfg[funcId][0].Address, funcId);
-                }
+                EmitterContext context = new EmitterContext(config, funcIndex != 0, funcIds);
 
                 for (int blkIndex = 0; blkIndex < cfg[funcIndex].Length; blkIndex++)
                 {

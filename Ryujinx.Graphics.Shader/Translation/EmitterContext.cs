@@ -15,20 +15,17 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public bool IsNonMain { get; }
 
-        private List<Operation> _operations;
+        private readonly IReadOnlyDictionary<ulong, int> _funcs;
+        private readonly List<Operation> _operations;
+        private readonly Dictionary<ulong, Operand> _labels;
 
-        private Dictionary<ulong, Operand> _labels;
-        private Dictionary<ulong, int> _funcs;
-
-        public EmitterContext(ShaderConfig config, bool isNonMain)
+        public EmitterContext(ShaderConfig config, bool isNonMain, IReadOnlyDictionary<ulong, int> funcs)
         {
             Config = config;
             IsNonMain = isNonMain;
-
+            _funcs = funcs;
             _operations = new List<Operation>();
-
             _labels = new Dictionary<ulong, Operand>();
-            _funcs = new Dictionary<ulong, int>();
         }
 
         public Operand Add(Instruction inst, Operand dest = null, params Operand[] sources)
@@ -74,11 +71,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             }
 
             return label;
-        }
-
-        public void AddFunction(ulong address, int id)
-        {
-            _funcs.Add(address, id);
         }
 
         public int GetFunctionId(ulong address)
