@@ -4,6 +4,9 @@ using Ryujinx.Graphics.Shader;
 
 namespace Ryujinx.Graphics.Gpu.Engine
 {
+    /// <summary>
+    /// Shader texture properties conversion methods.
+    /// </summary>
     static class ShaderTexture
     {
         /// <summary>
