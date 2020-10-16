@@ -7,6 +7,8 @@ namespace ARMeilleure.Decoders
 
         public IntType IntType { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemReg(inst, address, opCode);
+
         public OpCodeMemReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Shift    =          ((opCode >> 12) & 0x1) != 0;

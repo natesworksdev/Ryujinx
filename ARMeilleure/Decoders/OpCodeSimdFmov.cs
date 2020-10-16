@@ -6,6 +6,8 @@ namespace ARMeilleure.Decoders
         public long Immediate { get; private set; }
         public int  Size      { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdFmov(inst, address, opCode);
+
         public OpCodeSimdFmov(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int type = (opCode >> 22) & 0x3;

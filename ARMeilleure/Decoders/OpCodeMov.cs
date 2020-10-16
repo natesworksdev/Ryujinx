@@ -8,6 +8,8 @@ namespace ARMeilleure.Decoders
 
         public int Bit { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMov(inst, address, opCode);
+
         public OpCodeMov(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int p1 = (opCode >> 22) & 1;

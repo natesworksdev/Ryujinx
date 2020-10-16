@@ -5,6 +5,8 @@ namespace ARMeilleure.Decoders
         public int Rt2 { get; private set; }
         public int Rs  { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemEx(inst, address, opCode);
+
         public OpCodeMemEx(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt2 = (opCode >> 10) & 0x1f;

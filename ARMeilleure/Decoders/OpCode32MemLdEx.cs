@@ -4,6 +4,8 @@
     {
         public int Rd { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32MemLdEx(inst, address, opCode);
+
         public OpCode32MemLdEx(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rd = opCode & 0xf;

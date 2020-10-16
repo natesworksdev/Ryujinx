@@ -14,6 +14,8 @@ namespace ARMeilleure.Decoders
 
         public RegisterSize RegisterSize { get; protected set; }
 
+        public static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode(inst, address, opCode);
+
         public OpCode(InstDescriptor inst, ulong address, int opCode)
         {
             Address   = address;

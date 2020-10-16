@@ -8,6 +8,8 @@ namespace ARMeilleure.Decoders
 
         public bool IsRotated { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluImm(inst, address, opCode);
+
         public OpCode32AluImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int value = (opCode >> 0) & 0xff;

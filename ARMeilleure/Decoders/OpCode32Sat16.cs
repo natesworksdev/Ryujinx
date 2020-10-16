@@ -6,6 +6,8 @@ namespace ARMeilleure.Decoders
         public int Rd { get; private set; }
         public int SatImm { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32Sat16(inst, address, opCode);
+
         public OpCode32Sat16(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 0) & 0xf;

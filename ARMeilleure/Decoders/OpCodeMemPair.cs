@@ -4,6 +4,8 @@ namespace ARMeilleure.Decoders
     {
         public int Rt2 { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemPair(inst, address, opCode);
+
         public OpCodeMemPair(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt2      =  (opCode >> 10) & 0x1f;

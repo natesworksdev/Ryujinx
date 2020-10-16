@@ -4,6 +4,8 @@ namespace ARMeilleure.Decoders
     {
         public int Rm { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeAluBinary(inst, address, opCode);
+
         public OpCodeAluBinary(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rm = (opCode >> 16) & 0x1f;

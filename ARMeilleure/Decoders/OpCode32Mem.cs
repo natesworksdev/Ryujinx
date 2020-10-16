@@ -16,6 +16,8 @@ namespace ARMeilleure.Decoders
 
         public bool IsLoad { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32Mem(inst, address, opCode);
+
         public OpCode32Mem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = (opCode >> 12) & 0xf;

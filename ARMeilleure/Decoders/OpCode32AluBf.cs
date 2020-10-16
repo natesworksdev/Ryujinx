@@ -12,6 +12,8 @@
         public int SourceMask => (int)(0xFFFFFFFF >> (31 - Msb));
         public int DestMask => SourceMask & (int)(0xFFFFFFFF << Lsb);
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluBf(inst, address, opCode);
+
         public OpCode32AluBf(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rd = (opCode >> 12) & 0xf;

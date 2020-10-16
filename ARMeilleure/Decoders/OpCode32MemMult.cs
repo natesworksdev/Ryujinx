@@ -10,6 +10,8 @@ namespace ARMeilleure.Decoders
 
         public bool IsLoad { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32MemMult(inst, address, opCode);
+
         public OpCode32MemMult(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 16) & 0xf;

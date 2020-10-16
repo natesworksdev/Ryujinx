@@ -5,6 +5,8 @@ namespace ARMeilleure.Decoders
         public int SrcIndex { get; private set; }
         public int DstIndex { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdIns(inst, address, opCode);
+
         public OpCodeSimdIns(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int imm4 = (opCode >> 11) & 0xf;

@@ -6,6 +6,8 @@ namespace ARMeilleure.Decoders
 
         public Condition Cond { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeCsel(inst, address, opCode);
+
         public OpCodeCsel(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rm   =             (opCode >> 16) & 0x1f;

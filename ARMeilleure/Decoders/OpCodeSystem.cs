@@ -9,6 +9,8 @@ namespace ARMeilleure.Decoders
         public int Op1 { get; private set; }
         public int Op0 { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSystem(inst, address, opCode);
+
         public OpCodeSystem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt  =  (opCode >>  0) & 0x1f;

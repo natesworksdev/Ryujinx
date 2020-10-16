@@ -4,6 +4,8 @@
     {
         public bool U { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdLong(inst, address, opCode);
+
         public OpCode32SimdLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int imm3h = (opCode >> 19) & 0x7;

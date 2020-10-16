@@ -11,6 +11,8 @@
 
         public int Index { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGpElem(inst, address, opCode);
+
         public OpCode32SimdMovGpElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Op = (opCode >> 20) & 0x1;
@@ -22,7 +24,7 @@
             {
                 Size = 0;
                 Index = opc & 0x7;
-            } 
+            }
             else if ((opc & 0b01001) == 0b00001)
             {
                 Size = 1;
@@ -32,7 +34,7 @@
             {
                 Size = 2;
                 Index = (opc >> 2) & 0x1;
-            } 
+            }
             else
             {
                 Instruction = InstDescriptor.Undefined;

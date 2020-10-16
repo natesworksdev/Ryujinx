@@ -9,6 +9,8 @@ namespace ARMeilleure.Decoders
 
         public Condition Cond { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeCcmp(inst, address, opCode);
+
         public OpCodeCcmp(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int o3 = (opCode >> 4) & 1;

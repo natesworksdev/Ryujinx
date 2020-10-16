@@ -4,6 +4,8 @@
     {
         public int Index { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdDupElem(inst, address, opCode);
+
         public OpCode32SimdDupElem(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             var opc = (opCode >> 16) & 0xf;

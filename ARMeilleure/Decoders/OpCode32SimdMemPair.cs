@@ -10,7 +10,7 @@ namespace ARMeilleure.Decoders
             1, 1, 4, 2,
             1, 1, 3, 1,
             1, 1, 2, 1,
-            1, 1, 1, 1 
+            1, 1, 1, 1
         };
 
         public int Vd { get; private set; }
@@ -23,6 +23,8 @@ namespace ARMeilleure.Decoders
         public int Elems => 8 >> Size;
         public int Regs { get; private set; }
         public int Increment { get; private set; }
+
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemPair(inst, address, opCode);
 
         public OpCode32SimdMemPair(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {

@@ -8,6 +8,8 @@
         public int In => GetQuadwordSubindex(Vn) << (3 - Size);
         public int Fn => GetQuadwordSubindex(Vn) << (1 - (Size & 1));
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdReg(inst, address, opCode);
+
         public OpCode32SimdReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Vn = ((opCode >> 3) & 0x10) | ((opCode >> 16) & 0xf);

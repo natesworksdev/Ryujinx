@@ -15,6 +15,8 @@ namespace ARMeilleure.Decoders
         public bool Replicate { get; private set; }
         public int Increment { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemSingle(inst, address, opCode);
+
         public OpCode32SimdMemSingle(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Vd = (opCode >> 12) & 0xf;
@@ -29,8 +31,8 @@ namespace ARMeilleure.Decoders
                 Size = (opCode >> 6) & 0x3;
                 Increment = ((opCode >> 5) & 1) + 1;
                 Index = 0;
-            } 
-            else 
+            }
+            else
             {
                 Increment = (((IndexAlign >> Size) & 1) == 0) ? 1 : 2;
                 Index = IndexAlign >> (1 + Size);

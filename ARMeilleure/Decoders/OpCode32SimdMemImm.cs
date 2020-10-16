@@ -8,6 +8,8 @@
         public bool Add { get; private set; }
         public int Immediate { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemImm(inst, address, opCode);
+
         public OpCode32SimdMemImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Immediate = opCode & 0xff;

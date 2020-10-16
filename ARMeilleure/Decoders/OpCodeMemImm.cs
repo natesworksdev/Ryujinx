@@ -16,6 +16,8 @@ namespace ARMeilleure.Decoders
             Unsigned
         }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemImm(inst, address, opCode);
+
         public OpCodeMemImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Extend64 = ((opCode >> 22) & 3) == 2;

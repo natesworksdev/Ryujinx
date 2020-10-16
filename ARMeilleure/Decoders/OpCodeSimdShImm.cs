@@ -6,6 +6,8 @@ namespace ARMeilleure.Decoders
     {
         public int Imm { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdShImm(inst, address, opCode);
+
         public OpCodeSimdShImm(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Imm = (opCode >> 16) & 0x7f;

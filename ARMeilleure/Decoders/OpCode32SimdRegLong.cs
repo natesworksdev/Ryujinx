@@ -4,6 +4,8 @@
     {
         public bool Polynomial { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegLong(inst, address, opCode);
+
         public OpCode32SimdRegLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Q = false;

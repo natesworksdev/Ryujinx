@@ -9,6 +9,8 @@ namespace ARMeilleure.Decoders
 
         public ShiftType ShiftType { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32Sat(inst, address, opCode);
+
         public OpCode32Sat(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 0) & 0xf;

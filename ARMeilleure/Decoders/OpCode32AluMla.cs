@@ -12,6 +12,8 @@
         public bool R { get; private set; }
         public bool SetFlags { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluMla(inst, address, opCode);
+
         public OpCode32AluMla(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 0) & 0xf;

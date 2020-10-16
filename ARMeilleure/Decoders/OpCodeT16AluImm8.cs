@@ -11,6 +11,8 @@ namespace ARMeilleure.Decoders
 
         public int Immediate { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16AluImm8(inst, address, opCode);
+
         public OpCodeT16AluImm8(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Immediate = (opCode >> 0) & 0xff;

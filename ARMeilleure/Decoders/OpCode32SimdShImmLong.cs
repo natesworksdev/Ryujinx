@@ -4,6 +4,8 @@
     {
         public int Shift { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdShImmLong(inst, address, opCode);
+
         public OpCode32SimdShImmLong(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Q = false;

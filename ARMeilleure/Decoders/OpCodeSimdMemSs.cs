@@ -7,6 +7,8 @@ namespace ARMeilleure.Decoders
         public bool Replicate { get; private set; }
         public bool WBack     { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdMemSs(inst, address, opCode);
+
         public OpCodeSimdMemSs(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int size   = (opCode >> 10) & 3;

@@ -12,6 +12,8 @@
         public bool DoubleWidth { get; private set; }
         public bool Add { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMemMult(inst, address, opCode);
+
         public OpCode32SimdMemMult(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rn = (opCode >> 16) & 0xf;

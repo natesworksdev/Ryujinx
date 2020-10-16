@@ -5,6 +5,8 @@ namespace ARMeilleure.Decoders
         public int Rt  { get; private set; }
         public int Bit { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBImmTest(inst, address, opCode);
+
         public OpCodeBImmTest(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rt = opCode & 0x1f;

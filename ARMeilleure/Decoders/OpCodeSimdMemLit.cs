@@ -8,6 +8,8 @@ namespace ARMeilleure.Decoders
         public bool Signed   => false;
         public bool Prefetch => false;
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdMemLit(inst, address, opCode);
+
         public OpCodeSimdMemLit(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             int opc = (opCode >> 30) & 3;

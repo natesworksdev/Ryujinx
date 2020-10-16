@@ -7,6 +7,8 @@ namespace ARMeilleure.Decoders
         public int  Elems  { get; private set; }
         public bool WBack  { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdMemMs(inst, address, opCode);
+
         public OpCodeSimdMemMs(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             switch ((opCode >> 12) & 0xf)

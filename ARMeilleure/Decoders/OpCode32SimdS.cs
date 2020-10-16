@@ -8,6 +8,8 @@
         public int Opc2 { get; private set; } // opc2 or RM (opc2<1:0>) [Vcvt, Vrint].
         public int Size { get; protected set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdS(inst, address, opCode);
+
         public OpCode32SimdS(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Opc = (opCode >> 15) & 0x3;

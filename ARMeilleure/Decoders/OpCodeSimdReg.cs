@@ -6,6 +6,8 @@ namespace ARMeilleure.Decoders
         public int  Ra   { get; private   set; }
         public int  Rm   { get; protected set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdReg(inst, address, opCode);
+
         public OpCodeSimdReg(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Bit3 = ((opCode >>  3) & 0x1) != 0;

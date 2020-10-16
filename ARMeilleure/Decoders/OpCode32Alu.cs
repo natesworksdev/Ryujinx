@@ -7,6 +7,8 @@ namespace ARMeilleure.Decoders
 
         public bool SetFlags { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32Alu(inst, address, opCode);
+
         public OpCode32Alu(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             Rd = (opCode >> 12) & 0xf;

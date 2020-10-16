@@ -11,6 +11,8 @@
         public int Opc1 { get; private set; }
         public int Opc2 { get; private set; }
 
+        public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGp(inst, address, opCode);
+
         public OpCode32SimdMovGp(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
             // Which one is used is instruction dependant.
