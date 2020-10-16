@@ -3,7 +3,7 @@ namespace ARMeilleure.Decoders
     class OpCodeAlu : OpCode, IOpCodeAlu
     {
         public int Rd { get; protected set; }
-        public int Rn { get; private   set; }
+        public int Rn { get; }
 
         public DataOp DataOp { get; }
 

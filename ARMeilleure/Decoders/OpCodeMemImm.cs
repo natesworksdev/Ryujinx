@@ -5,7 +5,7 @@ namespace ARMeilleure.Decoders
         public    long Immediate { get; protected set; }
         public    bool WBack     { get; protected set; }
         public    bool PostIdx   { get; protected set; }
-        protected bool Unscaled  { get; private   set; }
+        protected bool Unscaled  { get; }
 
         private enum MemOp
         {
