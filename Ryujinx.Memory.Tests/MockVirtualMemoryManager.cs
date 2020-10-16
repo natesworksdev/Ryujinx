@@ -1,7 +1,4 @@
 ﻿using Ryujinx.Memory.Tracking;
-using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Ryujinx.Memory.Tests
 {

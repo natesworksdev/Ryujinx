@@ -1,5 +1,4 @@
 ﻿using Ryujinx.Memory.Tracking;
-using System;
 
 namespace Ryujinx.Cpu.Tracking
 {

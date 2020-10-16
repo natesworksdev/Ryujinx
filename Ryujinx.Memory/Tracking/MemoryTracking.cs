@@ -49,8 +49,8 @@ namespace Ryujinx.Memory.Tracking
         private (ulong address, ulong size) PageAlign(ulong address, ulong size)
         {
             ulong pageMask = (ulong)_pageSize - 1;
-            ulong rA = address & (~pageMask);
-            ulong rS = ((address + size + pageMask) & (~pageMask)) - rA;
+            ulong rA = address & ~pageMask;
+            ulong rS = ((address + size + pageMask) & ~pageMask) - rA;
             return (rA, rS);
         }
 
