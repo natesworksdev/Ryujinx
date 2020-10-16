@@ -323,6 +323,8 @@ namespace Ryujinx.Ui
         {
             // First take exclusivity on the OpenGL context.
             _renderer.InitializeBackgroundContext(GraphicsContext);
+            Gtk.Window parent = Toplevel as Gtk.Window;
+            parent.Present();
             GraphicsContext.MakeCurrent(WindowInfo);
 
             _renderer.Initialize(_glLogLevel);

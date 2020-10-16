@@ -712,10 +712,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            // NOTE: Remove before PR merge (useful for testing, but can spam a lot)
-            string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
-            Logger.Warning?.Print(LogClass.Gpu, $"Flushing texture {texInfo} at ({Address.ToString("x8")}, {Size.ToString("x8")})");
-
             _context.Renderer.BackgroundContextAction(() =>
             {
                 IsModified = false;
