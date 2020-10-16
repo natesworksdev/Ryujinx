@@ -4,7 +4,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeAluImm : OpCodeAlu, IOpCodeAluImm
     {
-        public long Immediate { get; private set; }
+        public long Immediate { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeAluImm(inst, address, opCode);
 

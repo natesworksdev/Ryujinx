@@ -9,7 +9,7 @@ namespace ARMeilleure.Decoders
 
         public bool SetFlags => false;
 
-        public int Immediate { get; private set; }
+        public int Immediate { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeT16AluImm8(inst, address, opCode);
 

@@ -2,7 +2,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeSimdRegElem : OpCodeSimdReg
     {
-        public int Index { get; private set; }
+        public int Index { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdRegElem(inst, address, opCode);
 

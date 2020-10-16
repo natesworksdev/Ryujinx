@@ -4,10 +4,10 @@
     {
         public int Size => 3;
 
-        public int Vm { get; private set; }
-        public int Rt { get; private set; }
-        public int Rt2 { get; private set; }
-        public int Op { get; private set; }
+        public int Vm { get; }
+        public int Rt { get; }
+        public int Rt2 { get; }
+        public int Op { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGpDouble(inst, address, opCode);
 

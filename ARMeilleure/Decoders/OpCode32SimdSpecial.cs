@@ -2,8 +2,8 @@
 {
     class OpCode32SimdSpecial : OpCode32
     {
-        public int Rt { get; private set; }
-        public int Sreg { get; private set; }
+        public int Rt { get; }
+        public int Sreg { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdSpecial(inst, address, opCode);
 

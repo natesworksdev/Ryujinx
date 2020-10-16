@@ -2,8 +2,8 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeMemEx : OpCodeMem
     {
-        public int Rt2 { get; private set; }
-        public int Rs  { get; private set; }
+        public int Rt2 { get; }
+        public int Rs  { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemEx(inst, address, opCode);
 

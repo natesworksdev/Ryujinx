@@ -2,7 +2,7 @@
 {
     class OpCode32SimdRegLong : OpCode32SimdReg
     {
-        public bool Polynomial { get; private set; }
+        public bool Polynomial { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegLong(inst, address, opCode);
 

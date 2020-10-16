@@ -2,8 +2,8 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeSimdIns : OpCodeSimd
     {
-        public int SrcIndex { get; private set; }
-        public int DstIndex { get; private set; }
+        public int SrcIndex { get; }
+        public int DstIndex { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeSimdIns(inst, address, opCode);
 

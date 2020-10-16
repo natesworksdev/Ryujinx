@@ -2,7 +2,7 @@
 {
     class OpCode32MemReg : OpCode32Mem
     {
-        public int Rm { get; private set; }
+        public int Rm { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32MemReg(inst, address, opCode);
 

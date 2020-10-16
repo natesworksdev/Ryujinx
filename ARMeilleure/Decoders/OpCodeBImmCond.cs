@@ -2,7 +2,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeBImmCond : OpCodeBImm, IOpCodeCond
     {
-        public Condition Cond { get; private set; }
+        public Condition Cond { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBImmCond(inst, address, opCode);
 

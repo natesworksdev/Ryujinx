@@ -2,10 +2,10 @@
 {
     class OpCode32SimdImm44 : OpCode32, IOpCode32SimdImm
     {
-        public int Vd { get; private set; }
-        public long Immediate { get; private set; }
-        public int Size { get; private set; }
-        public int Elems { get; private set; }
+        public int Vd { get; }
+        public long Immediate { get; }
+        public int Size { get; }
+        public int Elems { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdImm44(inst, address, opCode);
 

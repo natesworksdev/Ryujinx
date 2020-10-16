@@ -2,7 +2,7 @@
 {
     class OpCode32SimdLong : OpCode32SimdBase
     {
-        public bool U { get; private set; }
+        public bool U { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdLong(inst, address, opCode);
 

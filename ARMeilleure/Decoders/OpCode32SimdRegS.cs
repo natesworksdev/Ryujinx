@@ -2,7 +2,7 @@
 {
     class OpCode32SimdRegS : OpCode32SimdS
     {
-        public int Vn { get; private set; }
+        public int Vn { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdRegS(inst, address, opCode);
 

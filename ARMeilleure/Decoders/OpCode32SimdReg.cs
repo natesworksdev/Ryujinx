@@ -2,7 +2,7 @@
 {
     class OpCode32SimdReg : OpCode32Simd
     {
-        public int Vn { get; private set; }
+        public int Vn { get; }
 
         public int Qn => GetQuadwordIndex(Vn);
         public int In => GetQuadwordSubindex(Vn) << (3 - Size);

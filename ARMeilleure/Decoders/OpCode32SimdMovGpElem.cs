@@ -2,14 +2,14 @@
 {
     class OpCode32SimdMovGpElem : OpCode32, IOpCode32Simd
     {
-        public int Size { get; private set; }
+        public int Size { get; }
 
-        public int Vd { get; private set; }
-        public int Rt { get; private set; }
-        public int Op { get; private set; }
-        public bool U { get; private set; }
+        public int Vd { get; }
+        public int Rt { get; }
+        public int Op { get; }
+        public bool U { get; }
 
-        public int Index { get; private set; }
+        public int Index { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdMovGpElem(inst, address, opCode);
 

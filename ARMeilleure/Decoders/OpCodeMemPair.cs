@@ -2,7 +2,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeMemPair : OpCodeMemImm
     {
-        public int Rt2 { get; private set; }
+        public int Rt2 { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMemPair(inst, address, opCode);
 

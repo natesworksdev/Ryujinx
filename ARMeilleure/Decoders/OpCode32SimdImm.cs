@@ -2,8 +2,8 @@
 {
     class OpCode32SimdImm : OpCode32SimdBase, IOpCode32SimdImm
     {
-        public bool Q { get; private set; }
-        public long Immediate { get; private set; }
+        public bool Q { get; }
+        public long Immediate { get; }
         public int Elems => GetBytesCount() >> Size;
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32SimdImm(inst, address, opCode);

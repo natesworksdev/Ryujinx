@@ -2,7 +2,7 @@
 {
     class OpCode32AluReg : OpCode32Alu, IOpCode32AluReg
     {
-        public int Rm { get; private set; }
+        public int Rm { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCode32AluReg(inst, address, opCode);
 

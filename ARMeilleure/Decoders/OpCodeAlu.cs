@@ -5,7 +5,7 @@ namespace ARMeilleure.Decoders
         public int Rd { get; protected set; }
         public int Rn { get; private   set; }
 
-        public DataOp DataOp { get; private set; }
+        public DataOp DataOp { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeAlu(inst, address, opCode);
 

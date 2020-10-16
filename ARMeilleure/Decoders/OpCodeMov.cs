@@ -2,11 +2,11 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeMov : OpCode
     {
-        public int Rd { get; private set; }
+        public int Rd { get; }
 
-        public long Immediate { get; private set; }
+        public long Immediate { get; }
 
-        public int Bit { get; private set; }
+        public int Bit { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeMov(inst, address, opCode);
 

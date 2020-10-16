@@ -2,7 +2,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeBReg : OpCode
     {
-        public int Rn { get; private set; }
+        public int Rn { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeBReg(inst, address, opCode);
 

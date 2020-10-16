@@ -2,7 +2,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeAluBinary : OpCodeAlu
     {
-        public int Rm { get; private set; }
+        public int Rm { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeAluBinary(inst, address, opCode);
 

@@ -2,10 +2,10 @@ namespace ARMeilleure.Decoders
 {
     class OpCodeAluRx : OpCodeAlu, IOpCodeAluRx
     {
-        public int Shift { get; private set; }
-        public int Rm    { get; private set; }
+        public int Shift { get; }
+        public int Rm    { get; }
 
-        public IntType IntType { get; private set; }
+        public IntType IntType { get; }
 
         public new static OpCode Create(InstDescriptor inst, ulong address, int opCode) => new OpCodeAluRx(inst, address, opCode);
 

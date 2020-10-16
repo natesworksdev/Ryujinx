@@ -4,7 +4,7 @@ namespace ARMeilleure.Decoders
 {
     class OpCode32AluUx : OpCode32AluReg, IOpCode32AluUx
     {
-        public int Rotate { get; private set; }
+        public int Rotate { get; }
         public int RotateBits => Rotate * 8;
         public bool Add => Rn != RegisterAlias.Aarch32Pc;
 
