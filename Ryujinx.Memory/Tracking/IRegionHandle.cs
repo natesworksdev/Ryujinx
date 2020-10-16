@@ -2,15 +2,15 @@
 
 namespace Ryujinx.Memory.Tracking
 {
-    interface IRegionHandle : IDisposable
+    public interface IRegionHandle : IDisposable
     {
-        public bool Dirty { get; }
+        bool Dirty { get; }
 
-        public ulong Address { get; }
-        public ulong Size { get; }
-        public ulong EndAddress { get; }
+        ulong Address { get; }
+        ulong Size { get; }
+        ulong EndAddress { get; }
 
-        public void Reprotect();
-        public void RegisterAction(RegionSignal action);
+        void Reprotect();
+        void RegisterAction(RegionSignal action);
     }
 }

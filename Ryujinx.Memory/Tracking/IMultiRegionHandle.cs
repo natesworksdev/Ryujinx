@@ -2,19 +2,19 @@
 
 namespace Ryujinx.Memory.Tracking
 {
-    interface IMultiRegionHandle : IDisposable
+    public interface IMultiRegionHandle : IDisposable
     {
         /// <summary>
         /// True if any write has occurred to the whole region since the last use of QueryModified (with no subregion specified).
         /// </summary>
-        public bool Dirty { get; }
+        bool Dirty { get; }
 
         /// <summary>
         /// Check if any part of the region has been modified, and perform an action for each.
         /// Contiguous modified regions are combined.
         /// </summary>
         /// <param name="modifiedAction">Action to perform for modified regions</param>
-        public void QueryModified(Action<ulong, ulong> modifiedAction);
+        void QueryModified(Action<ulong, ulong> modifiedAction);
 
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="address">Start address of the range</param>
         /// <param name="size">Size of the range</param>
         /// <param name="modifiedAction">Action to perform for modified regions</param>
-        public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction);
+        void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction);
 
         /// <summary>
         /// Check if part of the region has been modified within a given range, and perform an action for each.
@@ -38,11 +38,11 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="size">Size of the range</param>
         /// <param name="modifiedAction">Action to perform for modified regions</param>
         /// <param name="sequenceNumber">Current sequence number</param>
-        public void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction, int sequenceNumber);
+        void QueryModified(ulong address, ulong size, Action<ulong, ulong> modifiedAction, int sequenceNumber);
 
         /// <summary>
         /// Signal that one of the subregions of this multi-region has been modified. This sets the overall dirty flag.
         /// </summary>
-        public void SignalWrite();
+        void SignalWrite();
     }
 }
