@@ -294,7 +294,14 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     _imageState[stageIndex][index].Texture = hostTexture;
 
-                    _context.Renderer.Pipeline.SetImage(index, stage, hostTexture);
+                    Format format = binding.Format;
+
+                    if (format == 0)
+                    {
+                        format = texture.Format;
+                    }
+
+                    _context.Renderer.Pipeline.SetImage(index, stage, hostTexture, format);
                 }
             }
         }
