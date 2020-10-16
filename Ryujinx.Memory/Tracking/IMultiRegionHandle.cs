@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Memory.Tracking
 {
-    public interface IMultiRegionHandle : IDisposable
+    interface IMultiRegionHandle : IDisposable
     {
         /// <summary>
         /// True if any write has occurred to the whole region since the last use of QueryModified (with no subregion specified).

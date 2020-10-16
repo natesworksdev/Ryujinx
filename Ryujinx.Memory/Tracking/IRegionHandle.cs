@@ -2,7 +2,7 @@
 
 namespace Ryujinx.Memory.Tracking
 {
-    public interface IRegionHandle : IDisposable
+    interface IRegionHandle : IDisposable
     {
         public bool Dirty { get; }
 
