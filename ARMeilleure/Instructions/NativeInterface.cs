@@ -78,6 +78,11 @@ namespace ARMeilleure.Instructions
             return (ulong)GetContext().Fpcr;
         }
 
+        public static bool GetFpcrFz()
+        {
+            return (GetContext().Fpcr & FPCR.Fz) != 0;
+        }
+
         public static ulong GetFpsr()
         {
             return (ulong)GetContext().Fpsr;

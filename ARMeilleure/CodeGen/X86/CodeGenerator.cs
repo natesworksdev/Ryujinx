@@ -45,6 +45,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(Instruction.ConvertToFP,             GenerateConvertToFP);
             Add(Instruction.Copy,                    GenerateCopy);
             Add(Instruction.CountLeadingZeros,       GenerateCountLeadingZeros);
+            Add(Instruction.CsrMaskBits,             GenerateCsrMaskBits);
+            Add(Instruction.CsrUnmaskBits,           GenerateCsrUnmaskBits);
             Add(Instruction.Divide,                  GenerateDivide);
             Add(Instruction.DivideUI,                GenerateDivideUI);
             Add(Instruction.Fill,                    GenerateFill);
@@ -799,6 +801,48 @@ namespace ARMeilleure.CodeGen.X86
             // return the number of 0 bits on the high end. So, we invert the result
             // of the BSR using XOR to get the correct value.
             context.Assembler.Xor(dest, Const(operandMask), OperandType.I32);
+        }
+
+        private static void GenerateCsrMaskBits(CodeGenContext context, Operation operation)
+        {
+            Operand offset = operation.GetSource(0);
+            Operand bits   = operation.GetSource(1);
+
+            Debug.Assert(offset.Kind == OperandKind.Constant && bits.Kind == OperandKind.Constant);
+            Debug.Assert(offset.Type == OperandType.I32 && bits.Type == OperandType.I32);
+
+            int offs = offset.AsInt32() + context.CallArgsRegionSize;
+
+            Operand rsp = Register(X86Register.Rsp);
+
+            MemoryOperand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, offs);
+
+            Debug.Assert(HardwareCapabilities.SupportsSse || HardwareCapabilities.SupportsVexEncoding);
+
+            context.Assembler.Stmxcsr(memOp);
+            context.Assembler.Or(memOp, bits, OperandType.I32);
+            context.Assembler.Ldmxcsr(memOp);
+        }
+
+        private static void GenerateCsrUnmaskBits(CodeGenContext context, Operation operation)
+        {
+            Operand offset = operation.GetSource(0);
+            Operand bits   = operation.GetSource(1);
+
+            Debug.Assert(offset.Kind == OperandKind.Constant && bits.Kind == OperandKind.Constant);
+            Debug.Assert(offset.Type == OperandType.I32 && bits.Type == OperandType.I32);
+
+            int offs = offset.AsInt32() + context.CallArgsRegionSize;
+
+            Operand rsp = Register(X86Register.Rsp);
+
+            MemoryOperand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, offs);
+
+            Debug.Assert(HardwareCapabilities.SupportsSse || HardwareCapabilities.SupportsVexEncoding);
+
+            context.Assembler.Stmxcsr(memOp);
+            context.Assembler.And(memOp, bits, OperandType.I32);
+            context.Assembler.Ldmxcsr(memOp);
         }
 
         private static void GenerateDivide(CodeGenContext context, Operation operation)

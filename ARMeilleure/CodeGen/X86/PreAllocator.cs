@@ -114,6 +114,20 @@ namespace ARMeilleure.CodeGen.X86
                                 node = HandleVectorInsert8(block.Operations, node, operation);
                             }
                             break;
+
+                        case Instruction.CsrMaskBits:
+                        {
+                            int stackOffset = stackAlloc.Allocate(OperandType.I32);
+                            operation.SetSource(0, Const(stackOffset));
+                            break;
+                        }
+
+                        case Instruction.CsrUnmaskBits:
+                        {
+                            int stackOffset = stackAlloc.Allocate(OperandType.I32);
+                            operation.SetSource(0, Const(stackOffset));
+                            break;
+                        }
                     }
                 }
             }
@@ -1331,6 +1345,8 @@ namespace ARMeilleure.CodeGen.X86
             switch (inst)
             {
                 case Instruction.Copy:
+                case Instruction.CsrMaskBits:
+                case Instruction.CsrUnmaskBits:
                 case Instruction.LoadArgument:
                 case Instruction.Spill:
                 case Instruction.SpillArg:
@@ -1350,6 +1366,8 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.BitwiseOr:
                 case Instruction.BranchIf:
                 case Instruction.Compare:
+                case Instruction.CsrMaskBits:
+                case Instruction.CsrUnmaskBits:
                 case Instruction.Multiply:
                 case Instruction.RotateRight:
                 case Instruction.ShiftLeft:

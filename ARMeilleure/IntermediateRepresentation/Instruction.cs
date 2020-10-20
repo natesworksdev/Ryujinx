@@ -20,6 +20,8 @@ namespace ARMeilleure.IntermediateRepresentation
         ConvertToFPUI,
         Copy,
         CountLeadingZeros,
+        CsrMaskBits,
+        CsrUnmaskBits,
         Divide,
         DivideUI,
         Load,
