@@ -3400,7 +3400,7 @@ namespace ARMeilleure.Instructions
             Operand nCopy = n ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn));
             Operand mCopy = m ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm));
 
-            EmitSseOrAvxEnterFtzAndDazModesOpF(context, out var isTrue);
+            EmitSseOrAvxEnterFtzAndDazModesOpF(context, out Operand isTrue);
 
             Operand res = emit(nCopy, mCopy);
 
