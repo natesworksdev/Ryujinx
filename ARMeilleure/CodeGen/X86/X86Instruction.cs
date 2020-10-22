@@ -2,6 +2,7 @@ namespace ARMeilleure.CodeGen.X86
 {
     enum X86Instruction
     {
+        None,
         Add,
         Addpd,
         Addps,

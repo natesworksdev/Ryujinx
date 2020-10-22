@@ -237,16 +237,6 @@ namespace ARMeilleure.Translation
             return Add(Instruction.CountLeadingZeros, Local(op1.Type), op1);
         }
 
-        public void CsrMaskBits(int bits)
-        {
-            Add(Instruction.CsrMaskBits, null, Const(0), Const(bits));
-        }
-
-        public void CsrUnmaskBits(int bits)
-        {
-            Add(Instruction.CsrUnmaskBits, null, Const(0), Const(~bits));
-        }
-
         public Operand Divide(Operand op1, Operand op2)
         {
             return Add(Instruction.Divide, Local(op1.Type), op1, op2);
@@ -581,6 +571,11 @@ namespace ARMeilleure.Translation
         public Operand AddIntrinsicLong(Intrinsic intrin, params Operand[] args)
         {
             return Add(intrin, Local(OperandType.I64), args);
+        }
+
+        public void AddIntrinsicNoRet(Intrinsic intrin, params Operand[] args)
+        {
+            Add(intrin, null, args);
         }
 
         private Operand Add(Intrinsic intrin, Operand dest, params Operand[] sources)

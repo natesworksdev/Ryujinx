@@ -1205,7 +1205,7 @@ namespace ARMeilleure.Instructions
             Operand lblTrue = Label();
             context.BranchIfFalse(lblTrue, isTrue);
 
-            context.CsrMaskBits((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz));
+            context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
 
             context.MarkLabel(lblTrue);
         }
@@ -1217,7 +1217,7 @@ namespace ARMeilleure.Instructions
             Operand lblTrue = Label();
             context.BranchIfFalse(lblTrue, isTrue);
 
-            context.CsrUnmaskBits((int)(Mxcsr.Ftz | Mxcsr.Daz));
+            context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));
 
             context.MarkLabel(lblTrue);
         }

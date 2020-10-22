@@ -115,19 +115,15 @@ namespace ARMeilleure.CodeGen.X86
                             }
                             break;
 
-                        case Instruction.CsrMaskBits:
-                        {
-                            int stackOffset = stackAlloc.Allocate(OperandType.I32);
-                            operation.SetSource(0, Const(stackOffset));
-                            break;
-                        }
+                        case Instruction.Extended:
+                            IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
 
-                        case Instruction.CsrUnmaskBits:
-                        {
-                            int stackOffset = stackAlloc.Allocate(OperandType.I32);
-                            operation.SetSource(0, Const(stackOffset));
+                            if (intrinOp.Intrinsic == Intrinsic.X86Mxcsrmb || intrinOp.Intrinsic == Intrinsic.X86Mxcsrub)
+                            {
+                                int stackOffset = stackAlloc.Allocate(OperandType.I32);
+                                operation.SetSources(new Operand[] { Const(stackOffset), operation.GetSource(0) });
+                            }
                             break;
-                        }
                     }
                 }
             }
@@ -1345,8 +1341,6 @@ namespace ARMeilleure.CodeGen.X86
             switch (inst)
             {
                 case Instruction.Copy:
-                case Instruction.CsrMaskBits:
-                case Instruction.CsrUnmaskBits:
                 case Instruction.LoadArgument:
                 case Instruction.Spill:
                 case Instruction.SpillArg:
@@ -1366,8 +1360,6 @@ namespace ARMeilleure.CodeGen.X86
                 case Instruction.BitwiseOr:
                 case Instruction.BranchIf:
                 case Instruction.Compare:
-                case Instruction.CsrMaskBits:
-                case Instruction.CsrUnmaskBits:
                 case Instruction.Multiply:
                 case Instruction.RotateRight:
                 case Instruction.ShiftLeft:
