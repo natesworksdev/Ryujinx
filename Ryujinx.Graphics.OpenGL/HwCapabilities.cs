@@ -7,6 +7,7 @@ namespace Ryujinx.Graphics.OpenGL
     {
         private static readonly Lazy<bool> _supportsAstcCompression           = new Lazy<bool>(() => HasExtension("GL_KHR_texture_compression_astc_ldr"));
         private static readonly Lazy<bool> _supportsImageLoadFormatted        = new Lazy<bool>(() => HasExtension("GL_EXT_shader_image_load_formatted"));
+        private static readonly Lazy<bool> _supportsNvBindlessTexture         = new Lazy<bool>(() => HasExtension("GL_NV_bindless_texture"));
         private static readonly Lazy<bool> _supportsPolygonOffsetClamp        = new Lazy<bool>(() => HasExtension("GL_EXT_polygon_offset_clamp"));
         private static readonly Lazy<bool> _supportsViewportSwizzle           = new Lazy<bool>(() => HasExtension("GL_NV_viewport_swizzle"));
         private static readonly Lazy<bool> _supportsSeamlessCubemapPerTexture = new Lazy<bool>(() => HasExtension("GL_ARB_seamless_cubemap_per_texture"));
@@ -30,6 +31,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public static bool SupportsAstcCompression           => _supportsAstcCompression.Value;
         public static bool SupportsImageLoadFormatted        => _supportsImageLoadFormatted.Value;
+        public static bool SupportsNvBindlessTexture         => _supportsNvBindlessTexture.Value;
         public static bool SupportsPolygonOffsetClamp        => _supportsPolygonOffsetClamp.Value;
         public static bool SupportsViewportSwizzle           => _supportsViewportSwizzle.Value;
         public static bool SupportsSeamlessCubemapPerTexture => _supportsSeamlessCubemapPerTexture.Value;

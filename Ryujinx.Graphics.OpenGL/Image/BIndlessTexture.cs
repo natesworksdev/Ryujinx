@@ -13,17 +13,38 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private static long GetTextureSamplerHandle(int texture, int sampler)
         {
-            return GL.NV.GetTextureSamplerHandle(texture, sampler);
+            if (HwCapabilities.SupportsNvBindlessTexture)
+            {
+                return GL.NV.GetTextureSamplerHandle(texture, sampler);
+            }
+            else
+            {
+                return GL.Arb.GetTextureSamplerHandle(texture, sampler);
+            }
         }
 
         private static void MakeTextureHandleResident(long handle)
         {
-            GL.NV.MakeTextureHandleResident(handle);
+            if (HwCapabilities.SupportsNvBindlessTexture)
+            {
+                GL.NV.MakeTextureHandleResident(handle);
+            }
+            else
+            {
+                GL.Arb.MakeTextureHandleResident(handle);
+            }
         }
 
         private static void MakeTextureHandleNonResident(long handle)
         {
-            GL.NV.MakeTextureHandleNonResident(handle);
+            if (HwCapabilities.SupportsNvBindlessTexture)
+            {
+                GL.NV.MakeTextureHandleNonResident(handle);
+            }
+            else
+            {
+                GL.Arb.MakeTextureHandleNonResident(handle);
+            }
         }
 
         public BindlessTexture(TextureBase texture)
