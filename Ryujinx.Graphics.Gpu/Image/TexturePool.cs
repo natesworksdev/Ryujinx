@@ -1,3 +1,4 @@
+using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
@@ -11,7 +12,8 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class TexturePool : Pool<Texture, TextureDescriptor>
     {
-        private int _sequenceNumber;
+        private readonly BitMap _modifiedEntries;
+        private readonly BindlessHandleManager _handleManager;
 
         /// <summary>
         /// Intrusive linked list node used on the texture pool cache.
@@ -24,7 +26,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="context">GPU context that the texture pool belongs to</param>
         /// <param name="address">Address of the texture pool in guest memory</param>
         /// <param name="maximumId">Maximum texture ID of the texture pool (equal to maximum textures minus one)</param>
-        public TexturePool(GpuContext context, ulong address, int maximumId) : base(context, address, maximumId) { }
+        public TexturePool(GpuContext context, ulong address, int maximumId) : base(context, address, maximumId)
+        {
+            _modifiedEntries = new BitMap(BitUtils.DivRoundUp(maximumId + 1, DescriptorSize));
+            _handleManager = new BindlessHandleManager(context.Renderer);
+        }
 
         /// <summary>
         /// Gets the texture with the given ID.
@@ -38,34 +44,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return null;
             }
 
-            if (_sequenceNumber != Context.SequenceNumber)
-            {
-                _sequenceNumber = Context.SequenceNumber;
-
-                SynchronizeMemory();
-            }
-
             Texture texture = Items[id];
 
             if (texture == null)
             {
-                TextureDescriptor descriptor = GetDescriptor(id);
-
-                TextureInfo info = GetInfo(descriptor, out int layerSize);
-
-                texture = Context.Methods.TextureManager.FindOrCreateTexture(TextureSearchFlags.ForSampler, info, layerSize);
-
-                // If this happens, then the texture address is invalid, we can't add it to the cache.
-                if (texture == null)
-                {
-                    return null;
-                }
-
-                texture.IncrementReferenceCount();
-
-                Items[id] = texture;
-
-                DescriptorCache[id] = descriptor;
+                Items[id] = texture = GetTexture(id);
             }
             else
             {
@@ -88,6 +71,49 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // Memory is automatically synchronized on texture creation.
                 texture.SynchronizeMemory();
             }
+
+            return texture;
+        }
+
+        /// <summary>
+        /// Gets the texture at the given <paramref name="id"/> from the cache,
+        /// or creates a new one if not found.
+        /// </summary>
+        /// <param name="id">Index of the texture on the pool</param>
+        /// <param name="forBindless">Indicates that the texture is only used for bindless access</param>
+        /// <returns>Texture for the given pool index</returns>
+        private Texture GetTexture(int id, bool forBindless = false)
+        {
+            TextureDescriptor descriptor = GetDescriptor(id);
+
+            DescriptorCache[id] = descriptor;
+
+            TextureInfo info = GetInfo(descriptor, out int layerSize);
+
+            // For bindless, we want to exclude ASTC compressed textures (as they would use too much
+            // VRAM when decompressed) and 3D textures due to the current method used for 2D to 3D
+            // slice copies, that only happens when the 3D texture is created for the first time.
+            if (forBindless && (info.Target == Target.Texture3D || info.FormatInfo.Format.IsAstc()))
+            {
+                return null;
+            }
+
+            TextureValidationResult validationResult = TextureValidation.Validate(ref info);
+
+            if (validationResult != TextureValidationResult.Valid)
+            {
+                return null;
+            }
+
+            // TODO: Eventually get rid of that...
+            if (forBindless && (info.Width > 8192 || info.Height > 8192 || info.DepthOrLayers > 8192))
+            {
+                return null;
+            }
+
+            Texture texture = Context.Methods.TextureManager.FindOrCreateTexture(TextureSearchFlags.ForSampler, info, layerSize);
+
+            texture?.IncrementReferenceCount();
 
             return texture;
         }
@@ -118,11 +144,45 @@ namespace Ryujinx.Graphics.Gpu.Image
                         continue;
                     }
 
-                    texture.DecrementReferenceCount();
+                    texture.BindlessUnregister(this, id);
+                    Delete(texture);
 
                     Items[id] = null;
                 }
+
+                _modifiedEntries.Set(id);
             }
+        }
+
+        /// <summary>
+        /// Loads all the textures currently registered by the guest application on the pool.
+        /// This is required for bindless access, as it's not possible to predict which textures will be used.
+        /// </summary>
+        /// <param name="activeSamplerPool">The currently active sampler pool</param>
+        public void LoadAll(SamplerPool activeSamplerPool)
+        {
+            if (activeSamplerPool == null)
+            {
+                return;
+            }
+
+            _modifiedEntries.BeginIterating();
+
+            int id;
+
+            while ((id = _modifiedEntries.GetNextAndClear()) >= 0)
+            {
+                Texture texture = Items[id] ?? GetTexture(id, true);
+
+                if (texture != null)
+                {
+                    texture.BindlessRegister(this, activeSamplerPool, _handleManager, id);
+                }
+
+                Items[id] = texture;
+            }
+
+            _handleManager.Bind(Context.Renderer);
         }
 
         /// <summary>
@@ -168,7 +228,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             uint format = descriptor.UnpackFormat();
-            bool srgb   = descriptor.UnpackSrgb();
+            bool srgb = descriptor.UnpackSrgb();
 
             ulong gpuVa = descriptor.UnpackAddress();
 

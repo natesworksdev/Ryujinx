@@ -8,9 +8,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
         public TextureFormat Format { get; }
         public TextureFlags  Flags  { get; }
 
-        public int CbufSlot  { get; }
-        public int Handle    { get; }
-        public int ArraySize { get; }
+        public int CbufSlot { get; }
+        public int Handle   { get; }
 
         public AstTextureOperation(
             Instruction       inst,
@@ -19,7 +18,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             TextureFlags      flags,
             int               cbufSlot,
             int               handle,
-            int               arraySize,
             int               index,
             params IAstNode[] sources) : base(inst, index, sources, sources.Length)
         {
@@ -28,7 +26,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             Flags     = flags;
             CbufSlot  = cbufSlot;
             Handle    = handle;
-            ArraySize = arraySize;
         }
     }
 }

@@ -39,6 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
         private bool _isAnyVbInstanced;
         private bool _vsUsesInstanceId;
+        private bool _anyStageUsesBindlessTextures;
 
         private bool _forceShaderUpdate;
 
@@ -305,7 +306,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             UpdateStorageBuffers();
 
             BufferManager.CommitGraphicsBindings();
-            TextureManager.CommitGraphicsBindings();
+            TextureManager.CommitGraphicsBindings(_anyStageUsesBindlessTextures);
         }
 
         /// <summary>
@@ -1004,6 +1005,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             ShaderBundle gs = ShaderCache.GetGraphicsShader(state, addresses);
 
             _vsUsesInstanceId = gs.Shaders[0]?.Info.UsesInstanceId ?? false;
+            _anyStageUsesBindlessTextures = false;
 
             int storageBufferBindingsCount = 0;
             int uniformBufferBindingsCount = 0;
@@ -1021,6 +1023,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     BufferManager.SetGraphicsStorageBufferBindings(stage, null);
                     BufferManager.SetGraphicsUniformBufferBindings(stage, null);
                     continue;
+                }
+
+                if (info.UsesBindlessTextures)
+                {
+                    _anyStageUsesBindlessTextures = true;
                 }
 
                 var textureBindings = new TextureBindingInfo[info.Textures.Count];
@@ -1114,6 +1121,53 @@ namespace Ryujinx.Graphics.Gpu.Engine
             {
                 _context.Renderer.Pipeline.SetUserClipDistance(i, (clipMask & (1 << i)) != 0);
             }
+        }
+
+        /// <summary>
+        /// Gets texture target from a sampler type.
+        /// </summary>
+        /// <param name="type">Sampler type</param>
+        /// <returns>Texture target value</returns>
+        private static Target GetTarget(SamplerType type)
+        {
+            type &= ~SamplerType.Shadow;
+
+            switch (type)
+            {
+                case SamplerType.Texture1D:
+                    return Target.Texture1D;
+
+                case SamplerType.TextureBuffer:
+                    return Target.TextureBuffer;
+
+                case SamplerType.Texture1D | SamplerType.Array:
+                    return Target.Texture1DArray;
+
+                case SamplerType.Texture2D:
+                    return Target.Texture2D;
+
+                case SamplerType.Texture2D | SamplerType.Array:
+                    return Target.Texture2DArray;
+
+                case SamplerType.Texture2D | SamplerType.Multisample:
+                    return Target.Texture2DMultisample;
+
+                case SamplerType.Texture2D | SamplerType.Multisample | SamplerType.Array:
+                    return Target.Texture2DMultisampleArray;
+
+                case SamplerType.Texture3D:
+                    return Target.Texture3D;
+
+                case SamplerType.TextureCube:
+                    return Target.Cubemap;
+
+                case SamplerType.TextureCube | SamplerType.Array:
+                    return Target.CubemapArray;
+            }
+
+            Logger.Warning?.Print(LogClass.Gpu, $"Invalid sampler type \"{type}\".");
+
+            return Target.Texture2D;
         }
 
         /// <summary>

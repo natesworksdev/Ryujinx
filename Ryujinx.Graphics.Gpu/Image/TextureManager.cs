@@ -6,6 +6,7 @@ using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Memory.Range;
 using System;
+using System.Collections.Concurrent;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -48,6 +49,20 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private readonly AutoDeleteCache _cache;
 
+        private struct TextureAction
+        {
+            public Texture Texture { get; }
+            public TextureExternalEvent Event { get; }
+
+            public TextureAction(Texture texture, TextureExternalEvent externalEvent)
+            {
+                Texture = texture;
+                Event = externalEvent;
+            }
+        }
+
+        private readonly ConcurrentQueue<TextureAction> _deferredTextureActions;
+
         /// <summary>
         /// The scaling factor applied to all currently bound render targets.
         /// </summary>
@@ -75,6 +90,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             _overlapInfo = new OverlapInfo[OverlapsBufferInitialCapacity];
 
             _cache = new AutoDeleteCache();
+
+            _deferredTextureActions = new ConcurrentQueue<TextureAction>();
         }
 
         /// <summary>
@@ -300,23 +317,25 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Commits bindings on the compute pipeline.
         /// </summary>
-        public void CommitComputeBindings()
+        /// <param name="usesBindlessTextures">Indicates if any of the currently bound shaders uses bindless textures</param>
+        public void CommitComputeBindings(bool usesBindlessTextures)
         {
             // Every time we switch between graphics and compute work,
             // we must rebind everything.
             // Since compute work happens less often, we always do that
             // before and after the compute dispatch.
             _cpBindingsManager.Rebind();
-            _cpBindingsManager.CommitBindings();
+            _cpBindingsManager.CommitBindings(usesBindlessTextures);
             _gpBindingsManager.Rebind();
         }
 
         /// <summary>
         /// Commits bindings on the graphics pipeline.
         /// </summary>
-        public void CommitGraphicsBindings()
+        /// <param name="usesBindlessTextures">Indicates if the currently bound shader uses bindless textures</param>
+        public void CommitGraphicsBindings(bool usesBindlessTextures)
         {
-            _gpBindingsManager.CommitBindings();
+            _gpBindingsManager.CommitBindings(usesBindlessTextures);
 
             UpdateRenderTargets();
         }
@@ -373,6 +392,36 @@ namespace Ryujinx.Graphics.Gpu.Image
             if (anyChanged)
             {
                 _context.Renderer.Pipeline.SetRenderTargets(_rtHostColors, _rtHostDs);
+            }
+        }
+
+        /// <summary>
+        /// Signals a external texture modification event from a foreign thread.
+        /// </summary>
+        /// <remarks>
+        /// This function is thread safe and can be called from any thread.
+        /// </remarks>
+        /// <param name="texture">The affected texture</param>
+        /// <param name="externalEvent">Event that affected the texture</param>
+        public void SignalExternalEvent(Texture texture, TextureExternalEvent externalEvent)
+        {
+            _deferredTextureActions.Enqueue(new TextureAction(texture, externalEvent));
+        }
+
+        /// <summary>
+        /// Processes external texture modification events.
+        /// </summary>
+        public void ProcessExternalEvents()
+        {
+            while (_deferredTextureActions.TryDequeue(out TextureAction action))
+            {
+                switch (action.Event)
+                {
+                    case TextureExternalEvent.DataModified:
+                        action.Texture.SynchronizeMemory();
+                        action.Texture.BindlessTrack();
+                        break;
+                }
             }
         }
 

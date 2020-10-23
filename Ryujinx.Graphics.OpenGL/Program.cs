@@ -27,7 +27,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             for (int index = 0; index < shaders.Length; index++)
             {
-                int shaderHandle = ((Shader)shaders[index]).Handle;
+                Shader shader = (Shader)shaders[index];
+
+                int shaderHandle = shader.Handle;
 
                 GL.AttachShader(Handle, shaderHandle);
             }

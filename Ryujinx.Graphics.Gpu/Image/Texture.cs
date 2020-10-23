@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// <summary>
     /// Represents a cached GPU texture.
     /// </summary>
-    class Texture : IMultiRangeItem, IDisposable
+    partial class Texture : IMultiRangeItem, IDisposable
     {
         // How many updates we need before switching to the byte-by-byte comparison
         // modification check method.
@@ -170,6 +170,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             _context  = context;
             _sizeInfo = sizeInfo;
             Range     = range;
+
+            /* if (sizeInfo.TotalSize > 16 * 1024 * 1024)
+            {
+                throw new Exception($"texture too large {info.Width}x{info.Height}x{info.DepthOrLayers} {info.Levels} {info.IsLinear} {info.Target} {info.FormatInfo.Format} {info.GobBlocksInY} {info.Stride}");
+            } */
 
             SetInfo(info);
 
@@ -710,6 +715,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void ExternalFlush(ulong address, ulong size)
         {
+            if (_isBindless)
+            {
+                _context.Methods.TextureManager.SignalExternalEvent(this, TextureExternalEvent.DataModified);
+            }
+
             if (!IsModified || _memoryTracking == null)
             {
                 return;
@@ -1050,6 +1060,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             DisposeTextures();
 
             HostTexture = hostTexture;
+
+            BindlessReplace();
         }
 
         /// <summary>
@@ -1132,6 +1144,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private void DisposeTextures()
         {
             _currentData = null;
+            BindlessUnregister();
             HostTexture.Release();
 
             _arrayViewTexture?.Release();

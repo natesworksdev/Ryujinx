@@ -1,5 +1,6 @@
 using Ryujinx.Graphics.GAL;
 using System;
+using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -8,6 +9,13 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class Sampler : IDisposable
     {
+        private readonly HashSet<Texture> _dependants;
+
+        /// <summary>
+        /// Maxwell sampler descriptor.
+        /// </summary>
+        public SamplerDescriptor Descriptor { get; }
+
         /// <summary>
         /// Host sampler object.
         /// </summary>
@@ -20,6 +28,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="descriptor">The Maxwell sampler descriptor</param>
         public Sampler(GpuContext context, SamplerDescriptor descriptor)
         {
+            Descriptor = descriptor;
+
             MinFilter minFilter = descriptor.UnpackMinFilter();
             MagFilter magFilter = descriptor.UnpackMagFilter();
 
@@ -62,6 +72,26 @@ namespace Ryujinx.Graphics.Gpu.Image
                 maxLod,
                 mipLodBias,
                 maxRequestedAnisotropy));
+
+            _dependants = new HashSet<Texture>();
+        }
+
+        /// <summary>
+        /// Adds a texture that should be notified of all modifications to this sampler.
+        /// </summary>
+        /// <param name="texture">Texture to notify</param>
+        public void AddDependant(Texture texture)
+        {
+            _dependants.Add(texture);
+        }
+
+        /// <summary>
+        /// Removes a texture from the sampler dependency list, this stops the texture from being notified.
+        /// </summary>
+        /// <param name="texture">Texture to remove</param>
+        public void RemoveDependant(Texture texture)
+        {
+            _dependants.Remove(texture);
         }
 
         /// <summary>
@@ -69,6 +99,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Dispose()
         {
+            foreach (Texture texture in _dependants)
+            {
+                texture.NotifySamplerDisposal(this);
+            }
+            _dependants.Clear();
             HostSampler.Dispose();
         }
     }

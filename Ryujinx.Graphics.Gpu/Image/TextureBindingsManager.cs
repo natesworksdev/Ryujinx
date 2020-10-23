@@ -17,16 +17,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         private bool _isCompute;
 
         private SamplerPool _samplerPool;
-
         private SamplerIndex _samplerIndex;
 
         private ulong _texturePoolAddress;
         private int   _texturePoolMaximumId;
 
-        private TexturePoolCache _texturePoolCache;
+        private readonly TexturePoolCache _texturePoolCache;
 
-        private TextureBindingInfo[][] _textureBindings;
-        private TextureBindingInfo[][] _imageBindings;
+        private readonly TextureBindingInfo[][] _textureBindings;
+        private readonly TextureBindingInfo[][] _imageBindings;
 
         private struct TextureStatePerStage
         {
@@ -34,8 +33,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             public ISampler Sampler;
         }
 
-        private TextureStatePerStage[][] _textureState;
-        private TextureStatePerStage[][] _imageState;
+        private readonly TextureStatePerStage[][] _textureState;
+        private readonly TextureStatePerStage[][] _imageState;
 
         private int _textureBufferIndex;
 
@@ -220,11 +219,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Ensures that the bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
         /// </summary>
-        public void CommitBindings()
+        /// <param name="usesBindlessTextures">Indicates if any of the currently bound shaders uses bindless textures</param>
+        public void CommitBindings(bool usesBindlessTextures)
         {
-            TexturePool texturePool = _texturePoolCache.FindOrCreate(
-                _texturePoolAddress,
-                _texturePoolMaximumId);
+            _samplerPool?.SynchronizeMemory();
+
+            TexturePool texturePool = _texturePoolCache.FindOrCreate(_texturePoolAddress, _texturePoolMaximumId);
+
+            texturePool.SynchronizeMemory();
+
+            if (usesBindlessTextures)
+            {
+                _samplerPool?.LoadAll();
+                texturePool.LoadAll(_samplerPool);
+                _context.Methods.TextureManager.ProcessExternalEvents();
+            }
 
             if (_isCompute)
             {

@@ -1,6 +1,7 @@
 using Ryujinx.Graphics.GAL;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
+using System;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -8,7 +9,7 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// Maxwell sampler descriptor structure.
     /// This structure defines the sampler descriptor as it is packed on the GPU sampler pool region.
     /// </summary>
-    struct SamplerDescriptor
+    struct SamplerDescriptor : IEquatable<SamplerDescriptor>
     {
         private static readonly float[] _f5ToF32ConversionLut = new float[]
         {
@@ -111,6 +112,16 @@ namespace Ryujinx.Graphics.Gpu.Image
         public CompareOp UnpackCompareOp()
         {
             return (CompareOp)(((Word0 >> 10) & 7) + 1);
+        }
+
+        public int UnpackFontFilterWidth()
+        {
+            return (int)(Word0 >> 14) & 7;
+        }
+
+        public int UnpackFontFilterHeight()
+        {
+            return (int)(Word0 >> 17) & 7;
         }
 
         /// <summary>
@@ -255,6 +266,21 @@ namespace Ryujinx.Graphics.Gpu.Image
         public bool Equals(ref SamplerDescriptor other)
         {
             return Unsafe.As<SamplerDescriptor, Vector256<byte>>(ref this).Equals(Unsafe.As<SamplerDescriptor, Vector256<byte>>(ref other));
+        }
+
+        public override bool Equals(object obj)
+        {
+            return obj is SamplerDescriptor other && Equals(other);
+        }
+
+        public bool Equals(SamplerDescriptor other)
+        {
+            return Equals(ref other);
+        }
+
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Word0, Word1, Word2, Word3, BorderColorR, BorderColorG, BorderColorB, BorderColorA);
         }
     }
 }

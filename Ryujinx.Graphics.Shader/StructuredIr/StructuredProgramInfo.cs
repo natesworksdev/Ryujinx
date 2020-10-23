@@ -14,6 +14,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
         public bool UsesInstanceId { get; set; }
         public bool UsesCbIndexing { get; set; }
+        public bool UsesBindlessTextures { get; set; }
 
         public HelperFunctionsMask HelperFunctionsMask { get; set; }
 

@@ -1,3 +1,8 @@
+using Ryujinx.Common;
+using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
+
 namespace Ryujinx.Graphics.Gpu.Image
 {
     /// <summary>
@@ -5,7 +10,10 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class SamplerPool : Pool<Sampler, SamplerDescriptor>
     {
-        private int _sequenceNumber;
+        private readonly BitMap _modifiedEntries;
+        private readonly HashSet<Texture> _dependants;
+
+        public List<int> SamplerIds { get; }
 
         /// <summary>
         /// Constructs a new instance of the sampler pool.
@@ -13,7 +21,13 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="context">GPU context that the sampler pool belongs to</param>
         /// <param name="address">Address of the sampler pool in guest memory</param>
         /// <param name="maximumId">Maximum sampler ID of the sampler pool (equal to maximum samplers minus one)</param>
-        public SamplerPool(GpuContext context, ulong address, int maximumId) : base(context, address, maximumId) { }
+        public SamplerPool(GpuContext context, ulong address, int maximumId) : base(context, address, maximumId)
+        {
+            int entries = BitUtils.DivRoundUp(maximumId + 1, DescriptorSize);
+            _modifiedEntries = new BitMap(entries);
+            _dependants = new HashSet<Texture>();
+            SamplerIds = new List<int>();
+        }
 
         /// <summary>
         /// Gets the sampler with the given ID.
@@ -27,27 +41,56 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return null;
             }
 
-            if (_sequenceNumber != Context.SequenceNumber)
-            {
-                _sequenceNumber = Context.SequenceNumber;
-
-                SynchronizeMemory();
-            }
-
             Sampler sampler = Items[id];
 
             if (sampler == null)
             {
-                SamplerDescriptor descriptor = GetDescriptor(id);
-
-                sampler = new Sampler(Context, descriptor);
-
-                Items[id] = sampler;
-
-                DescriptorCache[id] = descriptor;
+                Items[id] = sampler = GetSampler(id);
             }
 
             return sampler;
+        }
+
+        /// <summary>
+        /// Gets the sampler at the given <paramref name="id"/> from the cache,
+        /// or creates a new one if not found.
+        /// </summary>
+        /// <param name="id">Index of the sampler on the pool</param>
+        /// <returns>Sampler for the given pool index</returns>
+        private Sampler GetSampler(int id)
+        {
+            ulong address = Address + (ulong)(uint)id * DescriptorSize;
+
+            ReadOnlySpan<byte> data = Context.PhysicalMemory.GetSpan(address, DescriptorSize);
+
+            SamplerDescriptor descriptor = MemoryMarshal.Cast<byte, SamplerDescriptor>(data)[0];
+
+            DescriptorCache[id] = descriptor;
+
+            if (descriptor.UnpackFontFilterWidth() != 1 || descriptor.UnpackFontFilterHeight() != 1 || (descriptor.Word0 >> 23) != 0)
+            {
+                return null;
+            }
+
+            return new Sampler(Context, descriptor);
+        }
+
+        /// <summary>
+        /// Checks if the sampler at the given pool <paramref name="id"/>
+        /// has the same parameters as <paramref name="current"/>.
+        /// </summary>
+        /// <param name="current">Sampler to compare with</param>
+        /// <param name="id">Index on the pool to compare with</param>
+        /// <returns>True if the parameters are equal, false otherwise</returns>
+        private bool IsPerfectMatch(Sampler current, int id)
+        {
+            ulong address = Address + (ulong)(uint)id * DescriptorSize;
+
+            ReadOnlySpan<byte> data = Context.PhysicalMemory.GetSpan(address, DescriptorSize);
+
+            SamplerDescriptor descriptor = MemoryMarshal.Cast<byte, SamplerDescriptor>(data)[0];
+
+            return current.Descriptor.Equals(descriptor);
         }
 
         /// <summary>
@@ -76,10 +119,59 @@ namespace Ryujinx.Graphics.Gpu.Image
                     }
 
                     sampler.Dispose();
+                    SamplerIds.Remove(id);
 
                     Items[id] = null;
                 }
+
+                _modifiedEntries.Set(id);
             }
+        }
+
+        /// <summary>
+        /// Loads all the samplers currently registered by the guest application on the pool.
+        /// This is required for bindless access, as it's not possible to predict which samplers will be used.
+        /// </summary>
+        public void LoadAll()
+        {
+            _modifiedEntries.BeginIterating();
+
+            int id;
+
+            while ((id = _modifiedEntries.GetNextAndClear()) >= 0)
+            {
+                Sampler sampler = Items[id] ?? GetSampler(id);
+
+                if (sampler != null)
+                {
+                    SamplerIds.Add(id);
+
+                    foreach (Texture texture in _dependants)
+                    {
+                        texture.NotifySamplerCreation(id, sampler);
+                    }
+                }
+
+                Items[id] = sampler;
+            }
+        }
+
+        /// <summary>
+        /// Adds a texture that should be notified of all modifications to this sampler pool.
+        /// </summary>
+        /// <param name="texture">Texture to notify</param>
+        public void AddDependant(Texture texture)
+        {
+            _dependants.Add(texture);
+        }
+
+        /// <summary>
+        /// Removes a texture from the sampler pool dependency list, this stops the texture from being notified.
+        /// </summary>
+        /// <param name="texture">Texture to remove</param>
+        public void RemoveDependant(Texture texture)
+        {
+            _dependants.Remove(texture);
         }
 
         /// <summary>

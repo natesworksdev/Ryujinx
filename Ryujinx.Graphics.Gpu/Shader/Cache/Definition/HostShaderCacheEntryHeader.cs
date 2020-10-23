@@ -42,9 +42,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
         public bool InUse;
 
         /// <summary>
+        /// Set to true if the shader uses bindless textures.
+        /// </summary>
+        [MarshalAs(UnmanagedType.I1)]
+        public bool UsesBindlessTextures;
+
+        /// <summary>
         /// Reserved / unused.
         /// </summary>
-        public short Reserved;
+        public byte Reserved;
 
         /// <summary>
         /// Create a new host shader cache entry header.
@@ -54,14 +60,22 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache.Definition
         /// <param name="texturesCount">Count of texture descriptors</param>
         /// <param name="imagesCount">Count of image descriptors</param>
         /// <param name="usesInstanceId">Set to true if the shader uses instance id</param>
-        public HostShaderCacheEntryHeader(int cBuffersCount, int sBuffersCount, int texturesCount, int imagesCount, bool usesInstanceId) : this()
+        /// <param name="usesBindlessTextures">Set to true if the shader uses bindless textures</param>
+        public HostShaderCacheEntryHeader(
+            int cBuffersCount,
+            int sBuffersCount,
+            int texturesCount,
+            int imagesCount,
+            bool usesInstanceId,
+            bool usesBindlessTextures) : this()
         {
-            CBuffersCount  = cBuffersCount;
-            SBuffersCount  = sBuffersCount;
-            TexturesCount  = texturesCount;
-            ImagesCount    = imagesCount;
-            UsesInstanceId = usesInstanceId;
-            InUse          = true;
+            CBuffersCount        = cBuffersCount;
+            SBuffersCount        = sBuffersCount;
+            TexturesCount        = texturesCount;
+            ImagesCount          = imagesCount;
+            UsesInstanceId       = usesInstanceId;
+            InUse                = true;
+            UsesBindlessTextures = usesBindlessTextures;
         }
     }
 }

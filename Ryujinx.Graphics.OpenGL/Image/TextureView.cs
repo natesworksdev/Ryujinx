@@ -14,6 +14,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
         private TextureView _incompatibleFormatView;
 
+        private int _referenceCount;
+
         public int FirstLayer { get; private set; }
         public int FirstLevel { get; private set; }
 
@@ -22,10 +24,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureStorage    parent,
             TextureCreateInfo info,
             int               firstLayer,
-            int               firstLevel) : base(info, parent.ScaleFactor)
+            int               firstLevel) : base(renderer, info, parent.ScaleFactor)
         {
-            _renderer = renderer;
-            _parent   = parent;
+            _renderer       = renderer;
+            _parent         = parent;
+            _referenceCount = 1;
 
             FirstLayer = firstLayer;
             FirstLevel = firstLevel;
@@ -649,39 +652,45 @@ namespace Ryujinx.Graphics.OpenGL.Image
             throw new NotSupportedException();
         }
 
-        private void DisposeHandles()
-        {
-            if (_incompatibleFormatView != null)
-            {
-                _incompatibleFormatView.Dispose();
-
-                _incompatibleFormatView = null;
-            }
-
-            if (Handle != 0)
-            {
-                GL.DeleteTexture(Handle);
-
-                Handle = 0;
-            }
-        }
-
         /// <summary>
         /// Release the view without necessarily disposing the parent if we are the default view.
         /// This allows it to be added to the resource pool and reused later.
         /// </summary>
-        public void Release()
+        public override void Release()
         {
+            base.Release();
             bool hadHandle = Handle != 0;
 
+            // Bindless textures are not released to the pool
+            // since they use deferred disposal (necessary
+            // since the handles can only be made non-resident
+            // after the texture is no longer in use).
             if (_parent.DefaultView != this)
             {
-                DisposeHandles();
+                DecrementReferenceCount();
+            }
+            else if (Bindless)
+            {
+                _parent.DeleteDefault();
+                DecrementReferenceCount();
             }
 
             if (hadHandle)
             {
                 _parent.DecrementViewsCount();
+            }
+        }
+
+        public override void IncrementReferenceCount()
+        {
+            _referenceCount++;
+        }
+
+        public override void DecrementReferenceCount()
+        {
+            if (--_referenceCount == 0)
+            {
+                DisposeHandles();
             }
         }
 
@@ -694,6 +703,22 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
 
             Release();
+        }
+
+        private void DisposeHandles()
+        {
+            if (_incompatibleFormatView != null)
+            {
+                _incompatibleFormatView.Dispose();
+                _incompatibleFormatView = null;
+            }
+
+            if (Handle != 0)
+            {
+                GL.DeleteTexture(Handle);
+
+                Handle = 0;
+            }
         }
     }
 }

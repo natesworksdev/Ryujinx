@@ -93,6 +93,12 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             AstTextureOperation GetAstTextureOperation(TextureOperation texOp)
             {
+                if ((texOp.Flags & TextureFlags.Bindless) != 0)
+                {
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.Bindless;
+                    context.Info.UsesBindlessTextures = true;
+                }
+
                 return new AstTextureOperation(
                     inst,
                     texOp.Type,
@@ -100,7 +106,6 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                     texOp.Flags,
                     texOp.CbufSlot,
                     texOp.Handle,
-                    4, // TODO: Non-hardcoded array size.
                     texOp.Index,
                     sources);
             }

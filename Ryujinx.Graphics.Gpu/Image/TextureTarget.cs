@@ -14,7 +14,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         Texture1DArray,
         Texture2DArray,
         TextureBuffer,
-        Texture2DRect,
+        Texture2DNoMips,
         CubemapArray
     }
 
@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     case TextureTarget.Texture1D:       return Target.Texture1D;
                     case TextureTarget.Texture2D:       return Target.Texture2D;
-                    case TextureTarget.Texture2DRect:   return Target.Texture2D;
+                    case TextureTarget.Texture2DNoMips: return Target.Texture2D;
                     case TextureTarget.Texture3D:       return Target.Texture3D;
                     case TextureTarget.Texture1DArray:  return Target.Texture1DArray;
                     case TextureTarget.Texture2DArray:  return Target.Texture2DArray;
@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            return Target.Texture1D;
+            return 0;
         }
     }
 }

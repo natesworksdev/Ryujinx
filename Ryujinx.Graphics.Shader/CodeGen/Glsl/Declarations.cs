@@ -19,6 +19,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             context.AppendLine("#extension GL_ARB_gpu_shader_int64 : enable");
             context.AppendLine("#extension GL_ARB_shader_ballot : enable");
             context.AppendLine("#extension GL_ARB_shader_group_vote : enable");
+            context.AppendLine("#extension GL_ARB_bindless_texture : enable");
             context.AppendLine("#extension GL_EXT_shader_image_load_formatted : enable");
 
             if (context.Config.Stage == ShaderStage.Compute)
@@ -153,6 +154,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                     $"local_size_y = {localSizeY}, " +
                     $"local_size_z = {localSizeZ}) in;");
                 context.AppendLine();
+            }
+
+            if ((info.HelperFunctionsMask & HelperFunctionsMask.Bindless) != 0)
+            {
+                AppendHelperFunction(context, "Ryujinx.Graphics.Shader/CodeGen/Glsl/HelperFunctions/GetBindlessHandle.glsl");
             }
 
             if (context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute)
@@ -335,41 +341,24 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             // TextureSample instruction, if both are available.
             foreach (AstTextureOperation texOp in info.Samplers.OrderBy(x => x.Handle * 2 + (x.Inst == Instruction.TextureSample ? 0 : 1)))
             {
-                string indexExpr = NumberFormatter.FormatInt(texOp.ArraySize);
+                // We don't need to declare a sampler for bindless textures.
+                if ((texOp.Flags & TextureFlags.Bindless) != 0)
+                {
+                    continue;
+                }
 
-                string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
+                string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
                 if ((texOp.Flags & TextureFlags.Bindless) != 0 || !samplers.Add(samplerName))
                 {
                     continue;
                 }
 
-                int firstBinding = -1;
+                int firstBinding = context.Config.Counts.IncrementTexturesCount();
 
-                if ((texOp.Type & SamplerType.Indexed) != 0)
-                {
-                    for (int index = 0; index < texOp.ArraySize; index++)
-                    {
-                        int binding = context.Config.Counts.IncrementTexturesCount();
+                var desc = new TextureDescriptor(firstBinding, texOp.Type, texOp.Format, texOp.CbufSlot, texOp.Handle);
 
-                        if (firstBinding < 0)
-                        {
-                            firstBinding = binding;
-                        }
-
-                        var desc = new TextureDescriptor(binding, texOp.Type, texOp.Format, texOp.CbufSlot, texOp.Handle + index * 2);
-
-                        context.TextureDescriptors.Add(desc);
-                    }
-                }
-                else
-                {
-                    firstBinding = context.Config.Counts.IncrementTexturesCount();
-
-                    var desc = new TextureDescriptor(firstBinding, texOp.Type, texOp.Format, texOp.CbufSlot, texOp.Handle);
-
-                    context.TextureDescriptors.Add(desc);
-                }
+                context.TextureDescriptors.Add(desc);
 
                 string samplerTypeName = texOp.Type.ToGlslSamplerType();
 
@@ -383,41 +372,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             foreach (AstTextureOperation texOp in info.Images.OrderBy(x => x.Handle))
             {
-                string indexExpr = NumberFormatter.FormatInt(texOp.ArraySize);
-
-                string imageName = OperandManager.GetImageName(context.Config.Stage, texOp, indexExpr);
+                string imageName = OperandManager.GetImageName(context.Config.Stage, texOp);
 
                 if ((texOp.Flags & TextureFlags.Bindless) != 0 || !images.Add(imageName))
                 {
                     continue;
                 }
 
-                int firstBinding = -1;
+                int firstBinding = context.Config.Counts.IncrementImagesCount();
 
-                if ((texOp.Type & SamplerType.Indexed) != 0)
-                {
-                    for (int index = 0; index < texOp.ArraySize; index++)
-                    {
-                        int binding = context.Config.Counts.IncrementImagesCount();
+                var desc = new TextureDescriptor(firstBinding, texOp.Type, texOp.Format, texOp.CbufSlot, texOp.Handle);
 
-                        if (firstBinding < 0)
-                        {
-                            firstBinding = binding;
-                        }
-
-                        var desc = new TextureDescriptor(binding, texOp.Type, texOp.Format, texOp.CbufSlot, texOp.Handle + index * 2);
-
-                        context.ImageDescriptors.Add(desc);
-                    }
-                }
-                else
-                {
-                    firstBinding = context.Config.Counts.IncrementImagesCount();
-
-                    var desc = new TextureDescriptor(firstBinding, texOp.Type, texOp.Format, texOp.CbufSlot, texOp.Handle);
-
-                    context.ImageDescriptors.Add(desc);
-                }
+                context.ImageDescriptors.Add(desc);
 
                 string layout = texOp.Format.ToGlslFormat();
 

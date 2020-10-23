@@ -15,34 +15,32 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0/do nothing.
-            if (isBindless)
-            {
-                return texOp.Inst == Instruction.ImageLoad ? NumberFormatter.FormatFloat(0) : "// imageStore(bindless)";
-            }
-
-            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
+            bool isArray = (texOp.Type & SamplerType.Array) != 0;
 
             string texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(VariableType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            VariableType type = texOp.Format.GetComponentType();
 
-            if (isIndexed)
+            string bindlessHandle = null;
+
+            if (isBindless)
             {
-                indexExpr = Src(VariableType.S32);
+                bindlessHandle = Src(VariableType.S32);
+                texCall += "(" + texOp.Type.ToGlslImageType(type) + "(" + HelperFunctionNames.GetBindlessHandle + "(" + bindlessHandle + "))";
             }
+            else
+            {
+                string imageName = OperandManager.GetImageName(context.Config.Stage, texOp);
 
-            string imageName = OperandManager.GetImageName(context.Config.Stage, texOp, indexExpr);
-
-            texCall += "(" + imageName;
+                texCall += "(" + imageName;
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -58,17 +56,21 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 int index = context.FindImageDescriptorIndex(texOp);
                 TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
 
-                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
-                    texOp.Inst == Instruction.ImageLoad &&
-                    !isBindless &&
-                    !isIndexed)
+                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) && texOp.Inst == Instruction.ImageLoad)
                 {
                     // Image scales start after texture ones.
                     int scaleIndex = context.TextureDescriptors.Count + index;
 
-                    if (pCount == 3 && isArray)
+                    if (isBindless && pCount == 3 && isArray)
                     {
-                        // The array index is not scaled, just x and y.
+                        vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + bindlessHandle + "), (" + vector + ").z)";
+                    }
+                    else if (isBindless && pCount == 2 && !isArray)
+                    {
+                        vector = "Helper_TexelFetchScaleBindless(" + vector + ", " + bindlessHandle + ")";
+                    }
+                    else if (pCount == 3 && isArray)
+                    {
                         vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + scaleIndex + "), (" + vector + ").z)";
                     }
                     else if (pCount == 2 && !isArray)
@@ -111,8 +113,6 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             if (texOp.Inst == Instruction.ImageStore)
             {
-                VariableType type = texOp.Format.GetComponentType();
-
                 string[] cElems = new string[4];
 
                 for (int index = 0; index < 4; index++)
@@ -221,24 +221,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                return NumberFormatter.FormatFloat(0);
-            }
+            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
-
-            string indexExpr = null;
-
-            if (isIndexed)
-            {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
-            }
-
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = isBindless ? 1 : 0;
 
             string coordsExpr;
 
@@ -318,15 +303,8 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool hasOffsets     = (texOp.Flags & TextureFlags.Offsets)     != 0;
 
             bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
-
-            // TODO: Bindless texture support. For now we just return 0.
-            if (isBindless)
-            {
-                return NumberFormatter.FormatFloat(0);
-            }
 
             // This combination is valid, but not available on GLSL.
             // For now, ignore the LOD level and do a normal sample.
@@ -360,23 +338,26 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += "Offsets";
             }
 
-            int srcIndex = isBindless ? 1 : 0;
+            int srcIndex = 0;
 
             string Src(VariableType type)
             {
                 return GetSoureExpr(context, texOp.GetSource(srcIndex++), type);
             }
 
-            string indexExpr = null;
+            string bindlessHandle = null;
 
-            if (isIndexed)
+            if (isBindless)
             {
-                indexExpr = Src(VariableType.S32);
+                bindlessHandle = Src(VariableType.S32);
+                texCall += "(" + texOp.Type.ToGlslSamplerType() + "(" + HelperFunctionNames.GetBindlessHandle + "(" + bindlessHandle + "))";
             }
+            else
+            {
+                string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            texCall += "(" + samplerName;
+                texCall += "(" + samplerName;
+            }
 
             int coordsCount = texOp.Type.GetDimensions();
 
@@ -465,13 +446,18 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     int index = context.FindTextureDescriptorIndex(texOp);
                     TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
 
-                    if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
-                        !isBindless &&
-                        !isIndexed)
+                    if (context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute)
                     {
-                        if (pCount == 3 && isArray)
+                        if (isBindless && pCount == 3 && isArray)
                         {
-                            // The array index is not scaled, just x and y.
+                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + bindlessHandle + "), (" + vector + ").z)";
+                        }
+                        else if (isBindless && pCount == 2 && !isArray)
+                        {
+                            vector = "Helper_TexelFetchScaleBindless(" + vector + ", " + bindlessHandle + ")";
+                        }
+                        else if (pCount == 3 && isArray)
+                        {
                             vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
                         }
                         else if (pCount == 2 && !isArray)
@@ -482,7 +468,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                         {
                             flags |= TextureUsageFlags.ResScaleUnsupported;
                         }
-                    } 
+                    }
                     else
                     {
                         // Resolution scaling cannot be applied to this texture right now.
@@ -597,24 +583,19 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            // TODO: Bindless texture support. For now we just return 0.
+            string samplerName;
+
             if (isBindless)
             {
-                return NumberFormatter.FormatInt(0);
+                string bindlessHandle = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
+                samplerName = texOp.Type.ToGlslSamplerType() + "(" + HelperFunctionNames.GetBindlessHandle + "(" + bindlessHandle + "))";
             }
-
-            bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
-
-            string indexExpr = null;
-
-            if (isIndexed)
+            else
             {
-                indexExpr = GetSoureExpr(context, texOp.GetSource(0), VariableType.S32);
+                samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
             }
 
-            string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp, indexExpr);
-
-            int lodSrcIndex = isBindless || isIndexed ? 1 : 0;
+            int lodSrcIndex = isBindless ? 1 : 0;
 
             IAstNode lod = operation.GetSource(lodSrcIndex);
 

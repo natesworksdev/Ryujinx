@@ -7,12 +7,13 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
     {
         AtomicMinMaxS32Shared  = 1 << 0,
         AtomicMinMaxS32Storage = 1 << 1,
-        MultiplyHighS32        = 1 << 2,
-        MultiplyHighU32        = 1 << 3,
-        Shuffle                = 1 << 4,
-        ShuffleDown            = 1 << 5,
-        ShuffleUp              = 1 << 6,
-        ShuffleXor             = 1 << 7,
-        SwizzleAdd             = 1 << 8
+        Bindless               = 1 << 2,
+        MultiplyHighS32        = 1 << 3,
+        MultiplyHighU32        = 1 << 4,
+        Shuffle                = 1 << 5,
+        ShuffleDown            = 1 << 6,
+        ShuffleUp              = 1 << 7,
+        ShuffleXor             = 1 << 8,
+        SwizzleAdd             = 1 << 9
     }
 }

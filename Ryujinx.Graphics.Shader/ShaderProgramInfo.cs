@@ -11,20 +11,23 @@ namespace Ryujinx.Graphics.Shader
         public ReadOnlyCollection<TextureDescriptor> Images   { get; }
 
         public bool UsesInstanceId { get; }
+        public bool UsesBindlessTextures { get; }
 
         public ShaderProgramInfo(
             BufferDescriptor[]  cBuffers,
             BufferDescriptor[]  sBuffers,
             TextureDescriptor[] textures,
             TextureDescriptor[] images,
-            bool                usesInstanceId)
+            bool                usesInstanceId,
+            bool                usesBindlessTextures)
         {
             CBuffers = Array.AsReadOnly(cBuffers);
             SBuffers = Array.AsReadOnly(sBuffers);
             Textures = Array.AsReadOnly(textures);
             Images   = Array.AsReadOnly(images);
 
-            UsesInstanceId = usesInstanceId;
+            UsesInstanceId       = usesInstanceId;
+            UsesBindlessTextures = usesBindlessTextures;
         }
     }
 }

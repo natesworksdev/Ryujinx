@@ -6,12 +6,17 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class TextureBuffer : TextureBase, ITexture
     {
+        private int _referenceCount;
+
         private int _bufferOffset;
         private int _bufferSize;
 
         private BufferHandle _buffer;
 
-        public TextureBuffer(TextureCreateInfo info) : base(info) {}
+        public TextureBuffer(Renderer renderer, TextureCreateInfo info) : base(renderer, info)
+        {
+            _referenceCount = 1;
+        }
 
         public void CopyTo(ITexture destination, int firstLayer, int firstLevel)
         {
@@ -58,6 +63,25 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.TexBufferRange(TextureBufferTarget.TextureBuffer, format, _buffer.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
         }
 
+        public override void Release()
+        {
+            base.Release();
+            DecrementReferenceCount();
+        }
+
+        public override void IncrementReferenceCount()
+        {
+            _referenceCount++;
+        }
+
+        public override void DecrementReferenceCount()
+        {
+            if (--_referenceCount == 0)
+            {
+                Dispose();
+            }
+        }
+
         public void Dispose()
         {
             if (Handle != 0)
@@ -66,11 +90,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
                 Handle = 0;
             }
-        }
-
-        public void Release()
-        {
-            Dispose();
         }
     }
 }

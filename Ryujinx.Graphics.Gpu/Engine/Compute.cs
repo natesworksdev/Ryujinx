@@ -142,7 +142,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
             TextureManager.SetComputeImages(imageBindings);
 
             BufferManager.CommitComputeBindings();
-            TextureManager.CommitComputeBindings();
+            TextureManager.CommitComputeBindings(info.UsesBindlessTextures);
 
             _context.Renderer.Pipeline.DispatchCompute(
                 qmd.CtaRasterWidth,

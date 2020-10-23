@@ -239,26 +239,16 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return $"{GetShaderStagePrefix(stage)}_{DefaultNames.UniformNamePrefix}[{slotExpr}].{DefaultNames.DataName}";
         }
 
-        public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
+        public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp)
         {
             string suffix = texOp.CbufSlot < 0 ? $"_tcb_{texOp.Handle:X}" : $"_cb{texOp.CbufSlot}_{texOp.Handle:X}";
-
-            if ((texOp.Type & SamplerType.Indexed) != 0)
-            {
-                suffix += $"a[{indexExpr}]";
-            }
 
             return GetShaderStagePrefix(stage) + "_" + DefaultNames.SamplerNamePrefix + suffix;
         }
 
-        public static string GetImageName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
+        public static string GetImageName(ShaderStage stage, AstTextureOperation texOp)
         {
             string suffix = texOp.CbufSlot < 0 ? $"_tcb_{texOp.Handle:X}_{texOp.Format.ToGlslFormat()}" : $"_cb{texOp.CbufSlot}_{texOp.Handle:X}_{texOp.Format.ToGlslFormat()}";
-
-            if ((texOp.Type & SamplerType.Indexed) != 0)
-            {
-                suffix += $"a[{indexExpr}]";
-            }
 
             return GetShaderStagePrefix(stage) + "_" + DefaultNames.ImageNamePrefix + suffix;
         }

@@ -5,10 +5,20 @@ namespace Ryujinx.Graphics.OpenGL.Image
 {
     class Sampler : ISampler
     {
+        private readonly SamplerCache _cache;
+        private bool _disposed;
+        private int _referenceCount;
+
+        public SamplerCreateInfo Info { get; }
+
         public int Handle { get; private set; }
 
-        public Sampler(SamplerCreateInfo info)
+        public Sampler(SamplerCache cache, SamplerCreateInfo info)
         {
+            _cache = cache;
+            Info = info;
+            _referenceCount = 1;
+
             Handle = GL.GenSampler();
 
             GL.SamplerParameter(Handle, SamplerParameterName.TextureMinFilter, (int)info.MinFilter.Convert());
@@ -51,13 +61,32 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.BindSampler(unit, Handle);
         }
 
+        public void IncrementReferenceCount()
+        {
+            _referenceCount++;
+        }
+
+        public void DecrementReferenceCount()
+        {
+            if (--_referenceCount == 0)
+            {
+                if (Handle != 0)
+                {
+                    GL.DeleteSampler(Handle);
+
+                    Handle = 0;
+                }
+
+                _cache.Remove(this);
+            }
+        }
+
         public void Dispose()
         {
-            if (Handle != 0)
+            if (!_disposed)
             {
-                GL.DeleteSampler(Handle);
-
-                Handle = 0;
+                DecrementReferenceCount();
+                _disposed = true;
             }
         }
     }

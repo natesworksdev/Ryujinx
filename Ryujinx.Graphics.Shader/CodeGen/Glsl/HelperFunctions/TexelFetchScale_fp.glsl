@@ -14,3 +14,13 @@
         return ivec2(vec2(inputVec) * scale);
     }
 }
+
+#ifdef HAS_BINDLESS
+ivec2 Helper_TexelFetchScaleBindless(ivec2 inputVec, int nvHandle) {
+    float scale = Helper_GetBindlessScale(nvHandle);
+    if (scale == 1.0) {
+        return inputVec;
+    }
+    return ivec2(vec2(inputVec) * scale + mod(gl_FragCoord.xy, scale));
+}
+#endif

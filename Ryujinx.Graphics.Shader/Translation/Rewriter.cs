@@ -157,7 +157,6 @@ namespace Ryujinx.Graphics.Shader.Translation
             bool hasLodLevel    = (texOp.Flags & TextureFlags.LodLevel)    != 0;
 
             bool isArray       = (texOp.Type & SamplerType.Array)       != 0;
-            bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
 
@@ -183,7 +182,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             int copyCount = 0;
 
-            if (isBindless || isIndexed)
+            if (isBindless)
             {
                 copyCount++;
             }
@@ -257,7 +256,7 @@ namespace Ryujinx.Graphics.Shader.Translation
                sources[dstIndex++] = texOp.GetSource(srcIndex++);
             }
 
-            int coordsIndex = isBindless || isIndexed ? 1 : 0;
+            int coordsIndex = isBindless ? 1 : 0;
 
             int componentIndex = texOp.Index;
 
@@ -291,7 +290,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                     Operand[] texSizeSources;
 
-                    if (isBindless || isIndexed)
+                    if (isBindless)
                     {
                         texSizeSources = new Operand[] { sources[0], Const(0) };
                     }
@@ -362,7 +361,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
                         Operand[] texSizeSources;
 
-                        if (isBindless || isIndexed)
+                        if (isBindless)
                         {
                             texSizeSources = new Operand[] { sources[0], Int(lod) };
                         }

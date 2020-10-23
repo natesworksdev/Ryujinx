@@ -1,6 +1,4 @@
-using Ryujinx.Common;
 using Ryujinx.Cpu.Tracking;
-using Ryujinx.Graphics.Gpu.Memory;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -40,6 +38,12 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly CpuMultiRegionHandle _memoryTracking;
         private readonly Action<ulong, ulong> _modifiedDelegate;
 
+        /// <summary>
+        /// Creates a new instance of the GPU resource pool.
+        /// </summary>
+        /// <param name="context">Current GPU context</param>
+        /// <param name="address">Address of the pool</param>
+        /// <param name="maximumId">Maximum index of the pool, this is effectively the size minus 1</param>
         public Pool(GpuContext context, ulong address, int maximumId)
         {
             Context   = context;

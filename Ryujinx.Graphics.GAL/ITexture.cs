@@ -13,6 +13,8 @@ namespace Ryujinx.Graphics.GAL
 
         ITexture CreateView(TextureCreateInfo info, int firstLayer, int firstLevel);
 
+        long GetBindlessHandle(ISampler sampler);
+
         byte[] GetData();
 
         void SetData(ReadOnlySpan<byte> data);

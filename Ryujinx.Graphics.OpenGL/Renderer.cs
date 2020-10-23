@@ -22,13 +22,16 @@ namespace Ryujinx.Graphics.OpenGL
 
         public IWindow Window => _window;
 
-        private TextureCopy _textureCopy;
-        private TextureCopy _backgroundTextureCopy;
+        private readonly TextureCopy _textureCopy;
+        private readonly TextureCopy _backgroundTextureCopy;
+
         internal TextureCopy TextureCopy => BackgroundContextWorker.InBackground ? _backgroundTextureCopy : _textureCopy;
 
         private Sync _sync;
+        private readonly SamplerCache _samplerCache;
 
         internal ResourcePool ResourcePool { get; }
+        internal DisposalQueue DisposalQueue { get; }
 
         public string GpuVendor { get; private set; }
         public string GpuRenderer { get; private set; }
@@ -42,7 +45,9 @@ namespace Ryujinx.Graphics.OpenGL
             _textureCopy = new TextureCopy(this);
             _backgroundTextureCopy = new TextureCopy(this);
             _sync = new Sync();
+            _samplerCache = new SamplerCache();
             ResourcePool = new ResourcePool();
+            DisposalQueue = new DisposalQueue();
         }
 
         public IShader CompileShader(ShaderStage stage, string code)
@@ -62,14 +67,14 @@ namespace Ryujinx.Graphics.OpenGL
 
         public ISampler CreateSampler(SamplerCreateInfo info)
         {
-            return new Sampler(info);
+            return _samplerCache.GetOrCreate(info);
         }
 
         public ITexture CreateTexture(TextureCreateInfo info, float scaleFactor)
         {
             if (info.Target == Target.TextureBuffer)
             {
-                return new TextureBuffer(info);
+                return new TextureBuffer(this, info);
             }
             else
             {
@@ -113,6 +118,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             _sync.Cleanup();
             ResourcePool.Tick();
+            DisposalQueue.Tick();
         }
 
         public ICounterEvent ReportCounter(CounterType type, EventHandler<ulong> resultHandler)

@@ -96,7 +96,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             TextureTarget target = descriptor.UnpackTextureTarget();
 
             bool is2DTexture = target == TextureTarget.Texture2D ||
-                               target == TextureTarget.Texture2DRect;
+                               target == TextureTarget.Texture2DNoMips;
 
             return !descriptor.UnpackTextureCoordNormalized() && is2DTexture;
         }

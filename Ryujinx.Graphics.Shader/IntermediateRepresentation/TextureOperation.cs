@@ -28,13 +28,6 @@ namespace Ryujinx.Graphics.Shader.IntermediateRepresentation
             Handle   = handle;
         }
 
-        public void TurnIntoIndexed(int handle)
-        {
-            Type |= SamplerType.Indexed;
-            Flags &= ~TextureFlags.Bindless;
-            Handle = handle;
-        }
-
         public void SetHandle(int handle, int cbufSlot = DefaultCbufSlot)
         {
             if ((Flags & TextureFlags.Bindless) != 0)
