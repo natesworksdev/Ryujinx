@@ -90,10 +90,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             TextureInfo info = GetInfo(descriptor, out int layerSize);
 
-            // For bindless, we want to exclude ASTC compressed textures (as they would use too much
-            // VRAM when decompressed) and 3D textures due to the current method used for 2D to 3D
+            // For bindless, we exclude 3D textures due to the current method used for 2D to 3D
             // slice copies, that only happens when the 3D texture is created for the first time.
-            if (forBindless && (info.Target == Target.Texture3D || info.FormatInfo.Format.IsAstc()))
+            if (forBindless && info.Target == Target.Texture3D)
             {
                 return null;
             }
