@@ -171,11 +171,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             _sizeInfo = sizeInfo;
             Range     = range;
 
-            /* if (sizeInfo.TotalSize > 16 * 1024 * 1024)
-            {
-                throw new Exception($"texture too large {info.Width}x{info.Height}x{info.DepthOrLayers} {info.Levels} {info.IsLinear} {info.Target} {info.FormatInfo.Format} {info.GobBlocksInY} {info.Stride}");
-            } */
-
             SetInfo(info);
 
             _viewStorage = this;
