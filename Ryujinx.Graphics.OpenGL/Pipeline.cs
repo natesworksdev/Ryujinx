@@ -5,7 +5,6 @@ using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
 using System;
-using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -49,6 +48,7 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _scissor0Enable = false;
 
         private bool _tfEnabled;
+        private TransformFeedbackPrimitiveType _tfTopology;
 
         private ColorF _blendConstant;
 
@@ -83,7 +83,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void BeginTransformFeedback(PrimitiveTopology topology)
         {
-            GL.BeginTransformFeedback(topology.ConvertToTfType());
+            GL.BeginTransformFeedback(_tfTopology = topology.ConvertToTfType());
             _tfEnabled = true;
         }
 
@@ -790,9 +790,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_tfEnabled)
             {
-                GL.PauseTransformFeedback();
+                GL.EndTransformFeedback();
                 _program.Bind();
-                GL.ResumeTransformFeedback();
+                GL.BeginTransformFeedback(_tfTopology);
             }
             else
             {
@@ -999,9 +999,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_tfEnabled)
             {
-                GL.PauseTransformFeedback();
+                GL.EndTransformFeedback();
                 GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
-                GL.ResumeTransformFeedback();
+                GL.BeginTransformFeedback(_tfTopology);
             }
             else
             {
