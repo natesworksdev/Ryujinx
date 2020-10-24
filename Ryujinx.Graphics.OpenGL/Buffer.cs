@@ -48,7 +48,7 @@ namespace Ryujinx.Graphics.OpenGL
         public static void Resize(BufferHandle handle, int size)
         {
             GL.BindBuffer(BufferTarget.CopyWriteBuffer, handle.ToInt32());
-            GL.BufferData(BufferTarget.CopyWriteBuffer, size, IntPtr.Zero, BufferUsageHint.StaticCopy);
+            GL.BufferData(BufferTarget.CopyWriteBuffer, size, IntPtr.Zero, BufferUsageHint.StreamCopy);
         }
 
         public static void SetData(BufferHandle buffer, int offset, ReadOnlySpan<byte> data)

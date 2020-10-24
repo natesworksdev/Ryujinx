@@ -545,7 +545,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Checks if the memory for this texture was modified, and returns true if it was. 
+        /// Checks if the memory for this texture was modified, and returns true if it was.
         /// The modified flags are consumed as a result.
         /// </summary>
         /// <remarks>
