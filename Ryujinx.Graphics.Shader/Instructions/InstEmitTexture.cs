@@ -40,8 +40,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(raIndex++, RegisterType.Gpr));
             }
 
-            Operand arrayIndex = type.HasFlag(SamplerType.Array) ? Ra() : null;
-
             List<Operand> sourcesList = new List<Operand>();
 
             if (op.IsBindless)
@@ -56,19 +54,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
+            if (type.HasFlag(SamplerType.Array))
+            {
+                sourcesList.Add(Ra());
+
+                type |= SamplerType.Array;
+            }
+
             if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
                 sourcesList.Add(Const(0));
 
                 type &= ~SamplerType.Mask;
                 type |= SamplerType.Texture2D;
-            }
-
-            if (type.HasFlag(SamplerType.Array))
-            {
-                sourcesList.Add(arrayIndex);
-
-                type |= SamplerType.Array;
             }
 
             Operand[] sources = sourcesList.ToArray();
@@ -193,8 +191,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return context.Copy(Register(rbIndex++, RegisterType.Gpr));
             }
 
-            Operand arrayIndex = type.HasFlag(SamplerType.Array) ? Ra() : null;
-
             List<Operand> sourcesList = new List<Operand>();
 
             if (op.IsBindless)
@@ -209,19 +205,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
+            if (type.HasFlag(SamplerType.Array))
+            {
+                sourcesList.Add(Ra());
+
+                type |= SamplerType.Array;
+            }
+
             if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
                 sourcesList.Add(Const(0));
 
                 type &= ~SamplerType.Mask;
                 type |= SamplerType.Texture2D;
-            }
-
-            if (type.HasFlag(SamplerType.Array))
-            {
-                sourcesList.Add(arrayIndex);
-
-                type |= SamplerType.Array;
             }
 
             TextureFormat format = TextureFormat.Unknown;
