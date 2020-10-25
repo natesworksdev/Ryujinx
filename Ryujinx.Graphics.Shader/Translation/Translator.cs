@@ -269,7 +269,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             Operand lblB = Label();
 
-            for (int index = 0; index < a.Length; index++)
+            for (int index = 0; index < a[0].Code.Length; index++)
             {
                 Operation operation = a[0].Code[index];
 
@@ -301,7 +301,7 @@ namespace Ryujinx.Graphics.Shader.Translation
 
             ops.Add(new Operation(Instruction.MarkLabel, lblB));
 
-            for (int index = 0; index < b.Length; index++)
+            for (int index = 0; index < b[0].Code.Length; index++)
             {
                 Operation operation = b[0].Code[index];
 
