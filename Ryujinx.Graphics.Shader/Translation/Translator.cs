@@ -31,8 +31,8 @@ namespace Ryujinx.Graphics.Shader.Translation
 
         public static ShaderProgram Translate(ulong addressA, ulong addressB, IGpuAccessor gpuAccessor, TranslationFlags flags)
         {
-            var funcA = DecodeShader(addressA, gpuAccessor, flags | TranslationFlags.VertexA, out ShaderConfig configA);
-            var funcB = DecodeShader(addressB, gpuAccessor, flags, out ShaderConfig config);
+            FunctionCode[] funcA = DecodeShader(addressA, gpuAccessor, flags | TranslationFlags.VertexA, out ShaderConfig configA);
+            FunctionCode[] funcB = DecodeShader(addressB, gpuAccessor, flags, out ShaderConfig config);
 
             config.SetUsedFeature(configA.UsedFeatures);
 
