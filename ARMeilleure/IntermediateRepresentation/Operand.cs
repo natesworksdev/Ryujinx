@@ -119,18 +119,6 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
-        public static Operand operator ~(Operand op)
-        {
-            if (op.Kind != OperandKind.Constant)
-            {
-                throw new InvalidOperationException("The operand is not a constant.");
-            }
-
-            op.Value = ~op.Value;
-
-            return op;
-        }
-
         internal void NumberLocal(int number)
         {
             if (Kind != OperandKind.LocalVariable)

@@ -274,7 +274,9 @@ namespace ARMeilleure.CodeGen.X86
                         }
                         else /* if (intrinOp.Intrinsic == Intrinsic.X86Mxcsrub) */
                         {
-                            context.Assembler.And(memOp, ~bits, OperandType.I32);
+                            Operand notBits = Const(~bits.AsInt32());
+
+                            context.Assembler.And(memOp, notBits, OperandType.I32);
                         }
 
                         context.Assembler.Ldmxcsr(memOp);
