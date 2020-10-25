@@ -54,19 +54,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            if (type.HasFlag(SamplerType.Array))
-            {
-                sourcesList.Add(Ra());
-
-                type |= SamplerType.Array;
-            }
-
             if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
                 sourcesList.Add(Const(0));
 
                 type &= ~SamplerType.Mask;
                 type |= SamplerType.Texture2D;
+            }
+
+            if (type.HasFlag(SamplerType.Array))
+            {
+                sourcesList.Add(Ra());
+
+                type |= SamplerType.Array;
             }
 
             Operand[] sources = sourcesList.ToArray();
@@ -205,19 +205,19 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 sourcesList.Add(Ra());
             }
 
-            if (type.HasFlag(SamplerType.Array))
-            {
-                sourcesList.Add(Ra());
-
-                type |= SamplerType.Array;
-            }
-
             if (Sample1DAs2D && (type & SamplerType.Mask) == SamplerType.Texture1D)
             {
                 sourcesList.Add(Const(0));
 
                 type &= ~SamplerType.Mask;
                 type |= SamplerType.Texture2D;
+            }
+
+            if (type.HasFlag(SamplerType.Array))
+            {
+                sourcesList.Add(Ra());
+
+                type |= SamplerType.Array;
             }
 
             TextureFormat format = TextureFormat.Unknown;
