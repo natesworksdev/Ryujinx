@@ -147,6 +147,24 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return to;
         }
 
+        public TextureView PboCopy(TextureView from, TextureView to, int srcLayer, int dstLayer, int srcLevel, int dstLevel)
+        {
+            EnsurePbo(from);
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
+
+            int offset = from.WriteToPbo2D(0, srcLayer, srcLevel);
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
+
+            to.ReadFromPbo2D(offset, dstLayer, dstLevel);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+
+            return to;
+        }
+
         private void EnsurePbo(TextureView view)
         {
             int requiredSize = 0;

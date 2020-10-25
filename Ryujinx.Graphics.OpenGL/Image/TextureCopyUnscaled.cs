@@ -8,8 +8,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
     static class TextureCopyUnscaled
     {
         public static void Copy(
-            TextureCreateInfo srcInfo,
-            TextureCreateInfo dstInfo,
+            TextureCopy copy,
+            ITextureInfo src,
+            ITextureInfo dst,
             int srcHandle,
             int dstHandle,
             int srcLayer,
@@ -17,6 +18,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
             int srcLevel,
             int dstLevel)
         {
+            TextureCreateInfo srcInfo = src.Info;
+            TextureCreateInfo dstInfo = dst.Info;
+
             int srcWidth  = srcInfo.Width;
             int srcHeight = srcInfo.Height;
             int srcDepth  = srcInfo.GetDepthOrLayers();
@@ -35,6 +39,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 dstDepth = Math.Max(1, dstDepth >> dstLevel);
             }
 
+            int blockWidth = 1;
+            int blockHeight = 1;
+
             // When copying from a compressed to a non-compressed format,
             // the non-compressed texture will have the size of the texture
             // in blocks (not in texels), so we must adjust that size to
@@ -43,11 +50,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
             {
                 dstWidth  = BitUtils.DivRoundUp(dstWidth,  dstInfo.BlockWidth);
                 dstHeight = BitUtils.DivRoundUp(dstHeight, dstInfo.BlockHeight);
+                blockWidth = dstInfo.BlockWidth;
+                blockHeight = dstInfo.BlockHeight;
             }
             else if (srcInfo.IsCompressed && !dstInfo.IsCompressed)
             {
                 dstWidth  *= srcInfo.BlockWidth;
                 dstHeight *= srcInfo.BlockHeight;
+                blockWidth = srcInfo.BlockWidth;
+                blockHeight = srcInfo.BlockHeight;
             }
 
             int width  = Math.Min(srcWidth,  dstWidth);
@@ -63,22 +74,29 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
                 }
 
-                GL.CopyImageSubData(
-                    srcHandle,
-                    srcInfo.Target.ConvertToImageTarget(),
-                    srcLevel + level,
-                    0,
-                    0,
-                    srcLayer,
-                    dstHandle,
-                    dstInfo.Target.ConvertToImageTarget(),
-                    dstLevel + level,
-                    0,
-                    0,
-                    dstLayer,
-                    width,
-                    height,
-                    depth);
+                if (width % blockWidth != 0 && height % blockHeight != 0 && src is TextureView && dst is TextureView)
+                {
+                    copy.PboCopy((TextureView)src, (TextureView)dst, srcLayer, dstLayer, srcLevel + level, dstLevel + level);
+                }
+                else
+                {
+                    GL.CopyImageSubData(
+                        srcHandle,
+                        srcInfo.Target.ConvertToImageTarget(),
+                        srcLevel + level,
+                        0,
+                        0,
+                        srcLayer,
+                        dstHandle,
+                        dstInfo.Target.ConvertToImageTarget(),
+                        dstLevel + level,
+                        0,
+                        0,
+                        dstLayer,
+                        width,
+                        height,
+                        depth);
+                }
 
                 width = Math.Max(1, width >> 1);
                 height = Math.Max(1, height >> 1);
