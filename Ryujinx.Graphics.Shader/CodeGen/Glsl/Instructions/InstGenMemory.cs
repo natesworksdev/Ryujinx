@@ -414,7 +414,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                             // The array index is not scaled, just x and y.
                             return "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "),(" + vector + ").z)";
                         }
-                        else if (pCount == 2)
+                        else if (pCount == 2 && !isArray)
                         {
                             return "Helper_TexelFetchScale(" + vector + ", " + index + ")";
                         }
