@@ -1,5 +1,6 @@
 using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
+using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Memory;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
@@ -10,7 +11,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading;
 using System.Threading.Tasks;
@@ -648,17 +648,18 @@ namespace ARMeilleure.Translation.PTC
         {
             ulong featureInfo = 0ul;
 
-            featureInfo |= (Sse3.IsSupported      ? 1ul : 0ul) << 0;
-            featureInfo |= (Pclmulqdq.IsSupported ? 1ul : 0ul) << 1;
-            featureInfo |= (Ssse3.IsSupported     ? 1ul : 0ul) << 9;
-            featureInfo |= (Fma.IsSupported       ? 1ul : 0ul) << 12;
-            featureInfo |= (Sse41.IsSupported     ? 1ul : 0ul) << 19;
-            featureInfo |= (Sse42.IsSupported     ? 1ul : 0ul) << 20;
-            featureInfo |= (Popcnt.IsSupported    ? 1ul : 0ul) << 23;
-            featureInfo |= (Aes.IsSupported       ? 1ul : 0ul) << 25;
-            featureInfo |= (Avx.IsSupported       ? 1ul : 0ul) << 28;
-            featureInfo |= (Sse.IsSupported       ? 1ul : 0ul) << 57;
-            featureInfo |= (Sse2.IsSupported      ? 1ul : 0ul) << 58;
+            featureInfo |= (HardwareCapabilities.SupportsSse3      ? 1ul : 0ul) << 0;
+            featureInfo |= (HardwareCapabilities.SupportsPclmulqdq ? 1ul : 0ul) << 1;
+            featureInfo |= (HardwareCapabilities.SupportsSsse3     ? 1ul : 0ul) << 9;
+            featureInfo |= (HardwareCapabilities.SupportsFma       ? 1ul : 0ul) << 12;
+            featureInfo |= (HardwareCapabilities.SupportsSse41     ? 1ul : 0ul) << 19;
+            featureInfo |= (HardwareCapabilities.SupportsSse42     ? 1ul : 0ul) << 20;
+            featureInfo |= (HardwareCapabilities.SupportsPopcnt    ? 1ul : 0ul) << 23;
+            featureInfo |= (HardwareCapabilities.SupportsAesni     ? 1ul : 0ul) << 25;
+            featureInfo |= (HardwareCapabilities.SupportsAvx       ? 1ul : 0ul) << 28;
+            featureInfo |= (HardwareCapabilities.SupportsF16c      ? 1ul : 0ul) << 29;
+            featureInfo |= (HardwareCapabilities.SupportsSse       ? 1ul : 0ul) << 57;
+            featureInfo |= (HardwareCapabilities.SupportsSse2      ? 1ul : 0ul) << 58;
 
             return featureInfo;
         }
