@@ -1095,8 +1095,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (scale != 1f)
             {
-                width  = (int)Math.Ceiling(width  * scale);
-                height = (int)Math.Ceiling(height * scale);
+                width  = (int)MathF.Ceiling(width  * scale);
+                height = (int)MathF.Ceiling(height * scale);
             }
 
             return new TextureCreateInfo(
