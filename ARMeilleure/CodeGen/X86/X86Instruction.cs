@@ -199,6 +199,8 @@ namespace ARMeilleure.CodeGen.X86
         Unpcklps,
         Vblendvpd,
         Vblendvps,
+        Vcvtph2ps,
+        Vcvtps2ph,
         Vpblendvb,
         Xor,
         Xorpd,

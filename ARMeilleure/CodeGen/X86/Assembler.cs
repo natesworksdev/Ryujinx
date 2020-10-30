@@ -270,6 +270,8 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Unpcklps,   new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f14, InstructionFlags.Vex));
             Add(X86Instruction.Vblendvpd,  new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4b, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Vblendvps,  new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4a, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Vcvtph2ps,  new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3813, InstructionFlags.Vex | InstructionFlags.Prefix66));
+            Add(X86Instruction.Vcvtps2ph,  new InstructionInfo(0x000f3a1d, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Vpblendvb,  new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a4c, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Xor,        new InstructionInfo(0x00000031, 0x06000083, 0x06000081, BadOp,      0x00000033, InstructionFlags.None));
             Add(X86Instruction.Xorpd,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f57, InstructionFlags.Vex | InstructionFlags.Prefix66));
