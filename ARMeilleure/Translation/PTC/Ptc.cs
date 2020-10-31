@@ -21,7 +21,7 @@ namespace ARMeilleure.Translation.PTC
     {
         private const string HeaderMagic = "PTChd";
 
-        private const int InternalVersion = 1273; //! To be incremented manually for each change to the ARMeilleure project.
+        private const int InternalVersion = 1650; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -646,22 +646,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static ulong GetFeatureInfo()
         {
-            ulong featureInfo = 0ul;
-
-            featureInfo |= (HardwareCapabilities.SupportsSse3      ? 1ul : 0ul) << 0;
-            featureInfo |= (HardwareCapabilities.SupportsPclmulqdq ? 1ul : 0ul) << 1;
-            featureInfo |= (HardwareCapabilities.SupportsSsse3     ? 1ul : 0ul) << 9;
-            featureInfo |= (HardwareCapabilities.SupportsFma       ? 1ul : 0ul) << 12;
-            featureInfo |= (HardwareCapabilities.SupportsSse41     ? 1ul : 0ul) << 19;
-            featureInfo |= (HardwareCapabilities.SupportsSse42     ? 1ul : 0ul) << 20;
-            featureInfo |= (HardwareCapabilities.SupportsPopcnt    ? 1ul : 0ul) << 23;
-            featureInfo |= (HardwareCapabilities.SupportsAesni     ? 1ul : 0ul) << 25;
-            featureInfo |= (HardwareCapabilities.SupportsAvx       ? 1ul : 0ul) << 28;
-            featureInfo |= (HardwareCapabilities.SupportsF16c      ? 1ul : 0ul) << 29;
-            featureInfo |= (HardwareCapabilities.SupportsSse       ? 1ul : 0ul) << 57;
-            featureInfo |= (HardwareCapabilities.SupportsSse2      ? 1ul : 0ul) << 58;
-
-            return featureInfo;
+            return (ulong)HardwareCapabilities.FeatureInfoEdx << 32 | (uint)HardwareCapabilities.FeatureInfoEcx;
         }
 
         private struct Header
