@@ -47,7 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// if it is already host compatible.
         /// </summary>
         /// <remarks>
-        /// This can be used to convert to convert a incompatible compressed format to the decompressor
+        /// This can be used to convert a incompatible compressed format to the decompressor
         /// output format.
         /// </remarks>
         /// <param name="info">Texture information</param>
@@ -69,7 +69,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (info.Target == Target.Texture3D)
             {
-                // The host API does not support 3D BC4/BC5 compressed format.
+                // The host API does not support 3D BC4/BC5 compressed formats.
                 // We assume software decompression will be done for those textures,
                 // and so we adjust the format here to match the decompressor output.
                 switch (info.FormatInfo.Format)
