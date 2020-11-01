@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 int index = context.FindImageDescriptorIndex(texOp);
                 TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
 
-                if ((context.Config.Stage == ShaderStage.Fragment || (context.Config.Stage == ShaderStage.Compute) &&
+                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
                     texOp.Inst == Instruction.ImageLoad &&
                     !isBindless &&
                     !isIndexed)
