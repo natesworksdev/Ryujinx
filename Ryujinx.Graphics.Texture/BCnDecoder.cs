@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Texture
 
             for (int l = 0; l < levels; l++)
             {
-                int w = BitUtils.DivRoundUp(width, 4);
+                int w = BitUtils.DivRoundUp(width, BlockWidth);
                 int h = BitUtils.DivRoundUp(height, BlockHeight);
 
                 for (int l2 = 0; l2 < layers; l2++)
