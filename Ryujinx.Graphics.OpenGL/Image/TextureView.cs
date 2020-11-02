@@ -308,131 +308,171 @@ namespace Ryujinx.Graphics.OpenGL.Image
             ReadFrom(IntPtr.Zero + offset, size);
         }
 
-        public void ReadFromPbo2D(int offset, int layer, int level)
+        public void ReadFromPbo2D(int offset, int layer, int level, int width, int height, int size)
         {
-            ReadFrom2D(IntPtr.Zero + offset, layer, level);
+            ReadFrom2D(IntPtr.Zero + offset, layer, level, width, height, size);
         }
 
-        private void ReadFrom2D(IntPtr data, int layer, int level)
+        private void ReadFrom2D(IntPtr data, int layer, int level, int width, int height, int size)
         {
-            if (Target == Target.CubemapArray ||
-                Target == Target.Texture1DArray ||
-                Target == Target.Texture2DArray ||
-                Target == Target.Cubemap)
+            TextureTarget target = Target.Convert();
+
+            Bind(target, 0);
+
+            FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
+
+            switch (Target)
             {
-                TextureTarget target = Target.Convert();
+                case Target.Texture1D:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage1D(
+                            target,
+                            level,
+                            0,
+                            width,
+                            format.PixelFormat,
+                            size,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage1D(
+                            target,
+                            level,
+                            0,
+                            width,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
 
-                Bind(target, 0);
+                case Target.Texture1DArray:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            layer,
+                            width,
+                            1,
+                            format.PixelFormat,
+                            size,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            layer,
+                            width,
+                            1,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
 
-                FormatInfo format = FormatTable.GetFormatInfo(Info.Format);
+                case Target.Texture2D:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            size,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage2D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
 
-                int width = Info.Width >> level;
-                int height = Info.Height >> level;
+                case Target.Texture2DArray:
+                case Target.Texture3D:
+                case Target.CubemapArray:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage3D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            layer,
+                            width,
+                            height,
+                            1,
+                            format.PixelFormat,
+                            size,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage3D(
+                            target,
+                            level,
+                            0,
+                            0,
+                            layer,
+                            width,
+                            height,
+                            1,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
 
-                int mipSize = Info.GetMipSize2D(level);
-
-                switch (Target)
-                {
-                    case Target.Texture1DArray:
-                        if (format.IsCompressed)
-                        {
-                            GL.CompressedTexSubImage2D(
-                                target,
-                                level,
-                                0,
-                                layer,
-                                width,
-                                1,
-                                format.PixelFormat,
-                                mipSize,
-                                data);
-                        }
-                        else
-                        {
-                            GL.TexSubImage2D(
-                                target,
-                                level,
-                                0,
-                                layer,
-                                width,
-                                1,
-                                format.PixelFormat,
-                                format.PixelType,
-                                data);
-                        }
-                        break;
-
-                    case Target.Texture2DArray:
-                    case Target.CubemapArray:
-                        if (format.IsCompressed)
-                        {
-                            GL.CompressedTexSubImage3D(
-                                target,
-                                level,
-                                0,
-                                0,
-                                layer,
-                                width,
-                                height,
-                                1,
-                                format.PixelFormat,
-                                mipSize,
-                                data);
-                        }
-                        else
-                        {
-                            GL.TexSubImage3D(
-                                target,
-                                level,
-                                0,
-                                0,
-                                layer,
-                                width,
-                                height,
-                                1,
-                                format.PixelFormat,
-                                format.PixelType,
-                                data);
-                        }
-                        break;
-
-                    case Target.Cubemap:
-                        if (format.IsCompressed)
-                        {
-                            GL.CompressedTexSubImage2D(
-                                TextureTarget.TextureCubeMapPositiveX + layer,
-                                level,
-                                0,
-                                0,
-                                width,
-                                height,
-                                format.PixelFormat,
-                                mipSize,
-                                data);
-                        }
-                        else
-                        {
-                            GL.TexSubImage2D(
-                                TextureTarget.TextureCubeMapPositiveX + layer,
-                                level,
-                                0,
-                                0,
-                                width,
-                                height,
-                                format.PixelFormat,
-                                format.PixelType,
-                                data);
-                        }
-                        break;
-                }
-            }
-            else
-            {
-                ReadFrom(data, Info.GetMipSize(level), level);
+                case Target.Cubemap:
+                    if (format.IsCompressed)
+                    {
+                        GL.CompressedTexSubImage2D(
+                            TextureTarget.TextureCubeMapPositiveX + layer,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            size,
+                            data);
+                    }
+                    else
+                    {
+                        GL.TexSubImage2D(
+                            TextureTarget.TextureCubeMapPositiveX + layer,
+                            level,
+                            0,
+                            0,
+                            width,
+                            height,
+                            format.PixelFormat,
+                            format.PixelType,
+                            data);
+                    }
+                    break;
             }
         }
 
-        private void ReadFrom(IntPtr data, int size, int baseLevel = -1)
+        private void ReadFrom(IntPtr data, int size)
         {
             TextureTarget target = Target.Convert();
 
@@ -445,16 +485,10 @@ namespace Ryujinx.Graphics.OpenGL.Image
             int depth  = Info.Depth;
 
             int offset = 0;
-            int levels = (baseLevel == -1) ? Info.Levels : 1;
-            if (baseLevel == -1)
-            {
-                baseLevel = 0;
-            }
+            int levels = Info.Levels;
 
-            for (int levelOffset = 0; levelOffset < levels; levelOffset++)
+            for (int level = 0; level < levels; level++)
             {
-                int level = levelOffset + baseLevel;
-
                 int mipSize = Info.GetMipSize(level);
 
                 int endOffset = offset + mipSize;

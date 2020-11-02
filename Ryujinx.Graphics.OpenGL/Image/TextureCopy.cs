@@ -1,5 +1,6 @@
-using Ryujinx.Graphics.GAL;
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
@@ -147,18 +148,83 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return to;
         }
 
-        public TextureView PboCopy(TextureView from, TextureView to, int srcLayer, int dstLayer, int srcLevel, int dstLevel)
+        public TextureView PboCopy(TextureView from, TextureView to, int srcLayer, int dstLayer, int srcLevel, int dstLevel, int width, int height)
         {
+            int dstWidth = width;
+            int dstHeight = height;
+
+            // The size of the source texture.
+            int unpackWidth = from.Width;
+            int unpackHeight = from.Height;
+
+            if (from.Info.IsCompressed != to.Info.IsCompressed)
+            {
+                if (from.Info.IsCompressed)
+                {
+                    // Dest size is in pixels, but should be in blocks
+                    dstWidth = BitUtils.DivRoundUp(width, from.Info.BlockWidth);
+                    dstHeight = BitUtils.DivRoundUp(height, from.Info.BlockHeight);
+
+                    // When copying from a compressed texture, the source size must be taken in blocks for unpacking to the uncompressed block texture.
+                    unpackWidth = BitUtils.DivRoundUp(from.Info.Width, from.Info.BlockWidth);
+                    unpackHeight = BitUtils.DivRoundUp(from.Info.Height, from.Info.BlockHeight);
+                }
+                else
+                {
+                    // When copying to a compressed texture, the source size must be scaled by the block width for unpacking on the compressed target.
+                    unpackWidth = from.Info.Width * to.Info.BlockWidth;
+                    unpackHeight = from.Info.Height * to.Info.BlockHeight;
+                }
+            }
+
             EnsurePbo(from);
+            EnsurePbo(to);
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
 
+            // The source texture is written out in full, then the destination is taken as a slice from the data using unpack params.
+            // The offset points to the base at which the requested layer is at.
+
             int offset = from.WriteToPbo2D(0, srcLayer, srcLevel);
+
+            // If the destination size is not an exact match for the source unpack parameters, we need to set them to slice the data correctly.
+
+            bool slice = (unpackWidth != dstWidth || unpackHeight != dstHeight);
+
+            if (slice)
+            {
+                // Set unpack parameters to take a slice of width/height:
+                GL.PixelStore(PixelStoreParameter.UnpackRowLength, unpackWidth);
+                GL.PixelStore(PixelStoreParameter.UnpackImageHeight, unpackHeight);
+
+                if (to.Info.IsCompressed)
+                {
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, to.Info.BlockWidth);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, to.Info.BlockHeight);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 1);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, to.Info.BytesPerPixel);
+                }
+            }
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
 
-            to.ReadFromPbo2D(offset, dstLayer, dstLevel);
+            to.ReadFromPbo2D(offset, dstLayer, dstLevel, dstWidth, dstHeight, from.Info.GetMipSize2D(srcLevel));
+
+            if (slice)
+            {
+                // Reset unpack parameters
+                GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
+                GL.PixelStore(PixelStoreParameter.UnpackImageHeight, 0);
+
+                if (to.Info.IsCompressed)
+                {
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, 0);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, 0);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 0);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, 0);
+                }
+            }
 
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
 

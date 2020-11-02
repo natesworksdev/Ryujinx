@@ -31,6 +31,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
             int dstDepth  = dstInfo.GetDepthOrLayers();
             int dstLevels = dstInfo.Levels;
 
+            srcWidth = Math.Max(1, srcWidth >> srcLevel);
+            srcHeight = Math.Max(1, srcHeight >> srcLevel);
+
             dstWidth = Math.Max(1, dstWidth >> dstLevel);
             dstHeight = Math.Max(1, dstHeight >> dstLevel);
 
@@ -41,6 +44,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
 
             int blockWidth = 1;
             int blockHeight = 1;
+            bool sizeInBlocks = false;
 
             // When copying from a compressed to a non-compressed format,
             // the non-compressed texture will have the size of the texture
@@ -48,14 +52,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
             // match the size in texels of the compressed texture.
             if (!srcInfo.IsCompressed && dstInfo.IsCompressed)
             {
-                dstWidth  = BitUtils.DivRoundUp(dstWidth,  dstInfo.BlockWidth);
-                dstHeight = BitUtils.DivRoundUp(dstHeight, dstInfo.BlockHeight);
+                srcWidth *= dstInfo.BlockWidth;
+                srcHeight *= dstInfo.BlockHeight;
                 blockWidth = dstInfo.BlockWidth;
                 blockHeight = dstInfo.BlockHeight;
+
+                sizeInBlocks = true;
             }
             else if (srcInfo.IsCompressed && !dstInfo.IsCompressed)
             {
-                dstWidth  *= srcInfo.BlockWidth;
+                dstWidth *= srcInfo.BlockWidth;
                 dstHeight *= srcInfo.BlockHeight;
                 blockWidth = srcInfo.BlockWidth;
                 blockHeight = srcInfo.BlockHeight;
@@ -74,12 +80,15 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
                 }
 
-                if (width % blockWidth != 0 && height % blockHeight != 0 && src is TextureView && dst is TextureView)
+                if ((width % blockWidth != 0 || height % blockHeight != 0) && src is TextureView && dst is TextureView)
                 {
-                    copy.PboCopy((TextureView)src, (TextureView)dst, srcLayer, dstLayer, srcLevel + level, dstLevel + level);
+                    copy.PboCopy((TextureView)src, (TextureView)dst, srcLayer, dstLayer, srcLevel + level, dstLevel + level, width, height);
                 }
                 else
                 {
+                    int copyWidth = sizeInBlocks ? BitUtils.DivRoundUp(width, blockWidth) : width;
+                    int copyHeight = sizeInBlocks ? BitUtils.DivRoundUp(height, blockHeight) : height;
+
                     GL.CopyImageSubData(
                         srcHandle,
                         srcInfo.Target.ConvertToImageTarget(),
@@ -93,8 +102,8 @@ namespace Ryujinx.Graphics.OpenGL.Image
                         0,
                         0,
                         dstLayer,
-                        width,
-                        height,
+                        copyWidth,
+                        copyHeight,
                         depth);
                 }
 
