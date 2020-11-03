@@ -2,14 +2,12 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
-using Ryujinx.HLE.HOS.Services.Apm;
 using System;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy
 {
     class ICommonStateGetter : IpcService
     {
-        private CpuBoostMode _cpuBoostMode  = CpuBoostMode.Disabled;
         private bool         _vrModeEnabled = false;
 
         public ICommonStateGetter() { }
@@ -58,16 +56,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         }
 
         [Command(6)]
-        // GetPerformanceMode() -> u32
+        // GetPerformanceMode() -> nn::apm::PerformanceMode
         public ResultCode GetPerformanceMode(ServiceCtx context)
         {
-            PerformanceMode mode = context.Device.System.State.DockedMode
-                ? PerformanceMode.Docked
-                : PerformanceMode.Handheld;
-
-            context.ResponseData.Write((int)mode);
-
-            return ResultCode.Success;
+            return (ResultCode)Apm.IManager.GetPerformanceModeImpl(context);
         }
 
         [Command(8)]
@@ -136,12 +128,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 return ResultCode.InvalidParameters;
             }
 
-            _cpuBoostMode = (CpuBoostMode)cpuBoostMode;
+            Apm.ISystemManager.SetCpuBoostModeImpl(cpuBoostMode);
 
-            // NOTE: There is a condition variable after the assignment, probably waiting something with apm:sys service (SetCpuBoostMode call?).
-            //       Since we will probably never support CPU boost things, it's not needed to implement more.
+            // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used. 
 
             return ResultCode.Success;
+        }
+
+        [Command(91)] // 7.0.0+
+        // GetCurrentPerformanceConfiguration() -> nn::apm::PerformanceConfiguration
+        public ResultCode GetCurrentPerformanceConfiguration(ServiceCtx context)
+        {
+            return (ResultCode)Apm.ISystemManager.GetCurrentPerformanceConfigurationImpl(context);
         }
     }
 }

@@ -2,7 +2,7 @@
 {
     enum PerformanceMode
     {
-        Handheld = 0,
-        Docked   = 1
+        Default = 0,
+        Boost   = 1
     }
 }
