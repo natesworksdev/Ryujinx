@@ -12,6 +12,7 @@ using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Services.Hid;
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Threading;
 using Ryujinx.Motion;
 
@@ -57,6 +58,8 @@ namespace Ryujinx.Ui
         private Client _dsuClient;
 
         private GraphicsDebugLevel _glLogLevel;
+
+        private Dictionary<HLE.HOS.Services.Hid.PlayerIndex, RumbleDevice> _rumbleDevices = new Dictionary<HLE.HOS.Services.Hid.PlayerIndex, RumbleDevice>();
 
         public GlRenderer(Switch device, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
@@ -508,6 +511,22 @@ namespace Ryujinx.Ui
                         Dx = controllerConfig.RightJoycon.InvertStickX ? -rightJoystickDx : rightJoystickDx,
                         Dy = controllerConfig.RightJoycon.InvertStickY ? -rightJoystickDy : rightJoystickDy
                     };
+
+                    if (controllerConfig.EnableRumble)
+                    {
+                        HLE.HOS.Services.Hid.PlayerIndex playerIndex = (HLE.HOS.Services.Hid.PlayerIndex)controllerConfig.PlayerIndex;
+                        if (!_device.Hid.Npads.RumbleQueues.ContainsKey(playerIndex))
+                        {
+                            _device.Hid.Npads.RumbleQueues.Add(playerIndex, new ConcurrentQueue<HidVibrationValue>());
+                        }
+                        ConcurrentQueue<HidVibrationValue> rumbleQueue = _device.Hid.Npads.RumbleQueues[playerIndex];
+                        if (!_rumbleDevices.ContainsKey(playerIndex))
+                        {
+                            _rumbleDevices.Add(playerIndex, new RumbleDevice(controllerConfig.RumbleIndex, rumbleQueue));
+                            _rumbleDevices[playerIndex].Start();
+                        }
+                        _device.Hid.Npads.LastRumbleValues[playerIndex] = _rumbleDevices[playerIndex].LastVibrationValue;
+                    }
                 }
 
                 currentButton |= _device.Hid.UpdateStickButtons(leftJoystick, rightJoystick);

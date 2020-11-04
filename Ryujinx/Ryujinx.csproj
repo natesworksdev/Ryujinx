@@ -78,6 +78,8 @@
     <PackageReference Include="GtkSharp.Dependencies" Version="1.1.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="Ryujinx.Graphics.Nvdec.Dependencies" Version="4.3.0" Condition="'$(RuntimeIdentifier)' != 'linux-x64' AND '$(RuntimeIdentifier)' != 'osx-x64'" />
     <PackageReference Include="OpenTK.NetStandard" Version="1.0.5.22" />
+    <PackageReference Include="SDL2-CS.NetCore" Version="2.0.8" />
+    <PackageReference Include="SDL2.Core" Version="2.2.0" />
     <PackageReference Include="SharpZipLib" Version="1.2.0" />
   </ItemGroup>
 

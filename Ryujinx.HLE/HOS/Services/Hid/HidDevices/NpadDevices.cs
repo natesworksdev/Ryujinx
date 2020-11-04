@@ -1,6 +1,7 @@
 using System;
-using System.Collections.Generic;
 using Ryujinx.Common;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.Memory;
 using Ryujinx.HLE.HOS.Kernel.Threading;
@@ -70,6 +71,20 @@ namespace Ryujinx.HLE.HOS.Services.Hid
                     yield return (PlayerIndex)i;
                 }
             }
+        }
+
+        public Dictionary<PlayerIndex, ConcurrentQueue<HidVibrationValue>> RumbleQueues = new Dictionary<PlayerIndex, ConcurrentQueue<HidVibrationValue>>();
+        public Dictionary<PlayerIndex, HidVibrationValue>[] RumbleValuesBuffer = new Dictionary<PlayerIndex, HidVibrationValue>[] 
+        {
+            new Dictionary<PlayerIndex, HidVibrationValue>(),
+            new Dictionary<PlayerIndex, HidVibrationValue>()
+        };
+        public Dictionary<PlayerIndex, HidVibrationValue> LastRumbleValues = new Dictionary<PlayerIndex, HidVibrationValue>();
+
+        public bool RumbleDataEqual(HidVibrationValue value1, HidVibrationValue value2)
+        {
+            return value1.AmplitudeHigh == value2.AmplitudeHigh
+                && value1.AmplitudeLow == value2.AmplitudeLow;
         }
 
         public bool Validate(int playerMin, int playerMax, ControllerType acceptedTypes, out int configuredCount, out PlayerIndex primaryIndex)

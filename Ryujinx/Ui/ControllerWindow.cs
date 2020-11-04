@@ -2,9 +2,11 @@ using Gtk;
 using OpenTK.Input;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Logging;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
 using Ryujinx.HLE.FileSystem;
+using SDL2;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -36,6 +38,9 @@ namespace Ryujinx.Ui
         [GUI] CheckButton  _mirrorInput;
         [GUI] Entry        _dsuServerHost;
         [GUI] Entry        _dsuServerPort;
+        [GUI] CheckButton  _rumbleToggle;
+        [GUI] ComboBoxText _rumbleSelect;
+        [GUI] ToggleButton _rumbleRefresh;
         [GUI] ComboBoxText _inputDevice;
         [GUI] ComboBoxText _profile;
         [GUI] ToggleButton _refreshInputDevicesButton;
@@ -199,12 +204,14 @@ namespace Ryujinx.Ui
                 _deadZoneLeftBox.Hide();
                 _deadZoneRightBox.Hide();
                 _triggerThresholdBox.Hide();
+                _rumbleToggle.Parent.Hide();
             }
             else if (_inputDevice.ActiveId != null && _inputDevice.ActiveId.StartsWith("controller"))
             {
                 this.ShowAll();
                 _leftStickKeyboard.Hide();
                 _rightStickKeyboard.Hide();
+                UpdateRumble();
             }
             else
             {
@@ -212,6 +219,42 @@ namespace Ryujinx.Ui
             }
 
             ClearValues();
+        }
+
+        private void UpdateRumble()
+        {
+            _rumbleSelect.RemoveAll();
+            _rumbleSelect.Append("none", "None");
+            _rumbleSelect.SetActiveId("none");
+
+            try
+            {
+                int res = SDL.SDL_Init(SDL.SDL_INIT_HAPTIC);
+                if (res != 0)
+                {
+                    Logger.Info?.PrintMsg(LogClass.Application, "Failed to initialize SDL2, skipping rumble config");
+                    return;
+                }
+                int num_haptics = SDL.SDL_NumHaptics();
+                for (int i = 0; i < num_haptics; i++)
+                {
+                    IntPtr haptic = SDL.SDL_HapticOpen(i);
+                    if (haptic == IntPtr.Zero) continue;
+                    uint haptic_flags;
+                    if ((haptic_flags = SDL.SDL_HapticQuery(haptic)) == 0 || (haptic_flags & SDL.SDL_HAPTIC_LEFTRIGHT) == 0)
+                    {
+                        SDL.SDL_HapticClose(haptic);
+                        continue;
+                    }
+                    string haptic_name = SDL.SDL_HapticName(i);
+                    _rumbleSelect.Append($"{i}", $"Haptic/{i} ({haptic_name})");
+                    SDL.SDL_HapticClose(haptic);
+                }
+            } catch (DllNotFoundException)
+            {
+                Logger.Info?.PrintMsg(LogClass.Application, "SDL2 DLL not found, skipping rumble config");
+                return;
+            }
         }
 
         private void SetCurrentValues()
@@ -311,6 +354,7 @@ namespace Ryujinx.Ui
             _gyroDeadzone.Value               = 1;
             _dsuServerHost.Buffer.Text        = "";
             _dsuServerPort.Buffer.Text        = "";
+            _rumbleToggle.Active              = false;
         }
 
         private void SetValues(InputConfig config)
@@ -409,6 +453,8 @@ namespace Ryujinx.Ui
                     _mirrorInput.Active               = controllerConfig.MirrorInput;
                     _dsuServerHost.Buffer.Text        = controllerConfig.DsuServerHost;
                     _dsuServerPort.Buffer.Text        = controllerConfig.DsuServerPort.ToString();
+                    _rumbleToggle.Active              = controllerConfig.EnableRumble;
+                    _rumbleSelect.ActiveId            = controllerConfig.RumbleIndex.ToString();
                     break;
             }
         }
@@ -528,6 +574,12 @@ namespace Ryujinx.Ui
                 Enum.TryParse(_rSr.Label,          out ControllerInputId rButtonSr);
 
                 int.TryParse(_dsuServerPort.Buffer.Text, out int port);
+                
+                int rumbleIndex = 0;
+                if (_rumbleToggle.Active)
+                {
+                    int.TryParse(_rumbleSelect.ActiveId, out rumbleIndex);
+                }
 
                 return new ControllerConfig
                 {
@@ -537,6 +589,8 @@ namespace Ryujinx.Ui
                     DeadzoneLeft     = (float)_controllerDeadzoneLeft.Value,
                     DeadzoneRight    = (float)_controllerDeadzoneRight.Value,
                     TriggerThreshold = (float)_controllerTriggerThreshold.Value,
+                    EnableRumble     = _rumbleToggle.Active,
+                    RumbleIndex      = rumbleIndex,
                     LeftJoycon       = new NpadControllerLeft
                     {
                         InvertStickX = _invertLStickX.Active,
@@ -693,6 +747,13 @@ namespace Ryujinx.Ui
             UpdateInputDeviceList();
 
             _refreshInputDevicesButton.SetStateFlags(0, true);
+        }
+
+        private void RefreshRumbleButton_Pressed(object sender, EventArgs args)
+        {
+            UpdateRumble();
+
+            _rumbleRefresh.SetStateFlags(0, true);
         }
 
         private void Button_Pressed(object sender, EventArgs args)
