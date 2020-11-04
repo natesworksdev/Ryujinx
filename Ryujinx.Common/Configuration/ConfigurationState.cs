@@ -726,6 +726,17 @@ namespace Ryujinx.Configuration
 
                 configurationFileUpdated = true;
             }
+            if (configurationFileFormat.Version < 15)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 15.");
+                for (int i = 0; i < configurationFileFormat.ControllerConfig.Count; i++)
+                {
+                    configurationFileFormat.ControllerConfig[i].EnableRumble = false;
+                    configurationFileFormat.ControllerConfig[i].RumbleIndex = 0;
+                }
+
+                configurationFileUpdated = true;
+            }
 
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(configurationFileFormat.ControllerConfig);
