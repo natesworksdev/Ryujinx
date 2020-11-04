@@ -1026,7 +1026,7 @@ namespace Ryujinx.HLE.HOS.Services.Hid
             Span<HidVibrationValue> vibrationValues = MemoryMarshal.Cast<byte, HidVibrationValue>(vibrationValueBuffer);
 
             Span<int> deviceHandles = MemoryMarshal.Cast<byte, int>(vibrationDeviceHandleBuffer);
-            if(!deviceHandles.IsEmpty && !vibrationValues.IsEmpty)
+            if(!deviceHandles.IsEmpty && vibrationValues.Length >= 2)
             {
                 PlayerIndex index = (PlayerIndex)((deviceHandles[0] >> 8) & 0xff);
                 if (context.Device.Hid.Npads.RumbleQueues.TryGetValue(index, out ConcurrentQueue<HidVibrationValue> rumbleQueue))
