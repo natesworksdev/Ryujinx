@@ -32,24 +32,51 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private VertexBuffer[] _vertexBuffers;
         private BufferBounds[] _transformFeedbackBuffers;
 
+        /// <summary>
+        /// Holds shader stage buffer state and binding information.
+        /// </summary>
         private class BuffersPerStage
         {
+            /// <summary>
+            /// Shader buffer binding information.
+            /// </summary>
             public BufferDescriptor[] Bindings { get; }
+
+            /// <summary>
+            /// Buffer regions.
+            /// </summary>
             public BufferBounds[] Buffers { get; }
 
+            /// <summary>
+            /// Total amount of buffers used on the shader.
+            /// </summary>
             public int Count { get; private set; }
 
+            /// <summary>
+            /// Creates a new instance of the shader stage buffer information.
+            /// </summary>
+            /// <param name="count">Maximum amount of buffers that the shader stage can use</param>
             public BuffersPerStage(int count)
             {
                 Bindings = new BufferDescriptor[count];
                 Buffers = new BufferBounds[count];
             }
 
+            /// <summary>
+            /// Sets the region of a buffer at a given slot.
+            /// </summary>
+            /// <param name="index">Buffer slot</param>
+            /// <param name="address">Region virtual address</param>
+            /// <param name="size">Region size in bytes</param>
             public void SetBounds(int index, ulong address, ulong size)
             {
                 Buffers[index] = new BufferBounds(address, size);
             }
 
+            /// <summary>
+            /// Sets shader buffer binding information.
+            /// </summary>
+            /// <param name="descriptors">Buffer binding information</param>
             public void SetBindings(ReadOnlyCollection<BufferDescriptor> descriptors)
             {
                 if (descriptors == null)

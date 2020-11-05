@@ -80,7 +80,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 localMemorySize,
                 sharedMemorySize);
 
-            shader.HostShader = _context.Renderer.CompileShader(shader.Program);
+            shader.HostShader = _context.Renderer.CompileShader(ShaderStage.Compute, shader.Program.Code);
 
             IProgram hostProgram = _context.Renderer.CreateProgram(new IShader[] { shader.HostShader }, null);
 
@@ -161,7 +161,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     continue;
                 }
 
-                IShader hostShader = _context.Renderer.CompileShader(program);
+                IShader hostShader = _context.Renderer.CompileShader(program.Stage, program.Code);
 
                 shaders[stage].HostShader = hostShader;
 
