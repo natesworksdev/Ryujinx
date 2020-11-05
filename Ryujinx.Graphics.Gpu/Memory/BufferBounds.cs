@@ -5,7 +5,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     struct BufferBounds
     {
-        public ulong Address;
-        public ulong Size;
+        public ulong Address { get; }
+        public ulong Size { get; }
+
+        public BufferBounds(ulong address, ulong size)
+        {
+            Address = address;
+            Size = size;
+        }
     }
 }
