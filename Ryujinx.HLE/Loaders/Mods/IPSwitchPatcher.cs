@@ -18,6 +18,7 @@ namespace Ryujinx.HLE.Loaders.Mods
             if (header == null || !header.StartsWith(BidHeader))
             {
                 Logger.Error?.Print(LogClass.ModLoader, "IPSwitch:    Malformed PCHTXT file. Skipping...");
+
                 return;
             }
 
@@ -163,6 +164,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                 if (string.IsNullOrWhiteSpace(line))
                 {
                     enabled = false;
+
                     continue;
                 }
 
@@ -196,6 +198,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                     if (tokens.Length < 2)
                     {
                         ParseWarn();
+
                         continue;
                     }
 
@@ -204,6 +207,7 @@ namespace Ryujinx.HLE.Loaders.Mods
                         if (tokens.Length != 3 || !ParseInt(tokens[2], out offset_shift))
                         {
                             ParseWarn();
+
                             continue;
                         }
                     }
@@ -228,12 +232,14 @@ namespace Ryujinx.HLE.Loaders.Mods
                     if (tokens.Length < 2)
                     {
                         ParseWarn();
+
                         continue;
                     }
 
                     if (!Int32.TryParse(tokens[0], System.Globalization.NumberStyles.HexNumber, null, out int offset))
                     {
                         ParseWarn();
+
                         continue;
                     }
 
