@@ -4,6 +4,10 @@ namespace Ryujinx.HLE.HOS.Services.Apm
     {
         public ISystemManager(ServiceCtx context) { }
 
+        protected abstract void RequestPerformanceMode(PerformanceMode performanceMode);
+        internal abstract void SetCpuBoostMode(CpuBoostMode cpuBoostMode);
+        protected abstract PerformanceConfiguration GetCurrentPerformanceConfiguration();
+
         [Command(0)]
         // RequestPerformanceMode(nn::apm::PerformanceMode)
         public ResultCode RequestPerformanceMode(ServiceCtx context)
@@ -34,11 +38,5 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 
             return ResultCode.Success;
         }
-
-        protected abstract void RequestPerformanceMode(PerformanceMode performanceMode);
-
-        protected abstract void SetCpuBoostMode(CpuBoostMode cpuBoostMode);
-
-        protected abstract PerformanceConfiguration GetCurrentPerformanceConfiguration();
     }
 }

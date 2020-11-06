@@ -4,15 +4,19 @@ namespace Ryujinx.HLE.HOS.Services.Apm
     {
         public IManager(ServiceCtx context) { }
 
+        protected abstract ResultCode OpenSession(out SessionServer sessionServer);
+        protected abstract PerformanceMode GetPerformanceMode();
+        protected abstract bool IsCpuOverclockEnabled();
+
         [Command(0)]
         // OpenSession() -> object<nn::apm::ISession>
         public ResultCode OpenSession(ServiceCtx context)
         {
-            ResultCode resultCode = OpenSession(out ISession sessionObj);
+            ResultCode resultCode = OpenSession(out SessionServer sessionServer);
 
             if (resultCode == ResultCode.Success)
             {
-                MakeObject(context, sessionObj);
+                MakeObject(context, sessionServer);
             }
 
             return resultCode;
@@ -35,11 +39,5 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 
             return ResultCode.Success;
         }
-
-        protected abstract ResultCode OpenSession(out ISession sessionObj);
-
-        protected abstract PerformanceMode GetPerformanceMode();
-
-        protected abstract bool IsCpuOverclockEnabled();
     }
 }

@@ -135,9 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 return ResultCode.InvalidParameters;
             }
 
-            context.RequestData.BaseStream.Position = 0;
-
-            apmSystemManagerServer.SetCpuBoostMode(context);
+            apmSystemManagerServer.SetCpuBoostMode((Apm.CpuBoostMode)cpuBoostMode);
 
             // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used. 
 

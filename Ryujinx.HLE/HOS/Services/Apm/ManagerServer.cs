@@ -6,9 +6,9 @@
     {
         public ManagerServer(ServiceCtx context) : base(context) { }
 
-        protected override ResultCode OpenSession(out ISession sessionObj)
+        protected override ResultCode OpenSession(out SessionServer sessionServer)
         {
-            sessionObj = new ISession();
+            sessionServer = new SessionServer();
 
             return ResultCode.Success;
         }

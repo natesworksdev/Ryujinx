@@ -1,10 +1,12 @@
-using Ryujinx.Common.Logging;
-
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    class ISession : IpcService
+    abstract class ISession : IpcService
     {
         public ISession() { }
+
+        protected abstract ResultCode SetPerformanceConfiguration(PerformanceMode performanceMode, PerformanceConfiguration performanceConfiguration);
+        protected abstract ResultCode GetPerformanceConfiguration(PerformanceMode performanceMode, out PerformanceConfiguration performanceConfiguration);
+        protected abstract void SetCpuOverclockEnabled(bool enabled);
 
         [Command(0)]
         // SetPerformanceConfiguration(nn::apm::PerformanceMode, nn::apm::PerformanceConfiguration)
@@ -13,25 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
             PerformanceMode          performanceMode          = (PerformanceMode)context.RequestData.ReadInt32();
             PerformanceConfiguration performanceConfiguration = (PerformanceConfiguration)context.RequestData.ReadInt32();
 
-            if (performanceMode > PerformanceMode.Boost)
-            {
-                return ResultCode.InvalidParameters;
-            }
-
-            switch (performanceMode)
-            {
-                case PerformanceMode.Default: 
-                    PerformanceState.DefaultPerformanceConfiguration = performanceConfiguration; 
-                    break;
-                case PerformanceMode.Boost:   
-                    PerformanceState.BoostPerformanceConfiguration = performanceConfiguration; 
-                    break;
-                default:
-                    Logger.Error?.PrintMsg(LogClass.ServiceApm, $"PerformanceMode isn't supported: {performanceMode}");
-                    break;
-            }
-
-            return ResultCode.Success;
+            return SetPerformanceConfiguration(performanceMode, performanceConfiguration);
         }
 
         [Command(1)]
@@ -40,23 +24,20 @@ namespace Ryujinx.HLE.HOS.Services.Apm
         {
             PerformanceMode performanceMode = (PerformanceMode)context.RequestData.ReadInt32();
 
-            if (performanceMode > PerformanceMode.Boost)
-            {
-                return ResultCode.InvalidParameters;
-            }
+            ResultCode resultCode = GetPerformanceConfiguration(performanceMode, out PerformanceConfiguration performanceConfiguration);
 
-            context.ResponseData.Write((uint)PerformanceState.GetCurrentPerformanceConfiguration(performanceMode));
+            context.ResponseData.Write((uint)performanceConfiguration);
 
-            return ResultCode.Success;
+            return resultCode;
         }
 
         [Command(2)] // 8.0.0+
         // SetCpuOverclockEnabled(bool)
         public ResultCode SetCpuOverclockEnabled(ServiceCtx context)
         {
-            PerformanceState.CpuOverclockEnabled = context.RequestData.ReadBoolean();
+            bool enabled = context.RequestData.ReadBoolean();
 
-            // NOTE: This call seems to overclock the system, since we emulate it, it's fine to do nothing instead.
+            SetCpuOverclockEnabled(enabled);
 
             return ResultCode.Success;
         }

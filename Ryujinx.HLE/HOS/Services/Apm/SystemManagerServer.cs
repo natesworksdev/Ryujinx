@@ -10,7 +10,7 @@
             PerformanceState.PerformanceMode = performanceMode;
         }
 
-        protected override void SetCpuBoostMode(CpuBoostMode cpuBoostMode)
+        internal override void SetCpuBoostMode(CpuBoostMode cpuBoostMode)
         {
             PerformanceState.CpuBoostMode = cpuBoostMode;
         }
