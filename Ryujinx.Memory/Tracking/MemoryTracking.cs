@@ -200,7 +200,7 @@ namespace Ryujinx.Memory.Tracking
 
             lock (TrackingLock)
             {
-                RegionHandle handle = new RegionHandle(this, address, size);
+                RegionHandle handle = new RegionHandle(this, address, size, _memoryManager.IsRangeMapped(address, size));
 
                 return handle;
             }
