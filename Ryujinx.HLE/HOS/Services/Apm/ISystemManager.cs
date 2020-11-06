@@ -1,7 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    [Service("apm:sys")]
-    class ISystemManager : IpcService
+    abstract class ISystemManager : IpcService
     {
         public ISystemManager(ServiceCtx context) { }
 
@@ -9,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
         // RequestPerformanceMode(nn::apm::PerformanceMode)
         public ResultCode RequestPerformanceMode(ServiceCtx context)
         {
-            PerformanceState.PerformanceMode = (PerformanceMode)context.RequestData.ReadInt32();
+            RequestPerformanceMode((PerformanceMode)context.RequestData.ReadInt32());
 
             // NOTE: This call seems to overclock the system related to the PerformanceMode, since we emulate it, it's fine to do nothing instead.
 
@@ -20,12 +19,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
         // SetCpuBoostMode(nn::apm::CpuBootMode)
         public ResultCode SetCpuBoostMode(ServiceCtx context)
         {
-            return SetCpuBoostModeImpl(context.RequestData.ReadUInt32());
-        }
-
-        public static ResultCode SetCpuBoostModeImpl(uint cpuBoostMode)
-        {
-            PerformanceState.CpuBoostMode = (CpuBoostMode)cpuBoostMode;
+            SetCpuBoostMode((CpuBoostMode)context.RequestData.ReadUInt32());
 
             // NOTE: This call seems to overclock the system related to the CpuBoostMode, since we emulate it, it's fine to do nothing instead.
 
@@ -36,14 +30,15 @@ namespace Ryujinx.HLE.HOS.Services.Apm
         // GetCurrentPerformanceConfiguration() -> nn::apm::PerformanceConfiguration
         public ResultCode GetCurrentPerformanceConfiguration(ServiceCtx context)
         {
-            return GetCurrentPerformanceConfigurationImpl(context);
-        }
-
-        public static ResultCode GetCurrentPerformanceConfigurationImpl(ServiceCtx context)
-        {
-            context.ResponseData.Write((uint)PerformanceState.GetCurrentPerformanceConfiguration(PerformanceState.PerformanceMode));
+            context.ResponseData.Write((uint)GetCurrentPerformanceConfiguration());
 
             return ResultCode.Success;
         }
+
+        protected abstract void RequestPerformanceMode(PerformanceMode performanceMode);
+
+        protected abstract void SetCpuBoostMode(CpuBoostMode cpuBoostMode);
+
+        protected abstract PerformanceConfiguration GetCurrentPerformanceConfiguration();
     }
 }

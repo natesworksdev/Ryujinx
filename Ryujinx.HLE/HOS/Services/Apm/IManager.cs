@@ -1,8 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    [Service("apm")]
-    [Service("apm:am")] // 8.0.0+
-    class IManager : IpcService
+    abstract class IManager : IpcService
     {
         public IManager(ServiceCtx context) { }
 
@@ -10,21 +8,21 @@ namespace Ryujinx.HLE.HOS.Services.Apm
         // OpenSession() -> object<nn::apm::ISession>
         public ResultCode OpenSession(ServiceCtx context)
         {
-            MakeObject(context, new ISession());
+            ResultCode resultCode = OpenSession(out ISession sessionObj);
 
-            return ResultCode.Success;
+            if (resultCode == ResultCode.Success)
+            {
+                MakeObject(context, sessionObj);
+            }
+
+            return resultCode;
         }
 
         [Command(1)]
         // GetPerformanceMode() -> nn::apm::PerformanceMode
         public ResultCode GetPerformanceMode(ServiceCtx context)
         {
-            return GetPerformanceModeImpl(context);
-        }
-
-        public static ResultCode GetPerformanceModeImpl(ServiceCtx context)
-        {
-            context.ResponseData.Write((uint)PerformanceState.PerformanceMode);
+            context.ResponseData.Write((uint)GetPerformanceMode());
 
             return ResultCode.Success;
         }
@@ -33,9 +31,15 @@ namespace Ryujinx.HLE.HOS.Services.Apm
         // IsCpuOverclockEnabled() -> bool
         public ResultCode IsCpuOverclockEnabled(ServiceCtx context)
         {
-            context.ResponseData.Write(PerformanceState.CpuOverclockEnabled);
+            context.ResponseData.Write(IsCpuOverclockEnabled());
 
             return ResultCode.Success;
         }
+
+        protected abstract ResultCode OpenSession(out ISession sessionObj);
+
+        protected abstract PerformanceMode GetPerformanceMode();
+
+        protected abstract bool IsCpuOverclockEnabled();
     }
 }

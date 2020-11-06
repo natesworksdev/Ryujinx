@@ -8,9 +8,16 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 {
     class ICommonStateGetter : IpcService
     {
-        private bool         _vrModeEnabled = false;
+        private Apm.ManagerServer       apmManagerServer;
+        private Apm.SystemManagerServer apmSystemManagerServer;
 
-        public ICommonStateGetter() { }
+        private bool _vrModeEnabled = false;
+
+        public ICommonStateGetter(ServiceCtx context)
+        {
+            apmManagerServer       = new Apm.ManagerServer(context);
+            apmSystemManagerServer = new Apm.SystemManagerServer(context);
+        }
 
         [Command(0)]
         // GetEventHandle() -> handle<copy>
@@ -59,7 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetPerformanceMode() -> nn::apm::PerformanceMode
         public ResultCode GetPerformanceMode(ServiceCtx context)
         {
-            return (ResultCode)Apm.IManager.GetPerformanceModeImpl(context);
+            return (ResultCode)apmManagerServer.GetPerformanceMode(context);
         }
 
         [Command(8)]
@@ -128,7 +135,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 return ResultCode.InvalidParameters;
             }
 
-            Apm.ISystemManager.SetCpuBoostModeImpl(cpuBoostMode);
+            context.RequestData.BaseStream.Position = 0;
+
+            apmSystemManagerServer.SetCpuBoostMode(context);
 
             // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used. 
 
@@ -139,7 +148,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetCurrentPerformanceConfiguration() -> nn::apm::PerformanceConfiguration
         public ResultCode GetCurrentPerformanceConfiguration(ServiceCtx context)
         {
-            return (ResultCode)Apm.ISystemManager.GetCurrentPerformanceConfigurationImpl(context);
+            return (ResultCode)apmSystemManagerServer.GetCurrentPerformanceConfiguration(context);
         }
     }
 }
