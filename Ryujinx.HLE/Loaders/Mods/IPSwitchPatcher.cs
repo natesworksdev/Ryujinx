@@ -147,7 +147,7 @@ namespace Ryujinx.HLE.Loaders.Mods
 
             MemPatch patches = new MemPatch();
 
-            bool enabled = true;
+            bool enabled = false;
             bool printValues = false;
             int offset_shift = 0;
 
@@ -160,6 +160,12 @@ namespace Ryujinx.HLE.Loaders.Mods
 
             while ((line = _reader.ReadLine()) != null)
             {
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    enabled = false;
+                    continue;
+                }
+
                 line = PreprocessLine(line);
                 lineNum += 1;
 
