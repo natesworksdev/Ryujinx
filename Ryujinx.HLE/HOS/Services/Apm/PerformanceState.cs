@@ -1,16 +1,18 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    static class PerformanceState
+    public sealed class PerformanceState
     {
-        public static bool CpuOverclockEnabled = false;
+        public PerformanceState() { }
 
-        public static PerformanceMode PerformanceMode = PerformanceMode.Default;
-        public static CpuBoostMode    CpuBoostMode    = CpuBoostMode.Disabled;
+        public bool CpuOverclockEnabled = false;
 
-        public static PerformanceConfiguration DefaultPerformanceConfiguration = PerformanceConfiguration.PerformanceConfiguration7;
-        public static PerformanceConfiguration BoostPerformanceConfiguration   = PerformanceConfiguration.PerformanceConfiguration8;
+        public PerformanceMode PerformanceMode = PerformanceMode.Default;
+        public CpuBoostMode    CpuBoostMode    = CpuBoostMode.Disabled;
 
-        public static PerformanceConfiguration GetCurrentPerformanceConfiguration(PerformanceMode performanceMode)
+        public PerformanceConfiguration DefaultPerformanceConfiguration = PerformanceConfiguration.PerformanceConfiguration7;
+        public PerformanceConfiguration BoostPerformanceConfiguration   = PerformanceConfiguration.PerformanceConfiguration8;
+
+        public PerformanceConfiguration GetCurrentPerformanceConfiguration(PerformanceMode performanceMode)
         {
             return performanceMode switch
             {

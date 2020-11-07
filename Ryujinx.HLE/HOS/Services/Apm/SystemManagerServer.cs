@@ -3,21 +3,26 @@
     [Service("apm:sys")]
     class SystemManagerServer : ISystemManager
     {
-        public SystemManagerServer(ServiceCtx context) : base(context) { }
+        private readonly ServiceCtx _context;
+
+        public SystemManagerServer(ServiceCtx context) : base(context)
+        {
+            _context = context;
+        }
 
         protected override void RequestPerformanceMode(PerformanceMode performanceMode)
         {
-            PerformanceState.PerformanceMode = performanceMode;
+            _context.Device.System.PerformanceState.PerformanceMode = performanceMode;
         }
 
         internal override void SetCpuBoostMode(CpuBoostMode cpuBoostMode)
         {
-            PerformanceState.CpuBoostMode = cpuBoostMode;
+            _context.Device.System.PerformanceState.CpuBoostMode = cpuBoostMode;
         }
 
         protected override PerformanceConfiguration GetCurrentPerformanceConfiguration()
         {
-            return PerformanceState.GetCurrentPerformanceConfiguration(PerformanceState.PerformanceMode);
+            return _context.Device.System.PerformanceState.GetCurrentPerformanceConfiguration(_context.Device.System.PerformanceState.PerformanceMode);
         }
     }
 }

@@ -2,7 +2,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 {
     abstract class ISession : IpcService
     {
-        public ISession() { }
+        public ISession(ServiceCtx context) { }
 
         protected abstract ResultCode SetPerformanceConfiguration(PerformanceMode performanceMode, PerformanceConfiguration performanceConfiguration);
         protected abstract ResultCode GetPerformanceConfiguration(PerformanceMode performanceMode, out PerformanceConfiguration performanceConfiguration);

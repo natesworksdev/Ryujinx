@@ -4,6 +4,13 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 {
     class SessionServer : ISession
     {
+        private readonly ServiceCtx _context;
+
+        public SessionServer(ServiceCtx context) : base(context) 
+        {
+            _context = context;
+        }
+
         protected override ResultCode SetPerformanceConfiguration(PerformanceMode performanceMode, PerformanceConfiguration performanceConfiguration)
         {
             if (performanceMode > PerformanceMode.Boost)
@@ -14,10 +21,10 @@ namespace Ryujinx.HLE.HOS.Services.Apm
             switch (performanceMode)
             {
                 case PerformanceMode.Default:
-                    PerformanceState.DefaultPerformanceConfiguration = performanceConfiguration;
+                    _context.Device.System.PerformanceState.DefaultPerformanceConfiguration = performanceConfiguration;
                     break;
                 case PerformanceMode.Boost:
-                    PerformanceState.BoostPerformanceConfiguration = performanceConfiguration;
+                    _context.Device.System.PerformanceState.BoostPerformanceConfiguration = performanceConfiguration;
                     break;
                 default:
                     Logger.Error?.PrintMsg(LogClass.ServiceApm, $"PerformanceMode isn't supported: {performanceMode}");
@@ -36,14 +43,14 @@ namespace Ryujinx.HLE.HOS.Services.Apm
                 return ResultCode.InvalidParameters;
             }
 
-            performanceConfiguration = PerformanceState.GetCurrentPerformanceConfiguration(performanceMode);
+            performanceConfiguration = _context.Device.System.PerformanceState.GetCurrentPerformanceConfiguration(performanceMode);
 
             return ResultCode.Success;
         }
 
         protected override void SetCpuOverclockEnabled(bool enabled)
         {
-            PerformanceState.CpuOverclockEnabled = enabled;
+            _context.Device.System.PerformanceState.CpuOverclockEnabled = enabled;
 
             // NOTE: This call seems to overclock the system, since we emulate it, it's fine to do nothing instead.
         }

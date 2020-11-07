@@ -1,6 +1,6 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    enum PerformanceMode
+    public enum PerformanceMode : uint
     {
         Default = 0,
         Boost   = 1

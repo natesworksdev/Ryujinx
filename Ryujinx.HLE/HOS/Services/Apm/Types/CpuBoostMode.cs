@@ -1,9 +1,9 @@
 ﻿namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    enum CpuBoostMode
+    public enum CpuBoostMode
     {
         Disabled      = 0,
-        BoostCPU      = 1, // Use PerformanceConfiguration13 and PerformanceConfiguration14, or PerformanceConfiguration15 and PerformanceConfiguration16
-        ConservePower = 2  // Use PerformanceConfiguration15 and PerformanceConfiguration16.
+        BoostCPU      = 1, // Uses PerformanceConfiguration13 and PerformanceConfiguration14, or PerformanceConfiguration15 and PerformanceConfiguration16
+        ConservePower = 2  // Uses PerformanceConfiguration15 and PerformanceConfiguration16.
     }
 }
