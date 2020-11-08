@@ -937,7 +937,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (texture.Info.Width != width || texture.Info.Height != height)
                 {
-                    // Only attempt to resize if the new width and height are within alignment constraints.
+                    // Only attempt to resize if the new width and height match within alignment constraints.
 
                     if (TextureCompatibility.GetAlignedSize(texture.Info).Equals(TextureCompatibility.GetAlignedSize(texture.Info, width, height, texture.Info.GetDepth())))
                     {
