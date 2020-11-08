@@ -10,8 +10,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
 
         public ReductionType Type { get; }
 
-        public int Offset { get; }
-
         public bool Extended { get; }
 
         public AtomicOp AtomicOp { get; }
@@ -30,8 +28,6 @@ namespace Ryujinx.Graphics.Shader.Decoders
             {
                 Type = ReductionType.S64;
             }
-
-            Offset = opCode.Extract(30, 22);
 
             Extended = opCode.Extract(48);
 
