@@ -2,7 +2,6 @@ using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Texture;
 using System;
-using System.Runtime.CompilerServices;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -305,22 +304,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             int width = Math.Max(1, info.Width >> level);
             int height = Math.Max(1, info.Height >> level);
-            int depth = Math.Max(1, info.GetDepth() >> level);
-
-            return GetAlignedSize(info, width, height, depth);
-        }
-
-        /// <summary>
-        /// Gets the aligned sizes of the specified texture information and dimensions.
-        /// The alignment depends on the texture layout and format bytes per pixel.
-        /// </summary>
-        /// <param name="info">Texture information to calculate the aligned size from</param>
-        /// <param name="width">Texture width</param>
-        /// <param name="height">Texture height</param>
-        /// <param name="depth">Texture depth</param>
-        /// <returns>The aligned texture size</returns>
-        public static Size GetAlignedSize(TextureInfo info, int width, int height, int depth)
-        {
+            
             if (info.IsLinear)
             {
                 return SizeCalculator.GetLinearAlignedSize(
@@ -332,6 +316,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
+                int depth = Math.Max(1, info.GetDepth() >> level);
+
                 return SizeCalculator.GetBlockLinearAlignedSize(
                     width,
                     height,
