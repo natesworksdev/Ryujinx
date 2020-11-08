@@ -54,7 +54,7 @@ namespace Ryujinx.HLE.HOS
 
         public SystemStateMgr State { get; private set; }
 
-        public PerformanceState PerformanceState { get; private set; }
+        internal PerformanceState PerformanceState { get; private set; }
 
         internal AppletStateMgr AppletState { get; private set; }
 
