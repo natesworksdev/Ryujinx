@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Apm
                     _context.Device.System.PerformanceState.BoostPerformanceConfiguration = performanceConfiguration;
                     break;
                 default:
-                    Logger.Error?.PrintMsg(LogClass.ServiceApm, $"PerformanceMode isn't supported: {performanceMode}");
+                    Logger.Error?.Print(LogClass.ServiceApm, $"PerformanceMode isn't supported: {performanceMode}");
                     break;
             }
 
