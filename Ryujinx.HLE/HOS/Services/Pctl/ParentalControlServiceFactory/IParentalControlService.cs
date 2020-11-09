@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         // GetStereoVisionRestriction() -> bool
         public ResultCode GetStereoVisionRestriction(ServiceCtx context)
         {
-            if ((_permissionFlag & 0x200) != 0)
+            if ((_permissionFlag & 0x200) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         // SetStereoVisionRestriction(bool)
         public ResultCode SetStereoVisionRestriction(ServiceCtx context)
         {
-            if ((_permissionFlag & 0x200) != 0)
+            if ((_permissionFlag & 0x200) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
