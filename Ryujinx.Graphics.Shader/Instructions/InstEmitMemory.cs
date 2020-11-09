@@ -61,6 +61,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
         {
             OpCodeAtom op = (OpCodeAtom)context.CurrOp;
 
+            ReductionType type = (ReductionType)op.RawOpCode.Extract(49, 2);
+
             int sOffset = (op.RawOpCode.Extract(28, 20) << 12) >> 12;
 
             (Operand addrLow, Operand addrHigh) = Get40BitsAddress(context, op.Ra, op.Extended, sOffset);
@@ -71,7 +73,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 context,
                 Instruction.MrGlobal,
                 op.AtomicOp,
-                op.Type,
+                type,
                 addrLow,
                 addrHigh,
                 value);
@@ -82,6 +84,14 @@ namespace Ryujinx.Graphics.Shader.Instructions
         public static void Atoms(EmitterContext context)
         {
             OpCodeAtom op = (OpCodeAtom)context.CurrOp;
+
+            ReductionType type = op.RawOpCode.Extract(28, 2) switch
+            {
+                0 => ReductionType.U32,
+                1 => ReductionType.S32,
+                2 => ReductionType.U64,
+                _ => ReductionType.S64
+            };
 
             Operand offset = context.ShiftRightU32(GetSrcA(context), Const(2));
 
@@ -95,7 +105,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 context,
                 Instruction.MrShared,
                 op.AtomicOp,
-                op.Type,
+                type,
                 offset,
                 Const(0),
                 value);
