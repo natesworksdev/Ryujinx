@@ -75,6 +75,7 @@ namespace Ryujinx.Memory.Tracking
                 {
                     VirtualRegion region = results[i];
                     region.RecalculatePhysicalChildren();
+                    region.UpdateProtection();
                 }
             }
         }
