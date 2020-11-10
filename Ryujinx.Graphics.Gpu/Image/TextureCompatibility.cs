@@ -304,7 +304,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             int width = Math.Max(1, info.Width >> level);
             int height = Math.Max(1, info.Height >> level);
-            
+
             if (info.IsLinear)
             {
                 return SizeCalculator.GetLinearAlignedSize(

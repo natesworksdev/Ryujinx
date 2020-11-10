@@ -933,8 +933,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // If the texture is smaller than the size hint, it must be enlarged to meet it.
                 // The maximum size is provided by the requested info, which generally has an aligned size.
 
-                int width = Math.Min(Math.Max(sizeHint.Value.Width, texture.Info.Width), info.Width);
-                int height = Math.Min(Math.Max(sizeHint.Value.Height, texture.Info.Height), info.Height);
+                int width = Math.Max(texture.Info.Width, Math.Min(sizeHint.Value.Width, info.Width));
+                int height = Math.Max(texture.Info.Height, Math.Min(sizeHint.Value.Height, info.Height));
 
                 if (texture.Info.Width != width || texture.Info.Height != height)
                 {
