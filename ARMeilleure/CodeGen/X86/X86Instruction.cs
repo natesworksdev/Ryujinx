@@ -33,7 +33,6 @@ namespace ARMeilleure.CodeGen.X86
         Cmpxchg8,
         Comisd,
         Comiss,
-        Cpuid,
         Crc32,
         Crc32_16,
         Crc32_8,
