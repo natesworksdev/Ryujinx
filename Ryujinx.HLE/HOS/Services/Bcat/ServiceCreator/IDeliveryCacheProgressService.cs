@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceBcat);
+            Logger.Stub?.Print(LogClass.ServiceBcat);
 
             return ResultCode.Success;
         }
@@ -46,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Bcat.ServiceCreator
 
             WriteDeliveryCacheProgressImpl(context, context.Request.RecvListBuff[0], deliveryCacheProgress);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceBcat);
+            Logger.Stub?.Print(LogClass.ServiceBcat);
 
             return ResultCode.Success;
         }

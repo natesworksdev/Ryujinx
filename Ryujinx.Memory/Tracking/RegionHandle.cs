@@ -10,7 +10,7 @@ namespace Ryujinx.Memory.Tracking
     /// </summary>
     public class RegionHandle : IRegionHandle, IRange
     {
-        public bool Dirty { get; private set; }
+        public bool Dirty { get; private set; } = true;
 
         public ulong Address { get; }
         public ulong Size { get; }
@@ -32,10 +32,8 @@ namespace Ryujinx.Memory.Tracking
         /// <param name="tracking">Tracking object for the target memory block</param>
         /// <param name="address">Virtual address of the region to track</param>
         /// <param name="size">Size of the region to track</param>
-        /// <param name="dirty">Initial value of the dirty flag</param>
-        internal RegionHandle(MemoryTracking tracking, ulong address, ulong size, bool dirty = true)
+        internal RegionHandle(MemoryTracking tracking, ulong address, ulong size)
         {
-            Dirty = dirty;
             Address = address;
             Size = size;
             EndAddress = address + size;

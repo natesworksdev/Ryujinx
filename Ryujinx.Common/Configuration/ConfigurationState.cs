@@ -133,6 +133,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableFsAccessLog { get; private set; }
 
             /// <summary>
+            /// Enables printing trace log messages
+            /// </summary>
+            public ReactiveObject<bool> EnableTrace { get; private set; }
+
+            /// <summary>
             /// Controls which log messages are written to the log targets
             /// </summary>
             public ReactiveObject<LogClass[]> FilteredClasses { get; private set; }
@@ -156,6 +161,7 @@ namespace Ryujinx.Configuration
                 EnableError        = new ReactiveObject<bool>();
                 EnableGuest        = new ReactiveObject<bool>();
                 EnableFsAccessLog  = new ReactiveObject<bool>();
+                EnableTrace        = new ReactiveObject<bool>();
                 FilteredClasses    = new ReactiveObject<LogClass[]>();
                 EnableFileLog      = new ReactiveObject<bool>();
                 GraphicsDebugLevel = new ReactiveObject<GraphicsDebugLevel>();
@@ -390,6 +396,7 @@ namespace Ryujinx.Configuration
                 LoggingEnableError        = Logger.EnableError,
                 LoggingEnableGuest        = Logger.EnableGuest,
                 LoggingEnableFsAccessLog  = Logger.EnableFsAccessLog,
+                LoggingEnableTrace        = Logger.EnableTrace,
                 LoggingFilteredClasses    = Logger.FilteredClasses,
                 LoggingGraphicsDebugLevel = Logger.GraphicsDebugLevel,
                 EnableFileLog             = Logger.EnableFileLog,
@@ -450,6 +457,7 @@ namespace Ryujinx.Configuration
             Logger.EnableError.Value               = true;
             Logger.EnableGuest.Value               = true;
             Logger.EnableFsAccessLog.Value         = false;
+            Logger.EnableTrace.Value               = false;
             Logger.FilteredClasses.Value           = new LogClass[] { };
             Logger.GraphicsDebugLevel.Value        = GraphicsDebugLevel.None;
             Logger.EnableFileLog.Value             = true;
@@ -742,6 +750,7 @@ namespace Ryujinx.Configuration
             Logger.EnableError.Value               = configurationFileFormat.LoggingEnableError;
             Logger.EnableGuest.Value               = configurationFileFormat.LoggingEnableGuest;
             Logger.EnableFsAccessLog.Value         = configurationFileFormat.LoggingEnableFsAccessLog;
+            Logger.EnableTrace.Value               = configurationFileFormat.LoggingEnableTrace;
             Logger.FilteredClasses.Value           = configurationFileFormat.LoggingFilteredClasses;
             Logger.GraphicsDebugLevel.Value        = configurationFileFormat.LoggingGraphicsDebugLevel;
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;

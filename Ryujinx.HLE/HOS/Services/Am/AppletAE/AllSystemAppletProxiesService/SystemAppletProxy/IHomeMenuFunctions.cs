@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // RequestToGetForeground()
         public ResultCode RequestToGetForeground(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            Logger.Stub?.Print(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }
@@ -36,7 +36,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+            Logger.Stub?.Print(LogClass.ServiceAm);
 
             return ResultCode.Success;
         }

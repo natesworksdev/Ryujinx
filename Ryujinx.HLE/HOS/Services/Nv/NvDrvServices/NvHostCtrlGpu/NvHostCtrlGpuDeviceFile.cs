@@ -140,7 +140,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 
         private NvInternalResult ZbcSetTable(ref ZbcSetTableArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -213,7 +213,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrlGpu
 
         private NvInternalResult GetActiveSlotMask(ref GetActiveSlotMaskArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             arguments.Slot = 0x07;
             arguments.Mask = 0x01;

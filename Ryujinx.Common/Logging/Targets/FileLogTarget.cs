@@ -5,6 +5,9 @@ using System.Text;
 
 namespace Ryujinx.Common.Logging
 {
+    /// <summary>
+    /// A target for logging to the file system
+    /// </summary>
     public class FileLogTarget : ILogTarget
     {
         private static readonly ObjectPool<StringBuilder> _stringBuilderPool = SharedPools.Default<StringBuilder>();
@@ -14,7 +17,9 @@ namespace Ryujinx.Common.Logging
         private readonly string        _name;
 
         string ILogTarget.Name { get => _name; }
-
+        
+        /// <param name="path">The path of the directory to log to (stores logs in a folder under the directory named "Logs")</param>
+        /// <param name="name">The name of this <c>FileLogTarget</c> instance (not the filename)</param>
         public FileLogTarget(string path, string name)
             : this(path, name, FileShare.Read, FileMode.Append)
         { }

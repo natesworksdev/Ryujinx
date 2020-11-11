@@ -18,7 +18,7 @@ namespace Ryujinx.HLE.HOS.Services.Ssl.SslService
 
             context.ResponseData.Write(certificateId);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSsl, new { certificateFormat, certificateDataPosition, certificateDataSize });
+            Logger.Stub?.Print(LogClass.ServiceSsl, new { certificateFormat, certificateDataPosition, certificateDataSize });
 
             return ResultCode.Success;
         }

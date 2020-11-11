@@ -52,7 +52,7 @@ namespace Ryujinx.Motion
                     catch (SocketException ex)
 #pragma warning restore CS0168
                     {
-                        Logger.Warning?.PrintMsg(LogClass.Hid, $"Unable to dispose motion client. Error code {ex.ErrorCode}");
+                        Logger.Warning?.Print(LogClass.Hid, $"Unable to dispose motion client. Error code {ex.ErrorCode}");
                     }
                 }
 
@@ -98,7 +98,7 @@ namespace Ryujinx.Motion
                 {
                     if (!_clientErrorStatus[player])
                     {
-                        Logger.Warning?.PrintMsg(LogClass.Hid, $"Unable to connect to motion source at {host}:{port}. Error {fex.Message}");
+                        Logger.Warning?.Print(LogClass.Hid, $"Unable to connect to motion source at {host}:{port}. Error {fex.Message}");
 
                         _clientErrorStatus[player] = true;
                     }
@@ -107,7 +107,7 @@ namespace Ryujinx.Motion
                 {
                     if (!_clientErrorStatus[player])
                     {
-                        Logger.Warning?.PrintMsg(LogClass.Hid, $"Unable to connect to motion source at {host}:{port}. Error code {sex.ErrorCode}");
+                        Logger.Warning?.Print(LogClass.Hid, $"Unable to connect to motion source at {host}:{port}. Error code {sex.ErrorCode}");
 
                         _clientErrorStatus[player] = true;
                     }
@@ -170,7 +170,7 @@ namespace Ryujinx.Motion
                     {
                         if (!_clientErrorStatus[clientId])
                         {
-                            Logger.Warning?.PrintMsg(LogClass.Hid, $"Unable to send data request to motion source at {_client.Client.RemoteEndPoint}. Error code {ex.ErrorCode}");
+                            Logger.Warning?.Print(LogClass.Hid, $"Unable to send data request to motion source at {_client.Client.RemoteEndPoint}. Error code {ex.ErrorCode}");
                         }
 
                         _clientErrorStatus[clientId] = true;
@@ -260,7 +260,7 @@ namespace Ryujinx.Motion
                     {
                         if (!_clientErrorStatus[clientId])
                         {
-                            Logger.Warning?.PrintMsg(LogClass.Hid, $"Unable to receive data from motion source at {endPoint}. Error code {ex.ErrorCode}");
+                            Logger.Warning?.Print(LogClass.Hid, $"Unable to receive data from motion source at {endPoint}. Error code {ex.ErrorCode}");
                         }
 
                         _clientErrorStatus[clientId] = true;

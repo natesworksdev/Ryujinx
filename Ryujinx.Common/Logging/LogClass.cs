@@ -1,5 +1,8 @@
 namespace Ryujinx.Common.Logging
 {
+    /// <summary>
+    /// The categeories a log entry can pertain to 
+    /// </summary>
     public enum LogClass
     {
         Application,

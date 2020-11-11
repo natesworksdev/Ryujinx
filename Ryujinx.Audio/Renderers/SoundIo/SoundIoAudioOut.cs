@@ -162,7 +162,6 @@ namespace Ryujinx.Audio
 
                     _volumeChanged = false;
                 }
-                    
                 track.AppendBuffer(bufferTag, buffer);
             }
         }

@@ -29,7 +29,7 @@ namespace Ryujinx.HLE.HOS.Services.Nim.ShopServiceAccessServerInterface.ShopServ
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNim);
+            Logger.Stub?.Print(LogClass.ServiceNim);
 
             return ResultCode.Success;
         }

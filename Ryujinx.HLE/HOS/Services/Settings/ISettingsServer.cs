@@ -105,7 +105,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         {
             context.ResponseData.Write(false);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceSet);
+            Logger.Stub?.Print(LogClass.ServiceSet);
 
             return ResultCode.Success;
         }

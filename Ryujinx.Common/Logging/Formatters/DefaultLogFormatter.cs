@@ -8,6 +8,13 @@ namespace Ryujinx.Common.Logging
     {
         private static readonly ObjectPool<StringBuilder> _stringBuilderPool = SharedPools.Default<StringBuilder>();
 
+        /// <summary>
+        /// Formats the logged data into readable text
+        /// </summary>
+        /// <example>
+        /// 00:00:12.092  |W|   HLE.HostThread.0   KernelSvc   PrintResult: SendSyncRequest64 returned error PortRemoteClosed.
+        ///   Time       Level    Thread           Log Class     Caller                Message
+        /// </example>
         public string Format(LogEventArgs args)
         {
             StringBuilder sb = _stringBuilderPool.Allocate();
@@ -25,7 +32,8 @@ namespace Ryujinx.Common.Logging
                     sb.Append(' ');
                 }
 
-                sb.Append(args.Message);
+                string message = (args.Level == LogLevel.Stub) ? "Stubbed. " + args.Message : args.Message;
+                sb.Append($"{args.Class} {args.Caller}: {message}");
 
                 if (args.Data != null)
                 {

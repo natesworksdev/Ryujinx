@@ -124,7 +124,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+            Logger.Stub?.Print(LogClass.ServiceAudio);
 
             return ResultCode.Success;
         }
@@ -135,7 +135,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
         {
             context.ResponseData.Write(_impl.GetActiveChannelCount());
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+            Logger.Stub?.Print(LogClass.ServiceAudio);
 
             return ResultCode.Success;
         }
@@ -241,7 +241,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+            Logger.Stub?.Print(LogClass.ServiceAudio);
 
             return ResultCode.Success;
         }
@@ -259,7 +259,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAudio);
+            Logger.Stub?.Print(LogClass.ServiceAudio);
 
             return ResultCode.Success;
         }

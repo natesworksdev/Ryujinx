@@ -56,7 +56,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                     {
                         // TODO: Service store TitleId and FreeCommunicationEnabled in another static object.
                         //       When it's done it signal an event in this static object.
-                        Logger.Stub?.PrintStub(LogClass.ServicePctl);
+                        Logger.Stub?.Print(LogClass.ServicePctl);
                     }
                 }
 
@@ -70,7 +70,7 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         // CheckFreeCommunicationPermission()
         public ResultCode CheckFreeCommunicationPermission(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServicePctl);
+            Logger.Stub?.Print(LogClass.ServicePctl);
 
             if (!_freeCommunicationEnabled)
             {

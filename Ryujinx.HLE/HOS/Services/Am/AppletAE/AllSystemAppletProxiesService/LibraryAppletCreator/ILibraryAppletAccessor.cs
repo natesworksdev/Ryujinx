@@ -194,7 +194,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Lib
 
             context.ResponseData.Write(indirectLayerConsumerHandle);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAm, new { indirectLayerConsumerHandle });
+            Logger.Stub?.Print(LogClass.ServiceAm, new { indirectLayerConsumerHandle });
 
             return ResultCode.Success;
         }

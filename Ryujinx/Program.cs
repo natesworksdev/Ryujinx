@@ -158,9 +158,9 @@ namespace Ryujinx
 
             string message = $"Unhandled exception caught: {e}";
 
-            Logger.Error?.PrintMsg(LogClass.Application, message);
+            Logger.Error?.Print(LogClass.Application, message);
 
-            if (Logger.Error == null) Logger.Notice.PrintMsg(LogClass.Application, message);
+            if (Logger.Error == null) Logger.Notice.Print(LogClass.Application, message);
 
             if (isTerminating)
             {

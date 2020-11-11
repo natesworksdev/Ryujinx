@@ -143,7 +143,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 // This checks something related to baas (online), and then return an invalid UserId if the check in baas returns an error code.
                 // In our case, we can just log it for now.
 
-                Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { baasCheck });
+                Logger.Stub?.Print(LogClass.ServiceAcc, new { baasCheck });
             }
 
             // As we returned an invalid UserId if there is more than one user earlier, now we can return only the first one.
@@ -182,7 +182,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 _applicationLaunchProperty = ApplicationLaunchProperty.GetByPid(context);
             }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { unknown });
+            Logger.Stub?.Print(LogClass.ServiceAcc, new { unknown });
 
             return ResultCode.Success;
         }
@@ -246,7 +246,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             // TODO: Store thumbnailBuffer somewhere, in save data 0x8000000000000010 ?
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             return ResultCode.Success;
         }
@@ -269,7 +269,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             // TODO: Clear the Thumbnail somewhere, in save data 0x8000000000000010 ?
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             return ResultCode.Success;
         }
@@ -285,7 +285,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             // TODO: This seems to write stored userids of the OpenContext in the buffer. We needs to determine them.
             
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             return ResultCode.Success;
         }
@@ -316,7 +316,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
             context.ResponseData.Write(context.Device.Application.ControlData.Value.UserAccountSwitchLock);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             return ResultCode.Success;
         }

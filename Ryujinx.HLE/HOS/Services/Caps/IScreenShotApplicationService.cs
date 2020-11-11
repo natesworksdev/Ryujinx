@@ -14,7 +14,7 @@ namespace Ryujinx.HLE.HOS.Services.Caps
             ulong shimLibraryVersion   = context.RequestData.ReadUInt64();
             ulong appletResourceUserId = context.RequestData.ReadUInt64();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceCaps, new { shimLibraryVersion, appletResourceUserId });
+            Logger.Stub?.Print(LogClass.ServiceCaps, new { shimLibraryVersion, appletResourceUserId });
 
             return ResultCode.Success;
         }

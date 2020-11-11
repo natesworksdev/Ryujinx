@@ -15,7 +15,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 
             context.ResponseData.Write(chargePercentage);
 
-            Logger.Stub?.PrintStub(LogClass.ServicePsm, new { chargePercentage });
+            Logger.Stub?.Print(LogClass.ServicePsm, new { chargePercentage });
 
             return ResultCode.Success;
         }
@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Ptm.Psm
 
             context.ResponseData.Write((int)chargerType);
 
-            Logger.Stub?.PrintStub(LogClass.ServicePsm, new { chargerType });
+            Logger.Stub?.Print(LogClass.ServicePsm, new { chargerType });
 
             return ResultCode.Success;
         }

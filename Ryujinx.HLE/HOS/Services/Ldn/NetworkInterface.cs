@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
             //             If the call failed, it returns the result code.
             //             If the call succeed, it signal and clear an event then start a new thread named nn.ldn.NetworkInterfaceMonitor.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn, new { version });
+            Logger.Stub?.Print(LogClass.ServiceLdn, new { version });
 
             // NOTE: Since we don't support ldn for now, we can return this following result code to make it disabled.
             return ResultCode.DeviceDisabled;
@@ -51,7 +51,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn
             StateChangeEvent.WritableEvent.Signal();
             StateChangeEvent.WritableEvent.Clear();
 
-            Logger.Stub?.PrintStub(LogClass.ServiceLdn);
+            Logger.Stub?.Print(LogClass.ServiceLdn);
 
             return ResultCode.Success;
         }

@@ -1,4 +1,4 @@
-﻿using ARMeilleure.Memory;
+using ARMeilleure.Memory;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Memory;
 using Ryujinx.Memory.Tracking;
@@ -461,32 +461,7 @@ namespace Ryujinx.Cpu
         }
 
         /// <summary>
-        /// Checks if a memory range is mapped.
-        /// </summary>
-        /// <param name="va">Virtual address of the range</param>
-        /// <param name="size">Size of the range in bytes</param>
-        /// <returns>True if the entire range is mapped, false otherwise</returns>
-        public bool IsRangeMapped(ulong va, ulong size)
-        {
-            ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
-
-            va &= ~(ulong)PageMask;
-
-            while (va < endVa)
-            {
-                if (!IsMapped(va))
-                {
-                    return false;
-                }
-
-                va += PageSize;
-            }
-
-            return true;
-        }
-
-        /// <summary>
-        /// Checks if the page at a given CPU virtual address is mapped.
+        /// Checks if the page at a given CPU virtual address.
         /// </summary>
         /// <param name="va">Virtual address to check</param>
         /// <returns>True if the address is mapped, false otherwise</returns>

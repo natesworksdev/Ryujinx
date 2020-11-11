@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x".
             //       Then it searches the Availability of Online Services related to the UserId in this file and returns it.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             // NOTE: Even if we try to return different error codes here, the guest still needs other calls.
             return ResultCode.Success;
@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             //       as "%08x-%04x-%04x-%02x%02x-%08x%04x") in the account:/ savedata.
             //       Then it searches the NetworkServiceAccountId related to the UserId in this file and returns it.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
+            Logger.Stub?.Print(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
             context.ResponseData.Write(NetworkServiceAccountId);
 
@@ -76,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             //       in "su/cache/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted as "%08x-%04x-%04x-%02x%02x-%08x%04x") in the "account:/" savedata.
             //       Since we don't support online services, we can stub it.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             // TODO: Use a real function instead, with the CancellationToken.
             await Task.CompletedTask;
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             //       in the "account:/" savedata and writes some data in the buffer.
             //       Since we don't support online services, we can stub it.
 
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             /*
             if (internal_object != null)
@@ -118,7 +118,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, buffer<nn::account::nas::NasUserBaseForApplication, 0x1a>, buffer<bytes, 6>)
         public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
+            Logger.Stub?.Print(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
             context.ResponseData.Write(NetworkServiceAccountId);
 
@@ -131,7 +131,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // StoreOpenContext()
         public ResultCode StoreOpenContext(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceAcc);
+            Logger.Stub?.Print(LogClass.ServiceAcc);
 
             return ResultCode.Success;
         }

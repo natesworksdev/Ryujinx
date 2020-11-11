@@ -32,7 +32,7 @@ namespace Ryujinx.HLE.HOS.Applets
             byte[] controllerSupportArgPrivate = _normalSession.Pop();
             ControllerSupportArgPrivate privateArg = IApplet.ReadStruct<ControllerSupportArgPrivate>(controllerSupportArgPrivate);
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ArgPriv {privateArg.PrivateSize} {privateArg.ArgSize} {privateArg.Mode} " +
+            Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerApplet ArgPriv {privateArg.PrivateSize} {privateArg.ArgSize} {privateArg.Mode} " +
                         $"HoldType:{(NpadJoyHoldType)privateArg.NpadJoyHoldType} StyleSets:{(ControllerType)privateArg.NpadStyleSet}");
 
             if (privateArg.Mode != ControllerSupportMode.ShowControllerSupport)
@@ -52,7 +52,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 ControllerSupportArgV7 arg = IApplet.ReadStruct<ControllerSupportArgV7>(controllerSupportArg);
                 argHeader = arg.Header;
 
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version 7 EnableExplainText={arg.EnableExplainText != 0}");
+                Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerSupportArg Version 7 EnableExplainText={arg.EnableExplainText != 0}");
                 // Read enable text here?
             }
             else if (privateArg.ArgSize == Marshal.SizeOf<ControllerSupportArgVPre7>())
@@ -60,12 +60,12 @@ namespace Ryujinx.HLE.HOS.Applets
                 ControllerSupportArgVPre7 arg = IApplet.ReadStruct<ControllerSupportArgVPre7>(controllerSupportArg);
                 argHeader = arg.Header;
 
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Pre-7 EnableExplainText={arg.EnableExplainText != 0}");
+                Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerSupportArg Version Pre-7 EnableExplainText={arg.EnableExplainText != 0}");
                 // Read enable text here?
             }
             else
             {
-                Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerSupportArg Version Unknown");
+                Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerSupportArg Version Unknown");
 
                 argHeader = IApplet.ReadStruct<ControllerSupportArgHeader>(controllerSupportArg); // Read just the header
             }
@@ -73,7 +73,7 @@ namespace Ryujinx.HLE.HOS.Applets
             int playerMin = argHeader.PlayerCountMin;
             int playerMax = argHeader.PlayerCountMax;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet Arg {playerMin} {playerMax} {argHeader.EnableTakeOverConnection} {argHeader.EnableSingleMode}");
+            Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerApplet Arg {playerMin} {playerMax} {argHeader.EnableTakeOverConnection} {argHeader.EnableSingleMode}");
 
             int configuredCount = 0;
             PlayerIndex primaryIndex = PlayerIndex.Unknown;
@@ -100,7 +100,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 SelectedId = (uint)GetNpadIdTypeFromIndex(primaryIndex)
             };
 
-            Logger.Stub?.PrintStub(LogClass.ServiceHid, $"ControllerApplet ReturnResult {result.PlayerCount} {result.SelectedId}");
+            Logger.Stub?.Print(LogClass.ServiceHid, $"ControllerApplet ReturnResult {result.PlayerCount} {result.SelectedId}");
 
             _normalSession.Push(BuildResponse(result));
             AppletStateChanged?.Invoke(this, null);

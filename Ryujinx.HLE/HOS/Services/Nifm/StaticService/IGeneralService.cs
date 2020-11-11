@@ -45,7 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Nifm.StaticService
             // Doesn't occur in our case.
             // return ResultCode.ObjectIsNull;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNifm, new { version });
+            Logger.Stub?.Print(LogClass.ServiceNifm, new { version });
 
             return ResultCode.Success;
         }

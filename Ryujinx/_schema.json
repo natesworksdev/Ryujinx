@@ -952,145 +952,164 @@
         "C:\\ShaderDumps"
       ]
     },
-    "logging_enable_debug": {
-      "$id": "#/properties/logging_enable_debug",
-      "type": "boolean",
-      "title": "Logging Enable Debug",
-      "description": "Enables printing debug log messages",
-      "default": false,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_enable_stub": {
-      "$id": "#/properties/logging_enable_stub",
-      "type": "boolean",
-      "title": "Logging Enable Stub",
-      "description": "Enables printing stub log messages",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_enable_info": {
-      "$id": "#/properties/logging_enable_info",
-      "type": "boolean",
-      "title": "Logging Enable Info",
-      "description": "Enables printing info log messages",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_enable_warn": {
-      "$id": "#/properties/logging_enable_warn",
-      "type": "boolean",
-      "title": "Logging Enable Warn",
-      "description": "Enables printing warning log messages",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_enable_error": {
-      "$id": "#/properties/logging_enable_error",
-      "type": "boolean",
-      "title": "Logging Enable Error",
-      "description": "Enables printing error log messages",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_enable_guest": {
-      "$id": "#/properties/logging_enable_guest",
-      "type": "boolean",
-      "title": "Logging Enable Guest",
-      "description": "Enables printing guest log messages",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_enable_fs_access": {
-      "$id": "#/properties/logging_enable_fs_access_log",
-      "type": "boolean",
-      "title": "Logging Enable FS Access Log",
-      "description": "Enables printing FS access log messages",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
-    },
-    "logging_filtered_classes": {
-      "$id": "#/properties/logging_filtered_classes",
-      "type": "array",
-      "title": "Logging Filtered Classes",
-      "description": "Controls which log messages are written to the log targets",
-      "items": {
-        "type": "string",
-        "enum": [
-          "Application",
-          "Audio",
-          "Cpu",
-          "Font",
-          "Emulation",
-          "Gpu",
-          "Hid",
-          "Kernel",
-          "KernelIpc",
-          "KernelScheduler",
-          "KernelSvc",
-          "Loader",
-          "Service",
-          "ServiceAcc",
-          "ServiceAm",
-          "ServiceApm",
-          "ServiceAudio",
-          "ServiceBsd",
-          "ServiceCaps",
-          "ServiceFriend",
-          "ServiceFs",
-          "ServiceHid",
-          "ServiceIrs",
-          "ServiceLdr",
-          "ServiceLm",
-          "ServiceMm",
-          "ServiceNfp",
-          "ServiceNifm",
-          "ServiceNs",
-          "ServiceNv",
-          "ServicePctl",
-          "ServicePl",
-          "ServicePrepo",
-          "ServicePsm",
-          "ServiceSet",
-          "ServiceSfdnsres",
-          "ServiceSm",
-          "ServiceSsl",
-          "ServiceSss",
-          "ServiceTime",
-          "ServiceVi"
-        ]
+    "logging": {
+      "$id": "#/properties/logging",
+      "type": "object",
+      "title": "Settings and information related to logging",
+      "description": "Settings and information related to logging",
+      "properties": {
+        "logging_enable_debug": {
+          "$id": "#/properties/logging_enable_debug",
+          "type": "boolean",
+          "title": "Logging Enable Debug",
+          "description": "Enables printing debug log messages",
+          "default": false,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_stub": {
+          "$id": "#/properties/logging_enable_stub",
+          "type": "boolean",
+          "title": "Logging Enable Stub",
+          "description": "Enables printing stub log messages",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_info": {
+          "$id": "#/properties/logging_enable_info",
+          "type": "boolean",
+          "title": "Logging Enable Info",
+          "description": "Enables printing info log messages",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_warn": {
+          "$id": "#/properties/logging_enable_warn",
+          "type": "boolean",
+          "title": "Logging Enable Warn",
+          "description": "Enables printing warning log messages",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_error": {
+          "$id": "#/properties/logging_enable_error",
+          "type": "boolean",
+          "title": "Logging Enable Error",
+          "description": "Enables printing error log messages",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_guest": {
+          "$id": "#/properties/logging_enable_guest",
+          "type": "boolean",
+          "title": "Logging Enable Guest",
+          "description": "Enables printing guest log messages",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_fs_access": {
+          "$id": "#/properties/logging_enable_fs_access_log",
+          "type": "boolean",
+          "title": "Logging Enable FS Access Log",
+          "description": "Enables printing FS access log messages",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_enable_trace": {
+          "$id": "#/properties/logging_enable_trace",
+          "type": "boolean",
+          "title": "Logging Enable Trace",
+          "description": "Enables printing trace log messages",
+          "default": false,
+          "examples": [
+            true,
+            false
+          ]
+        },
+        "logging_filtered_classes": {
+          "$id": "#/properties/logging_filtered_classes",
+          "type": "array",
+          "title": "Logging Filtered Classes",
+          "description": "Controls which log messages are written to the log targets",
+          "items": {
+            "type": "string",
+            "enum": [
+              "Application",
+              "Audio",
+              "Cpu",
+              "Font",
+              "Emulation",
+              "Gpu",
+              "Hid",
+              "Kernel",
+              "KernelIpc",
+              "KernelScheduler",
+              "KernelSvc",
+              "Loader",
+              "Service",
+              "ServiceAcc",
+              "ServiceAm",
+              "ServiceApm",
+              "ServiceAudio",
+              "ServiceBsd",
+              "ServiceCaps",
+              "ServiceFriend",
+              "ServiceFs",
+              "ServiceHid",
+              "ServiceIrs",
+              "ServiceLdr",
+              "ServiceLm",
+              "ServiceMm",
+              "ServiceNfp",
+              "ServiceNifm",
+              "ServiceNs",
+              "ServiceNv",
+              "ServicePctl",
+              "ServicePl",
+              "ServicePrepo",
+              "ServicePsm",
+              "ServiceSet",
+              "ServiceSfdnsres",
+              "ServiceSm",
+              "ServiceSsl",
+              "ServiceSss",
+              "ServiceTime",
+              "ServiceVi"
+            ]
+          }
+        },
+        "enable_file_log": {
+          "$id": "#/properties/enable_file_log",
+          "type": "boolean",
+          "title": "Enable File Log",
+          "description": "Enables logging to a file on disk",
+          "default": true,
+          "examples": [
+            true,
+            false
+          ]
+        }
       }
-    },
-    "enable_file_log": {
-      "$id": "#/properties/enable_file_log",
-      "type": "boolean",
-      "title": "Enable File Log",
-      "description": "Enables logging to a file on disk",
-      "default": true,
-      "examples": [
-        true,
-        false
-      ]
     },
     "system_language": {
       "$id": "#/properties/system_language",

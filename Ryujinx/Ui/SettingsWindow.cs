@@ -36,6 +36,7 @@ namespace Ryujinx.Ui
         [GUI] CheckButton     _fileLogToggle;
         [GUI] CheckButton     _guestLogToggle;
         [GUI] CheckButton     _fsAccessLogToggle;
+        [GUI] CheckButton     _traceLogToggle;
         [GUI] Adjustment      _fsLogSpinAdjustment;
         [GUI] ComboBoxText    _graphicsDebugLevel;
         [GUI] CheckButton     _dockedModeToggle;
@@ -153,6 +154,11 @@ namespace Ryujinx.Ui
             if (ConfigurationState.Instance.Logger.EnableFsAccessLog)
             {
                 _fsAccessLogToggle.Click();
+            }
+
+            if (ConfigurationState.Instance.Logger.EnableTrace)
+            {
+                _traceLogToggle.Click();
             }
 
             foreach (GraphicsDebugLevel level in Enum.GetValues(typeof(GraphicsDebugLevel)))
@@ -522,6 +528,7 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Logger.EnableDebug.Value               = _debugLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableGuest.Value               = _guestLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Value         = _fsAccessLogToggle.Active;
+            ConfigurationState.Instance.Logger.EnableTrace.Value               = _traceLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFileLog.Value             = _fileLogToggle.Active;
             ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value        = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
             ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;

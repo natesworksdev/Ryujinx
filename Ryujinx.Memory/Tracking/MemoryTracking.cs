@@ -75,7 +75,6 @@ namespace Ryujinx.Memory.Tracking
                 {
                     VirtualRegion region = results[i];
                     region.RecalculatePhysicalChildren();
-                    region.UpdateProtection();
                 }
             }
         }
@@ -201,7 +200,7 @@ namespace Ryujinx.Memory.Tracking
 
             lock (TrackingLock)
             {
-                RegionHandle handle = new RegionHandle(this, address, size, _memoryManager.IsRangeMapped(address, size));
+                RegionHandle handle = new RegionHandle(this, address, size);
 
                 return handle;
             }

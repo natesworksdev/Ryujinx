@@ -8,16 +8,34 @@ namespace Ryujinx.Common.Logging
 {
     public static class Logger
     {
+        /// <summary>
+        /// Tracks the amount of time elapsed since the start of Ryujinx.
+        /// </summary>
+        /// <remarks>
+        /// Time spent idling in the games directory does not increase this value.
+        /// </remarks>
         private static readonly Stopwatch m_Time;
 
+        /// <summary>
+        /// Array of booleans that describe whether logging for a specific <see cref="LogClass"/> has been enabled.
+        /// </summary>
         private static readonly bool[] m_EnabledClasses;
 
+        /// <summary>
+        /// A list of targets to log to.
+        /// </summary>
         private static readonly List<ILogTarget> m_LogTargets;
 
+        /// <summary>
+        /// The event that is raised whenever a message or data needs to be logged
+        /// </summary>
         public static event EventHandler<LogEventArgs> Updated;
 
         public struct Log
         {
+            /// <summary>
+            /// The level at which to log at
+            /// </summary>
             internal readonly LogLevel Level;
 
             internal Log(LogLevel level)
@@ -25,64 +43,41 @@ namespace Ryujinx.Common.Logging
                 Level = level;
             }
 
+            /// <summary>
+            /// Logs a message at the specified <see cref="LogLevel"/> and using the specified <see cref="LogClass"/> and caller.
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void PrintMsg(LogClass logClass, string message)
+            public void Print(LogClass logClass, string message = "", [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
-                {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, "", message)));
-                }
+                Print(logClass, message, null, caller);
             }
 
+            /// <summary>
+            /// Logs an object at the specified <see cref="LogLevel"/> and using the specified <see cref="LogClass"/> and caller.
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void Print(LogClass logClass, string message, [CallerMemberName] string caller = "")
+            public void Print(LogClass logClass, object data, [CallerMemberName] string caller = "")
             {
-                if (m_EnabledClasses[(int)logClass])
-                {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
-                }
-            }
+                Print(logClass, "", data, caller);
+            }  
 
+            /// <summary>
+            /// Logs a message and object at the specified <see cref="LogLevel"/> and using the specified <see cref="LogClass"/> and caller.
+            /// </summary>
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Print(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
             {
                 if (m_EnabledClasses[(int)logClass])
                 {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message), data));
+                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, logClass, caller, message, data));
                 }
             }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void PrintStub(LogClass logClass, string message = "", [CallerMemberName] string caller = "")
-            {
-                if (m_EnabledClasses[(int)logClass])
-                {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message)));
-                }
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void PrintStub(LogClass logClass, object data, [CallerMemberName] string caller = "")
-            {
-                if (m_EnabledClasses[(int)logClass])
-                {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed."), data));
-                }
-            }
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            public void PrintStub(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
-            {
-                if (m_EnabledClasses[(int)logClass])
-                {
-                    Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, "Stubbed. " + message), data));
-                }
-            }            
-
-            [MethodImpl(MethodImplOptions.AggressiveInlining)]
-            private static string FormatMessage(LogClass Class, string Caller, string Message) => $"{Class} {Caller}: {Message}";
         }
 
+        /*
+         By using Nullables, the cost of invoking the logging function if a log level is disabled is greatly reduced.
+         For example, the arguments passed to the Log are not computed if it isn't enabled.
+        */
         public static Log? Debug     { get; private set; }
         public static Log? Info      { get; private set; }
         public static Log? Warning   { get; private set; }
@@ -90,6 +85,7 @@ namespace Ryujinx.Common.Logging
         public static Log? Guest     { get; private set; }
         public static Log? AccessLog { get; private set; }
         public static Log? Stub      { get; private set; }
+        public static Log? Trace     { get; private set; }
         public static Log  Notice    { get; } // Always enabled
 
         static Logger()
@@ -119,11 +115,17 @@ namespace Ryujinx.Common.Logging
             Info = new Log(LogLevel.Info);
         }
 
+        /// <summary>
+        /// Resets the time elapsed since start to 0
+        /// </summary>
         public static void RestartTime()
         {
             m_Time.Restart();
         }
 
+        /// <summary>
+        /// Retrieves the <see cref="ILogTarget"/> with the corresponding <c>Name</c>. Returns <c>null</c> if nothing was found.
+        /// </summary>
         private static ILogTarget GetTarget(string targetName)
         {
             foreach (var target in m_LogTargets)
@@ -137,6 +139,13 @@ namespace Ryujinx.Common.Logging
             return null;
         }
 
+
+        /// <summary>
+        /// Adds a target to log when the <c>Updated</c> event is invoked.
+        /// </summary>
+        /// <remark>
+        /// The target's <c>Log(object sender, LogEventArgs args)</c> method is added as an event handler.
+        /// </remark>
         public static void AddTarget(ILogTarget target)
         {
             m_LogTargets.Add(target);
@@ -144,6 +153,10 @@ namespace Ryujinx.Common.Logging
             Updated += target.Log;
         }
 
+
+        /// <summary>
+        /// Unsubscribes a target from receiving log notifications
+        /// </summary>
         public static void RemoveTarget(string target)
         {
             ILogTarget logTarget = GetTarget(target);
@@ -170,9 +183,12 @@ namespace Ryujinx.Common.Logging
             m_LogTargets.Clear();
         }
 
+        /// <summary>
+        /// Returns a read-only list of the enabled log levels
+        /// </summary>
         public static IReadOnlyCollection<LogLevel> GetEnabledLevels()
         {
-            var logs = new Log?[] { Debug, Info, Warning, Error, Guest, AccessLog, Stub };
+            var logs = new Log?[] { Trace, Debug, Info, Warning, Error, Guest, AccessLog, Stub };
             List<LogLevel> levels = new List<LogLevel>(logs.Length);
             foreach (var log in logs)
             {
@@ -185,10 +201,14 @@ namespace Ryujinx.Common.Logging
             return levels;
         }
 
+        /// <summary>
+        /// Enables/disables logging for a <see cref="LogLevel"/>
+        /// </summary>
         public static void SetEnable(LogLevel logLevel, bool enabled)
         {
             switch (logLevel)
             {
+                case LogLevel.Trace     : Trace     = enabled ? new Log(LogLevel.Trace)    : new Log?(); break;
                 case LogLevel.Debug     : Debug     = enabled ? new Log(LogLevel.Debug)    : new Log?(); break;
                 case LogLevel.Info      : Info      = enabled ? new Log(LogLevel.Info)     : new Log?(); break;
                 case LogLevel.Warning   : Warning   = enabled ? new Log(LogLevel.Warning)  : new Log?(); break;
@@ -200,6 +220,9 @@ namespace Ryujinx.Common.Logging
             }
         }
 
+        /// <summary>
+        /// Enables/disables logging for a <see cref="LogClass"/>
+        /// </summary>
         public static void SetEnable(LogClass logClass, bool enabled)
         {
             m_EnabledClasses[(int)logClass] = enabled;

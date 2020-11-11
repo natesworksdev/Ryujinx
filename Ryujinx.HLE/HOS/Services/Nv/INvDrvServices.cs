@@ -411,7 +411,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
                 context.ResponseData.WriteStruct(nvStatus);
                 context.ResponseData.Write((uint)NvResult.Success);
 
-                Logger.Stub?.PrintStub(LogClass.ServiceNv);
+                Logger.Stub?.Print(LogClass.ServiceNv);
             }
             else
             {
@@ -443,7 +443,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // DumpGraphicsMemoryInfo()
         public ResultCode DumpGraphicsMemoryInfo(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return ResultCode.Success;
         }
@@ -558,7 +558,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv
         // FinishInitialize(unknown<8>)
         public ResultCode FinishInitialize(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return ResultCode.Success;
         }

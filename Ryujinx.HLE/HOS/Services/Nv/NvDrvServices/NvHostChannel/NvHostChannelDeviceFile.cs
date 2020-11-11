@@ -208,7 +208,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         {
             arguments.Value = 0;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -217,7 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         {
             _submitTimeout = submitTimeout;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -292,7 +292,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult SetNvMapFd(ref int nvMapFd)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -301,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         {
             _timeout = timeout;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -317,21 +317,21 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult AllocObjCtx(ref AllocObjCtxArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
 
         private NvInternalResult ZcullBind(ref ZcullBindArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
 
         private NvInternalResult SetErrorNotifier(ref SetErrorNotifierArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -353,7 +353,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                     return NvInternalResult.InvalidInput;
             }
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             // TODO: disable and preempt channel when GPU scheduler will be implemented.
 
@@ -366,7 +366,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
             arguments.Fence = _channelSyncpoint;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -377,7 +377,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
             arguments.Fence = _channelSyncpoint;
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -391,7 +391,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
             _timeslice = timeslice; // in micro-seconds
 
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             // TODO: disable and preempt channel when GPU scheduler will be implemented.
 
@@ -400,7 +400,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvInternalResult SetUserData(ref ulong userData)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }

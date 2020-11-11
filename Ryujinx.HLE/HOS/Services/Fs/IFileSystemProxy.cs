@@ -380,7 +380,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
         [Command(71)]
         public ResultCode ReadSaveDataFileSystemExtraDataWithMaskBySaveDataAttribute(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceFs);
+            Logger.Stub?.Print(LogClass.ServiceFs);
 
             MemoryHelper.FillWithZeros(context.Memory, context.Request.ReceiveBuff[0].Position, (int)context.Request.ReceiveBuff[0].Size);
 
@@ -538,7 +538,7 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             string message = ReadUtf8StringSend(context);
 
             // FS ends each line with a newline. Remove it because Ryujinx logging adds its own newline
-            Logger.AccessLog?.PrintMsg(LogClass.ServiceFs, message.TrimEnd('\n'));
+            Logger.AccessLog?.Print(LogClass.ServiceFs, message.TrimEnd('\n'));
 
             return ResultCode.Success;
         }

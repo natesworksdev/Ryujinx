@@ -286,7 +286,6 @@ namespace Ryujinx.Ui
         private HLE.Switch InitializeSwitchInstance()
         {
             _virtualFileSystem.Reload();
-
             HLE.Switch instance = new HLE.Switch(_virtualFileSystem, _contentManager, _userChannelPersistence, InitializeRenderer(), InitializeAudioEngine())
             {
                 UiHandler = _uiHandler

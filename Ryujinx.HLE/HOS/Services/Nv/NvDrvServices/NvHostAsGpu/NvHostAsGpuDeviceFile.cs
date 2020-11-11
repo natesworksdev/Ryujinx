@@ -72,7 +72,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult BindChannel(ref BindChannelArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
@@ -273,14 +273,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult GetVaRegions(ref GetVaRegionsArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }
 
         private NvInternalResult InitializeEx(ref InitializeExArguments arguments)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceNv);
+            Logger.Stub?.Print(LogClass.ServiceNv);
 
             return NvInternalResult.Success;
         }

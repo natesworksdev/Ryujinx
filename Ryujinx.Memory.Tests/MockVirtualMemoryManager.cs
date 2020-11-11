@@ -15,11 +15,6 @@ namespace Ryujinx.Memory.Tests
             return NoMappings ? new (ulong address, ulong size)[0] : new (ulong address, ulong size)[] { (va, size) };
         }
 
-        public bool IsRangeMapped(ulong va, ulong size)
-        {
-            return true;
-        }
-
         public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection)
         {
             

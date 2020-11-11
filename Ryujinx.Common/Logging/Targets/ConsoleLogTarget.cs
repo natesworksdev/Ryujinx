@@ -11,6 +11,9 @@ namespace Ryujinx.Common.Logging
 
         string ILogTarget.Name { get => _name; }
 
+        /// <summary>
+        /// Returns the color of the text depending on the <see cref="LogLevel"/>
+        /// </summary>
         private static ConsoleColor GetLogColor(LogLevel level) => level switch {
             LogLevel.Info    => ConsoleColor.White,
             LogLevel.Warning => ConsoleColor.Yellow,
@@ -26,6 +29,9 @@ namespace Ryujinx.Common.Logging
             _name      = name;
         }
 
+        /// <summary>
+        /// Logs the data to the console
+        /// </summary>
         public void Log(object sender, LogEventArgs args)
         {
             Console.ForegroundColor = GetLogColor(args.Level);
