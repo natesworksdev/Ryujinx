@@ -178,7 +178,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
 
             EnsurePbo(from);
-            EnsurePbo(to);
 
             GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
 
@@ -209,7 +208,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
 
-            to.ReadFromPbo2D(offset, dstLayer, dstLevel, dstWidth, dstHeight, from.Info.GetMipSize2D(srcLevel));
+            to.ReadFromPbo2D(offset, dstLayer, dstLevel, dstWidth, dstHeight);
 
             if (slice)
             {

@@ -112,6 +112,17 @@ namespace Ryujinx.Graphics.OpenGL.Image
                 // so it doesn't work for all cases.
                 TextureView emulatedView = (TextureView)_renderer.CreateTexture(info, ScaleFactor);
 
+                TextureCopyUnscaled.Copy(
+                    _renderer.TextureCopy,
+                    this,
+                    emulatedView,
+                    Handle,
+                    emulatedView.Handle,
+                    0,
+                    firstLayer,
+                    0,
+                    firstLevel);
+
                 emulatedView._emulatedViewParent = this;
 
                 emulatedView.FirstLayer = firstLayer;
@@ -308,14 +319,16 @@ namespace Ryujinx.Graphics.OpenGL.Image
             ReadFrom(IntPtr.Zero + offset, size);
         }
 
-        public void ReadFromPbo2D(int offset, int layer, int level, int width, int height, int size)
+        public void ReadFromPbo2D(int offset, int layer, int level, int width, int height)
         {
-            ReadFrom2D(IntPtr.Zero + offset, layer, level, width, height, size);
+            ReadFrom2D(IntPtr.Zero + offset, layer, level, width, height);
         }
 
-        private void ReadFrom2D(IntPtr data, int layer, int level, int width, int height, int size)
+        private void ReadFrom2D(IntPtr data, int layer, int level, int width, int height)
         {
             TextureTarget target = Target.Convert();
+
+            int mipSize = Info.GetMipSize2D(level);
 
             Bind(target, 0);
 
@@ -332,7 +345,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             0,
                             width,
                             format.PixelFormat,
-                            size,
+                            mipSize,
                             data);
                     }
                     else
@@ -359,7 +372,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             width,
                             1,
                             format.PixelFormat,
-                            size,
+                            mipSize,
                             data);
                     }
                     else
@@ -388,7 +401,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             width,
                             height,
                             format.PixelFormat,
-                            size,
+                            mipSize,
                             data);
                     }
                     else
@@ -421,7 +434,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             height,
                             1,
                             format.PixelFormat,
-                            size,
+                            mipSize,
                             data);
                     }
                     else
@@ -452,7 +465,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                             width,
                             height,
                             format.PixelFormat,
-                            size,
+                            mipSize,
                             data);
                     }
                     else
