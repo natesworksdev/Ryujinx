@@ -277,7 +277,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets the address of an unused (free) region of the specified size.
         /// </summary>
