@@ -11,9 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// GPU memory manager.
     /// </summary>
     public class MemoryManager
-    {
-        private Stopwatch stopwatch = new Stopwatch();
-        
+    {        
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -291,7 +289,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
         private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
         {
-            stopwatch.Restart();
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
             ulong address  = start;
@@ -317,7 +314,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (freeSize >= size)
                     {
-                        Console.WriteLine($"Memory Mapping took {stopwatch.ElapsedMilliseconds}ms");
                         return address;
                     }
                 }
@@ -334,7 +330,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
             }
-            Console.WriteLine($"Memory Mapping took {stopwatch.ElapsedMilliseconds}ms");
             return PteUnmapped;
         }
 
