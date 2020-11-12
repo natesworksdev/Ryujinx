@@ -1,5 +1,7 @@
 using Ryujinx.Cpu;
 using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,6 +12,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
+        private Stopwatch stopwatch = new Stopwatch();
+        
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -37,6 +41,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
         private GpuContext _context;
+
+        private SortedSet<ConsumedMemory> consumedMemorySet = new SortedSet<ConsumedMemory>();
 
         /// <summary>
         /// Creates a new instance of the GPU memory manager.
@@ -152,6 +158,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (va != PteUnmapped)
                 {
+                    ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
+                    consumedMemorySet.Add(consumedMemory);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -178,6 +186,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
+                    ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
+                    consumedMemorySet.Add(consumedMemory);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -213,6 +223,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
 
+                ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
+                consumedMemorySet.Add(consumedMemory);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
@@ -236,6 +248,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (address != PteUnmapped)
                 {
+                    ConsumedMemory consumedMemory = new ConsumedMemory(address, (size / PageSize) + (size % PageSize));
+                    consumedMemorySet.Add(consumedMemory);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -258,6 +272,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
+                ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
+                consumedMemorySet.Remove(consumedMemory);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
@@ -265,6 +281,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        
         /// <summary>
         /// Gets the address of an unused (free) region of the specified size.
         /// </summary>
@@ -274,10 +291,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
         private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
         {
+            stopwatch.Restart();
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
             ulong address  = start;
             ulong freeSize = 0;
+
+            foreach(ConsumedMemory cm in consumedMemorySet)
+            {
+                if (address >= cm.address && address <= cm.endAddress) address = cm.endAddress + 1ul;
+            }
 
             if (alignment == 0)
             {
@@ -294,6 +317,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (freeSize >= size)
                     {
+                        Console.WriteLine($"Memory Mapping took {stopwatch.ElapsedMilliseconds}ms");
                         return address;
                     }
                 }
@@ -310,7 +334,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
             }
-
+            Console.WriteLine($"Memory Mapping took {stopwatch.ElapsedMilliseconds}ms");
             return PteUnmapped;
         }
 
