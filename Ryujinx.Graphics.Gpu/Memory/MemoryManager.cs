@@ -11,7 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// GPU memory manager.
     /// </summary>
     public class MemoryManager
-    {        
+    {
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -330,6 +330,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
             }
+
             return PteUnmapped;
         }
 
