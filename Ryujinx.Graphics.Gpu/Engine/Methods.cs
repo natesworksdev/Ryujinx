@@ -355,8 +355,8 @@ namespace Ryujinx.Graphics.Gpu.Engine
             int samplesInX = msaaMode.SamplesInX();
             int samplesInY = msaaMode.SamplesInY();
 
-            var extents = state.Get<ViewportExtents>(MethodOffset.ViewportExtents, 0);
-            Size sizeHint = new Size(extents.X + extents.Width, extents.Y + extents.Height, 1);
+            var scissor = state.Get<ScreenScissorState>(MethodOffset.ScreenScissorState);
+            Size sizeHint = new Size(scissor.X + scissor.Width, scissor.Y + scissor.Height, 1);
 
             bool changedScale = false;
 
@@ -1000,14 +1000,14 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             ShaderBundle gs = ShaderCache.GetGraphicsShader(state, addresses);
 
-            _vsUsesInstanceId = gs.Shaders[0]?.Program.Info.UsesInstanceId ?? false;
+            _vsUsesInstanceId = gs.Shaders[0]?.Info.UsesInstanceId ?? false;
 
             int storageBufferBindingsCount = 0;
             int uniformBufferBindingsCount = 0;
 
             for (int stage = 0; stage < Constants.ShaderStages; stage++)
             {
-                ShaderProgramInfo info = gs.Shaders[stage]?.Program.Info;
+                ShaderProgramInfo info = gs.Shaders[stage]?.Info;
 
                 _currentProgramInfo[stage] = info;
 
