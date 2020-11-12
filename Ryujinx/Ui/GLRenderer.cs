@@ -166,7 +166,7 @@ namespace Ryujinx.Ui
 
             bool toggleDockedMode = keyboard.IsKeyDown(OpenTK.Input.Key.F9);
 
-            if(toggleDockedMode != _toggleDockedMode)
+            if (toggleDockedMode != _toggleDockedMode)
             {
                 if (toggleDockedMode)
                 {
