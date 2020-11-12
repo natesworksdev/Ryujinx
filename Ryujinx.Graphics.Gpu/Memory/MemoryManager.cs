@@ -1,7 +1,6 @@
 using Ryujinx.Cpu;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -278,7 +277,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
             }
         }
-
         
         /// <summary>
         /// Gets the address of an unused (free) region of the specified size.
