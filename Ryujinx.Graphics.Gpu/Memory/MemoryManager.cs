@@ -39,7 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private GpuContext _context;
 
-        private SortedSet<ConsumedMemory> consumedMemorySet = new SortedSet<ConsumedMemory>();
+        private SortedSet<MappedMemoryRange> mappedMemoryRangeCache = new SortedSet<MappedMemoryRange>();
 
         /// <summary>
         /// Creates a new instance of the GPU memory manager.
@@ -155,8 +155,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (va != PteUnmapped)
                 {
-                    ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
-                    consumedMemorySet.Add(consumedMemory);
+                    MappedMemoryRange consumedMemory = new MappedMemoryRange(va, (size / PageSize) + (size % PageSize));
+                    mappedMemoryRangeCache.Add(consumedMemory);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -183,8 +183,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
-                    ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
-                    consumedMemorySet.Add(consumedMemory);
+                    MappedMemoryRange consumedMemory = new MappedMemoryRange(va, (size / PageSize) + (size % PageSize));
+                    mappedMemoryRangeCache.Add(consumedMemory);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -220,8 +220,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
 
-                ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
-                consumedMemorySet.Add(consumedMemory);
+                MappedMemoryRange consumedMemory = new MappedMemoryRange(va, (size / PageSize) + (size % PageSize));
+                mappedMemoryRangeCache.Add(consumedMemory);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
@@ -245,8 +245,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (address != PteUnmapped)
                 {
-                    ConsumedMemory consumedMemory = new ConsumedMemory(address, (size / PageSize) + (size % PageSize));
-                    consumedMemorySet.Add(consumedMemory);
+                    MappedMemoryRange consumedMemory = new MappedMemoryRange(address, (size / PageSize) + (size % PageSize));
+                    mappedMemoryRangeCache.Add(consumedMemory);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -269,8 +269,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
-                ConsumedMemory consumedMemory = new ConsumedMemory(va, (size / PageSize) + (size % PageSize));
-                consumedMemorySet.Remove(consumedMemory);
+                MappedMemoryRange consumedMemory = new MappedMemoryRange(va, (size / PageSize) + (size % PageSize));
+                mappedMemoryRangeCache.Remove(consumedMemory);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
@@ -292,9 +292,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             ulong address  = start;
             ulong freeSize = 0;
 
-            foreach(ConsumedMemory cm in consumedMemorySet)
+            foreach(MappedMemoryRange cm in mappedMemoryRangeCache)
             {
-                if (address >= cm.address && address <= cm.endAddress) address = cm.endAddress + 1ul;
+                if (address >= cm.startAddress && address <= cm.endAddress) address = cm.endAddress + 1ul;
             }
 
             if (alignment == 0)
