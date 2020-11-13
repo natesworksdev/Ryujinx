@@ -19,7 +19,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             this.size = endAddress - address;
         }
 
-        public override bool Equals([AllowNull] object obj)
+        public override bool Equals(object obj)
         {
             return Equals((MemoryRange)obj);
         }
