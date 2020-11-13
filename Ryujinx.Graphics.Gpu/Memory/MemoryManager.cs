@@ -161,6 +161,44 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
             }
         }
+
+        /// <summary>
+        /// Marks a range of memory as free.
+        /// </summary>
+        /// <param name="address">The address at which to mark</param>
+        /// <param name="size">Size in bytes of the range</param>
+        private void Dealloc(ulong address, ulong size)
+        {
+            LinkedListNode<MemoryRange> node = _memory.First;
+            while (node != null)
+            {
+                MemoryRange range = node.Value;
+                if (address < range.startAddress)
+                {
+                    ulong start = address, end = range.endAddress;
+
+                    LinkedListNode<MemoryRange> prev = node.Previous;
+
+                    if (prev != null)
+                    {
+                        if(prev.Value.endAddress == start - 1UL)
+                        {
+                            start = prev.Value.startAddress;
+                            _memory.Remove(prev);
+                        }
+                    }
+
+                    _memory.AddBefore(node, new MemoryRange(start, end));
+                    _memory.Remove(node);
+                    return;
+                }
+                else
+                {
+                    node = node.Next;
+                }
+            }
+        }
+
         /// <summary>
         /// Maps a given range of pages to the specified CPU virtual address.
         /// </summary>
