@@ -202,6 +202,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
+                Alloc(va, (size / PageSize) + (size % PageSize));
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
