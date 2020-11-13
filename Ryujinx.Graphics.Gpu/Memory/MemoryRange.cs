@@ -5,25 +5,28 @@ using System.Text;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
-    class MemoryRange : IEquatable<MemoryRange>, IComparable<MemoryRange>
+    struct MemoryRange : IEquatable<MemoryRange>, IComparable<MemoryRange>
     {
         public ulong startAddress { get; }
 
         public ulong endAddress { get; }
+        
+        public ulong size { get; }
         public MemoryRange(ulong address, ulong endAddress)
         {
             this.startAddress = address;
             this.endAddress = endAddress;
+            this.size = endAddress - address;
         }
 
-        public override bool Equals(object obj)
+        public override bool Equals([AllowNull] object obj)
         {
-            return Equals(obj as MemoryRange);
+            return Equals((MemoryRange)obj);
         }
 
         public bool Equals(MemoryRange other)
         {
-            return other != null &&
+            return 
                    startAddress == other.startAddress &&
                    endAddress == other.endAddress;
         }

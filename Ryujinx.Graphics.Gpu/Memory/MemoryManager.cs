@@ -169,12 +169,32 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     LinkedListNode<MemoryRange> prev = node.Previous;
 
-                    if (prev != null)
+                    while (prev != null)
                     {
-                        if(prev.Value.endAddress == start - 1UL)
+                        if (prev.Value.endAddress == start - 1UL)
                         {
                             start = prev.Value.startAddress;
                             _memory.Remove(prev);
+                            prev = prev.Previous;
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    LinkedListNode<MemoryRange> next = node.Next;
+
+                    while(next != null)
+                    {
+                        if(next.Value.startAddress == end + 1UL)
+                        {
+                            end = next.Value.endAddress;
+                            _memory.Remove(next);
+                            next = next.Next;
+                        }
+                        else {
+                            break;
                         }
                     }
 
@@ -381,9 +401,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 while(null != node)
                 {
                     MemoryRange memoryRange = node.Value;
-                    if (address >= memoryRange.startAddress && address + PageSize - 1UL <= memoryRange.endAddress)
+                    if (memoryRange.size >= PageSize && address >= memoryRange.startAddress && address + PageSize - 1UL <= memoryRange.endAddress)
                     {
                         Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+                        Console.WriteLine($"# Ranges: {_memory.Count}");
                         return address;
                     }
                     node = node.Next;
