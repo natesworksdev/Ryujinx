@@ -1,5 +1,6 @@
 using Ryujinx.Cpu;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -11,7 +12,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
     public class MemoryManager
     {
         private const ulong AddressSpaceSize = 1UL << 40;
-
+        private const ulong MinAddress = 1UL;
+        private const ulong MaxAddress = AddressSpaceSize;
         public const ulong BadAddress = ulong.MaxValue;
 
         private const int PtLvl0Bits = 14;
@@ -33,6 +35,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const ulong PteReserved = 0xffffffff_fffffffe;
 
         private readonly ulong[][] _pageTable;
+        private LinkedList<MemoryRange> _memory = new LinkedList<MemoryRange>();
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
@@ -111,6 +114,53 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context.PhysicalMemory.Write(processVa, data);
         }
 
+        /// <summary>
+        /// Marks a range of memory as allocated.
+        /// </summary>
+        /// <param name="address">The address at which to mark</param>
+        /// <param name="size">Size in bytes of the range</param>
+        private void Alloc(ulong address, ulong size)
+        {
+            LinkedListNode<MemoryRange> node = _memory.First;
+            ulong endAddress = address + size;
+            while(node != null)
+            {
+                MemoryRange range = node.Value;
+                if(address >= range.startAddress && endAddress <= range.endAddress)
+                {
+                    ulong leftStart = MinAddress, leftEnd = address - 1UL;
+                    ulong rightStart = endAddress + 1UL, rightEnd = MaxAddress;
+
+                    LinkedListNode<MemoryRange> prev = node.Previous;
+                    LinkedListNode<MemoryRange> next = node.Next;
+
+                    if(prev != null)
+                    {
+                        leftStart = prev.Value.endAddress + 1UL;
+                    }
+                    if(next != null)
+                    {
+                        rightEnd = next.Value.startAddress - 1UL;
+                    }
+
+                    if(leftStart <= leftEnd)
+                    {
+                        _memory.AddBefore(node, new MemoryRange(leftStart, leftEnd));
+                    }
+                    if (rightStart <= rightEnd)
+                    {
+                        _memory.AddAfter(node, new MemoryRange(rightStart, rightEnd));
+                    }
+                    _memory.Remove(node);
+
+                    return;
+                }
+                else
+                {
+                    node = node.Next;
+                }
+            }
+        }
         /// <summary>
         /// Maps a given range of pages to the specified CPU virtual address.
         /// </summary>
