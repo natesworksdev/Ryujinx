@@ -37,5 +37,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             return this.startAddress.CompareTo(other.startAddress);
         }
+
+        public override string ToString()
+        {
+            return $" |{startAddress} -> {endAddress}| ";
+        }
     }
 }
