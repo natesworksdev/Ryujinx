@@ -1,6 +1,7 @@
 using Ryujinx.Cpu;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -11,6 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
+        private Stopwatch stopwatch = new Stopwatch();
         private const ulong AddressSpaceSize = 1UL << 40;
         private const ulong MinAddress = 1UL;
         private const ulong MaxAddress = AddressSpaceSize;
@@ -48,6 +50,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
+            _memory.AddFirst(new MemoryRange(MinAddress, MaxAddress));
         }
 
         /// <summary>
@@ -128,29 +131,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 MemoryRange range = node.Value;
                 if(address >= range.startAddress && endAddress <= range.endAddress)
                 {
-                    ulong leftStart = MinAddress, leftEnd = address - 1UL;
-                    ulong rightStart = endAddress + 1UL, rightEnd = MaxAddress;
+                    ulong rightStart = endAddress + 1UL, rightEnd = range.endAddress;
 
-                    LinkedListNode<MemoryRange> prev = node.Previous;
-                    LinkedListNode<MemoryRange> next = node.Next;
-
-                    if(prev != null)
-                    {
-                        leftStart = prev.Value.endAddress + 1UL;
-                    }
-                    if(next != null)
-                    {
-                        rightEnd = next.Value.startAddress - 1UL;
-                    }
-
-                    if(leftStart <= leftEnd)
-                    {
-                        _memory.AddBefore(node, new MemoryRange(leftStart, leftEnd));
-                    }
                     if (rightStart <= rightEnd)
                     {
                         _memory.AddAfter(node, new MemoryRange(rightStart, rightEnd));
                     }
+
                     _memory.Remove(node);
 
                     return;
@@ -240,6 +227,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (va != PteUnmapped)
                 {
+                    Alloc(va, (size / PageSize) + (size % PageSize));
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -266,6 +254,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
+                    Alloc(va, (size / PageSize) + (size % PageSize));
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -301,6 +290,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
 
+                Alloc(va, (size / PageSize) + (size % PageSize));
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
@@ -324,6 +314,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (address != PteUnmapped)
                 {
+                    Alloc(address, (size / PageSize) + (size % PageSize));
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -346,6 +337,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
+                Dealloc(va, (size / PageSize) + (size % PageSize));
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
@@ -362,43 +354,52 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
         private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
         {
+            stopwatch.Restart();
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
-            ulong address  = start;
-            ulong freeSize = 0;
-
-            if (alignment == 0)
+            foreach(MemoryRange memoryRange in _memory)
             {
-                alignment = 1;
-            }
-
-            alignment = (alignment + PageMask) & ~PageMask;
-
-            while (address + freeSize < AddressSpaceSize)
-            {
-                if (!IsPageInUse(address + freeSize))
+                if (memoryRange.endAddress - memoryRange.startAddress >= size)
                 {
-                    freeSize += PageSize;
-
-                    if (freeSize >= size)
-                    {
-                        return address;
-                    }
-                }
-                else
-                {
-                    address += freeSize + PageSize;
-                    freeSize = 0;
-
-                    ulong remainder = address % alignment;
-
-                    if (remainder != 0)
-                    {
-                        address = (address - remainder) + alignment;
-                    }
+                    Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+                    return memoryRange.startAddress;
                 }
             }
+            //ulong address  = start;
+            //ulong freeSize = 0;
 
+            //if (alignment == 0)
+            //{
+            //    alignment = 1;
+            //}
+
+            //alignment = (alignment + PageMask) & ~PageMask;
+
+            //while (address + freeSize < AddressSpaceSize)
+            //{
+            //    if (!IsPageInUse(address + freeSize))
+            //    {
+            //        freeSize += PageSize;
+
+            //        if (freeSize >= size)
+            //        {
+            //            return address;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        address += freeSize + PageSize;
+            //        freeSize = 0;
+
+            //        ulong remainder = address % alignment;
+
+            //        if (remainder != 0)
+            //        {
+            //            address = (address - remainder) + alignment;
+            //        }
+            //    }
+            //}
+            Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
             return PteUnmapped;
         }
 
