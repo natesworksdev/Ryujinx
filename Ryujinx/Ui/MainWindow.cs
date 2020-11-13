@@ -500,6 +500,7 @@ namespace Ryujinx.Ui
 
                 _deviceExitStatus.Reset();
 
+                Translator.IsReadyForTranslation.Reset();
 #if MACOS_BUILD
                 CreateGameWindow(device);
 #else
@@ -537,8 +538,6 @@ namespace Ryujinx.Ui
             }
 
             _glWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
-
-            Translator.IsReadyForTranslation.Reset();
 
             Application.Invoke(delegate
             {
