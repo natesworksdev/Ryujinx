@@ -381,7 +381,7 @@ namespace Ryujinx.Ui
             {
                 resScaleCustom = 1.0f;
             }
-            
+
             if (_validTzRegions.Contains(_systemTimeZoneEntry.Text))
             {
                 ConfigurationState.Instance.System.TimeZone.Value = _systemTimeZoneEntry.Text;
