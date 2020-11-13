@@ -125,7 +125,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private void Alloc(ulong address, ulong size)
         {
             LinkedListNode<MemoryRange> node = _memory.First;
-            ulong endAddress = address + size;
+            ulong endAddress = address + size - 1UL;
             while(node != null)
             {
                 MemoryRange range = node.Value;
@@ -356,9 +356,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
         {
             stopwatch.Restart();
-            // Note: Address 0 is not considered valid by the driver,
-            // when 0 is returned it's considered a mapping error.
-            foreach(MemoryRange memoryRange in _memory)
+
+            foreach (MemoryRange memoryRange in _memory)
             {
                 if (memoryRange.endAddress - memoryRange.startAddress >= size)
                 {
@@ -366,40 +365,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     return memoryRange.startAddress;
                 }
             }
-            //ulong address  = start;
-            //ulong freeSize = 0;
 
-            //if (alignment == 0)
-            //{
-            //    alignment = 1;
-            //}
-
-            //alignment = (alignment + PageMask) & ~PageMask;
-
-            //while (address + freeSize < AddressSpaceSize)
-            //{
-            //    if (!IsPageInUse(address + freeSize))
-            //    {
-            //        freeSize += PageSize;
-
-            //        if (freeSize >= size)
-            //        {
-            //            return address;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        address += freeSize + PageSize;
-            //        freeSize = 0;
-
-            //        ulong remainder = address % alignment;
-
-            //        if (remainder != 0)
-            //        {
-            //            address = (address - remainder) + alignment;
-            //        }
-            //    }
-            //}
             Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
             return PteUnmapped;
         }
