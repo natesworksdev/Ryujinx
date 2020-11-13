@@ -133,6 +133,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     ulong rightStart = endAddress + 1UL, rightEnd = range.endAddress;
 
+                    if(address > range.startAddress)
+                    {
+                        _memory.AddBefore(node, new MemoryRange(range.startAddress, address - 1UL));
+                    }
                     if (rightStart <= rightEnd)
                     {
                         _memory.AddAfter(node, new MemoryRange(rightStart, rightEnd));
@@ -283,22 +287,21 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
-                for (ulong offset = 0; offset < size; offset += PageSize)
+                foreach(MemoryRange range in _memory)
                 {
-                    if (IsPageInUse(va + offset))
+                    if (va >= range.startAddress && range.endAddress - range.startAddress >= size)
                     {
-                        return PteUnmapped;
+                        Alloc(va, (size / PageSize) + (size % PageSize));
+                        for (ulong offset = 0; offset < size; offset += PageSize)
+                        {
+                            SetPte(va + offset, PteReserved);
+                        }
+                        return va;
                     }
                 }
 
-                Alloc(va, (size / PageSize) + (size % PageSize));
-                for (ulong offset = 0; offset < size; offset += PageSize)
-                {
-                    SetPte(va + offset, PteReserved);
-                }
+                return PteUnmapped;
             }
-
-            return va;
         }
 
         /// <summary>
@@ -357,12 +360,35 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             stopwatch.Restart();
 
-            foreach (MemoryRange memoryRange in _memory)
+            // Note: Address 0 is not considered valid by the driver,
+            // when 0 is returned it's considered a mapping error.
+            ulong address = start;
+            ulong freeSize = 0;
+
+
+            if(alignment == 0)
             {
-                if (memoryRange.endAddress - memoryRange.startAddress >= size)
+                alignment = 1;
+            }
+
+            while (address <= AddressSpaceSize)
+            {
+                foreach (MemoryRange memoryRange in _memory)
                 {
-                    Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
-                    return memoryRange.startAddress;
+                    if (memoryRange.startAddress <= address && address + size <= memoryRange.endAddress)
+                    {
+                        Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+                        return address;
+                    }
+                }
+                address += freeSize + PageSize;
+                freeSize = 0;
+
+                ulong remainder = address % alignment;
+
+                if (remainder != 0)
+                {
+                    address = (address - remainder) + alignment;
                 }
             }
 
