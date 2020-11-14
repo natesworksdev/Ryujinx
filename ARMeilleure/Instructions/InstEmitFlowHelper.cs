@@ -144,7 +144,7 @@ namespace ARMeilleure.Instructions
 
         public static void EmitCall(ArmEmitterContext context, ulong immediate)
         {
-            bool isRecursive = immediate == (ulong)context.BaseAddress;
+            bool isRecursive = immediate == context.EntryAddress;
 
             EmitJumpTableBranch(context, Const(immediate), isRecursive);
         }
@@ -326,7 +326,7 @@ namespace ARMeilleure.Instructions
             // TODO: Constant folding. Indirect calls are slower in the best case and emit more code so we want to 
             // avoid them when possible.
             bool isConst = address.Kind == OperandKind.Constant;
-            long constAddr = (long)address.Value;
+            ulong constAddr = address.Value;
 
             if (!context.HighCq)
             {
@@ -337,7 +337,7 @@ namespace ARMeilleure.Instructions
             else if (!isConst)
             {
                 // Virtual branch/call - store first used addresses on a small table for fast lookup.
-                int entry = context.JumpTable.ReserveDynamicEntry(isJump);
+                int entry = context.JumpTable.ReserveDynamicEntry(context.EntryAddress, isJump);
 
                 int jumpOffset = entry * JumpTable.JumpTableStride * JumpTable.DynamicTableElems;
 
@@ -357,7 +357,7 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                int entry = context.JumpTable.ReserveTableEntry(context.BaseAddress & (~3L), constAddr, isJump);
+                int entry = context.JumpTable.ReserveTableEntry(context.EntryAddress, constAddr, isJump);
 
                 int jumpOffset = entry * JumpTable.JumpTableStride + 8; // Offset directly to the host address.
 

@@ -240,7 +240,7 @@ namespace ARMeilleure.Instructions
             if (function.HighCq)
             {
                 // Rewrite the host function address in the table to point to the highCq function.
-                Marshal.WriteInt64((IntPtr)entryAddress, 8, (long)ptr);
+                Marshal.WriteInt64((IntPtr)entryAddress, 8, (long)ptr); // TODO: Debug.Assert(): Validate that writing actually takes place in table memory range (and not elsewhere).
             }
 
             return ptr;

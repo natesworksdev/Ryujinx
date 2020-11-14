@@ -1,5 +1,6 @@
 using ARMeilleure.State;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -22,16 +23,19 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly ManualResetEvent _waitEvent;
 
+        private static readonly ConcurrentQueue<(ulong address, ulong size, ExecutionMode mode)> _backgroundQueue;
+        private static readonly AutoResetEvent _backgroundEvent;
+
         private static readonly object _lock;
 
         private static bool _disposed;
 
-        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> ProfiledFuncs { get; private set; } //! Not to be modified.
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> ProfiledFuncs { get; private set; } //! Not to be modified.
 
         internal static bool Enabled { get; private set; }
 
         public static ulong StaticCodeStart { internal get; set; }
-        public static int   StaticCodeSize  { internal get; set; }
+        public static ulong StaticCodeSize  { internal get; set; }
 
         static PtcProfiler()
         {
@@ -46,45 +50,93 @@ namespace ARMeilleure.Translation.PTC
 
             _disposed = false;
 
-            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
+            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool, bool)>();
 
             Enabled = false;
+
+            _backgroundQueue = new ConcurrentQueue<(ulong, ulong, ExecutionMode)>();
+            _backgroundEvent = new AutoResetEvent(false);
+
+            ThreadPool.QueueUserWorkItem(BackgroundMethod);
         }
 
         internal static void AddEntry(ulong address, ExecutionMode mode, bool highCq)
         {
             if (IsAddressInStaticCodeRange(address))
             {
+                Debug.Assert(!highCq);
+
                 lock (_lock)
                 {
-                    Debug.Assert(!highCq && !ProfiledFuncs.ContainsKey(address));
+                    Debug.Assert(!ProfiledFuncs.ContainsKey(address));
 
-                    ProfiledFuncs.TryAdd(address, (mode, highCq));
+                    ProfiledFuncs.TryAdd(address, (mode, highCq: false, overlapped: false));
                 }
             }
         }
 
-        internal static void UpdateEntry(ulong address, ExecutionMode mode, bool highCq)
+        internal static void UpdateEntries(ulong address, ulong size, ExecutionMode mode, bool highCq)
         {
             if (IsAddressInStaticCodeRange(address))
             {
-                lock (_lock)
-                {
-                    Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
+                Debug.Assert(highCq);
 
-                    ProfiledFuncs[address] = (mode, highCq);
+                _backgroundQueue.Enqueue((address, size, mode));
+                _backgroundEvent.Set();
+            }
+        }
+
+        private static void BackgroundMethod(object state)
+        {
+            while (!_disposed)
+            {
+                if (Enabled && _backgroundQueue.TryDequeue(out var item))
+                {
+                    lock (_lock)
+                    {
+                        Debug.Assert(ProfiledFuncs.ContainsKey(item.address));
+
+                        if (Enabled)
+                        {
+                            ProfiledFuncs[item.address] = (item.mode, highCq: true, overlapped: false);
+                        }
+
+                        foreach (ulong key in new List<ulong>(ProfiledFuncs.Keys))
+                        {
+                            var value = ProfiledFuncs[key];
+
+                            if (!value.highCq && key >= item.address && key < item.address + item.size)
+                            {
+                                if (Enabled)
+                                {
+                                    ProfiledFuncs[key] = (value.mode, highCq: false, overlapped: true);
+                                }
+                            }
+                        }
+                    }
+
+                    Thread.Sleep(1);
+                }
+                else
+                {
+                    _backgroundEvent.WaitOne();
                 }
             }
         }
 
         internal static bool IsAddressInStaticCodeRange(ulong address)
         {
-            return address >= StaticCodeStart && address < StaticCodeStart + (ulong)StaticCodeSize;
+            return address >= StaticCodeStart && address < StaticCodeStart + StaticCodeSize;
         }
 
         internal static void ClearEntries()
         {
-            ProfiledFuncs.Clear();
+            lock (_lock)
+            {
+                ProfiledFuncs.Clear();
+            }
+
+            _backgroundQueue.Clear();
         }
 
         internal static void PreLoad()
@@ -120,7 +172,16 @@ namespace ARMeilleure.Translation.PTC
             {
                 int hashSize = md5.HashSize / 8;
 
-                deflateStream.CopyTo(stream);
+                try
+                {
+                    deflateStream.CopyTo(stream);
+                }
+                catch
+                {
+                    InvalidateCompressedStream(compressedStream);
+
+                    return false;
+                }
 
                 stream.Seek(0L, SeekOrigin.Begin);
 
@@ -140,11 +201,11 @@ namespace ARMeilleure.Translation.PTC
 
                 try
                 {
-                    ProfiledFuncs = (Dictionary<ulong, (ExecutionMode, bool)>)_binaryFormatter.Deserialize(stream);
+                    ProfiledFuncs = (Dictionary<ulong, (ExecutionMode, bool, bool)>)_binaryFormatter.Deserialize(stream);
                 }
                 catch
                 {
-                    ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
+                    ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool, bool)>();
 
                     InvalidateCompressedStream(compressedStream);
 
@@ -165,7 +226,7 @@ namespace ARMeilleure.Translation.PTC
             compressedStream.SetLength(0L);
         }
 
-        private static void PreSave(object source, System.Timers.ElapsedEventArgs e)
+        internal static void PreSave(object source, System.Timers.ElapsedEventArgs e)
         {
             _waitEvent.Reset();
 
@@ -261,6 +322,9 @@ namespace ARMeilleure.Translation.PTC
 
                 Wait();
                 _waitEvent.Dispose();
+
+                _backgroundEvent.Set();
+                _backgroundEvent.Dispose();
             }
         }
     }

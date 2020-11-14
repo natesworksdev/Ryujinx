@@ -39,21 +39,19 @@ namespace ARMeilleure.Translation
 
         public IMemoryManager Memory { get; }
 
-        public Aarch32Mode Mode { get; }
-
         public JumpTable JumpTable { get; }
 
-        public long BaseAddress { get; }
-
+        public ulong EntryAddress { get; }
         public bool HighCq { get; }
+        public Aarch32Mode Mode { get; }
 
-        public ArmEmitterContext(IMemoryManager memory, JumpTable jumpTable, long baseAddress, bool highCq, Aarch32Mode mode)
+        public ArmEmitterContext(IMemoryManager memory, JumpTable jumpTable, ulong entryAddress, bool highCq, Aarch32Mode mode)
         {
-            Memory      = memory;
-            JumpTable   = jumpTable;
-            BaseAddress = baseAddress;
-            HighCq      = highCq;
-            Mode        = mode;
+            Memory       = memory;
+            JumpTable    = jumpTable;
+            EntryAddress = entryAddress;
+            HighCq       = highCq;
+            Mode         = mode;
 
             _labels = new Dictionary<ulong, Operand>();
         }

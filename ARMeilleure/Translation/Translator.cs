@@ -67,7 +67,7 @@ namespace ARMeilleure.Translation
 
                     if (PtcProfiler.Enabled)
                     {
-                        PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
+                        PtcProfiler.UpdateEntries(request.Address, func.GuestSize, request.Mode, highCq: true);
                     }
                 }
                 else
@@ -176,7 +176,7 @@ namespace ARMeilleure.Translation
 
         internal static TranslatedFunction Translate(IMemoryManager memory, JumpTable jumpTable, ulong address, ExecutionMode mode, bool highCq)
         {
-            ArmEmitterContext context = new ArmEmitterContext(memory, jumpTable, (long)address, highCq, Aarch32Mode.User);
+            ArmEmitterContext context = new ArmEmitterContext(memory, jumpTable, address, highCq, Aarch32Mode.User);
 
             PrepareOperandPool(highCq);
             PrepareOperationPool(highCq);
@@ -196,7 +196,9 @@ namespace ARMeilleure.Translation
                 context.Branch(context.GetLabel(address));
             }
 
-            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
+            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Range funcRange);
+
+            ulong funcSize = funcRange.End - funcRange.Start;
 
             Logger.EndPass(PassName.Translation);
 
@@ -222,21 +224,49 @@ namespace ARMeilleure.Translation
                 {
                     func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
 
-                    Ptc.WriteInfoCodeReloc((long)address, highCq, ptcInfo);
+                    Ptc.WriteInfoCodeReloc(address, highCq, ptcInfo);
                 }
             }
 
             ResetOperandPool(highCq);
             ResetOperationPool(highCq);
 
-            return new TranslatedFunction(func, highCq);
+            return new TranslatedFunction(func, funcSize, highCq);
         }
 
-        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)
+        private struct Range
         {
+            public ulong Start { get; }
+            public ulong End { get; }
+
+            public Range(ulong start, ulong end)
+            {
+                Start = start;
+                End = end;
+            }
+        }
+
+        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks, out Range range)
+        {
+            ulong rangeStart = ulong.MaxValue;
+            ulong rangeEnd = 0;
+
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 Block block = blocks[blkIndex];
+
+                if (!block.Exit)
+                {
+                    if (rangeStart > block.Address)
+                    {
+                        rangeStart = block.Address;
+                    }
+
+                    if (rangeEnd < block.EndAddress)
+                    {
+                        rangeEnd = block.EndAddress;
+                    }
+                }
 
                 context.CurrBlock = block;
 
@@ -286,6 +316,8 @@ namespace ARMeilleure.Translation
                     }
                 }
             }
+
+            range = new Range(rangeStart, rangeEnd);
 
             return context.GetControlFlowGraph();
         }
