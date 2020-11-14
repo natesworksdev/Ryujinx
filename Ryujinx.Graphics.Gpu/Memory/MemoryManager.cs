@@ -38,6 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private readonly ulong[][] _pageTable;
         private LinkedList<MemoryRange> _memory = new LinkedList<MemoryRange>();
+        private SortedDictionary<ulong, MemoryRange> _tree = new SortedDictionary<ulong, MemoryRange>();
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
         private GpuContext _context;
@@ -50,6 +51,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
             _memory.AddFirst(new MemoryRange(MinAddress, MaxAddress));
+            Tree
         }
 
         /// <summary>
