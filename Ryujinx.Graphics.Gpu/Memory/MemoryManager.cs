@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             
             ulong current = PageSize;
             ulong i = 1;
-            while(i <= 128)
+            while(i <= 256)
             {
                 _tree.Add(current, new LinkedList<LinkedListNode<MemoryRange>>());
                 current = PageSize * i;
@@ -510,9 +510,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
-            Console.WriteLine($"# Ranges: {_memory.Count}");
-            Console.WriteLine(String.Join(',', _memory));
-            Console.WriteLine($"Desired Address: |{address} -> {address + size}");
+            //Console.WriteLine($"# Ranges: {_memory.Count}");
+            //Console.WriteLine(String.Join(',', _memory));
+            //Console.WriteLine($"Desired Address: |{address} -> {address + size}");
 
             list = new LinkedList<LinkedListNode<MemoryRange>>();
             memoryRange = new LinkedListNode<MemoryRange>(MemoryRange.InvalidRange);
