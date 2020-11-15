@@ -39,6 +39,7 @@ namespace Ryujinx.Ui
         public static GlRenderer GlWidget => _glWidget;
 
         private static AutoResetEvent _deviceExitStatus = new AutoResetEvent(false);
+        private static AutoResetEvent _widgetInitEvent = new AutoResetEvent(false);
 
         private static ListStore _tableStore;
 
@@ -328,6 +329,7 @@ namespace Ryujinx.Ui
             }
             else
             {
+#if !DEBUG
                 if (ConfigurationState.Instance.Logger.EnableDebug.Value)
                 {
                     MessageDialog debugWarningDialog = new MessageDialog(this, DialogFlags.Modal, MessageType.Warning, ButtonsType.YesNo, null)
@@ -363,7 +365,7 @@ namespace Ryujinx.Ui
 
                     shadersDumpWarningDialog.Dispose();
                 }
-
+#endif
                 Logger.RestartTime();
 
                 HLE.Switch device = InitializeSwitchInstance();
@@ -433,6 +435,30 @@ namespace Ryujinx.Ui
                     }
                 }
 
+                _widgetInitEvent.Reset();
+
+#if MACOS_BUILD
+                CreateGameWindow(device);
+#else
+                Thread windowThread = new Thread(() =>
+                {
+                    CreateGameWindow(device);
+                })
+                {
+                    Name = "GUI.WindowThread"
+                };
+
+                windowThread.Start();
+#endif
+
+                _widgetInitEvent.WaitOne();
+
+                // Make sure the widget get initialized by forcing an update of GTK
+                while (Application.EventsPending())
+                {
+                    Application.RunIteration();
+                }
+
                 Logger.Notice.Print(LogClass.Application, $"Using Firmware Version: {firmwareVersion?.VersionString}");
 
                 if (Directory.Exists(path))
@@ -493,24 +519,23 @@ namespace Ryujinx.Ui
                     return;
                 }
 
+                string titleNameSection = string.IsNullOrWhiteSpace(device.Application.TitleName) ? string.Empty
+                    : $" - {device.Application.TitleName}";
+
+                string titleVersionSection = string.IsNullOrWhiteSpace(device.Application.DisplayVersion) ? string.Empty
+                    : $" v{device.Application.DisplayVersion}";
+
+                string titleIdSection = string.IsNullOrWhiteSpace(device.Application.TitleIdText) ? string.Empty
+                    : $" ({device.Application.TitleIdText.ToUpper()})";
+
+                string titleArchSection = device.Application.TitleIs64Bit ? " (64-bit)" : " (32-bit)";
+
+                Title = $"Ryujinx {Program.Version}{titleNameSection}{titleVersionSection}{titleIdSection}{titleArchSection}";
+
                 _emulationContext = device;
                 _gamePath = path;
 
                 _deviceExitStatus.Reset();
-
-#if MACOS_BUILD
-                CreateGameWindow(device);
-#else
-                Thread windowThread = new Thread(() =>
-                {
-                    CreateGameWindow(device);
-                })
-                {
-                    Name = "GUI.WindowThread"
-                };
-
-                windowThread.Start();
-#endif
 
                 _gameLoaded              = true;
                 _stopEmulation.Sensitive = true;
@@ -534,7 +559,7 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
-            _glWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
+            _glWidget = new GlRenderer(device, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
             {
@@ -550,6 +575,8 @@ namespace Ryujinx.Ui
                     ToggleExtraWidgets(false);
                 }
             });
+
+            _widgetInitEvent.Set();
 
             _glWidget.WaitEvent.WaitOne();
 
@@ -658,6 +685,7 @@ namespace Ryujinx.Ui
             Graphics.Gpu.GraphicsConfig.ResScale = (resScale == -1) ? resScaleCustom : resScale;
             Graphics.Gpu.GraphicsConfig.MaxAnisotropy = ConfigurationState.Instance.Graphics.MaxAnisotropy;
             Graphics.Gpu.GraphicsConfig.ShadersDumpPath = ConfigurationState.Instance.Graphics.ShadersDumpPath;
+            Graphics.Gpu.GraphicsConfig.EnableShaderCache = ConfigurationState.Instance.Graphics.EnableShaderCache;
         }
 
         public static void SaveConfig()
