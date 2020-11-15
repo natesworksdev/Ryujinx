@@ -94,32 +94,40 @@ namespace ARMeilleure.Translation.PTC
                 {
                     lock (_lock)
                     {
-                        Debug.Assert(ProfiledFuncs.ContainsKey(item.address));
-
                         if (Enabled)
                         {
+                            Debug.Assert(ProfiledFuncs.ContainsKey(item.address));
+
                             ProfiledFuncs[item.address] = (item.mode, highCq: true, overlapped: false);
-                        }
 
-                        foreach (ulong key in new List<ulong>(ProfiledFuncs.Keys))
-                        {
-                            var value = ProfiledFuncs[key];
-
-                            if (!value.highCq && key >= item.address && key < item.address + item.size)
+                            foreach (ulong key in new List<ulong>(ProfiledFuncs.Keys))
                             {
-                                if (Enabled)
+                                var value = ProfiledFuncs[key];
+
+                                if (!value.highCq && key >= item.address && key < item.address + item.size)
                                 {
+                                    if (!Enabled)
+                                    {
+                                        break;
+                                    }
+
                                     ProfiledFuncs[key] = (value.mode, highCq: false, overlapped: true);
                                 }
                             }
                         }
                     }
 
-                    Thread.Sleep(1);
+                    if (Enabled)
+                    {
+                        Thread.Sleep(1);
+                    }
                 }
                 else
                 {
-                    _backgroundEvent.WaitOne();
+                    if (!_disposed)
+                    {
+                        _backgroundEvent.WaitOne();
+                    }
                 }
             }
         }

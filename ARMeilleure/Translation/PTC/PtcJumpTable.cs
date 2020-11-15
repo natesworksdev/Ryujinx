@@ -90,7 +90,7 @@ namespace ARMeilleure.Translation.PTC
                 {
                     if ((entry & JumpTable.DynamicEntryTag) == 0)
                     {
-                        int removed = _jumpTable.RemoveAll(item => item.EntryIndex == (entry & ~JumpTable.DynamicEntryTag));
+                        int removed = _jumpTable.RemoveAll(item => item.EntryIndex == entry);
 
                         Debug.Assert(removed == 1);
                     }
