@@ -440,7 +440,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
             ulong address = start;
+            if (alignment == 0)
+            {
+                alignment = 1;
+            }
 
+            alignment = (alignment + PageMask) & ~PageMask;
             TreeNode<ulong, LinkedList<LinkedListNode<MemoryRange>>> n = _tree.Ceiling(size);
             LinkedList<LinkedListNode<MemoryRange>> stk = n.Value;
             while (n != null && stk.Count == 0)
@@ -458,35 +463,41 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // If null, we've reached the end of the address space w/o finding a region large enough for the allocation.
             if (stk == null)
             {
+                Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+                Console.WriteLine($"# Ranges: {_memory.Count}");
+                Console.WriteLine(String.Join(',', _memory));
+                Console.WriteLine($"Desired Address: |{address} -> {address + size}");
                 list = new LinkedList<LinkedListNode<MemoryRange>>();
                 memoryRange = new LinkedListNode<MemoryRange>(MemoryRange.InvalidRange);
                 return PteUnmapped;
             }
-
+            ulong origAddress = address;
             while (stk != null) {
-                foreach(LinkedListNode<MemoryRange> node in stk)
+                while (address < AddressSpaceSize)
                 {
-                    MemoryRange range = node.Value;
-
-                    if(range.startAddress <= address && address + size <= range.endAddress)
+                    foreach (LinkedListNode<MemoryRange> node in stk)
                     {
-                        Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
-                        Console.WriteLine($"# Ranges: {_memory.Count}");
-                        Console.WriteLine(String.Join(',', _memory));
-                        Console.WriteLine($"Desired Address: |{address} -> {address + size}");
-                        list = stk;
-                        memoryRange = node;
-                        return address;
+                        MemoryRange range = node.Value;
+
+                        if (range.startAddress <= address && address + size < range.endAddress)
+                        {
+                            Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+                       //     Console.WriteLine($"# Ranges: {_memory.Count}");
+                      //      Console.WriteLine(String.Join(',', _memory));
+                      //      Console.WriteLine($"Desired Address: |{address} -> {address + size}");
+                            list = stk;
+                            memoryRange = node;
+                            return address;
+                        }
+                    }
+                    address += (PageSize * 2);
+                    ulong remainder = address % alignment;
+
+                    if (remainder != 0)
+                    {
+                        address = (address - remainder) + alignment;
                     }
                 }
-                address += PageSize;
-                ulong remainder = address % alignment;
-
-                if(remainder != 0)
-                {
-                    address = (address - remainder) + alignment;
-                }
-
                 n = n.Right;
                 if(n != null)
                 {
@@ -497,6 +508,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     stk = null;
                 }
             }
+
+            Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+            Console.WriteLine($"# Ranges: {_memory.Count}");
+            Console.WriteLine(String.Join(',', _memory));
+            Console.WriteLine($"Desired Address: |{address} -> {address + size}");
 
             list = new LinkedList<LinkedListNode<MemoryRange>>();
             memoryRange = new LinkedListNode<MemoryRange>(MemoryRange.InvalidRange);
