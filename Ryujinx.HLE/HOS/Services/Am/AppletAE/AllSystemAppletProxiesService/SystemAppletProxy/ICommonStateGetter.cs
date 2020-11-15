@@ -131,16 +131,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
         private void UpdateVrMode(bool vrModeEnabled)
         {
-            bool oldVrModeEnabled = _vrModeEnabled;
-
-            _vrModeEnabled = vrModeEnabled;
-
-            if (oldVrModeEnabled == _vrModeEnabled)
+            if (_vrModeEnabled == vrModeEnabled)
             {
                 return;
             }
 
-            if (_vrModeEnabled)
+            _vrModeEnabled = vrModeEnabled;
+
+            if (vrModeEnabled)
             {
                 _lblControllerServer.EnableVrMode();
             }

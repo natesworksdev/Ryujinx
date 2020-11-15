@@ -191,13 +191,8 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
                 }
             */
 
-            if (_stereoVisionRestrictionConfigurable)
+            if (_stereoVisionRestrictionConfigurable && _stereoVisionRestriction)
             {
-                if (!_stereoVisionRestriction)
-                {
-                    return ResultCode.Success;
-                }
-
                 return ResultCode.StereoVisionDenied;
             }
             else
