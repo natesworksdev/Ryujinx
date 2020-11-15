@@ -12,6 +12,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public ulong endAddress { get; }
         
         public ulong size { get; }
+
+        public static MemoryRange InvalidRange = new MemoryRange(0, 0);
+
         public MemoryRange(ulong address, ulong endAddress)
         {
             this.startAddress = address;
@@ -43,7 +46,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public override string ToString()
         {
-            return $" |{startAddress} -> {endAddress}| ";
+            return $" [{startAddress} -> {endAddress}] ";
         }
     }
 }

@@ -7,7 +7,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
     class TreeDictionary<K, V> where K : IComparable<K>
     {
-        private Node root;
+        private TreeNode<K, V> root;
 
         public TreeDictionary()
         {
@@ -16,19 +16,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public TreeDictionary(K key, V value)
         {
-            this.root = new Node(key, value);
+            this.root = new TreeNode<K, V>(key, value);
         }
 
-
-        public K Floor(K key)
+        public TreeNode<K, V> Floor(K key)
         {
             return Floor(root, key);
         }
 
-        private K Floor(Node node, K key)
+        private TreeNode<K, V> Floor(TreeNode<K, V> node, K key)
         {
             if (node == null) return default;
-            if (node.Key.Equals(key)) return key;
+            if (node.Key.Equals(key)) return node;
             int compare = key.CompareTo(node.Key);
             if(compare > 0)
             {
@@ -38,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
                 else
                 {
-                    return node.Key;
+                    return node;
                 }
             }
             else
@@ -47,19 +46,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     return Floor(node.Left, key);
                 }
-                return node.Key;
+                return node;
             }
         }
 
-        public K Ceiling(K key)
+        public TreeNode<K, V> Ceiling(K key)
         {
             return Ceiling(root, key);
         }
 
-        private K Ceiling(Node node, K key)
+        private TreeNode<K, V> Ceiling(TreeNode<K, V> node, K key)
         {
             if (node == null) return default;
-            if (node.Key.Equals(key)) return key;
+            if (node.Key.Equals(key)) return node;
             int compare = key.CompareTo(node.Key);
             if (compare < 0)
             {
@@ -69,7 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
                 else
                 {
-                    return node.Key;
+                    return node;
                 }
             }
             else
@@ -78,7 +77,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     return Ceiling(node.Right, key);
                 }
-                return node.Key;
+                return node;
             }
         }
 
@@ -92,17 +91,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
             Remove(root, key);
         }
 
-        public bool Contains(K key)
+        public V Get(K key)
         {
-            return Contains(root, key);
+            return Get(root, key);
         }
 
-        private Node Add(Node node, K key, V value)
+        private TreeNode<K, V> Add(TreeNode<K, V> node, K key, V value)
         {
             {
                 if (node == null)
                 {
-                    return new Node(key, value);
+                    TreeNode<K, V> n = new TreeNode<K, V>(key, value);
+                    return n;
                 }
                 int cmp = key.CompareTo(node.Key);
                 if (cmp < 0)
@@ -122,7 +122,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        private Node Remove(Node node, K key)
+        private TreeNode<K, V> Remove(TreeNode<K, V> node, K key)
         {
             if (node == null) return null;
             if(key.Equals(node.Key))
@@ -141,7 +141,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
                 else
                 {
-                    Node smallestNode = findSmallestKey(node.Right);
+                    TreeNode<K, V> smallestNode = findSmallestKey(node.Right);
                     node.Key = smallestNode.Key;
                     node.Value = smallestNode.Value;
                     node.Right = Remove(node.Right, smallestNode.Key);
@@ -157,32 +157,33 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return node;
         }
 
-        private Node findSmallestKey(Node node)
+        private TreeNode<K, V> findSmallestKey(TreeNode<K, V> node)
         {
             return node.Left == null ? node : findSmallestKey(node.Left);
         }
 
-        private bool Contains(Node node, K key)
+        private V Get(TreeNode<K,V> node, K key)
         {
-            if (node == null) return false;
-            if (key.Equals(node.Key)) return true;
-            return key.CompareTo(node.Key) < 0 ? Contains(node.Left, key) : Contains(node.Right, key);
+            if (node == null) return default;
+            if (key.Equals(node.Key)) return node.Value;
+            return key.CompareTo(node.Key) < 0 ? Get(node.Left, key) : Get(node.Right, key);
         }
 
-        protected class Node
-        {
-            public Node Left;
-            public Node Right;
-            public K Key;
-            public V Value;
+        
+    }
+    public class TreeNode<E, C>
+    {
+        public TreeNode<E, C> Left;
+        public TreeNode<E, C> Right;
+        public E Key;
+        public C Value;
 
-            public Node(K key, V value)
-            {
-                this.Key = key;
-                this.Value = value;
-                this.Left = null;
-                this.Right = null;
-            }
+        public TreeNode(E key, C value)
+        {
+            this.Key = key;
+            this.Value = value;
+            this.Left = null;
+            this.Right = null;
         }
     }
 }

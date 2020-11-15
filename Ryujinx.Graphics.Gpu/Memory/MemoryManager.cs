@@ -38,7 +38,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private readonly ulong[][] _pageTable;
         private LinkedList<MemoryRange> _memory = new LinkedList<MemoryRange>();
-        private SortedDictionary<ulong, MemoryRange> _tree = new SortedDictionary<ulong, MemoryRange>();
+        private TreeDictionary<ulong, LinkedList<LinkedListNode<MemoryRange>>> _tree = new TreeDictionary<ulong, LinkedList<LinkedListNode<MemoryRange>>> ();
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
         private GpuContext _context;
@@ -51,7 +51,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
             _memory.AddFirst(new MemoryRange(MinAddress, MaxAddress));
-            Tree
+            
+            ulong current = PageSize;
+            ulong i = 1;
+            while(i <= 128)
+            {
+                _tree.Add(current, new LinkedList<LinkedListNode<MemoryRange>>());
+                current = PageSize * i;
+                i++;
+            }
+            _tree.Add(AddressSpaceSize, new LinkedList<LinkedListNode<MemoryRange>>());
+            LinkedList<LinkedListNode<MemoryRange>> stack = _tree.Get(AddressSpaceSize);
+            stack.AddFirst(_memory.First);
         }
 
         /// <summary>
@@ -123,35 +134,56 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">The address at which to mark</param>
         /// <param name="size">Size in bytes of the range</param>
-        private void Alloc(ulong address, ulong size)
+        private void Alloc(ulong address, ulong size, LinkedList<LinkedListNode<MemoryRange>> list, LinkedListNode<MemoryRange> rangeNode)
         {
-            LinkedListNode<MemoryRange> node = _memory.First;
-            ulong endAddress = address + size;
-            while (node != null)
+            if(list == null && rangeNode == null)
             {
-                MemoryRange range = node.Value;
-                if (address >= range.startAddress && endAddress < range.endAddress)
+                ulong sz = size;
+                list = _tree.Ceiling(sz).Value;
+
+                foreach (LinkedListNode<MemoryRange> node in list)
                 {
-                    ulong rightStart = endAddress + 1UL, rightEnd = range.endAddress;
+                    MemoryRange memRange = node.Value;
 
-                    if (address >= range.startAddress)
+                    if (memRange.startAddress <= address && address <= memRange.endAddress)
                     {
-                        _memory.AddBefore(node, new MemoryRange(range.startAddress, address - 1UL));
+                        if (address + size <= memRange.endAddress)
+                        {
+                            rangeNode = node;
+                        }
+                        break;
                     }
-                    if (rightStart <= rightEnd)
-                    {
-                        _memory.AddAfter(node, new MemoryRange(rightStart, rightEnd));
-                    }
-
-                    _memory.Remove(node);
-                   // Console.WriteLine(string.Join(',', _memory));
-                    return;
                 }
-                else
+
+                if (rangeNode == null) return;
+            }
+
+            MemoryRange range = rangeNode.Value;           
+            if (address > range.startAddress)
+            {
+                _memory.AddBefore(rangeNode, new MemoryRange(range.startAddress, address - 1UL));
+                LinkedList<LinkedListNode<MemoryRange>> stack = _tree.Floor(address - 1UL - range.startAddress).Value;
+                if (null != stack)
                 {
-                    node = node.Next;
+                    stack.AddLast(rangeNode.Previous);
                 }
             }
+
+            ulong rightStart = address + size, rightEnd = range.endAddress;
+
+            if (rightStart <= range.endAddress)
+            {
+                _memory.AddAfter(rangeNode, new MemoryRange(rightStart, rightEnd));
+                LinkedList<LinkedListNode<MemoryRange>> stack = _tree.Floor(rightEnd - rightStart).Value;
+                if (null != stack)
+                {
+                    stack.AddLast(rangeNode.Next);
+                }
+            }
+            // No longer available, so get it off the free memory ranges list and stack so that other allocations don't try to access it.=
+            list.Remove(rangeNode);
+            _memory.Remove(rangeNode);
+            
         }
 
         /// <summary>
@@ -170,7 +202,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     ulong start = address, end = range.endAddress;
 
                     LinkedListNode<MemoryRange> prev = node.Previous;
-
                     while (prev != null)
                     {
                         if (prev.Value.endAddress == start - 1UL)
@@ -193,6 +224,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         {
                             end = next.Value.endAddress;
                             _memory.Remove(next);
+                            _tree.Remove(next.Value.startAddress);
                             next = next.Next;
                         }
                         else {
@@ -201,6 +233,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
 
                     _memory.AddBefore(node, new MemoryRange(start, end));
+
+                    LinkedList<LinkedListNode<MemoryRange>> stk = _tree.Ceiling(end - start).Value;
+                    stk.AddLast(node.Previous);
                     _memory.Remove(node);
                     return;
                 }
@@ -226,9 +261,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-
                 ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
-                Alloc(va, Math.Max(PageSize * (size / PageSize) + remainder, PageSize));
+                ulong requiredSize = Math.Max(PageSize * (size / PageSize) + remainder, PageSize);
+
+                Alloc(va, requiredSize, null, null);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
@@ -250,12 +286,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, alignment);
+                ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
+                ulong requiredSize = Math.Max(PageSize * (size / PageSize) + remainder, PageSize);
+                LinkedListNode<MemoryRange> memRange;
+                LinkedList<LinkedListNode<MemoryRange>> rangeList;
+                ulong va = GetFreePosition(requiredSize, out memRange, out rangeList, alignment);
 
                 if (va != PteUnmapped)
                 {
-                    ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
-                    Alloc(va, Math.Max(PageSize * (size / PageSize) + remainder, PageSize));
+                    
+                    Alloc(va, requiredSize, rangeList, memRange);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -278,12 +318,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, 1, PageSize);
+                ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
+                ulong requiredSize = Math.Max(PageSize * (size / PageSize) + remainder, PageSize);
+
+                LinkedListNode<MemoryRange> memRange;
+                LinkedList<LinkedListNode<MemoryRange>> rangeList;
+                ulong va = GetFreePosition(requiredSize, out memRange, out rangeList);
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
-                    ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
-                    Alloc(va, Math.Max(PageSize * (size / PageSize) + remainder, PageSize));
+                    Alloc(va, requiredSize, rangeList, memRange);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -310,12 +354,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-                foreach(MemoryRange range in _memory)
+                ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
+                ulong requiredSize = Math.Max(PageSize * (size / PageSize) + remainder, PageSize);
+
+                foreach (MemoryRange range in _memory)
                 {
-                    if (va >= range.startAddress && range.endAddress - range.startAddress >= size)
+                    if (va >= range.startAddress && range.endAddress - range.startAddress >= requiredSize)
                     {
-                        ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
-                        Alloc(va, Math.Max(PageSize * (size / PageSize) + remainder, PageSize));
+                        Alloc(va, requiredSize, null, null);
                         for (ulong offset = 0; offset < size; offset += PageSize)
                         {
                             SetPte(va + offset, PteReserved);
@@ -338,12 +384,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong address = GetFreePosition(size, alignment);
+                ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
+                ulong requiredSize = Math.Max(PageSize * (size / PageSize) + remainder, PageSize);
+
+                LinkedListNode<MemoryRange> memRange;
+                LinkedList<LinkedListNode<MemoryRange>> rangeList;
+                ulong address = GetFreePosition(requiredSize, out memRange, out rangeList, alignment);
 
                 if (address != PteUnmapped)
                 {
-                    ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
-                    Alloc(address, Math.Max(PageSize * (size / PageSize) + remainder, PageSize));
+                    Alloc(address, requiredSize, rangeList, memRange);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -365,9 +415,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-
                 ulong remainder = size > PageSize ? size % PageSize > 0 ? PageSize : 0 : 0;
-                Dealloc(va, Math.Max(PageSize * (size / PageSize) + remainder, PageSize));
+                ulong requiredSize = Math.Max(PageSize * (size / PageSize) + remainder, PageSize);
+
+                Dealloc(va, requiredSize);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
@@ -382,7 +433,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
+        private ulong GetFreePosition(ulong size, out LinkedListNode<MemoryRange> memoryRange, out LinkedList<LinkedListNode<MemoryRange>> list, ulong alignment = 1, ulong start = 1UL << 32)
         {
             stopwatch.Restart();
 
@@ -390,38 +441,65 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // when 0 is returned it's considered a mapping error.
             ulong address = start;
 
-            if (alignment == 0)
+            TreeNode<ulong, LinkedList<LinkedListNode<MemoryRange>>> n = _tree.Ceiling(size);
+            LinkedList<LinkedListNode<MemoryRange>> stk = n.Value;
+            while (n != null && stk.Count == 0)
             {
-                alignment = 1;
+                n = n.Right;
+                if (n != null)
+                {
+                    stk = n.Value;
+                }
+                else
+                {
+                    stk = null;
+                }
+            }
+            // If null, we've reached the end of the address space w/o finding a region large enough for the allocation.
+            if (stk == null)
+            {
+                list = new LinkedList<LinkedListNode<MemoryRange>>();
+                memoryRange = new LinkedListNode<MemoryRange>(MemoryRange.InvalidRange);
+                return PteUnmapped;
             }
 
-            alignment = (alignment + PageMask) & ~PageMask;
-
-            while (address <= AddressSpaceSize)
-            {
-                LinkedListNode<MemoryRange> node = _memory.First;
-                while(null != node)
+            while (stk != null) {
+                foreach(LinkedListNode<MemoryRange> node in stk)
                 {
-                    MemoryRange memoryRange = node.Value;
-                    if (memoryRange.size >= PageSize && address >= memoryRange.startAddress && address + PageSize - 1UL <= memoryRange.endAddress)
+                    MemoryRange range = node.Value;
+
+                    if(range.startAddress <= address && address + size <= range.endAddress)
                     {
                         Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
                         Console.WriteLine($"# Ranges: {_memory.Count}");
+                        Console.WriteLine(String.Join(',', _memory));
+                        Console.WriteLine($"Desired Address: |{address} -> {address + size}");
+                        list = stk;
+                        memoryRange = node;
                         return address;
                     }
-                    node = node.Next;
                 }
                 address += PageSize;
-
                 ulong remainder = address % alignment;
 
-                if (remainder != 0)
+                if(remainder != 0)
                 {
                     address = (address - remainder) + alignment;
                 }
+
+                n = n.Right;
+                if(n != null)
+                {
+                    stk = n.Value;
+                }
+                else
+                {
+                    stk = null;
+                }
             }
 
-            Console.WriteLine($"Position Took: {stopwatch.ElapsedMilliseconds}ms");
+            list = new LinkedList<LinkedListNode<MemoryRange>>();
+            memoryRange = new LinkedListNode<MemoryRange>(MemoryRange.InvalidRange);
             return PteUnmapped;
         }
 
