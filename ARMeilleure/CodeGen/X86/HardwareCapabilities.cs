@@ -9,7 +9,7 @@ namespace ARMeilleure.CodeGen.X86
         {
             if (!X86Base.IsSupported)
             {
-                throw new Exception();
+                return;
             }
 
             (_, _, int ecx, int edx) = X86Base.CpuId(0x00000001, 0x00000000);
