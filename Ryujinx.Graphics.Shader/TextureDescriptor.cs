@@ -2,49 +2,31 @@ namespace Ryujinx.Graphics.Shader
 {
     public struct TextureDescriptor
     {
-        public string Name { get; }
+        public readonly int Binding;
 
-        public SamplerType Type { get; }
+        public readonly SamplerType Type;
+        public readonly TextureFormat Format;
 
-        public TextureFormat Format { get; }
+        public readonly int CbufSlot;
+        public readonly int HandleIndex;
 
-        public int HandleIndex { get; }
+        public TextureUsageFlags Flags;
 
-        public bool IsBindless { get; }
-
-        public int CbufSlot   { get; }
-        public int CbufOffset { get; }
-
-        public TextureUsageFlags Flags { get; set; }
-
-        public TextureDescriptor(string name, SamplerType type, TextureFormat format, int handleIndex)
+        public TextureDescriptor(int binding, SamplerType type, TextureFormat format, int cbufSlot, int handleIndex)
         {
-            Name        = name;
+            Binding     = binding;
             Type        = type;
             Format      = format;
+            CbufSlot    = cbufSlot;
             HandleIndex = handleIndex;
-
-            IsBindless = false;
-
-            CbufSlot   = 0;
-            CbufOffset = 0;
-
-            Flags = TextureUsageFlags.None;
+            Flags       = TextureUsageFlags.None;
         }
 
-        public TextureDescriptor(string name, SamplerType type, int cbufSlot, int cbufOffset)
+        public TextureDescriptor SetFlag(TextureUsageFlags flag)
         {
-            Name        = name;
-            Type        = type;
-            Format      = TextureFormat.Unknown;
-            HandleIndex = 0;
+            Flags |= flag;
 
-            IsBindless = true;
-
-            CbufSlot   = cbufSlot;
-            CbufOffset = cbufOffset;
-
-            Flags = TextureUsageFlags.None;
+            return this;
         }
     }
 }

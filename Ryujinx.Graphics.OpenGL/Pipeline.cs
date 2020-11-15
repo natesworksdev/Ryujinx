@@ -32,12 +32,10 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundReadFramebuffer;
 
         private int[] _fpIsBgra = new int[8];
-        private float[] _fpRenderScale = new float[33];
-        private float[] _cpRenderScale = new float[32];
+        private float[] _fpRenderScale = new float[65];
+        private float[] _cpRenderScale = new float[64];
 
         private TextureBase _unit0Texture;
-        private TextureBase _rtColor0Texture;
-        private TextureBase _rtDepthTexture;
 
         private FrontFaceDirection _frontFace;
         private ClipOrigin _clipOrigin;
@@ -699,20 +697,20 @@ namespace Ryujinx.Graphics.OpenGL
             SetFrontFace(_frontFace = frontFace.Convert());
         }
 
-        public void SetImage(int index, ShaderStage stage, ITexture texture, Format imageFormat)
+        public void SetImage(int binding, ITexture texture, Format imageFormat)
         {
-            int unit = _program.GetImageUnit(stage, index);
-
-            if (unit != -1 && texture != null)
+            if (texture == null)
             {
-                TextureBase texBase = (TextureBase)texture;
+                return;
+            }
 
-                SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+            TextureBase texBase = (TextureBase)texture;
 
-                if (format != 0)
-                {
-                    GL.BindImageTexture(unit, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
-                }
+            SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
+
+            if (format != 0)
+            {
+                GL.BindImageTexture(binding, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
             }
         }
 
@@ -847,9 +845,6 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureFramebuffer();
 
-            _rtColor0Texture = (TextureBase)colors[0];
-            _rtDepthTexture = (TextureBase)depthStencil;
-
             for (int index = 0; index < colors.Length; index++)
             {
                 TextureView color = (TextureView)colors[index];
@@ -871,14 +866,14 @@ namespace Ryujinx.Graphics.OpenGL
             UpdateDepthTest();
         }
 
-        public void SetSampler(int index, ShaderStage stage, ISampler sampler)
+        public void SetSampler(int binding, ISampler sampler)
         {
-            int unit = _program.GetTextureUnit(stage, index);
-
-            if (unit != -1 && sampler != null)
+            if (sampler == null)
             {
-                ((Sampler)sampler).Bind(unit);
+                return;
             }
+
+            ((Sampler)sampler).Bind(binding);
         }
 
         public void SetScissorEnable(int index, bool enable)
@@ -944,58 +939,25 @@ namespace Ryujinx.Graphics.OpenGL
             _stencilFrontMask = stencilTest.FrontMask;
         }
 
-        public void SetStorageBuffer(int index, ShaderStage stage, BufferRange buffer)
+        public void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            SetBuffer(index, stage, buffer, isStorage: true);
+            SetBuffers(buffers, isStorage: true);
         }
 
-        public void SetTexture(int index, ShaderStage stage, ITexture texture)
+        public void SetTexture(int binding, ITexture texture)
         {
-            int unit = _program.GetTextureUnit(stage, index);
-
-            if (unit != -1 && texture != null)
+            if (texture == null)
             {
-                if (unit == 0)
-                {
-                    _unit0Texture = (TextureBase)texture;
-                }
-                else
-                {
-                    ((TextureBase)texture).Bind(unit);
-                }
+                return;
+            }
 
-                // Update scale factor for bound textures.
-
-                switch (stage)
-                {
-                    case ShaderStage.Fragment:
-                        if (_program.FragmentRenderScaleUniform != -1)
-                        {
-                            // Only update and send sampled texture scales if the shader uses them.
-                            bool interpolate = false;
-                            float scale = texture.ScaleFactor;
-
-                            if (scale != 1)
-                            {
-                                TextureBase activeTarget = _rtColor0Texture ?? _rtDepthTexture;
-
-                                if (activeTarget != null && activeTarget.Width / (float)texture.Width == activeTarget.Height / (float)texture.Height)
-                                {
-                                    // If the texture's size is a multiple of the sampler size,
-                                    // enable interpolation using gl_FragCoord.
-                                    // (helps "invent" new integer values between scaled pixels)
-                                    interpolate = true;
-                                }
-                            }
-
-                            _fpRenderScale[index + 1] = interpolate ? -scale : scale;
-                        }
-                        break;
-
-                    case ShaderStage.Compute:
-                        _cpRenderScale[index] = texture.ScaleFactor;
-                        break;
-                }
+            if (binding == 0)
+            {
+                _unit0Texture = (TextureBase)texture;
+            }
+            else
+            {
+                ((TextureBase)texture).Bind(binding);
             }
         }
 
@@ -1035,9 +997,9 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer)
+        public void SetUniformBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            SetBuffer(index, stage, buffer, isStorage: false);
+            SetBuffers(buffers, isStorage: false);
         }
 
         public void SetUserClipDistance(int index, bool enableClip)
@@ -1115,30 +1077,22 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
         }
 
-        private void SetBuffer(int index, ShaderStage stage, BufferRange buffer, bool isStorage)
+        private void SetBuffers(ReadOnlySpan<BufferRange> buffers, bool isStorage)
         {
-            int bindingPoint = isStorage
-                ? _program.GetStorageBufferBindingPoint(stage, index)
-                : _program.GetUniformBufferBindingPoint(stage, index);
+            BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
 
-            if (bindingPoint == -1)
+            for (int index = 0; index < buffers.Length; index++)
             {
-                return;
+                BufferRange buffer = buffers[index];
+
+                if (buffer.Handle == BufferHandle.Null)
+                {
+                    GL.BindBufferRange(target, index, 0, IntPtr.Zero, 0);
+                    continue;
+                }
+
+                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
             }
-
-            BufferRangeTarget target = isStorage
-                ? BufferRangeTarget.ShaderStorageBuffer
-                : BufferRangeTarget.UniformBuffer;
-
-            if (buffer.Handle == BufferHandle.Null)
-            {
-                GL.BindBufferRange(target, bindingPoint, 0, IntPtr.Zero, 0);
-                return;
-            }
-
-            IntPtr bufferOffset = (IntPtr)buffer.Offset;
-
-            GL.BindBufferRange(target, bindingPoint, buffer.Handle.ToInt32(), bufferOffset, buffer.Size);
         }
 
         private void SetOrigin(ClipOrigin origin)
@@ -1232,7 +1186,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void UpdateRenderScale(ShaderStage stage, int textureCount)
+        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
         {
             if (_program != null)
             {
@@ -1241,14 +1195,16 @@ namespace Ryujinx.Graphics.OpenGL
                     case ShaderStage.Fragment:
                         if (_program.FragmentRenderScaleUniform != -1)
                         {
-                            GL.Uniform1(_program.FragmentRenderScaleUniform, textureCount + 1, _fpRenderScale);
+                            Array.Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount);
+                            GL.Uniform1(_program.FragmentRenderScaleUniform, 1 + textureCount + imageCount, _fpRenderScale);
                         }
                         break;
 
                     case ShaderStage.Compute:
                         if (_program.ComputeRenderScaleUniform != -1)
                         {
-                            GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount, _cpRenderScale);
+                            Array.Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount);
+                            GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount + imageCount, _cpRenderScale);
                         }
                         break;
                 }

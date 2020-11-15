@@ -15,6 +15,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
         public static void Suld(EmitterContext context)
         {
+            context.Config.SetUsedFeature(FeatureFlags.IntegerSampling);
+
             OpCodeImage op = (OpCodeImage)context.CurrOp;
 
             SamplerType type = ConvertSamplerType(op.Dimensions);
@@ -71,7 +73,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand[] sources = sourcesList.ToArray();
 
-            int handle = !op.IsBindless ? op.Immediate : 0;
+            int handle = !op.IsBindless ? op.HandleOffset : 0;
 
             TextureFlags flags = op.IsBindless ? TextureFlags.Bindless : TextureFlags.None;
 
@@ -236,7 +238,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 if (!op.IsBindless)
                 {
-                    format = context.Config.GetTextureFormat(op.Immediate);
+                    format = context.Config.GetTextureFormat(op.HandleOffset);
                 }
             }
             else
@@ -260,7 +262,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand[] sources = sourcesList.ToArray();
 
-            int handle = !op.IsBindless ? op.Immediate : 0;
+            int handle = !op.IsBindless ? op.HandleOffset : 0;
 
             TextureFlags flags = op.IsBindless ? TextureFlags.Bindless : TextureFlags.None;
 
@@ -456,7 +458,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 flags = ConvertTextureFlags(tldsOp.Target) | TextureFlags.IntCoords;
 
-                if (tldsOp.Target == TexelLoadTarget.Texture1DLodZero && context.Config.GpuAccessor.QueryIsTextureBuffer(tldsOp.Immediate))
+                if (tldsOp.Target == TexelLoadTarget.Texture1DLodZero && context.Config.GpuAccessor.QueryIsTextureBuffer(tldsOp.HandleOffset))
                 {
                     type   = SamplerType.TextureBuffer;
                     flags &= ~TextureFlags.LodLevel;
@@ -605,7 +607,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 }
             }
 
-            int handle = op.Immediate;
+            int handle = op.HandleOffset;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -754,7 +756,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = op.Immediate;
+            int handle = op.HandleOffset;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -868,7 +870,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !isBindless ? op.Immediate : 0;
+            int handle = !isBindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -1017,7 +1019,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !op.IsBindless ? op.Immediate : 0;
+            int handle = !op.IsBindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -1102,7 +1104,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !bindless ? op.Immediate : 0;
+            int handle = !bindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {
@@ -1179,7 +1181,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             {
                 // For bindless, we don't have any way to know the texture type,
                 // so we assume it's texture buffer when the sampler type is 1D, since that's more common.
-                bool isTypeBuffer = isBindless || context.Config.GpuAccessor.QueryIsTextureBuffer(op.Immediate);
+                bool isTypeBuffer = isBindless || context.Config.GpuAccessor.QueryIsTextureBuffer(op.HandleOffset);
 
                 if (isTypeBuffer)
                 {
@@ -1267,7 +1269,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 return Register(rdIndex++, RegisterType.Gpr);
             }
 
-            int handle = !isBindless ? op.Immediate : 0;
+            int handle = !isBindless ? op.HandleOffset : 0;
 
             for (int compMask = op.ComponentMask, compIndex = 0; compMask != 0; compMask >>= 1, compIndex++)
             {

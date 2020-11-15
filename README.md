@@ -16,7 +16,7 @@
 </p>
 
 <h5 align="center">
-    As of August 2020, Ryujinx goes past menus and in-game on over 1,500 commercial titles. Of those, more than half are considered playable. See the compatibility list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
+    As of November 2020, Ryujinx has been tested to go past menus to in-game on approximately 1,900 commercial titles. Of those, over 1,000 are considered playable. See the compatibility list <a href="https://github.com/Ryujinx/Ryujinx-Games-List/issues" target="_blank">here</a>.
 </h5>
 
 ## Usage
@@ -35,12 +35,12 @@ The latest automatic build for Windows, macOS, and Linux can be found on the [Of
 
 If you wish to build the emulator yourself  you will need to:
 
-**Step one:** Install the [.NET Core 3.1 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet-core).
+**Step one:** Install the [.NET 5.0 (or higher) SDK](https://dotnet.microsoft.com/download/dotnet/5.0).
 
 **Step two (choose one):**  
 **(Variant one)**
 
-After the installation of the Net Core SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. You can Git Clone the repo by using Git Bash or Git CMD.
+After the installation of the .NET SDK is done; go ahead and copy the Clone link from GitHub from here (via Clone or Download --> Copy HTTPS Link. You can Git Clone the repo by using Git Bash or Git CMD.
 
 **(Variant two):**
 

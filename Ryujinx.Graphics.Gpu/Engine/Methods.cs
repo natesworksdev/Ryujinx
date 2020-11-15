@@ -5,7 +5,9 @@ using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Shader;
 using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Texture;
 using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Engine
@@ -353,6 +355,9 @@ namespace Ryujinx.Graphics.Gpu.Engine
             int samplesInX = msaaMode.SamplesInX();
             int samplesInY = msaaMode.SamplesInY();
 
+            var scissor = state.Get<ScreenScissorState>(MethodOffset.ScreenScissorState);
+            Size sizeHint = new Size(scissor.X + scissor.Width, scissor.Y + scissor.Height, 1);
+
             bool changedScale = false;
 
             for (int index = 0; index < Constants.TotalRenderTargets; index++)
@@ -368,7 +373,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     continue;
                 }
 
-                Texture color = TextureManager.FindOrCreateTexture(colorState, samplesInX, samplesInY);
+                Texture color = TextureManager.FindOrCreateTexture(colorState, samplesInX, samplesInY, sizeHint);
 
                 changedScale |= TextureManager.SetRenderTargetColor(index, color);
 
@@ -387,7 +392,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
                 var dsState = state.Get<RtDepthStencilState>(MethodOffset.RtDepthStencilState);
                 var dsSize  = state.Get<Size3D>(MethodOffset.RtDepthStencilSize);
 
-                depthStencil = TextureManager.FindOrCreateTexture(dsState, dsSize, samplesInX, samplesInY);
+                depthStencil = TextureManager.FindOrCreateTexture(dsState, dsSize, samplesInX, samplesInY, sizeHint);
             }
 
             changedScale |= TextureManager.SetRenderTargetDepthStencil(depthStencil);
@@ -995,16 +1000,23 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             ShaderBundle gs = ShaderCache.GetGraphicsShader(state, addresses);
 
-            _vsUsesInstanceId = gs.Shaders[0]?.Program.Info.UsesInstanceId ?? false;
+            _vsUsesInstanceId = gs.Shaders[0]?.Info.UsesInstanceId ?? false;
+
+            int storageBufferBindingsCount = 0;
+            int uniformBufferBindingsCount = 0;
 
             for (int stage = 0; stage < Constants.ShaderStages; stage++)
             {
-                ShaderProgramInfo info = gs.Shaders[stage]?.Program.Info;
+                ShaderProgramInfo info = gs.Shaders[stage]?.Info;
 
                 _currentProgramInfo[stage] = info;
 
                 if (info == null)
                 {
+                    TextureManager.SetGraphicsTextures(stage, Array.Empty<TextureBindingInfo>());
+                    TextureManager.SetGraphicsImages(stage, Array.Empty<TextureBindingInfo>());
+                    BufferManager.SetGraphicsStorageBufferBindings(stage, null);
+                    BufferManager.SetGraphicsUniformBufferBindings(stage, null);
                     continue;
                 }
 
@@ -1016,14 +1028,12 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     Target target = ShaderTexture.GetTarget(descriptor.Type);
 
-                    if (descriptor.IsBindless)
-                    {
-                        textureBindings[index] = new TextureBindingInfo(target, descriptor.CbufSlot, descriptor.CbufOffset, descriptor.Flags);
-                    }
-                    else
-                    {
-                        textureBindings[index] = new TextureBindingInfo(target, descriptor.HandleIndex, descriptor.Flags);
-                    }
+                    textureBindings[index] = new TextureBindingInfo(
+                        target,
+                        descriptor.Binding,
+                        descriptor.CbufSlot,
+                        descriptor.HandleIndex,
+                        descriptor.Flags);
                 }
 
                 TextureManager.SetGraphicsTextures(stage, textureBindings);
@@ -1037,27 +1047,33 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     Target target = ShaderTexture.GetTarget(descriptor.Type);
                     Format format = ShaderTexture.GetFormat(descriptor.Format);
 
-                    imageBindings[index] = new TextureBindingInfo(target, format, descriptor.HandleIndex, descriptor.Flags);
+                    imageBindings[index] = new TextureBindingInfo(
+                        target,
+                        format,
+                        descriptor.Binding,
+                        descriptor.CbufSlot,
+                        descriptor.HandleIndex,
+                        descriptor.Flags);
                 }
 
                 TextureManager.SetGraphicsImages(stage, imageBindings);
 
-                uint sbEnableMask = 0;
-                uint ubEnableMask = 0;
+                BufferManager.SetGraphicsStorageBufferBindings(stage, info.SBuffers);
+                BufferManager.SetGraphicsUniformBufferBindings(stage, info.CBuffers);
 
-                for (int index = 0; index < info.SBuffers.Count; index++)
+                if (info.SBuffers.Count != 0)
                 {
-                    sbEnableMask |= 1u << info.SBuffers[index].Slot;
+                    storageBufferBindingsCount = Math.Max(storageBufferBindingsCount, info.SBuffers.Max(x => x.Binding) + 1);
                 }
 
-                for (int index = 0; index < info.CBuffers.Count; index++)
+                if (info.CBuffers.Count != 0)
                 {
-                    ubEnableMask |= 1u << info.CBuffers[index].Slot;
+                    uniformBufferBindingsCount = Math.Max(uniformBufferBindingsCount, info.CBuffers.Max(x => x.Binding) + 1);
                 }
-
-                BufferManager.SetGraphicsStorageBufferEnableMask(stage, sbEnableMask);
-                BufferManager.SetGraphicsUniformBufferEnableMask(stage, ubEnableMask);
             }
+
+            BufferManager.SetGraphicsStorageBufferBindingsCount(storageBufferBindingsCount);
+            BufferManager.SetGraphicsUniformBufferBindingsCount(uniformBufferBindingsCount);
 
             _context.Renderer.Pipeline.SetProgram(gs.HostProgram);
         }

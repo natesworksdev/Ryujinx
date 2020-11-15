@@ -15,7 +15,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
-            bool isArray   = (texOp.Type & SamplerType.Array) != 0;
+            // TODO: Bindless texture support. For now we just return 0/do nothing.
+            if (isBindless)
+            {
+                return texOp.Inst == Instruction.ImageLoad ? NumberFormatter.FormatFloat(0) : "// imageStore(bindless)";
+            }
+
+            bool isArray   = (texOp.Type & SamplerType.Array)   != 0;
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             string texCall = texOp.Inst == Instruction.ImageLoad ? "imageLoad" : "imageStore";
@@ -47,6 +53,46 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 texCall += ", " + str;
             }
 
+            string ApplyScaling(string vector)
+            {
+                int index = context.FindImageDescriptorIndex(texOp);
+                TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
+
+                if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
+                    texOp.Inst == Instruction.ImageLoad &&
+                    !isBindless &&
+                    !isIndexed)
+                {
+                    // Image scales start after texture ones.
+                    int scaleIndex = context.TextureDescriptors.Count + index;
+
+                    if (pCount == 3 && isArray)
+                    {
+                        // The array index is not scaled, just x and y.
+                        vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + scaleIndex + "), (" + vector + ").z)";
+                    }
+                    else if (pCount == 2 && !isArray)
+                    {
+                        vector = "Helper_TexelFetchScale(" + vector + ", " + scaleIndex + ")";
+                    }
+                    else
+                    {
+                        flags |= TextureUsageFlags.ResScaleUnsupported;
+                    }
+                }
+                else
+                {
+                    flags |= TextureUsageFlags.ResScaleUnsupported;
+                }
+
+                if (!isBindless)
+                {
+                    context.ImageDescriptors[index] = context.ImageDescriptors[index].SetFlag(flags);
+                }
+
+                return vector;
+            }
+
             if (pCount > 1)
             {
                 string[] elems = new string[pCount];
@@ -56,7 +102,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     elems[index] = Src(VariableType.S32);
                 }
 
-                Append("ivec" + pCount + "(" + string.Join(", ", elems) + ")");
+                Append(ApplyScaling("ivec" + pCount + "(" + string.Join(", ", elems) + ")"));
             }
             else
             {
@@ -175,6 +221,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
 
+            // TODO: Bindless texture support. For now we just return 0.
+            if (isBindless)
+            {
+                return NumberFormatter.FormatFloat(0);
+            }
+
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
             string indexExpr = null;
@@ -268,6 +320,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             bool isIndexed     = (texOp.Type & SamplerType.Indexed)     != 0;
             bool isMultisample = (texOp.Type & SamplerType.Multisample) != 0;
             bool isShadow      = (texOp.Type & SamplerType.Shadow)      != 0;
+
+            // TODO: Bindless texture support. For now we just return 0.
+            if (isBindless)
+            {
+                return NumberFormatter.FormatFloat(0);
+            }
 
             // This combination is valid, but not available on GLSL.
             // For now, ignore the LOD level and do a normal sample.
@@ -404,28 +462,38 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                 if (intCoords)
                 {
                     int index = context.FindTextureDescriptorIndex(texOp);
+                    TextureUsageFlags flags = TextureUsageFlags.NeedsScaleValue;
 
                     if ((context.Config.Stage == ShaderStage.Fragment || context.Config.Stage == ShaderStage.Compute) &&
-                        (texOp.Flags & TextureFlags.Bindless) == 0 &&
-                        texOp.Type != SamplerType.Indexed)
+                        !isBindless &&
+                        !isIndexed)
                     {
                         if (pCount == 3 && isArray)
                         {
                             // The array index is not scaled, just x and y.
-                            return "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
+                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + index + "), (" + vector + ").z)";
                         }
                         else if (pCount == 2 && !isArray)
                         {
-                            return "Helper_TexelFetchScale(" + vector + ", " + index + ")";
+                            vector = "Helper_TexelFetchScale(" + vector + ", " + index + ")";
                         }
+                        else
+                        {
+                            flags |= TextureUsageFlags.ResScaleUnsupported;
+                        }
+                    } 
+                    else
+                    {
+                        // Resolution scaling cannot be applied to this texture right now.
+                        // Flag so that we know to blacklist scaling on related textures when binding them.
+
+                        flags |= TextureUsageFlags.ResScaleUnsupported;
                     }
 
-                    // Resolution scaling cannot be applied to this texture right now.
-                    // Flag so that we know to blacklist scaling on related textures when binding them.
-
-                    TextureDescriptor descriptor = context.TextureDescriptors[index];
-                    descriptor.Flags |= TextureUsageFlags.ResScaleUnsupported;
-                    context.TextureDescriptors[index] = descriptor;
+                    if (!isBindless)
+                    {
+                        context.TextureDescriptors[index] = context.TextureDescriptors[index].SetFlag(flags);
+                    }
                 }
 
                 return vector;
@@ -527,6 +595,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
             AstTextureOperation texOp = (AstTextureOperation)operation;
 
             bool isBindless = (texOp.Flags & TextureFlags.Bindless) != 0;
+
+            // TODO: Bindless texture support. For now we just return 0.
+            if (isBindless)
+            {
+                return NumberFormatter.FormatInt(0);
+            }
 
             bool isIndexed = (texOp.Type & SamplerType.Indexed) != 0;
 
