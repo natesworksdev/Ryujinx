@@ -5,7 +5,6 @@ using Ryujinx.Graphics.OpenGL.Image;
 using Ryujinx.Graphics.OpenGL.Queries;
 using Ryujinx.Graphics.Shader;
 using System;
-using System.Threading;
 
 namespace Ryujinx.Graphics.OpenGL
 {
@@ -33,12 +32,10 @@ namespace Ryujinx.Graphics.OpenGL
         private int _boundReadFramebuffer;
 
         private int[] _fpIsBgra = new int[8];
-        private float[] _fpRenderScale = new float[33];
-        private float[] _cpRenderScale = new float[32];
+        private float[] _fpRenderScale = new float[65];
+        private float[] _cpRenderScale = new float[64];
 
         private TextureBase _unit0Texture;
-        private TextureBase _rtColor0Texture;
-        private TextureBase _rtDepthTexture;
 
         private FrontFaceDirection _frontFace;
         private ClipOrigin _clipOrigin;
@@ -49,6 +46,10 @@ namespace Ryujinx.Graphics.OpenGL
         private bool _scissor0Enable = false;
 
         private bool _tfEnabled;
+        private TransformFeedbackPrimitiveType _tfTopology;
+
+        private readonly BufferHandle[] _tfbs;
+        private readonly BufferRange[] _tfbTargets;
 
         private ColorF _blendConstant;
 
@@ -74,6 +75,9 @@ namespace Ryujinx.Graphics.OpenGL
             {
                 _cpRenderScale[index] = 1f;
             }
+
+            _tfbs = new BufferHandle[Constants.MaxTransformFeedbackBuffers];
+            _tfbTargets = new BufferRange[Constants.MaxTransformFeedbackBuffers];
         }
 
         public void Barrier()
@@ -83,7 +87,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void BeginTransformFeedback(PrimitiveTopology topology)
         {
-            GL.BeginTransformFeedback(topology.ConvertToTfType());
+            GL.BeginTransformFeedback(_tfTopology = topology.ConvertToTfType());
             _tfEnabled = true;
         }
 
@@ -175,7 +179,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            PrepareForDraw();
+            PreDraw();
 
             if (_primitiveType == PrimitiveType.Quads)
             {
@@ -190,7 +194,7 @@ namespace Ryujinx.Graphics.OpenGL
                 DrawImpl(vertexCount, instanceCount, firstVertex, firstInstance);
             }
 
-            _framebuffer.SignalModified();
+            PostDraw();
         }
 
         private void DrawQuadsImpl(
@@ -293,7 +297,7 @@ namespace Ryujinx.Graphics.OpenGL
                 return;
             }
 
-            PrepareForDraw();
+            PreDraw();
 
             int indexElemSize = 1;
 
@@ -335,7 +339,7 @@ namespace Ryujinx.Graphics.OpenGL
                     firstInstance);
             }
 
-            _framebuffer.SignalModified();
+            PostDraw();
         }
 
         private void DrawQuadsIndexedImpl(
@@ -693,19 +697,20 @@ namespace Ryujinx.Graphics.OpenGL
             SetFrontFace(_frontFace = frontFace.Convert());
         }
 
-        public void SetImage(int index, ShaderStage stage, ITexture texture)
+        public void SetImage(int binding, ITexture texture, Format imageFormat)
         {
-            int unit = _program.GetImageUnit(stage, index);
-
-            if (unit != -1 && texture != null)
+            if (texture == null)
             {
-                TextureBase texBase = (TextureBase)texture;
+                return;
+            }
 
-                FormatInfo formatInfo = FormatTable.GetFormatInfo(texBase.Format);
+            TextureBase texBase = (TextureBase)texture;
 
-                SizedInternalFormat format = (SizedInternalFormat)formatInfo.PixelInternalFormat;
+            SizedInternalFormat format = FormatTable.GetImageFormat(imageFormat);
 
-                GL.BindImageTexture(unit, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
+            if (format != 0)
+            {
+                GL.BindImageTexture(binding, texBase.Handle, 0, true, 0, TextureAccess.ReadWrite, format);
             }
         }
 
@@ -789,9 +794,9 @@ namespace Ryujinx.Graphics.OpenGL
 
             if (_tfEnabled)
             {
-                GL.PauseTransformFeedback();
+                GL.EndTransformFeedback();
                 _program.Bind();
-                GL.ResumeTransformFeedback();
+                GL.BeginTransformFeedback(_tfTopology);
             }
             else
             {
@@ -840,9 +845,6 @@ namespace Ryujinx.Graphics.OpenGL
         {
             EnsureFramebuffer();
 
-            _rtColor0Texture = (TextureBase)colors[0];
-            _rtDepthTexture = (TextureBase)depthStencil;
-
             for (int index = 0; index < colors.Length; index++)
             {
                 TextureView color = (TextureView)colors[index];
@@ -864,14 +866,14 @@ namespace Ryujinx.Graphics.OpenGL
             UpdateDepthTest();
         }
 
-        public void SetSampler(int index, ShaderStage stage, ISampler sampler)
+        public void SetSampler(int binding, ISampler sampler)
         {
-            int unit = _program.GetTextureUnit(stage, index);
-
-            if (unit != -1 && sampler != null)
+            if (sampler == null)
             {
-                ((Sampler)sampler).Bind(unit);
+                return;
             }
+
+            ((Sampler)sampler).Bind(binding);
         }
 
         public void SetScissorEnable(int index, bool enable)
@@ -937,80 +939,67 @@ namespace Ryujinx.Graphics.OpenGL
             _stencilFrontMask = stencilTest.FrontMask;
         }
 
-        public void SetStorageBuffer(int index, ShaderStage stage, BufferRange buffer)
+        public void SetStorageBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            SetBuffer(index, stage, buffer, isStorage: true);
+            SetBuffers(buffers, isStorage: true);
         }
 
-        public void SetTexture(int index, ShaderStage stage, ITexture texture)
+        public void SetTexture(int binding, ITexture texture)
         {
-            int unit = _program.GetTextureUnit(stage, index);
-
-            if (unit != -1 && texture != null)
+            if (texture == null)
             {
-                if (unit == 0)
-                {
-                    _unit0Texture = (TextureBase)texture;
-                }
-                else
-                {
-                    ((TextureBase)texture).Bind(unit);
-                }
-
-                // Update scale factor for bound textures.
-
-                switch (stage)
-                {
-                    case ShaderStage.Fragment:
-                        if (_program.FragmentRenderScaleUniform != -1)
-                        {
-                            // Only update and send sampled texture scales if the shader uses them.
-                            bool interpolate = false;
-                            float scale = texture.ScaleFactor;
-
-                            if (scale != 1)
-                            {
-                                TextureBase activeTarget = _rtColor0Texture ?? _rtDepthTexture;
-
-                                if (activeTarget != null && activeTarget.Width / (float)texture.Width == activeTarget.Height / (float)texture.Height)
-                                {
-                                    // If the texture's size is a multiple of the sampler size,
-                                    // enable interpolation using gl_FragCoord.
-                                    // (helps "invent" new integer values between scaled pixels)
-                                    interpolate = true;
-                                }
-                            }
-
-                            _fpRenderScale[index + 1] = interpolate ? -scale : scale;
-                        }
-                        break;
-
-                    case ShaderStage.Compute:
-                        _cpRenderScale[index] = texture.ScaleFactor;
-                        break;
-                }
+                return;
             }
-        }
 
-        public void SetTransformFeedbackBuffer(int index, BufferRange buffer)
-        {
-            const BufferRangeTarget target = BufferRangeTarget.TransformFeedbackBuffer;
-
-            if (_tfEnabled)
+            if (binding == 0)
             {
-                GL.PauseTransformFeedback();
-                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
-                GL.ResumeTransformFeedback();
+                _unit0Texture = (TextureBase)texture;
             }
             else
             {
-                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
+                ((TextureBase)texture).Bind(binding);
             }
         }
 
-        public void SetUniformBuffer(int index, ShaderStage stage, BufferRange buffer)
+        public void SetTransformFeedbackBuffers(ReadOnlySpan<BufferRange> buffers)
         {
-            SetBuffer(index, stage, buffer, isStorage: false);
+            if (_tfEnabled)
+            {
+                GL.EndTransformFeedback();
+            }
+
+            int count = Math.Min(buffers.Length, Constants.MaxTransformFeedbackBuffers);
+
+            for (int i = 0; i < count; i++)
+            {
+                BufferRange buffer = buffers[i];
+                _tfbTargets[i] = buffer;
+
+                if (buffer.Handle == BufferHandle.Null)
+                {
+                    GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, i, 0);
+                    continue;
+                }
+
+                if (_tfbs[i] == BufferHandle.Null)
+                {
+                    _tfbs[i] = Buffer.Create();
+                }
+
+                Buffer.Resize(_tfbs[i], buffer.Size);
+                Buffer.Copy(buffer.Handle, _tfbs[i], buffer.Offset, 0, buffer.Size);
+                GL.BindBufferBase(BufferRangeTarget.TransformFeedbackBuffer, i, _tfbs[i].ToInt32());
+            }
+
+            if (_tfEnabled)
+            {
+                GL.BeginTransformFeedback(_tfTopology);
+            }
+        }
+
+        public void SetUniformBuffers(ReadOnlySpan<BufferRange> buffers)
+        {
+            SetBuffers(buffers, isStorage: false);
         }
 
         public void SetUserClipDistance(int index, bool enableClip)
@@ -1088,30 +1077,22 @@ namespace Ryujinx.Graphics.OpenGL
             GL.MemoryBarrier(MemoryBarrierFlags.TextureFetchBarrierBit);
         }
 
-        private void SetBuffer(int index, ShaderStage stage, BufferRange buffer, bool isStorage)
+        private void SetBuffers(ReadOnlySpan<BufferRange> buffers, bool isStorage)
         {
-            int bindingPoint = isStorage
-                ? _program.GetStorageBufferBindingPoint(stage, index)
-                : _program.GetUniformBufferBindingPoint(stage, index);
+            BufferRangeTarget target = isStorage ? BufferRangeTarget.ShaderStorageBuffer : BufferRangeTarget.UniformBuffer;
 
-            if (bindingPoint == -1)
+            for (int index = 0; index < buffers.Length; index++)
             {
-                return;
+                BufferRange buffer = buffers[index];
+
+                if (buffer.Handle == BufferHandle.Null)
+                {
+                    GL.BindBufferRange(target, index, 0, IntPtr.Zero, 0);
+                    continue;
+                }
+
+                GL.BindBufferRange(target, index, buffer.Handle.ToInt32(), (IntPtr)buffer.Offset, buffer.Size);
             }
-
-            BufferRangeTarget target = isStorage
-                ? BufferRangeTarget.ShaderStorageBuffer
-                : BufferRangeTarget.UniformBuffer;
-
-            if (buffer.Handle == null)
-            {
-                GL.BindBufferRange(target, bindingPoint, 0, IntPtr.Zero, 0);
-                return;
-            }
-
-            IntPtr bufferOffset = (IntPtr)buffer.Offset;
-
-            GL.BindBufferRange(target, bindingPoint, buffer.Handle.ToInt32(), bufferOffset, buffer.Size);
         }
 
         private void SetOrigin(ClipOrigin origin)
@@ -1205,7 +1186,7 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        public void UpdateRenderScale(ShaderStage stage, int textureCount)
+        public void UpdateRenderScale(ShaderStage stage, float[] scales, int textureCount, int imageCount)
         {
             if (_program != null)
             {
@@ -1214,14 +1195,16 @@ namespace Ryujinx.Graphics.OpenGL
                     case ShaderStage.Fragment:
                         if (_program.FragmentRenderScaleUniform != -1)
                         {
-                            GL.Uniform1(_program.FragmentRenderScaleUniform, textureCount + 1, _fpRenderScale);
+                            Array.Copy(scales, 0, _fpRenderScale, 1, textureCount + imageCount);
+                            GL.Uniform1(_program.FragmentRenderScaleUniform, 1 + textureCount + imageCount, _fpRenderScale);
                         }
                         break;
 
                     case ShaderStage.Compute:
                         if (_program.ComputeRenderScaleUniform != -1)
                         {
-                            GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount, _cpRenderScale);
+                            Array.Copy(scales, 0, _cpRenderScale, 0, textureCount + imageCount);
+                            GL.Uniform1(_program.ComputeRenderScaleUniform, textureCount + imageCount, _cpRenderScale);
                         }
                         break;
                 }
@@ -1236,13 +1219,29 @@ namespace Ryujinx.Graphics.OpenGL
             }
         }
 
-        private void PrepareForDraw()
+        private void PreDraw()
         {
             _vertexArray.Validate();
 
             if (_unit0Texture != null)
             {
                 _unit0Texture.Bind(0);
+            }
+        }
+
+        private void PostDraw()
+        {
+            _framebuffer?.SignalModified();
+
+            if (_tfEnabled)
+            {
+                for (int i = 0; i < Constants.MaxTransformFeedbackBuffers; i++)
+                {
+                    if (_tfbTargets[i].Handle != BufferHandle.Null)
+                    {
+                        Buffer.Copy(_tfbs[i], _tfbTargets[i].Handle, 0, _tfbTargets[i].Offset, _tfbTargets[i].Size);
+                    }
+                }
             }
         }
 
@@ -1318,6 +1317,15 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void Dispose()
         {
+            for (int i = 0; i < Constants.MaxTransformFeedbackBuffers; i++)
+            {
+                if (_tfbs[i] != BufferHandle.Null)
+                {
+                    Buffer.Delete(_tfbs[i]);
+                    _tfbs[i] = BufferHandle.Null;
+                }
+            }
+
             _framebuffer?.Dispose();
             _vertexArray?.Dispose();
         }

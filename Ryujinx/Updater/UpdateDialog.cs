@@ -3,6 +3,7 @@ using Gtk;
 using Mono.Unix;
 using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Ryujinx.Ui
@@ -45,6 +46,7 @@ namespace Ryujinx.Ui
             {
                 string ryuName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "Ryujinx.exe" : "Ryujinx";
                 string ryuExe  = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, ryuName);
+                string ryuArg = String.Join(" ", Environment.GetCommandLineArgs().AsEnumerable().Skip(1).ToArray());
 
                 if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
@@ -52,7 +54,7 @@ namespace Ryujinx.Ui
                     unixFileInfo.FileAccessPermissions |= FileAccessPermissions.UserExecute;
                 }
 
-                Process.Start(ryuExe);
+                Process.Start(ryuExe, ryuArg);
 
                 Environment.Exit(0);
             }

@@ -1,6 +1,5 @@
 using Ryujinx.Common;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.State;
 using Ryujinx.Graphics.Texture;
 using System;
 
@@ -27,23 +26,65 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Finds the appropriate depth format for a copy texture if the source texture has a depth format.
+        /// Checks if a format is host incompatible.
         /// </summary>
-        /// <param name="dstTextureFormat">Destination CopyTexture Format</param>
-        /// <param name="srcTextureFormat">Source Texture Format</param>
-        /// <returns>Derived RtFormat if srcTextureFormat is a depth format, otherwise return dstTextureFormat.</returns>
-        public static RtFormat DeriveDepthFormat(RtFormat dstTextureFormat, Format srcTextureFormat)
+        /// <remarks>
+        /// Host incompatible formats can't be used directly, the texture data needs to be converted
+        /// to a compatible format first.
+        /// </remarks>
+        /// <param name="info">Texture information</param>
+        /// <param name="caps">Host GPU capabilities</param>
+        /// <returns>True if the format is incompatible, false otherwise</returns>
+        public static bool IsFormatHostIncompatible(TextureInfo info, Capabilities caps)
         {
-            return srcTextureFormat switch
+            Format originalFormat = info.FormatInfo.Format;
+            return ToHostCompatibleFormat(info, caps).Format != originalFormat;
+        }
+
+        /// <summary>
+        /// Converts a incompatible format to a host compatible format, or return the format directly
+        /// if it is already host compatible.
+        /// </summary>
+        /// <remarks>
+        /// This can be used to convert a incompatible compressed format to the decompressor
+        /// output format.
+        /// </remarks>
+        /// <param name="info">Texture information</param>
+        /// <param name="caps">Host GPU capabilities</param>
+        /// <returns>A host compatible format</returns>
+        public static FormatInfo ToHostCompatibleFormat(TextureInfo info, Capabilities caps)
+        {
+            if (!caps.SupportsAstcCompression)
             {
-                Format.S8Uint => RtFormat.S8Uint,
-                Format.D16Unorm => RtFormat.D16Unorm,
-                Format.D24X8Unorm => RtFormat.D24Unorm,
-                Format.D32Float => RtFormat.D32Float,
-                Format.D24UnormS8Uint => RtFormat.D24UnormS8Uint,
-                Format.D32FloatS8Uint => RtFormat.D32FloatS8Uint,
-                _ => dstTextureFormat
-            };
+                if (info.FormatInfo.Format.IsAstcUnorm())
+                {
+                    return new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
+                }
+                else if (info.FormatInfo.Format.IsAstcSrgb())
+                {
+                    return new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
+                }
+            }
+
+            if (info.Target == Target.Texture3D)
+            {
+                // The host API does not support 3D BC4/BC5 compressed formats.
+                // We assume software decompression will be done for those textures,
+                // and so we adjust the format here to match the decompressor output.
+                switch (info.FormatInfo.Format)
+                {
+                    case Format.Bc4Unorm:
+                        return new FormatInfo(Format.R8Unorm, 1, 1, 1, 1);
+                    case Format.Bc4Snorm:
+                        return new FormatInfo(Format.R8Snorm, 1, 1, 1, 1);
+                    case Format.Bc5Unorm:
+                        return new FormatInfo(Format.R8G8Unorm, 1, 1, 2, 2);
+                    case Format.Bc5Snorm:
+                        return new FormatInfo(Format.R8G8Snorm, 1, 1, 2, 2);
+                }
+            }
+
+            return info.FormatInfo;
         }
 
         /// <summary>
@@ -54,7 +95,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the formats are compatible, false otherwise</returns>
         public static bool FormatCompatible(FormatInfo lhs, FormatInfo rhs)
         {
-            if (IsDsFormat(lhs.Format) || IsDsFormat(rhs.Format))
+            if (lhs.Format.IsDepthOrStencil() || rhs.Format.IsDepthOrStencil())
             {
                 return lhs.Format == rhs.Format;
             }
@@ -233,7 +274,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return false;
             }
 
-            if (alignSizes)
+            bool isTextureBuffer = lhs.Target == Target.TextureBuffer || rhs.Target == Target.TextureBuffer;
+
+            if (alignSizes && !isTextureBuffer)
             {
                 Size size0 = GetAlignedSize(lhs);
                 Size size1 = GetAlignedSize(rhs);
@@ -504,27 +547,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return FormatClass.Unclassified;
-        }
-
-        /// <summary>
-        /// Checks if the format is a depth-stencil texture format.
-        /// </summary>
-        /// <param name="format">Format to check</param>
-        /// <returns>True if the format is a depth-stencil format (including depth only), false otherwise</returns>
-        private static bool IsDsFormat(Format format)
-        {
-            switch (format)
-            {
-                case Format.D16Unorm:
-                case Format.D24X8Unorm:
-                case Format.D24UnormS8Uint:
-                case Format.D32Float:
-                case Format.D32FloatS8Uint:
-                case Format.S8Uint:
-                    return true;
-            }
-
-            return false;
         }
     }
 }

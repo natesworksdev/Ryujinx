@@ -41,6 +41,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private bool _rebind;
 
+        private float[] _scales;
+        private bool _scaleChanged;
+
         /// <summary>
         /// Constructs a new instance of the texture bindings manager.
         /// </summary>
@@ -60,6 +63,13 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             _textureState = new TextureStatePerStage[stages][];
             _imageState   = new TextureStatePerStage[stages][];
+
+            _scales = new float[64];
+
+            for (int i = 0; i < 64; i++)
+            {
+                _scales[i] = 1f;
+            }
         }
 
         /// <summary>
@@ -132,6 +142,81 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Updates the texture scale for a given texture or image.
+        /// </summary>
+        /// <param name="texture">Start GPU virtual address of the pool</param>
+        /// <param name="binding">The related texture binding</param>
+        /// <param name="index">The texture/image binding index</param>
+        /// <param name="stage">The active shader stage</param>
+        /// <returns>True if the given texture has become blacklisted, indicating that its host texture may have changed.</returns>
+        private bool UpdateScale(Texture texture, TextureBindingInfo binding, int index, ShaderStage stage)
+        {
+            float result = 1f;
+            bool changed = false;
+
+            if ((binding.Flags & TextureUsageFlags.NeedsScaleValue) != 0 && texture != null)
+            {
+                _scaleChanged |= true;
+
+                switch (stage)
+                {
+                    case ShaderStage.Fragment:
+                        if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) != 0)
+                        {
+                            changed |= texture.ScaleMode != TextureScaleMode.Blacklisted;
+                            texture.BlacklistScale();
+                            break;
+                        }
+
+                        float scale = texture.ScaleFactor;
+
+                        TextureManager manager = _context.Methods.TextureManager;
+
+                        if (scale != 1)
+                        {
+                            Texture activeTarget = manager.GetAnyRenderTarget();
+
+                            if (activeTarget != null && activeTarget.Info.Width / (float)texture.Info.Width == activeTarget.Info.Height / (float)texture.Info.Height)
+                            {
+                                // If the texture's size is a multiple of the sampler size, enable interpolation using gl_FragCoord. (helps "invent" new integer values between scaled pixels)
+                                result = -scale;
+                                break;
+                            }
+                        }
+
+                        result = scale;
+                        break;
+
+                    case ShaderStage.Compute:
+                        if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) != 0)
+                        {
+                            changed |= texture.ScaleMode != TextureScaleMode.Blacklisted;
+                            texture.BlacklistScale();
+                        }
+
+                        result = texture.ScaleFactor;
+                        break;
+                }
+            }
+
+            _scales[index] = result;
+            return changed;
+        }
+
+        /// <summary>
+        /// Uploads texture and image scales to the backend when they are used.
+        /// </summary>
+        /// <param name="stage">Current shader stage</param>
+        /// <param name="stageIndex">Shader stage index</param>
+        private void CommitRenderScale(ShaderStage stage, int stageIndex)
+        {
+            if (_scaleChanged)
+            {
+                _context.Renderer.Pipeline.UpdateRenderScale(stage, _scales, _textureBindings[stageIndex]?.Length ?? 0, _imageBindings[stageIndex]?.Length ?? 0);
+            }
+        }
+
+        /// <summary>
         /// Ensures that the bindings are visible to the host GPU.
         /// Note: this actually performs the binding using the host graphics API.
         /// </summary>
@@ -145,6 +230,8 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 CommitTextureBindings(texturePool, ShaderStage.Compute, 0);
                 CommitImageBindings  (texturePool, ShaderStage.Compute, 0);
+
+                CommitRenderScale(ShaderStage.Compute, 0);
             }
             else
             {
@@ -154,6 +241,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     CommitTextureBindings(texturePool, stage, stageIndex);
                     CommitImageBindings  (texturePool, stage, stageIndex);
+
+                    CommitRenderScale(stage, stageIndex);
                 }
             }
 
@@ -174,36 +263,13 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            bool changed = false;
-
             for (int index = 0; index < _textureBindings[stageIndex].Length; index++)
             {
-                TextureBindingInfo binding = _textureBindings[stageIndex][index];
+                TextureBindingInfo bindingInfo = _textureBindings[stageIndex][index];
 
-                int packedId;
+                int textureBufferIndex = bindingInfo.CbufSlot < 0 ? _textureBufferIndex : bindingInfo.CbufSlot;
 
-                if (binding.IsBindless)
-                {
-                    ulong address;
-
-                    var bufferManager = _context.Methods.BufferManager;
-
-                    if (_isCompute)
-                    {
-                        address = bufferManager.GetComputeUniformBufferAddress(binding.CbufSlot);
-                    }
-                    else
-                    {
-                        address = bufferManager.GetGraphicsUniformBufferAddress(stageIndex, binding.CbufSlot);
-                    }
-
-                    packedId = _context.PhysicalMemory.Read<int>(address + (ulong)binding.CbufOffset * 4);
-                }
-                else
-                {
-                    packedId = ReadPackedId(stageIndex, binding.Handle, _textureBufferIndex);
-                }
-
+                int packedId = ReadPackedId(stageIndex, bindingInfo.Handle, textureBufferIndex);
                 int textureId = UnpackTextureId(packedId);
                 int samplerId;
 
@@ -218,20 +284,18 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 Texture texture = pool.Get(textureId);
 
-                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) != 0)
-                {
-                    texture?.BlacklistScale();
-                }
-
-                ITexture hostTexture = texture?.GetTargetTexture(binding.Target);
+                ITexture hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
 
                 if (_textureState[stageIndex][index].Texture != hostTexture || _rebind)
                 {
+                    if (UpdateScale(texture, bindingInfo, index, stage))
+                    {
+                        hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
+                    }
+
                     _textureState[stageIndex][index].Texture = hostTexture;
 
-                    _context.Renderer.Pipeline.SetTexture(index, stage, hostTexture);
-
-                    changed = true;
+                    _context.Renderer.Pipeline.SetTexture(bindingInfo.Binding, hostTexture);
                 }
 
                 if (hostTexture != null && texture.Info.Target == Target.TextureBuffer)
@@ -250,13 +314,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     _textureState[stageIndex][index].Sampler = hostSampler;
 
-                    _context.Renderer.Pipeline.SetSampler(index, stage, hostSampler);
+                    _context.Renderer.Pipeline.SetSampler(bindingInfo.Binding, hostSampler);
                 }
-            }
-
-            if (changed)
-            {
-                _context.Renderer.Pipeline.UpdateRenderScale(stage, _textureBindings[stageIndex].Length);
             }
         }
 
@@ -274,27 +333,47 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
+            // Scales for images appear after the texture ones.
+            int baseScaleIndex = _textureBindings[stageIndex]?.Length ?? 0;
+
             for (int index = 0; index < _imageBindings[stageIndex].Length; index++)
             {
-                TextureBindingInfo binding = _imageBindings[stageIndex][index];
+                TextureBindingInfo bindingInfo = _imageBindings[stageIndex][index];
 
-                int packedId = ReadPackedId(stageIndex, binding.Handle, _textureBufferIndex);
+                int textureBufferIndex = bindingInfo.CbufSlot < 0 ? _textureBufferIndex : bindingInfo.CbufSlot;
+
+                int packedId = ReadPackedId(stageIndex, bindingInfo.Handle, textureBufferIndex);
                 int textureId = UnpackTextureId(packedId);
 
                 Texture texture = pool.Get(textureId);
 
-                if ((binding.Flags & TextureUsageFlags.ResScaleUnsupported) != 0)
-                {
-                    texture?.BlacklistScale();
-                }
+                ITexture hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
 
-                ITexture hostTexture = texture?.GetTargetTexture(binding.Target);
+                if (hostTexture != null && texture.Info.Target == Target.TextureBuffer)
+                {
+                    // Ensure that the buffer texture is using the correct buffer as storage.
+                    // Buffers are frequently re-created to accomodate larger data, so we need to re-bind
+                    // to ensure we're not using a old buffer that was already deleted.
+                    _context.Methods.BufferManager.SetBufferTextureStorage(hostTexture, texture.Address, texture.Size, _isCompute);
+                }
 
                 if (_imageState[stageIndex][index].Texture != hostTexture || _rebind)
                 {
+                    if (UpdateScale(texture, bindingInfo, baseScaleIndex + index, stage))
+                    {
+                        hostTexture = texture?.GetTargetTexture(bindingInfo.Target);
+                    }
+
                     _imageState[stageIndex][index].Texture = hostTexture;
 
-                    _context.Renderer.Pipeline.SetImage(index, stage, hostTexture);
+                    Format format = bindingInfo.Format;
+
+                    if (format == 0 && texture != null)
+                    {
+                        format = texture.Format;
+                    }
+
+                    _context.Renderer.Pipeline.SetImage(bindingInfo.Binding, hostTexture, format);
                 }
             }
         }
@@ -377,18 +456,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         private static int UnpackSamplerId(int packedId)
         {
             return (packedId >> 20) & 0xfff;
-        }
-
-        /// <summary>
-        /// Invalidates a range of memory on all GPU resource pools (both texture and sampler pools).
-        /// </summary>
-        /// <param name="address">Start address of the range to invalidate</param>
-        /// <param name="size">Size of the range to invalidate</param>
-        public void InvalidatePoolRange(ulong address, ulong size)
-        {
-            _samplerPool?.InvalidateRange(address, size);
-
-            _texturePoolCache.InvalidateRange(address, size);
         }
 
         /// <summary>

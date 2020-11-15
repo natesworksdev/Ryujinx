@@ -195,6 +195,15 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Gets the first available bound colour target, or the depth stencil target if not present.
+        /// </summary>
+        /// <returns>The first bound colour target, otherwise the depth stencil target</returns>
+        public Texture GetAnyRenderTarget()
+        {
+            return _rtColors[0] ?? _rtDepthStencil;
+        }
+
+        /// <summary>
         /// Updates the Render Target scale, given the currently bound render targets.
         /// This will update scale to match the configured scale, scale textures that are eligible but not scaled,
         /// and propagate blacklisted status from one texture to the ones bound with it.
@@ -442,9 +451,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Tries to find an existing texture, or create a new one if not found.
         /// </summary>
         /// <param name="copyTexture">Copy texture to find or create</param>
+        /// <param name="formatInfo">Format information of the copy texture</param>
         /// <param name="preferScaling">Indicates if the texture should be scaled from the start</param>
+        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(CopyTexture copyTexture, bool preferScaling = true)
+        public Texture FindOrCreateTexture(CopyTexture copyTexture, FormatInfo formatInfo, bool preferScaling = true, Size? sizeHint = null)
         {
             ulong address = _context.MemoryManager.Translate(copyTexture.Address.Pack());
 
@@ -455,8 +466,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int gobBlocksInY = copyTexture.MemoryLayout.UnpackGobBlocksInY();
             int gobBlocksInZ = copyTexture.MemoryLayout.UnpackGobBlocksInZ();
-
-            FormatInfo formatInfo = copyTexture.Format.Convert();
 
             int width;
 
@@ -492,7 +501,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 flags |= TextureSearchFlags.WithUpscale;
             }
 
-            Texture texture = FindOrCreateTexture(info, flags);
+            Texture texture = FindOrCreateTexture(info, flags, sizeHint);
 
             texture.SynchronizeMemory();
 
@@ -505,8 +514,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="colorState">Color buffer texture to find or create</param>
         /// <param name="samplesInX">Number of samples in the X direction, for MSAA</param>
         /// <param name="samplesInY">Number of samples in the Y direction, for MSAA</param>
+        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(RtColorState colorState, int samplesInX, int samplesInY)
+        public Texture FindOrCreateTexture(RtColorState colorState, int samplesInX, int samplesInY, Size sizeHint)
         {
             ulong address = _context.MemoryManager.Translate(colorState.Address.Pack());
 
@@ -575,7 +585,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 target,
                 formatInfo);
 
-            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.WithUpscale);
+            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.WithUpscale, sizeHint);
 
             texture.SynchronizeMemory();
 
@@ -589,8 +599,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="size">Size of the depth-stencil texture</param>
         /// <param name="samplesInX">Number of samples in the X direction, for MSAA</param>
         /// <param name="samplesInY">Number of samples in the Y direction, for MSAA</param>
+        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(RtDepthStencilState dsState, Size3D size, int samplesInX, int samplesInY)
+        public Texture FindOrCreateTexture(RtDepthStencilState dsState, Size3D size, int samplesInX, int samplesInY, Size sizeHint)
         {
             ulong address = _context.MemoryManager.Translate(dsState.Address.Pack());
 
@@ -624,7 +635,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 target,
                 formatInfo);
 
-            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.WithUpscale);
+            Texture texture = FindOrCreateTexture(info, TextureSearchFlags.WithUpscale, sizeHint);
 
             texture.SynchronizeMemory();
 
@@ -636,8 +647,9 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">Texture information of the texture to be found or created</param>
         /// <param name="flags">The texture search flags, defines texture comparison rules</param>
+        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
         /// <returns>The texture</returns>
-        public Texture FindOrCreateTexture(TextureInfo info, TextureSearchFlags flags = TextureSearchFlags.None)
+        public Texture FindOrCreateTexture(TextureInfo info, TextureSearchFlags flags = TextureSearchFlags.None, Size? sizeHint = null)
         {
             bool isSamplerTexture = (flags & TextureSearchFlags.ForSampler) != 0;
 
@@ -670,14 +682,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         // deletion.
                         _cache.Lift(overlap);
                     }
-                    else if (!TextureCompatibility.SizeMatches(overlap.Info, info))
-                    {
-                        // If this is used for sampling, the size must match,
-                        // otherwise the shader would sample garbage data.
-                        // To fix that, we create a new texture with the correct
-                        // size, and copy the data from the old one to the new one.
-                        overlap.ChangeSize(info.Width, info.Height, info.DepthOrLayers);
-                    }
+
+                    ChangeSizeIfNeeded(info, overlap, isSamplerTexture, sizeHint);
 
                     overlap.SynchronizeMemory();
 
@@ -733,28 +739,24 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (overlapCompatibility == TextureViewCompatibility.Full)
                 {
+                    TextureInfo oInfo = AdjustSizes(overlap, info, firstLevel);
+
                     if (!isSamplerTexture)
                     {
-                        info = AdjustSizes(overlap, info, firstLevel);
+                        info = oInfo;
                     }
 
-                    texture = overlap.CreateView(info, sizeInfo, firstLayer, firstLevel);
+                    texture = overlap.CreateView(oInfo, sizeInfo, firstLayer, firstLevel);
 
                     if (overlap.IsModified)
                     {
                         texture.SignalModified();
                     }
 
-                    // The size only matters (and is only really reliable) when the
-                    // texture is used on a sampler, because otherwise the size will be
-                    // aligned.
-                    if (!TextureCompatibility.SizeMatches(overlap.Info, info, firstLevel) && isSamplerTexture)
-                    {
-                        texture.ChangeSize(info.Width, info.Height, info.DepthOrLayers);
-                    }
+                    ChangeSizeIfNeeded(info, texture, isSamplerTexture, sizeHint);
 
                     break;
-                } 
+                }
                 else if (overlapCompatibility == TextureViewCompatibility.CopyOnly)
                 {
                     // TODO: Copy rules for targets created after the container texture. See below.
@@ -833,7 +835,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     TextureInfo overlapInfo = AdjustSizes(texture, overlap.Info, oInfo.FirstLevel);
 
-                    TextureCreateInfo createInfo = GetCreateInfo(overlapInfo, _context.Capabilities);
+                    TextureCreateInfo createInfo = GetCreateInfo(overlapInfo, _context.Capabilities, overlap.ScaleFactor);
 
                     if (texture.ScaleFactor != overlap.ScaleFactor)
                     {
@@ -904,6 +906,44 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Changes a texture's size to match the desired size for samplers,
+        /// or increases a texture's size to fit the region indicated by a size hint.
+        /// </summary>
+        /// <param name="info">The desired texture info</param>
+        /// <param name="texture">The texture to resize</param>
+        /// <param name="isSamplerTexture">True if the texture will be used for a sampler, false otherwise</param>
+        /// <param name="sizeHint">A hint indicating the minimum used size for the texture</param>
+        private void ChangeSizeIfNeeded(TextureInfo info, Texture texture, bool isSamplerTexture, Size? sizeHint)
+        {
+            if (isSamplerTexture)
+            {
+                // If this is used for sampling, the size must match,
+                // otherwise the shader would sample garbage data.
+                // To fix that, we create a new texture with the correct
+                // size, and copy the data from the old one to the new one.
+
+                if (!TextureCompatibility.SizeMatches(texture.Info, info))
+                {
+                    texture.ChangeSize(info.Width, info.Height, info.DepthOrLayers);
+                }
+            }
+            else if (sizeHint != null)
+            {
+                // A size hint indicates that data will be used within that range, at least.
+                // If the texture is smaller than the size hint, it must be enlarged to meet it.
+                // The maximum size is provided by the requested info, which generally has an aligned size.
+
+                int width = Math.Max(texture.Info.Width, Math.Min(sizeHint.Value.Width, info.Width));
+                int height = Math.Max(texture.Info.Height, Math.Min(sizeHint.Value.Height, info.Height));
+
+                if (texture.Info.Width != width || texture.Info.Height != height)
+                {
+                    texture.ChangeSize(width, height, info.DepthOrLayers);
+                }
+            }
+        }
+
+        /// <summary>
         /// Tries to find an existing texture matching the given buffer copy destination. If none is found, returns null.
         /// </summary>
         /// <param name="tex">The texture information</param>
@@ -944,7 +984,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
                 else
                 {
-                    // Bpp may be a mismatch between the target texture and the param. 
+                    // Bpp may be a mismatch between the target texture and the param.
                     // Due to the way linear strided and block layouts work, widths can be multiplied by Bpp for comparison.
                     // Note: tex.Width is the aligned texture size. Prefer param.XCount, as the destination should be a texture with that exact size.
 
@@ -1054,22 +1094,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">Texture information</param>
         /// <param name="caps">GPU capabilities</param>
+        /// <param name="scale">Texture scale factor, to be applied to the texture size</param>
         /// <returns>The texture creation information</returns>
-        public static TextureCreateInfo GetCreateInfo(TextureInfo info, Capabilities caps)
+        public static TextureCreateInfo GetCreateInfo(TextureInfo info, Capabilities caps, float scale)
         {
-            FormatInfo formatInfo = info.FormatInfo;
-
-            if (!caps.SupportsAstcCompression)
-            {
-                if (formatInfo.Format.IsAstcUnorm())
-                {
-                    formatInfo = new FormatInfo(Format.R8G8B8A8Unorm, 1, 1, 4, 4);
-                }
-                else if (formatInfo.Format.IsAstcSrgb())
-                {
-                    formatInfo = new FormatInfo(Format.R8G8B8A8Srgb, 1, 1, 4, 4);
-                }
-            }
+            FormatInfo formatInfo = TextureCompatibility.ToHostCompatibleFormat(info, caps);
 
             if (info.Target == Target.TextureBuffer)
             {
@@ -1078,12 +1107,24 @@ namespace Ryujinx.Graphics.Gpu.Image
                 // The shader will need the appropriate conversion code to compensate.
                 switch (formatInfo.Format)
                 {
-                    case Format.R8Snorm:           formatInfo = new FormatInfo(Format.R8Sint,           1, 1, 1, 1); break;
-                    case Format.R16Snorm:          formatInfo = new FormatInfo(Format.R16Sint,          1, 1, 2, 1); break;
-                    case Format.R8G8Snorm:         formatInfo = new FormatInfo(Format.R8G8Sint,         1, 1, 2, 2); break;
-                    case Format.R16G16Snorm:       formatInfo = new FormatInfo(Format.R16G16Sint,       1, 1, 4, 2); break;
-                    case Format.R8G8B8A8Snorm:     formatInfo = new FormatInfo(Format.R8G8B8A8Sint,     1, 1, 4, 4); break;
-                    case Format.R16G16B16A16Snorm: formatInfo = new FormatInfo(Format.R16G16B16A16Sint, 1, 1, 8, 4); break;
+                    case Format.R8Snorm:
+                        formatInfo = new FormatInfo(Format.R8Sint, 1, 1, 1, 1);
+                        break;
+                    case Format.R16Snorm:
+                        formatInfo = new FormatInfo(Format.R16Sint, 1, 1, 2, 1);
+                        break;
+                    case Format.R8G8Snorm:
+                        formatInfo = new FormatInfo(Format.R8G8Sint, 1, 1, 2, 2);
+                        break;
+                    case Format.R16G16Snorm:
+                        formatInfo = new FormatInfo(Format.R16G16Sint, 1, 1, 4, 2);
+                        break;
+                    case Format.R8G8B8A8Snorm:
+                        formatInfo = new FormatInfo(Format.R8G8B8A8Sint, 1, 1, 4, 4);
+                        break;
+                    case Format.R16G16B16A16Snorm:
+                        formatInfo = new FormatInfo(Format.R16G16B16A16Sint, 1, 1, 8, 4);
+                        break;
                 }
             }
 
@@ -1091,6 +1132,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             int height = info.Height / info.SamplesInY;
 
             int depth = info.GetDepth() * info.GetLayers();
+
+            if (scale != 1f)
+            {
+                width  = (int)MathF.Ceiling(width  * scale);
+                height = (int)MathF.Ceiling(height * scale);
+            }
 
             return new TextureCreateInfo(
                 width,

@@ -3,6 +3,7 @@ using Ryujinx.Graphics.Shader.StructuredIr;
 using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 using static Ryujinx.Graphics.Shader.StructuredIr.InstructionInfo;
 
@@ -96,6 +97,9 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
         {
             switch (operand.Type)
             {
+                case OperandType.Argument:
+                    return GetArgumentName(operand.Value);
+
                 case OperandType.Attribute:
                     return GetAttributeName(operand, config);
 
@@ -206,7 +210,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                     string name = builtInAttr.Name;
 
-                    if (config.Stage == ShaderStage.Geometry && !isOutAttr)
+                    if (config.Stage == ShaderStage.Geometry && (value & AttributeConsts.SpecialMask) == 0 && !isOutAttr)
                     {
                         name = $"gl_in[{indexExpr}].{name}";
                     }
@@ -237,22 +241,11 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string GetSamplerName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
         {
-            string suffix;
+            string suffix = texOp.CbufSlot < 0 ? $"_tcb_{texOp.Handle:X}" : $"_cb{texOp.CbufSlot}_{texOp.Handle:X}";
 
-            if ((texOp.Flags & TextureFlags.Bindless) != 0)
+            if ((texOp.Type & SamplerType.Indexed) != 0)
             {
-                AstOperand operand = texOp.GetSource(0) as AstOperand;
-
-                suffix = "_cb" + operand.CbufSlot + "_" + operand.CbufOffset;
-            }
-            else
-            {
-                suffix = texOp.Handle.ToString("X");
-
-                if ((texOp.Type & SamplerType.Indexed) != 0)
-                {
-                    suffix += $"a[{indexExpr}]";
-                }
+                suffix += $"a[{indexExpr}]";
             }
 
             return GetShaderStagePrefix(stage) + "_" + DefaultNames.SamplerNamePrefix + suffix;
@@ -260,7 +253,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
         public static string GetImageName(ShaderStage stage, AstTextureOperation texOp, string indexExpr)
         {
-            string suffix = texOp.Handle.ToString("X");
+            string suffix = texOp.CbufSlot < 0 ? $"_tcb_{texOp.Handle:X}_{texOp.Format.ToGlslFormat()}" : $"_cb{texOp.CbufSlot}_{texOp.Handle:X}_{texOp.Format.ToGlslFormat()}";
 
             if ((texOp.Type & SamplerType.Indexed) != 0)
             {
@@ -287,7 +280,12 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             return "xyzw"[value];
         }
 
-        public static VariableType GetNodeDestType(IAstNode node)
+        public static string GetArgumentName(int argIndex)
+        {
+            return $"{DefaultNames.ArgumentNamePrefix}{argIndex}";
+        }
+
+        public static VariableType GetNodeDestType(CodeGenContext context, IAstNode node)
         {
             if (node is AstOperation operation)
             {
@@ -297,6 +295,14 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
                 if (operation.Inst == Instruction.LoadAttribute)
                 {
                     return GetOperandVarType((AstOperand)operation.GetSource(0));
+                }
+                else if (operation.Inst == Instruction.Call)
+                {
+                    AstOperand funcId = (AstOperand)operation.GetSource(0);
+
+                    Debug.Assert(funcId.Type == OperandType.Constant);
+
+                    return context.GetFunction(funcId.Value).ReturnType;
                 }
                 else if (operation is AstTextureOperation texOp &&
                          (texOp.Inst == Instruction.ImageLoad ||
@@ -309,6 +315,13 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
             }
             else if (node is AstOperand operand)
             {
+                if (operand.Type == OperandType.Argument)
+                {
+                    int argIndex = operand.Value;
+
+                    return context.CurrentFunction.GetArgumentType(argIndex);
+                }
+
                 return GetOperandVarType(operand);
             }
             else

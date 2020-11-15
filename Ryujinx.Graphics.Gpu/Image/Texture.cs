@@ -16,6 +16,11 @@ namespace Ryujinx.Graphics.Gpu.Image
     /// </summary>
     class Texture : IRange, IDisposable
     {
+        // How many updates we need before switching to the byte-by-byte comparison
+        // modification check method.
+        // This method uses much more memory so we want to avoid it if possible.
+        private const int ByteComparisonSwitchThreshold = 4;
+
         private GpuContext _context;
 
         private SizeInfo _sizeInfo;
@@ -45,12 +50,20 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public bool IsModified { get; internal set; }
 
+        /// <summary>
+        /// Set when a texture has been changed size. This indicates that it may need to be
+        /// changed again when obtained as a sampler.
+        /// </summary>
+        public bool ChangedSize { get; internal set; }
+
         private int _depth;
         private int _layers;
         private int _firstLayer;
         private int _firstLevel;
 
         private bool _hasData;
+        private int _updateCount;
+        private byte[] _currentData;
 
         private ITexture _arrayViewTexture;
         private Target   _arrayViewTarget;
@@ -174,7 +187,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Debug.Assert(!isView);
 
-                TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
+                TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities, ScaleFactor);
                 HostTexture = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
 
                 SynchronizeMemory(); // Load the data.
@@ -197,7 +210,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         ScaleFactor = GraphicsConfig.ResScale;
                     }
 
-                    TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
+                    TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities, ScaleFactor);
                     HostTexture = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
                 }
             }
@@ -225,8 +238,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 ScaleFactor,
                 ScaleMode);
 
-            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(info, _context.Capabilities);
-
+            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(info, _context.Capabilities, ScaleFactor);
             texture.HostTexture = HostTexture.CreateView(createInfo, firstLayer, firstLevel);
 
             _viewStorage.AddView(texture);
@@ -347,6 +359,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="depthOrLayers">The new texture depth (for 3D textures) or layers (for layered textures)</param>
         private void RecreateStorageOrView(int width, int height, int depthOrLayers)
         {
+            ChangedSize = true;
+
             SetInfo(new TextureInfo(
                 Info.Address,
                 width,
@@ -368,7 +382,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Info.SwizzleB,
                 Info.SwizzleA));
 
-            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
+            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities, ScaleFactor);
 
             if (_viewStorage != this)
             {
@@ -444,7 +458,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 Info.SwizzleB,
                 Info.SwizzleA);
 
-            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(viewInfo, _context.Capabilities);
+            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(viewInfo, _context.Capabilities, ScaleFactor);
 
             for (int i = 0; i < Info.DepthOrLayers; i++)
             {
@@ -468,8 +482,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (storage == null)
             {
-                TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities);
-
+                TextureCreateInfo createInfo = TextureManager.GetCreateInfo(Info, _context.Capabilities, scale);
                 storage = _context.Renderer.CreateTexture(createInfo, scale);
             }
 
@@ -523,12 +536,10 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Logger.Debug?.Print(LogClass.Gpu, $"  Recreating view {Info.Width}x{Info.Height} {Info.FormatInfo.Format.ToString()}.");
                     view.ScaleFactor = scale;
 
-                    TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities);
-
+                    TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities, scale);
                     ITexture newView = HostTexture.CreateView(viewCreateInfo, view._firstLayer - _firstLayer, view._firstLevel - _firstLevel);
 
                     view.ReplaceStorage(newView);
-
                     view.ScaleMode = newScaleMode;
                 }
             }
@@ -545,7 +556,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Checks if the memory for this texture was modified, and returns true if it was. 
+        /// Checks if the memory for this texture was modified, and returns true if it was.
         /// The modified flags are consumed as a result.
         /// </summary>
         /// <remarks>
@@ -590,6 +601,27 @@ namespace Ryujinx.Graphics.Gpu.Image
             ReadOnlySpan<byte> data = _context.PhysicalMemory.GetSpan(Address, (int)Size);
 
             IsModified = false;
+
+            // If the host does not support ASTC compression, we need to do the decompression.
+            // The decompression is slow, so we want to avoid it as much as possible.
+            // This does a byte-by-byte check and skips the update if the data is equal in this case.
+            // This improves the speed on applications that overwrites ASTC data without changing anything.
+            if (Info.FormatInfo.Format.IsAstc() && !_context.Capabilities.SupportsAstcCompression)
+            {
+                if (_updateCount < ByteComparisonSwitchThreshold)
+                {
+                    _updateCount++;
+                }
+                else
+                {
+                    bool dataMatches = _currentData != null && data.SequenceEqual(_currentData);
+                    _currentData = data.ToArray();
+                    if (dataMatches)
+                    {
+                        return;
+                    }
+                }
+            }
 
             data = ConvertToHostCompatibleFormat(data);
 
@@ -647,6 +679,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     data);
             }
 
+            // Handle compressed cases not supported by the host:
+            // - ASTC is usually not supported on desktop cards.
+            // - BC4/BC5 is not supported on 3D textures.
             if (!_context.Capabilities.SupportsAstcCompression && Info.FormatInfo.Format.IsAstc())
             {
                 if (!AstcDecoder.TryDecodeToRgba8(
@@ -667,6 +702,14 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 data = decoded;
             }
+            else if (Info.Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
+            {
+                data = BCnDecoder.DecodeBC4(data, Info.Width, Info.Height, _depth, Info.Levels, _layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+            }
+            else if (Info.Target == Target.Texture3D && Info.FormatInfo.Format.IsBc5())
+            {
+                data = BCnDecoder.DecodeBC5(data, Info.Width, Info.Height, _depth, Info.Levels, _layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+            }
 
             return data;
         }
@@ -683,8 +726,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Flush(bool tracked = true)
         {
             IsModified = false;
-
-            if (Info.FormatInfo.Format.IsAstc())
+            if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
             {
                 return; // Flushing this format is not supported, as it may have been converted to another host format.
             }
@@ -715,10 +757,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             _context.Renderer.BackgroundContextAction(() =>
             {
                 IsModified = false;
-                if (Info.FormatInfo.Format.IsAstc())
+                if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
                 {
-                    // ASTC textures are not in their original format, so cannot be flushed.
-                    return;
+                    return; // Flushing this format is not supported, as it may have been converted to another host format.
                 }
 
                 ITexture texture = HostTexture;
@@ -895,19 +936,6 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             return (Info.SamplesInX == info.SamplesInX &&
                     Info.SamplesInY == info.SamplesInY) ? result : TextureViewCompatibility.Incompatible;
-        }
-
-        /// <summary>
-        /// Checks if the view format is compatible with this texture format.
-        /// In general, the formats are considered compatible if the bytes per pixel values are equal,
-        /// but there are more complex rules for some formats, like compressed or depth-stencil formats.
-        /// This follows the host API copy compatibility rules.
-        /// </summary>
-        /// <param name="info">Texture information of the texture view</param>
-        /// <returns>True if the formats are compatible, false otherwise</returns>
-        private bool ViewFormatCompatible(TextureInfo info)
-        {
-            return TextureCompatibility.FormatCompatible(Info.FormatInfo, info.FormatInfo);
         }
 
         /// <summary>
@@ -1145,6 +1173,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         private void DisposeTextures()
         {
+            _currentData = null;
             HostTexture.Release();
 
             _arrayViewTexture?.Release();
