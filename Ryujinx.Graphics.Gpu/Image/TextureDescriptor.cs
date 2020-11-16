@@ -243,7 +243,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             };
 
             // Clear the virtual address
-            result.Descriptor.Word0 = 0;
+            result.Descriptor.Word1 = 0;
             result.Descriptor.Word2 &= 0xFFFF0000;
 
             return result;

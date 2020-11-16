@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Version of the codegen (to be incremented when codegen changes).
         /// </summary>
-        private const ulong ShaderCodeGenVersion = 1;
+        private const ulong ShaderCodeGenVersion = 2;
 
         /// <summary>
         /// Creates a new instance of the shader cache.
