@@ -66,7 +66,7 @@ namespace Ryujinx.Common
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private unsafe static Hash128 Mult64To128(ulong lhs, ulong rhs)
+        private static Hash128 Mult64To128(ulong lhs, ulong rhs)
         {
             ulong high = Math.BigMul(lhs, rhs, out ulong low);
             return new Hash128
