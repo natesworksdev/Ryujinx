@@ -12,6 +12,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
     public class MemoryManager
     {
         private Stopwatch stopwatch = new Stopwatch();
+        private long maxPositionMs = 0;
+        private long totalPositionTicks = 0;
+        private long positionCounts = 0;
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -377,6 +380,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             alignment = (alignment + PageMask) & ~PageMask;
+            long ms;
             if (address < AddressSpaceSize)
             {
                 Entry<ulong, MemoryBlock> addressEntry = _map.Count() == 1 ? _map.GetFloorEntry(address) : _map.GetCeilingEntry(address);
@@ -390,7 +394,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
                             if (address + size <= block.endAddress)
                             {
                                 memoryBlock = block;
-                                Console.WriteLine($"Position: {stopwatch.ElapsedMilliseconds}ms");
+                                ms = stopwatch.ElapsedMilliseconds;
+                                maxPositionMs = Math.Max(ms, maxPositionMs);
+                                positionCounts++;
+                                totalPositionTicks += stopwatch.ElapsedTicks;
+                                Console.WriteLine($"Position: {ms}ms | Max: {maxPositionMs}");
+                                Console.WriteLine($"Avg Ticks: {totalPositionTicks / positionCounts}");
                                 return address;
                             }
                             else
@@ -425,7 +434,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             memoryBlock = new MemoryBlock(PteUnmapped, 0);
             _map.PreOrderTraverse();
-            Console.WriteLine($"Position: {stopwatch.ElapsedMilliseconds}ms");
+            ms = stopwatch.ElapsedMilliseconds;
+            maxPositionMs = Math.Max(ms, maxPositionMs);
+            positionCounts++;
+            totalPositionTicks += stopwatch.ElapsedTicks;
+            Console.WriteLine($"Position: {ms}ms | Max: {maxPositionMs}");
+            Console.WriteLine($"Avg Ticks: {totalPositionTicks / positionCounts}");
             return PteUnmapped;
         }
 
