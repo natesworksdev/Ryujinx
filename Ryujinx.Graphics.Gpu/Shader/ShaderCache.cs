@@ -290,9 +290,9 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 }
 
                 // Remove entries that are broken in the cache
-                _cacheManager.Synchronize();
                 _cacheManager.RemoveManifestEntries(invalidEntries);
                 _cacheManager.FlushToArchive();
+                _cacheManager.Synchronize();
 
                 Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
             }
