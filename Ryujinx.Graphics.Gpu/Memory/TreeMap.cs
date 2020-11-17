@@ -520,6 +520,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
             SetColor(x, BLACK);
         }
 
+        public void PreOrderTraverse()
+        {
+            Entry<TKey, TValue> n = root;
+            PrintEntry(n);
+        }
+
+        private void PrintEntry(Entry<TKey, TValue> e)
+        {
+            if (e == null) return;
+            PrintEntry(e.Left);
+            Console.WriteLine(e.ToString());
+            PrintEntry(e.Right);
+        }
     }
 
     class Entry<NKey, NValue>
@@ -548,13 +561,20 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public Entry<NKey, NValue> CeilingEntry()
         {
             if (this.Right != null) return this.Right;
-            return this.Parent;
+            if (this.Parent != null && this.Parent.Left == this) return this.Parent;
+            return default;
         }
 
         public Entry<NKey, NValue> FloorEntry()
         {
             if (this.Left != null) return this.Left;
-            return this.Parent;
+            if (this.Parent != null && this.Parent.Right == this) return this.Parent;
+            return default;
+        }
+
+        public override String ToString()
+        {
+            return Value.ToString();
         }
     }
 }

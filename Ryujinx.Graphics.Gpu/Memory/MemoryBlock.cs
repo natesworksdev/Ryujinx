@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
-    struct MemoryBlock : IComparable<MemoryBlock>
+    public struct MemoryBlock : IComparable<MemoryBlock>
     {
         public ulong address { get; }
         public ulong size { get; }
@@ -22,6 +22,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public int CompareTo(MemoryBlock other)
         {
             return this.address.CompareTo(other.address);
+        }
+
+        public override string ToString()
+        {
+            return $" [{address} - ({size}) -> {endAddress}] ";
         }
     }
 }

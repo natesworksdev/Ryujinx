@@ -1,5 +1,6 @@
 using Ryujinx.Cpu;
 using System;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -10,6 +11,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
+        private Stopwatch stopwatch = new Stopwatch();
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -47,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
-            _map.Put(4096, new MemoryBlock(1, AddressSpaceSize - 4095));
+            _map.Put(1, new MemoryBlock(1, AddressSpaceSize));
         }
 
         /// <summary>
@@ -129,7 +131,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-
+                AllocateMemoryBlock(va, size, new MemoryBlock(PteUnmapped, 0));
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
@@ -151,10 +153,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, alignment);
+                ulong va = GetFreePosition(size, out MemoryBlock referenceBlock, alignment);
 
                 if (va != PteUnmapped)
                 {
+                    AllocateMemoryBlock(va, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -177,10 +180,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, 1, PageSize);
+                ulong va = GetFreePosition(size, out MemoryBlock referenceBlock, 1, PageSize);
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
+                    AllocateMemoryBlock(va, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -216,6 +220,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
 
+                AllocateMemoryBlock(va, size, new MemoryBlock(PteUnmapped, 0));
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
@@ -235,10 +240,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong address = GetFreePosition(size, alignment);
+                ulong address = GetFreePosition(size, out MemoryBlock referenceBlock, alignment);
 
                 if (address != PteUnmapped)
                 {
+                    AllocateMemoryBlock(address, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -260,10 +266,93 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-
+                DeallocateMemoryBlock(va, size);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
+                }
+            }
+        }
+
+        public void AllocateMemoryBlock(ulong va, ulong size, MemoryBlock referenceBlock)
+        {
+            lock (_map)
+            {
+                // Fixed Addresses are being mapped. Ignore the reference.
+                if (referenceBlock.address == PteUnmapped)
+                {
+                    Entry<ulong, MemoryBlock> entry = _map.GetFloorEntry(va);
+                    if (null == entry) return;
+                    referenceBlock = entry.Value;
+                    
+                    if(!(va >= referenceBlock.address && va + size <= referenceBlock.endAddress)) return;
+                }
+
+                if (va > referenceBlock.address)
+                {
+                    // Need to create a left block.
+                    MemoryBlock leftBlock = new MemoryBlock(referenceBlock.address, va - referenceBlock.address);
+                    _map.Put(referenceBlock.address, leftBlock);
+                }
+                else if (va == referenceBlock.address)
+                {
+                    _map.Remove(va);
+                }
+                ulong endAddress = va + size;
+                if (endAddress < referenceBlock.endAddress)
+                {
+                    // Need to create a right block.
+                    MemoryBlock rightBlock = new MemoryBlock(endAddress, referenceBlock.endAddress - endAddress);
+                    _map.Put(endAddress, rightBlock);
+                }
+                
+            }
+        }
+
+        public void DeallocateMemoryBlock(ulong va, ulong size)
+        {
+            lock (_map)
+            {
+                Entry<ulong, MemoryBlock> entry = _map.GetEntry(va);
+                if (null != entry)
+                {
+                    MemoryBlock block = entry.Value;
+
+                    Entry<ulong, MemoryBlock> prev = entry.FloorEntry();
+                    Entry<ulong, MemoryBlock> next = entry.CeilingEntry();
+                    ulong expandedStart = va;
+                    ulong expandedEnd = va + size;
+                    while(prev != null)
+                    {
+                        MemoryBlock prevBlock = prev.Value;
+                        if(prevBlock.endAddress == expandedStart - 1UL)
+                        {
+                            expandedStart = prevBlock.address;
+                            prev = prev.FloorEntry();
+                            _map.Remove(prevBlock.address);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    while(next != null)
+                    {
+                        MemoryBlock nextBlock = next.Value;
+                        if(nextBlock.address == expandedEnd - 1UL)
+                        {
+                            expandedEnd = nextBlock.endAddress;
+                            next = next.CeilingEntry();
+                            _map.Remove(nextBlock.address);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    _map.Put(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
                 }
             }
         }
@@ -275,10 +364,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
+        private ulong GetFreePosition(ulong size, out MemoryBlock memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
+            stopwatch.Restart();
             ulong address  = start;
 
             if (alignment == 0)
@@ -289,7 +379,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             alignment = (alignment + PageMask) & ~PageMask;
             if (address < AddressSpaceSize)
             {
-                Entry<ulong, MemoryBlock> addressEntry = _map.GetCeilingEntry(address);
+                Entry<ulong, MemoryBlock> addressEntry = _map.Count() == 1 ? _map.GetFloorEntry(address) : _map.GetCeilingEntry(address);
                 while (address < AddressSpaceSize)
                 {
                     if (addressEntry != null)
@@ -299,23 +389,32 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         {
                             if (address + size <= block.endAddress)
                             {
+                                memoryBlock = block;
+                                Console.WriteLine($"Position: {stopwatch.ElapsedMilliseconds}ms");
                                 return address;
                             }
                             else
                             {
-                                address += PageSize;
-
-                                ulong remainder = address % alignment;
-
-                                if (remainder != 0)
+                                if (address == block.address)
                                 {
-                                    address = (address - remainder) + alignment;
+                                    addressEntry = _map.GetCeilingEntry(address + 1);
+                                }
+                                else
+                                {
+                                    addressEntry = _map.GetCeilingEntry(address);
                                 }
                             }
                         }
                         else
                         {
-                            addressEntry = addressEntry.CeilingEntry();
+                            address += PageSize;
+
+                            ulong remainder = address % alignment;
+
+                            if (remainder != 0)
+                            {
+                                address = (address - remainder) + alignment;
+                            }
                         }
                     }
                     else
@@ -324,7 +423,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
             }
-
+            memoryBlock = new MemoryBlock(PteUnmapped, 0);
+            _map.PreOrderTraverse();
+            Console.WriteLine($"Position: {stopwatch.ElapsedMilliseconds}ms");
             return PteUnmapped;
         }
 
