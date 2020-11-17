@@ -12,10 +12,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        private Stopwatch stopwatch = new Stopwatch();
-        private long maxPositionMs = 0;
-        private long totalPositionTicks = 0;
-        private long positionCounts = 0;
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -278,6 +274,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Marks a block of memory as consumed by removing it from the tree.
+        /// This function will add up to two new blocks to the tree to represent the remeaining space.
+        /// </summary>
+        /// <param name="va">GPU virtual address</param>
+        /// <param name="size">Size in bytes of the allocation</param>
+        /// <param name="referenceBlock">The block at which va was found to fit in</param>
         public void AllocateMemoryBlock(ulong va, ulong size, MemoryBlock referenceBlock)
         {
             lock (_map)
@@ -313,6 +316,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Marks a block of memory as free by adding it to the tree.
+        /// This function will automatically defragment the tree when it determines there are multiple blocks of free memory adjacent to each other.
+        /// </summary>
+        /// <param name="va"></param>
+        /// <param name="size"></param>
         public void DeallocateMemoryBlock(ulong va, ulong size)
         {
             lock (_map)
@@ -372,7 +381,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
-            stopwatch.Restart();
             ulong address  = start;
 
             if (alignment == 0)
@@ -381,7 +389,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             alignment = (alignment + PageMask) & ~PageMask;
-            long ms;
             if (address < AddressSpaceSize)
             {
                 Entry<ulong, MemoryBlock> addressEntry = _map.Count() == 1 ? _map.GetFloorEntry(address) : _map.GetCeilingEntry(address);
@@ -395,12 +402,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                             if (address + size <= block.endAddress)
                             {
                                 memoryBlock = block;
-                                ms = stopwatch.ElapsedMilliseconds;
-                                maxPositionMs = Math.Max(ms, maxPositionMs);
-                                positionCounts++;
-                                totalPositionTicks += stopwatch.ElapsedTicks;
-                                Logger.Debug?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
-                                Logger.Debug?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
                                 return address;
                             }
                             else
@@ -434,13 +435,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
             }
             memoryBlock = new MemoryBlock(PteUnmapped, 0);
-            _map.PreOrderTraverse();
-            ms = stopwatch.ElapsedMilliseconds;
-            maxPositionMs = Math.Max(ms, maxPositionMs);
-            positionCounts++;
-            totalPositionTicks += stopwatch.ElapsedTicks;
-            Logger.Debug?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
-            Logger.Debug?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
             return PteUnmapped;
         }
 
