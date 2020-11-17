@@ -8,9 +8,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 {
     struct MemoryBlock : IComparable<MemoryBlock>
     {
-        private ulong address { get; }
-        private ulong size { get; }
-        private ulong endAddress { get; }
+        public ulong address { get; }
+        public ulong size { get; }
+        public ulong endAddress { get; }
 
         public MemoryBlock(ulong address, ulong size)
         {

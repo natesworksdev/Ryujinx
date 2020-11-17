@@ -36,6 +36,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
+        private TreeMap<ulong, MemoryBlock> _map = new TreeMap<ulong, MemoryBlock>();
+
         private GpuContext _context;
 
         /// <summary>
@@ -45,6 +47,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
+            _map.Put(4096, new MemoryBlock(1, AddressSpaceSize - 4095));
         }
 
         /// <summary>
@@ -277,7 +280,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
             ulong address  = start;
-            ulong freeSize = 0;
 
             if (alignment == 0)
             {
@@ -285,28 +287,40 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             alignment = (alignment + PageMask) & ~PageMask;
-
-            while (address + freeSize < AddressSpaceSize)
+            if (address < AddressSpaceSize)
             {
-                if (!IsPageInUse(address + freeSize))
+                Entry<ulong, MemoryBlock> addressEntry = _map.GetCeilingEntry(address);
+                while (address < AddressSpaceSize)
                 {
-                    freeSize += PageSize;
-
-                    if (freeSize >= size)
+                    if (addressEntry != null)
                     {
-                        return address;
+                        MemoryBlock block = addressEntry.Value;
+                        if(address >= block.address)
+                        {
+                            if (address + size <= block.endAddress)
+                            {
+                                return address;
+                            }
+                            else
+                            {
+                                address += PageSize;
+
+                                ulong remainder = address % alignment;
+
+                                if (remainder != 0)
+                                {
+                                    address = (address - remainder) + alignment;
+                                }
+                            }
+                        }
+                        else
+                        {
+                            addressEntry = addressEntry.CeilingEntry();
+                        }
                     }
-                }
-                else
-                {
-                    address += freeSize + PageSize;
-                    freeSize = 0;
-
-                    ulong remainder = address % alignment;
-
-                    if (remainder != 0)
+                    else
                     {
-                        address = (address - remainder) + alignment;
+                        break;
                     }
                 }
             }
