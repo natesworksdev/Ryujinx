@@ -49,7 +49,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
-            _map.Put(1, new MemoryBlock(1, AddressSpaceSize));
+            _map.Put(4096UL, new MemoryBlock(4096UL, AddressSpaceSize));
         }
 
         /// <summary>
