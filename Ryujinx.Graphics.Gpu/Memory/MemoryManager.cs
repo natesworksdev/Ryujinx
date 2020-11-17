@@ -399,8 +399,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                                 maxPositionMs = Math.Max(ms, maxPositionMs);
                                 positionCounts++;
                                 totalPositionTicks += stopwatch.ElapsedTicks;
-                                Logger.Info?.Print(LogClass.Gpu, $"Position: {ms}ms | Max: {maxPositionMs}");
-                                Logger.Info?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
+                                Logger.Debug?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
+                                Logger.Debug?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
                                 return address;
                             }
                             else
@@ -439,8 +439,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             maxPositionMs = Math.Max(ms, maxPositionMs);
             positionCounts++;
             totalPositionTicks += stopwatch.ElapsedTicks;
-            Logger.Info?.Print(LogClass.Gpu, $"Position: {ms}ms | Max: {maxPositionMs}");
-            Logger.Info?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
+            Logger.Debug?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
+            Logger.Debug?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
             return PteUnmapped;
         }
 
