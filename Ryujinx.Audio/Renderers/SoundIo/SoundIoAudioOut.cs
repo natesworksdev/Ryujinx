@@ -178,30 +178,68 @@ namespace Ryujinx.Audio
         /// Get track buffer count
         /// </summary>
         /// <param name="trackId">The ID of the track to get buffer count</param>
-        public uint GetBufferCount(int trackId) => _trackPool.GetBufferCount(trackId);
+        public uint GetBufferCount(int trackId)
+        {
+            if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
+                return track.BufferCount;
+            }
+
+            return 0;
+        }
 
         /// <summary>
         /// Get track played sample count
         /// </summary>
         /// <param name="trackId">The ID of the track to get played sample</param>
-        public ulong GetPlayedSampleCount(int trackId) => _trackPool.GetPlayedSampleCount(trackId);
+        public ulong GetPlayedSampleCount(int trackId)
+        {
+            if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
+                return track.PlayedSampleCount;
+            }
+
+            return 0;
+        }
 
         /// <summary>
         /// Flush all track buffers
         /// </summary>
         /// <param name="trackId">The ID of the track to flush</param>
-        public bool FlushBuffers(int trackId) => _trackPool.FlushBuffers(trackId);
+        public bool FlushBuffers(int trackId)
+        {
+            if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
+                return track.FlushBuffers();
+            }
 
-        /// <summary>
-        /// Get track volume
-        /// </summary>
-        public float GetVolume(int trackId) => _trackPool.GetVolume(trackId);
+            return false;
+        }
 
         /// <summary>
         /// Set track volume
         /// </summary>
         /// <param name="volume">The volume of the playback</param>
-        public void SetVolume(int trackId, float volume) => _trackPool.SetVolume(trackId, volume);
+        public void SetVolume(int trackId, float volume)
+        {
+            if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
+                track.AudioStream.SetVolume(volume);
+            }
+        }
+
+        /// <summary>
+        /// Get track volume
+        /// </summary>
+        public float GetVolume(int trackId)
+        {
+            if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
+            {
+                return track.AudioStream.Volume;
+            }
+
+            return 1.0f;
+        }
 
         /// <summary>
         /// Gets the current playback state of the specified track
