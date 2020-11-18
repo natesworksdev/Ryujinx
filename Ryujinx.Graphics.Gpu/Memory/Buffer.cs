@@ -34,7 +34,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public ulong EndAddress => Address + Size;
 
+        /// <summary>
+        /// Set when a buffer has been modified by the Host GPU since it was last flushed.
+        /// </summary>
+        public bool IsModified { get; internal set; }
+
         private CpuMultiRegionHandle _memoryTrackingGranular;
+
         private CpuRegionHandle _memoryTracking;
         private readonly Action<ulong, ulong> _modifiedDelegate;
         private int _sequenceNumber;
@@ -55,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             Handle = context.Renderer.CreateBuffer((int)size);
 
-            _useGranular = size > GranularBufferThreshold;
+            _useGranular = false;// size > GranularBufferThreshold;
 
             if (_useGranular)
             {
@@ -113,12 +119,30 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
+                if (IsModified)
+                {
+
+                }
                 if (_memoryTracking.Dirty && _context.SequenceNumber != _sequenceNumber)
                 {
                     _memoryTracking.Reprotect();
                     _context.Renderer.SetBufferData(Handle, 0, _context.PhysicalMemory.GetSpan(Address, (int)Size));
                     _sequenceNumber = _context.SequenceNumber;
                 }
+            }
+        }
+
+        public void SignalModified(ulong address, ulong size)
+        {
+            IsModified = true;
+
+            if (_useGranular)
+            {
+                _memoryTrackingGranular.RegisterAction(ExternalFlush);
+            }
+            else
+            {
+                _memoryTracking.RegisterAction(ExternalFlush);
             }
         }
 
@@ -154,6 +178,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void CopyTo(Buffer destination, int dstOffset)
         {
             _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, 0, dstOffset, (int)Size);
+            //destination.SignalModified(destination.Address, destination.Size);
         }
 
         /// <summary>
@@ -164,12 +189,54 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the range</param>
         public void Flush(ulong address, ulong size)
         {
+            IsModified = false;
+
             int offset = (int)(address - Address);
 
             byte[] data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
 
             // TODO: When write tracking shaders, they will need to be aware of changes in overlapping buffers.
             _context.PhysicalMemory.WriteUntracked(address, data);
+        }
+
+        public void ExternalFlush(ulong address, ulong size)
+        {
+            if (!IsModified)
+            {
+                return;
+            }
+
+            _context.Renderer.BackgroundContextAction(() =>
+            {
+                if (false)//_useGranular)
+                {
+                    // Granular flush will provide region that was triggered.
+                    ulong endAddress = address + size;
+                    ulong flushAddress = Math.Max(Address, address);
+                    ulong flushEndAddress = Math.Min(EndAddress, address + size);
+
+                    Flush(flushAddress, flushEndAddress - flushAddress);
+                }
+                else
+                {
+                    Flush(Address, Size);
+                }
+            });
+        }
+
+        /// <summary>
+        /// Called when the memory for this buffer has been unmapped.
+        /// Calls are from non-gpu threads.
+        /// </summary>
+        public void Unmapped()
+        {
+            IsModified = false; // We shouldn't flush this buffer, as its memory is no longer mapped.
+
+            _memoryTracking?.Reprotect();
+            _memoryTracking?.RegisterAction(null);
+
+            _memoryTrackingGranular.QueryModified((address, size) => { });
+            _memoryTrackingGranular?.RegisterAction(null);
         }
 
         /// <summary>
