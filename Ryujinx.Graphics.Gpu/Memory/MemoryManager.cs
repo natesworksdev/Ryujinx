@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        public const ulong AddressSpaceSize = 1UL << 40;
+        private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
 
@@ -29,13 +29,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;
 
-        public const ulong PteUnmapped = 0xffffffff_ffffffff;
-        public const ulong PteReserved = 0xffffffff_fffffffe;
+        private const ulong PteUnmapped = 0xffffffff_ffffffff;
+        private const ulong PteReserved = 0xffffffff_fffffffe;
 
         private readonly ulong[][] _pageTable;
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
-
 
         private GpuContext _context;
 
@@ -127,6 +126,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
+
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
@@ -219,6 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
+
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
