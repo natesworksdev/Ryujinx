@@ -848,10 +848,14 @@ namespace Ryujinx.Ui
             LoadApplication(path);
         }
 
+        private void VSyncStatus_Clicked(object sender, ButtonReleaseEventArgs args)
+        {
+            _emulationContext.EnableDeviceVsync = !_emulationContext.EnableDeviceVsync;
+        }
+
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
-            ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
         }
 
         private void Row_Clicked(object sender, ButtonReleaseEventArgs args)
