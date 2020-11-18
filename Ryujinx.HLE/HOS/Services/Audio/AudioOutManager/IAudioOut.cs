@@ -166,8 +166,6 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         {
             ulong playedSampleCount = _audioOut.GetPlayedSampleCount(_track);
 
-            Console.WriteLine("0x" + playedSampleCount.ToString("x2"));
-
             context.ResponseData.Write(playedSampleCount);
 
             return ResultCode.Success;
