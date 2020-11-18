@@ -1,5 +1,4 @@
-﻿
-using Ryujinx.Common.Collections;
+﻿using Ryujinx.Common.Collections;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
@@ -32,6 +31,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             return nvMemoryAllocator;
         }
 
+        /// <summary>
+        /// Marks a block of memory as consumed by removing it from the tree.
+        /// This function will split memory regions if there is available space
+        /// </summary>
+        /// <param name="va"></param>
+        /// <param name="size"></param>
+        /// <param name="reference"></param>
         #region Memory Allocation
         public void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
         {
@@ -209,8 +215,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             }
             return false;
         }
-
         #endregion
-
     }
 }
