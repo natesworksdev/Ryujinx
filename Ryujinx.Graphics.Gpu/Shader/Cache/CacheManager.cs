@@ -29,7 +29,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <summary>
         /// Version of the guest cache shader (to increment when guest cache structure change).
         /// </summary>
-        private const ulong GuestCacheVersion = 1;
+        private const ulong GuestCacheVersion = 1717;
 
         /// <summary>
         /// Create a new cache manager instance
@@ -58,8 +58,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <param name="entries">Entries to remove from the manifest of all caches</param>
         public void RemoveManifestEntries(HashSet<Hash128> entries)
         {
-            _guestProgramCache.RemoveManifestEntries(entries);
-            _hostProgramCache.RemoveManifestEntries(entries);
+            _guestProgramCache.RemoveManifestEntriesAsync(entries);
+            _hostProgramCache.RemoveManifestEntriesAsync(entries);
         }
 
         /// <summary>
