@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Ryujinx.Graphics.Gpu.Memory
+namespace Ryujinx.HLE.HOS.Services.Nv
 {
     public class MemoryBlock : IComparable<MemoryBlock>
     {

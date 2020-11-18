@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Ryujinx.Graphics.Gpu.Memory
+namespace Ryujinx.Common.Collections
 {
     public class TreeDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
     {

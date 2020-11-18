@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Collections;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
@@ -22,6 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         private Switch _device;
 
         private Cpu.MemoryManager _memory;
+        private NvMemoryAllocator memoryAllocator = NvMemoryAllocator.GetInstance();
 
         public enum ResourcePolicy
         {
@@ -244,7 +246,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress == 0)
                     {
-                        map.DmaMapAddress = (long)gmm.MapLow((ulong)map.Address, (uint)map.Size);
+                        ulong va = memoryAllocator.GetFreePosition((ulong) map.Address, out TreeNode<ulong, MemoryBlock> referenceBlock, 1, NvMemoryAllocator.PageSize);
+
+                        if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
+                        {
+                            memoryAllocator.AllocateMemoryBlock(va, (uint)map.Size, referenceBlock);
+                        }
+
+                        map.DmaMapAddress = (long)gmm.MapLow((ulong)map.Address, va, (uint)map.Size);
                     }
 
                     commandBufferEntry.MapAddress = (int)map.DmaMapAddress;

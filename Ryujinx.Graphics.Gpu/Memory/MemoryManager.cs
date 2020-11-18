@@ -1,3 +1,5 @@
+using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using System;
 using System.Runtime.CompilerServices;
@@ -10,7 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        private const ulong AddressSpaceSize = 1UL << 40;
+        public const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
 
@@ -29,14 +31,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;
 
-        private const ulong PteUnmapped = 0xffffffff_ffffffff;
-        private const ulong PteReserved = 0xffffffff_fffffffe;
+        public const ulong PteUnmapped = 0xffffffff_ffffffff;
+        public const ulong PteReserved = 0xffffffff_fffffffe;
 
         private readonly ulong[][] _pageTable;
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
-        private TreeDictionary<ulong, MemoryBlock> _map = new TreeDictionary<ulong, MemoryBlock>();
 
         private GpuContext _context;
 
@@ -47,7 +48,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
-            _map.Add(4096UL, new MemoryBlock(4096UL, AddressSpaceSize));
         }
 
         /// <summary>
@@ -129,7 +129,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-                AllocateMemoryBlock(va, size, null);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
@@ -142,47 +141,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Maps a given range of pages to an allocated GPU virtual address.
         /// The memory is automatically allocated by the memory manager.
-        /// </summary>
-        /// <param name="pa">CPU virtual address to map into</param>
-        /// <param name="size">Size in bytes of the mapping</param>
-        /// <param name="alignment">Required alignment of the GPU virtual address in bytes</param>
-        /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
-        public ulong MapAllocate(ulong pa, ulong size, ulong alignment)
-        {
-            lock (_pageTable)
-            {
-                ulong va = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, alignment);
-
-                if (va != PteUnmapped)
-                {
-                    AllocateMemoryBlock(va, size, referenceBlock);
-                    for (ulong offset = 0; offset < size; offset += PageSize)
-                    {
-                        SetPte(va + offset, pa + offset);
-                    }
-                }
-
-                return va;
-            }
-        }
-
-        /// <summary>
-        /// Maps a given range of pages to an allocated GPU virtual address.
-        /// The memory is automatically allocated by the memory manager.
         /// This also ensures that the mapping is always done in the first 4GB of GPU address space.
         /// </summary>
         /// <param name="pa">CPU virtual address to map into</param>
         /// <param name="size">Size in bytes of the mapping</param>
         /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
-        public ulong MapLow(ulong pa, ulong size)
+        public ulong MapLow(ulong pa, ulong va, ulong size)
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, 1, PageSize);
-
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
-                    AllocateMemoryBlock(va, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -212,37 +181,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
-                    if (IsPageInUse(va + offset))
-                    {
-                        return PteUnmapped;
-                    }
-                }
-
-                AllocateMemoryBlock(va, size, null);
-                for (ulong offset = 0; offset < size; offset += PageSize)
-                {
                     SetPte(va + offset, PteReserved);
                 }
             }
-
             return va;
         }
 
         /// <summary>
         /// Reserves memory at any GPU memory location.
         /// </summary>
-        /// <param name="size">Size in bytes of the reservation</param>
-        /// <param name="alignment">Reservation address alignment in bytes</param>
+        /// <param name="address">GPU virtual address to reserve</param>
+        /// <param name="size">Reservation address alignment in bytes</param>
         /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
-        public ulong Reserve(ulong size, ulong alignment)
+        public ulong Reserve(ulong address, ulong size)
         {
             lock (_pageTable)
             {
-                ulong address = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, alignment);
-
                 if (address != PteUnmapped)
                 {
-                    AllocateMemoryBlock(address, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -264,165 +220,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-                DeallocateMemoryBlock(va, size);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
                 }
             }
-        }
-
-        public void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
-        {
-            lock (_map)
-            {
-                if (reference != null)
-                {
-                    MemoryBlock referenceBlock = reference.Value;
-                    // Fixed Addresses are being mapped. Ignore the reference.
-                    if (referenceBlock.address == PteUnmapped)
-                    {
-                        TreeNode<ulong, MemoryBlock> entry = _map.PredecessorOf(reference);
-                        if (null == entry) return;
-                        referenceBlock = entry.Value;
-
-                        if (!(va >= referenceBlock.address && va + size <= referenceBlock.endAddress)) return;
-                    }
-
-                    if (va > referenceBlock.address)
-                    {
-                        // Need to create a left block.
-                        MemoryBlock leftBlock = new MemoryBlock(referenceBlock.address, va - referenceBlock.address);
-                        _map.Add(referenceBlock.address, leftBlock);
-                    }
-                    else if (va == referenceBlock.address)
-                    {
-                        _map.Remove(va);
-                    }
-                    ulong endAddress = va + size;
-                    if (endAddress < referenceBlock.endAddress)
-                    {
-                        // Need to create a right block.
-                        MemoryBlock rightBlock = new MemoryBlock(endAddress, referenceBlock.endAddress - endAddress);
-                        _map.Add(endAddress, rightBlock);
-                    }
-                }
-            }
-        }
-
-        /// <summary>
-        /// Marks a block of memory as free by adding it to the tree.
-        /// This function will automatically defragment the tree when it determines there are multiple blocks of free memory adjacent to each other.
-        /// </summary>
-        /// <param name="va"></param>
-        /// <param name="size"></param>
-        public void DeallocateMemoryBlock(ulong va, ulong size)
-        {
-            lock (_map)
-            {
-                TreeNode<ulong, MemoryBlock> entry = _map.GetNode(va);
-                if (null != entry)
-                {
-                    TreeNode<ulong, MemoryBlock> prev = _map.PredecessorOf(entry);
-                    TreeNode<ulong, MemoryBlock> next = _map.SuccessorOf(entry);
-                    ulong expandedStart = va;
-                    ulong expandedEnd = va + size;
-                    while(prev != null)
-                    {
-                        MemoryBlock prevBlock = prev.Value;
-                        ulong prevAddress = prevBlock.address;
-                        if(prevBlock.endAddress == expandedStart - 1UL)
-                        {
-                            expandedStart = prevAddress;
-                            prev = _map.PredecessorOf(prev);
-                            _map.Remove(prevAddress);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    while(next != null)
-                    {
-                        MemoryBlock nextBlock = next.Value;
-                        ulong nextAddress = nextBlock.address;
-                        if(nextBlock.address == expandedEnd - 1UL)
-                        {
-                            expandedEnd = nextBlock.endAddress;
-                            next = _map.SuccessorOf(next);
-                            _map.Remove(nextAddress);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    _map.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
-                }
-            }
-        }
-
-        /// <summary>
-        /// Gets the address of an unused (free) region of the specified size.
-        /// </summary>
-        /// <param name="size">Size of the region in bytes</param>
-        /// <param name="alignment">Required alignment of the region address in bytes</param>
-        /// <param name="start">Start address of the search on the address space</param>
-        /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        private ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
-        {
-            // Note: Address 0 is not considered valid by the driver,
-            // when 0 is returned it's considered a mapping error.
-            ulong address  = start;
-
-            if (alignment == 0)
-            {
-                alignment = 1;
-            }
-
-            alignment = (alignment + PageMask) & ~PageMask;
-            if (address < AddressSpaceSize)
-            {
-                TreeNode<ulong, MemoryBlock> blockNode = _map.Count == 1 ? _map.FloorNode(address) : _map.CeilingNode(address);
-                while (address < AddressSpaceSize)
-                {
-                    if (blockNode != null)
-                    {
-                        MemoryBlock block = blockNode.Value;
-                        if(address >= block.address)
-                        {
-                            if (address + size <= block.endAddress)
-                            {
-                                memoryBlock = blockNode;
-                                return address;
-                            }
-                            else
-                            {
-                                blockNode = _map.SuccessorOf(blockNode);
-                            }
-                        }
-                        else
-                        {
-                            address += PageSize;
-
-                            ulong remainder = address % alignment;
-
-                            if (remainder != 0)
-                            {
-                                address = (address - remainder) + alignment;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        break;
-                    }
-                }
-            }
-            memoryBlock = null;
-            return PteUnmapped;
         }
 
         /// <summary>
@@ -450,29 +252,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             return baseAddress + (gpuVa & PageMask);
-        }
-
-        /// <summary>
-        /// Checks if a given memory page is mapped or reserved.
-        /// </summary>
-        /// <param name="gpuVa">GPU virtual address of the page</param>
-        /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        private bool IsPageInUse(ulong gpuVa)
-        {
-            if (gpuVa >> PtLvl0Bits + PtLvl1Bits + PtPageBits != 0)
-            {
-                return false;
-            }
-
-            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
-
-            if (_pageTable[l0] == null)
-            {
-                return false;
-            }
-
-            return _pageTable[l0][l1] != PteUnmapped;
         }
 
         /// <summary>
