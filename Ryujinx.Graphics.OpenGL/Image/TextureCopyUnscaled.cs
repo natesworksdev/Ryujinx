@@ -11,8 +11,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
             TextureCopy copy,
             ITextureInfo src,
             ITextureInfo dst,
-            int srcHandle,
-            int dstHandle,
             int srcLayer,
             int dstLayer,
             int srcLevel,
@@ -20,6 +18,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureCreateInfo srcInfo = src.Info;
             TextureCreateInfo dstInfo = dst.Info;
+
+            int srcHandle = src.Handle;
+            int dstHandle = dst.Handle;
 
             int srcWidth  = srcInfo.Width;
             int srcHeight = srcInfo.Height;

@@ -116,8 +116,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     _renderer.TextureCopy,
                     this,
                     emulatedView,
-                    Handle,
-                    emulatedView.Handle,
                     0,
                     firstLayer,
                     0,
@@ -145,7 +143,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     _incompatibleFormatView = (TextureView)_renderer.CreateTexture(Info, ScaleFactor);
                 }
 
-                TextureCopyUnscaled.Copy(_renderer.TextureCopy, _parent, _incompatibleFormatView, _parent.Handle, _incompatibleFormatView.Handle, FirstLayer, 0, FirstLevel, 0);
+                TextureCopyUnscaled.Copy(_renderer.TextureCopy, _parent, _incompatibleFormatView, FirstLayer, 0, FirstLevel, 0);
 
                 return _incompatibleFormatView.Handle;
             }
@@ -157,7 +155,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             if (_incompatibleFormatView != null)
             {
-                TextureCopyUnscaled.Copy(_renderer.TextureCopy, _incompatibleFormatView, _parent, _incompatibleFormatView.Handle, _parent.Handle, 0, FirstLayer, 0, FirstLevel);
+                TextureCopyUnscaled.Copy(_renderer.TextureCopy, _incompatibleFormatView, _parent, 0, FirstLayer, 0, FirstLevel);
             }
         }
 
@@ -165,7 +163,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
         {
             TextureView destinationView = (TextureView)destination;
 
-            TextureCopyUnscaled.Copy(_renderer.TextureCopy, this, destinationView, Handle, destinationView.Handle, 0, firstLayer, 0, firstLevel);
+            TextureCopyUnscaled.Copy(_renderer.TextureCopy, this, destinationView, 0, firstLayer, 0, firstLevel);
 
             if (destinationView._emulatedViewParent != null)
             {
@@ -173,8 +171,6 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     _renderer.TextureCopy,
                     this,
                     destinationView._emulatedViewParent,
-                    Handle,
-                    destinationView._emulatedViewParent.Handle,
                     0,
                     destinationView.FirstLayer,
                     0,
