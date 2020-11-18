@@ -1,5 +1,3 @@
-using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using System;
 using System.Runtime.CompilerServices;
