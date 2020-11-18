@@ -12,10 +12,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        private Stopwatch stopwatch = new Stopwatch();
-        private long maxPositionMs = 0;
-        private long totalPositionTicks = 0;
-        private long positionCounts = 0;
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -316,6 +312,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Marks a block of memory as free by adding it to the tree.
+        /// This function will automatically defragment the tree when it determines there are multiple blocks of free memory adjacent to each other.
+        /// </summary>
+        /// <param name="va"></param>
+        /// <param name="size"></param>
         public void DeallocateMemoryBlock(ulong va, ulong size)
         {
             lock (_map)
@@ -375,7 +377,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
-            stopwatch.Restart();
             ulong address  = start;
 
             if (alignment == 0)
@@ -384,7 +385,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             alignment = (alignment + PageMask) & ~PageMask;
-            long ms;
             if (address < AddressSpaceSize)
             {
                 TreeNode<ulong, MemoryBlock> blockNode = _map.Count == 1 ? _map.FloorNode(address) : _map.CeilingNode(address);
@@ -398,12 +398,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                             if (address + size <= block.endAddress)
                             {
                                 memoryBlock = blockNode;
-                                ms = stopwatch.ElapsedMilliseconds;
-                                maxPositionMs = Math.Max(ms, maxPositionMs);
-                                positionCounts++;
-                                totalPositionTicks += stopwatch.ElapsedTicks;
-                                Logger.Info?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
-                                Logger.Info?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
                                 return address;
                             }
                             else
@@ -430,12 +424,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 }
             }
             memoryBlock = null;
-            ms = stopwatch.ElapsedMilliseconds;
-            maxPositionMs = Math.Max(ms, maxPositionMs);
-            positionCounts++;
-            totalPositionTicks += stopwatch.ElapsedTicks;
-            Logger.Info?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
-            Logger.Info?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
             return PteUnmapped;
         }
 
