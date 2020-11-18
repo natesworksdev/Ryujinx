@@ -42,7 +42,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
 
-        private TreeMap<ulong, MemoryBlock> _map = new TreeMap<ulong, MemoryBlock>();
+        private TreeDictionary<ulong, MemoryBlock> _map = new TreeDictionary<ulong, MemoryBlock>();
 
         private GpuContext _context;
 
@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             _context = context;
             _pageTable = new ulong[PtLvl0Size][];
-            _map.Put(4096UL, new MemoryBlock(4096UL, AddressSpaceSize));
+            _map.Add(4096UL, new MemoryBlock(4096UL, AddressSpaceSize));
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-                AllocateMemoryBlock(va, size, new MemoryBlock(PteUnmapped, 0));
+                AllocateMemoryBlock(va, size, null);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
@@ -157,7 +157,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, out MemoryBlock referenceBlock, alignment);
+                ulong va = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, alignment);
 
                 if (va != PteUnmapped)
                 {
@@ -184,7 +184,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, out MemoryBlock referenceBlock, 1, PageSize);
+                ulong va = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, 1, PageSize);
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
@@ -224,7 +224,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
 
-                AllocateMemoryBlock(va, size, new MemoryBlock(PteUnmapped, 0));
+                AllocateMemoryBlock(va, size, null);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
@@ -244,7 +244,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-                ulong address = GetFreePosition(size, out MemoryBlock referenceBlock, alignment);
+                ulong address = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, alignment);
 
                 if (address != PteUnmapped)
                 {
@@ -278,38 +278,41 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        public void AllocateMemoryBlock(ulong va, ulong size, MemoryBlock referenceBlock)
+        public void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
         {
             lock (_map)
             {
-                // Fixed Addresses are being mapped. Ignore the reference.
-                if (referenceBlock.address == PteUnmapped)
+                if (reference != null)
                 {
-                    Entry<ulong, MemoryBlock> entry = _map.GetFloorEntry(va);
-                    if (null == entry) return;
-                    referenceBlock = entry.Value;
-                    
-                    if(!(va >= referenceBlock.address && va + size <= referenceBlock.endAddress)) return;
-                }
+                    MemoryBlock referenceBlock = reference.Value;
+                    // Fixed Addresses are being mapped. Ignore the reference.
+                    if (referenceBlock.address == PteUnmapped)
+                    {
+                        TreeNode<ulong, MemoryBlock> entry = _map.PredecessorOf(reference);
+                        if (null == entry) return;
+                        referenceBlock = entry.Value;
 
-                if (va > referenceBlock.address)
-                {
-                    // Need to create a left block.
-                    MemoryBlock leftBlock = new MemoryBlock(referenceBlock.address, va - referenceBlock.address);
-                    _map.Put(referenceBlock.address, leftBlock);
+                        if (!(va >= referenceBlock.address && va + size <= referenceBlock.endAddress)) return;
+                    }
+
+                    if (va > referenceBlock.address)
+                    {
+                        // Need to create a left block.
+                        MemoryBlock leftBlock = new MemoryBlock(referenceBlock.address, va - referenceBlock.address);
+                        _map.Add(referenceBlock.address, leftBlock);
+                    }
+                    else if (va == referenceBlock.address)
+                    {
+                        _map.Remove(va);
+                    }
+                    ulong endAddress = va + size;
+                    if (endAddress < referenceBlock.endAddress)
+                    {
+                        // Need to create a right block.
+                        MemoryBlock rightBlock = new MemoryBlock(endAddress, referenceBlock.endAddress - endAddress);
+                        _map.Add(endAddress, rightBlock);
+                    }
                 }
-                else if (va == referenceBlock.address)
-                {
-                    _map.Remove(va);
-                }
-                ulong endAddress = va + size;
-                if (endAddress < referenceBlock.endAddress)
-                {
-                    // Need to create a right block.
-                    MemoryBlock rightBlock = new MemoryBlock(endAddress, referenceBlock.endAddress - endAddress);
-                    _map.Put(endAddress, rightBlock);
-                }
-                
             }
         }
 
@@ -317,23 +320,22 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_map)
             {
-                Entry<ulong, MemoryBlock> entry = _map.GetEntry(va);
+                TreeNode<ulong, MemoryBlock> entry = _map.GetNode(va);
                 if (null != entry)
                 {
-                    MemoryBlock block = entry.Value;
-
-                    Entry<ulong, MemoryBlock> prev = entry.FloorEntry();
-                    Entry<ulong, MemoryBlock> next = entry.CeilingEntry();
+                    TreeNode<ulong, MemoryBlock> prev = _map.PredecessorOf(entry);
+                    TreeNode<ulong, MemoryBlock> next = _map.SuccessorOf(entry);
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
                     while(prev != null)
                     {
                         MemoryBlock prevBlock = prev.Value;
+                        ulong prevAddress = prevBlock.address;
                         if(prevBlock.endAddress == expandedStart - 1UL)
                         {
-                            expandedStart = prevBlock.address;
-                            prev = prev.FloorEntry();
-                            _map.Remove(prevBlock.address);
+                            expandedStart = prevAddress;
+                            prev = _map.PredecessorOf(prev);
+                            _map.Remove(prevAddress);
                         }
                         else
                         {
@@ -344,11 +346,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     while(next != null)
                     {
                         MemoryBlock nextBlock = next.Value;
+                        ulong nextAddress = nextBlock.address;
                         if(nextBlock.address == expandedEnd - 1UL)
                         {
                             expandedEnd = nextBlock.endAddress;
-                            next = next.CeilingEntry();
-                            _map.Remove(nextBlock.address);
+                            next = _map.SuccessorOf(next);
+                            _map.Remove(nextAddress);
                         }
                         else
                         {
@@ -356,7 +359,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         }
                     }
 
-                    _map.Put(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
+                    _map.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
                 }
             }
         }
@@ -368,7 +371,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        private ulong GetFreePosition(ulong size, out MemoryBlock memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
+        private ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -384,35 +387,28 @@ namespace Ryujinx.Graphics.Gpu.Memory
             long ms;
             if (address < AddressSpaceSize)
             {
-                Entry<ulong, MemoryBlock> addressEntry = _map.Count() == 1 ? _map.GetFloorEntry(address) : _map.GetCeilingEntry(address);
+                TreeNode<ulong, MemoryBlock> blockNode = _map.Count == 1 ? _map.FloorNode(address) : _map.CeilingNode(address);
                 while (address < AddressSpaceSize)
                 {
-                    if (addressEntry != null)
+                    if (blockNode != null)
                     {
-                        MemoryBlock block = addressEntry.Value;
+                        MemoryBlock block = blockNode.Value;
                         if(address >= block.address)
                         {
                             if (address + size <= block.endAddress)
                             {
-                                memoryBlock = block;
+                                memoryBlock = blockNode;
                                 ms = stopwatch.ElapsedMilliseconds;
                                 maxPositionMs = Math.Max(ms, maxPositionMs);
                                 positionCounts++;
                                 totalPositionTicks += stopwatch.ElapsedTicks;
-                                Logger.Debug?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
-                                Logger.Debug?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
+                                Logger.Info?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
+                                Logger.Info?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
                                 return address;
                             }
                             else
                             {
-                                if (address == block.address)
-                                {
-                                    addressEntry = _map.GetCeilingEntry(address + 1);
-                                }
-                                else
-                                {
-                                    addressEntry = _map.GetCeilingEntry(address);
-                                }
+                                blockNode = _map.SuccessorOf(blockNode);
                             }
                         }
                         else
@@ -433,14 +429,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 }
             }
-            memoryBlock = new MemoryBlock(PteUnmapped, 0);
-            _map.PreOrderTraverse();
+            memoryBlock = null;
             ms = stopwatch.ElapsedMilliseconds;
             maxPositionMs = Math.Max(ms, maxPositionMs);
             positionCounts++;
             totalPositionTicks += stopwatch.ElapsedTicks;
-            Logger.Debug?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
-            Logger.Debug?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
+            Logger.Info?.Print(LogClass.Gpu, $"Function call took {ms}ms | Max: {maxPositionMs}");
+            Logger.Info?.Print(LogClass.Gpu, $"Avg Ticks: {totalPositionTicks / positionCounts}");
             return PteUnmapped;
         }
 

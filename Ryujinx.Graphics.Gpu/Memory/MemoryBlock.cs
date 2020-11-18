@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
-    public struct MemoryBlock : IComparable<MemoryBlock>
+    public class MemoryBlock : IComparable<MemoryBlock>
     {
         public ulong address { get; }
         public ulong size { get; }
