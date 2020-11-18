@@ -142,6 +142,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// This also ensures that the mapping is always done in the first 4GB of GPU address space.
         /// </summary>
         /// <param name="pa">CPU virtual address to map into</param>
+        /// <param name="va">GPU virtual address to map into</param>
         /// <param name="size">Size in bytes of the mapping</param>
         /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
         public ulong MapLow(ulong pa, ulong va, ulong size)
