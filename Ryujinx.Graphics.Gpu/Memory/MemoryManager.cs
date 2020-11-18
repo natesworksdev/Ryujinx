@@ -147,11 +147,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="pa">CPU virtual address to map into</param>
         /// <param name="size">Size in bytes of the mapping</param>
         /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
-        public ulong MapLow(ulong pa, ulong size)
+        public ulong MapLow(ulong pa, ulong va, ulong size)
         {
             lock (_pageTable)
             {
-                ulong va = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, 1, PageSize);
 
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
