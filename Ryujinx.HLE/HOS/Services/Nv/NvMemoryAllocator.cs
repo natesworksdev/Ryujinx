@@ -1,55 +1,49 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿
+using Ryujinx.Common.Collections;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
-    class NvMemoryAllocator
+
+    public class NvMemoryAllocator
     {
+        private static NvMemoryAllocator nvMemoryAllocator = new NvMemoryAllocator();
 
         public const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
 
-        private const int PtLvl0Bits = 14;
-        private const int PtLvl1Bits = 14;
         public const int PtPageBits = 12;
 
-        private const ulong PtLvl0Size = 1UL << PtLvl0Bits;
-        private const ulong PtLvl1Size = 1UL << PtLvl1Bits;
         public const ulong PageSize = 1UL << PtPageBits;
-
-        private const ulong PtLvl0Mask = PtLvl0Size - 1;
-        private const ulong PtLvl1Mask = PtLvl1Size - 1;
         public const ulong PageMask = PageSize - 1;
-
-        private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
-        private const int PtLvl1Bit = PtPageBits;
 
         public const ulong PteUnmapped = 0xffffffff_ffffffff;
         public const ulong PteReserved = 0xffffffff_fffffffe;
 
         private TreeDictionary<ulong, MemoryBlock> _tree = new TreeDictionary<ulong, MemoryBlock>();
 
-        public NvMemoryAllocator()
+        private NvMemoryAllocator()
         {
-            _map.Add(4096UL, new MemoryBlock(4096UL, MemoryManager.AddressSpaceSize));
+            _tree.Add(4096UL, new MemoryBlock(4096UL, AddressSpaceSize));
+        }
+
+        public static NvMemoryAllocator GetInstance()
+        {
+            return nvMemoryAllocator;
         }
 
         #region Memory Allocation
-        private void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
+        public void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
         {
-            lock (_map)
+            lock (_tree)
             {
                 if (reference != null)
                 {
                     MemoryBlock referenceBlock = reference.Value;
                     // Fixed Addresses are being mapped. Ignore the reference.
-                    if (referenceBlock.address == MemoryManager.PteUnmapped)
+                    if (referenceBlock.address == PteUnmapped)
                     {
-                        TreeNode<ulong, MemoryBlock> entry = _map.PredecessorOf(reference);
+                        TreeNode<ulong, MemoryBlock> entry = _tree.PredecessorOf(reference);
                         if (null == entry) return;
                         referenceBlock = entry.Value;
 
@@ -60,18 +54,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                     {
                         // Need to create a left block.
                         MemoryBlock leftBlock = new MemoryBlock(referenceBlock.address, va - referenceBlock.address);
-                        _map.Add(referenceBlock.address, leftBlock);
+                        _tree.Add(referenceBlock.address, leftBlock);
                     }
                     else if (va == referenceBlock.address)
                     {
-                        _map.Remove(va);
+                        _tree.Remove(va);
                     }
                     ulong endAddress = va + size;
                     if (endAddress < referenceBlock.endAddress)
                     {
                         // Need to create a right block.
                         MemoryBlock rightBlock = new MemoryBlock(endAddress, referenceBlock.endAddress - endAddress);
-                        _map.Add(endAddress, rightBlock);
+                        _tree.Add(endAddress, rightBlock);
                     }
                 }
             }
@@ -85,13 +79,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="size"></param>
         public void DeallocateMemoryBlock(ulong va, ulong size)
         {
-            lock (_map)
+            lock (_tree)
             {
-                TreeNode<ulong, MemoryBlock> entry = _map.GetNode(va);
+                TreeNode<ulong, MemoryBlock> entry = _tree.GetNode(va);
                 if (null != entry)
                 {
-                    TreeNode<ulong, MemoryBlock> prev = _map.PredecessorOf(entry);
-                    TreeNode<ulong, MemoryBlock> next = _map.SuccessorOf(entry);
+                    TreeNode<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
+                    TreeNode<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
                     while (prev != null)
@@ -101,8 +95,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (prevBlock.endAddress == expandedStart - 1UL)
                         {
                             expandedStart = prevAddress;
-                            prev = _map.PredecessorOf(prev);
-                            _map.Remove(prevAddress);
+                            prev = _tree.PredecessorOf(prev);
+                            _tree.Remove(prevAddress);
                         }
                         else
                         {
@@ -117,8 +111,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (nextBlock.address == expandedEnd - 1UL)
                         {
                             expandedEnd = nextBlock.endAddress;
-                            next = _map.SuccessorOf(next);
-                            _map.Remove(nextAddress);
+                            next = _tree.SuccessorOf(next);
+                            _tree.Remove(nextAddress);
                         }
                         else
                         {
@@ -126,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         }
                     }
 
-                    _map.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
+                    _tree.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
                 }
             }
         }
@@ -138,58 +132,82 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        private ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
+        public ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
-            ulong address = start;
-
-            if (alignment == 0)
+            lock (_tree)
             {
-                alignment = 1;
-            }
+                ulong address = start;
 
-            alignment = (alignment + PageMask) & ~PageMask;
-            if (address < AddressSpaceSize)
-            {
-                TreeNode<ulong, MemoryBlock> blockNode = _map.Count == 1 ? _map.FloorNode(address) : _map.CeilingNode(address);
-                while (address < AddressSpaceSize)
+                if (alignment == 0)
                 {
-                    if (blockNode != null)
+                    alignment = 1;
+                }
+
+                alignment = (alignment + PageMask) & ~PageMask;
+                if (address < AddressSpaceSize)
+                {
+                    TreeNode<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : _tree.CeilingNode(address);
+                    while (address < AddressSpaceSize)
                     {
-                        MemoryBlock block = blockNode.Value;
-                        if (address >= block.address)
+                        if (blockNode != null)
                         {
-                            if (address + size <= block.endAddress)
+                            MemoryBlock block = blockNode.Value;
+                            if (address >= block.address)
                             {
-                                memoryBlock = blockNode;
-                                return address;
+                                if (address + size <= block.endAddress)
+                                {
+                                    memoryBlock = blockNode;
+                                    return address;
+                                }
+                                else
+                                {
+                                    blockNode = _tree.SuccessorOf(blockNode);
+                                }
                             }
                             else
                             {
-                                blockNode = _map.SuccessorOf(blockNode);
+                                address += PageSize;
+
+                                ulong remainder = address % alignment;
+
+                                if (remainder != 0)
+                                {
+                                    address = (address - remainder) + alignment;
+                                }
                             }
                         }
                         else
                         {
-                            address += PageSize;
-
-                            ulong remainder = address % alignment;
-
-                            if (remainder != 0)
-                            {
-                                address = (address - remainder) + alignment;
-                            }
+                            break;
                         }
                     }
-                    else
-                    {
-                        break;
-                    }
+                }
+                memoryBlock = null;
+            }
+            return PteUnmapped;
+        }
+
+        /// <summary>
+        /// Checks if a given memory page is mapped or reserved.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address of the page</param>
+        /// <param name="size">Size of the allocation in bytes</param>
+        /// <returns>True if the page is mapped or reserved, false otherwise</returns>
+        public bool IsRegionInUse(ulong gpuVa, ulong size, out TreeNode<ulong, MemoryBlock> memoryNode)
+        {
+            lock (_tree)
+            {
+                TreeNode<ulong, MemoryBlock> floorNode = _tree.FloorNode(gpuVa);
+                memoryNode = floorNode;
+                if (null != floorNode)
+                {
+                    MemoryBlock memoryBlock = floorNode.Value;
+                    return (gpuVa >= memoryBlock.address && gpuVa + size < memoryBlock.endAddress);
                 }
             }
-            memoryBlock = null;
-            return PteUnmapped;
+            return false;
         }
 
         #endregion

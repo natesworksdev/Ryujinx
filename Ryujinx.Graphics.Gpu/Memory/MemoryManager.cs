@@ -12,7 +12,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        private PerformanceProfiler reserveFixedProfiler = new PerformanceProfiler();
         public const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -151,10 +150,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_pageTable)
             {
-
                 if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
                 {
-                    AllocateMemoryBlock(va, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(va + offset, pa + offset);
@@ -178,39 +175,30 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
         public ulong ReserveFixed(ulong va, ulong size)
         {
-            reserveFixedProfiler.StartCapture();
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
-                if (IsRegionInUse(va, size, out TreeNode<ulong, MemoryBlock> memoryBlock)) return PteUnmapped;
-
-                AllocateMemoryBlock(va, size, memoryBlock);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
                 }
             }
-            reserveFixedProfiler.EndCapture();
-            Logger.Info?.Print(LogClass.Gpu, reserveFixedProfiler.GetMetrics());
             return va;
         }
 
         /// <summary>
         /// Reserves memory at any GPU memory location.
         /// </summary>
-        /// <param name="size">Size in bytes of the reservation</param>
-        /// <param name="alignment">Reservation address alignment in bytes</param>
+        /// <param name="address">GPU virtual address to reserve</param>
+        /// <param name="size">Reservation address alignment in bytes</param>
         /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
-        public ulong Reserve(ulong size, ulong alignment)
+        public ulong Reserve(ulong address, ulong size)
         {
             lock (_pageTable)
             {
-                ulong address = GetFreePosition(size, out TreeNode<ulong, MemoryBlock> referenceBlock, alignment);
-
                 if (address != PteUnmapped)
                 {
-                    AllocateMemoryBlock(address, size, referenceBlock);
                     for (ulong offset = 0; offset < size; offset += PageSize)
                     {
                         SetPte(address + offset, PteReserved);
@@ -232,17 +220,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-                DeallocateMemoryBlock(va, size);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);
                 }
             }
         }
-
-        
-
-        
 
         /// <summary>
         /// Checks if a given page is mapped.
@@ -269,24 +252,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             return baseAddress + (gpuVa & PageMask);
-        }
-
-        /// <summary>
-        /// Checks if a given memory page is mapped or reserved.
-        /// </summary>
-        /// <param name="gpuVa">GPU virtual address of the page</param>
-        /// <param name="size">Size of the allocation in bytes</param>
-        /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        private bool IsRegionInUse(ulong gpuVa, ulong size, out TreeNode<ulong, MemoryBlock> memoryNode)
-        {
-            TreeNode<ulong, MemoryBlock> floorNode = _map.FloorNode(gpuVa);
-            memoryNode = floorNode;
-            if(null != floorNode)
-            {
-                MemoryBlock memoryBlock = floorNode.Value;
-                return (gpuVa >= memoryBlock.address && gpuVa + size < memoryBlock.endAddress);
-            }
-            return false;
         }
 
         /// <summary>
