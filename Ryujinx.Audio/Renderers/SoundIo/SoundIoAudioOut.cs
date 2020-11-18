@@ -16,16 +16,6 @@ namespace Ryujinx.Audio
         private const int MaximumTracks = 256;
 
         /// <summary>
-        /// The volume of audio renderer
-        /// </summary>
-        private float _volume = 1.0f;
-
-        /// <summary>
-        /// True if the volume of audio renderer have changed
-        /// </summary>
-        private bool _volumeChanged;
-
-        /// <summary>
         /// The <see cref="SoundIO"/> audio context
         /// </summary>
         private SoundIO _audioContext;
@@ -155,14 +145,7 @@ namespace Ryujinx.Audio
         public void AppendBuffer<T>(int trackId, long bufferTag, T[] buffer) where T : struct
         {
             if (_trackPool.TryGet(trackId, out SoundIoAudioTrack track))
-            {
-                if (_volumeChanged)
-                {
-                    track.AudioStream.SetVolume(_volume);
-
-                    _volumeChanged = false;
-                }
-                    
+            {   
                 track.AppendBuffer(bufferTag, buffer);
             }
         }
@@ -192,22 +175,33 @@ namespace Ryujinx.Audio
         }
 
         /// <summary>
-        /// Get playback volume
+        /// Get track buffer count
         /// </summary>
-        public float GetVolume() => _volume;
+        /// <param name="trackId">The ID of the track to get buffer count</param>
+        public uint GetBufferCount(int trackId) => _trackPool.GetBufferCount(trackId);
 
         /// <summary>
-        /// Set playback volume
+        /// Get track played sample count
+        /// </summary>
+        /// <param name="trackId">The ID of the track to get played sample</param>
+        public ulong GetPlayedSampleCount(int trackId) => _trackPool.GetPlayedSampleCount(trackId);
+
+        /// <summary>
+        /// Flush all track buffers
+        /// </summary>
+        /// <param name="trackId">The ID of the track to flush</param>
+        public bool FlushBuffers(int trackId) => _trackPool.FlushBuffers(trackId);
+
+        /// <summary>
+        /// Get track volume
+        /// </summary>
+        public float GetVolume(int trackId) => _trackPool.GetVolume(trackId);
+
+        /// <summary>
+        /// Set track volume
         /// </summary>
         /// <param name="volume">The volume of the playback</param>
-        public void SetVolume(float volume)
-        {
-            if (!_volumeChanged)
-            {
-                _volume        = volume;
-                _volumeChanged = true;
-            }
-        }
+        public void SetVolume(int trackId, float volume) => _trackPool.SetVolume(trackId, volume);
 
         /// <summary>
         /// Gets the current playback state of the specified track

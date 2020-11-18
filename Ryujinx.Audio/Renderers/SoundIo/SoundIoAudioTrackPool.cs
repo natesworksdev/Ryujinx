@@ -175,6 +175,75 @@ namespace Ryujinx.Audio.SoundIo
         }
 
         /// <summary>
+        /// Get track buffer count
+        /// </summary>
+        /// <param name="trackId">The ID of the track to get buffer count</param>
+        public uint GetBufferCount(int trackId)
+        {
+            if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
+            {
+                return track.BufferCount;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Get track played sample count
+        /// </summary>
+        /// <param name="trackId">The ID of the track to get played sample</param>
+        public ulong GetPlayedSampleCount(int trackId)
+        {
+            if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
+            {
+                return track.PlayedSampleCount;
+            }
+
+            return 0;
+        }
+
+        /// <summary>
+        /// Flush all track buffers
+        /// </summary>
+        /// <param name="trackId">The ID of the track to flush</param>
+        public bool FlushBuffers(int trackId)
+        {
+            if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
+            {
+                return track.FlushBuffers();
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Set track volume
+        /// </summary>
+        /// <param name="trackId">The ID of the track to set volume</param>
+        /// <param name="volume">The volume of the track</param>
+        public void SetVolume(int trackId, float volume)
+        {
+            if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
+            {
+                track.AudioStream.SetVolume(volume);
+            }
+        }
+
+        /// <summary>
+        /// Get track volume
+        /// </summary>
+        /// <param name="trackId">The ID of the track to get volume</param>
+        public float GetVolume(int trackId)
+        {
+            if (m_TrackList.TryGetValue(trackId, out SoundIoAudioTrack track))
+            {
+                return track.AudioStream.Volume;
+            }
+
+            return 1.0f;
+        }
+
+        /// <summary>
         /// Releases the unmanaged resources used by the <see cref="SoundIoAudioTrackPool" />
         /// </summary>
         public void Dispose()
