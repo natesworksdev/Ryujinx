@@ -1,3 +1,5 @@
+using Ryujinx.Common.Logging;
+using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using System;
 using System.Runtime.CompilerServices;
@@ -10,6 +12,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
+        private PerformanceProfiler reserveFixedProfiler = new PerformanceProfiler();
         private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -206,25 +209,21 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
         public ulong ReserveFixed(ulong va, ulong size)
         {
+            reserveFixedProfiler.StartCapture();
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
 
-                for (ulong offset = 0; offset < size; offset += PageSize)
-                {
-                    if (IsPageInUse(va + offset))
-                    {
-                        return PteUnmapped;
-                    }
-                }
+                if (IsRegionInUse(va, size, out TreeNode<ulong, MemoryBlock> memoryBlock)) return PteUnmapped;
 
-                AllocateMemoryBlock(va, size, null);
+                AllocateMemoryBlock(va, size, memoryBlock);
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteReserved);
                 }
             }
-
+            reserveFixedProfiler.EndCapture();
+            Logger.Info?.Print(LogClass.Gpu, reserveFixedProfiler.GetMetrics());
             return va;
         }
 
@@ -456,23 +455,18 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Checks if a given memory page is mapped or reserved.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address of the page</param>
+        /// <param name="size">Size of the allocation in bytes</param>
         /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        private bool IsPageInUse(ulong gpuVa)
+        private bool IsRegionInUse(ulong gpuVa, ulong size, out TreeNode<ulong, MemoryBlock> memoryNode)
         {
-            if (gpuVa >> PtLvl0Bits + PtLvl1Bits + PtPageBits != 0)
+            TreeNode<ulong, MemoryBlock> floorNode = _map.FloorNode(gpuVa);
+            memoryNode = floorNode;
+            if(null != floorNode)
             {
-                return false;
+                MemoryBlock memoryBlock = floorNode.Value;
+                return (gpuVa >= memoryBlock.address && gpuVa + size < memoryBlock.endAddress);
             }
-
-            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
-
-            if (_pageTable[l0] == null)
-            {
-                return false;
-            }
-
-            return _pageTable[l0][l1] != PteUnmapped;
+            return false;
         }
 
         /// <summary>
