@@ -5,7 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
-    class TreeDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
+    public class TreeDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
     {
         private TreeNode<TKey, TValue> root = null;
         private bool isModified = true;
