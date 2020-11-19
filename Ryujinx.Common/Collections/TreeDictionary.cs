@@ -7,17 +7,16 @@ namespace Ryujinx.Common.Collections
 {
     public class TreeDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
     {
-        private TreeNode<TKey, TValue> root = null;
-        private bool isModified = true;
-        private int count = 0;
+        private TreeNode<TKey, TValue> _root = null;
+        private bool _isModified = true;
+        private int _count = 0;
 
-        private static readonly bool BLACK = true;
-        private static readonly bool RED = false;
+        private const bool Black = true;
+        private const bool Red = false;
 
-        private LinkedList<TreeNode<TKey, TValue>> nodes = new LinkedList<TreeNode<TKey, TValue>>();
-        private List<TValue> values;
-        private List<TKey> keys;
-
+        private LinkedList<TreeNode<TKey, TValue>> _nodes = new LinkedList<TreeNode<TKey, TValue>>();
+        private List<TValue> _values;
+        private List<TKey> _keys;
 
         #region Public Methods
         /// <summary>
@@ -34,8 +33,8 @@ namespace Ryujinx.Common.Collections
 
         public TreeNode<TKey, TValue> GetNode(TKey key)
         {
-            if (key == null) throw new ArgumentNullException();
-            TreeNode<TKey, TValue> entry = root;
+            if (key == null) throw new ArgumentNullException(nameof(key));
+            TreeNode<TKey, TValue> entry = _root;
             while (entry != null)
             {
                 int cmp = key.CompareTo(entry.Key);
@@ -70,7 +69,7 @@ namespace Ryujinx.Common.Collections
 
         public TreeNode<TKey, TValue> CeilingNode(TKey key)
         {
-            TreeNode<TKey, TValue> entry = root;
+            TreeNode<TKey, TValue> entry = _root;
             while (entry != null)
             {
                 int cmp = key.CompareTo(entry.Key);
@@ -126,7 +125,7 @@ namespace Ryujinx.Common.Collections
 
         public TreeNode<TKey, TValue> FloorNode(TKey key)
         {
-            TreeNode<TKey, TValue> entry = root;
+            TreeNode<TKey, TValue> entry = _root;
             while (entry != null)
             {
                 int cmp = key.CompareTo(entry.Key);
@@ -194,9 +193,9 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         public void Clear()
         {
-            this.count = 0;
-            this.root = null;
-            this.isModified = true;
+            this._count = 0;
+            this._root = null;
+            this._isModified = true;
         }
 
         /// <summary>
@@ -273,11 +272,11 @@ namespace Ryujinx.Common.Collections
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
             if (arrayIndex >= array.Length) throw new ArgumentException($"arrayIndex is greater than the length of array");
-            if (array.Length - arrayIndex < this.count) throw new ArgumentException($"There is not enough space in array");
-            if (this.count == 0) return;
+            if (array.Length - arrayIndex < this._count) throw new ArgumentException($"There is not enough space in array");
+            if (this._count == 0) return;
 
-            LinkedListNode<TreeNode<TKey, TValue>> node = nodes.First;
-            for (int i = 0; i < this.count && node != null; i++)
+            LinkedListNode<TreeNode<TKey, TValue>> node = _nodes.First;
+            for (int i = 0; i < this._count && node != null; i++)
             {
                 array[arrayIndex + i] = new KeyValuePair<TKey, TValue>(node.Value.Key, node.Value.Value);
                 node = node.Next;
@@ -312,9 +311,9 @@ namespace Ryujinx.Common.Collections
             throw new NotImplementedException();
         }
 
-        int ICollection<KeyValuePair<TKey, TValue>>.Count => this.count;
+        int ICollection<KeyValuePair<TKey, TValue>>.Count => this._count;
 
-        public int Count => this.count;
+        public int Count => this._count;
 
         public bool IsReadOnly => false;
 
@@ -330,7 +329,7 @@ namespace Ryujinx.Common.Collections
 
         private static bool ColorOf(TreeNode<TKey, TValue> entry)
         {
-            return (entry == null ? BLACK : entry.Color);
+            return (entry == null ? Black : entry.Color);
         }
 
         private static TreeNode<TKey, TValue> LeftOf(TreeNode<TKey, TValue> entry)
@@ -362,45 +361,45 @@ namespace Ryujinx.Common.Collections
 
         private ICollection<TKey> Keys()
         {
-            if (this.isModified)
+            if (this._isModified)
             {
-                this.keys = new List<TKey>(nodes.Count);
+                this._keys = new List<TKey>(_nodes.Count);
 
-                foreach (TreeNode<TKey, TValue> node in nodes)
+                foreach (TreeNode<TKey, TValue> node in _nodes)
                 {
-                    keys.Add(node.Key);
+                    _keys.Add(node.Key);
                 }
-                this.isModified = false;
+                this._isModified = false;
             }
 
-            return keys;
+            return _keys;
         }
 
         private ICollection<TValue> Values()
         {
-            if (this.isModified)
+            if (this._isModified)
             {
-                this.values = new List<TValue>(nodes.Count);
+                this._values = new List<TValue>(_nodes.Count);
 
-                foreach (TreeNode<TKey, TValue> node in nodes)
+                foreach (TreeNode<TKey, TValue> node in _nodes)
                 {
-                    values.Add(node.Value);
+                    _values.Add(node.Value);
                 }
-                this.isModified = false;
+                this._isModified = false;
             }
-            return this.values;
+            return this._values;
         }
 
 
         private TValue Put(TKey key, TValue value)
         {
-            TreeNode<TKey, TValue> entry = root;
+            TreeNode<TKey, TValue> entry = _root;
             if (entry == null)
             {
-                root = new TreeNode<TKey, TValue>(key, value);
-                count = 1;
-                this.isModified = true;
-                nodes.AddLast(root);
+                _root = new TreeNode<TKey, TValue>(key, value);
+                _count = 1;
+                this._isModified = true;
+                _nodes.AddLast(_root);
                 return value;
             }
             if (key == null || value == null)
@@ -442,16 +441,16 @@ namespace Ryujinx.Common.Collections
 
             FixAfterInsertion(newEntry);
 
-            nodes.AddLast(newEntry);
-            this.isModified = true;
-            this.count++;
+            _nodes.AddLast(newEntry);
+            this._isModified = true;
+            this._count++;
             return default;
         }
 
         private TreeNode<TKey, TValue> GetEntryNode(TKey key)
         {
             if (key == null) throw new ArgumentNullException();
-            TreeNode<TKey, TValue> entry = root;
+            TreeNode<TKey, TValue> entry = _root;
             while (entry != null)
             {
                 int cmp = key.CompareTo(entry.Key);
@@ -544,7 +543,7 @@ namespace Ryujinx.Common.Collections
                     tmp.Left.Parent = treeNode;
                 tmp.Parent = treeNode.Parent;
                 if (treeNode.Parent == null)
-                    root = tmp;
+                    _root = tmp;
                 else if (treeNode.Parent.Left == treeNode)
                     treeNode.Parent.Left = tmp;
                 else
@@ -567,7 +566,7 @@ namespace Ryujinx.Common.Collections
                 if (tmp.Right != null) tmp.Right.Parent = treeNode;
                 tmp.Parent = treeNode.Parent;
                 if (treeNode.Parent == null)
-                    root = tmp;
+                    _root = tmp;
                 else if (treeNode.Parent.Right == treeNode)
                     treeNode.Parent.Right = tmp;
                 else treeNode.Parent.Left = tmp;
@@ -583,18 +582,18 @@ namespace Ryujinx.Common.Collections
         /// <param name="treeNode"></param>
         private void FixAfterInsertion(TreeNode<TKey, TValue> treeNode)
         {
-            treeNode.Color = RED;
+            treeNode.Color = Red;
 
-            while (treeNode != null && treeNode != root && treeNode.Parent.Color == RED)
+            while (treeNode != null && treeNode != _root && treeNode.Parent.Color == Red)
             {
                 if (ParentOf(treeNode) == LeftOf(ParentOf(ParentOf(treeNode))))
                 {
                     TreeNode<TKey, TValue> tmp = RightOf(ParentOf(ParentOf(treeNode)));
-                    if (ColorOf(tmp) == RED)
+                    if (ColorOf(tmp) == Red)
                     {
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(tmp, BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
+                        SetColor(ParentOf(treeNode), Black);
+                        SetColor(tmp, Black);
+                        SetColor(ParentOf(ParentOf(treeNode)), Red);
                         treeNode = ParentOf(ParentOf(treeNode));
                     }
                     else
@@ -604,19 +603,19 @@ namespace Ryujinx.Common.Collections
                             treeNode = ParentOf(treeNode);
                             RotateLeft(treeNode);
                         }
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
+                        SetColor(ParentOf(treeNode), Black);
+                        SetColor(ParentOf(ParentOf(treeNode)), Red);
                         RotateRight(ParentOf(ParentOf(treeNode)));
                     }
                 }
                 else
                 {
                     TreeNode<TKey, TValue> tmp = LeftOf(ParentOf(ParentOf(treeNode)));
-                    if (ColorOf(tmp) == RED)
+                    if (ColorOf(tmp) == Red)
                     {
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(tmp, BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
+                        SetColor(ParentOf(treeNode), Black);
+                        SetColor(tmp, Black);
+                        SetColor(ParentOf(ParentOf(treeNode)), Red);
                         treeNode = ParentOf(ParentOf(treeNode));
                     }
                     else
@@ -626,13 +625,13 @@ namespace Ryujinx.Common.Collections
                             treeNode = ParentOf(treeNode);
                             RotateRight(treeNode);
                         }
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
+                        SetColor(ParentOf(treeNode), Black);
+                        SetColor(ParentOf(ParentOf(treeNode)), Red);
                         RotateLeft(ParentOf(ParentOf(treeNode)));
                     }
                 }
             }
-            root.Color = BLACK;
+            _root.Color = Black;
         }
 
         /// <summary>
@@ -641,9 +640,9 @@ namespace Ryujinx.Common.Collections
         /// <param name="treeNode"></param>
         private void DeleteEntry(TreeNode<TKey, TValue> treeNode)
         {
-            this.count--;
-            this.isModified = true;
-            nodes.Remove(treeNode);
+            this._count--;
+            this._isModified = true;
+            _nodes.Remove(treeNode);
             // If strictly internal, copy successor's element to p and then make p
             // point to successor.
             if (treeNode.Left != null && treeNode.Right != null)
@@ -662,7 +661,7 @@ namespace Ryujinx.Common.Collections
                 // Link replacement to Parent
                 replacement.Parent = treeNode.Parent;
                 if (treeNode.Parent == null)
-                    root = replacement;
+                    _root = replacement;
                 else if (treeNode == treeNode.Parent.Left)
                     treeNode.Parent.Left = replacement;
                 else
@@ -672,16 +671,16 @@ namespace Ryujinx.Common.Collections
                 treeNode.Left = treeNode.Right = treeNode.Parent = null;
 
                 // Fix replacement
-                if (treeNode.Color == BLACK)
+                if (treeNode.Color == Black)
                     FixAfterDeletion(replacement);
             }
             else if (treeNode.Parent == null)
             { // return if we are the only node.
-                root = null;
+                _root = null;
             }
             else
             { //  No children. Use self as phantom replacement and unlink.
-                if (treeNode.Color == BLACK)
+                if (treeNode.Color == Black)
                     FixAfterDeletion(treeNode);
 
                 if (treeNode.Parent != null)
@@ -702,40 +701,40 @@ namespace Ryujinx.Common.Collections
         /// <param name="treeNode"></param>
         private void FixAfterDeletion(TreeNode<TKey, TValue> treeNode)
         {
-            while (treeNode != root && ColorOf(treeNode) == BLACK)
+            while (treeNode != _root && ColorOf(treeNode) == Black)
             {
                 if (treeNode == LeftOf(ParentOf(treeNode)))
                 {
                     TreeNode<TKey, TValue> sibling = RightOf(ParentOf(treeNode));
 
-                    if (ColorOf(sibling) == RED)
+                    if (ColorOf(sibling) == Red)
                     {
-                        SetColor(sibling, BLACK);
-                        SetColor(ParentOf(treeNode), RED);
+                        SetColor(sibling, Black);
+                        SetColor(ParentOf(treeNode), Red);
                         RotateLeft(ParentOf(treeNode));
                         sibling = RightOf(ParentOf(treeNode));
                     }
 
-                    if (ColorOf(LeftOf(sibling)) == BLACK &&
-                        ColorOf(RightOf(sibling)) == BLACK)
+                    if (ColorOf(LeftOf(sibling)) == Black &&
+                        ColorOf(RightOf(sibling)) == Black)
                     {
-                        SetColor(sibling, RED);
+                        SetColor(sibling, Red);
                         treeNode = ParentOf(treeNode);
                     }
                     else
                     {
-                        if (ColorOf(RightOf(sibling)) == BLACK)
+                        if (ColorOf(RightOf(sibling)) == Black)
                         {
-                            SetColor(LeftOf(sibling), BLACK);
-                            SetColor(sibling, RED);
+                            SetColor(LeftOf(sibling), Black);
+                            SetColor(sibling, Red);
                             RotateRight(sibling);
                             sibling = RightOf(ParentOf(treeNode));
                         }
                         SetColor(sibling, ColorOf(ParentOf(treeNode)));
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(RightOf(sibling), BLACK);
+                        SetColor(ParentOf(treeNode), Black);
+                        SetColor(RightOf(sibling), Black);
                         RotateLeft(ParentOf(treeNode));
-                        treeNode = root;
+                        treeNode = _root;
                     }
                 }
                 else
@@ -743,46 +742,46 @@ namespace Ryujinx.Common.Collections
                     // The exact opposite occurs over here.
                     TreeNode<TKey, TValue> sibling = LeftOf(ParentOf(treeNode));
 
-                    if (ColorOf(sibling) == RED)
+                    if (ColorOf(sibling) == Red)
                     {
-                        SetColor(sibling, BLACK);
-                        SetColor(ParentOf(treeNode), RED);
+                        SetColor(sibling, Black);
+                        SetColor(ParentOf(treeNode), Red);
                         RotateRight(ParentOf(treeNode));
                         sibling = LeftOf(ParentOf(treeNode));
                     }
 
-                    if (ColorOf(RightOf(sibling)) == BLACK &&
-                        ColorOf(LeftOf(sibling)) == BLACK)
+                    if (ColorOf(RightOf(sibling)) == Black &&
+                        ColorOf(LeftOf(sibling)) == Black)
                     {
-                        SetColor(sibling, RED);
+                        SetColor(sibling, Red);
                         treeNode = ParentOf(treeNode);
                     }
                     else
                     {
-                        if (ColorOf(LeftOf(sibling)) == BLACK)
+                        if (ColorOf(LeftOf(sibling)) == Black)
                         {
-                            SetColor(RightOf(sibling), BLACK);
-                            SetColor(sibling, RED);
+                            SetColor(RightOf(sibling), Black);
+                            SetColor(sibling, Red);
                             RotateLeft(sibling);
                             sibling = LeftOf(ParentOf(treeNode));
                         }
                         SetColor(sibling, ColorOf(ParentOf(treeNode)));
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(LeftOf(sibling), BLACK);
+                        SetColor(ParentOf(treeNode), Black);
+                        SetColor(LeftOf(sibling), Black);
                         RotateRight(ParentOf(treeNode));
-                        treeNode = root;
+                        treeNode = _root;
                     }
                 }
             }
 
-            SetColor(treeNode, BLACK);
+            SetColor(treeNode, Black);
         }
 
         #endregion
 
         public void TraverseInOrder()
         {
-            TreeNode<TKey, TValue> n = root;
+            TreeNode<TKey, TValue> n = _root;
             PrintEntryInOrder(n);
         }
 

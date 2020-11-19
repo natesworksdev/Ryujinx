@@ -23,7 +23,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         private NvMemoryAllocator()
         {
-            _tree.Add(4096UL, new MemoryBlock(4096UL, AddressSpaceSize));
+            _tree.Add(PageSize, new MemoryBlock(PageSize, AddressSpaceSize));
         }
 
         public static NvMemoryAllocator GetInstance()
@@ -35,9 +35,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// Marks a block of memory as consumed by removing it from the tree.
         /// This function will split memory regions if there is available space
         /// </summary>
-        /// <param name="va"></param>
-        /// <param name="size"></param>
-        /// <param name="reference"></param>
+        /// <param name="va">Virtual address at which to allocate</param>
+        /// <param name="size">Size of the allocation in bytes</param>
+        /// <param name="reference">Reference to the block of memory where the allocation can take place</param>
         #region Memory Allocation
         public void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
         {
@@ -81,8 +81,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// Marks a block of memory as free by adding it to the tree.
         /// This function will automatically defragment the tree when it determines there are multiple blocks of free memory adjacent to each other.
         /// </summary>
-        /// <param name="va"></param>
-        /// <param name="size"></param>
+        /// <param name="va">Virtual address at which to allocate</param>
+        /// <param name="size">Size of the allocation in bytes</param>
         public void DeallocateMemoryBlock(ulong va, ulong size)
         {
             lock (_tree)
