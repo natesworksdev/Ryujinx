@@ -154,9 +154,9 @@ namespace Ryujinx.Graphics.OpenGL.Image
                     break;
                 }
 
-                if ((width % blockWidth != 0 || height % blockHeight != 0) && src is TextureView && dst is TextureView)
+                if ((width % blockWidth != 0 || height % blockHeight != 0) && src is TextureView srcView && dst is TextureView dstView)
                 {
-                    PboCopy((TextureView)src, (TextureView)dst, srcLayer, dstLayer, srcLevel + level, dstLevel + level, width, height);
+                    PboCopy(srcView, dstView, srcLayer, dstLayer, srcLevel + level, dstLevel + level, width, height);
                 }
                 else
                 {
@@ -258,7 +258,7 @@ namespace Ryujinx.Graphics.OpenGL.Image
             return to;
         }
 
-        public TextureView PboCopy(TextureView from, TextureView to, int srcLayer, int dstLayer, int srcLevel, int dstLevel, int width, int height)
+        private TextureView PboCopy(TextureView from, TextureView to, int srcLayer, int dstLayer, int srcLevel, int dstLevel, int width, int height)
         {
             int dstWidth = width;
             int dstHeight = height;
