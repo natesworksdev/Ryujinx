@@ -252,7 +252,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Checks if an item exists in the tree whose key is item.Key, and whose value is item.Value
+        /// Checks if an item exists in the tree whose key is "item.Key", and whose value is "item.Value".
         /// </summary>
         /// <param name="item">Key/Value pair to match against to match against</param>
         /// <returns>True if both key and value match, false otherwise</returns>
