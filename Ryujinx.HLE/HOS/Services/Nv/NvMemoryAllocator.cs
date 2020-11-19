@@ -2,7 +2,6 @@
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
-
     public class NvMemoryAllocator
     {
         public const ulong AddressSpaceSize = 1UL << 40;
@@ -32,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="size">Size of the allocation in bytes</param>
         /// <param name="reference">Reference to the block of memory where the allocation can take place</param>
         #region Memory Allocation
-        public void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
+        internal void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
         {
             lock (_tree)
             {
@@ -131,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        public ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
+        internal ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -194,7 +193,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="gpuVa">GPU virtual address of the page</param>
         /// <param name="size">Size of the allocation in bytes</param>
         /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        public bool IsRegionInUse(ulong gpuVa, ulong size, out TreeNode<ulong, MemoryBlock> memoryNode)
+        internal bool IsRegionInUse(ulong gpuVa, ulong size, out TreeNode<ulong, MemoryBlock> memoryNode)
         {
             lock (_tree)
             {

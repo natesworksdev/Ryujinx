@@ -20,7 +20,7 @@ namespace Ryujinx.Common.Collections
 
         #region Public Methods
         /// <summary>
-        /// Retrieves the value whose key is equal to key, or the default value of TValue if no value is found.
+        /// Retrieves the value whose key is equal to "key", or the default value of TValue if no value is found.
         /// </summary>
         /// <param name="key">Key to search</param>
         /// <returns></returns>
@@ -31,6 +31,11 @@ namespace Ryujinx.Common.Collections
             return default;
         }
 
+        /// <summary>
+        /// Retrieves the node whose key is equal to "key", or null if the key does not exist.
+        /// </summary>
+        /// <param name="key">Key to search</param>
+        /// <returns></returns>
         public TreeNode<TKey, TValue> GetNode(TKey key)
         {
             if (key == null) throw new ArgumentNullException(nameof(key));
@@ -56,7 +61,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Retrieves the value whose key is equal to or immediately greater than key.
+        /// Retrieves the value whose key is equal to or immediately greater than "key".
         /// </summary>
         /// <param name="key">Key to search</param>
         /// <returns></returns>
@@ -67,6 +72,11 @@ namespace Ryujinx.Common.Collections
             return default;
         }
 
+        /// <summary>
+        /// Retrieves the node whose key is equal to or immediately greater than "key".
+        /// </summary>
+        /// <param name="key">Key to search</param>
+        /// <returns></returns>
         public TreeNode<TKey, TValue> CeilingNode(TKey key)
         {
             TreeNode<TKey, TValue> entry = _root;
@@ -100,7 +110,7 @@ namespace Ryujinx.Common.Collections
                             tmp = parent;
                             parent = parent.Parent;
                         }
-                        return parent != null ? parent : default;
+                        return parent;
                     }
                 }
                 else
@@ -112,7 +122,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Retrieves the value whose key is equal to or immediately less than key.
+        /// Retrieves the value whose key is equal to or immediately less than "key".
         /// </summary>
         /// <param name="key">Key to search</param>
         /// <returns></returns>
@@ -123,6 +133,11 @@ namespace Ryujinx.Common.Collections
             return default;
         }
 
+        /// <summary>
+        /// Retrieves the node whose key is equal to or immediately less than "key".
+        /// </summary>
+        /// <param name="key">Key to search</param>
+        /// <returns></returns>
         public TreeNode<TKey, TValue> FloorNode(TKey key)
         {
             TreeNode<TKey, TValue> entry = _root;
@@ -156,7 +171,7 @@ namespace Ryujinx.Common.Collections
                             tmp = parent;
                             parent = parent.Parent;
                         }
-                        return parent != null ? parent : default;
+                        return parent;
                     }
                 }
                 else
@@ -166,7 +181,6 @@ namespace Ryujinx.Common.Collections
             }
             return default;
         }
-
 
         /// <summary>
         /// Removes and returns the key/value pair with the specified key from the tree if it exists.
@@ -230,10 +244,10 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Checks if a value exists for the specified key and stores it in value.
+        /// Checks if a value exists for the specified key and stores it in <paramref name="value"/>.
         /// </summary>
         /// <param name="key">Key</param>
-        /// <param name="value">Value if key was found, default of TValue otherwise</param>
+        /// <param name="value">Value if key was found, default of <see cref="TValue"></param>
         /// <returns>True if a value was found, false otherwise</returns>
         public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
         {
@@ -254,7 +268,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Checks if an item exists in the tree whose key is "item.Key", and whose value is "item.Value".
         /// </summary>
-        /// <param name="item">Key/Value pair to match against to match against</param>
+        /// <param name="item">Key/Value pair to match against</param>
         /// <returns>True if both key and value match, false otherwise</returns>
         public bool Contains(KeyValuePair<TKey, TValue> item)
         {
@@ -263,16 +277,17 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Copies all items in the tree to array starting at index arrayIndex
-        /// 
-        /// array must contain enough space to carry all elements, otherwise an exception will be thrown.
+        /// Copies all items in the tree to array starting at <paramref name="arrayIndex"/>.
+        /// <br></br>
+        /// Array must contain enough space to carry all elements, otherwise an exception will be thrown.
         /// </summary>
         /// <param name="array">Array to copy the key/value pairs into</param>
         /// <param name="arrayIndex">Index at which to start copying into array</param>
+        /// <exception cref="ArgumentException"></exception>
         public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
         {
-            if (arrayIndex >= array.Length) throw new ArgumentException($"arrayIndex is greater than the length of array");
-            if (array.Length - arrayIndex < this._count) throw new ArgumentException($"There is not enough space in array");
+            if (arrayIndex >= array.Length) throw new ArgumentException("arrayIndex is greater than the length of array");
+            if (array.Length - arrayIndex < this._count) throw new ArgumentException("There is not enough space in array");
             if (this._count == 0) return;
 
             LinkedListNode<TreeNode<TKey, TValue>> node = _nodes.First;
@@ -334,24 +349,24 @@ namespace Ryujinx.Common.Collections
 
         private static TreeNode<TKey, TValue> LeftOf(TreeNode<TKey, TValue> entry)
         {
-            return (entry == null) ? null : entry.Left;
+            return entry?.Left;
         }
 
         private static TreeNode<TKey, TValue> RightOf(TreeNode<TKey, TValue> entry)
         {
-            return (entry == null) ? null : entry.Right;
+            return entry?.Right;
         }
 
         private static TreeNode<TKey, TValue> ParentOf(TreeNode<TKey, TValue> entry)
         {
-            return (entry == null ? null : entry.Parent);
+            return entry?.Parent;
         }
 
-        private static void SetColor(TreeNode<TKey, TValue> e, bool color)
+        private static void SetColor(TreeNode<TKey, TValue> entry, bool color)
         {
-            if (e != null)
+            if (entry != null)
             {
-                e.Color = color;
+                entry.Color = color;
             }
         }
 
@@ -390,7 +405,6 @@ namespace Ryujinx.Common.Collections
             return this._values;
         }
 
-
         private TValue Put(TKey key, TValue value)
         {
             TreeNode<TKey, TValue> entry = _root;
@@ -402,9 +416,14 @@ namespace Ryujinx.Common.Collections
                 _nodes.AddLast(_root);
                 return value;
             }
-            if (key == null || value == null)
+
+            if (key == null) 
             {
-                throw new ArgumentNullException();
+                throw new ArgumentException(nameof(key)); 
+            }
+            if (value == null)
+            {
+                throw new ArgumentException(nameof(value));
             }
 
             int cmp;
@@ -449,7 +468,7 @@ namespace Ryujinx.Common.Collections
 
         private TreeNode<TKey, TValue> GetEntryNode(TKey key)
         {
-            if (key == null) throw new ArgumentNullException();
+            if (key == null) throw new ArgumentNullException(nameof(key));
             TreeNode<TKey, TValue> entry = _root;
             while (entry != null)
             {
@@ -472,19 +491,23 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node with the key greater than treeNode.
+        /// Returns the node with the key immediately greater than <paramref name="treeNode"/>.
         /// </summary>
         /// <param name="treeNode"></param>
-        /// <returns></returns>
+        /// <returns>Node immediately greater than <paramref name="treeNode"/></returns>
         public TreeNode<TKey, TValue> SuccessorOf(TreeNode<TKey, TValue> treeNode)
         {
             if (treeNode == null)
+            {
                 return null;
+            }
             else if (treeNode.Right != null)
             {
                 TreeNode<TKey, TValue> tmp = treeNode.Right;
                 while (tmp.Left != null)
+                {
                     tmp = tmp.Left;
+                }
                 return tmp;
             }
             else
@@ -501,19 +524,23 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node the occurs prior to treeNode
+        /// Returns the node with the key immediately less than <paramref name="treeNode"/>.
         /// </summary>
         /// <param name="treeNode"></param>
-        /// <returns></returns>
+        /// <returns>Node immediately less than <paramref name="treeNode"/></returns>
         public TreeNode<TKey, TValue> PredecessorOf(TreeNode<TKey, TValue> treeNode)
         {
             if (treeNode == null)
+            {
                 return null;
+            }
             else if (treeNode.Left != null)
             {
                 TreeNode<TKey, TValue> tmp = treeNode.Left;
                 while (tmp.Right != null)
+                {
                     tmp = tmp.Right;
+                }
                 return tmp;
             }
             else
@@ -532,7 +559,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Rotate to reduce the height of the tree, to maximize operation efficieny.
         /// </summary>
-        /// <param name="treeNode"></param>
+        /// <param name="treeNode">Node to start rotating on</param>
         private void RotateLeft(TreeNode<TKey, TValue> treeNode)
         {
             if (treeNode != null)
@@ -540,36 +567,54 @@ namespace Ryujinx.Common.Collections
                 TreeNode<TKey, TValue> tmp = treeNode.Right;
                 treeNode.Right = tmp.Left;
                 if (tmp.Left != null)
+                {
                     tmp.Left.Parent = treeNode;
+                }
                 tmp.Parent = treeNode.Parent;
                 if (treeNode.Parent == null)
+                {
                     _root = tmp;
+                }
                 else if (treeNode.Parent.Left == treeNode)
+                {
                     treeNode.Parent.Left = tmp;
+                }
                 else
+                {
                     treeNode.Parent.Right = tmp;
+                }
                 tmp.Left = treeNode;
                 treeNode.Parent = tmp;
             }
         }
 
         /// <summary>
-        /// Rotate to reduce the height of the tree, to maximize operation efficieny.
+        /// Rotate to reduce the height of the tree, to maximize operation efficiency.
         /// </summary>
-        /// <param name="treeNode"></param>
+        /// <param name="treeNode">Node to start rotating on</param>
         private void RotateRight(TreeNode<TKey, TValue> treeNode)
         {
             if (treeNode != null)
             {
                 TreeNode<TKey, TValue> tmp = treeNode.Left;
                 treeNode.Left = tmp.Right;
-                if (tmp.Right != null) tmp.Right.Parent = treeNode;
+                if (tmp.Right != null)
+                {
+                    tmp.Right.Parent = treeNode;
+                }
                 tmp.Parent = treeNode.Parent;
                 if (treeNode.Parent == null)
+                {
                     _root = tmp;
+                }
                 else if (treeNode.Parent.Right == treeNode)
+                {
                     treeNode.Parent.Right = tmp;
-                else treeNode.Parent.Left = tmp;
+                }
+                else
+                {
+                    treeNode.Parent.Left = tmp;
+                }
                 tmp.Right = treeNode;
                 treeNode.Parent = tmp;
             }
@@ -579,7 +624,7 @@ namespace Ryujinx.Common.Collections
         /// Rebalance the tree after an insertion.
         /// This is important for O(logN) operations.
         /// </summary>
-        /// <param name="treeNode"></param>
+        /// <param name="treeNode">Node where rebalancing should start</param>
         private void FixAfterInsertion(TreeNode<TKey, TValue> treeNode)
         {
             treeNode.Color = Red;
@@ -635,9 +680,9 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Remove treeNode from the tree and rebalance it.
+        /// Remove <paramref name="treeNode"/> from the tree and rebalance it.
         /// </summary>
-        /// <param name="treeNode"></param>
+        /// <param name="treeNode">Node to remove</param>
         private void DeleteEntry(TreeNode<TKey, TValue> treeNode)
         {
             this._count--;
@@ -654,25 +699,33 @@ namespace Ryujinx.Common.Collections
             } // p has 2 children
 
             // Start fixup at replacement node, if it exists.
-            TreeNode<TKey, TValue> replacement = (treeNode.Left != null ? treeNode.Left : treeNode.Right);
+            TreeNode<TKey, TValue> replacement = treeNode.Left ?? treeNode.Right;
 
             if (replacement != null)
             {
                 // Link replacement to Parent
                 replacement.Parent = treeNode.Parent;
                 if (treeNode.Parent == null)
+                {
                     _root = replacement;
+                }
                 else if (treeNode == treeNode.Parent.Left)
+                {
                     treeNode.Parent.Left = replacement;
+                }
                 else
+                {
                     treeNode.Parent.Right = replacement;
+                }
 
                 // Null out links so they are OK to use by fixAfterDeletion.
                 treeNode.Left = treeNode.Right = treeNode.Parent = null;
 
                 // Fix replacement
                 if (treeNode.Color == Black)
+                {
                     FixAfterDeletion(replacement);
+                }
             }
             else if (treeNode.Parent == null)
             { // return if we are the only node.
@@ -681,14 +734,20 @@ namespace Ryujinx.Common.Collections
             else
             { //  No children. Use self as phantom replacement and unlink.
                 if (treeNode.Color == Black)
+                {
                     FixAfterDeletion(treeNode);
+                }
 
                 if (treeNode.Parent != null)
                 {
                     if (treeNode == treeNode.Parent.Left)
+                    {
                         treeNode.Parent.Left = null;
+                    }
                     else if (treeNode == treeNode.Parent.Right)
+                    {
                         treeNode.Parent.Right = null;
+                    }
                     treeNode.Parent = null;
                 }
             }
@@ -698,7 +757,7 @@ namespace Ryujinx.Common.Collections
         /// Rebalances the tree after a deletion takes place.
         /// This is important to guarantee O(logN) operations.
         /// </summary>
-        /// <param name="treeNode"></param>
+        /// <param name="treeNode">Node to begin the rebalancing operation.</param>
         private void FixAfterDeletion(TreeNode<TKey, TValue> treeNode)
         {
             while (treeNode != _root && ColorOf(treeNode) == Black)
@@ -778,7 +837,6 @@ namespace Ryujinx.Common.Collections
         }
 
         #endregion
-
         public void TraverseInOrder()
         {
             TreeNode<TKey, TValue> n = _root;
@@ -792,14 +850,11 @@ namespace Ryujinx.Common.Collections
             Console.WriteLine(e.ToString());
             PrintEntryInOrder(e.Right);
         }
-
-
     }
 
     #region Node Implementation
     public class TreeNode<NKey, NValue>
     {
-
         public bool Color { get; set; } = true;
         public NKey Key { get; set; }
         public NValue Value { get; set; }
