@@ -22,8 +22,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private Switch _device;
 
+        private NvMemoryAllocator _memoryAllocator;
+
         private Cpu.MemoryManager _memory;
-        private NvMemoryAllocator memoryAllocator = NvMemoryAllocator.GetInstance();
 
         public enum ResourcePolicy
         {
@@ -41,11 +42,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         public NvHostChannelDeviceFile(ServiceCtx context) : base(context)
         {
-            _device        = context.Device;
-            _memory        = context.Memory;
-            _timeout       = 3000;
-            _submitTimeout = 0;
-            _timeslice     = 0;
+            _device          = context.Device;
+            _memory          = context.Memory;
+            _timeout         = 3000;
+            _submitTimeout   = 0;
+            _timeslice       = 0;
+            _memoryAllocator = _device.MemoryAllocator;
 
             ChannelSyncpoints = new uint[MaxModuleSyncpoint];
 
@@ -246,11 +248,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress == 0)
                     {
-                        ulong va = memoryAllocator.GetFreePosition((ulong) map.Address, out TreeNode<ulong, MemoryBlock> referenceBlock, 1, NvMemoryAllocator.PageSize);
+                        ulong va = _memoryAllocator.GetFreePosition((ulong) map.Size, out TreeNode<ulong, MemoryBlock> referenceBlock, 1, NvMemoryAllocator.PageSize);
 
                         if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
                         {
-                            memoryAllocator.AllocateMemoryBlock(va, (uint)map.Size, referenceBlock);
+                            _memoryAllocator.AllocateMemoryBlock(va, (uint)map.Size, referenceBlock);
                         }
 
                         map.DmaMapAddress = (long)gmm.MapLow((ulong)map.Address, va, (uint)map.Size);

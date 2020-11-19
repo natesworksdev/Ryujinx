@@ -13,9 +13,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
     {
         private static ConcurrentDictionary<KProcess, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<KProcess, AddressSpaceContext>();
 
-        private NvMemoryAllocator memoryAllocator = NvMemoryAllocator.GetInstance();
+        private NvMemoryAllocator _memoryAllocator;
 
-        public NvHostAsGpuDeviceFile(ServiceCtx context) : base(context) { }
+        public NvHostAsGpuDeviceFile(ServiceCtx context) : base(context) 
+        {
+            _memoryAllocator = context.Device.MemoryAllocator;
+        }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
         {
@@ -94,27 +97,29 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 // the Offset field holds the alignment size instead.
                 if ((arguments.Flags & AddressSpaceFlags.FixedOffset) != 0)
                 {
-                    bool regionInUse = memoryAllocator.IsRegionInUse((ulong) arguments.Offset, size, out TreeNode<ulong, MemoryBlock> memoryBlock);
+                    bool regionInUse = _memoryAllocator.IsRegionInUse((ulong) arguments.Offset, size, out TreeNode<ulong, MemoryBlock> memoryBlock);
                     ulong address;
 
                     if (!regionInUse)
                     {
-                        memoryAllocator.AllocateMemoryBlock((ulong) arguments.Offset, size, memoryBlock);
+                        _memoryAllocator.AllocateMemoryBlock((ulong) arguments.Offset, size, memoryBlock);
                         address = memoryBlock.Value.address;
                     }
                     else
                     {
                         address = NvMemoryAllocator.PteUnmapped;
                     }
+
                     arguments.Offset = (long)addressSpaceContext.Gmm.ReserveFixed(address, size);
                 }
                 else
                 {
-                    ulong address = memoryAllocator.GetFreePosition((ulong)size, out TreeNode<ulong, MemoryBlock> memoryBlock, (ulong)arguments.Offset);
+                    ulong address = _memoryAllocator.GetFreePosition((ulong)size, out TreeNode<ulong, MemoryBlock> memoryBlock, (ulong)arguments.Offset);
                     if(address != NvMemoryAllocator.PteUnmapped)
                     {
-                        memoryAllocator.AllocateMemoryBlock(address, (ulong)size, memoryBlock);
+                        _memoryAllocator.AllocateMemoryBlock(address, (ulong)size, memoryBlock);
                     }
+
                     arguments.Offset = (long)addressSpaceContext.Gmm.Reserve(address, (ulong)size);
                 }
 
@@ -147,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                 if (addressSpaceContext.RemoveReservation(arguments.Offset))
                 {
-                    memoryAllocator.DeallocateMemoryBlock((ulong) arguments.Offset, size);
+                    _memoryAllocator.DeallocateMemoryBlock((ulong) arguments.Offset, size);
                     addressSpaceContext.Gmm.Free((ulong)arguments.Offset, size);
                 }
                 else
@@ -172,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 {
                     if (size != 0)
                     {
-                        memoryAllocator.DeallocateMemoryBlock((ulong)arguments.Offset, (ulong)size);
+                        _memoryAllocator.DeallocateMemoryBlock((ulong)arguments.Offset, (ulong)size);
                         addressSpaceContext.Gmm.Free((ulong)arguments.Offset, (ulong)size);
                     }
                 }
@@ -228,6 +233,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                             return NvInternalResult.InvalidInput;
                         }
 
+                        _memoryAllocator.AllocateMemoryBlock((ulong)virtualAddress, (ulong)arguments.MappingSize, null);
+
                         return NvInternalResult.Success;
                     }
                     else
@@ -261,6 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     if (addressSpaceContext.ValidateFixedBuffer(arguments.Offset, size, pageSize))
                     {
                         arguments.Offset = (long)addressSpaceContext.Gmm.Map((ulong)physicalAddress, (ulong)arguments.Offset, (ulong)size);
+                        _memoryAllocator.AllocateMemoryBlock((ulong)arguments.Offset, (ulong)size, null);
                     }
                     else
                     {
@@ -273,10 +281,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong va = memoryAllocator.GetFreePosition((ulong) size, out TreeNode<ulong, MemoryBlock> memoryBlock, (ulong) pageSize);
+                    ulong va = _memoryAllocator.GetFreePosition((ulong) size, out TreeNode<ulong, MemoryBlock> memoryBlock, (ulong) pageSize);
                     if (va != NvMemoryAllocator.PteUnmapped)
                     {
-                        memoryAllocator.AllocateMemoryBlock(va, (ulong)size, memoryBlock);
+                        _memoryAllocator.AllocateMemoryBlock(va, (ulong)size, memoryBlock);
                     }
                     arguments.Offset = (long)addressSpaceContext.Gmm.Map((ulong)physicalAddress, va, (ulong) size);
                 }
@@ -339,6 +347,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                     return NvInternalResult.InvalidInput;
                 }
+
+                _memoryAllocator.AllocateMemoryBlock((ulong)arguments[index].GpuOffset << 16, (ulong)arguments[index].Pages, null);
             }
 
             return NvInternalResult.Success;

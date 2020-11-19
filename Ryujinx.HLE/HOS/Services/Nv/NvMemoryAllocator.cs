@@ -5,8 +5,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
     public class NvMemoryAllocator
     {
-        private static NvMemoryAllocator nvMemoryAllocator = new NvMemoryAllocator();
-
         public const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -21,14 +19,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         private TreeDictionary<ulong, MemoryBlock> _tree = new TreeDictionary<ulong, MemoryBlock>();
 
-        private NvMemoryAllocator()
+        public NvMemoryAllocator()
         {
             _tree.Add(PageSize, new MemoryBlock(PageSize, AddressSpaceSize));
-        }
-
-        public static NvMemoryAllocator GetInstance()
-        {
-            return nvMemoryAllocator;
         }
 
         /// <summary>
@@ -210,10 +203,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (null != floorNode)
                 {
                     MemoryBlock memoryBlock = floorNode.Value;
-                    return (gpuVa >= memoryBlock.address && gpuVa + size < memoryBlock.endAddress);
+                    return !(gpuVa >= memoryBlock.address && ((gpuVa + size - 1) <= memoryBlock.endAddress));
                 }
             }
-            return false;
+            return true;
         }
         #endregion
     }
