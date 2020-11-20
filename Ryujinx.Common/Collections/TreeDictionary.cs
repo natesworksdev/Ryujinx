@@ -17,7 +17,7 @@ namespace Ryujinx.Common.Collections
         private const bool Black = true;
         private const bool Red   = false;
         private Node<K, V> _root = null;
-        private Dictionary<K, Node<K,V>> _set  = new Dictionary<K,Node<K,V>>();
+        private Dictionary<K, Node<K,V>> _dictionary  = new Dictionary<K,Node<K,V>>();
         public TreeDictionary() { }
 
         #region Public Methods
@@ -35,9 +35,9 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
             // O(1) Lookup for keys
-            if (!_set.ContainsKey(key)) return null;
+            if (!_dictionary.ContainsKey(key)) return null;
 
-            return _set[key];
+            return _dictionary[key];
         }
 
         /// <summary>
@@ -80,9 +80,9 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentNullException($"{nameof(value)} may not be null");
             }
             // O(1) Overwrites
-            if (_set.ContainsKey(key))
+            if (_dictionary.ContainsKey(key))
             {
-                _set[key].Value = value;
+                _dictionary[key].Value = value;
             }
             else
             {
@@ -101,7 +101,7 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            if (!_set.ContainsKey(key))
+            if (!_dictionary.ContainsKey(key))
             {
                 return;
             }
@@ -247,7 +247,7 @@ namespace Ryujinx.Common.Collections
             return parent;
         }
 
-        public int Count => _set.Count;
+        public int Count => _dictionary.Count;
 
         #endregion
         #region Private Methods (BST)
@@ -265,7 +265,7 @@ namespace Ryujinx.Common.Collections
             if (node == null)
             {
                 _root = new Node<K, V>(key, value);
-                _set[key] = _root;
+                _dictionary[key] = _root;
                 return;
             }
 
@@ -292,7 +292,7 @@ namespace Ryujinx.Common.Collections
                     tmp.Right = newNode;
                 }
             }
-            _set[key] = newNode;
+            _dictionary[key] = newNode;
             RestoreBalanceAfterInsertion(newNode);
         }
 
@@ -307,7 +307,7 @@ namespace Ryujinx.Common.Collections
             Node<K, V> node = GetNode(key);
             if (node == null) return null;
 
-            _set.Remove(key);
+            _dictionary.Remove(key);
             
             if(!(node.Left == null || node.Right == null))
             {
