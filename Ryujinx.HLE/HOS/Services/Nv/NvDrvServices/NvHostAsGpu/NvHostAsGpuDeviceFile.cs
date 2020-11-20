@@ -97,7 +97,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 // the Offset field holds the alignment size instead.
                 if ((arguments.Flags & AddressSpaceFlags.FixedOffset) != 0)
                 {
-                    bool regionInUse = _memoryAllocator.IsRegionInUse((ulong) arguments.Offset, size, out TreeNode<ulong, MemoryBlock> memoryBlock);
+                    bool regionInUse = _memoryAllocator.IsRegionInUse((ulong) arguments.Offset, size, out Node<ulong, MemoryBlock> memoryBlock);
                     ulong address;
 
                     if (!regionInUse)
@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong address = _memoryAllocator.GetFreePosition((ulong)size, out TreeNode<ulong, MemoryBlock> memoryBlock, (ulong)arguments.Offset);
+                    ulong address = _memoryAllocator.GetFreePosition((ulong)size, out Node<ulong, MemoryBlock> memoryBlock, (ulong)arguments.Offset);
                     if(address != NvMemoryAllocator.PteUnmapped)
                     {
                         _memoryAllocator.AllocateMemoryBlock(address, (ulong)size, memoryBlock);
@@ -281,7 +281,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong va = _memoryAllocator.GetFreePosition((ulong) size, out TreeNode<ulong, MemoryBlock> memoryBlock, (ulong) pageSize);
+                    ulong va = _memoryAllocator.GetFreePosition((ulong) size, out Node<ulong, MemoryBlock> memoryBlock, (ulong) pageSize);
                     if (va != NvMemoryAllocator.PteUnmapped)
                     {
                         _memoryAllocator.AllocateMemoryBlock(va, (ulong)size, memoryBlock);

@@ -31,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="size">Size of the allocation in bytes</param>
         /// <param name="reference">Reference to the block of memory where the allocation can take place</param>
         #region Memory Allocation
-        internal void AllocateMemoryBlock(ulong va, ulong size, TreeNode<ulong, MemoryBlock> reference)
+        internal void AllocateMemoryBlock(ulong va, ulong size, Node<ulong, MemoryBlock> reference)
         {
             lock (_tree)
             {
@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                     // Fixed Addresses are being mapped. Ignore the reference.
                     if (referenceBlock.address == PteUnmapped)
                     {
-                        TreeNode<ulong, MemoryBlock> entry = _tree.PredecessorOf(reference);
+                        Node<ulong, MemoryBlock> entry = _tree.PredecessorOf(reference);
                         if (null == entry) return;
                         referenceBlock = entry.Value;
 
@@ -79,11 +79,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                TreeNode<ulong, MemoryBlock> entry = _tree.GetNode(va);
+                Node<ulong, MemoryBlock> entry = _tree.GetNode(va);
                 if (null != entry)
                 {
-                    TreeNode<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
-                    TreeNode<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
+                    Node<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
+                    Node<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
                     while (prev != null)
@@ -130,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        internal ulong GetFreePosition(ulong size, out TreeNode<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
+        internal ulong GetFreePosition(ulong size, out Node<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -146,7 +146,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 alignment = (alignment + PageMask) & ~PageMask;
                 if (address < AddressSpaceSize)
                 {
-                    TreeNode<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : _tree.CeilingNode(address);
+                    Node<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : _tree.CeilingNode(address);
                     while (address < AddressSpaceSize)
                     {
                         if (blockNode != null)
@@ -193,11 +193,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="gpuVa">GPU virtual address of the page</param>
         /// <param name="size">Size of the allocation in bytes</param>
         /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        internal bool IsRegionInUse(ulong gpuVa, ulong size, out TreeNode<ulong, MemoryBlock> memoryNode)
+        internal bool IsRegionInUse(ulong gpuVa, ulong size, out Node<ulong, MemoryBlock> memoryNode)
         {
             lock (_tree)
             {
-                TreeNode<ulong, MemoryBlock> floorNode = _tree.FloorNode(gpuVa);
+                Node<ulong, MemoryBlock> floorNode = _tree.FloorNode(gpuVa);
                 memoryNode = floorNode;
                 if (null != floorNode)
                 {
