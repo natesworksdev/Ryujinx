@@ -123,7 +123,7 @@ namespace ARMeilleure.Translation.PTC
                 try
                 {
                     deflateStream.CopyTo(stream);
-                } 
+                }
                 catch
                 {
                     InvalidateCompressedStream(compressedStream);
