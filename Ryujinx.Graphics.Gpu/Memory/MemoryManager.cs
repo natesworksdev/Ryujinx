@@ -1,5 +1,3 @@
-using Ryujinx.Common.Logging;
-using Ryujinx.Common.Utilities;
 using Ryujinx.Cpu;
 using System;
 using System.Runtime.CompilerServices;
@@ -12,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        public const ulong AddressSpaceSize = 1UL << 40;
+        private const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
 
@@ -31,13 +29,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;
 
-        public const ulong PteUnmapped = 0xffffffff_ffffffff;
-        public const ulong PteReserved = 0xffffffff_fffffffe;
+        private const ulong PteUnmapped = 0xffffffff_ffffffff;
+        private const ulong PteReserved = 0xffffffff_fffffffe;
 
         private readonly ulong[][] _pageTable;
 
         public event EventHandler<UnmapEventArgs> MemoryUnmapped;
-
 
         private GpuContext _context;
 
@@ -129,6 +126,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_pageTable)
             {
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
+
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, pa + offset);
@@ -144,6 +142,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// This also ensures that the mapping is always done in the first 4GB of GPU address space.
         /// </summary>
         /// <param name="pa">CPU virtual address to map into</param>
+        /// <param name="va">GPU virtual address to map into</param>
         /// <param name="size">Size in bytes of the mapping</param>
         /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
         public ulong MapLow(ulong pa, ulong va, ulong size)
@@ -220,6 +219,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 // Event handlers are not expected to be thread safe.
                 MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
+
                 for (ulong offset = 0; offset < size; offset += PageSize)
                 {
                     SetPte(va + offset, PteUnmapped);

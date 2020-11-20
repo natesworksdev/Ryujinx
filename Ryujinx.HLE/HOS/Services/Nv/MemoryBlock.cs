@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Services.Nv
 {
-    public class MemoryBlock : IComparable<MemoryBlock>
+    internal struct MemoryBlock : IComparable<MemoryBlock>
     {
         public ulong address { get; }
         public ulong size { get; }

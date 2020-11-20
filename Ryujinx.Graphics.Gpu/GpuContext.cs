@@ -32,7 +32,7 @@ namespace Ryujinx.Graphics.Gpu
         /// GPU memory manager.
         /// </summary>
         public MemoryManager MemoryManager { get; }
-        
+
         /// <summary>
         /// GPU engine methods processing.
         /// </summary>

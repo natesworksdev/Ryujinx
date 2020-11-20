@@ -1,830 +1,623 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace Ryujinx.Common.Collections
 {
-    public class TreeDictionary<TKey, TValue> : IDictionary<TKey, TValue> where TKey : IComparable<TKey>
+
+    /// <summary>
+    /// Hybrid-Type Dictionary that provides the ability for O(1) Lookups for keys that exist in the Dictionary, and O(logN) Lookups for keys immediately greater than or less than a specified key.
+    /// </summary>
+    /// <typeparam name="K">Key</typeparam>
+    /// <typeparam name="V">Value</typeparam>
+    public class TreeDictionary<K, V> where K : IComparable<K>
     {
-        private TreeNode<TKey, TValue> root = null;
-        private bool isModified = true;
-        private int count = 0;
-
-        private static readonly bool BLACK = true;
-        private static readonly bool RED = false;
-
-        private LinkedList<TreeNode<TKey, TValue>> nodes = new LinkedList<TreeNode<TKey, TValue>>();
-        private List<TValue> values;
-        private List<TKey> keys;
-
+        private const bool Black = true;
+        private const bool Red   = false;
+        private Node<K, V> _root = null;
+        private Dictionary<K, Node<K,V>> _dictionary  = new Dictionary<K,Node<K,V>>();
+        public TreeDictionary() { }
 
         #region Public Methods
-        /// <summary>
-        /// Retrieves the value whose key is equal to key, or the default value of TValue if no value is found.
-        /// </summary>
-        /// <param name="key">Key to search</param>
-        /// <returns></returns>
-        public TValue Get(TKey key)
-        {
-            TreeNode<TKey, TValue> node = GetNode(key);
-            if (node != null) return node.Value;
-            return default;
-        }
-
-        public TreeNode<TKey, TValue> GetNode(TKey key)
-        {
-            if (key == null) throw new ArgumentNullException();
-            TreeNode<TKey, TValue> entry = root;
-            while (entry != null)
-            {
-                int cmp = key.CompareTo(entry.Key);
-
-                if (cmp < 0)
-                {
-                    entry = entry.Left;
-                }
-                else if (cmp > 0)
-                {
-                    entry = entry.Right;
-                }
-                else
-                {
-                    return entry;
-                }
-            }
-            return null;
-        }
 
         /// <summary>
-        /// Retrieves the value whose key is equal to or immediately greater than key.
-        /// </summary>
-        /// <param name="key">Key to search</param>
-        /// <returns></returns>
-        public TValue Ceiling(TKey key)
-        {
-            TreeNode<TKey, TValue> node = CeilingNode(key);
-            if (node != null) return node.Value;
-            return default;
-        }
-
-        public TreeNode<TKey, TValue> CeilingNode(TKey key)
-        {
-            TreeNode<TKey, TValue> entry = root;
-            while (entry != null)
-            {
-                int cmp = key.CompareTo(entry.Key);
-
-                if (cmp < 0)
-                {
-                    if (entry.Left != null)
-                    {
-                        entry = entry.Left;
-                    }
-                    else
-                    {
-                        return entry;
-                    }
-                }
-                else if (cmp > 0)
-                {
-                    if (entry.Right != null)
-                    {
-                        entry = entry.Right;
-                    }
-                    else
-                    {
-                        TreeNode<TKey, TValue> parent = entry.Parent;
-                        TreeNode<TKey, TValue> tmp = entry;
-                        while (parent != null && tmp == parent.Right)
-                        {
-                            tmp = parent;
-                            parent = parent.Parent;
-                        }
-                        return parent != null ? parent : default;
-                    }
-                }
-                else
-                {
-                    return entry;
-                }
-            }
-            return default;
-        }
-
-        /// <summary>
-        /// Retrieves the value whose key is equal to or immediately less than key.
-        /// </summary>
-        /// <param name="key">Key to search</param>
-        /// <returns></returns>
-        public TValue Floor(TKey key)
-        {
-            TreeNode<TKey, TValue> node = FloorNode(key);
-            if (node != null) return node.Value;
-            return default;
-        }
-
-        public TreeNode<TKey, TValue> FloorNode(TKey key)
-        {
-            TreeNode<TKey, TValue> entry = root;
-            while (entry != null)
-            {
-                int cmp = key.CompareTo(entry.Key);
-
-                if (cmp > 0)
-                {
-                    if (entry.Right != null)
-                    {
-                        entry = entry.Right;
-                    }
-                    else
-                    {
-                        return entry;
-                    }
-                }
-                else if (cmp < 0)
-                {
-                    if (entry.Left != null)
-                    {
-                        entry = entry.Left;
-                    }
-                    else
-                    {
-                        TreeNode<TKey, TValue> parent = entry.Left;
-                        TreeNode<TKey, TValue> tmp = entry;
-                        while (parent != null && tmp == parent.Left)
-                        {
-                            tmp = parent;
-                            parent = parent.Parent;
-                        }
-                        return parent != null ? parent : default;
-                    }
-                }
-                else
-                {
-                    return entry;
-                }
-            }
-            return default;
-        }
-
-
-        /// <summary>
-        /// Removes and returns the key/value pair with the specified key from the tree if it exists.
-        /// </summary>
-        /// <param name="key">Key of value to remove</param>
-        /// <returns>The removed value</returns>
-        public TValue Remove(TKey key)
-        {
-            TreeNode<TKey, TValue> entry = GetEntryNode(key);
-
-            if (entry == null)
-            {
-                return default;
-            }
-
-            TValue deletedValue = entry.Value;
-
-            DeleteEntry(entry);
-            return deletedValue;
-        }
-
-        /// <summary>
-        /// Removes all key/value pairs from the tree.
-        /// </summary>
-        public void Clear()
-        {
-            this.count = 0;
-            this.root = null;
-            this.isModified = true;
-        }
-
-        /// <summary>
-        /// Insert or overwrite a key/value pair in the tree.
-        /// If the key already exists, its value will be overwritten.
+        /// Retrieve the node reference whose key is <paramref name="key"/>, or null if no such node exists.
         /// </summary>
         /// <param name="key">Key</param>
-        /// <param name="value">Value</param>
-        public void Add(TKey key, TValue value)
+        /// <returns>Node reference in the tree</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public Node<K, V> GetNode(K key)
         {
-            Put(key, value);
+            if (key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            // O(1) Lookup for keys
+            if (!_dictionary.ContainsKey(key)) return null;
+
+            return _dictionary[key];
         }
 
         /// <summary>
-        /// Checks if a value exists for the specified key
+        /// Returns the value of the node whose key is <paramref name="key"/>, or the default value if no such node exists.
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <returns>Value</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        public V Get(K key)
+        {
+            if(key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+
+            Node<K, V> node = GetNode(key);
+
+            if (node == null) { 
+                return default; 
+            }
+
+            return node.Value;
+        }
+
+        /// <summary>
+        /// Adds a new node into the tree whose key is <paramref name="key"/> key and value is <paramref name="value"/>.
         /// </summary>
         /// <param name="key"></param>
-        /// <returns>True if a value exists, false otherwise</returns>
-        public bool ContainsKey(TKey key)
+        /// <param name="value"></param>
+        /// <exception cref="InvalidOperationException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void Add(K key, V value)
         {
-            return Get(key) != null;
-        }
-
-        /// <summary>
-        /// Removes and returns the key/value pair with the specified key from the tree if it exists.
-        /// </summary>
-        /// <param name="key">Key of value to remove</param>
-        /// <returns>The removed value</returns>
-        bool IDictionary<TKey, TValue>.Remove(TKey key)
-        {
-            return Remove(key) != null;
-        }
-
-        /// <summary>
-        /// Checks if a value exists for the specified key and stores it in value.
-        /// </summary>
-        /// <param name="key">Key</param>
-        /// <param name="value">Value if key was found, default of TValue otherwise</param>
-        /// <returns>True if a value was found, false otherwise</returns>
-        public bool TryGetValue(TKey key, [MaybeNullWhen(false)] out TValue value)
-        {
-            value = Get(key);
-            return value != null;
-        }
-
-        /// <summary>
-        /// Insert or overwrite a key/value pair in the tree.
-        /// If the key already exists, its value will be overwritten.
-        /// </summary>
-        /// <param name="item">Key/Value pair</param>
-        public void Add(KeyValuePair<TKey, TValue> item)
-        {
-            Put(item.Key, item.Value);
-        }
-
-        /// <summary>
-        /// Checks if an item exists in the tree whose key is item.Key, and whose value is item.Value
-        /// </summary>
-        /// <param name="item">Key/Value pair to match against to match against</param>
-        /// <returns>True if both key and value match, false otherwise</returns>
-        public bool Contains(KeyValuePair<TKey, TValue> item)
-        {
-            TValue t = Get(item.Key);
-            return t.Equals(item.Value);
-        }
-
-        /// <summary>
-        /// Copies all items in the tree to array starting at index arrayIndex
-        /// 
-        /// array must contain enough space to carry all elements, otherwise an exception will be thrown.
-        /// </summary>
-        /// <param name="array">Array to copy the key/value pairs into</param>
-        /// <param name="arrayIndex">Index at which to start copying into array</param>
-        public void CopyTo(KeyValuePair<TKey, TValue>[] array, int arrayIndex)
-        {
-            if (arrayIndex >= array.Length) throw new ArgumentException($"arrayIndex is greater than the length of array");
-            if (array.Length - arrayIndex < this.count) throw new ArgumentException($"There is not enough space in array");
-            if (this.count == 0) return;
-
-            LinkedListNode<TreeNode<TKey, TValue>> node = nodes.First;
-            for (int i = 0; i < this.count && node != null; i++)
+            if(null == key)
             {
-                array[arrayIndex + i] = new KeyValuePair<TKey, TValue>(node.Value.Key, node.Value.Value);
-                node = node.Next;
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-        }
-
-        /// <summary>
-        /// Removes the item whose key is item.Key
-        /// </summary>
-        /// <param name="item">Key/Value Pair to remove</param>
-        /// <returns>True if an item was removed, false otherwise</returns>
-        public bool Remove(KeyValuePair<TKey, TValue> item)
-        {
-            return Remove(item.Key) != null;
-        }
-
-        /// <summary>
-        /// Not Implemented.
-        /// </summary>
-        /// <returns></returns>
-        public IEnumerator<KeyValuePair<TKey, TValue>> GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        /// <summary>
-        /// Not Implemented.
-        /// </summary>
-        /// <returns></returns>
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            throw new NotImplementedException();
-        }
-
-        int ICollection<KeyValuePair<TKey, TValue>>.Count => this.count;
-
-        public int Count => this.count;
-
-        public bool IsReadOnly => false;
-
-        ICollection<TKey> IDictionary<TKey, TValue>.Keys => Keys();
-
-        ICollection<TValue> IDictionary<TKey, TValue>.Values => Values();
-
-        public TValue this[TKey key] { get => Get(key); set => Put(key, value); }
-
-        #endregion
-
-        #region Helper Methods (Avoid Null-Pointers)
-
-        private static bool ColorOf(TreeNode<TKey, TValue> entry)
-        {
-            return (entry == null ? BLACK : entry.Color);
-        }
-
-        private static TreeNode<TKey, TValue> LeftOf(TreeNode<TKey, TValue> entry)
-        {
-            return (entry == null) ? null : entry.Left;
-        }
-
-        private static TreeNode<TKey, TValue> RightOf(TreeNode<TKey, TValue> entry)
-        {
-            return (entry == null) ? null : entry.Right;
-        }
-
-        private static TreeNode<TKey, TValue> ParentOf(TreeNode<TKey, TValue> entry)
-        {
-            return (entry == null ? null : entry.Parent);
-        }
-
-        private static void SetColor(TreeNode<TKey, TValue> e, bool color)
-        {
-            if (e != null)
+            if(null == value)
             {
-                e.Color = color;
+                throw new ArgumentNullException($"{nameof(value)} may not be null");
             }
-        }
-
-        #endregion
-
-        #region IDictionary Implementation Helpers
-
-        private ICollection<TKey> Keys()
-        {
-            if (this.isModified)
+            // O(1) Overwrites
+            if (_dictionary.ContainsKey(key))
             {
-                this.keys = new List<TKey>(nodes.Count);
-
-                foreach (TreeNode<TKey, TValue> node in nodes)
-                {
-                    keys.Add(node.Key);
-                }
-                this.isModified = false;
-            }
-
-            return keys;
-        }
-
-        private ICollection<TValue> Values()
-        {
-            if (this.isModified)
-            {
-                this.values = new List<TValue>(nodes.Count);
-
-                foreach (TreeNode<TKey, TValue> node in nodes)
-                {
-                    values.Add(node.Value);
-                }
-                this.isModified = false;
-            }
-            return this.values;
-        }
-
-
-        private TValue Put(TKey key, TValue value)
-        {
-            TreeNode<TKey, TValue> entry = root;
-            if (entry == null)
-            {
-                root = new TreeNode<TKey, TValue>(key, value);
-                count = 1;
-                this.isModified = true;
-                nodes.AddLast(root);
-                return value;
-            }
-            if (key == null || value == null)
-            {
-                throw new ArgumentNullException();
-            }
-
-            int cmp;
-            TreeNode<TKey, TValue> parent;
-
-            do
-            {
-                parent = entry;
-                cmp = key.CompareTo(entry.Key);
-                if (cmp < 0)
-                {
-                    entry = entry.Left;
-                }
-                else if (cmp > 0)
-                {
-                    entry = entry.Right;
-                }
-                else
-                {
-                    entry.Value = value;
-                    return entry.Value;
-                }
-            } while (entry != null);
-
-            TreeNode<TKey, TValue> newEntry = new TreeNode<TKey, TValue>(key, value, parent);
-            if (cmp < 0)
-            {
-                parent.Left = newEntry;
+                _dictionary[key].Value = value;
             }
             else
             {
-                parent.Right = newEntry;
+                Insert(key, value);
             }
-
-            FixAfterInsertion(newEntry);
-
-            nodes.AddLast(newEntry);
-            this.isModified = true;
-            this.count++;
-            return default;
         }
 
-        private TreeNode<TKey, TValue> GetEntryNode(TKey key)
+        /// <summary>
+        /// Removes the node whose key is <paramref name="key"/> from the tree.
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <exception cref="ArgumentNullException"></exception>
+        public void Remove(K key)
         {
-            if (key == null) throw new ArgumentNullException();
-            TreeNode<TKey, TValue> entry = root;
-            while (entry != null)
+            if (key == null)
             {
-                int cmp = key.CompareTo(entry.Key);
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            if (!_dictionary.ContainsKey(key))
+            {
+                return;
+            }
 
-                if (cmp < 0)
+            Delete(key);
+        }
+
+        /// <summary>
+        /// Returns the node whose key is equal to or immediately less than <paramref name="key"/>
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public Node<K, V> FloorNode(K key)
+        {
+            Node<K, V> tmp = _root;
+
+            while(tmp != null)
+            {
+                int cmp = key.CompareTo(tmp.Key);
+                if(cmp > 0)
                 {
-                    entry = entry.Left;
+                    if (tmp.Right != null)
+                    {
+                        tmp = tmp.Right;
+                    }
+                    else
+                    {
+                        return tmp;
+                    }
                 }
-                else if (cmp > 0)
+                else if(cmp < 0)
                 {
-                    entry = entry.Right;
+                    if(tmp.Left != null)
+                    {
+                        tmp = tmp.Left;
+                    }
+                    else
+                    {
+                        Node<K, V> parent = tmp.Parent;
+                        Node<K, V> ptr = tmp;
+                        while(parent != null && ptr == parent.Left)
+                        {
+                            ptr = parent;
+                            parent = parent.Parent;
+                        }
+                        return parent;
+                    }
                 }
                 else
                 {
-                    return entry;
+                    return tmp;
                 }
             }
             return null;
         }
 
         /// <summary>
-        /// Returns the node with the key greater than treeNode.
+        /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
         /// </summary>
-        /// <param name="treeNode"></param>
+        /// <param name="key"></param>
         /// <returns></returns>
-        public TreeNode<TKey, TValue> SuccessorOf(TreeNode<TKey, TValue> treeNode)
+        public Node<K, V> CeilingNode(K key)
         {
-            if (treeNode == null)
-                return null;
-            else if (treeNode.Right != null)
+            Node<K, V> tmp = _root;
+
+            while (tmp != null)
             {
-                TreeNode<TKey, TValue> tmp = treeNode.Right;
-                while (tmp.Left != null)
-                    tmp = tmp.Left;
-                return tmp;
-            }
-            else
-            {
-                TreeNode<TKey, TValue> parent = treeNode.Parent;
-                TreeNode<TKey, TValue> tmp = treeNode;
-                while (parent != null && tmp == parent.Right)
+                int cmp = key.CompareTo(tmp.Key);
+                if (cmp < 0)
                 {
-                    tmp = parent;
-                    parent = parent.Parent;
-                }
-                return parent;
-            }
-        }
-
-        /// <summary>
-        /// Returns the node the occurs prior to treeNode
-        /// </summary>
-        /// <param name="treeNode"></param>
-        /// <returns></returns>
-        public TreeNode<TKey, TValue> PredecessorOf(TreeNode<TKey, TValue> treeNode)
-        {
-            if (treeNode == null)
-                return null;
-            else if (treeNode.Left != null)
-            {
-                TreeNode<TKey, TValue> tmp = treeNode.Left;
-                while (tmp.Right != null)
-                    tmp = tmp.Right;
-                return tmp;
-            }
-            else
-            {
-                TreeNode<TKey, TValue> parent = treeNode.Parent;
-                TreeNode<TKey, TValue> tmp = treeNode;
-                while (parent != null && tmp == parent.Left)
-                {
-                    tmp = parent;
-                    parent = parent.Parent;
-                }
-                return parent;
-            }
-        }
-
-        /// <summary>
-        /// Rotate to reduce the height of the tree, to maximize operation efficieny.
-        /// </summary>
-        /// <param name="treeNode"></param>
-        private void RotateLeft(TreeNode<TKey, TValue> treeNode)
-        {
-            if (treeNode != null)
-            {
-                TreeNode<TKey, TValue> tmp = treeNode.Right;
-                treeNode.Right = tmp.Left;
-                if (tmp.Left != null)
-                    tmp.Left.Parent = treeNode;
-                tmp.Parent = treeNode.Parent;
-                if (treeNode.Parent == null)
-                    root = tmp;
-                else if (treeNode.Parent.Left == treeNode)
-                    treeNode.Parent.Left = tmp;
-                else
-                    treeNode.Parent.Right = tmp;
-                tmp.Left = treeNode;
-                treeNode.Parent = tmp;
-            }
-        }
-
-        /// <summary>
-        /// Rotate to reduce the height of the tree, to maximize operation efficieny.
-        /// </summary>
-        /// <param name="treeNode"></param>
-        private void RotateRight(TreeNode<TKey, TValue> treeNode)
-        {
-            if (treeNode != null)
-            {
-                TreeNode<TKey, TValue> tmp = treeNode.Left;
-                treeNode.Left = tmp.Right;
-                if (tmp.Right != null) tmp.Right.Parent = treeNode;
-                tmp.Parent = treeNode.Parent;
-                if (treeNode.Parent == null)
-                    root = tmp;
-                else if (treeNode.Parent.Right == treeNode)
-                    treeNode.Parent.Right = tmp;
-                else treeNode.Parent.Left = tmp;
-                tmp.Right = treeNode;
-                treeNode.Parent = tmp;
-            }
-        }
-
-        /// <summary>
-        /// Rebalance the tree after an insertion.
-        /// This is important for O(logN) operations.
-        /// </summary>
-        /// <param name="treeNode"></param>
-        private void FixAfterInsertion(TreeNode<TKey, TValue> treeNode)
-        {
-            treeNode.Color = RED;
-
-            while (treeNode != null && treeNode != root && treeNode.Parent.Color == RED)
-            {
-                if (ParentOf(treeNode) == LeftOf(ParentOf(ParentOf(treeNode))))
-                {
-                    TreeNode<TKey, TValue> tmp = RightOf(ParentOf(ParentOf(treeNode)));
-                    if (ColorOf(tmp) == RED)
+                    if (tmp.Left != null)
                     {
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(tmp, BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
-                        treeNode = ParentOf(ParentOf(treeNode));
+                        tmp = tmp.Left;
                     }
                     else
                     {
-                        if (treeNode == RightOf(ParentOf(treeNode)))
+                        return tmp;
+                    }
+                }
+                else if (cmp > 0)
+                {
+                    if (tmp.Right != null)
+                    {
+                        tmp = tmp.Right;
+                    }
+                    else
+                    {
+                        Node<K, V> parent = tmp.Parent;
+                        Node<K, V> ptr = tmp;
+                        while (parent != null && ptr == parent.Right)
                         {
-                            treeNode = ParentOf(treeNode);
-                            RotateLeft(treeNode);
+                            ptr = parent;
+                            parent = parent.Parent;
                         }
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
-                        RotateRight(ParentOf(ParentOf(treeNode)));
+                        return parent;
                     }
                 }
                 else
                 {
-                    TreeNode<TKey, TValue> tmp = LeftOf(ParentOf(ParentOf(treeNode)));
-                    if (ColorOf(tmp) == RED)
-                    {
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(tmp, BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
-                        treeNode = ParentOf(ParentOf(treeNode));
-                    }
-                    else
-                    {
-                        if (treeNode == LeftOf(ParentOf(treeNode)))
-                        {
-                            treeNode = ParentOf(treeNode);
-                            RotateRight(treeNode);
-                        }
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(ParentOf(ParentOf(treeNode)), RED);
-                        RotateLeft(ParentOf(ParentOf(treeNode)));
-                    }
+                    return tmp;
                 }
             }
-            root.Color = BLACK;
+            return null;
         }
 
         /// <summary>
-        /// Remove treeNode from the tree and rebalance it.
+        /// Finds the node with the key immediately greater than <paramref name="node"/>.Key
         /// </summary>
-        /// <param name="treeNode"></param>
-        private void DeleteEntry(TreeNode<TKey, TValue> treeNode)
+        /// <param name="node">Node to find the successor of</param>
+        /// <returns>Node</returns>
+        public Node<K, V> SuccessorOf(Node<K, V> node)
         {
-            this.count--;
-            this.isModified = true;
-            nodes.Remove(treeNode);
-            // If strictly internal, copy successor's element to p and then make p
-            // point to successor.
-            if (treeNode.Left != null && treeNode.Right != null)
+            if(node.Right != null)
             {
-                TreeNode<TKey, TValue> s = SuccessorOf(treeNode);
-                treeNode.Key = s.Key;
-                treeNode.Value = s.Value;
-                treeNode = s;
-            } // p has 2 children
-
-            // Start fixup at replacement node, if it exists.
-            TreeNode<TKey, TValue> replacement = (treeNode.Left != null ? treeNode.Left : treeNode.Right);
-
-            if (replacement != null)
+                return Minimum(node.Right);
+            }
+            Node<K, V> parent = node.Parent;
+            while(parent != null && node == parent.Right)
             {
-                // Link replacement to Parent
-                replacement.Parent = treeNode.Parent;
-                if (treeNode.Parent == null)
-                    root = replacement;
-                else if (treeNode == treeNode.Parent.Left)
-                    treeNode.Parent.Left = replacement;
-                else
-                    treeNode.Parent.Right = replacement;
-
-                // Null out links so they are OK to use by fixAfterDeletion.
-                treeNode.Left = treeNode.Right = treeNode.Parent = null;
-
-                // Fix replacement
-                if (treeNode.Color == BLACK)
-                    FixAfterDeletion(replacement);
+                node = parent;
+                parent = parent.Parent;
             }
-            else if (treeNode.Parent == null)
-            { // return if we are the only node.
-                root = null;
-            }
-            else
-            { //  No children. Use self as phantom replacement and unlink.
-                if (treeNode.Color == BLACK)
-                    FixAfterDeletion(treeNode);
-
-                if (treeNode.Parent != null)
-                {
-                    if (treeNode == treeNode.Parent.Left)
-                        treeNode.Parent.Left = null;
-                    else if (treeNode == treeNode.Parent.Right)
-                        treeNode.Parent.Right = null;
-                    treeNode.Parent = null;
-                }
-            }
+            return parent;
         }
 
         /// <summary>
-        /// Rebalances the tree after a deletion takes place.
-        /// This is important to guarantee O(logN) operations.
+        /// Finds the node with the key immediately less than <paramref name="node"/>.Key
         /// </summary>
-        /// <param name="treeNode"></param>
-        private void FixAfterDeletion(TreeNode<TKey, TValue> treeNode)
+        /// <param name="node">Node to find the predecessor of</param>
+        /// <returns>Node</returns>
+        public Node<K, V> PredecessorOf(Node<K, V> node)
         {
-            while (treeNode != root && ColorOf(treeNode) == BLACK)
+            if(node.Left != null)
             {
-                if (treeNode == LeftOf(ParentOf(treeNode)))
-                {
-                    TreeNode<TKey, TValue> sibling = RightOf(ParentOf(treeNode));
-
-                    if (ColorOf(sibling) == RED)
-                    {
-                        SetColor(sibling, BLACK);
-                        SetColor(ParentOf(treeNode), RED);
-                        RotateLeft(ParentOf(treeNode));
-                        sibling = RightOf(ParentOf(treeNode));
-                    }
-
-                    if (ColorOf(LeftOf(sibling)) == BLACK &&
-                        ColorOf(RightOf(sibling)) == BLACK)
-                    {
-                        SetColor(sibling, RED);
-                        treeNode = ParentOf(treeNode);
-                    }
-                    else
-                    {
-                        if (ColorOf(RightOf(sibling)) == BLACK)
-                        {
-                            SetColor(LeftOf(sibling), BLACK);
-                            SetColor(sibling, RED);
-                            RotateRight(sibling);
-                            sibling = RightOf(ParentOf(treeNode));
-                        }
-                        SetColor(sibling, ColorOf(ParentOf(treeNode)));
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(RightOf(sibling), BLACK);
-                        RotateLeft(ParentOf(treeNode));
-                        treeNode = root;
-                    }
-                }
-                else
-                {
-                    // The exact opposite occurs over here.
-                    TreeNode<TKey, TValue> sibling = LeftOf(ParentOf(treeNode));
-
-                    if (ColorOf(sibling) == RED)
-                    {
-                        SetColor(sibling, BLACK);
-                        SetColor(ParentOf(treeNode), RED);
-                        RotateRight(ParentOf(treeNode));
-                        sibling = LeftOf(ParentOf(treeNode));
-                    }
-
-                    if (ColorOf(RightOf(sibling)) == BLACK &&
-                        ColorOf(LeftOf(sibling)) == BLACK)
-                    {
-                        SetColor(sibling, RED);
-                        treeNode = ParentOf(treeNode);
-                    }
-                    else
-                    {
-                        if (ColorOf(LeftOf(sibling)) == BLACK)
-                        {
-                            SetColor(RightOf(sibling), BLACK);
-                            SetColor(sibling, RED);
-                            RotateLeft(sibling);
-                            sibling = LeftOf(ParentOf(treeNode));
-                        }
-                        SetColor(sibling, ColorOf(ParentOf(treeNode)));
-                        SetColor(ParentOf(treeNode), BLACK);
-                        SetColor(LeftOf(sibling), BLACK);
-                        RotateRight(ParentOf(treeNode));
-                        treeNode = root;
-                    }
-                }
+                return Maximum(node.Left);
             }
-
-            SetColor(treeNode, BLACK);
+            Node<K, V> parent = node.Parent;
+            while(parent != null && node == parent.Left)
+            {
+                node = parent;
+                parent = parent.Parent;
+            }
+            return parent;
         }
+
+        public int Count => _dictionary.Count;
 
         #endregion
+        #region Private Methods (BST)
 
-        public void TraverseInOrder()
+        /// <summary>
+        /// Inserts a new node into the tree whose key is <paramref name="key"/> and value is <paramref name="value"/>
+        /// <br></br>
+        /// Adding the same key multiple times will overwrite the previous value.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <param name="value"></param>
+        private void Insert(K key, V value)
         {
-            TreeNode<TKey, TValue> n = root;
-            PrintEntryInOrder(n);
+            Node<K, V> node = _root;
+            if (node == null)
+            {
+                _root = new Node<K, V>(key, value);
+                _dictionary[key] = _root;
+                return;
+            }
+
+            Node<K, V> tmp = null;
+            while(node != null)
+            {
+                tmp = node;
+                node = key.CompareTo(node.Key) < 0 ? node.Left : node.Right;
+            }
+            Node<K, V> newNode = new Node<K, V>(key, value, tmp);
+            if(tmp == null)
+            {
+                _root = newNode;
+            }
+            else
+            {
+                int cmp = key.CompareTo(tmp.Key);
+                if(cmp < 0)
+                {
+                    tmp.Left = newNode;
+                }
+                else
+                {
+                    tmp.Right = newNode;
+                }
+            }
+            _dictionary[key] = newNode;
+            RestoreBalanceAfterInsertion(newNode);
         }
 
-        private void PrintEntryInOrder(TreeNode<TKey, TValue> e)
+        /// <summary>
+        /// Removes <paramref name="key"/> from the dictionary, if it exists.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        private Node<K, V> Delete(K key)
         {
-            if (e == null) return;
-            PrintEntryInOrder(e.Left);
-            Console.WriteLine(e.ToString());
-            PrintEntryInOrder(e.Right);
+            // O(1) Retrieval
+            Node<K, V> node = GetNode(key);
+            if (node == null) return null;
+
+            _dictionary.Remove(key);
+            
+            if(!(node.Left == null || node.Right == null))
+            {
+                Node<K, V> tmpNode = SuccessorOf(node);
+                node.Key = tmpNode.Key;
+                node.Value = tmpNode.Value;
+                node = tmpNode;
+            }
+
+            Node<K, V> tmp = node.Left ?? node.Right;
+            if (tmp != null)
+            {
+                tmp.Parent = node.Parent;
+                if (node.Parent == null)
+                {
+                    _root = tmp;
+                }
+                else if (node == node.Parent.Left)
+                {
+                    node.Parent.Left = tmp;
+                }
+                else
+                {
+                    node.Parent.Right = tmp;
+                }
+
+                node.Left = null;
+                node.Right = null;
+                node.Parent = null;
+
+                if (node.Color == Black)
+                {
+                    RestoreBalanceAfterRemoval(node);
+                }
+            }
+            else if (node.Parent == null)
+            {
+                _root = null;
+            }
+            else
+            {
+                if (node.Color == Black)
+                {
+                    RestoreBalanceAfterRemoval(node);
+                }
+
+                if (node.Parent != null)
+                {
+                    if (node == node.Parent.Left)
+                    {
+                        node.Parent.Left = null;
+                    }
+                    else if (node == node.Parent.Right)
+                    {
+                        node.Parent.Right = null;
+                    }
+                    node.Parent = null;
+                }
+            }
+            return node;
+        }
+
+        /// <summary>
+        /// Returns the node with the largest key where <paramref name="node"/> is considered the root node.
+        /// </summary>
+        /// <param name="node">Root Node</param>
+        /// <returns>Node</returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        private Node<K,V> Maximum(Node<K,V> node)
+        {
+            if(node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+            Node<K, V> tmp = node;
+            while(tmp.Right != null)
+            {
+                tmp = tmp.Right;
+            }
+
+            return tmp;
+        }
+
+        /// <summary>
+        /// Returns the node with the smallest key where <paramref name="node"/> is considered the root node.
+        /// </summary>
+        /// <param name="node">Root Node</param>
+        /// <returns></returns>
+        ///<exception cref="ArgumentNullException"></exception>
+        private Node<K, V> Minimum(Node<K, V> node)
+        {
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+            Node<K, V> tmp = node;
+            while (tmp.Left != null)
+            {
+                tmp = tmp.Left;
+            }
+
+            return tmp;
+        }
+        #endregion
+        #region Private Methods (RBL)
+
+        private void RestoreBalanceAfterRemoval(Node<K, V> node)
+        {
+            Node<K, V> tmp = node;
+            
+            while(tmp != _root && ColorOf(tmp) == Black)
+            {
+                if(tmp == tmp.Parent.Left)
+                {
+                    Node<K, V> sibling = tmp.Parent.Right;
+
+                    if(ColorOf(sibling) == Red)
+                    {
+                        sibling.Color = Black;
+                        tmp.Parent.Color = Red;
+                        RotateLeft(tmp.Parent);
+                        sibling = tmp.Parent.Right;
+                    }
+                    if(ColorOf(sibling.Left) == Black && ColorOf(sibling.Right) == Black)
+                    {
+                        sibling.Color = Red;
+                        tmp = tmp.Parent;
+                    }
+                    else {
+                        if (ColorOf(sibling.Right) == Black)
+                        {
+                            sibling.Left.Color = Black;
+                            sibling.Color = Red;
+                            RotateRight(sibling);
+                            sibling = tmp.Parent.Right;
+                        }
+                        sibling.Color = ColorOf(tmp.Parent);
+                        tmp.Parent.Color = Black;
+                        sibling.Right.Color = Black;
+                        RotateLeft(tmp.Parent);
+                        tmp = _root;
+                    }
+                }
+                else
+                {
+                    Node<K, V> sibling = tmp.Parent.Left;
+
+                    if (ColorOf(sibling) == Red)
+                    {
+                        sibling.Color = Black;
+                        tmp.Parent.Color = Red;
+                        RotateRight(tmp.Parent);
+                        sibling = tmp.Parent.Left;
+                    }
+                    if (ColorOf(sibling.Right) == Black && ColorOf(sibling.Left) == Black)
+                    {
+                        sibling.Color = Red;
+                        tmp = tmp.Parent;
+                    }
+                    else
+                    {
+                        if (ColorOf(sibling.Left) == Black)
+                        {
+                            sibling.Right.Color = Black;
+                            sibling.Color = Red;
+                            RotateLeft(sibling);
+                            sibling = tmp.Parent.Left;
+                        }
+                    }
+                    sibling.Color = ColorOf(tmp.Parent);
+                    tmp.Parent.Color = Black;
+                    sibling.Left.Color = Black;
+                    RotateRight(tmp.Parent);
+                    tmp = _root;
+                }
+            }
+            tmp.Color = Black;
+        }
+
+        private void RestoreBalanceAfterInsertion(Node<K, V> x)
+        {
+            x.Color = Red;
+            while (x != null && x != _root && x.Parent.Color == Red)
+            {
+                if (x.Parent == x.Parent.Parent.Left)
+                {
+                    Node<K, V> y = x.Parent.Parent.Right;
+
+                    if(ColorOf(y) == Red)
+                    {
+                        x.Parent.Color = Black;
+                        x.Parent.Parent.Color = Red;
+                        x = x.Parent.Parent;
+                    }
+                    else {
+                        if (x == x.Parent.Right)
+                        {
+                            x = x.Parent;
+                            RotateLeft(x);
+                        }
+                        x.Parent.Color = Black;
+                        x.Parent.Parent.Color = Red;
+                        RotateRight(x.Parent.Parent);
+                    }
+                }
+                else
+                {
+                    Node<K, V> y = x.Parent.Parent.Left;
+
+                    if (ColorOf(y) == Red)
+                    {
+                        x.Parent.Color = Black;
+                        x.Parent.Parent.Color = Red;
+                        x = x.Parent.Parent;
+                    }
+                    else
+                    {
+                        if (x == x.Parent.Left)
+                        {
+                            x = x.Parent;
+                            RotateRight(x);
+                        }
+                        x.Parent.Color = Black;
+                        x.Parent.Parent.Color = Red;
+                        RotateLeft(x.Parent.Parent);
+                    }
+                }
+            }
+            _root.Color = Black;
+        }
+
+        private void RotateLeft(Node<K, V> node)
+        {
+            Node<K, V> right = node.Right;
+            node.Right = right.Left;
+            if(right.Left != null)
+            {
+                right.Left.Parent = node;
+            }
+            right.Parent = node.Parent;
+            if(node.Parent == null)
+            {
+                _root = right;
+            }
+            else if(node == node.Parent.Left)
+            {
+                node.Parent.Left = right;
+            }
+            else
+            {
+                node.Parent.Right = right;
+            }
+            right.Left = node;
+            node.Parent = right;
+        }
+
+        private void RotateRight(Node<K, V> node)
+        {
+            Node<K, V> left = node.Left;
+            node.Left = left.Right;
+            if (left.Right != null)
+            {
+                left.Parent.Right = node;
+            }
+            left.Parent = node.Parent;
+            if (node.Parent == null)
+            {
+                _root = left;
+            }
+            else if (node == node.Parent.Right)
+            {
+                node.Parent.Right = left;
+            }
+            else
+            {
+                node.Parent.Left = left;
+            }
+            left.Right = node;
+            node.Parent = left;
+        }
+
+        private bool ColorOf(Node<K,V> node)
+        {
+            return node != null ? node.Color : Black;
         }
 
 
+        #endregion
     }
 
-    #region Node Implementation
-    public class TreeNode<NKey, NValue>
+    public class Node<K, V>
     {
+        internal bool Color        = true;
+        internal Node<K, V> Left   = null;
+        internal Node<K, V> Right  = null;
+        internal Node<K, V> Parent = null;
+        public K Key;
+        public V Value;
 
-        public bool Color { get; set; } = true;
-        public NKey Key { get; set; }
-        public NValue Value { get; set; }
-        public TreeNode<NKey, NValue> Left { get; set; } = null;
-        public TreeNode<NKey, NValue> Right { get; set; } = null;
-        public TreeNode<NKey, NValue> Parent { get; set; } = null;
-
-        public TreeNode(NKey key, NValue value)
+        public Node(K key, V value)
         {
             this.Key = key;
             this.Value = value;
         }
 
-        public TreeNode(NKey key, NValue value, TreeNode<NKey, NValue> parent)
+        public Node(K key, V value, Node<K, V> parent)
         {
             this.Key = key;
             this.Value = value;
             this.Parent = parent;
         }
-
-        public override String ToString()
-        {
-            return Value.ToString();
-        }
     }
-    #endregion
 }
