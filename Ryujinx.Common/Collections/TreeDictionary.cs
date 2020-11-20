@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Ryujinx.Common.Collections
 {
@@ -114,8 +111,13 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public Node<K, V> FloorNode(K key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
             Node<K, V> tmp = _root;
 
             while(tmp != null)
@@ -163,8 +165,13 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key"></param>
         /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
         public Node<K, V> CeilingNode(K key)
         {
+            if (key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
             Node<K, V> tmp = _root;
 
             while (tmp != null)
@@ -414,9 +421,9 @@ namespace Ryujinx.Common.Collections
         #endregion
         #region Private Methods (RBL)
 
-        private void RestoreBalanceAfterRemoval(Node<K, V> node)
+        private void RestoreBalanceAfterRemoval(Node<K, V> balanceNode)
         {
-            Node<K, V> tmp = node;
+            Node<K, V> tmp = balanceNode;
             
             while(tmp != _root && ColorOf(tmp) == Black)
             {
@@ -487,52 +494,52 @@ namespace Ryujinx.Common.Collections
             tmp.Color = Black;
         }
 
-        private void RestoreBalanceAfterInsertion(Node<K, V> x)
+        private void RestoreBalanceAfterInsertion(Node<K, V> insertedNode)
         {
-            x.Color = Red;
-            while (x != null && x != _root && x.Parent.Color == Red)
+            insertedNode.Color = Red;
+            while (insertedNode != null && insertedNode != _root && insertedNode.Parent.Color == Red)
             {
-                if (x.Parent == x.Parent.Parent.Left)
+                if (insertedNode.Parent == insertedNode.Parent.Parent.Left)
                 {
-                    Node<K, V> y = x.Parent.Parent.Right;
+                    Node<K, V> y = insertedNode.Parent.Parent.Right;
 
                     if(ColorOf(y) == Red)
                     {
-                        x.Parent.Color = Black;
-                        x.Parent.Parent.Color = Red;
-                        x = x.Parent.Parent;
+                        insertedNode.Parent.Color = Black;
+                        insertedNode.Parent.Parent.Color = Red;
+                        insertedNode = insertedNode.Parent.Parent;
                     }
                     else {
-                        if (x == x.Parent.Right)
+                        if (insertedNode == insertedNode.Parent.Right)
                         {
-                            x = x.Parent;
-                            RotateLeft(x);
+                            insertedNode = insertedNode.Parent;
+                            RotateLeft(insertedNode);
                         }
-                        x.Parent.Color = Black;
-                        x.Parent.Parent.Color = Red;
-                        RotateRight(x.Parent.Parent);
+                        insertedNode.Parent.Color = Black;
+                        insertedNode.Parent.Parent.Color = Red;
+                        RotateRight(insertedNode.Parent.Parent);
                     }
                 }
                 else
                 {
-                    Node<K, V> y = x.Parent.Parent.Left;
+                    Node<K, V> y = insertedNode.Parent.Parent.Left;
 
                     if (ColorOf(y) == Red)
                     {
-                        x.Parent.Color = Black;
-                        x.Parent.Parent.Color = Red;
-                        x = x.Parent.Parent;
+                        insertedNode.Parent.Color = Black;
+                        insertedNode.Parent.Parent.Color = Red;
+                        insertedNode = insertedNode.Parent.Parent;
                     }
                     else
                     {
-                        if (x == x.Parent.Left)
+                        if (insertedNode == insertedNode.Parent.Left)
                         {
-                            x = x.Parent;
-                            RotateRight(x);
+                            insertedNode = insertedNode.Parent;
+                            RotateRight(insertedNode);
                         }
-                        x.Parent.Color = Black;
-                        x.Parent.Parent.Color = Red;
-                        RotateLeft(x.Parent.Parent);
+                        insertedNode.Parent.Color = Black;
+                        insertedNode.Parent.Parent.Color = Red;
+                        RotateLeft(insertedNode.Parent.Parent);
                     }
                 }
             }
