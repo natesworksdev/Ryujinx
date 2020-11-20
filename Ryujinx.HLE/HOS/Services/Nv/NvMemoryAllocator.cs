@@ -134,7 +134,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
-            stopwatch.Restart();
             lock (_tree)
             {
                 ulong address = start;

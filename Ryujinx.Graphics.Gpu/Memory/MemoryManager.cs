@@ -137,35 +137,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Maps a given range of pages to an allocated GPU virtual address.
-        /// The memory is automatically allocated by the memory manager.
-        /// This also ensures that the mapping is always done in the first 4GB of GPU address space.
-        /// </summary>
-        /// <param name="pa">CPU virtual address to map into</param>
-        /// <param name="va">GPU virtual address to map into</param>
-        /// <param name="size">Size in bytes of the mapping</param>
-        /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
-        public ulong MapLow(ulong pa, ulong va, ulong size)
-        {
-            lock (_pageTable)
-            {
-                if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
-                {
-                    for (ulong offset = 0; offset < size; offset += PageSize)
-                    {
-                        SetPte(va + offset, pa + offset);
-                    }
-                }
-                else
-                {
-                    va = PteUnmapped;
-                }
-
-                return va;
-            }
-        }
-
-        /// <summary>
         /// Reserves memory at a fixed GPU memory location.
         /// This prevents the reserved region from being used for memory allocation for map.
         /// </summary>
