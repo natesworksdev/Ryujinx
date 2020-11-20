@@ -1,12 +1,9 @@
 ﻿using Ryujinx.Common.Collections;
-using System;
-using System.Diagnostics;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
     public class NvMemoryAllocator
     {
-        private Stopwatch stopwatch = new Stopwatch();
         public const ulong AddressSpaceSize = 1UL << 40;
 
         public const ulong BadAddress = ulong.MaxValue;
@@ -161,7 +158,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                 if (address + size <= block.endAddress)
                                 {
                                     memoryBlock = blockNode;
-                                    Console.WriteLine($"{stopwatch.ElapsedMilliseconds}");
                                     return address;
                                 }
                                 else
