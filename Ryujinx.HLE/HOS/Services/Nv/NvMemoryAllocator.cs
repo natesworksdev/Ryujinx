@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Common.Collections;
+using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
@@ -31,39 +32,42 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="size">Size of the allocation in bytes</param>
         /// <param name="reference">Reference to the block of memory where the allocation can take place</param>
         #region Memory Allocation
-        internal void AllocateMemoryBlock(ulong va, ulong size, Node<ulong, MemoryBlock> reference)
+        internal void AllocateMemoryBlock(ulong va, ulong size, Node<ulong, MemoryBlock> reference = null)
         {
             lock (_tree)
             {
+                if(reference == null)
+                {
+                    return;
+                }
+
                 if (reference != null)
                 {
                     MemoryBlock referenceBlock = reference.Value;
-                    // Fixed Addresses are being mapped. Ignore the reference.
-                    if (referenceBlock.address == PteUnmapped)
-                    {
-                        Node<ulong, MemoryBlock> entry = _tree.PredecessorOf(reference);
-                        if (null == entry) return;
-                        referenceBlock = entry.Value;
-
-                        if (!(va >= referenceBlock.address && va + size <= referenceBlock.endAddress)) return;
-                    }
-
-                    if (va > referenceBlock.address)
-                    {
-                        // Need to create a left block.
-                        MemoryBlock leftBlock = new MemoryBlock(referenceBlock.address, va - referenceBlock.address);
-                        _tree.Add(referenceBlock.address, leftBlock);
-                    }
-                    else if (va == referenceBlock.address)
-                    {
-                        _tree.Remove(va);
-                    }
                     ulong endAddress = va + size;
-                    if (endAddress < referenceBlock.endAddress)
+                    ulong refEndAddress = referenceBlock.endAddress;
+                    if (va >= referenceBlock.address)
                     {
-                        // Need to create a right block.
-                        MemoryBlock rightBlock = new MemoryBlock(endAddress, referenceBlock.endAddress - endAddress);
-                        _tree.Add(endAddress, rightBlock);
+                        // Need Left Node
+                        if (va > referenceBlock.address)
+                        {
+                            ulong leftEndAddress = va;
+
+                            //Overwrite existing block with its new smaller range.
+                            _tree.Add(referenceBlock.address, new MemoryBlock(referenceBlock.address, leftEndAddress - referenceBlock.address));
+                        }
+                        else
+                        {
+                            // We need to get rid of the large chunk.
+                            _tree.Remove(referenceBlock.address);
+                        }
+
+                        ulong rightSize = refEndAddress - endAddress;
+                        // If leftover space, create a right node.
+                        if (rightSize > 0)
+                        {
+                            _tree.Add(endAddress,new MemoryBlock(endAddress, rightSize));
+                        }
                     }
                 }
             }
@@ -79,47 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                Node<ulong, MemoryBlock> entry = _tree.GetNode(va);
-                if (null != entry)
-                {
-                    Node<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
-                    Node<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
-                    ulong expandedStart = va;
-                    ulong expandedEnd = va + size;
-                    while (prev != null)
-                    {
-                        MemoryBlock prevBlock = prev.Value;
-                        ulong prevAddress = prevBlock.address;
-                        if (prevBlock.endAddress == expandedStart - 1UL)
-                        {
-                            expandedStart = prevAddress;
-                            prev = _tree.PredecessorOf(prev);
-                            _tree.Remove(prevAddress);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    while (next != null)
-                    {
-                        MemoryBlock nextBlock = next.Value;
-                        ulong nextAddress = nextBlock.address;
-                        if (nextBlock.address == expandedEnd - 1UL)
-                        {
-                            expandedEnd = nextBlock.endAddress;
-                            next = _tree.SuccessorOf(next);
-                            _tree.Remove(nextAddress);
-                        }
-                        else
-                        {
-                            break;
-                        }
-                    }
-
-                    _tree.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
-                }
+                // FIXME Figure out how to make this work.
             }
         }
 
@@ -202,7 +166,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (null != floorNode)
                 {
                     MemoryBlock memoryBlock = floorNode.Value;
-                    return !(gpuVa >= memoryBlock.address && ((gpuVa + size - 1) <= memoryBlock.endAddress));
+                    return !(gpuVa >= memoryBlock.address && ((gpuVa + size) < memoryBlock.endAddress));
                 }
             }
             return true;

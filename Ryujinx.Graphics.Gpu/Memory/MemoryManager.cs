@@ -137,49 +137,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Reserves memory at a fixed GPU memory location.
-        /// This prevents the reserved region from being used for memory allocation for map.
-        /// </summary>
-        /// <param name="va">GPU virtual address to reserve</param>
-        /// <param name="size">Size in bytes of the reservation</param>
-        /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
-        public ulong ReserveFixed(ulong va, ulong size)
-        {
-            lock (_pageTable)
-            {
-                MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-
-                for (ulong offset = 0; offset < size; offset += PageSize)
-                {
-                    SetPte(va + offset, PteReserved);
-                }
-            }
-            return va;
-        }
-
-        /// <summary>
-        /// Reserves memory at any GPU memory location.
-        /// </summary>
-        /// <param name="address">GPU virtual address to reserve</param>
-        /// <param name="size">Reservation address alignment in bytes</param>
-        /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
-        public ulong Reserve(ulong address, ulong size)
-        {
-            lock (_pageTable)
-            {
-                if (address != PteUnmapped)
-                {
-                    for (ulong offset = 0; offset < size; offset += PageSize)
-                    {
-                        SetPte(address + offset, PteReserved);
-                    }
-                }
-
-                return address;
-            }
-        }
-
-        /// <summary>
         /// Frees memory that was previously allocated by a map or reserved.
         /// </summary>
         /// <param name="va">GPU virtual address to free</param>

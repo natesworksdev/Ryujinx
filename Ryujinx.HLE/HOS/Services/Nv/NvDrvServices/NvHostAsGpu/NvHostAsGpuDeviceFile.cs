@@ -110,7 +110,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                         address = NvMemoryAllocator.PteUnmapped;
                     }
 
-                    arguments.Offset = (long)addressSpaceContext.Gmm.ReserveFixed(address, size);
+                    arguments.Offset = (long)address;
                 }
                 else
                 {
@@ -120,7 +120,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                         _memoryAllocator.AllocateMemoryBlock(address, (ulong)size, memoryBlock);
                     }
 
-                    arguments.Offset = (long)addressSpaceContext.Gmm.Reserve(address, (ulong)size);
+                    arguments.Offset = unchecked((long)address);
                 }
 
                 if (arguments.Offset < 0)
@@ -233,7 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                             return NvInternalResult.InvalidInput;
                         }
 
-                        _memoryAllocator.AllocateMemoryBlock((ulong)virtualAddress, (ulong)arguments.MappingSize, null);
+                        _memoryAllocator.AllocateMemoryBlock((ulong)virtualAddress, (ulong)arguments.MappingSize);
 
                         return NvInternalResult.Success;
                     }
@@ -268,7 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     if (addressSpaceContext.ValidateFixedBuffer(arguments.Offset, size, pageSize))
                     {
                         arguments.Offset = (long)addressSpaceContext.Gmm.Map((ulong)physicalAddress, (ulong)arguments.Offset, (ulong)size);
-                        _memoryAllocator.AllocateMemoryBlock((ulong)arguments.Offset, (ulong)size, null);
+                        _memoryAllocator.AllocateMemoryBlock((ulong)arguments.Offset, (ulong)size);
                     }
                     else
                     {
@@ -348,7 +348,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     return NvInternalResult.InvalidInput;
                 }
 
-                _memoryAllocator.AllocateMemoryBlock((ulong)arguments[index].GpuOffset << 16, (ulong)arguments[index].Pages, null);
+                _memoryAllocator.AllocateMemoryBlock((ulong)arguments[index].GpuOffset << 16, (ulong)arguments[index].Pages << 16);
             }
 
             return NvInternalResult.Success;
