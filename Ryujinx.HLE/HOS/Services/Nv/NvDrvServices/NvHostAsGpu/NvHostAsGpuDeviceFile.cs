@@ -103,7 +103,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     if (!regionInUse)
                     {
                         _memoryAllocator.AllocateMemoryBlock((ulong) arguments.Offset, size, memoryBlock);
-                        address = memoryBlock.Value.address;
+                        address = memoryBlock.Value.Address;
                     }
                     else
                     {
@@ -177,7 +177,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 {
                     if (size != 0)
                     {
-                        _memoryAllocator.DeallocateMemoryBlock((ulong)arguments.Offset, (ulong)size);
                         addressSpaceContext.Gmm.Free((ulong)arguments.Offset, (ulong)size);
                     }
                 }
@@ -233,8 +232,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                             return NvInternalResult.InvalidInput;
                         }
 
-                        _memoryAllocator.AllocateMemoryBlock((ulong)virtualAddress, (ulong)arguments.MappingSize);
-
                         return NvInternalResult.Success;
                     }
                     else
@@ -268,7 +265,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     if (addressSpaceContext.ValidateFixedBuffer(arguments.Offset, size, pageSize))
                     {
                         arguments.Offset = (long)addressSpaceContext.Gmm.Map((ulong)physicalAddress, (ulong)arguments.Offset, (ulong)size);
-                        _memoryAllocator.AllocateMemoryBlock((ulong)arguments.Offset, (ulong)size);
                     }
                     else
                     {
@@ -347,8 +343,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                     return NvInternalResult.InvalidInput;
                 }
-
-                _memoryAllocator.AllocateMemoryBlock((ulong)arguments[index].GpuOffset << 16, (ulong)arguments[index].Pages << 16);
             }
 
             return NvInternalResult.Success;

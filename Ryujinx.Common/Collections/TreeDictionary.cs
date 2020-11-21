@@ -14,7 +14,7 @@ namespace Ryujinx.Common.Collections
         private const bool Black = true;
         private const bool Red   = false;
         private Node<K, V> _root = null;
-        private Dictionary<K, Node<K,V>> _dictionary  = new Dictionary<K,Node<K,V>>();
+        private readonly Dictionary<K, Node<K,V>> _dictionary  = new Dictionary<K,Node<K,V>>();
         public TreeDictionary() { }
 
         #region Public Methods
@@ -385,7 +385,7 @@ namespace Ryujinx.Common.Collections
         /// <param name="node">Root Node</param>
         /// <returns>Node</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private Node<K,V> Maximum(Node<K,V> node)
+        private static Node<K,V> Maximum(Node<K,V> node)
         {
             if(node == null)
             {
@@ -406,7 +406,7 @@ namespace Ryujinx.Common.Collections
         /// <param name="node">Root Node</param>
         /// <returns></returns>
         ///<exception cref="ArgumentNullException"></exception>
-        private Node<K, V> Minimum(Node<K, V> node)
+        private static Node<K, V> Minimum(Node<K, V> node)
         {
             if (node == null)
             {
@@ -613,9 +613,9 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Boolean</returns>
-        private bool ColorOf(Node<K,V> node)
+        private static bool ColorOf(Node<K,V> node)
         {
-            return node != null ? node.Color : Black;
+            return node == null || node.Color;
         }
 
         /// <summary>
@@ -625,7 +625,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <param name="color">Color (Boolean)</param>
-        private void SetColor(Node<K, V> node, bool color)
+        private static void SetColor(Node<K, V> node, bool color)
         {
             if(node != null)
             {
@@ -638,9 +638,9 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Left Node</returns>
-        private Node<K,V> LeftOf(Node<K, V> node)
+        private static Node<K,V> LeftOf(Node<K, V> node)
         {
-            return node != null ? node.Left : null;
+            return node?.Left;
         }
 
         /// <summary>
@@ -648,9 +648,9 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Right Node</returns>
-        private Node<K, V> RightOf(Node<K, V> node)
+        private static Node<K, V> RightOf(Node<K, V> node)
         {
-            return node != null ? node.Right : null;
+            return node?.Right;
         }
 
         /// <summary>
@@ -658,9 +658,9 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Parent Node</returns>
-        private Node<K, V> ParentOf(Node<K, V> node)
+        private static Node<K, V> ParentOf(Node<K, V> node)
         {
-            return node != null ? node.Parent : null;
+            return node?.Parent;
         }
         #endregion
     }

@@ -4,27 +4,25 @@ namespace Ryujinx.HLE.HOS.Services.Nv
 {
     internal struct MemoryBlock : IComparable<MemoryBlock>
     {
-        public ulong address { get; }
-        public ulong size { get; }
-        public ulong endAddress { get; }
-
-        public ulong lastAddress { get; }
+        public ulong Address { get; }
+        public ulong Size { get; }
+        public ulong EndAddress { get; }
 
         public MemoryBlock(ulong address, ulong size)
         {
-            this.address = address;
-            this.size = size;
-            this.endAddress = address + size;
+            this.Address = address;
+            this.Size = size;
+            this.EndAddress = address + size;
         }
 
         public int CompareTo(MemoryBlock other)
         {
-            return this.address.CompareTo(other.address);
+            return this.Address.CompareTo(other.Address);
         }
 
         public override string ToString()
         {
-            return $" [{address} - ({size}) -> {lastAddress}] ";
+            return $" [{Address} - ({Size}) -> {EndAddress}] ";
         }
     }
 }

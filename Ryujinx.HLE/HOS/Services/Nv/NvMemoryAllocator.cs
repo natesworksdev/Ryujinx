@@ -17,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         public const ulong PteUnmapped = 0xffffffff_ffffffff;
         public const ulong PteReserved = 0xffffffff_fffffffe;
 
-        private TreeDictionary<ulong, MemoryBlock> _tree = new TreeDictionary<ulong, MemoryBlock>();
+        private readonly TreeDictionary<ulong, MemoryBlock> _tree = new TreeDictionary<ulong, MemoryBlock>();
 
         public NvMemoryAllocator()
         {
@@ -45,21 +45,21 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 {
                     MemoryBlock referenceBlock = reference.Value;
                     ulong endAddress = va + size;
-                    ulong refEndAddress = referenceBlock.endAddress;
-                    if (va >= referenceBlock.address)
+                    ulong refEndAddress = referenceBlock.EndAddress;
+                    if (va >= referenceBlock.Address)
                     {
                         // Need Left Node
-                        if (va > referenceBlock.address)
+                        if (va > referenceBlock.Address)
                         {
                             ulong leftEndAddress = va;
 
                             //Overwrite existing block with its new smaller range.
-                            _tree.Add(referenceBlock.address, new MemoryBlock(referenceBlock.address, leftEndAddress - referenceBlock.address));
+                            _tree.Add(referenceBlock.Address, new MemoryBlock(referenceBlock.Address, leftEndAddress - referenceBlock.Address));
                         }
                         else
                         {
                             // We need to get rid of the large chunk.
-                            _tree.Remove(referenceBlock.address);
+                            _tree.Remove(referenceBlock.Address);
                         }
 
                         ulong rightSize = refEndAddress - endAddress;
@@ -83,7 +83,47 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                // FIXME Figure out how to make this work.
+                Node<ulong, MemoryBlock> entry = _tree.FloorNode(va);
+                if (null != entry)
+                {
+                    Node<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
+                    Node<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
+                    ulong expandedStart = va;
+                    ulong expandedEnd = va + size;
+                    while (prev != null)
+                    {
+                        MemoryBlock prevBlock = prev.Value;
+                        ulong prevAddress = prevBlock.Address;
+                        if (prevBlock.EndAddress == expandedStart)
+                        {
+                            expandedStart = prevAddress;
+                            prev = _tree.PredecessorOf(prev);
+                            _tree.Remove(prevAddress);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    while (next != null)
+                    {
+                        MemoryBlock nextBlock = next.Value;
+                        ulong nextAddress = nextBlock.Address;
+                        if (nextBlock.Address == expandedEnd)
+                        {
+                            expandedEnd = nextBlock.EndAddress;
+                            next = _tree.SuccessorOf(next);
+                            _tree.Remove(nextAddress);
+                        }
+                        else
+                        {
+                            break;
+                        }
+                    }
+
+                    _tree.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
+                }
             }
         }
 
@@ -116,9 +156,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (blockNode != null)
                         {
                             MemoryBlock block = blockNode.Value;
-                            if (address >= block.address)
+                            if (address >= block.Address)
                             {
-                                if (address + size <= block.endAddress)
+                                if (address + size <= block.EndAddress)
                                 {
                                     memoryBlock = blockNode;
                                     return address;
@@ -166,7 +206,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (null != floorNode)
                 {
                     MemoryBlock memoryBlock = floorNode.Value;
-                    return !(gpuVa >= memoryBlock.address && ((gpuVa + size) < memoryBlock.endAddress));
+                    return !(gpuVa >= memoryBlock.Address && ((gpuVa + size) < memoryBlock.EndAddress));
                 }
             }
             return true;
