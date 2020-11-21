@@ -76,6 +76,7 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(value)} may not be null");
             }
+
             // O(1) Overwrites
             if (_dictionary.ContainsKey(key))
             {
@@ -102,7 +103,6 @@ namespace Ryujinx.Common.Collections
             {
                 return;
             }
-
             Delete(key);
         }
 
@@ -268,39 +268,41 @@ namespace Ryujinx.Common.Collections
         /// <param name="value"></param>
         private void Insert(K key, V value)
         {
-            Node<K, V> node = _root;
-            if (node == null)
-            {
-                _root = new Node<K, V>(key, value);
-                _dictionary[key] = _root;
-                return;
-            }
+            Node<K, V> newNode = BSTInsert(key, value);
+            RestoreBalanceAfterInsertion(newNode);
+        }
 
-            Node<K, V> tmp = null;
+        /// <summary>
+        /// Standard Insertion Mechanism for a Binary Search Tree (BST)
+        /// </summary>
+        /// <param name="key">Key</param>
+        /// <param name="value">Value</param>
+        /// <returns>Node</returns>
+        private Node<K,V> BSTInsert(K key, V value)
+        {
+            Node<K, V> parent = null;
+            Node<K, V> node = _root;
+
             while(node != null)
             {
-                tmp = node;
+                parent = node;
                 node = key.CompareTo(node.Key) < 0 ? node.Left : node.Right;
             }
-            Node<K, V> newNode = new Node<K, V>(key, value, tmp);
-            if(tmp == null)
+            Node<K, V> newNode = new Node<K, V>(key, value, parent);
+            if(newNode.Parent == null)
             {
                 _root = newNode;
             }
+            else if(key.CompareTo(parent.Key) < 0)
+            {
+                parent.Left = newNode;
+            }
             else
             {
-                int cmp = key.CompareTo(tmp.Key);
-                if(cmp < 0)
-                {
-                    tmp.Left = newNode;
-                }
-                else
-                {
-                    tmp.Right = newNode;
-                }
+                parent.Right = newNode;
             }
             _dictionary[key] = newNode;
-            RestoreBalanceAfterInsertion(newNode);
+            return newNode;
         }
 
         /// <summary>
@@ -345,9 +347,9 @@ namespace Ryujinx.Common.Collections
                 node.Right = null;
                 node.Parent = null;
 
-                if (node.Color == Black)
+                if (ColorOf(node) == Black)
                 {
-                    RestoreBalanceAfterRemoval(node);
+                    RestoreBalanceAfterRemoval(tmp);
                 }
             }
             else if (node.Parent == null)
@@ -356,7 +358,7 @@ namespace Ryujinx.Common.Collections
             }
             else
             {
-                if (node.Color == Black)
+                if (ColorOf(node) == Black)
                 {
                     RestoreBalanceAfterRemoval(node);
                 }
@@ -423,185 +425,243 @@ namespace Ryujinx.Common.Collections
 
         private void RestoreBalanceAfterRemoval(Node<K, V> balanceNode)
         {
-            Node<K, V> tmp = balanceNode;
+            Node<K, V> node = balanceNode;
             
-            while(tmp != _root && ColorOf(tmp) == Black)
+            while(node != _root && ColorOf(node) == Black)
             {
-                if(tmp == tmp.Parent.Left)
+                if(node == LeftOf(ParentOf(node)))
                 {
-                    Node<K, V> sibling = tmp.Parent.Right;
+                    Node<K, V> sibling = RightOf(ParentOf(node));
 
                     if(ColorOf(sibling) == Red)
                     {
-                        sibling.Color = Black;
-                        tmp.Parent.Color = Red;
-                        RotateLeft(tmp.Parent);
-                        sibling = tmp.Parent.Right;
+                        SetColor(sibling, Black);
+                        SetColor(ParentOf(node), Red);
+                        RotateLeft(ParentOf(node));
+                        sibling = RightOf(ParentOf(node));
                     }
-                    if(ColorOf(sibling.Left) == Black && ColorOf(sibling.Right) == Black)
+                    if(ColorOf(LeftOf(sibling)) == Black && ColorOf(RightOf(sibling)) == Black)
                     {
-                        sibling.Color = Red;
-                        tmp = tmp.Parent;
+                        SetColor(sibling, Red);
+                        node = ParentOf(node);
                     }
                     else {
-                        if (ColorOf(sibling.Right) == Black)
+                        if (ColorOf(RightOf(sibling)) == Black)
                         {
-                            sibling.Left.Color = Black;
-                            sibling.Color = Red;
+                            SetColor(LeftOf(sibling),  Black);
+                            SetColor(sibling, Red);
                             RotateRight(sibling);
-                            sibling = tmp.Parent.Right;
+                            sibling = RightOf(ParentOf(node));
                         }
-                        sibling.Color = ColorOf(tmp.Parent);
-                        tmp.Parent.Color = Black;
-                        sibling.Right.Color = Black;
-                        RotateLeft(tmp.Parent);
-                        tmp = _root;
+                        SetColor(sibling, ColorOf(ParentOf(node)));
+                        SetColor(ParentOf(node), Black);
+                        SetColor(RightOf(sibling), Black);
+                        RotateLeft(ParentOf(node));
+                        node = _root;
                     }
                 }
                 else
                 {
-                    Node<K, V> sibling = tmp.Parent.Left;
+                    Node<K, V> sibling = LeftOf(ParentOf(node));
 
                     if (ColorOf(sibling) == Red)
                     {
-                        sibling.Color = Black;
-                        tmp.Parent.Color = Red;
-                        RotateRight(tmp.Parent);
-                        sibling = tmp.Parent.Left;
+                        SetColor(sibling, Black);
+                        SetColor(ParentOf(node), Red);
+                        RotateRight(ParentOf(node));
+                        sibling = LeftOf(ParentOf(node));
                     }
-                    if (ColorOf(sibling.Right) == Black && ColorOf(sibling.Left) == Black)
+                    if (ColorOf(RightOf(sibling)) == Black && ColorOf(LeftOf(sibling)) == Black)
                     {
-                        sibling.Color = Red;
-                        tmp = tmp.Parent;
+                        SetColor(sibling, Red);
+                        node = ParentOf(node);
                     }
                     else
                     {
-                        if (ColorOf(sibling.Left) == Black)
+                        if (ColorOf(LeftOf(sibling)) == Black)
                         {
-                            sibling.Right.Color = Black;
-                            sibling.Color = Red;
+                            SetColor(RightOf(sibling), Black);
+                            SetColor(sibling, Red);
                             RotateLeft(sibling);
-                            sibling = tmp.Parent.Left;
+                            sibling = LeftOf(ParentOf(node));
                         }
+                        SetColor(sibling, ColorOf(ParentOf(node)));
+                        SetColor(ParentOf(node), Black);
+                        SetColor(LeftOf(sibling), Black);
+                        RotateRight(ParentOf(node));
+                        node = _root;
                     }
-                    sibling.Color = ColorOf(tmp.Parent);
-                    tmp.Parent.Color = Black;
-                    sibling.Left.Color = Black;
-                    RotateRight(tmp.Parent);
-                    tmp = _root;
                 }
             }
-            tmp.Color = Black;
+            SetColor(node, Black);
         }
 
         private void RestoreBalanceAfterInsertion(Node<K, V> insertedNode)
         {
-            insertedNode.Color = Red;
-            while (insertedNode != null && insertedNode != _root && insertedNode.Parent.Color == Red)
+            SetColor(insertedNode, Red);
+            while (insertedNode != null && insertedNode != _root && ColorOf(ParentOf(insertedNode)) == Red)
             {
-                if (insertedNode.Parent == insertedNode.Parent.Parent.Left)
+                if (ParentOf(insertedNode) == LeftOf(ParentOf(ParentOf(insertedNode))))
                 {
-                    Node<K, V> y = insertedNode.Parent.Parent.Right;
+                    Node<K, V> y = RightOf(ParentOf(ParentOf(insertedNode)));
 
                     if(ColorOf(y) == Red)
                     {
-                        insertedNode.Parent.Color = Black;
-                        insertedNode.Parent.Parent.Color = Red;
-                        insertedNode = insertedNode.Parent.Parent;
+                        SetColor(ParentOf(insertedNode),  Black);
+                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
+                        insertedNode = ParentOf(ParentOf(insertedNode));
                     }
                     else {
-                        if (insertedNode == insertedNode.Parent.Right)
+                        if (insertedNode == RightOf(ParentOf(insertedNode)))
                         {
-                            insertedNode = insertedNode.Parent;
+                            insertedNode = ParentOf(insertedNode);
                             RotateLeft(insertedNode);
                         }
-                        insertedNode.Parent.Color = Black;
-                        insertedNode.Parent.Parent.Color = Red;
-                        RotateRight(insertedNode.Parent.Parent);
+                        SetColor(ParentOf(insertedNode),  Black);
+                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
+                        RotateRight(ParentOf(ParentOf(insertedNode)));
                     }
                 }
                 else
                 {
-                    Node<K, V> y = insertedNode.Parent.Parent.Left;
+                    Node<K, V> y = LeftOf(ParentOf(ParentOf(insertedNode)));
 
                     if (ColorOf(y) == Red)
                     {
-                        insertedNode.Parent.Color = Black;
-                        insertedNode.Parent.Parent.Color = Red;
-                        insertedNode = insertedNode.Parent.Parent;
+                        SetColor(ParentOf(insertedNode),  Black);
+                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
+                        insertedNode = ParentOf(ParentOf(insertedNode));
                     }
                     else
                     {
-                        if (insertedNode == insertedNode.Parent.Left)
+                        if (insertedNode == LeftOf(ParentOf(insertedNode)))
                         {
-                            insertedNode = insertedNode.Parent;
+                            insertedNode = ParentOf(insertedNode);
                             RotateRight(insertedNode);
                         }
-                        insertedNode.Parent.Color = Black;
-                        insertedNode.Parent.Parent.Color = Red;
-                        RotateLeft(insertedNode.Parent.Parent);
+                        SetColor(ParentOf(insertedNode),  Black);
+                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
+                        RotateLeft(ParentOf(ParentOf(insertedNode)));
                     }
                 }
             }
-            _root.Color = Black;
+            SetColor(_root,  Black);
         }
 
         private void RotateLeft(Node<K, V> node)
         {
-            Node<K, V> right = node.Right;
-            node.Right = right.Left;
-            if(right.Left != null)
+            if (node != null)
             {
-                right.Left.Parent = node;
+                Node<K, V> right = RightOf(node);
+                node.Right = LeftOf(right);
+                if (LeftOf(right) != null)
+                {
+                    LeftOf(right).Parent = node;
+                }
+                right.Parent = ParentOf(node);
+                if (ParentOf(node) == null)
+                {
+                    _root = right;
+                }
+                else if (node == LeftOf(ParentOf(node)))
+                {
+                    ParentOf(node).Left = right;
+                }
+                else
+                {
+                    ParentOf(node).Right = right;
+                }
+                right.Left = node;
+                node.Parent = right;
             }
-            right.Parent = node.Parent;
-            if(node.Parent == null)
-            {
-                _root = right;
-            }
-            else if(node == node.Parent.Left)
-            {
-                node.Parent.Left = right;
-            }
-            else
-            {
-                node.Parent.Right = right;
-            }
-            right.Left = node;
-            node.Parent = right;
         }
 
         private void RotateRight(Node<K, V> node)
         {
-            Node<K, V> left = node.Left;
-            node.Left = left.Right;
-            if (left.Right != null)
+            if (node != null)
             {
-                left.Parent.Right = node;
+                Node<K, V> left = LeftOf(node);
+                node.Left = RightOf(left);
+                if (RightOf(left) != null)
+                {
+                    RightOf(left).Parent = node;
+                }
+                left.Parent = node.Parent;
+                if (ParentOf(node) == null)
+                {
+                    _root = left;
+                }
+                else if (node == RightOf(ParentOf(node)))
+                {
+                    ParentOf(node).Right = left;
+                }
+                else
+                {
+                    ParentOf(node).Left = left;
+                }
+                left.Right = node;
+                node.Parent = left;
             }
-            left.Parent = node.Parent;
-            if (node.Parent == null)
-            {
-                _root = left;
-            }
-            else if (node == node.Parent.Right)
-            {
-                node.Parent.Right = left;
-            }
-            else
-            {
-                node.Parent.Left = left;
-            }
-            left.Right = node;
-            node.Parent = left;
         }
+        #endregion
+        #region Safety-Methods
 
+        // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against nullpointerexceptions.
+
+        /// <summary>
+        /// Returns the color of <paramref name="node"/>, or Black if it is null.
+        /// </summary>
+        /// <param name="node">Node</param>
+        /// <returns>Boolean</returns>
         private bool ColorOf(Node<K,V> node)
         {
             return node != null ? node.Color : Black;
         }
 
+        /// <summary>
+        /// Sets the color of <paramref name="node"/> node to <paramref name="color"/>
+        /// <br></br>
+        /// This method does nothing if <paramref name="node"/> is null.
+        /// </summary>
+        /// <param name="node">Node</param>
+        /// <param name="color">Color (Boolean)</param>
+        private void SetColor(Node<K, V> node, bool color)
+        {
+            if(node != null)
+            {
+                node.Color = color;
+            }
+        }
 
+        /// <summary>
+        /// This method returns the left node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
+        /// </summary>
+        /// <param name="node">Node</param>
+        /// <returns>Left Node</returns>
+        private Node<K,V> LeftOf(Node<K, V> node)
+        {
+            return node != null ? node.Left : null;
+        }
+
+        /// <summary>
+        /// This method returns the right node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
+        /// </summary>
+        /// <param name="node">Node</param>
+        /// <returns>Right Node</returns>
+        private Node<K, V> RightOf(Node<K, V> node)
+        {
+            return node != null ? node.Right : null;
+        }
+
+        /// <summary>
+        /// This method returns the parent node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
+        /// </summary>
+        /// <param name="node">Node</param>
+        /// <returns>Parent Node</returns>
+        private Node<K, V> ParentOf(Node<K, V> node)
+        {
+            return node != null ? node.Parent : null;
+        }
         #endregion
     }
 
