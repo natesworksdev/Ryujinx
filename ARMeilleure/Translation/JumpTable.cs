@@ -88,14 +88,14 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            foreach (var item in ptcJumpTable.Dependants)
+            foreach (var kv in ptcJumpTable.Dependants)
             {
-                Dependants.TryAdd(item.Key, new List<int>(item.Value));
+                Dependants.TryAdd(kv.Key, new List<int>(kv.Value));
             }
 
-            foreach (var item in ptcJumpTable.Owners)
+            foreach (var kv in ptcJumpTable.Owners)
             {
-                Owners.TryAdd(item.Key, new List<int>(item.Value));
+                Owners.TryAdd(kv.Key, new List<int>(kv.Value));
             }
         }
 

@@ -13,6 +13,10 @@ namespace ARMeilleure.Translation.PTC
 {
     public static class PtcProfiler
     {
+        private const string HeaderMagic = "Phd";
+
+        private const uint InternalVersion = 1712; //! Not to be incremented manually for each change to the ARMeilleure project.
+
         private const int SaveInterval = 30; // Seconds.
 
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
@@ -30,7 +34,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static bool _disposed;
 
-        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> ProfiledFuncs { get; private set; } //! Not to be modified.
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> ProfiledFuncs { get; private set; }
 
         internal static bool Enabled { get; private set; }
 
@@ -100,18 +104,18 @@ namespace ARMeilleure.Translation.PTC
 
                             ProfiledFuncs[item.address] = (item.mode, highCq: true, overlapped: false);
 
-                            foreach (ulong key in new List<ulong>(ProfiledFuncs.Keys))
+                            foreach (ulong address in new List<ulong>(ProfiledFuncs.Keys))
                             {
-                                var value = ProfiledFuncs[key];
+                                var value = ProfiledFuncs[address];
 
-                                if (!value.highCq && key >= item.address && key < item.address + item.size)
+                                if (!value.highCq && address >= item.address && address < item.address + item.size)
                                 {
                                     if (!Enabled)
                                     {
                                         break;
                                     }
 
-                                    ProfiledFuncs[key] = (value.mode, highCq: false, overlapped: true);
+                                    ProfiledFuncs[address] = (value.mode, highCq: false, overlapped: true);
                                 }
                             }
                         }
@@ -207,9 +211,25 @@ namespace ARMeilleure.Translation.PTC
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
 
+                Header header = ReadHeader(stream);
+
+                if (header.Magic != HeaderMagic)
+                {
+                    InvalidateCompressedStream(compressedStream);
+
+                    return false;
+                }
+
+                if (header.InfoFileVersion != InternalVersion)
+                {
+                    InvalidateCompressedStream(compressedStream);
+
+                    return false;
+                }
+
                 try
                 {
-                    ProfiledFuncs = (Dictionary<ulong, (ExecutionMode, bool, bool)>)_binaryFormatter.Deserialize(stream);
+                    ProfiledFuncs = Deserialize(stream);
                 }
                 catch
                 {
@@ -227,6 +247,43 @@ namespace ARMeilleure.Translation.PTC
         private static bool CompareHash(ReadOnlySpan<byte> currentHash, ReadOnlySpan<byte> expectedHash)
         {
             return currentHash.SequenceEqual(expectedHash);
+        }
+
+        private static Header ReadHeader(MemoryStream stream)
+        {
+            using (BinaryReader headerReader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
+            {
+                Header header = new Header();
+
+                header.Magic = headerReader.ReadString();
+
+                header.InfoFileVersion = headerReader.ReadUInt32();
+
+                return header;
+            }
+        }
+
+        private static Dictionary<ulong, (ExecutionMode, bool, bool)> Deserialize(MemoryStream stream)
+        {
+            using (BinaryReader reader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
+            {
+                var profiledFuncs = new Dictionary<ulong, (ExecutionMode, bool, bool)>();
+
+                int profiledFuncsCount = reader.ReadInt32();
+
+                for (int i = 0; i < profiledFuncsCount; i++)
+                {
+                    ulong address = reader.ReadUInt64();
+
+                    ExecutionMode mode = (ExecutionMode)reader.ReadInt32();
+                    bool highCq = reader.ReadBoolean();
+                    bool overlapped = reader.ReadBoolean();
+
+                    profiledFuncs.Add(address, (mode, highCq, overlapped));
+                }
+
+                return profiledFuncs;
+            }
         }
 
         private static void InvalidateCompressedStream(FileStream compressedStream)
@@ -262,9 +319,11 @@ namespace ARMeilleure.Translation.PTC
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
 
+                WriteHeader(stream);
+
                 lock (_lock)
                 {
-                    _binaryFormatter.Serialize(stream, ProfiledFuncs);
+                    Serialize(stream, ProfiledFuncs);
                 }
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
@@ -291,6 +350,40 @@ namespace ARMeilleure.Translation.PTC
                     }
                 }
             }
+        }
+
+        private static void WriteHeader(MemoryStream stream)
+        {
+            using (BinaryWriter headerWriter = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
+            {
+                headerWriter.Write((string)HeaderMagic); // Header.Magic
+
+                headerWriter.Write((uint)InternalVersion); // Header.InfoFileVersion
+            }
+        }
+
+        private static void Serialize(MemoryStream stream, Dictionary<ulong, (ExecutionMode, bool, bool)> profiledFuncs)
+        {
+            using (BinaryWriter writer = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
+            {
+                writer.Write((int)profiledFuncs.Count);
+
+                foreach (var kv in profiledFuncs)
+                {
+                    writer.Write((ulong)kv.Key); // address
+
+                    writer.Write((int)kv.Value.Item1); // mode
+                    writer.Write((bool)kv.Value.Item2); // highCq
+                    writer.Write((bool)kv.Value.Item3); // overlapped
+                }
+            }
+        }
+
+        private struct Header
+        {
+            public string Magic;
+
+            public uint InfoFileVersion;
         }
 
         internal static void Start()

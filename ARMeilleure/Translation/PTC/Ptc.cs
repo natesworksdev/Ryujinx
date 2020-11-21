@@ -272,7 +272,7 @@ namespace ARMeilleure.Translation.PTC
 
                 try
                 {
-                    PtcJumpTable = (PtcJumpTable)_binaryFormatter.Deserialize(stream);
+                    PtcJumpTable = PtcJumpTable.Deserialize(stream);
                 }
                 catch
                 {
@@ -358,7 +358,7 @@ namespace ARMeilleure.Translation.PTC
                 _relocsStream.WriteTo(stream);
                 _unwindInfosStream.WriteTo(stream);
 
-                _binaryFormatter.Serialize(stream, PtcJumpTable);
+                PtcJumpTable.Serialize(stream, PtcJumpTable);
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
                 byte[] hash = md5.ComputeHash(stream);
@@ -477,13 +477,13 @@ namespace ARMeilleure.Translation.PTC
 
                 isModified = false;
 
-                foreach (var item in PtcProfiler.ProfiledFuncs)
+                foreach (var kv in PtcProfiler.ProfiledFuncs)
                 {
-                    if (item.Value.overlapped)
+                    if (kv.Value.overlapped)
                     {
-                        PtcJumpTable.Clean(item.Key);
+                        PtcJumpTable.Clean(kv.Key);
 
-                        PtcProfiler.ProfiledFuncs.Remove(item.Key);
+                        PtcProfiler.ProfiledFuncs.Remove(kv.Key);
                         isModified = true;
                     }
                 }
@@ -497,11 +497,11 @@ namespace ARMeilleure.Translation.PTC
             {
                 isModified = false;
 
-                foreach (var item in PtcProfiler.ProfiledFuncs)
+                foreach (var kv in PtcProfiler.ProfiledFuncs)
                 {
-                    if (item.Value.overlapped)
+                    if (kv.Value.overlapped)
                     {
-                        PtcProfiler.ProfiledFuncs.Remove(item.Key);
+                        PtcProfiler.ProfiledFuncs.Remove(kv.Key);
                         isModified = true;
                     }
                 }
@@ -540,7 +540,7 @@ namespace ARMeilleure.Translation.PTC
         {
             int pushEntriesLength = unwindInfosReader.ReadInt32();
 
-            _unwindInfosStream.Seek(pushEntriesLength * 16 + 4, SeekOrigin.Current);
+            _unwindInfosStream.Seek(pushEntriesLength * UnwindPushEntry.Stride + UnwindInfo.Stride, SeekOrigin.Current);
         }
 
         private static byte[] ReadCode(BinaryReader codesReader, int codeLen)
@@ -664,7 +664,7 @@ namespace ARMeilleure.Translation.PTC
         {
             int pushEntriesLength = unwindInfosReader.ReadInt32();
 
-            for (int i = 0; i < pushEntriesLength * 16 + 4; i++)
+            for (int i = 0; i < pushEntriesLength * UnwindPushEntry.Stride + UnwindInfo.Stride; i++)
             {
                 _unwindInfosStream.WriteByte(FillingByte);
             }
