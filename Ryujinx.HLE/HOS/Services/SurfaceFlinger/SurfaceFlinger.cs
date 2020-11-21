@@ -25,6 +25,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private long _ticks;
         private long _ticksPerFrame;
+        private long _1msTicks;
 
         private int _swapInterval;
 
@@ -59,8 +60,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             };
 
             _chrono = new Stopwatch();
+            _chrono.Start();
 
             _ticks = 0;
+            _1msTicks = Stopwatch.Frequency / 1000;
 
             UpdateSwapInterval(1);
 
@@ -187,23 +190,38 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             _isRunning = true;
 
+            long lastTicks = _chrono.ElapsedTicks;
+
             while (_isRunning)
             {
-                _ticks += _chrono.ElapsedTicks;
-
-                _chrono.Restart();
+                long ticks = _chrono.ElapsedTicks;
+                _ticks += ticks - lastTicks;
+                lastTicks = ticks;
 
                 if (_ticks >= _ticksPerFrame)
                 {
-                    Compose();
-
                     _device.System?.SignalVsync();
+                    
+                    Compose();
 
                     _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
                 }
 
                 // Sleep the minimal amount of time to avoid being too expensive.
-                Thread.Sleep(1);
+                if (_ticksPerFrame - _ticks < _1msTicks)
+                {
+                    do
+                    {
+                        Thread.SpinWait(100);
+                        ticks = _chrono.ElapsedTicks;
+                        _ticks += ticks - lastTicks;
+                        lastTicks = ticks;
+                    } while (_ticks < _ticksPerFrame);
+                }
+                else
+                {
+                    Thread.Sleep(1);
+                }
             }
         }
 
