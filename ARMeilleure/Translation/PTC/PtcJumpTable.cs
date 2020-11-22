@@ -114,18 +114,18 @@ namespace ARMeilleure.Translation.PTC
                 {
                     ulong address = reader.ReadUInt64();
 
-                    var items = new List<int>();
+                    var entries = new List<int>();
 
-                    int itemsCount = reader.ReadInt32();
+                    int entriesCount = reader.ReadInt32();
 
-                    for (int j = 0; j < itemsCount; j++)
+                    for (int j = 0; j < entriesCount; j++)
                     {
-                        int item = reader.ReadInt32();
+                        int entry = reader.ReadInt32();
 
-                        items.Add(item);
+                        entries.Add(entry);
                     }
 
-                    dependants.Add(address, items);
+                    dependants.Add(address, entries);
                 }
 
                 var owners = new Dictionary<ulong, List<int>>();
@@ -136,18 +136,18 @@ namespace ARMeilleure.Translation.PTC
                 {
                     ulong address = reader.ReadUInt64();
 
-                    var items = new List<int>();
+                    var entries = new List<int>();
 
-                    int itemsCount = reader.ReadInt32();
+                    int entriesCount = reader.ReadInt32();
 
-                    for (int j = 0; j < itemsCount; j++)
+                    for (int j = 0; j < entriesCount; j++)
                     {
-                        int item = reader.ReadInt32();
+                        int entry = reader.ReadInt32();
 
-                        items.Add(item);
+                        entries.Add(entry);
                     }
 
-                    owners.Add(address, items);
+                    owners.Add(address, entries);
                 }
 
                 return new PtcJumpTable(jumpTable, dynamicTable, targets, dependants, owners);
@@ -191,9 +191,9 @@ namespace ARMeilleure.Translation.PTC
 
                     writer.Write((int)kv.Value.Count);
 
-                    foreach (int item in kv.Value)
+                    foreach (int entry in kv.Value)
                     {
-                        writer.Write((int)item);
+                        writer.Write((int)entry);
                     }
                 }
 
@@ -205,9 +205,9 @@ namespace ARMeilleure.Translation.PTC
 
                     writer.Write((int)kv.Value.Count);
 
-                    foreach (int item in kv.Value)
+                    foreach (int entry in kv.Value)
                     {
-                        writer.Write((int)item);
+                        writer.Write((int)entry);
                     }
                 }
             }
@@ -245,7 +245,7 @@ namespace ARMeilleure.Translation.PTC
                 {
                     if ((entry & JumpTable.DynamicEntryTag) == 0)
                     {
-                        int removed = _jumpTable.RemoveAll(item => item.EntryIndex == entry);
+                        int removed = _jumpTable.RemoveAll(tableEntry => tableEntry.EntryIndex == entry);
 
                         Debug.Assert(removed == 1);
                     }
@@ -256,7 +256,7 @@ namespace ARMeilleure.Translation.PTC
                             throw new NotSupportedException();
                         }
 
-                        int removed = _dynamicTable.RemoveAll(item => item.EntryIndex == (entry & ~JumpTable.DynamicEntryTag));
+                        int removed = _dynamicTable.RemoveAll(tableEntry => tableEntry.EntryIndex == (entry & ~JumpTable.DynamicEntryTag));
 
                         Debug.Assert(removed == 1);
                     }
