@@ -256,6 +256,40 @@ namespace Ryujinx.Common.Collections
 
         public int Count => _dictionary.Count;
 
+        /// <summary>
+        /// Adds all the nodes in the dictionary into <paramref name="list"/>.
+        /// <br></br>
+        /// The nodes will be added in Level Order.
+        /// </summary>
+        /// <param name="list"></param>
+        /// 
+        public void ToList(List<Node<K,V>> list)
+        {
+            if(list == null)
+            {
+                throw new ArgumentNullException($"{nameof(list)} must not be null");
+            }
+
+            Queue<Node<K, V>> nodes = new Queue<Node<K, V>>();
+
+            if(this._root != null) {
+                nodes.Enqueue(this._root);
+            }
+            while (nodes.Count > 0)
+            {
+                Node<K, V> node = nodes.Dequeue();
+                list.Add(node);
+                if (node.Left != null)
+                {
+                    nodes.Enqueue(node.Left);
+                }
+                if (node.Right != null)
+                {
+                    nodes.Enqueue(node.Right);
+                }
+            }
+        }
+
         #endregion
         #region Private Methods (BST)
 
@@ -313,70 +347,56 @@ namespace Ryujinx.Common.Collections
         private Node<K, V> Delete(K key)
         {
             // O(1) Retrieval
-            Node<K, V> node = GetNode(key);
-            if (node == null) return null;
+            Node<K, V> nodeToDelete = GetNode(key);
+            
+            if (nodeToDelete == null) return null;
 
             _dictionary.Remove(key);
+
+            Node<K, V> replacementNode;
             
-            if(!(node.Left == null || node.Right == null))
+            if(LeftOf(nodeToDelete) == null || RightOf(nodeToDelete) == null)
             {
-                Node<K, V> tmpNode = SuccessorOf(node);
-                node.Key = tmpNode.Key;
-                node.Value = tmpNode.Value;
-                node = tmpNode;
-            }
-
-            Node<K, V> tmp = node.Left ?? node.Right;
-            if (tmp != null)
-            {
-                tmp.Parent = node.Parent;
-                if (node.Parent == null)
-                {
-                    _root = tmp;
-                }
-                else if (node == node.Parent.Left)
-                {
-                    node.Parent.Left = tmp;
-                }
-                else
-                {
-                    node.Parent.Right = tmp;
-                }
-
-                node.Left = null;
-                node.Right = null;
-                node.Parent = null;
-
-                if (ColorOf(node) == Black)
-                {
-                    RestoreBalanceAfterRemoval(tmp);
-                }
-            }
-            else if (node.Parent == null)
-            {
-                _root = null;
+                replacementNode = nodeToDelete;
             }
             else
             {
-                if (ColorOf(node) == Black)
-                {
-                    RestoreBalanceAfterRemoval(node);
-                }
-
-                if (node.Parent != null)
-                {
-                    if (node == node.Parent.Left)
-                    {
-                        node.Parent.Left = null;
-                    }
-                    else if (node == node.Parent.Right)
-                    {
-                        node.Parent.Right = null;
-                    }
-                    node.Parent = null;
-                }
+                replacementNode = PredecessorOf(nodeToDelete);
             }
-            return node;
+
+            Node<K, V> tmp = LeftOf(replacementNode) ?? RightOf(replacementNode);
+
+            if (tmp != null)
+            {
+                tmp.Parent = ParentOf(replacementNode);
+            }
+
+            if(ParentOf(replacementNode) == null)
+            {
+                _root = tmp;
+            }
+
+            else if(replacementNode == LeftOf(ParentOf(replacementNode)))
+            {
+                ParentOf(replacementNode).Left = tmp;
+            }
+            else
+            {
+                ParentOf(replacementNode).Right = tmp;
+            }
+
+            if(replacementNode != nodeToDelete)
+            {
+                nodeToDelete.Key = replacementNode.Key;
+                nodeToDelete.Value = replacementNode.Value;
+            }
+
+            if(tmp != null && ColorOf(replacementNode) == Black)
+            {
+                RestoreBalanceAfterRemoval(tmp);
+            }
+
+            return replacementNode;
         }
 
         /// <summary>
@@ -425,25 +445,25 @@ namespace Ryujinx.Common.Collections
 
         private void RestoreBalanceAfterRemoval(Node<K, V> balanceNode)
         {
-            Node<K, V> node = balanceNode;
+            Node<K, V> ptr = balanceNode;
             
-            while(node != _root && ColorOf(node) == Black)
+            while(ptr != _root && ColorOf(ptr) == Black)
             {
-                if(node == LeftOf(ParentOf(node)))
+                if(ptr == LeftOf(ParentOf(ptr)))
                 {
-                    Node<K, V> sibling = RightOf(ParentOf(node));
+                    Node<K, V> sibling = RightOf(ParentOf(ptr));
 
                     if(ColorOf(sibling) == Red)
                     {
                         SetColor(sibling, Black);
-                        SetColor(ParentOf(node), Red);
-                        RotateLeft(ParentOf(node));
-                        sibling = RightOf(ParentOf(node));
+                        SetColor(ParentOf(ptr), Red);
+                        RotateLeft(ParentOf(ptr));
+                        sibling = RightOf(ParentOf(ptr));
                     }
                     if(ColorOf(LeftOf(sibling)) == Black && ColorOf(RightOf(sibling)) == Black)
                     {
                         SetColor(sibling, Red);
-                        node = ParentOf(node);
+                        ptr = ParentOf(ptr);
                     }
                     else {
                         if (ColorOf(RightOf(sibling)) == Black)
@@ -451,30 +471,30 @@ namespace Ryujinx.Common.Collections
                             SetColor(LeftOf(sibling),  Black);
                             SetColor(sibling, Red);
                             RotateRight(sibling);
-                            sibling = RightOf(ParentOf(node));
+                            sibling = RightOf(ParentOf(ptr));
                         }
-                        SetColor(sibling, ColorOf(ParentOf(node)));
-                        SetColor(ParentOf(node), Black);
+                        SetColor(sibling, ColorOf(ParentOf(ptr)));
+                        SetColor(ParentOf(ptr), Black);
                         SetColor(RightOf(sibling), Black);
-                        RotateLeft(ParentOf(node));
-                        node = _root;
+                        RotateLeft(ParentOf(ptr));
+                        ptr = _root;
                     }
                 }
                 else
                 {
-                    Node<K, V> sibling = LeftOf(ParentOf(node));
+                    Node<K, V> sibling = LeftOf(ParentOf(ptr));
 
                     if (ColorOf(sibling) == Red)
                     {
                         SetColor(sibling, Black);
-                        SetColor(ParentOf(node), Red);
-                        RotateRight(ParentOf(node));
-                        sibling = LeftOf(ParentOf(node));
+                        SetColor(ParentOf(ptr), Red);
+                        RotateRight(ParentOf(ptr));
+                        sibling = LeftOf(ParentOf(ptr));
                     }
                     if (ColorOf(RightOf(sibling)) == Black && ColorOf(LeftOf(sibling)) == Black)
                     {
                         SetColor(sibling, Red);
-                        node = ParentOf(node);
+                        ptr = ParentOf(ptr);
                     }
                     else
                     {
@@ -483,65 +503,67 @@ namespace Ryujinx.Common.Collections
                             SetColor(RightOf(sibling), Black);
                             SetColor(sibling, Red);
                             RotateLeft(sibling);
-                            sibling = LeftOf(ParentOf(node));
+                            sibling = LeftOf(ParentOf(ptr));
                         }
-                        SetColor(sibling, ColorOf(ParentOf(node)));
-                        SetColor(ParentOf(node), Black);
+                        SetColor(sibling, ColorOf(ParentOf(ptr)));
+                        SetColor(ParentOf(ptr), Black);
                         SetColor(LeftOf(sibling), Black);
-                        RotateRight(ParentOf(node));
-                        node = _root;
+                        RotateRight(ParentOf(ptr));
+                        ptr = _root;
                     }
                 }
             }
-            SetColor(node, Black);
+            SetColor(ptr, Black);
         }
 
-        private void RestoreBalanceAfterInsertion(Node<K, V> insertedNode)
+        private void RestoreBalanceAfterInsertion(Node<K, V> balanceNode)
         {
-            SetColor(insertedNode, Red);
-            while (insertedNode != null && insertedNode != _root && ColorOf(ParentOf(insertedNode)) == Red)
+            SetColor(balanceNode, Red);
+            while (balanceNode != null && balanceNode != _root && ColorOf(ParentOf(balanceNode)) == Red)
             {
-                if (ParentOf(insertedNode) == LeftOf(ParentOf(ParentOf(insertedNode))))
+                if (ParentOf(balanceNode) == LeftOf(ParentOf(ParentOf(balanceNode))))
                 {
-                    Node<K, V> y = RightOf(ParentOf(ParentOf(insertedNode)));
+                    Node<K, V> sibling = RightOf(ParentOf(ParentOf(balanceNode)));
 
-                    if(ColorOf(y) == Red)
+                    if(ColorOf(sibling) == Red)
                     {
-                        SetColor(ParentOf(insertedNode),  Black);
-                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
-                        insertedNode = ParentOf(ParentOf(insertedNode));
+                        SetColor(ParentOf(balanceNode),  Black);
+                        SetColor(sibling, Black);
+                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        balanceNode = ParentOf(ParentOf(balanceNode));
                     }
                     else {
-                        if (insertedNode == RightOf(ParentOf(insertedNode)))
+                        if (balanceNode == RightOf(ParentOf(balanceNode)))
                         {
-                            insertedNode = ParentOf(insertedNode);
-                            RotateLeft(insertedNode);
+                            balanceNode = ParentOf(balanceNode);
+                            RotateLeft(balanceNode);
                         }
-                        SetColor(ParentOf(insertedNode),  Black);
-                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
-                        RotateRight(ParentOf(ParentOf(insertedNode)));
+                        SetColor(ParentOf(balanceNode),  Black);
+                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        RotateRight(ParentOf(ParentOf(balanceNode)));
                     }
                 }
                 else
                 {
-                    Node<K, V> y = LeftOf(ParentOf(ParentOf(insertedNode)));
+                    Node<K, V> sibling = LeftOf(ParentOf(ParentOf(balanceNode)));
 
-                    if (ColorOf(y) == Red)
+                    if (ColorOf(sibling) == Red)
                     {
-                        SetColor(ParentOf(insertedNode),  Black);
-                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
-                        insertedNode = ParentOf(ParentOf(insertedNode));
+                        SetColor(ParentOf(balanceNode),  Black);
+                        SetColor(sibling, Black);
+                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        balanceNode = ParentOf(ParentOf(balanceNode));
                     }
                     else
                     {
-                        if (insertedNode == LeftOf(ParentOf(insertedNode)))
+                        if (balanceNode == LeftOf(ParentOf(balanceNode)))
                         {
-                            insertedNode = ParentOf(insertedNode);
-                            RotateRight(insertedNode);
+                            balanceNode = ParentOf(balanceNode);
+                            RotateRight(balanceNode);
                         }
-                        SetColor(ParentOf(insertedNode),  Black);
-                        SetColor(ParentOf(ParentOf(insertedNode)),  Red);
-                        RotateLeft(ParentOf(ParentOf(insertedNode)));
+                        SetColor(ParentOf(balanceNode),  Black);
+                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        RotateLeft(ParentOf(ParentOf(balanceNode)));
                     }
                 }
             }
