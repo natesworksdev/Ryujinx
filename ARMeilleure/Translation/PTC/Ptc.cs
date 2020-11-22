@@ -12,6 +12,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -192,7 +193,7 @@ namespace ARMeilleure.Translation.PTC
             using (FileStream compressedStream = new FileStream(fileName, FileMode.Open))
             using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
             using (MemoryStream stream = new MemoryStream())
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            using (MD5 md5 = MD5.Create())
             {
                 int hashSize = md5.HashSize / 8;
 
@@ -345,7 +346,7 @@ namespace ARMeilleure.Translation.PTC
         private static void Save(string fileName)
         {
             using (MemoryStream stream = new MemoryStream())
-            using (System.Security.Cryptography.MD5 md5 = System.Security.Cryptography.MD5.Create())
+            using (MD5 md5 = MD5.Create())
             {
                 int hashSize = md5.HashSize / 8;
 
@@ -403,7 +404,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IntPtr pageTablePointer, JumpTable jumpTable)
+        internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable)
         {
             bool isModified;
 
@@ -444,7 +445,7 @@ namespace ARMeilleure.Translation.PTC
                             {
                                 RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
 
-                                PatchCode(code, relocEntries, pageTablePointer, jumpTable);
+                                PatchCode(code, relocEntries, memory.PageTablePointer, jumpTable);
                             }
 
                             UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);

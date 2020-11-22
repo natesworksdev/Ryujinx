@@ -49,11 +49,6 @@ namespace ARMeilleure.Translation
             JitCache.Initialize(allocator);
 
             DirectCallStubs.InitializeStubs();
-
-            if (Ptc.State == PtcState.Enabled)
-            {
-                Ptc.LoadTranslations(_funcs, memory.PageTablePointer, _jumpTable);
-            }
         }
 
         private void TranslateStackedSubs()
@@ -90,6 +85,8 @@ namespace ARMeilleure.Translation
 
                 if (Ptc.State == PtcState.Enabled)
                 {
+                    Ptc.LoadTranslations(_funcs, _memory, _jumpTable);
+
                     Ptc.MakeAndSaveTranslations(_funcs, _memory, _jumpTable);
                 }
 

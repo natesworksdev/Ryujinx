@@ -305,7 +305,10 @@ namespace ARMeilleure.Translation.PTC
                     }
                     else
                     {
-                        Debug.Assert(PtcProfiler.ProfiledFuncs.TryGetValue((ulong)guestAddress, out var value) && value.highCq);
+                        if (!PtcProfiler.ProfiledFuncs.TryGetValue((ulong)guestAddress, out var value) || !value.highCq)
+                        {
+                            throw new KeyNotFoundException($"({nameof(guestAddress)} = 0x{(ulong)guestAddress:X16})");
+                        }
 
                         hostAddress = 0L;
                     }
