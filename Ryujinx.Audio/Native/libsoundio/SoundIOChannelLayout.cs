@@ -101,14 +101,14 @@ namespace SoundIOSharp
 
         public string DetectBuiltInName()
         {
-            if (IsNull) throw new InvalidOperationException ();
+            if (IsNull) throw new InvalidOperationException();
 
             return Natives.soundio_channel_layout_detect_builtin(handle) ? Name : null;
         }
 
         public int FindChannel(SoundIOChannelId channel)
         {
-            if (IsNull) throw new InvalidOperationException ();
+            if (IsNull) throw new InvalidOperationException();
 
             return Natives.soundio_channel_layout_find_channel(handle, (SoundIoChannelId)channel);
         }
