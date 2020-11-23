@@ -1,13 +1,13 @@
 ﻿namespace SoundIOSharp
 {
     public enum SoundIOBackend
-	{
-		None,
-		Jack,
-		PulseAudio,
-		Alsa,
-		CoreAudio,
-		Wasapi,
-		Dummy
-	}
+    {
+        None,
+        Jack,
+        PulseAudio,
+        Alsa,
+        CoreAudio,
+        Wasapi,
+        Dummy
+    }
 }
