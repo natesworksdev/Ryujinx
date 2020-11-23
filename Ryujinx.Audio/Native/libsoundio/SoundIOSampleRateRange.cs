@@ -3,7 +3,7 @@ namespace SoundIOSharp
 {
 	public struct SoundIOSampleRateRange
 	{
-		internal SoundIOSampleRateRange (int min, int max)
+		internal SoundIOSampleRateRange(int min, int max)
 		{
 			Min = min;
 			Max = max;

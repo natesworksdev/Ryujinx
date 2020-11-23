@@ -52,7 +52,7 @@ namespace SoundIOSharp
 
 		// FIXME: this should be taken care in more centralized/decent manner... we don't want to write
 		// this kind of code anywhere we need string marshaling.
-		List<IntPtr> allocated_hglobals = new List<IntPtr> ();
+		List<IntPtr> allocated_hglobals = new List<IntPtr>();
 
 		public string ApplicationName {
 			get { return Marshal.PtrToStringAnsi (Marshal.ReadIntPtr (handle, app_name_offset)); }
