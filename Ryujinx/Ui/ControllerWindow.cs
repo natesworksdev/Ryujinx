@@ -667,7 +667,7 @@ namespace Ryujinx.Ui
             if (useKeyboardAnyKey) {
                 keyboardPressed = Keyboard.GetState().IsAnyKeyDown;
             } else {
-                Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape);
+                keyboardPressed = Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape);
             }
 
             return Mouse.GetState().IsAnyButtonDown || keyboardPressed;
