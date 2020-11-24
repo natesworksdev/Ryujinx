@@ -386,12 +386,10 @@ namespace ARMeilleure.Translation.PTC
                 }
             }
 
-            FileInfo fileInfo = new FileInfo(fileName);
-            long fileSize = fileInfo.Length;
-
+            long fileSize = new FileInfo(fileName).Length;
             int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
 
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize.ToString("N0")} byte, translated functions: {infosEntriesCount}).");
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize:N0} byte, translated functions: {infosEntriesCount}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -654,24 +652,26 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable)
         {
-            if (PtcProfiler.ProfiledFuncs.Count == 0)
+            var profiledFuncsWithoutOverlapped = PtcProfiler.GetProfiledFuncsWithoutOverlapped(out _);
+
+            if (profiledFuncsWithoutOverlapped.Count == 0)
             {
                 return;
             }
 
             _translateCount = 0;
 
-            ThreadPool.QueueUserWorkItem(TranslationLogger, (funcs.Count, PtcProfiler.ProfiledFuncs.Count));
+            ThreadPool.QueueUserWorkItem(TranslationLogger, (funcs.Count, profiledFuncsWithoutOverlapped.Count));
 
             int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
 
-            Parallel.ForEach(PtcProfiler.ProfiledFuncs, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
+            Parallel.ForEach(profiledFuncsWithoutOverlapped, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
             {
                 ulong address = item.Key;
 
                 Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
 
-                if (!funcs.ContainsKey(address) && !item.Value.overlapped)
+                if (!funcs.ContainsKey(address))
                 {
                     TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.Value.mode, item.Value.highCq);
 
@@ -710,15 +710,15 @@ namespace ARMeilleure.Translation.PTC
         {
             const int refreshRate = 1; // Seconds.
 
-            (int funcsCount, int ProfiledFuncsCount) = ((int, int))state;
+            (int funcsCount, int profiledFuncsWithoutOverlappedCount) = ((int, int))state;
 
             do
             {
-                Logger.Info?.Print(LogClass.Ptc, $"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions translated");
+                Logger.Info?.Print(LogClass.Ptc, $"{funcsCount + _translateCount} of {profiledFuncsWithoutOverlappedCount} functions translated");
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
-            Logger.Info?.Print(LogClass.Ptc, $"{funcsCount + _translateCount} of {ProfiledFuncsCount} functions translated");
+            Logger.Info?.Print(LogClass.Ptc, $"{funcsCount + _translateCount} of {profiledFuncsWithoutOverlappedCount} functions translated");
         }
 
         internal static void WriteInfoCodeReloc(ulong address, bool highCq, PtcInfo ptcInfo)

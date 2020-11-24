@@ -138,6 +138,23 @@ namespace ARMeilleure.Translation.PTC
             return address >= StaticCodeStart && address < StaticCodeStart + StaticCodeSize;
         }
 
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> GetProfiledFuncsWithoutOverlapped(out int overlappedCount)
+        {
+            var profiledFuncsWithoutOverlapped = new Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)>(ProfiledFuncs);
+            overlappedCount = 0;
+
+            foreach (var profiledFuncWithoutOverlapped in profiledFuncsWithoutOverlapped)
+            {
+                if (profiledFuncWithoutOverlapped.Value.overlapped)
+                {
+                    profiledFuncsWithoutOverlapped.Remove(profiledFuncWithoutOverlapped.Key); // address
+                    overlappedCount++;
+                }
+            }
+
+            return profiledFuncsWithoutOverlapped;
+        }
+
         internal static void ClearEntries()
         {
             lock (_lock)
@@ -309,6 +326,8 @@ namespace ARMeilleure.Translation.PTC
 
         private static void Save(string fileName)
         {
+            int profiledFuncsCount;
+
             using (MemoryStream stream = new MemoryStream())
             using (MD5 md5 = MD5.Create())
             {
@@ -321,6 +340,8 @@ namespace ARMeilleure.Translation.PTC
                 lock (_lock)
                 {
                     Serialize(stream, ProfiledFuncs);
+
+                    profiledFuncsCount = ProfiledFuncs.Count;
                 }
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
@@ -348,16 +369,9 @@ namespace ARMeilleure.Translation.PTC
                 }
             }
 
-            FileInfo fileInfo = new FileInfo(fileName);
-            long fileSize = fileInfo.Length;
+            long fileSize = new FileInfo(fileName).Length;
 
-            int profiledFuncsCount;
-            lock (_lock)
-            {
-                profiledFuncsCount = ProfiledFuncs.Count;
-            }
-
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize.ToString("N0")} byte, profiled functions: {profiledFuncsCount}).");
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize:N0} byte, profiled functions: {profiledFuncsCount}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -370,7 +384,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void Serialize(MemoryStream stream, Dictionary<ulong, (ExecutionMode, bool, bool)> profiledFuncs)
+        private static void Serialize(MemoryStream stream, Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> profiledFuncs)
         {
             using (BinaryWriter writer = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -380,9 +394,9 @@ namespace ARMeilleure.Translation.PTC
                 {
                     writer.Write((ulong)kv.Key); // address
 
-                    writer.Write((int)kv.Value.Item1); // mode
-                    writer.Write((bool)kv.Value.Item2); // highCq
-                    writer.Write((bool)kv.Value.Item3); // overlapped
+                    writer.Write((int)kv.Value.mode);
+                    writer.Write((bool)kv.Value.highCq);
+                    writer.Write((bool)kv.Value.overlapped);
                 }
             }
         }
