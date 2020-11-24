@@ -1,5 +1,7 @@
 ﻿using Ryujinx.Common.Collections;
 using System.Collections.Generic;
+using Ryujinx.Common;
+using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
@@ -10,6 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         public const ulong BadAddress = ulong.MaxValue;
 
         public const int PtPageBits = 12;
+        private const ulong DefaultStart = 1UL << 32;
 
         public const ulong PageSize = 1UL << PtPageBits;
         public const ulong PageMask = PageSize - 1;
@@ -18,10 +21,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         public const ulong PteReserved = 0xffffffff_fffffffe;
 
         private readonly TreeDictionary<ulong, MemoryBlock> _tree = new TreeDictionary<ulong, MemoryBlock>();
+        private readonly Dictionary<ulong, LinkedListNode<ulong>> _dictionary = new Dictionary<ulong, LinkedListNode<ulong>>();
+        private readonly LinkedList<ulong> _list = new LinkedList<ulong>();
 
         public NvMemoryAllocator()
         {
             _tree.Add(PageSize, new MemoryBlock(PageSize, AddressSpaceSize));
+            LinkedListNode<ulong> node = _list.AddFirst(PageSize);
+            _dictionary[PageSize] = node;
         }
 
         /// <summary>
@@ -36,7 +43,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                if(reference == null)
+                if (reference == null)
                 {
                     return;
                 }
@@ -66,7 +73,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         // If leftover space, create a right node.
                         if (rightSize > 0)
                         {
-                            _tree.Add(endAddress,new MemoryBlock(endAddress, rightSize));
+                            _tree.Add(endAddress, new MemoryBlock(endAddress, rightSize));
+
+                            LinkedListNode<ulong> node = _list.AddAfter(_dictionary[referenceBlock.Address], endAddress);
+                            _dictionary[endAddress] = node;
+                        }
+
+                        if (va == referenceBlock.Address)
+                        {
+                            _list.Remove(_dictionary[referenceBlock.Address]);
+                            _dictionary.Remove(referenceBlock.Address);
                         }
                     }
                 }
@@ -86,10 +102,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 Node<ulong, MemoryBlock> entry = _tree.FloorNode(va);
                 if (null != entry)
                 {
+                    LinkedListNode<ulong> node = _dictionary[entry.Key];
                     Node<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
                     Node<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
+
                     while (prev != null)
                     {
                         MemoryBlock prevBlock = prev.Value;
@@ -97,11 +115,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (prevBlock.EndAddress == expandedStart)
                         {
                             expandedStart = prevAddress;
-                            prev = _tree.PredecessorOf(prev);
+                            LinkedListNode<ulong> prevPtr = _dictionary[prevBlock.Address];
+                            if (prevPtr.Previous != null)
+                            {
+                                next = _tree.GetNode(prevPtr.Previous.Value);
+                            }
                             _tree.Remove(prevAddress);
+                            _list.Remove(_dictionary[prevAddress]);
+                            _dictionary.Remove(prevAddress);
                         }
                         else
                         {
+                            node = _dictionary[prevAddress];
                             break;
                         }
                     }
@@ -113,8 +138,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (nextBlock.Address == expandedEnd)
                         {
                             expandedEnd = nextBlock.EndAddress;
+
+                            LinkedListNode<ulong> nextPtr = _dictionary[nextBlock.Address];
+                            if (nextPtr.Next != null)
+                            {
+                                next = _tree.GetNode(nextPtr.Next.Value);
+                            }
+
                             next = _tree.SuccessorOf(next);
                             _tree.Remove(nextAddress);
+                            _list.Remove(_dictionary[nextAddress]);
+                            _dictionary.Remove(nextAddress);
                         }
                         else
                         {
@@ -123,6 +157,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                     }
 
                     _tree.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
+                    LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
+                    _dictionary[expandedStart] = nodePtr;
                 }
             }
         }
@@ -134,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        internal ulong GetFreePosition(ulong size, out Node<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = 1UL << 32)
+        internal ulong GetFreePosition(ulong size, out Node<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = DefaultStart)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -150,7 +186,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 alignment = (alignment + PageMask) & ~PageMask;
                 if (address < AddressSpaceSize)
                 {
-                    Node<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : _tree.CeilingNode(address);
+
+                    Node<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : (start == DefaultStart ? _tree.GetNode(_list.Last.Value) : _tree.CeilingNode(address));
                     while (address < AddressSpaceSize)
                     {
                         if (blockNode != null)
@@ -165,12 +202,20 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                 }
                                 else
                                 {
-                                    blockNode = _tree.SuccessorOf(blockNode);
+                                    LinkedListNode<ulong> nextPtr = _dictionary[blockNode.Value.Address];
+                                    if (nextPtr.Next != null)
+                                    {
+                                        blockNode = _tree.GetNode(nextPtr.Next.Value);
+                                    }
+                                    else
+                                    {
+                                        break;
+                                    }
                                 }
                             }
                             else
                             {
-                                address += PageSize;
+                                address += PageSize * (block.Address / PageSize - (address / PageSize));
 
                                 ulong remainder = address % alignment;
 
@@ -188,6 +233,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 }
                 memoryBlock = null;
             }
+
             return PteUnmapped;
         }
 

@@ -12,9 +12,9 @@ namespace Ryujinx.Common.Collections
     public class TreeDictionary<K, V> where K : IComparable<K>
     {
         private const bool Black = true;
-        private const bool Red   = false;
+        private const bool Red = false;
         private Node<K, V> _root = null;
-        private readonly Dictionary<K, Node<K,V>> _dictionary  = new Dictionary<K,Node<K,V>>();
+        private readonly Dictionary<K, Node<K, V>> _dictionary = new Dictionary<K, Node<K, V>>();
         public TreeDictionary() { }
 
         #region Public Methods
@@ -45,15 +45,16 @@ namespace Ryujinx.Common.Collections
         /// <exception cref="ArgumentNullException"></exception>
         public V Get(K key)
         {
-            if(key == null)
+            if (key == null)
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
 
             Node<K, V> node = GetNode(key);
 
-            if (node == null) { 
-                return default; 
+            if (node == null)
+            {
+                return default;
             }
 
             return node.Value;
@@ -68,11 +69,11 @@ namespace Ryujinx.Common.Collections
         /// <exception cref="ArgumentNullException"></exception>
         public void Add(K key, V value)
         {
-            if(null == key)
+            if (null == key)
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            if(null == value)
+            if (null == value)
             {
                 throw new ArgumentNullException($"{nameof(value)} may not be null");
             }
@@ -118,12 +119,16 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
+            else if (_dictionary.ContainsKey(key))
+            {
+                return _dictionary[key];
+            }
             Node<K, V> tmp = _root;
 
-            while(tmp != null)
+            while (tmp != null)
             {
                 int cmp = key.CompareTo(tmp.Key);
-                if(cmp > 0)
+                if (cmp > 0)
                 {
                     if (tmp.Right != null)
                     {
@@ -134,9 +139,9 @@ namespace Ryujinx.Common.Collections
                         return tmp;
                     }
                 }
-                else if(cmp < 0)
+                else if (cmp < 0)
                 {
-                    if(tmp.Left != null)
+                    if (tmp.Left != null)
                     {
                         tmp = tmp.Left;
                     }
@@ -144,7 +149,7 @@ namespace Ryujinx.Common.Collections
                     {
                         Node<K, V> parent = tmp.Parent;
                         Node<K, V> ptr = tmp;
-                        while(parent != null && ptr == parent.Left)
+                        while (parent != null && ptr == parent.Left)
                         {
                             ptr = parent;
                             parent = parent.Parent;
@@ -171,6 +176,10 @@ namespace Ryujinx.Common.Collections
             if (key == null)
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            else if (_dictionary.ContainsKey(key))
+            {
+                return _dictionary[key];
             }
             Node<K, V> tmp = _root;
 
@@ -215,18 +224,32 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
+        /// Finds the node with the key immediately greater than <paramref name="key"/>.Key
+        /// </summary>
+        /// <param name="key">Key to find the successor of</param>
+        /// <returns>Node</returns>
+        public Node<K, V> SuccessorOf(K key)
+        {
+            if (_dictionary.ContainsKey(key))
+            {
+                return SuccessorOf(GetNode(key));
+            }
+            return null;
+        }
+
+        /// <summary>
         /// Finds the node with the key immediately greater than <paramref name="node"/>.Key
         /// </summary>
         /// <param name="node">Node to find the successor of</param>
         /// <returns>Node</returns>
         public Node<K, V> SuccessorOf(Node<K, V> node)
         {
-            if(node.Right != null)
+            if (node.Right != null)
             {
                 return Minimum(node.Right);
             }
             Node<K, V> parent = node.Parent;
-            while(parent != null && node == parent.Right)
+            while (parent != null && node == parent.Right)
             {
                 node = parent;
                 parent = parent.Parent;
@@ -241,12 +264,12 @@ namespace Ryujinx.Common.Collections
         /// <returns>Node</returns>
         public Node<K, V> PredecessorOf(Node<K, V> node)
         {
-            if(node.Left != null)
+            if (node.Left != null)
             {
                 return Maximum(node.Left);
             }
             Node<K, V> parent = node.Parent;
-            while(parent != null && node == parent.Left)
+            while (parent != null && node == parent.Left)
             {
                 node = parent;
                 parent = parent.Parent;
@@ -263,16 +286,17 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="list"></param>
         /// 
-        public void ToList(List<Node<K,V>> list)
+        public void ToList(List<Node<K, V>> list)
         {
-            if(list == null)
+            if (list == null)
             {
                 throw new ArgumentNullException($"{nameof(list)} must not be null");
             }
 
             Queue<Node<K, V>> nodes = new Queue<Node<K, V>>();
 
-            if(this._root != null) {
+            if (this._root != null)
+            {
                 nodes.Enqueue(this._root);
             }
             while (nodes.Count > 0)
@@ -312,22 +336,22 @@ namespace Ryujinx.Common.Collections
         /// <param name="key">Key</param>
         /// <param name="value">Value</param>
         /// <returns>Node</returns>
-        private Node<K,V> BSTInsert(K key, V value)
+        private Node<K, V> BSTInsert(K key, V value)
         {
             Node<K, V> parent = null;
             Node<K, V> node = _root;
 
-            while(node != null)
+            while (node != null)
             {
                 parent = node;
                 node = key.CompareTo(node.Key) < 0 ? node.Left : node.Right;
             }
             Node<K, V> newNode = new Node<K, V>(key, value, parent);
-            if(newNode.Parent == null)
+            if (newNode.Parent == null)
             {
                 _root = newNode;
             }
-            else if(key.CompareTo(parent.Key) < 0)
+            else if (key.CompareTo(parent.Key) < 0)
             {
                 parent.Left = newNode;
             }
@@ -348,14 +372,14 @@ namespace Ryujinx.Common.Collections
         {
             // O(1) Retrieval
             Node<K, V> nodeToDelete = GetNode(key);
-            
+
             if (nodeToDelete == null) return null;
 
             _dictionary.Remove(key);
 
             Node<K, V> replacementNode;
-            
-            if(LeftOf(nodeToDelete) == null || RightOf(nodeToDelete) == null)
+
+            if (LeftOf(nodeToDelete) == null || RightOf(nodeToDelete) == null)
             {
                 replacementNode = nodeToDelete;
             }
@@ -371,12 +395,12 @@ namespace Ryujinx.Common.Collections
                 tmp.Parent = ParentOf(replacementNode);
             }
 
-            if(ParentOf(replacementNode) == null)
+            if (ParentOf(replacementNode) == null)
             {
                 _root = tmp;
             }
 
-            else if(replacementNode == LeftOf(ParentOf(replacementNode)))
+            else if (replacementNode == LeftOf(ParentOf(replacementNode)))
             {
                 ParentOf(replacementNode).Left = tmp;
             }
@@ -385,13 +409,13 @@ namespace Ryujinx.Common.Collections
                 ParentOf(replacementNode).Right = tmp;
             }
 
-            if(replacementNode != nodeToDelete)
+            if (replacementNode != nodeToDelete)
             {
                 nodeToDelete.Key = replacementNode.Key;
                 nodeToDelete.Value = replacementNode.Value;
             }
 
-            if(tmp != null && ColorOf(replacementNode) == Black)
+            if (tmp != null && ColorOf(replacementNode) == Black)
             {
                 RestoreBalanceAfterRemoval(tmp);
             }
@@ -405,14 +429,14 @@ namespace Ryujinx.Common.Collections
         /// <param name="node">Root Node</param>
         /// <returns>Node</returns>
         /// <exception cref="ArgumentNullException"></exception>
-        private static Node<K,V> Maximum(Node<K,V> node)
+        private static Node<K, V> Maximum(Node<K, V> node)
         {
-            if(node == null)
+            if (node == null)
             {
                 throw new ArgumentNullException(nameof(node));
             }
             Node<K, V> tmp = node;
-            while(tmp.Right != null)
+            while (tmp.Right != null)
             {
                 tmp = tmp.Right;
             }
@@ -446,29 +470,30 @@ namespace Ryujinx.Common.Collections
         private void RestoreBalanceAfterRemoval(Node<K, V> balanceNode)
         {
             Node<K, V> ptr = balanceNode;
-            
-            while(ptr != _root && ColorOf(ptr) == Black)
+
+            while (ptr != _root && ColorOf(ptr) == Black)
             {
-                if(ptr == LeftOf(ParentOf(ptr)))
+                if (ptr == LeftOf(ParentOf(ptr)))
                 {
                     Node<K, V> sibling = RightOf(ParentOf(ptr));
 
-                    if(ColorOf(sibling) == Red)
+                    if (ColorOf(sibling) == Red)
                     {
                         SetColor(sibling, Black);
                         SetColor(ParentOf(ptr), Red);
                         RotateLeft(ParentOf(ptr));
                         sibling = RightOf(ParentOf(ptr));
                     }
-                    if(ColorOf(LeftOf(sibling)) == Black && ColorOf(RightOf(sibling)) == Black)
+                    if (ColorOf(LeftOf(sibling)) == Black && ColorOf(RightOf(sibling)) == Black)
                     {
                         SetColor(sibling, Red);
                         ptr = ParentOf(ptr);
                     }
-                    else {
+                    else
+                    {
                         if (ColorOf(RightOf(sibling)) == Black)
                         {
-                            SetColor(LeftOf(sibling),  Black);
+                            SetColor(LeftOf(sibling), Black);
                             SetColor(sibling, Red);
                             RotateRight(sibling);
                             sibling = RightOf(ParentOf(ptr));
@@ -525,21 +550,22 @@ namespace Ryujinx.Common.Collections
                 {
                     Node<K, V> sibling = RightOf(ParentOf(ParentOf(balanceNode)));
 
-                    if(ColorOf(sibling) == Red)
+                    if (ColorOf(sibling) == Red)
                     {
-                        SetColor(ParentOf(balanceNode),  Black);
+                        SetColor(ParentOf(balanceNode), Black);
                         SetColor(sibling, Black);
-                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        SetColor(ParentOf(ParentOf(balanceNode)), Red);
                         balanceNode = ParentOf(ParentOf(balanceNode));
                     }
-                    else {
+                    else
+                    {
                         if (balanceNode == RightOf(ParentOf(balanceNode)))
                         {
                             balanceNode = ParentOf(balanceNode);
                             RotateLeft(balanceNode);
                         }
-                        SetColor(ParentOf(balanceNode),  Black);
-                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        SetColor(ParentOf(balanceNode), Black);
+                        SetColor(ParentOf(ParentOf(balanceNode)), Red);
                         RotateRight(ParentOf(ParentOf(balanceNode)));
                     }
                 }
@@ -549,9 +575,9 @@ namespace Ryujinx.Common.Collections
 
                     if (ColorOf(sibling) == Red)
                     {
-                        SetColor(ParentOf(balanceNode),  Black);
+                        SetColor(ParentOf(balanceNode), Black);
                         SetColor(sibling, Black);
-                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        SetColor(ParentOf(ParentOf(balanceNode)), Red);
                         balanceNode = ParentOf(ParentOf(balanceNode));
                     }
                     else
@@ -561,13 +587,13 @@ namespace Ryujinx.Common.Collections
                             balanceNode = ParentOf(balanceNode);
                             RotateRight(balanceNode);
                         }
-                        SetColor(ParentOf(balanceNode),  Black);
-                        SetColor(ParentOf(ParentOf(balanceNode)),  Red);
+                        SetColor(ParentOf(balanceNode), Black);
+                        SetColor(ParentOf(ParentOf(balanceNode)), Red);
                         RotateLeft(ParentOf(ParentOf(balanceNode)));
                     }
                 }
             }
-            SetColor(_root,  Black);
+            SetColor(_root, Black);
         }
 
         private void RotateLeft(Node<K, V> node)
@@ -635,7 +661,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Boolean</returns>
-        private static bool ColorOf(Node<K,V> node)
+        private static bool ColorOf(Node<K, V> node)
         {
             return node == null || node.Color;
         }
@@ -649,7 +675,7 @@ namespace Ryujinx.Common.Collections
         /// <param name="color">Color (Boolean)</param>
         private static void SetColor(Node<K, V> node, bool color)
         {
-            if(node != null)
+            if (node != null)
             {
                 node.Color = color;
             }
@@ -660,7 +686,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Left Node</returns>
-        private static Node<K,V> LeftOf(Node<K, V> node)
+        private static Node<K, V> LeftOf(Node<K, V> node)
         {
             return node?.Left;
         }
@@ -689,9 +715,9 @@ namespace Ryujinx.Common.Collections
 
     public class Node<K, V>
     {
-        internal bool Color        = true;
-        internal Node<K, V> Left   = null;
-        internal Node<K, V> Right  = null;
+        internal bool Color = true;
+        internal Node<K, V> Left = null;
+        internal Node<K, V> Right = null;
         internal Node<K, V> Parent = null;
         public K Key;
         public V Value;
