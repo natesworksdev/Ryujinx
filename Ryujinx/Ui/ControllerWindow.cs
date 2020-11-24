@@ -609,18 +609,17 @@ namespace Ryujinx.Ui
             return false;
         }
 
-        private static bool IsAnyButtonPressed(out ControllerInputId pressedButton, int index, double triggerThreshold)
+        private static bool IsAnyButtonPressed(out ControllerInputId pressedButton, JoystickState currentState, JoystickState prevState, int index, double triggerThreshold)
         {
-            JoystickState        joystickState        = Joystick.GetState(index);
             JoystickCapabilities joystickCapabilities = Joystick.GetCapabilities(index);
-
+            
             //Buttons
             for (int i = 0; i != joystickCapabilities.ButtonCount; i++)
             {
-                if (joystickState.IsButtonDown(i))
+                if (currentState.IsButtonUp(i) && prevState.IsButtonDown(i))
                 {
-                    Enum.TryParse($"Button{i}", out pressedButton);
-
+                    Enum.TryParse($"Button{i}", out pressedButton); 
+                    
                     return true;
                 }
             }
@@ -628,7 +627,10 @@ namespace Ryujinx.Ui
             //Axis
             for (int i = 0; i != joystickCapabilities.AxisCount; i++)
             {
-                if (joystickState.GetAxis(i) > 0.5f && joystickState.GetAxis(i) > triggerThreshold)
+                float axisValue = Math.Abs(currentState.GetAxis(i));
+                float prevAxisValue = Math.Abs(prevState.GetAxis(i));
+
+                if (axisValue < 0.5f && prevAxisValue > 0.5f && prevAxisValue > triggerThreshold)
                 {
                     Enum.TryParse($"Axis{i}", out pressedButton);
 
@@ -639,14 +641,14 @@ namespace Ryujinx.Ui
             //Hats
             for (int i = 0; i != joystickCapabilities.HatCount; i++)
             {
-                JoystickHatState hatState = joystickState.GetHat((JoystickHat)i);
-                string           pos      = null;
+                JoystickHatState hatState = currentState.GetHat((JoystickHat)i);
+                string pos = null;
 
-                if (hatState.IsUp)    pos = "Up";
-                if (hatState.IsDown)  pos = "Down";
-                if (hatState.IsLeft)  pos = "Left";
+                if (hatState.IsUp) pos = "Up";
+                if (hatState.IsDown) pos = "Down";
+                if (hatState.IsLeft) pos = "Left";
                 if (hatState.IsRight) pos = "Right";
-                if (pos == null)      continue;
+                if (pos == null) continue;
 
                 Enum.TryParse($"Hat{i}{pos}", out pressedButton);
 
@@ -656,6 +658,45 @@ namespace Ryujinx.Ui
             pressedButton = ControllerInputId.Unbound;
 
             return false;
+        }
+
+        private static bool IsCancelBindingPressed(bool useKeyboardAnyKey)
+        {
+            bool keyboardPressed = false;
+
+            if (useKeyboardAnyKey) {
+                keyboardPressed = Keyboard.GetState().IsAnyKeyDown;
+            } else {
+                Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape);
+            }
+
+            return Mouse.GetState().IsAnyButtonDown || keyboardPressed;
+        }
+
+        private static ControllerInputId WaitForButtonPressed(int index, double triggerThreshold)
+        {
+            JoystickState joystickState = Joystick.GetState(index);
+            JoystickState joystickPrevState = joystickState;
+           
+            ControllerInputId pressedButton = ControllerInputId.Unbound;
+
+            while (pressedButton == ControllerInputId.Unbound && !IsCancelBindingPressed(true)) {
+
+                Thread.Sleep(10);
+
+                joystickPrevState = joystickState;
+                joystickState = Joystick.GetState(index);
+
+                IsAnyButtonPressed(
+                    out pressedButton,
+                    joystickState,
+                    joystickPrevState,
+                    index,
+                    triggerThreshold
+                );
+            }
+
+            return pressedButton;
         }
 
         private string GetProfileBasePath()
@@ -715,7 +756,7 @@ namespace Ryujinx.Ui
                     int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
                     while (!IsAnyKeyPressed(out pressedKey, index))
                     {
-                        if (Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape))
+                        if (IsCancelBindingPressed(false))
                         {
                             Application.Invoke(delegate
                             {
@@ -736,22 +777,19 @@ namespace Ryujinx.Ui
                 }
                 else if (_inputDevice.ActiveId.StartsWith("controller"))
                 {
-                    ControllerInputId pressedButton;
-
                     int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
-                    while (!IsAnyButtonPressed(out pressedButton, index, _controllerTriggerThreshold.Value))
-                    {
-                        if (Mouse.GetState().IsAnyButtonDown || Keyboard.GetState().IsAnyKeyDown)
+                    var pressedButton = WaitForButtonPressed(index, _controllerTriggerThreshold.Value);
+
+                    if (pressedButton == ControllerInputId.Unbound) {
+                            
+                        Application.Invoke(delegate
                         {
-                            Application.Invoke(delegate
-                            {
-                                button.SetStateFlags(0, true);
-                            });
+                            button.SetStateFlags(0, true);
+                        });
 
-                            _isWaitingForInput = false;
+                        _isWaitingForInput = false;
 
-                            return;
-                        }
+                        return;
                     }
 
                     Application.Invoke(delegate
