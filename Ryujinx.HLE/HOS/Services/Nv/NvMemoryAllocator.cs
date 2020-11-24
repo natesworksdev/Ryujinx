@@ -115,18 +115,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (prevBlock.EndAddress == expandedStart)
                         {
                             expandedStart = prevAddress;
-                            LinkedListNode<ulong> prevPtr = _dictionary[prevBlock.Address];
+                            LinkedListNode<ulong> prevPtr = _dictionary[prevAddress];
                             if (prevPtr.Previous != null)
                             {
-                                next = _tree.GetNode(prevPtr.Previous.Value);
+                                prev = _tree.GetNode(prevPtr.Previous.Value);
                             }
+                            node = node.Previous;
                             _tree.Remove(prevAddress);
                             _list.Remove(_dictionary[prevAddress]);
-                            _dictionary.Remove(prevAddress);
                         }
                         else
                         {
-                            node = _dictionary[prevAddress];
                             break;
                         }
                     }
@@ -135,20 +134,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                     {
                         MemoryBlock nextBlock = next.Value;
                         ulong nextAddress = nextBlock.Address;
-                        if (nextBlock.Address == expandedEnd)
+                        if (nextBlock.Address <= expandedEnd)
                         {
-                            expandedEnd = nextBlock.EndAddress;
-
+                            expandedEnd = Math.Max(expandedEnd, nextBlock.EndAddress);
                             LinkedListNode<ulong> nextPtr = _dictionary[nextBlock.Address];
                             if (nextPtr.Next != null)
                             {
                                 next = _tree.GetNode(nextPtr.Next.Value);
                             }
-
-                            next = _tree.SuccessorOf(next);
                             _tree.Remove(nextAddress);
                             _list.Remove(_dictionary[nextAddress]);
-                            _dictionary.Remove(nextAddress);
                         }
                         else
                         {
