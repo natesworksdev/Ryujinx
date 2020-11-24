@@ -86,12 +86,12 @@ namespace Ryujinx.HLE.HOS
         {
             KernelStatic.SetKernelContext(KernelContext);
 
-            IUserInterface sm = new IUserInterface(Device);
+            var smServer = new ServerBase(Device, "sm")
+            {
+                IsSm = true
+            };
 
-            // Wait until SM server thread is done with initialization,
-            // only then doing connections to SM is safe.
-            sm.Server.InitDone.WaitOne();
-            sm.Server.InitDone.Dispose();
+            // TODO: Find a way to wait for SM initialization here...
 
             ServiceServer.DiscoverAll();
         }

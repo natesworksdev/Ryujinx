@@ -66,6 +66,14 @@ namespace Ryujinx.Horizon.Common
             return (uint)(Description - minInclusive) <= (uint)(maxInclusive - minInclusive);
         }
 
+        public void AbortOnSuccess()
+        {
+            if (IsSuccess)
+            {
+                ThrowInvalidResult();
+            }
+        }
+
         public void AbortOnFailure()
         {
             AbortUnless(Success);
@@ -74,6 +82,14 @@ namespace Ryujinx.Horizon.Common
         public void AbortUnless(Result result)
         {
             if (this != result)
+            {
+                ThrowInvalidResult();
+            }
+        }
+
+        public void AbortUnless(Result result, Result result2)
+        {
+            if (this != result && this != result2)
             {
                 ThrowInvalidResult();
             }

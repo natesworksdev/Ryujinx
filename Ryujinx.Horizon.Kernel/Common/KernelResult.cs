@@ -34,6 +34,7 @@ namespace Ryujinx.Horizon.Kernel.Common
         public static Result ReservedValue => new Result(ModuleId, 126);
         public static Result PortClosed => new Result(ModuleId, 131);
         public static Result ResLimitExceeded => new Result(ModuleId, 132);
+        public static Result ReceiveListBroken => new Result(ModuleId, 258);
         public static Result OutOfVaSpace => new Result(ModuleId, 259);
         public static Result CmdBufferTooSmall => new Result(ModuleId, 260);
     }

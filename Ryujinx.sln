@@ -60,7 +60,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon.Kernel", "R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon.Common", "Ryujinx.Horizon.Common\Ryujinx.Horizon.Common.csproj", "{37474915-DF84-4638-9A8C-51982A5632AE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Ryujinx.Horizon", "Ryujinx.Horizon\Ryujinx.Horizon.csproj", "{50081930-D1B8-4967-99FB-A08E336247AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Ryujinx.Horizon", "Ryujinx.Horizon\Ryujinx.Horizon.csproj", "{50081930-D1B8-4967-99FB-A08E336247AF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

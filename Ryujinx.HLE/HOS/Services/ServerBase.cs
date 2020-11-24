@@ -2,6 +2,7 @@ using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.Horizon.Common;
 using Ryujinx.Horizon.Kernel;
 using Ryujinx.Horizon.Kernel.Svc;
+using Ryujinx.Horizon.Sm;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -46,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Services
         private readonly Queue<RegistrationInfo> _toRegister = new Queue<RegistrationInfo>();
 
         public ManualResetEvent InitDone { get; }
-        public IpcService SmObject { get; set; }
+        public bool IsSm { get; set; }
         public string Name { get; }
 
         public ServerBase(Switch device, string name)
@@ -95,13 +96,11 @@ namespace Ryujinx.HLE.HOS.Services
         {
             Initialize();
 
-            if (SmObject != null)
+            if (IsSm)
             {
-                KernelStatic.Syscall.ManageNamedPort("sm:", 50, out int serverPortHandle);
-
-                AddPort(serverPortHandle, SmObject);
-
                 InitDone.Set();
+                new SmMain().Main();
+                return;
             }
             else
             {
@@ -203,7 +202,8 @@ namespace Ryujinx.HLE.HOS.Services
         {
             IpcMessage request = new IpcMessage
             {
-                Type = IpcMessageType.Request
+                Type = IpcMessageType.Request,
+                HandleDesc = new IpcHandleDesc(Array.Empty<int>(), Array.Empty<int>(), 0L) // Need to do this to set SendPid to true.
             };
 
             using (MemoryStream ms = new MemoryStream())
@@ -265,6 +265,11 @@ namespace Ryujinx.HLE.HOS.Services
             IpcMessage response = new IpcMessage(reqData, (long)messagePtr);
 
             serverPortHandle = response.HandleDesc.ToMove[0];
+
+            if (serverPortHandle == 0)
+            {
+                throw new Exception("Invalid server port handle");
+            }
         }
 
         private bool Process(int serverSessionHandle, ulong recvListAddr)
