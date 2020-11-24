@@ -385,6 +385,13 @@ namespace ARMeilleure.Translation.PTC
                     }
                 }
             }
+
+            FileInfo fileInfo = new FileInfo(fileName);
+            long fileSize = fileInfo.Length;
+
+            int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
+
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize.ToString("N0")} byte, translated functions: {infosEntriesCount}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -406,112 +413,86 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable)
         {
-            bool isModified;
-
-            if ((int)_infosStream.Length != 0 &&
-                (int)_codesStream.Length != 0 &&
-                (int)_relocsStream.Length != 0 &&
-                (int)_unwindInfosStream.Length != 0)
+            if ((int)_infosStream.Length == 0 ||
+                (int)_codesStream.Length == 0 ||
+                (int)_relocsStream.Length == 0 ||
+                (int)_unwindInfosStream.Length == 0)
             {
-                Debug.Assert(funcs.Count == 0);
-
-                _infosStream.Seek(0L, SeekOrigin.Begin);
-                _codesStream.Seek(0L, SeekOrigin.Begin);
-                _relocsStream.Seek(0L, SeekOrigin.Begin);
-                _unwindInfosStream.Seek(0L, SeekOrigin.Begin);
-
-                using (BinaryReader infosReader = new BinaryReader(_infosStream, EncodingCache.UTF8NoBOM, true))
-                using (BinaryReader codesReader = new BinaryReader(_codesStream, EncodingCache.UTF8NoBOM, true))
-                using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
-                using (BinaryReader unwindInfosReader = new BinaryReader(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
-                {
-                    int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
-
-                    for (int i = 0; i < infosEntriesCount; i++)
-                    {
-                        InfoEntry infoEntry = ReadInfo(infosReader);
-
-                        if (infoEntry.Stubbed)
-                        {
-                            SkipCode(infoEntry.CodeLen);
-                            SkipReloc(infoEntry.RelocEntriesCount);
-                            SkipUnwindInfo(unwindInfosReader);
-                        }
-                        else if (infoEntry.HighCq || !PtcProfiler.ProfiledFuncs.TryGetValue(infoEntry.Address, out var value) || !(value.highCq || value.overlapped))
-                        {
-                            byte[] code = ReadCode(codesReader, infoEntry.CodeLen);
-
-                            if (infoEntry.RelocEntriesCount != 0)
-                            {
-                                RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
-
-                                PatchCode(code, relocEntries, memory.PageTablePointer, jumpTable);
-                            }
-
-                            UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
-
-                            TranslatedFunction func = FastTranslate(code, unwindInfo, infoEntry.HighCq);
-
-                            bool isAddressUnique = funcs.TryAdd(infoEntry.Address, func);
-
-                            Debug.Assert(isAddressUnique, $"The address 0x{infoEntry.Address:X16} is not unique.");
-                        }
-                        else
-                        {
-                            infoEntry.Stubbed = true;
-                            UpdateInfo(infoEntry);
-
-                            StubCode(infoEntry.CodeLen);
-                            StubReloc(infoEntry.RelocEntriesCount);
-                            StubUnwindInfo(unwindInfosReader);
-                        }
-                    }
-                }
-
-                if (_infosStream.Position < _infosStream.Length ||
-                    _codesStream.Position < _codesStream.Length ||
-                    _relocsStream.Position < _relocsStream.Length ||
-                    _unwindInfosStream.Position < _unwindInfosStream.Length)
-                {
-                    throw new Exception("Could not reach the end of one or more memory streams.");
-                }
-
-                isModified = false;
-
-                foreach (var kv in PtcProfiler.ProfiledFuncs)
-                {
-                    if (kv.Value.overlapped)
-                    {
-                        PtcJumpTable.Clean(kv.Key);
-
-                        PtcProfiler.ProfiledFuncs.Remove(kv.Key);
-                        isModified = true;
-                    }
-                }
-
-                jumpTable.Initialize(PtcJumpTable, funcs);
-
-                PtcJumpTable.WriteJumpTable(jumpTable, funcs);
-                PtcJumpTable.WriteDynamicTable(jumpTable);
+                return;
             }
-            else
-            {
-                isModified = false;
 
-                foreach (var kv in PtcProfiler.ProfiledFuncs)
+            Debug.Assert(funcs.Count == 0);
+
+            _infosStream.Seek(0L, SeekOrigin.Begin);
+            _codesStream.Seek(0L, SeekOrigin.Begin);
+            _relocsStream.Seek(0L, SeekOrigin.Begin);
+            _unwindInfosStream.Seek(0L, SeekOrigin.Begin);
+
+            using (BinaryReader infosReader = new BinaryReader(_infosStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader codesReader = new BinaryReader(_codesStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader unwindInfosReader = new BinaryReader(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
+            {
+                int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
+
+                for (int i = 0; i < infosEntriesCount; i++)
                 {
-                    if (kv.Value.overlapped)
+                    InfoEntry infoEntry = ReadInfo(infosReader);
+
+                    if (infoEntry.Stubbed)
                     {
-                        PtcProfiler.ProfiledFuncs.Remove(kv.Key);
-                        isModified = true;
+                        SkipCode(infoEntry.CodeLen);
+                        SkipReloc(infoEntry.RelocEntriesCount);
+                        SkipUnwindInfo(unwindInfosReader);
+                    }
+                    else if (infoEntry.HighCq || !PtcProfiler.ProfiledFuncs.TryGetValue(infoEntry.Address, out var value) || !(value.highCq || value.overlapped))
+                    {
+                        byte[] code = ReadCode(codesReader, infoEntry.CodeLen);
+
+                        if (infoEntry.RelocEntriesCount != 0)
+                        {
+                            RelocEntry[] relocEntries = GetRelocEntries(relocsReader, infoEntry.RelocEntriesCount);
+
+                            PatchCode(code, relocEntries, memory.PageTablePointer, jumpTable);
+                        }
+
+                        UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
+
+                        TranslatedFunction func = FastTranslate(code, unwindInfo, infoEntry.HighCq);
+
+                        bool isAddressUnique = funcs.TryAdd(infoEntry.Address, func);
+
+                        Debug.Assert(isAddressUnique, $"The address 0x{infoEntry.Address:X16} is not unique.");
+                    }
+                    else
+                    {
+                        infoEntry.Stubbed = true;
+                        UpdateInfo(infoEntry);
+
+                        StubCode(infoEntry.CodeLen);
+                        StubReloc(infoEntry.RelocEntriesCount);
+                        StubUnwindInfo(unwindInfosReader);
+
+                        if (value.overlapped)
+                        {
+                            PtcJumpTable.Clean(infoEntry.Address);
+                        }
                     }
                 }
             }
 
-            if (isModified)
+            if (_infosStream.Position < _infosStream.Length ||
+                _codesStream.Position < _codesStream.Length ||
+                _relocsStream.Position < _relocsStream.Length ||
+                _unwindInfosStream.Position < _unwindInfosStream.Length)
             {
-                PtcProfiler.PreSave(null, null);
+                throw new Exception("Could not reach the end of one or more memory streams.");
             }
+
+            jumpTable.Initialize(PtcJumpTable, funcs);
+
+            PtcJumpTable.WriteJumpTable(jumpTable, funcs);
+            PtcJumpTable.WriteDynamicTable(jumpTable);
         }
 
         private static InfoEntry ReadInfo(BinaryReader infosReader)
@@ -690,10 +671,8 @@ namespace ARMeilleure.Translation.PTC
 
                 Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
 
-                if (!funcs.ContainsKey(address))
+                if (!funcs.ContainsKey(address) && !item.Value.overlapped)
                 {
-                    Debug.Assert(!item.Value.overlapped);
-
                     TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.Value.mode, item.Value.highCq);
 
                     bool isAddressUnique = funcs.TryAdd(address, func);

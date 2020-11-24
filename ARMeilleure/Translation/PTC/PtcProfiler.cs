@@ -1,4 +1,5 @@
 using ARMeilleure.State;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -72,8 +73,6 @@ namespace ARMeilleure.Translation.PTC
 
                 lock (_lock)
                 {
-                    Debug.Assert(!ProfiledFuncs.ContainsKey(address));
-
                     ProfiledFuncs.TryAdd(address, (mode, highCq: false, overlapped: false));
                 }
             }
@@ -100,8 +99,6 @@ namespace ARMeilleure.Translation.PTC
                     {
                         if (Enabled)
                         {
-                            Debug.Assert(ProfiledFuncs.ContainsKey(item.address));
-
                             ProfiledFuncs[item.address] = (item.mode, highCq: true, overlapped: false);
 
                             foreach (ulong address in new List<ulong>(ProfiledFuncs.Keys))
@@ -350,6 +347,17 @@ namespace ARMeilleure.Translation.PTC
                     }
                 }
             }
+
+            FileInfo fileInfo = new FileInfo(fileName);
+            long fileSize = fileInfo.Length;
+
+            int profiledFuncsCount;
+            lock (_lock)
+            {
+                profiledFuncsCount = ProfiledFuncs.Count;
+            }
+
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize.ToString("N0")} byte, profiled functions: {profiledFuncsCount}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
