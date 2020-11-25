@@ -112,7 +112,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                     {
                         MemoryBlock prevBlock = prev.Value;
                         ulong prevAddress = prevBlock.Address;
-                        if (prevBlock.EndAddress == expandedStart)
+                        if (prevBlock.EndAddress >= expandedStart)
                         {
                             expandedStart = prevAddress;
                             LinkedListNode<ulong> prevPtr = _dictionary[prevAddress];
@@ -123,6 +123,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             node = node.Previous;
                             _tree.Remove(prevAddress);
                             _list.Remove(_dictionary[prevAddress]);
+                            _dictionary.Remove(prevAddress);
                         }
                         else
                         {
@@ -144,13 +145,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             }
                             _tree.Remove(nextAddress);
                             _list.Remove(_dictionary[nextAddress]);
+                            _dictionary.Remove(nextAddress);
                         }
                         else
                         {
                             break;
                         }
                     }
-
                     _tree.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
                     LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
                     _dictionary[expandedStart] = nodePtr;

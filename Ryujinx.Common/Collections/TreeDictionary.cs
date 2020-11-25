@@ -16,6 +16,7 @@ namespace Ryujinx.Common.Collections
         private const bool Black = true;
         private const bool Red = false;
         private Node<K, V> _root = null;
+        private int count = 0;
         private readonly Dictionary<K, Node<K, V>> _dictionary = new Dictionary<K, Node<K, V>>();
         public TreeDictionary() { }
 
@@ -88,6 +89,7 @@ namespace Ryujinx.Common.Collections
             else
             {
                 Insert(key, value);
+                count++;
             }
         }
 
@@ -107,6 +109,7 @@ namespace Ryujinx.Common.Collections
                 return;
             }
             Delete(key);
+            count--;
         }
 
         /// <summary>
@@ -758,6 +761,7 @@ namespace Ryujinx.Common.Collections
         {
             _root = null;
             _dictionary.Clear();
+            count = 0;
         }
 
         public bool Contains(KeyValuePair<K, V> item)
@@ -822,7 +826,7 @@ namespace Ryujinx.Common.Collections
             return DepthOrderItemList().GetEnumerator();
         }
 
-        public int Count => _dictionary.Count;
+        public int Count => count;
 
         public ICollection<K> Keys => new List<K>(_dictionary.Keys);
 
