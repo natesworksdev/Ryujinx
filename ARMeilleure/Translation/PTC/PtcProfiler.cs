@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Threading;
 
@@ -21,8 +20,6 @@ namespace ARMeilleure.Translation.PTC
         private const int SaveInterval = 30; // Seconds.
 
         private const CompressionLevel SaveCompressionLevel = CompressionLevel.Fastest;
-
-        private static readonly BinaryFormatter _binaryFormatter;
 
         private static readonly System.Timers.Timer _timer;
 
@@ -44,8 +41,6 @@ namespace ARMeilleure.Translation.PTC
 
         static PtcProfiler()
         {
-            _binaryFormatter = new BinaryFormatter();
-
             _timer = new System.Timers.Timer((double)SaveInterval * 1000d);
             _timer.Elapsed += PreSave;
 
@@ -138,17 +133,15 @@ namespace ARMeilleure.Translation.PTC
             return address >= StaticCodeStart && address < StaticCodeStart + StaticCodeSize;
         }
 
-        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> GetProfiledFuncsWithoutOverlapped(out int overlappedCount)
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> GetProfiledFuncsToTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
             var profiledFuncsWithoutOverlapped = new Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)>(ProfiledFuncs);
-            overlappedCount = 0;
 
             foreach (var profiledFuncWithoutOverlapped in profiledFuncsWithoutOverlapped)
             {
-                if (profiledFuncWithoutOverlapped.Value.overlapped)
+                if (funcs.ContainsKey(profiledFuncWithoutOverlapped.Key) || profiledFuncWithoutOverlapped.Value.overlapped)
                 {
-                    profiledFuncsWithoutOverlapped.Remove(profiledFuncWithoutOverlapped.Key); // address
-                    overlappedCount++;
+                    profiledFuncsWithoutOverlapped.Remove(profiledFuncWithoutOverlapped.Key);
                 }
             }
 
@@ -175,21 +168,21 @@ namespace ARMeilleure.Translation.PTC
 
             if (fileInfoActual.Exists && fileInfoActual.Length != 0L)
             {
-                if (!Load(fileNameActual))
+                if (!Load(fileNameActual, false))
                 {
                     if (fileInfoBackup.Exists && fileInfoBackup.Length != 0L)
                     {
-                        Load(fileNameBackup);
+                        Load(fileNameBackup, true);
                     }
                 }
             }
             else if (fileInfoBackup.Exists && fileInfoBackup.Length != 0L)
             {
-                Load(fileNameBackup);
+                Load(fileNameBackup, true);
             }
         }
 
-        private static bool Load(string fileName)
+        private static bool Load(string fileName, bool isBackup)
         {
             using (FileStream compressedStream = new FileStream(fileName, FileMode.Open))
             using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
@@ -253,9 +246,13 @@ namespace ARMeilleure.Translation.PTC
 
                     return false;
                 }
-
-                return true;
             }
+
+            long fileSize = new FileInfo(fileName).Length;
+
+            Logger.Info?.Print(LogClass.Ptc, $"{(isBackup ? "Loaded Backup Profiling Info" : "Loaded Profiling Info")} (size: {fileSize:N0} byte, profiled functions: {ProfiledFuncs.Count}).");
+
+            return true;
         }
 
         private static bool CompareHash(ReadOnlySpan<byte> currentHash, ReadOnlySpan<byte> expectedHash)

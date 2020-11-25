@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Security.Cryptography;
 using System.Threading;
 using System.Threading.Tasks;
@@ -44,8 +43,6 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly BinaryWriter _infosWriter;
 
-        private static readonly BinaryFormatter _binaryFormatter;
-
         private static readonly ManualResetEvent _waitEvent;
 
         private static readonly AutoResetEvent _loggerEvent;
@@ -74,8 +71,6 @@ namespace ARMeilleure.Translation.PTC
             _unwindInfosStream = new MemoryStream();
 
             _infosWriter = new BinaryWriter(_infosStream, EncodingCache.UTF8NoBOM, true);
-
-            _binaryFormatter = new BinaryFormatter();
 
             _waitEvent = new ManualResetEvent(true);
 
@@ -174,21 +169,21 @@ namespace ARMeilleure.Translation.PTC
 
             if (fileInfoActual.Exists && fileInfoActual.Length != 0L)
             {
-                if (!Load(fileNameActual))
+                if (!Load(fileNameActual, false))
                 {
                     if (fileInfoBackup.Exists && fileInfoBackup.Length != 0L)
                     {
-                        Load(fileNameBackup);
+                        Load(fileNameBackup, true);
                     }
                 }
             }
             else if (fileInfoBackup.Exists && fileInfoBackup.Length != 0L)
             {
-                Load(fileNameBackup);
+                Load(fileNameBackup, true);
             }
         }
 
-        private static bool Load(string fileName)
+        private static bool Load(string fileName, bool isBackup)
         {
             using (FileStream compressedStream = new FileStream(fileName, FileMode.Open))
             using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
@@ -288,9 +283,13 @@ namespace ARMeilleure.Translation.PTC
                 _codesStream.Write(codesBuf, 0, header.CodesLen);
                 _relocsStream.Write(relocsBuf, 0, header.RelocsLen);
                 _unwindInfosStream.Write(unwindInfosBuf, 0, header.UnwindInfosLen);
-
-                return true;
             }
+
+            long fileSize = new FileInfo(fileName).Length;
+
+            Logger.Info?.Print(LogClass.Ptc, $"{(isBackup ? "Loaded Backup Translation Cache" : "Loaded Translation Cache")} (size: {fileSize:N0} byte, translated functions: {GetInfosEntriesCount()}).");
+
+            return true;
         }
 
         private static bool CompareHash(ReadOnlySpan<byte> currentHash, ReadOnlySpan<byte> expectedHash)
@@ -387,9 +386,8 @@ namespace ARMeilleure.Translation.PTC
             }
 
             long fileSize = new FileInfo(fileName).Length;
-            int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
 
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize:N0} byte, translated functions: {infosEntriesCount}).");
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize:N0} byte, translated functions: {GetInfosEntriesCount()}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -431,9 +429,7 @@ namespace ARMeilleure.Translation.PTC
             using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
             using (BinaryReader unwindInfosReader = new BinaryReader(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
             {
-                int infosEntriesCount = (int)_infosStream.Length / InfoEntry.Stride;
-
-                for (int i = 0; i < infosEntriesCount; i++)
+                for (int i = 0; i < GetInfosEntriesCount(); i++)
                 {
                     InfoEntry infoEntry = ReadInfo(infosReader);
 
@@ -491,6 +487,11 @@ namespace ARMeilleure.Translation.PTC
 
             PtcJumpTable.WriteJumpTable(jumpTable, funcs);
             PtcJumpTable.WriteDynamicTable(jumpTable);
+        }
+
+        private static int GetInfosEntriesCount()
+        {
+            return (int)_infosStream.Length / InfoEntry.Stride;
         }
 
         private static InfoEntry ReadInfo(BinaryReader infosReader)
@@ -652,40 +653,37 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void MakeAndSaveTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable)
         {
-            var profiledFuncsWithoutOverlapped = PtcProfiler.GetProfiledFuncsWithoutOverlapped(out _);
+            var profiledFuncsToTranslate = PtcProfiler.GetProfiledFuncsToTranslate(funcs);
 
-            if (profiledFuncsWithoutOverlapped.Count == 0)
+            if (profiledFuncsToTranslate.Count == 0)
             {
                 return;
             }
 
             _translateCount = 0;
 
-            ThreadPool.QueueUserWorkItem(TranslationLogger, (funcs.Count, profiledFuncsWithoutOverlapped.Count));
+            ThreadPool.QueueUserWorkItem(TranslationLogger, profiledFuncsToTranslate.Count);
 
             int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
 
-            Parallel.ForEach(profiledFuncsWithoutOverlapped, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
+            Parallel.ForEach(profiledFuncsToTranslate, new ParallelOptions { MaxDegreeOfParallelism = maxDegreeOfParallelism }, (item, state) =>
             {
                 ulong address = item.Key;
 
                 Debug.Assert(PtcProfiler.IsAddressInStaticCodeRange(address));
 
-                if (!funcs.ContainsKey(address))
+                TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.Value.mode, item.Value.highCq);
+
+                bool isAddressUnique = funcs.TryAdd(address, func);
+
+                Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
+
+                if (func.HighCq)
                 {
-                    TranslatedFunction func = Translator.Translate(memory, jumpTable, address, item.Value.mode, item.Value.highCq);
-
-                    bool isAddressUnique = funcs.TryAdd(address, func);
-
-                    Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
-
-                    if (func.HighCq)
-                    {
-                        jumpTable.RegisterFunction(address, func);
-                    }
-
-                    Interlocked.Increment(ref _translateCount);
+                    jumpTable.RegisterFunction(address, func);
                 }
+
+                Interlocked.Increment(ref _translateCount);
 
                 if (State != PtcState.Enabled)
                 {
@@ -695,30 +693,27 @@ namespace ARMeilleure.Translation.PTC
 
             _loggerEvent.Set();
 
-            if (_translateCount != 0)
-            {
-                PtcJumpTable.Initialize(jumpTable);
+            PtcJumpTable.Initialize(jumpTable);
 
-                PtcJumpTable.ReadJumpTable(jumpTable);
-                PtcJumpTable.ReadDynamicTable(jumpTable);
+            PtcJumpTable.ReadJumpTable(jumpTable);
+            PtcJumpTable.ReadDynamicTable(jumpTable);
 
-                ThreadPool.QueueUserWorkItem(PreSave);
-            }
+            ThreadPool.QueueUserWorkItem(PreSave);
         }
 
         private static void TranslationLogger(object state)
         {
             const int refreshRate = 1; // Seconds.
 
-            (int funcsCount, int profiledFuncsWithoutOverlappedCount) = ((int, int))state;
+            int profiledFuncsToTranslateCount = (int)state;
 
             do
             {
-                Logger.Info?.Print(LogClass.Ptc, $"{funcsCount + _translateCount} of {profiledFuncsWithoutOverlappedCount} functions translated");
+                Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
-            Logger.Info?.Print(LogClass.Ptc, $"{funcsCount + _translateCount} of {profiledFuncsWithoutOverlappedCount} functions translated");
+            Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
         }
 
         internal static void WriteInfoCodeReloc(ulong address, bool highCq, PtcInfo ptcInfo)
