@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Common.Collections
 {
@@ -9,7 +11,7 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
-    public class TreeDictionary<K, V> where K : IComparable<K>
+    public class TreeDictionary<K, V> : IDictionary<K, V> where K : IComparable<K>
     {
         private const bool Black = true;
         private const bool Red = false;
@@ -276,8 +278,6 @@ namespace Ryujinx.Common.Collections
             }
             return parent;
         }
-
-        public int Count => _dictionary.Count;
 
         /// <summary>
         /// Adds all the nodes in the dictionary into <paramref name="list"/>.
@@ -652,6 +652,7 @@ namespace Ryujinx.Common.Collections
             }
         }
         #endregion
+
         #region Safety-Methods
 
         // These methods save memory by allowing us to forego sentinel nil nodes, as well as serve as protection against nullpointerexceptions.
@@ -702,13 +703,166 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// This method returns the parent node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
+        /// Returns the parent node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
         /// <param name="node">Node</param>
         /// <returns>Parent Node</returns>
         private static Node<K, V> ParentOf(Node<K, V> node)
         {
             return node?.Parent;
+        }
+        #endregion
+
+        #region Interface Implementations
+
+        // Method descriptions are not provided as they are already included as part of the interface.
+
+        public bool ContainsKey(K key)
+        {
+            if(null == key)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            return _dictionary.ContainsKey(key);
+        }
+
+        bool IDictionary<K, V>.Remove(K key)
+        {
+            int count = _dictionary.Count;
+            Remove(key);
+            return count > _dictionary.Count;
+        }
+
+        public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
+        {
+            if (null == key)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            bool tryGet = _dictionary.TryGetValue(key, out Node<K, V> node);
+            value = node != null ? node.Value : default;
+            return tryGet;
+        }
+
+        public void Add(KeyValuePair<K, V> item)
+        {
+            if (null == item.Key)
+            {
+                throw new ArgumentNullException($"{nameof(item)}.Key may not be null");
+            }
+
+            Add(item.Key, item.Value);
+        }
+
+        public void Clear()
+        {
+            _root = null;
+            _dictionary.Clear();
+        }
+
+        public bool Contains(KeyValuePair<K, V> item)
+        {
+            if (null == item.Key)
+            {
+                return false;
+            }
+
+            Node<K, V> node = GetNode(item.Key);
+            if (node != null)
+            {
+                return node.Key.Equals(item.Key) && node.Value.Equals(item.Value);
+            }
+            return false;
+        }
+
+        public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
+        {
+            if(array.Length - arrayIndex < this.Count)
+            {
+                throw new ArgumentOutOfRangeException($"There is not enough space in {nameof(array)}");
+            }
+
+            List<KeyValuePair<K, V>> list = DepthOrderItemList();
+
+            int offset = 0;
+
+            for(int i = arrayIndex; i < array.Length && offset < list.Count; i++)
+            {
+                array[i] = list[offset];
+                offset++;
+            }
+        }
+
+        public bool Remove(KeyValuePair<K, V> item)
+        {
+            Node<K, V> node = GetNode(item.Key);
+
+            if (null == node)
+            {
+                return false;
+            }
+
+            if(node.Value.Equals(item.Value))
+            {
+                int count = _dictionary.Count;
+                Remove(item.Key);
+                return count > _dictionary.Count;
+            }
+
+            return false;
+        }
+
+        public IEnumerator<KeyValuePair<K, V>> GetEnumerator()
+        {
+            return DepthOrderItemList().GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return DepthOrderItemList().GetEnumerator();
+        }
+
+        public int Count => _dictionary.Count;
+
+        public ICollection<K> Keys => new List<K>(_dictionary.Keys);
+
+        public ICollection<V> Values => null;
+
+        public bool IsReadOnly => false;
+
+        public V this[K key] { get => Get(key); set => Add(key, value); }
+
+        #endregion
+        #region Private Interface Helper Methods
+
+        /// <summary>
+        /// Creates a List of all the nodes in the tree as Key/Value pairs sorted in Depth Order.
+        /// </summary>
+        /// <returns></returns>
+        private List<KeyValuePair<K,V>> DepthOrderItemList()
+        {
+            List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
+            Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
+            if(null != _root)
+            {
+                queue.Enqueue(_root);
+            }
+
+            while(queue.Count > 0)
+            {
+                Node<K, V> node = queue.Dequeue();
+                list.Add(new KeyValuePair<K, V>(node.Key, node.Value));
+                if(null != node.Left)
+                {
+                    queue.Enqueue(node.Left);
+                }
+                if(null != node.Right)
+                {
+                    queue.Enqueue(node.Right);
+                }
+            }
+
+            return list;
         }
         #endregion
     }

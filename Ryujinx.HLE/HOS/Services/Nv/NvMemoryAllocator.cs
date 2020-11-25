@@ -181,7 +181,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 alignment = (alignment + PageMask) & ~PageMask;
                 if (address < AddressSpaceSize)
                 {
-
+                    bool completedFirstPass = false;
                     Node<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : (start == DefaultStart ? _tree.GetNode(_list.Last.Value) : _tree.CeilingNode(address));
                     while (address < AddressSpaceSize)
                     {
@@ -204,7 +204,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                     }
                                     else
                                     {
-                                        break;
+                                        if (completedFirstPass)
+                                        {
+                                            break;
+                                        }
+                                        else
+                                        {
+                                            completedFirstPass = true;
+                                            blockNode = _tree.CeilingNode(address);
+                                        }
                                     }
                                 }
                             }
