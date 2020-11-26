@@ -317,6 +317,39 @@ namespace Ryujinx.Common.Collections
             }
         }
 
+        /// <summary>
+        /// Adds all the nodes in the dictionary into <paramref name="list"/>.
+        /// <br></br>
+        /// The nodes will be added in Level Order.
+        /// </summary>
+        /// <param name="list"></param>
+        /// 
+        public List<KeyValuePair<K, V>> AsList()
+        {
+            List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
+
+            Queue<Node<K, V>> nodes = new Queue<Node<K, V>>();
+
+            if (this._root != null)
+            {
+                nodes.Enqueue(this._root);
+            }
+            while (nodes.Count > 0)
+            {
+                Node<K, V> node = nodes.Dequeue();
+                list.Add(new KeyValuePair<K, V>(node.Key, node.Value));
+                if (node.Left != null)
+                {
+                    nodes.Enqueue(node.Left);
+                }
+                if (node.Right != null)
+                {
+                    nodes.Enqueue(node.Right);
+                }
+            }
+
+            return list;
+        }
         #endregion
         #region Private Methods (BST)
 
