@@ -57,7 +57,7 @@ namespace ARMeilleure.Translation.PTC
             _backgroundQueue = new ConcurrentQueue<(ulong, ulong, ExecutionMode)>();
             _backgroundEvent = new AutoResetEvent(false);
 
-            ThreadPool.QueueUserWorkItem(BackgroundMethod);
+            ThreadPool.QueueUserWorkItem(BackgroundOverlapFinder);
         }
 
         internal static void AddEntry(ulong address, ExecutionMode mode, bool highCq)
@@ -84,7 +84,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void BackgroundMethod(object state)
+        private static void BackgroundOverlapFinder(object state)
         {
             while (!_disposed)
             {
@@ -135,17 +135,17 @@ namespace ARMeilleure.Translation.PTC
 
         internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> GetProfiledFuncsToTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
-            var profiledFuncsWithoutOverlapped = new Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)>(ProfiledFuncs);
+            var profiledFuncsToTranslate = new Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)>(ProfiledFuncs);
 
-            foreach (var profiledFuncWithoutOverlapped in profiledFuncsWithoutOverlapped)
+            foreach (var profiledFuncToTranslate in profiledFuncsToTranslate)
             {
-                if (funcs.ContainsKey(profiledFuncWithoutOverlapped.Key) || profiledFuncWithoutOverlapped.Value.overlapped)
+                if (funcs.ContainsKey(profiledFuncToTranslate.Key) || profiledFuncToTranslate.Value.overlapped)
                 {
-                    profiledFuncsWithoutOverlapped.Remove(profiledFuncWithoutOverlapped.Key);
+                    profiledFuncsToTranslate.Remove(profiledFuncToTranslate.Key);
                 }
             }
 
-            return profiledFuncsWithoutOverlapped;
+            return profiledFuncsToTranslate;
         }
 
         internal static void ClearEntries()
