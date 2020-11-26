@@ -487,6 +487,8 @@ namespace ARMeilleure.Translation.PTC
 
             PtcJumpTable.WriteJumpTable(jumpTable, funcs);
             PtcJumpTable.WriteDynamicTable(jumpTable);
+
+            Logger.Info?.Print(LogClass.Ptc, $"{funcs.Count} translated functions loaded");
         }
 
         private static int GetInfosEntriesCount()
