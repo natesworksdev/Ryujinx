@@ -449,6 +449,7 @@ namespace Ryujinx.Common.Collections
             {
                 nodeToDelete.Key = replacementNode.Key;
                 nodeToDelete.Value = replacementNode.Value;
+                _dictionary[replacementNode.Key] = nodeToDelete;
             }
 
             if (tmp != null && ColorOf(replacementNode) == Black)
