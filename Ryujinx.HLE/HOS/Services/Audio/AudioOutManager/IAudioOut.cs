@@ -85,9 +85,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         {
             long tag = context.RequestData.ReadInt64();
 
-            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag) ? true : false);
+            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag));
 
-            return 0;
+            return ResultCode.Success;
         }
 
         [Command(7)] // 3.0.0+
