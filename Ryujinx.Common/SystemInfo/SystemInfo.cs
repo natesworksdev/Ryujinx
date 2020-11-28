@@ -16,15 +16,15 @@ namespace Ryujinx.Common.SystemInfo
         {
             if (OperatingSystem.IsWindows())
             {
-                Instance = new WindowsSysteminfo();
+                Instance = new WindowsSystemInfo();
             }
             else if (OperatingSystem.IsLinux())
             {
-                Instance = new LinuxSysteminfo();
+                Instance = new LinuxSystemInfo();
             }
             else if (OperatingSystem.IsMacOS())
             {
-                Instance = new MacOSSysteminfo();
+                Instance = new MacOSSystemInfo();
             }
             else
             {
