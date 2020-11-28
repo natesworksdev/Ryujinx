@@ -37,7 +37,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Version of the codegen (to be changed when codegen or guest format change).
         /// </summary>
-        private const ulong ShaderCodeGenVersion = 1717;
+        private const ulong ShaderCodeGenVersion = 1759;
 
         /// <summary>
         /// Creates a new instance of the shader cache.
@@ -165,7 +165,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         ShaderCodeHolder[] shaders = new ShaderCodeHolder[cachedShaderEntries.Length];
                         List<ShaderProgram> shaderPrograms = new List<ShaderProgram>();
 
-                        TransformFeedbackDescriptor[] tfd = ReadTransformationFeedbackInformations(ref guestProgramReadOnlySpan, fileHeader);
+                        TransformFeedbackDescriptor[] tfd = CacheHelper.ReadTransformationFeedbackInformations(ref guestProgramReadOnlySpan, fileHeader);
 
                         TranslationFlags flags = DefaultFlags;
 
@@ -804,52 +804,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
         }
 
         /// <summary>
-        /// Write transform feedback guest information to the given stream.
-        /// </summary>
-        /// <param name="stream">The stream to write data to</param>
-        /// <param name="tfd">The current transform feedback descriptors used</param>
-        private static void WriteTransformationFeedbackInformation(Stream stream, TransformFeedbackDescriptor[] tfd)
-        {
-            if (tfd != null)
-            {
-                BinaryWriter writer = new BinaryWriter(stream);
-
-                foreach (TransformFeedbackDescriptor transform in tfd)
-                {
-                    writer.WriteStruct(new GuestShaderCacheTransformFeedbackHeader(transform.BufferIndex, transform.Stride, transform.VaryingLocations.Length));
-                    writer.Write(transform.VaryingLocations);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Read transform feedback descriptors from guest.
-        /// </summary>
-        /// <param name="data">The raw guest transform feedback descriptors</param>
-        /// <param name="header">The guest shader program header</param>
-        /// <returns>The transform feedback descriptors read from guest</returns>
-        private static TransformFeedbackDescriptor[] ReadTransformationFeedbackInformations(ref ReadOnlySpan<byte> data, GuestShaderCacheHeader header)
-        {
-            if (header.TransformFeedbackCount != 0)
-            {
-                TransformFeedbackDescriptor[] result = new TransformFeedbackDescriptor[header.TransformFeedbackCount];
-
-                for (int i = 0; i < result.Length; i++)
-                {
-                    GuestShaderCacheTransformFeedbackHeader feedbackHeader = MemoryMarshal.Read<GuestShaderCacheTransformFeedbackHeader>(data);
-
-                    result[i] = new TransformFeedbackDescriptor(feedbackHeader.BufferIndex, feedbackHeader.Stride, data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>(), feedbackHeader.VaryingLocationsLength).ToArray());
-
-                    data = data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>() + feedbackHeader.VaryingLocationsLength);
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        /// <summary>
         /// Create a new instance of <see cref="GuestGpuAccessorHeader"/> from an gpu accessor.
         /// </summary>
         /// <param name="gpuAccessor">The gpu accessor</param>
@@ -885,6 +839,8 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 HashSet<int> textureHandlesInUse = shaderContext.TextureHandlesForCache;
 
                 header.TextureDescriptorCount = textureHandlesInUse.Count;
+
+                writer.WriteStruct(header);
 
                 foreach (int textureHandle in textureHandlesInUse)
                 {
@@ -946,7 +902,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     entries[i] = ComputeStage(stream, shaderContexts[i]);
                 }
 
-                WriteTransformationFeedbackInformation(stream, tfd);
+                CacheHelper.WriteTransformationFeedbackInformation(stream, tfd);
 
                 programCode = stream.ToArray();
                 programCodeHash = _cacheManager.ComputeHash(programCode);
