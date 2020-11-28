@@ -293,6 +293,49 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Nzcv);
         }
 
+        [Test, Pairwise, Description("VFNMS.F<size> <Vd>, <Vn>, <Vm>")]
+        public void Vfnms(
+                          [Values(1u, 2u)] uint rd,
+                          [Values(1u, 2u)] uint rn,
+                          [Values(1u, 2u)] uint rm,
+                          [Values(2u, 3u)] uint size,
+                          [Random(RndCnt)] ulong z,
+                          [Random(RndCnt)] ulong a,
+                          [Random(RndCnt)] ulong b,
+                          [Values] bool op)
+        {
+            uint opcode = 0xee900a00;
+
+            if (size == 2)
+            {
+                opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
+                opcode |= ((rd & 0x1e) << 11) | ((rd & 0x1) << 22);
+                opcode |= ((rn & 0x1e) >> 15) | ((rn & 0x1) << 7);
+               
+            }
+            else
+            {
+                opcode |= ((rm & 0xf) << 0) | ((rm & 0x10) << 1);
+                opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+                opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            }
+
+            opcode |= ((size & 3) << 8);
+
+            //if (op)
+            //{
+            //    opcode |= 1 << 6;
+            //}
+
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0E1(a, z);
+            V128 v2 = MakeVectorE0E1(b, z);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
         [Test, Pairwise, Description("VMLSL.<type><size> <Vd>, <Vn>, <Vm>")]
         public void Vmlsl_I([Values(0u)] uint rd,
                             [Values(1u, 0u)] uint rn,

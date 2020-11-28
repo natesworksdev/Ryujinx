@@ -284,6 +284,28 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vfnms_S(ArmEmitterContext context) // Fused.
+        {
+            if(Optimizations.FastFP && Optimizations.UseSse2)
+            {
+                OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
+
+                OperandType type = (op.Size & 1) == 0 ? OperandType.FP32 : OperandType.FP64;
+
+                Operand dest = ExtractScalar(context, type, op.Vd);
+                InsertScalar(context, op.Vd, context.Negate(dest));
+
+                EmitScalarTernaryOpF32(context, Intrinsic.X86Mulss, Intrinsic.X86Mulsd, Intrinsic.X86Addss, Intrinsic.X86Addsd);
+            }
+            else
+            {
+                EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), context.Negate(op1), op2, op3);
+                });
+            }
+        }
+
         public static void Vhadd(ArmEmitterContext context)
         {
             OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
