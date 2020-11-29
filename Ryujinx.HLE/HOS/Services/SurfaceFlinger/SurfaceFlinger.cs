@@ -23,9 +23,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private Stopwatch _chrono;
 
+        private ManualResetEvent _event = new ManualResetEvent(false);
         private long _ticks;
         private long _ticksPerFrame;
-        private long _1msTicks;
+        private long _spinTicks;
 
         private int _swapInterval;
 
@@ -63,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _chrono.Start();
 
             _ticks = 0;
-            _1msTicks = Stopwatch.Frequency / 1000;
+            _spinTicks = Stopwatch.Frequency / 1000;
 
             UpdateSwapInterval(1);
 
@@ -200,27 +201,31 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                 if (_ticks >= _ticksPerFrame)
                 {
-                    _device.System?.SignalVsync();
-                    
                     Compose();
 
-                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    _device.System?.SignalVsync();
+                    
+                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame * 3);
                 }
 
                 // Sleep the minimal amount of time to avoid being too expensive.
-                if (_ticksPerFrame - _ticks < _1msTicks)
+                long diff = _ticksPerFrame - _chrono.ElapsedTicks;
+                if (diff > 0)
                 {
-                    do
+                    if (diff < _spinTicks)
                     {
-                        Thread.SpinWait(100);
-                        ticks = _chrono.ElapsedTicks;
-                        _ticks += ticks - lastTicks;
-                        lastTicks = ticks;
-                    } while (_ticks < _ticksPerFrame);
-                }
-                else
-                {
-                    Thread.Sleep(1);
+                        do
+                        {
+                            Thread.SpinWait(50000);
+                            ticks = _chrono.ElapsedTicks;
+                            _ticks += ticks - lastTicks;
+                            lastTicks = ticks;
+                        } while (_ticks < _ticksPerFrame);
+                    }
+                    else
+                    {
+                        _event.WaitOne(1);
+                    }
                 }
             }
         }
