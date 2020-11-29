@@ -413,7 +413,6 @@ namespace ARMeilleure.CodeGen.X86
                         {
                             EnsureSameReg(dest, src1);
                             Debug.Assert(src3.GetRegister().Index == 0);
-                            
                             context.Assembler.WriteInstruction(info.Inst, dest, src1, src2);
                         }
                         break;
