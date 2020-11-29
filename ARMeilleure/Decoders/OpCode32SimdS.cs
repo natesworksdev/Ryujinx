@@ -4,7 +4,6 @@
     {
         public int Vd { get; protected set; }
         public int Vm { get; protected set; }
-        public int Op { get; protected set; } // "op1_neg" (op)
         public int Opc { get; protected set; } // "with_zero" (Opc<1>) [Vcmp, Vcmpe].
         public int Opc2 { get; } // opc2 or RM (opc2<1:0>) [Vcvt, Vrint].
         public int Size { get; protected set; }
@@ -13,7 +12,6 @@
 
         public OpCode32SimdS(InstDescriptor inst, ulong address, int opCode) : base(inst, address, opCode)
         {
-            Op = (opCode >> 6) & 0x1;
             Opc = (opCode >> 15) & 0x3;
             Opc2 = (opCode >> 16) & 0x7;
 
