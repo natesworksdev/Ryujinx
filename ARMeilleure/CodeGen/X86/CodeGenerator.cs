@@ -403,15 +403,20 @@ namespace ARMeilleure.CodeGen.X86
                         {
                             context.Assembler.WriteInstruction(X86Instruction.Vpblendvb, dest, src1, src2, src3);
                         }
-                        else
+                        else if ((info.Inst == X86Instruction.Vfmsub231ss || info.Inst == X86Instruction.Vfmsub231sd) && HardwareCapabilities.SupportsVexEncoding)
                         {
                             EnsureSameReg(dest, src1);
-
-                            Debug.Assert(src3.GetRegister().Index == 0);
-
+                            context.Assembler.WriteInstruction(info.Inst, dest, src2, src3);
+                        }
+                        else
+                        {
+                            if (!HardwareCapabilities.SupportsVexEncoding)
+                            {
+                                EnsureSameReg(dest, src1);
+                                Debug.Assert(src3.GetRegister().Index == 0);
+                            }
                             context.Assembler.WriteInstruction(info.Inst, dest, src1, src2);
                         }
-
                         break;
                     }
 

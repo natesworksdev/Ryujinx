@@ -1309,7 +1309,12 @@ namespace ARMeilleure.CodeGen.X86
             IntrinsicOperation intrinOp = (IntrinsicOperation)operation;
             IntrinsicInfo info = IntrinsicTable.GetInfo(intrinOp.Intrinsic);
 
-            return info.Type == IntrinsicType.Crc32 || IsVexSameOperandDestSrc1(operation);
+            return info.Type == IntrinsicType.Crc32 || IsVexSameOperandDestSrc1(operation) || IsVexSameOperandDestSrc1Fma(info);
+        }
+
+        private static bool IsVexSameOperandDestSrc1Fma(IntrinsicInfo info)
+        {
+            return info.Inst == X86Instruction.Vfmsub231ss || info.Inst == X86Instruction.Vfmsub231sd || info.Inst == X86Instruction.Vfmsub231ps || info.Inst == X86Instruction.Vfmsub231pd;
         }
 
         private static bool IsVexSameOperandDestSrc1(Operation operation)
