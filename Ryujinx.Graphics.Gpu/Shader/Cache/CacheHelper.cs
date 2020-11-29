@@ -2,7 +2,10 @@
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Gpu.Shader.Cache.Definition;
+using Ryujinx.Graphics.Shader;
+using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -177,13 +180,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return null;
         }
 
-        public static Hash128 ComputeGuestHashFromCache(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd)
+        private static byte[] ComputeGuestProgramCode(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd, bool forHashCompute = false)
         {
-            byte[] data;
-
             using (MemoryStream stream = new MemoryStream())
             {
                 BinaryWriter writer = new BinaryWriter(stream);
+
                 foreach (GuestShaderCacheEntry cachedShaderEntry in cachedShaderEntries)
                 {
                     if (cachedShaderEntry != null)
@@ -191,8 +193,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                         // Code (and Code A if present)
                         stream.Write(cachedShaderEntry.Code);
 
-                        // Guest GPU accessor header
-                        writer.WriteStruct(cachedShaderEntry.Header.GpuAccessorHeader);
+                        if (forHashCompute)
+                        {
+                            // Guest GPU accessor header (only write this for hashes, already present in the header for dumps)
+                            writer.WriteStruct(cachedShaderEntry.Header.GpuAccessorHeader);
+                        }
 
                         // Texture descriptors
                         foreach (GuestTextureDescriptor textureDescriptor in cachedShaderEntry.TextureDescriptors.Values)
@@ -203,12 +208,22 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                 }
 
                 // Transformation feedback
-                WriteTransformationFeedbackInformation(stream, tfd);
+                if (tfd != null)
+                {
+                    foreach (TransformFeedbackDescriptor transform in tfd)
+                    {
+                        writer.WriteStruct(new GuestShaderCacheTransformFeedbackHeader(transform.BufferIndex, transform.Stride, transform.VaryingLocations.Length));
+                        writer.Write(transform.VaryingLocations);
+                    }
+                }
 
-                data = stream.ToArray();
+                return stream.ToArray();
             }
+        }
 
-            return XXHash128.ComputeHash(data);
+        public static Hash128 ComputeGuestHashFromCache(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd = null)
+        {
+            return XXHash128.ComputeHash(ComputeGuestProgramCode(cachedShaderEntries, tfd, true));
         }
 
         /// <summary>
@@ -239,21 +254,112 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         }
 
         /// <summary>
-        /// Write transform feedback guest information to the given stream.
+        /// Create a new instance of <see cref="GuestGpuAccessorHeader"/> from an gpu accessor.
         /// </summary>
-        /// <param name="stream">The stream to write data to</param>
-        /// <param name="tfd">The current transform feedback descriptors used</param>
-        public static void WriteTransformationFeedbackInformation(Stream stream, TransformFeedbackDescriptor[] tfd)
+        /// <param name="gpuAccessor">The gpu accessor</param>
+        /// <returns>a new instance of <see cref="GuestGpuAccessorHeader"/></returns>
+        public static GuestGpuAccessorHeader CreateGuestGpuAccessorCache(IGpuAccessor gpuAccessor)
         {
-            if (tfd != null)
+            return new GuestGpuAccessorHeader
             {
-                BinaryWriter writer = new BinaryWriter(stream);
+                ComputeLocalSizeX = gpuAccessor.QueryComputeLocalSizeX(),
+                ComputeLocalSizeY = gpuAccessor.QueryComputeLocalSizeY(),
+                ComputeLocalSizeZ = gpuAccessor.QueryComputeLocalSizeZ(),
+                ComputeLocalMemorySize = gpuAccessor.QueryComputeLocalMemorySize(),
+                ComputeSharedMemorySize = gpuAccessor.QueryComputeSharedMemorySize(),
+                PrimitiveTopology = gpuAccessor.QueryPrimitiveTopology(),
+            };
+        }
 
-                foreach (TransformFeedbackDescriptor transform in tfd)
+        public static GuestShaderCacheEntry[] CreateShaderCacheEntries(MemoryManager memoryManager, ReadOnlySpan<TranslatorContext> shaderContexts)
+        {
+            GuestShaderCacheEntry ComputeStage(TranslatorContext context)
+            {
+                if (context == null)
                 {
-                    writer.WriteStruct(new GuestShaderCacheTransformFeedbackHeader(transform.BufferIndex, transform.Stride, transform.VaryingLocations.Length));
-                    writer.Write(transform.VaryingLocations);
+                    return null;
                 }
+
+                int sizeA = context.AddressA == 0 ? 0 : context.SizeA;
+
+                byte[] code = new byte[context.Size + sizeA];
+
+                memoryManager.GetSpan(context.Address, context.Size).CopyTo(code);
+
+                if (context.AddressA != 0)
+                {
+                    memoryManager.GetSpan(context.AddressA, context.SizeA).CopyTo(code.AsSpan().Slice(context.Size, context.SizeA));
+                }
+
+                GuestGpuAccessorHeader gpuAccessorHeader = CreateGuestGpuAccessorCache(context.GpuAccessor);
+
+                if (context.GpuAccessor is GpuAccessor)
+                {
+                    gpuAccessorHeader.TextureDescriptorCount = context.TextureHandlesForCache.Count;
+                }
+
+                GuestShaderCacheEntryHeader header = new GuestShaderCacheEntryHeader(context.Stage, context.Size, sizeA, gpuAccessorHeader);
+
+                GuestShaderCacheEntry entry = new GuestShaderCacheEntry(header, code);
+
+                if (context.GpuAccessor is GpuAccessor gpuAccessor)
+                {
+                    foreach (int textureHandle in context.TextureHandlesForCache)
+                    {
+                        GuestTextureDescriptor textureDescriptor = ((Image.TextureDescriptor)gpuAccessor.GetTextureDescriptor(textureHandle)).ToCache();
+
+                        textureDescriptor.Handle = (uint)textureHandle;
+
+                        entry.TextureDescriptors.Add(textureHandle, textureDescriptor);
+                    }
+                }
+
+                return entry;
+            }
+
+            GuestShaderCacheEntry[] entries = new GuestShaderCacheEntry[shaderContexts.Length];
+
+            for (int i = 0; i < shaderContexts.Length; i++)
+            {
+                entries[i] = ComputeStage(shaderContexts[i]);
+            }
+
+            return entries;
+        }
+
+        public static byte[] CreateGuestProgramDump(GuestShaderCacheEntry[] shaderCacheEntries, TransformFeedbackDescriptor[] tfd = null)
+        {
+            using (MemoryStream resultStream = new MemoryStream())
+            {
+                BinaryWriter resultStreamWriter = new BinaryWriter(resultStream);
+
+                byte transformFeedbackCount = 0;
+
+                if (tfd != null)
+                {
+                    transformFeedbackCount = (byte)tfd.Length;
+                }
+
+                // Header
+                resultStreamWriter.WriteStruct(new GuestShaderCacheHeader((byte)shaderCacheEntries.Length, transformFeedbackCount));
+
+                // Write all entries header
+                foreach (GuestShaderCacheEntry entry in shaderCacheEntries)
+                {
+                    if (entry == null)
+                    {
+                        resultStreamWriter.WriteStruct(new GuestShaderCacheEntryHeader());
+                    }
+                    else
+                    {
+                        resultStreamWriter.WriteStruct(entry.Header);
+                    }
+                }
+
+                // Finally, write all program code and all transform feedback information.
+                resultStreamWriter.Write(ComputeGuestProgramCode(shaderCacheEntries, tfd));
+
+                return resultStream.ToArray();
             }
         }
 
