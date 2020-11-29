@@ -286,7 +286,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vfnms_S(ArmEmitterContext context) // Fused.
         {
-            if(Optimizations.FastFP && Optimizations.UseFma)
+            if (Optimizations.FastFP && Optimizations.UseFma)
             {
                 EmitScalarTernaryOpF32(context, Intrinsic.X86Fmsub231ss, Intrinsic.X86Fmsub231sd);
             }
