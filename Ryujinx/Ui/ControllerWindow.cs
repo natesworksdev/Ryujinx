@@ -590,140 +590,6 @@ namespace Ryujinx.Ui
             return null;
         }
 
-        private static bool IsAnyKeyPressed(out Key pressedKey, int index)
-        {
-            KeyboardState keyboardState = KeyboardController.GetKeyboardState(index);
-
-            foreach (Key key in Enum.GetValues(typeof(Key)))
-            {
-                if (keyboardState.IsKeyDown((OpenTK.Input.Key)key))
-                {
-                    pressedKey = key;
-
-                    return true;
-                }
-            }
-
-            pressedKey = Key.Unbound;
-
-            return false;
-        }
-
-        private static void CollectButtonStats(JoystickButtonDetector detector, JoystickState prevState, JoystickState currState, JoystickCapabilities joystickCapabilities)
-        {
-            ControllerInputId pressedButton;
-            
-            //Buttons
-            for (int i = 0; i != joystickCapabilities.ButtonCount; i++)
-            {
-                if (currState.IsButtonDown(i) && prevState.IsButtonUp(i))
-                {
-                    Enum.TryParse($"Button{i}", out pressedButton); 
-                    detector.AddInput(pressedButton, 1);
-                }
-
-                if (currState.IsButtonUp(i) && prevState.IsButtonDown(i))
-                {
-                    Enum.TryParse($"Button{i}", out pressedButton); 
-                    detector.AddInput(pressedButton, -1);
-                }
-            }
-
-            //Axis
-            for (int i = 0; i != joystickCapabilities.AxisCount; i++)
-            {
-                float axisValue = currState.GetAxis(i);
-
-                Enum.TryParse($"Axis{i}", out pressedButton);
-                detector.AddInput(pressedButton, axisValue);
-            }
-
-            //Hats
-            for (int i = 0; i != joystickCapabilities.HatCount; i++)
-            {
-                string currPos = GetHatPosition(currState.GetHat((JoystickHat)i));
-                string prevPos = GetHatPosition(prevState.GetHat((JoystickHat)i));
-
-                if (currPos == prevPos) {
-                    continue;
-                }
-
-                if (currPos != "") {
-                    Enum.TryParse($"Hat{i}{currPos}", out pressedButton);
-                    detector.AddInput(pressedButton, 1);
-                }
-
-                if (prevPos != "") {
-                    Enum.TryParse($"Hat{i}{prevPos}", out pressedButton);
-                    detector.AddInput(pressedButton, -1);
-                } 
-            }
-        }
-
-        private static string GetHatPosition(JoystickHatState hatState)
-        {
-            if (hatState.IsUp) return "Up";
-            if (hatState.IsDown) return "Down";
-            if (hatState.IsLeft) return "Left";
-            if (hatState.IsRight) return "Right";
-            return "";
-        }
-
-        private static bool IsCancelBindingPressed(bool useKeyboardAnyKey)
-        {
-            bool keyboardPressed = false;
-
-            if (useKeyboardAnyKey) {
-                keyboardPressed = Keyboard.GetState().IsAnyKeyDown;
-            } else {
-                keyboardPressed = Keyboard.GetState().IsKeyDown(OpenTK.Input.Key.Escape);
-            }
-
-            return Mouse.GetState().IsAnyButtonDown || keyboardPressed;
-        }
-
-        private static ControllerInputId WaitForButtonPressed(int index, double triggerThreshold)
-        {
-            // TODO: triggerThresold is ignored in purpose. Should it be used for key binding?.
-            // Note that, like left and right sticks, ZL and ZR triggers are treated as axis.
-            // The problem is then how to decide which axis should use triggerThresold.
-
-            var joystickCapabilities = Joystick.GetCapabilities(index);
-            var joystickState = Joystick.GetState(index);
-            var joystickPrevState = joystickState;
-            var buttonStats = new JoystickButtonDetector();
-            // int numCounter = 0;
-
-            while (!buttonStats.HasAnyButtonPressed())
-            {
-                Thread.Sleep(10);
-
-                joystickPrevState = joystickState;
-                joystickState = Joystick.GetState(index);
-                
-                CollectButtonStats(buttonStats, joystickPrevState, joystickState, joystickCapabilities);
-
-                /*
-                if (numCounter % 1000 == 0) {
-                    Console.WriteLine(buttonStats);
-                }
-
-                numCounter += 1;
-                */
-
-                if (IsCancelBindingPressed(true)) {
-                    return ControllerInputId.Unbound;
-                }
-            }
-
-            var pressedButtons = buttonStats.GetPressedButtons();
-
-            // Reverse list so axis button take precedence when more than one button is recognized
-            pressedButtons.Reverse();
-            
-            return pressedButtons[0];
-        }
-
         private string GetProfileBasePath()
         {
             string path = AppDataManager.ProfilesDirPath;
@@ -761,6 +627,28 @@ namespace Ryujinx.Ui
             _refreshInputDevicesButton.SetStateFlags(0, true);
         }
 
+        private ButtonAssigner CreateButtonAssigner()
+        {
+            int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
+
+            ButtonAssigner assigner;
+
+            if (_inputDevice.ActiveId.StartsWith("keyboard")) {
+                assigner = new KeyboardKeyAssigner(index);
+            }
+            else if (_inputDevice.ActiveId.StartsWith("controller")) {
+                // TODO: triggerThresold is passed but not used by JoystickButtonAssigner. Should it be used for key binding?.
+                // Note that, like left and right sticks, ZL and ZR triggers are treated as axis.
+                // The problem is then how to decide which axis should use triggerThresold.
+                assigner = new JoystickButtonAssigner(index, _controllerTriggerThreshold.Value);
+            }
+            else {
+                throw new Exception("Controller not supported");
+            }
+            
+            return assigner;
+        }
+
         private void Button_Pressed(object sender, EventArgs args)
         {
             if (_isWaitingForInput)
@@ -768,64 +656,37 @@ namespace Ryujinx.Ui
                 return;
             }
 
+            var assigner = CreateButtonAssigner();
+
             _isWaitingForInput = true;
 
             Thread inputThread = new Thread(() =>
             {
-                Button button = (ToggleButton)sender;
+                assigner.Init();
 
-                if (_inputDevice.ActiveId.StartsWith("keyboard"))
+                while (true)
                 {
-                    Key pressedKey;
-
-                    int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
-                    while (!IsAnyKeyPressed(out pressedKey, index))
-                    {
-                        if (IsCancelBindingPressed(false))
-                        {
-                            Application.Invoke(delegate
-                            {
-                                button.SetStateFlags(0, true);
-                            });
-
-                            _isWaitingForInput = false;
-
-                            return;
-                        }
+                    Thread.Sleep(10);
+                    assigner.ReadInput();
+                    if (assigner.HasAnyButtonPressed() || assigner.ShouldCancel()) {
+                        break;
                     }
-
-                    Application.Invoke(delegate
-                    {
-                        button.Label = pressedKey.ToString();
-                        button.SetStateFlags(0, true);
-                    });
-                }
-                else if (_inputDevice.ActiveId.StartsWith("controller"))
-                {
-                    int index = int.Parse(_inputDevice.ActiveId.Split("/")[1]);
-                    var pressedButton = WaitForButtonPressed(index, _controllerTriggerThreshold.Value);
-
-                    if (pressedButton == ControllerInputId.Unbound) {
-                            
-                        Application.Invoke(delegate
-                        {
-                            button.SetStateFlags(0, true);
-                        });
-
-                        _isWaitingForInput = false;
-
-                        return;
-                    }
-
-                    Application.Invoke(delegate
-                    {
-                        button.Label = pressedButton.ToString();
-                        button.SetStateFlags(0, true);
-                    });
                 }
 
-                _isWaitingForInput = false;
+                var pressedButton = assigner.GetPressedButton();
+
+                ToggleButton button = (ToggleButton) sender;
+
+                Application.Invoke(delegate
+                {
+                    if (pressedButton != "") {
+                        button.Label = pressedButton;
+                    }
+                    button.Active = false;
+                    _isWaitingForInput = false;   
+                });
             });
+
             inputThread.Name = "GUI.InputThread";
             inputThread.IsBackground = true;
             inputThread.Start();
@@ -1092,99 +953,6 @@ namespace Ryujinx.Ui
         private void CloseToggle_Activated(object sender, EventArgs args)
         {
             Dispose();
-        }
-    
-        class JoystickButtonDetector
-        {
-            private Dictionary<ControllerInputId, InputSummary> _stats;
-
-            public JoystickButtonDetector()
-            {
-                _stats = new Dictionary<ControllerInputId, InputSummary>();
-            }
-
-            public bool HasAnyButtonPressed()
-            {
-                foreach (var inputSummary in _stats.Values) {
-                    if (checkButtonPressed(inputSummary)) {
-                        return true;
-                    }
-                }
-                return false;
-            }
-
-            public List<ControllerInputId> GetPressedButtons()
-            {
-                var pressedButtons = new List<ControllerInputId>();
-
-                foreach (var kvp in _stats) {
-                    if (!checkButtonPressed(kvp.Value)) {
-                        continue;
-                    }
-                    pressedButtons.Add(kvp.Key);
-                }
-
-                return pressedButtons;
-            }
-
-            public void AddInput(ControllerInputId button, float value)
-            {
-                InputSummary inputSummary;
-
-                if (!_stats.TryGetValue(button, out inputSummary)) {
-                    inputSummary = new InputSummary();
-                    _stats.Add(button, inputSummary);
-                }
-
-                inputSummary.AddInput(value);
-            }
-
-            public override string ToString()
-            {
-                var writer = new StringWriter();
-
-                foreach (var kvp in _stats) {
-                    writer.WriteLine($"Button {kvp.Key} -> {kvp.Value}");
-                }
-
-                return writer.ToString();
-            }
-
-            private bool checkButtonPressed(InputSummary sequence)
-            {
-                var distance = Math.Abs(sequence.Min - sequence.Avg) + Math.Abs(sequence.Max - sequence.Avg);
-                return distance > 1.5; // distance range [0, 2]
-            }
-        }   
-        
-        class InputSummary
-        {
-            public float Min, Max, Sum, Avg;
-
-            public int NumSamples;
-
-            public InputSummary()
-            {
-                Min = float.MaxValue;
-                Max = float.MinValue;
-                Sum = 0;
-                NumSamples = 0;
-                Avg = 0;
-            }
-
-            public void AddInput(float value)
-            {
-                Min = Math.Min(Min, value);
-                Max = Math.Max(Max, value);
-                Sum += value;
-                NumSamples += 1;
-                Avg = Sum / NumSamples;
-            }
-
-            public override string ToString()
-            {
-                return $"Avg: {Avg} Min: {Min} Max: {Max} Sum: {Sum} NumSamples: {NumSamples}";
-            }
         }
     }
 }
