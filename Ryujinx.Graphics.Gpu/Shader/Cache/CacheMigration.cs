@@ -9,8 +9,17 @@ using System.IO.Compression;
 
 namespace Ryujinx.Graphics.Gpu.Shader.Cache
 {
+    /// <summary>
+    /// Class handling shader cache migrations.
+    /// </summary>
     static class CacheMigration
     {
+        /// <summary>
+        /// Check if the given cache version need to recompute its hash.
+        /// </summary>
+        /// <param name="version">The version in use</param>
+        /// <param name="newVersion">The new version after migration</param>
+        /// <returns>True if a hash recompute is needed</returns>
         public static bool NeedHashRecompute(ulong version, out ulong newVersion)
         {
             const ulong TargetBrokenVersion = 1717;
@@ -26,6 +35,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return false;
         }
 
+        /// <summary>
+        /// Move a file with the name of a given hash to another in the cache archive.
+        /// </summary>
+        /// <param name="archive">The archive in use</param>
+        /// <param name="oldKey">The source file name</param>
+        /// <param name="newKey">The destination file name</param>
         private static void MoveEntry(ZipArchive archive, Hash128 oldKey, Hash128 newKey)
         {
             ZipArchiveEntry oldGuestEntry = archive.GetEntry($"{oldKey}");
@@ -44,6 +59,14 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             }
         }
 
+        /// <summary>
+        /// Recompute all the hashes of a given cache.
+        /// </summary>
+        /// <param name="guestBaseCacheDirectory">The guest cache directory path</param>
+        /// <param name="hostBaseCacheDirectory">The host cache directory path</param>
+        /// <param name="graphicsApi">The graphics api in use</param>
+        /// <param name="hashType">The hash type in use</param>
+        /// <param name="newVersion">The version to write in the host and guest manifest after migration</param>
         private static void RecomputeHashes(string guestBaseCacheDirectory, string hostBaseCacheDirectory, CacheGraphicsApi graphicsApi, CacheHashType hashType, ulong newVersion)
         {
             string guestManifestPath = CacheHelper.GetManifestPath(guestBaseCacheDirectory);
@@ -111,6 +134,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             }
         }
 
+        /// <summary>
+        /// Check and run cache migration if needed.
+        /// </summary>
+        /// <param name="baseCacheDirectory">The base path of the cache</param>
+        /// <param name="graphicsApi">The graphics api in use</param>
+        /// <param name="hashType">The hash type in use</param>
+        /// <param name="shaderProvider">The shader provider name of the cache</param>
         public static void Run(string baseCacheDirectory, CacheGraphicsApi graphicsApi, CacheHashType hashType, string shaderProvider)
         {
             string guestBaseCacheDirectory = CacheHelper.GenerateCachePath(baseCacheDirectory, CacheGraphicsApi.Guest, "", "program");

@@ -20,6 +20,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
     /// </summary>
     static class CacheHelper
     {
+        /// <summary>
+        /// Try to read the manifest header from a given file path.
+        /// </summary>
+        /// <param name="manifestPath">The path to the manifest file</param>
+        /// <param name="header">The manifest header read</param>
+        /// <returns>Return true if the manifest header was read</returns>
         public static bool TryReadManifestHeader(string manifestPath, out CacheManifestHeader header)
         {
             header = default;
@@ -37,6 +43,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return false;
         }
 
+        /// <summary>
+        /// Try to read the manifest from a given file path.
+        /// </summary>
+        /// <param name="manifestPath">The path to the manifest file</param>
+        /// <param name="graphicsApi">The graphics api used by the cache</param>
+        /// <param name="hashType">The hash type of the cache</param>
+        /// <param name="header">The manifest header read</param>
+        /// <param name="entries">The entries read from the cache manifest</param>
+        /// <returns>Return true if the manifest was read</returns>
         public static bool TryReadManifestFile(string manifestPath, CacheGraphicsApi graphicsApi, CacheHashType hashType, out CacheManifestHeader header, out HashSet<Hash128> entries)
         {
             header = default;
@@ -69,8 +84,21 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return false;
         }
 
+        /// <summary>
+        /// Compute a cache manifest from runtime data.
+        /// </summary>
+        /// <param name="version">The version of the cache</param>
+        /// <param name="graphicsApi">The graphics api used by the cache</param>
+        /// <param name="hashType">The hash type of the cache</param>
+        /// <param name="entries">The entries in the cache</param>
+        /// <returns></returns>
         public static byte[] ComputeManifest(ulong version, CacheGraphicsApi graphicsApi, CacheHashType hashType, HashSet<Hash128> entries)
         {
+            if (hashType != CacheHashType.XxHash128)
+            {
+                throw new NotImplementedException($"{hashType}");
+            }
+
             CacheManifestHeader manifestHeader = new CacheManifestHeader(version, graphicsApi, hashType);
 
             byte[] data = new byte[Unsafe.SizeOf<CacheManifestHeader>() + entries.Count * Unsafe.SizeOf<Hash128>()];
@@ -92,18 +120,44 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return data;
         }
 
+        /// <summary>
+        /// Get the base directory of the shader cache for a given title id.
+        /// </summary>
+        /// <param name="titleId">The title id of the target application</param>
+        /// <returns></returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetBaseCacheDirectory(string titleId) => Path.Combine(AppDataManager.GamesDirPath, titleId, "cache", "shader");
 
+        /// <summary>
+        /// Get the temp path to the cache data directory.
+        /// </summary>
+        /// <param name="cacheDirectory">The cache directory</param>
+        /// <returns>The temp path to the cache data directory</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetCacheTempDataPath(string cacheDirectory) => Path.Combine(cacheDirectory, "temp");
 
+        /// <summary>
+        /// The path to the cache archive file.
+        /// </summary>
+        /// <param name="cacheDirectory">The cache directory</param>
+        /// <returns>The path to the cache archive file</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetArchivePath(string cacheDirectory) => Path.Combine(cacheDirectory, "cache.zip");
 
+        /// <summary>
+        /// The path to the cache manifest file.
+        /// </summary>
+        /// <param name="cacheDirectory">The cache directory</param>
+        /// <returns>The path to the cache manifest file</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetManifestPath(string cacheDirectory) => Path.Combine(cacheDirectory, "cache.info");
 
+        /// <summary>
+        /// Create a new temp path to the given cached file via its hash.
+        /// </summary>
+        /// <param name="cacheDirectory">The cache directory</param>
+        /// <param name="key">The hash of the cached data</param>
+        /// <returns>New path to the given cached file</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GenCacheTempFilePath(string cacheDirectory, Hash128 key) => Path.Combine(GetCacheTempDataPath(cacheDirectory), key.ToString());
 
@@ -131,6 +185,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return Path.Combine(baseCacheDirectory, graphicsApiName, shaderProvider, cacheName);
         }
 
+        /// <summary>
+        /// Read a cached file with the given hash that is present in the archive.
+        /// </summary>
+        /// <param name="archive">The archive in us</param>
+        /// <param name="entry">The given hash</param>
+        /// <returns>The cached file if present or null</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static byte[] ReadFromArchive(ZipArchive archive, Hash128 entry)
         {
@@ -162,10 +222,16 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return null;
         }
 
+        /// <summary>
+        /// Read a cached file with the given hash that is not present in the archive.
+        /// </summary>
+        /// <param name="cacheDirectory">The cache directory</param>
+        /// <param name="entry">The given hash</param>
+        /// <returns>The cached file if present or null</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static byte[] ReadFromFile(string tempPath, Hash128 entry)
+        public static byte[] ReadFromFile(string cacheDirectory, Hash128 entry)
         {
-            string cacheTempFilePath = GenCacheTempFilePath(tempPath, entry);
+            string cacheTempFilePath = GenCacheTempFilePath(cacheDirectory, entry);
 
             try
             {
@@ -180,6 +246,13 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return null;
         }
 
+        /// <summary>
+        /// Compute the guest program code for usage while dumping to disk or hash.
+        /// </summary>
+        /// <param name="cachedShaderEntries">The guest shader entries to use</param>
+        /// <param name="tfd">The transformation feedback descriptors</param>
+        /// <param name="forHashCompute">Used to determine if the guest program code is generated for hashing</param>
+        /// <returns></returns>
         private static byte[] ComputeGuestProgramCode(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd, bool forHashCompute = false)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -221,6 +294,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             }
         }
 
+        /// <summary>
+        /// Compute a guest hash from shader entries.
+        /// </summary>
+        /// <param name="cachedShaderEntries">The guest shader entries to use</param>
+        /// <param name="tfd">The optional transformation feedback descriptors</param>
+        /// <returns>A guest hash from shader entries</returns>
         public static Hash128 ComputeGuestHashFromCache(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd = null)
         {
             return XXHash128.ComputeHash(ComputeGuestProgramCode(cachedShaderEntries, tfd, true));
@@ -271,6 +350,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             };
         }
 
+        /// <summary>
+        /// Create guest shader cache entries from the runtime contexts.
+        /// </summary>
+        /// <param name="memoryManager">The GPU memory manager in use</param>
+        /// <param name="shaderContexts">The runtime contexts</param>
+        /// <returns>Guest shader cahe entries from the runtime contexts</returns>
         public static GuestShaderCacheEntry[] CreateShaderCacheEntries(MemoryManager memoryManager, ReadOnlySpan<TranslatorContext> shaderContexts)
         {
             GuestShaderCacheEntry ComputeStage(TranslatorContext context)
@@ -327,6 +412,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             return entries;
         }
 
+        /// <summary>
+        /// Create a guest shader program.
+        /// </summary>
+        /// <param name="shaderCacheEntries">The entries composing the guest program dump</param>
+        /// <param name="tfd">The transform feedback descriptors in use</param>
+        /// <returns>The resulting guest shader program</returns>
         public static byte[] CreateGuestProgramDump(GuestShaderCacheEntry[] shaderCacheEntries, TransformFeedbackDescriptor[] tfd = null)
         {
             using (MemoryStream resultStream = new MemoryStream())
@@ -363,6 +454,12 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
             }
         }
 
+        /// <summary>
+        /// Save temporary files not in archive.
+        /// </summary>
+        /// <param name="baseCacheDirectory">The base of the cache directory</param>
+        /// <param name="archive">The archive to use</param>
+        /// <param name="entries">The entries in the cache</param>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void EnsureArchiveUpToDate(string baseCacheDirectory, ZipArchive archive, HashSet<Hash128> entries)
         {
