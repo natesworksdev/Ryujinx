@@ -9,9 +9,6 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -765,40 +762,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
 
             _cacheManager?.Dispose();
-        }
-
-        /// <summary>
-        /// Write the guest GpuAccessor informations to the given stream.
-        /// </summary>
-        /// <param name="stream">The stream to write the guest GpuAcessor</param>
-        /// <param name="shaderContext">The shader tranlator context in use</param>
-        /// <returns>The guest gpu accessor header</returns>
-        private static GuestGpuAccessorHeader WriteGuestGpuAccessorCache(Stream stream, TranslatorContext shaderContext)
-        {
-            BinaryWriter writer = new BinaryWriter(stream);
-
-            GuestGpuAccessorHeader header = CacheHelper.CreateGuestGpuAccessorCache(shaderContext.GpuAccessor);
-
-            // If we have a full gpu accessor, cache textures descriptors
-            if (shaderContext.GpuAccessor is GpuAccessor gpuAccessor)
-            {
-                HashSet<int> textureHandlesInUse = shaderContext.TextureHandlesForCache;
-
-                header.TextureDescriptorCount = textureHandlesInUse.Count;
-
-                writer.WriteStruct(header);
-
-                foreach (int textureHandle in textureHandlesInUse)
-                {
-                    GuestTextureDescriptor textureDescriptor = ((Image.TextureDescriptor)gpuAccessor.GetTextureDescriptor(textureHandle)).ToCache();
-
-                    textureDescriptor.Handle = (uint)textureHandle;
-
-                    writer.WriteStruct(textureDescriptor);
-                }
-            }
-
-            return header;
         }
     }
 }

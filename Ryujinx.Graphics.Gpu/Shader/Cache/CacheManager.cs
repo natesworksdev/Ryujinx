@@ -83,16 +83,6 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         }
 
         /// <summary>
-        /// Computes the hash of some data using the current cache hashing algorithm.
-        /// </summary>
-        /// <param name="data">Some data to generate a hash for.</param>
-        /// <returns>The hash of some data using the current hashing algorithm of the cache</returns>
-        public Hash128 ComputeHash(ReadOnlySpan<byte> data)
-        {
-            return XXHash128.ComputeHash(data);
-        }
-
-        /// <summary>
         /// Save a shader program not present in the program cache.
         /// </summary>
         /// <param name="programCodeHash">Target program code hash</param>
