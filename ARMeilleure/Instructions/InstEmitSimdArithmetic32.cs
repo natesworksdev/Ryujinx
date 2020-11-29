@@ -288,7 +288,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseFma)
             {
-                EmitScalarTernaryOpF32(context, Intrinsic.X86Fmsub231ss, Intrinsic.X86Fmsub231sd);
+                EmitScalarTernaryOpF32(context, Intrinsic.X86Vfmsub231ss, Intrinsic.X86Vfmsub231sd);
             }
             else
             {
