@@ -609,55 +609,64 @@ namespace Ryujinx.Ui
             return false;
         }
 
-        private static bool IsAnyButtonPressed(out ControllerInputId pressedButton, JoystickState currentState, JoystickState prevState, int index, double triggerThreshold)
+        private static void CollectButtonStats(JoystickButtonDetector detector, JoystickState prevState, JoystickState currState, JoystickCapabilities joystickCapabilities)
         {
-            JoystickCapabilities joystickCapabilities = Joystick.GetCapabilities(index);
+            ControllerInputId pressedButton;
             
             //Buttons
             for (int i = 0; i != joystickCapabilities.ButtonCount; i++)
             {
-                if (currentState.IsButtonUp(i) && prevState.IsButtonDown(i))
+                if (currState.IsButtonDown(i) && prevState.IsButtonUp(i))
                 {
                     Enum.TryParse($"Button{i}", out pressedButton); 
-                    
-                    return true;
+                    detector.AddInput(pressedButton, 1);
+                }
+
+                if (currState.IsButtonUp(i) && prevState.IsButtonDown(i))
+                {
+                    Enum.TryParse($"Button{i}", out pressedButton); 
+                    detector.AddInput(pressedButton, -1);
                 }
             }
 
             //Axis
             for (int i = 0; i != joystickCapabilities.AxisCount; i++)
             {
-                float axisValue = Math.Abs(currentState.GetAxis(i));
-                float prevAxisValue = Math.Abs(prevState.GetAxis(i));
+                float axisValue = currState.GetAxis(i);
 
-                if (axisValue < 0.5f && prevAxisValue > 0.5f && prevAxisValue > triggerThreshold)
-                {
-                    Enum.TryParse($"Axis{i}", out pressedButton);
-
-                    return true;
-                }
+                Enum.TryParse($"Axis{i}", out pressedButton);
+                detector.AddInput(pressedButton, axisValue);
             }
 
             //Hats
             for (int i = 0; i != joystickCapabilities.HatCount; i++)
             {
-                JoystickHatState hatState = currentState.GetHat((JoystickHat)i);
-                string pos = null;
+                string currPos = GetHatPosition(currState.GetHat((JoystickHat)i));
+                string prevPos = GetHatPosition(prevState.GetHat((JoystickHat)i));
 
-                if (hatState.IsUp) pos = "Up";
-                if (hatState.IsDown) pos = "Down";
-                if (hatState.IsLeft) pos = "Left";
-                if (hatState.IsRight) pos = "Right";
-                if (pos == null) continue;
+                if (currPos == prevPos) {
+                    continue;
+                }
 
-                Enum.TryParse($"Hat{i}{pos}", out pressedButton);
+                if (currPos != "") {
+                    Enum.TryParse($"Hat{i}{currPos}", out pressedButton);
+                    detector.AddInput(pressedButton, 1);
+                }
 
-                return true;
+                if (prevPos != "") {
+                    Enum.TryParse($"Hat{i}{prevPos}", out pressedButton);
+                    detector.AddInput(pressedButton, -1);
+                } 
             }
+        }
 
-            pressedButton = ControllerInputId.Unbound;
-
-            return false;
+        private static string GetHatPosition(JoystickHatState hatState)
+        {
+            if (hatState.IsUp) return "Up";
+            if (hatState.IsDown) return "Down";
+            if (hatState.IsLeft) return "Left";
+            if (hatState.IsRight) return "Right";
+            return "";
         }
 
         private static bool IsCancelBindingPressed(bool useKeyboardAnyKey)
@@ -675,28 +684,44 @@ namespace Ryujinx.Ui
 
         private static ControllerInputId WaitForButtonPressed(int index, double triggerThreshold)
         {
-            JoystickState joystickState = Joystick.GetState(index);
-            JoystickState joystickPrevState = joystickState;
-           
-            ControllerInputId pressedButton = ControllerInputId.Unbound;
+            // TODO: triggerThresold is ignored in purpose. Should it be used for key binding?.
+            // Note that, like left and right sticks, ZL and ZR triggers are treated as axis.
+            // The problem is then how to decide which axis should use triggerThresold.
 
-            while (pressedButton == ControllerInputId.Unbound && !IsCancelBindingPressed(true)) {
+            var joystickCapabilities = Joystick.GetCapabilities(index);
+            var joystickState = Joystick.GetState(index);
+            var joystickPrevState = joystickState;
+            var buttonStats = new JoystickButtonDetector();
+            // int numCounter = 0;
 
+            while (!buttonStats.HasAnyButtonPressed())
+            {
                 Thread.Sleep(10);
 
                 joystickPrevState = joystickState;
                 joystickState = Joystick.GetState(index);
+                
+                CollectButtonStats(buttonStats, joystickPrevState, joystickState, joystickCapabilities);
 
-                IsAnyButtonPressed(
-                    out pressedButton,
-                    joystickState,
-                    joystickPrevState,
-                    index,
-                    triggerThreshold
-                );
+                /*
+                if (numCounter % 1000 == 0) {
+                    Console.WriteLine(buttonStats);
+                }
+
+                numCounter += 1;
+                */
+
+                if (IsCancelBindingPressed(true)) {
+                    return ControllerInputId.Unbound;
+                }
             }
 
-            return pressedButton;
+            var pressedButtons = buttonStats.GetPressedButtons();
+
+            // Reverse list so axis button take precedence when more than one button is recognized
+            pressedButtons.Reverse();
+            
+            return pressedButtons[0];
         }
 
         private string GetProfileBasePath()
@@ -1067,6 +1092,99 @@ namespace Ryujinx.Ui
         private void CloseToggle_Activated(object sender, EventArgs args)
         {
             Dispose();
+        }
+    
+        class JoystickButtonDetector
+        {
+            private Dictionary<ControllerInputId, InputSummary> _stats;
+
+            public JoystickButtonDetector()
+            {
+                _stats = new Dictionary<ControllerInputId, InputSummary>();
+            }
+
+            public bool HasAnyButtonPressed()
+            {
+                foreach (var inputSummary in _stats.Values) {
+                    if (checkButtonPressed(inputSummary)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            public List<ControllerInputId> GetPressedButtons()
+            {
+                var pressedButtons = new List<ControllerInputId>();
+
+                foreach (var kvp in _stats) {
+                    if (!checkButtonPressed(kvp.Value)) {
+                        continue;
+                    }
+                    pressedButtons.Add(kvp.Key);
+                }
+
+                return pressedButtons;
+            }
+
+            public void AddInput(ControllerInputId button, float value)
+            {
+                InputSummary inputSummary;
+
+                if (!_stats.TryGetValue(button, out inputSummary)) {
+                    inputSummary = new InputSummary();
+                    _stats.Add(button, inputSummary);
+                }
+
+                inputSummary.AddInput(value);
+            }
+
+            public override string ToString()
+            {
+                var writer = new StringWriter();
+
+                foreach (var kvp in _stats) {
+                    writer.WriteLine($"Button {kvp.Key} -> {kvp.Value}");
+                }
+
+                return writer.ToString();
+            }
+
+            private bool checkButtonPressed(InputSummary sequence)
+            {
+                var distance = Math.Abs(sequence.Min - sequence.Avg) + Math.Abs(sequence.Max - sequence.Avg);
+                return distance > 1.5; // distance range [0, 2]
+            }
+        }   
+        
+        class InputSummary
+        {
+            public float Min, Max, Sum, Avg;
+
+            public int NumSamples;
+
+            public InputSummary()
+            {
+                Min = float.MaxValue;
+                Max = float.MinValue;
+                Sum = 0;
+                NumSamples = 0;
+                Avg = 0;
+            }
+
+            public void AddInput(float value)
+            {
+                Min = Math.Min(Min, value);
+                Max = Math.Max(Max, value);
+                Sum += value;
+                NumSamples += 1;
+                Avg = Sum / NumSamples;
+            }
+
+            public override string ToString()
+            {
+                return $"Avg: {Avg} Min: {Min} Max: {Max} Sum: {Sum} NumSamples: {NumSamples}";
+            }
         }
     }
 }
