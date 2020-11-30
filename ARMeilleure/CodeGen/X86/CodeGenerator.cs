@@ -403,12 +403,6 @@ namespace ARMeilleure.CodeGen.X86
                         {
                             context.Assembler.WriteInstruction(X86Instruction.Vpblendvb, dest, src1, src2, src3);
                         }
-                        else if (info.Inst == X86Instruction.Vfmsub231ss || info.Inst == X86Instruction.Vfmsub231sd)
-                        {
-                            Debug.Assert(HardwareCapabilities.SupportsVexEncoding);
-                            EnsureSameReg(dest, src1);
-                            context.Assembler.WriteInstruction(info.Inst, dest, src2, src3);
-                        }
                         else
                         {
                             EnsureSameReg(dest, src1);
@@ -437,6 +431,25 @@ namespace ARMeilleure.CodeGen.X86
                         context.Assembler.WriteInstruction(info.Inst, dest, src1, src2, src3.AsByte());
 
                         break;
+                    }
+
+                    case IntrinsicType.Fma:
+                    {
+                            Operand dest = operation.Destination;
+                            Operand src1 = operation.GetSource(0);
+                            Operand src2 = operation.GetSource(1);
+                            Operand src3 = operation.GetSource(2);
+
+                            EnsureSameType(dest, src1, src2, src3);
+
+                            Debug.Assert(!dest.Type.IsInteger());
+                            Debug.Assert(HardwareCapabilities.SupportsVexEncoding);
+
+                            EnsureSameReg(dest, src1);
+
+                            context.Assembler.WriteInstruction(info.Inst, dest, src2, src3);
+
+                            break;
                     }
                 }
             }

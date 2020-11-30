@@ -58,10 +58,6 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Divps,       new IntrinsicInfo(X86Instruction.Divps,       IntrinsicType.Binary));
             Add(Intrinsic.X86Divsd,       new IntrinsicInfo(X86Instruction.Divsd,       IntrinsicType.Binary));
             Add(Intrinsic.X86Divss,       new IntrinsicInfo(X86Instruction.Divss,       IntrinsicType.Binary));
-            Add(Intrinsic.X86Vfmsub231pd, new IntrinsicInfo(X86Instruction.Vfmsub231pd, IntrinsicType.Ternary));
-            Add(Intrinsic.X86Vfmsub231ps, new IntrinsicInfo(X86Instruction.Vfmsub231ps, IntrinsicType.Ternary));
-            Add(Intrinsic.X86Vfmsub231sd, new IntrinsicInfo(X86Instruction.Vfmsub231sd, IntrinsicType.Ternary));
-            Add(Intrinsic.X86Vfmsub231ss, new IntrinsicInfo(X86Instruction.Vfmsub231ss, IntrinsicType.Ternary));
             Add(Intrinsic.X86Haddpd,      new IntrinsicInfo(X86Instruction.Haddpd,      IntrinsicType.Binary));
             Add(Intrinsic.X86Haddps,      new IntrinsicInfo(X86Instruction.Haddps,      IntrinsicType.Binary));
             Add(Intrinsic.X86Insertps,    new IntrinsicInfo(X86Instruction.Insertps,    IntrinsicType.TernaryImm));
@@ -168,6 +164,10 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Unpcklps,    new IntrinsicInfo(X86Instruction.Unpcklps,    IntrinsicType.Binary));
             Add(Intrinsic.X86Vcvtph2ps,   new IntrinsicInfo(X86Instruction.Vcvtph2ps,   IntrinsicType.Unary));
             Add(Intrinsic.X86Vcvtps2ph,   new IntrinsicInfo(X86Instruction.Vcvtps2ph,   IntrinsicType.BinaryImm));
+            Add(Intrinsic.X86Vfmsub231pd, new IntrinsicInfo(X86Instruction.Vfmsub231pd, IntrinsicType.Fma));
+            Add(Intrinsic.X86Vfmsub231ps, new IntrinsicInfo(X86Instruction.Vfmsub231ps, IntrinsicType.Fma));
+            Add(Intrinsic.X86Vfmsub231sd, new IntrinsicInfo(X86Instruction.Vfmsub231sd, IntrinsicType.Fma));
+            Add(Intrinsic.X86Vfmsub231ss, new IntrinsicInfo(X86Instruction.Vfmsub231ss, IntrinsicType.Fma));
             Add(Intrinsic.X86Xorpd,       new IntrinsicInfo(X86Instruction.Xorpd,       IntrinsicType.Binary));
             Add(Intrinsic.X86Xorps,       new IntrinsicInfo(X86Instruction.Xorps,       IntrinsicType.Binary));
         }
