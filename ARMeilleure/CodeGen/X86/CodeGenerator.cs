@@ -441,11 +441,9 @@ namespace ARMeilleure.CodeGen.X86
                             Operand src3 = operation.GetSource(2);
 
                             EnsureSameType(dest, src1, src2, src3);
-
+                            EnsureSameReg(dest, src1);
                             Debug.Assert(!dest.Type.IsInteger());
                             Debug.Assert(HardwareCapabilities.SupportsVexEncoding);
-
-                            EnsureSameReg(dest, src1);
 
                             context.Assembler.WriteInstruction(info.Inst, dest, src2, src3);
 
