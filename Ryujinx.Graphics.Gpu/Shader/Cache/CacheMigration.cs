@@ -39,8 +39,8 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// Move a file with the name of a given hash to another in the cache archive.
         /// </summary>
         /// <param name="archive">The archive in use</param>
-        /// <param name="oldKey">The source file name</param>
-        /// <param name="newKey">The destination file name</param>
+        /// <param name="oldKey">The old key</param>
+        /// <param name="newKey">The new key</param>
         private static void MoveEntry(ZipArchive archive, Hash128 oldKey, Hash128 newKey)
         {
             ZipArchiveEntry oldGuestEntry = archive.GetEntry($"{oldKey}");
