@@ -98,8 +98,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (null != entry)
                 {
                     LinkedListNode<ulong> node = _dictionary[entry.Key];
-                    Node<ulong, MemoryBlock> prev = _tree.PredecessorOf(entry);
-                    Node<ulong, MemoryBlock> next = _tree.SuccessorOf(entry);
+                    Node<ulong, MemoryBlock> prev = _dictionary[entry.Key].Previous != null ? _tree.GetNode(_dictionary[_dictionary[entry.Key].Previous.Value].Value): null;
+                    Node<ulong, MemoryBlock> next = _dictionary[entry.Key].Next != null ? _tree.GetNode(_dictionary[_dictionary[entry.Key].Next.Value].Value) : null;
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
 
@@ -137,6 +137,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             if (nextPtr.Next != null)
                             {
                                 next = _tree.GetNode(nextPtr.Next.Value);
+                            }
+                            else
+                            {
+                                next = null;
                             }
                             _tree.Remove(nextAddress);
                             _list.Remove(_dictionary[nextAddress]);
