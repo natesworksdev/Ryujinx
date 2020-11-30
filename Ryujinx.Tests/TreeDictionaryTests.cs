@@ -7,7 +7,6 @@ namespace Ryujinx.Tests.Collections
 {
     class TreeDictionaryTests
     {
-
         [Test]
         public void EnsureAddIntegrity()
         {

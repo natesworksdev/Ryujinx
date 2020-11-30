@@ -5,7 +5,6 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Ryujinx.Common.Collections
 {
-
     /// <summary>
     /// Hybrid-Type Dictionary that provides the ability for O(1) Lookups for keys that exist in the Dictionary, and O(logN) Lookups for keys immediately greater than or less than a specified key.
     /// </summary>
@@ -35,7 +34,10 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
             // O(1) Lookup for keys
-            if (!_dictionary.ContainsKey(key)) return null;
+            if (!_dictionary.ContainsKey(key))
+            {
+                return null;
+            }
 
             return _dictionary[key];
         }
@@ -50,7 +52,7 @@ namespace Ryujinx.Common.Collections
         {
             if (key == null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
 
             Node<K, V> node = GetNode(key);

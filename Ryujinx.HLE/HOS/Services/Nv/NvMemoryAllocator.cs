@@ -33,7 +33,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         /// <summary>
         /// Marks a block of memory as consumed by removing it from the tree.
-        /// This function will split memory regions if there is available space
+        /// This function will split memory regions if there is available space.
         /// </summary>
         /// <param name="va">Virtual address at which to allocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
@@ -43,11 +43,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                if (reference == null)
-                {
-                    return;
-                }
-
                 if (reference != null)
                 {
                     MemoryBlock referenceBlock = reference.Value;
@@ -93,7 +88,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// Marks a block of memory as free by adding it to the tree.
         /// This function will automatically defragment the tree when it determines there are multiple blocks of free memory adjacent to each other.
         /// </summary>
-        /// <param name="va">Virtual address at which to allocate</param>
+        /// <param name="va">Virtual address at which to deallocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
         public void DeallocateMemoryBlock(ulong va, ulong size)
         {
@@ -242,7 +237,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         }
 
         /// <summary>
-        /// Checks if a given memory page is mapped or reserved.
+        /// Checks if a given memory region is mapped or reserved.
         /// </summary>
         /// <param name="gpuVa">GPU virtual address of the page</param>
         /// <param name="size">Size of the allocation in bytes</param>
