@@ -403,7 +403,7 @@ namespace ARMeilleure.CodeGen.X86
                         {
                             context.Assembler.WriteInstruction(X86Instruction.Vpblendvb, dest, src1, src2, src3);
                         }
-                        else if (info.Inst == X86Instruction.Vfmsub231ss || info.Inst == X86Instruction.Vfmsub231sd)
+                        else if (IsFma(info))
                         {
                             Debug.Assert(HardwareCapabilities.SupportsVexEncoding);
                             EnsureSameReg(dest, src1);
@@ -452,6 +452,23 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     throw new ArgumentException($"Invalid instruction \"{operation.Instruction}\".");
                 }
+            }
+        }
+
+        private static bool IsFma(IntrinsicInfo info)
+        {
+            switch (info.Inst)
+            {
+                case X86Instruction.Vfmsub231ss:
+                case X86Instruction.Vfmsub231sd:
+                case X86Instruction.Vfmsub231ps:
+                case X86Instruction.Vfmsub231pd:
+                case X86Instruction.Vfmadd231ss:
+                case X86Instruction.Vfmadd231sd:
+                case X86Instruction.Vfmadd231ps:
+                case X86Instruction.Vfmadd231pd:
+                    return true;
+                default: return false;
             }
         }
 

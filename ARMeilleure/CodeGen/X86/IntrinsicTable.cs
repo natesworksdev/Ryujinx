@@ -58,6 +58,10 @@ namespace ARMeilleure.CodeGen.X86
             Add(Intrinsic.X86Divps,       new IntrinsicInfo(X86Instruction.Divps,       IntrinsicType.Binary));
             Add(Intrinsic.X86Divsd,       new IntrinsicInfo(X86Instruction.Divsd,       IntrinsicType.Binary));
             Add(Intrinsic.X86Divss,       new IntrinsicInfo(X86Instruction.Divss,       IntrinsicType.Binary));
+            Add(Intrinsic.X86Vfmadd231pd, new IntrinsicInfo(X86Instruction.Vfmadd231pd, IntrinsicType.Ternary));
+            Add(Intrinsic.X86Vfmadd231ps, new IntrinsicInfo(X86Instruction.Vfmadd231ps, IntrinsicType.Ternary));
+            Add(Intrinsic.X86Vfmadd231sd, new IntrinsicInfo(X86Instruction.Vfmadd231sd, IntrinsicType.Ternary));
+            Add(Intrinsic.X86Vfmadd231ss, new IntrinsicInfo(X86Instruction.Vfmadd231ss, IntrinsicType.Ternary));
             Add(Intrinsic.X86Vfmsub231pd, new IntrinsicInfo(X86Instruction.Vfmsub231pd, IntrinsicType.Ternary));
             Add(Intrinsic.X86Vfmsub231ps, new IntrinsicInfo(X86Instruction.Vfmsub231ps, IntrinsicType.Ternary));
             Add(Intrinsic.X86Vfmsub231sd, new IntrinsicInfo(X86Instruction.Vfmsub231sd, IntrinsicType.Ternary));

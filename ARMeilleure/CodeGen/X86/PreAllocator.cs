@@ -1316,10 +1316,15 @@ namespace ARMeilleure.CodeGen.X86
         {
             switch (info.Inst)
             {
-                case X86Instruction.Vfmsub231ss: return true;
-                case X86Instruction.Vfmsub231sd: return true;
-                case X86Instruction.Vfmsub231ps: return true;
-                case X86Instruction.Vfmsub231pd: return true;
+                case X86Instruction.Vfmsub231ss:
+                case X86Instruction.Vfmsub231sd:
+                case X86Instruction.Vfmsub231ps:
+                case X86Instruction.Vfmsub231pd:
+                case X86Instruction.Vfmadd231ss:
+                case X86Instruction.Vfmadd231sd:
+                case X86Instruction.Vfmadd231ps:
+                case X86Instruction.Vfmadd231pd:
+                    return true;
                 default: return false;
             }
         }

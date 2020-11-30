@@ -293,6 +293,58 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn(fpsrMask: Fpsr.Nzcv);
         }
 
+        [Test, Pairwise, Description("VFMA.F<size> <Vd>, <Vn>, <Vm>")]
+        public void Vfma(
+                          [Values(0u, 1u)] uint rd,
+                          [Values(0u, 1u)] uint rn,
+                          [Values(0u, 1u)] uint rm,
+                          [Values(0u, 1u)] uint sz,
+                          [Values(0u, 1u)] uint Q,
+                          [Values(0u, 3u, 5u, 8u, 15u)] uint z,
+                          [Values(0u, 3u, 5u, 8u, 15u)] uint a,
+                          [Values(0u, 3u, 5u, 8u, 15u)] uint b)
+        {
+            uint opcode = 0xf2000c10;
+
+            if (Q == 0)
+            {
+                opcode |= (((rm & 0x1) << 5) | (rm & 0x1e) >> 1);
+                opcode |= (((rd & 0x1) << 22) | (rd & 0x1e) << 11);
+                opcode |= (((rn & 0x1) << 7) | (rn & 0x1e) >> 15);
+
+            }
+            else
+            {
+                opcode |= (((rm & 0x10) << 1) | (rm & 0xf) << 0);
+                opcode |= (((rd & 0x10) << 18) | (rd & 0xf) << 12);
+                opcode |= (((rn & 0x10) << 3) | (rn & 0xf) << 16);
+            }
+
+            opcode |= ((sz & 1) << 20);
+            opcode |= ((Q & 1)  << 6);
+
+            V128 v0;
+            V128 v1;
+            V128 v2;
+
+            if(sz == 0)
+            {
+                v0 = MakeVectorE0E1(z, z);
+                v1 = MakeVectorE0E1(a, z);
+                v2 = MakeVectorE0E1(b, z);
+            }
+            else
+            {
+                v0 = MakeVectorE0E1E2E3(z, z, b, a);
+                v1 = MakeVectorE0E1E2E3(a, z, b, a);
+                v2 = MakeVectorE0E1E2E3(b, z, b, z);
+            }
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
         [Test, Pairwise, Description("VFNMS.F<size> <Vd>, <Vn>, <Vm>")]
         public void Vfnms(
                           [Values(0u, 1u)] uint rd,
