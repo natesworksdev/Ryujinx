@@ -294,8 +294,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VFNMS.F<size> <Vd>, <Vn>, <Vm>")]
-        public void Vfnms(
-                          [Values(0u, 1u)] uint rd,
+        public void Vfnms([Values(0u, 1u)] uint rd,
                           [Values(0u, 1u)] uint rn,
                           [Values(0u, 1u)] uint rm,
                           [Values(2u, 3u)] uint size,
