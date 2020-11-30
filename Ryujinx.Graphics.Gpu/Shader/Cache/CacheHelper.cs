@@ -91,7 +91,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <param name="graphicsApi">The graphics api used by the cache</param>
         /// <param name="hashType">The hash type of the cache</param>
         /// <param name="entries">The entries in the cache</param>
-        /// <returns></returns>
+        /// <returns>The cache manifest from runtime data</returns>
         public static byte[] ComputeManifest(ulong version, CacheGraphicsApi graphicsApi, CacheHashType hashType, HashSet<Hash128> entries)
         {
             if (hashType != CacheHashType.XxHash128)
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// Get the base directory of the shader cache for a given title id.
         /// </summary>
         /// <param name="titleId">The title id of the target application</param>
-        /// <returns></returns>
+        /// <returns>The base directory of the shader cache for a given title id</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static string GetBaseCacheDirectory(string titleId) => Path.Combine(AppDataManager.GamesDirPath, titleId, "cache", "shader");
 
@@ -188,7 +188,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <summary>
         /// Read a cached file with the given hash that is present in the archive.
         /// </summary>
-        /// <param name="archive">The archive in us</param>
+        /// <param name="archive">The archive in use</param>
         /// <param name="entry">The given hash</param>
         /// <returns>The cached file if present or null</returns>
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -250,9 +250,9 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// Compute the guest program code for usage while dumping to disk or hash.
         /// </summary>
         /// <param name="cachedShaderEntries">The guest shader entries to use</param>
-        /// <param name="tfd">The transformation feedback descriptors</param>
+        /// <param name="tfd">The transform feedback descriptors</param>
         /// <param name="forHashCompute">Used to determine if the guest program code is generated for hashing</param>
-        /// <returns></returns>
+        /// <returns>The guest program code for usage while dumping to disk or hash</returns>
         private static byte[] ComputeGuestProgramCode(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd, bool forHashCompute = false)
         {
             using (MemoryStream stream = new MemoryStream())
@@ -298,7 +298,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// Compute a guest hash from shader entries.
         /// </summary>
         /// <param name="cachedShaderEntries">The guest shader entries to use</param>
-        /// <param name="tfd">The optional transformation feedback descriptors</param>
+        /// <param name="tfd">The optional transform feedback descriptors</param>
         /// <returns>A guest hash from shader entries</returns>
         public static Hash128 ComputeGuestHashFromCache(ReadOnlySpan<GuestShaderCacheEntry> cachedShaderEntries, TransformFeedbackDescriptor[] tfd = null)
         {
@@ -336,7 +336,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// Create a new instance of <see cref="GuestGpuAccessorHeader"/> from an gpu accessor.
         /// </summary>
         /// <param name="gpuAccessor">The gpu accessor</param>
-        /// <returns>a new instance of <see cref="GuestGpuAccessorHeader"/></returns>
+        /// <returns>A new instance of <see cref="GuestGpuAccessorHeader"/></returns>
         public static GuestGpuAccessorHeader CreateGuestGpuAccessorCache(IGpuAccessor gpuAccessor)
         {
             return new GuestGpuAccessorHeader
@@ -358,11 +358,15 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <returns>Guest shader cahe entries from the runtime contexts</returns>
         public static GuestShaderCacheEntry[] CreateShaderCacheEntries(MemoryManager memoryManager, ReadOnlySpan<TranslatorContext> shaderContexts)
         {
-            GuestShaderCacheEntry ComputeStage(TranslatorContext context)
+            GuestShaderCacheEntry[] entries = new GuestShaderCacheEntry[shaderContexts.Length];
+
+            for (int i = 0; i < shaderContexts.Length; i++)
             {
+                TranslatorContext context = shaderContexts[i];
+
                 if (context == null)
                 {
-                    return null;
+                    continue;
                 }
 
                 int sizeA = context.AddressA == 0 ? 0 : context.SizeA;
@@ -399,14 +403,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     }
                 }
 
-                return entry;
-            }
-
-            GuestShaderCacheEntry[] entries = new GuestShaderCacheEntry[shaderContexts.Length];
-
-            for (int i = 0; i < shaderContexts.Length; i++)
-            {
-                entries[i] = ComputeStage(shaderContexts[i]);
+                entries[i] = entry;
             }
 
             return entries;
