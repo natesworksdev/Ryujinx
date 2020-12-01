@@ -512,7 +512,7 @@ namespace Ryujinx.Common.Collections
         /// Finds the node with the key immediately greater than <paramref name="node"/>.Key
         /// </summary>
         /// <param name="node">Node to find the successor of</param>
-        /// <returns>Node</returns>
+        /// <returns>Successor of <paramref name="node"/></returns>
         private static Node<K, V> SuccessorOf(Node<K, V> node)
         {
             if (node.Right != null)
@@ -532,7 +532,7 @@ namespace Ryujinx.Common.Collections
         /// Finds the node whose key immediately less than <paramref name="node"/>.Key.
         /// </summary>
         /// <param name="node">Node to find the predecessor of</param>
-        /// <returns>Node</returns>
+        /// <returns>Predecessor of <paramref name="node"/></returns>
         private static Node<K, V> PredecessorOf(Node<K, V> node)
         {
             if (node.Left != null)
@@ -744,7 +744,7 @@ namespace Ryujinx.Common.Collections
         /// Returns the color of <paramref name="node"/>, or Black if it is null.
         /// </summary>
         /// <param name="node">Node</param>
-        /// <returns>Boolean</returns>
+        /// <returns>The boolean color of <paramref name="node"/>, or black if null</returns>
         private static bool ColorOf(Node<K, V> node)
         {
             return node == null || node.Color;
@@ -769,7 +769,7 @@ namespace Ryujinx.Common.Collections
         /// This method returns the left node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
         /// <param name="node">Node</param>
-        /// <returns>Left Node</returns>
+        /// <returns>Left child of <paramref name="node"/></returns>
         private static Node<K, V> LeftOf(Node<K, V> node)
         {
             return node?.Left;
@@ -779,7 +779,7 @@ namespace Ryujinx.Common.Collections
         /// This method returns the right node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
         /// <param name="node">Node</param>
-        /// <returns>Right Node</returns>
+        /// <returns>Right child of <paramref name="node"/></returns>
         private static Node<K, V> RightOf(Node<K, V> node)
         {
             return node?.Right;
@@ -789,7 +789,7 @@ namespace Ryujinx.Common.Collections
         /// Returns the parent node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
         /// <param name="node">Node</param>
-        /// <returns>Parent Node</returns>
+        /// <returns>Parent of <paramref name="node"/></returns>
         private static Node<K, V> ParentOf(Node<K, V> node)
         {
             return node?.Parent;
@@ -799,7 +799,6 @@ namespace Ryujinx.Common.Collections
         #region Interface Implementations
 
         // Method descriptions are not provided as they are already included as part of the interface.
-
         public bool ContainsKey(K key)
         {
             if (null == key)
