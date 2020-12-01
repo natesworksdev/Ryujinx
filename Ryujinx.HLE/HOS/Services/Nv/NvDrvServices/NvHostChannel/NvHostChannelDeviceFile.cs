@@ -248,11 +248,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress == 0)
                     {
-                        ulong va = _memoryAllocator.GetFreePosition((ulong) map.Size, out Node<ulong, MemoryBlock> referenceBlock, 1, NvMemoryAllocator.PageSize);
+                        ulong va = _memoryAllocator.GetFreePosition((ulong) map.Size, out ulong targetAddress, 1, NvMemoryAllocator.PageSize);
 
                         if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
                         {
-                            _memoryAllocator.AllocateMemoryBlock(va, (uint)map.Size, referenceBlock);
+                            _memoryAllocator.AllocateMemoryBlock(va, (uint)map.Size, targetAddress);
                             map.DmaMapAddress = (long)gmm.Map((ulong)map.Address, va, (uint)map.Size);
                         }
                         else

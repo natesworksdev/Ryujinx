@@ -12,7 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         public const ulong BadAddress = ulong.MaxValue;
 
         public const int PtPageBits = 12;
+
         private const ulong DefaultStart = 1UL << 32;
+        private const ulong InvalidAddress = 0;
 
         public const ulong PageSize = 1UL << PtPageBits;
         public const ulong PageMask = PageSize - 1;
@@ -20,13 +22,16 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         public const ulong PteUnmapped = 0xffffffff_ffffffff;
         public const ulong PteReserved = 0xffffffff_fffffffe;
 
-        private readonly TreeDictionary<ulong, MemoryBlock> _tree = new TreeDictionary<ulong, MemoryBlock>();
+        // Key   --> Start Address of Region
+        // Value --> End Address of Region
+        private readonly TreeDictionary<ulong, ulong> _tree = new TreeDictionary<ulong, ulong>();
+
         private readonly Dictionary<ulong, LinkedListNode<ulong>> _dictionary = new Dictionary<ulong, LinkedListNode<ulong>>();
         private readonly LinkedList<ulong> _list = new LinkedList<ulong>();
 
         public NvMemoryAllocator()
         {
-            _tree.Add(PageSize, new MemoryBlock(PageSize, AddressSpaceSize));
+            _tree.Add(PageSize, PageSize + AddressSpaceSize);
             LinkedListNode<ulong> node = _list.AddFirst(PageSize);
             _dictionary[PageSize] = node;
         }
@@ -37,47 +42,46 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// </summary>
         /// <param name="va">Virtual address at which to allocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
-        /// <param name="reference">Reference to the block of memory where the allocation can take place</param>
+        /// <param name="targetAddress">Reference to the block of memory where the allocation can take place</param>
         #region Memory Allocation
-        internal void AllocateMemoryBlock(ulong va, ulong size, Node<ulong, MemoryBlock> reference = null)
+        internal void AllocateMemoryBlock(ulong va, ulong size, ulong targetAddress = InvalidAddress)
         {
             lock (_tree)
             {
-                if (reference != null)
+                if (targetAddress != InvalidAddress)
                 {
-                    MemoryBlock referenceBlock = reference.Value;
                     ulong endAddress = va + size;
-                    ulong refEndAddress = referenceBlock.EndAddress;
-                    if (va >= referenceBlock.Address)
+                    ulong targetEndAddress = _tree.Get(targetAddress);
+                    if (va >= targetAddress)
                     {
                         // Need Left Node
-                        if (va > referenceBlock.Address)
+                        if (va > targetAddress)
                         {
                             ulong leftEndAddress = va;
 
                             //Overwrite existing block with its new smaller range.
-                            _tree.Add(referenceBlock.Address, new MemoryBlock(referenceBlock.Address, leftEndAddress - referenceBlock.Address));
+                            _tree.Add(targetAddress, leftEndAddress);
                         }
                         else
                         {
                             // We need to get rid of the large chunk.
-                            _tree.Remove(referenceBlock.Address);
+                            _tree.Remove(targetAddress);
                         }
 
-                        ulong rightSize = refEndAddress - endAddress;
+                        ulong rightSize = targetEndAddress - endAddress;
                         // If leftover space, create a right node.
                         if (rightSize > 0)
                         {
-                            _tree.Add(endAddress, new MemoryBlock(endAddress, rightSize));
+                            _tree.Add(endAddress, targetEndAddress);
 
-                            LinkedListNode<ulong> node = _list.AddAfter(_dictionary[referenceBlock.Address], endAddress);
+                            LinkedListNode<ulong> node = _list.AddAfter(_dictionary[targetAddress], endAddress);
                             _dictionary[endAddress] = node;
                         }
 
-                        if (va == referenceBlock.Address)
+                        if (va == targetAddress)
                         {
-                            _list.Remove(_dictionary[referenceBlock.Address]);
-                            _dictionary.Remove(referenceBlock.Address);
+                            _list.Remove(_dictionary[targetAddress]);
+                            _dictionary.Remove(targetAddress);
                         }
                     }
                 }
@@ -94,26 +98,30 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                Node<ulong, MemoryBlock> entry = _tree.FloorNode(va);
-                if (null != entry)
+                ulong targetAddress = _tree.Floor(va);
+                if (targetAddress != InvalidAddress)
                 {
-                    LinkedListNode<ulong> node = _dictionary[entry.Key];
-                    Node<ulong, MemoryBlock> prev = _dictionary[entry.Key].Previous != null ? _tree.GetNode(_dictionary[_dictionary[entry.Key].Previous.Value].Value): null;
-                    Node<ulong, MemoryBlock> next = _dictionary[entry.Key].Next != null ? _tree.GetNode(_dictionary[_dictionary[entry.Key].Next.Value].Value) : null;
+                    LinkedListNode<ulong> node = _dictionary[targetAddress];
+                    ulong targetPrevAddress = _dictionary[targetAddress].Previous != null ? _dictionary[_dictionary[targetAddress].Previous.Value].Value: InvalidAddress;
+                    ulong targetNextAddress = _dictionary[targetAddress].Next != null ? _dictionary[_dictionary[targetAddress].Next.Value].Value : InvalidAddress;
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
 
-                    while (prev != null)
+                    while (targetPrevAddress != InvalidAddress)
                     {
-                        MemoryBlock prevBlock = prev.Value;
-                        ulong prevAddress = prevBlock.Address;
-                        if (prevBlock.EndAddress >= expandedStart)
+                        ulong prevAddress = targetPrevAddress;
+                        ulong prevEndAddress = _tree.Get(targetPrevAddress);
+                        if (prevEndAddress >= expandedStart)
                         {
-                            expandedStart = prevAddress;
+                            expandedStart = targetPrevAddress;
                             LinkedListNode<ulong> prevPtr = _dictionary[prevAddress];
                             if (prevPtr.Previous != null)
                             {
-                                prev = _tree.GetNode(prevPtr.Previous.Value);
+                                targetPrevAddress = prevPtr.Previous.Value;
+                            }
+                            else
+                            {
+                                targetPrevAddress = InvalidAddress;
                             }
                             node = node.Previous;
                             _tree.Remove(prevAddress);
@@ -126,21 +134,21 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         }
                     }
 
-                    while (next != null)
+                    while (targetNextAddress != InvalidAddress)
                     {
-                        MemoryBlock nextBlock = next.Value;
-                        ulong nextAddress = nextBlock.Address;
-                        if (nextBlock.Address <= expandedEnd)
+                        ulong nextAddress = targetNextAddress;
+                        ulong nextEndAddress = _tree.Get(targetNextAddress);
+                        if (nextAddress <= expandedEnd)
                         {
-                            expandedEnd = Math.Max(expandedEnd, nextBlock.EndAddress);
-                            LinkedListNode<ulong> nextPtr = _dictionary[nextBlock.Address];
+                            expandedEnd = Math.Max(expandedEnd, nextEndAddress);
+                            LinkedListNode<ulong> nextPtr = _dictionary[nextAddress];
                             if (nextPtr.Next != null)
                             {
-                                next = _tree.GetNode(nextPtr.Next.Value);
+                                targetNextAddress = nextPtr.Next.Value;
                             }
                             else
                             {
-                                next = null;
+                                targetNextAddress = InvalidAddress;
                             }
                             _tree.Remove(nextAddress);
                             _list.Remove(_dictionary[nextAddress]);
@@ -151,7 +159,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             break;
                         }
                     }
-                    _tree.Add(expandedStart, new MemoryBlock(expandedStart, expandedEnd - expandedStart));
+                    _tree.Add(expandedStart, expandedEnd);
                     LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
                     _dictionary[expandedStart] = nodePtr;
                 }
@@ -165,7 +173,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        internal ulong GetFreePosition(ulong size, out Node<ulong, MemoryBlock> memoryBlock, ulong alignment = 1, ulong start = DefaultStart)
+        internal ulong GetFreePosition(ulong size, out ulong target, ulong alignment = 1, ulong start = DefaultStart)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -182,25 +190,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (address < AddressSpaceSize)
                 {
                     bool completedFirstPass = false;
-                    Node<ulong, MemoryBlock> blockNode = _tree.Count == 1 ? _tree.FloorNode(address) : (start == DefaultStart ? _tree.GetNode(_list.Last.Value) : _tree.CeilingNode(address));
+                    ulong targetAddress = _tree.Count == 1 ? _tree.Floor(address) : (start == DefaultStart ? _list.Last.Value : _tree.Ceiling(address));
                     while (address < AddressSpaceSize)
                     {
-                        if (blockNode != null)
+                        if (targetAddress != InvalidAddress)
                         {
-                            MemoryBlock block = blockNode.Value;
-                            if (address >= block.Address)
+                            if (address >= targetAddress)
                             {
-                                if (address + size <= block.EndAddress)
+                                if (address + size <= _tree.Get(targetAddress))
                                 {
-                                    memoryBlock = blockNode;
+                                    target = targetAddress;
                                     return address;
                                 }
                                 else
                                 {
-                                    LinkedListNode<ulong> nextPtr = _dictionary[blockNode.Value.Address];
+                                    LinkedListNode<ulong> nextPtr = _dictionary[targetAddress];
                                     if (nextPtr.Next != null)
                                     {
-                                        blockNode = _tree.GetNode(nextPtr.Next.Value);
+                                        targetAddress = nextPtr.Next.Value;
                                     }
                                     else
                                     {
@@ -211,14 +218,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                         else
                                         {
                                             completedFirstPass = true;
-                                            blockNode = _tree.CeilingNode(address);
+                                            targetAddress = _tree.Ceiling(address);
                                         }
                                     }
                                 }
                             }
                             else
                             {
-                                address += PageSize * (block.Address / PageSize - (address / PageSize));
+                                address += PageSize * (targetAddress / PageSize - (address / PageSize));
 
                                 ulong remainder = address % alignment;
 
@@ -234,7 +241,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         }
                     }
                 }
-                memoryBlock = null;
+                target = InvalidAddress;
             }
 
             return PteUnmapped;
@@ -246,16 +253,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="gpuVa">GPU virtual address of the page</param>
         /// <param name="size">Size of the allocation in bytes</param>
         /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        internal bool IsRegionInUse(ulong gpuVa, ulong size, out Node<ulong, MemoryBlock> memoryNode)
+        internal bool IsRegionInUse(ulong gpuVa, ulong size, out ulong targetAddress)
         {
             lock (_tree)
             {
-                Node<ulong, MemoryBlock> floorNode = _tree.FloorNode(gpuVa);
-                memoryNode = floorNode;
-                if (null != floorNode)
+                ulong floorAddress = _tree.Floor(gpuVa);
+                targetAddress = floorAddress;
+                if (floorAddress != InvalidAddress)
                 {
-                    MemoryBlock memoryBlock = floorNode.Value;
-                    return !(gpuVa >= memoryBlock.Address && ((gpuVa + size) < memoryBlock.EndAddress));
+                    return !(gpuVa >= floorAddress && ((gpuVa + size) < _tree.Get(floorAddress)));
                 }
             }
             return true;

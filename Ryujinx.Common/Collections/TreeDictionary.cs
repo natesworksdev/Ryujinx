@@ -22,27 +22,6 @@ namespace Ryujinx.Common.Collections
         #region Public Methods
 
         /// <summary>
-        /// Retrieve the node reference whose key is <paramref name="key"/>, or null if no such node exists.
-        /// </summary>
-        /// <param name="key">Key of the node to get</param>
-        /// <returns>Node reference in the tree</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public Node<K, V> GetNode(K key)
-        {
-            if (key == null)
-            {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
-            }
-            // O(1) Lookup for keys
-            if (!_dictionary.ContainsKey(key))
-            {
-                return null;
-            }
-
-            return _dictionary[key];
-        }
-
-        /// <summary>
         /// Returns the value of the node whose key is <paramref name="key"/>, or the default value if no such node exists.
         /// </summary>
         /// <param name="key">Key of the node value to get</param>
@@ -114,182 +93,72 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node whose key is equal to or immediately less than <paramref name="key"/>
+        /// Returns the value whose key is equal to or immediately less than <paramref name="key"/>
         /// </summary>
-        /// <param name="key">Key for which to find the floor node of</param>
-        /// <returns></returns>
+        /// <param name="key">Key for which to find the floor value of</param>
+        /// <returns>Key of node immediately less than <paramref name="key"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public Node<K, V> FloorNode(K key)
+        public K Floor(K key)
         {
-            if (key == null)
+            Node<K, V> node = FloorNode(key);
+            if(node != null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                return node.Key;
             }
-            else if (_dictionary.ContainsKey(key))
-            {
-                return _dictionary[key];
-            }
-            Node<K, V> tmp = _root;
-
-            while (tmp != null)
-            {
-                int cmp = key.CompareTo(tmp.Key);
-                if (cmp > 0)
-                {
-                    if (tmp.Right != null)
-                    {
-                        tmp = tmp.Right;
-                    }
-                    else
-                    {
-                        return tmp;
-                    }
-                }
-                else if (cmp < 0)
-                {
-                    if (tmp.Left != null)
-                    {
-                        tmp = tmp.Left;
-                    }
-                    else
-                    {
-                        Node<K, V> parent = tmp.Parent;
-                        Node<K, V> ptr = tmp;
-                        while (parent != null && ptr == parent.Left)
-                        {
-                            ptr = parent;
-                            parent = parent.Parent;
-                        }
-                        return parent;
-                    }
-                }
-                else
-                {
-                    return tmp;
-                }
-            }
-            return null;
+            return default;
         }
 
         /// <summary>
         /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key for which to find the ceiling node of</param>
-        /// <returns></returns>
+        /// <returns>Key of node immediately greater than <paramref name="key"/></returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public Node<K, V> CeilingNode(K key)
+        public K Ceiling(K key)
         {
-            if (key == null)
+            Node<K, V> node = CeilingNode(key);
+            if (node != null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                return node.Key;
             }
-            else if (_dictionary.ContainsKey(key))
-            {
-                return _dictionary[key];
-            }
-            Node<K, V> tmp = _root;
-
-            while (tmp != null)
-            {
-                int cmp = key.CompareTo(tmp.Key);
-                if (cmp < 0)
-                {
-                    if (tmp.Left != null)
-                    {
-                        tmp = tmp.Left;
-                    }
-                    else
-                    {
-                        return tmp;
-                    }
-                }
-                else if (cmp > 0)
-                {
-                    if (tmp.Right != null)
-                    {
-                        tmp = tmp.Right;
-                    }
-                    else
-                    {
-                        Node<K, V> parent = tmp.Parent;
-                        Node<K, V> ptr = tmp;
-                        while (parent != null && ptr == parent.Right)
-                        {
-                            ptr = parent;
-                            parent = parent.Parent;
-                        }
-                        return parent;
-                    }
-                }
-                else
-                {
-                    return tmp;
-                }
-            }
-            return null;
+            return default;
         }
 
         /// <summary>
-        /// Finds the node with the key immediately greater than <paramref name="key"/>.Key
+        /// Finds the value whose key is immediately greater than <paramref name="key"/>.Key
         /// </summary>
         /// <param name="key">Key to find the successor of</param>
-        /// <returns>Node</returns>
-        public Node<K, V> SuccessorOf(K key)
+        /// <returns>Value</returns>
+        public V SuccessorOf(K key)
         {
             if (_dictionary.ContainsKey(key))
             {
-                return SuccessorOf(GetNode(key));
+                return SuccessorOf(GetNode(key)).Value;
             }
-            return null;
+            return default;
         }
 
         /// <summary>
-        /// Finds the node with the key immediately greater than <paramref name="node"/>.Key
+        /// Finds the value whose key is immediately less than <paramref name="key"/>.Key
         /// </summary>
-        /// <param name="node">Node to find the successor of</param>
-        /// <returns>Node</returns>
-        public Node<K, V> SuccessorOf(Node<K, V> node)
+        /// <param name="key">Key to find the predecessor of</param>
+        /// <returns>Value</returns>
+        public V PredecessorOf(K key)
         {
-            if (node.Right != null)
+            if (_dictionary.ContainsKey(key))
             {
-                return Minimum(node.Right);
+                return PredecessorOf(GetNode(key)).Value;
             }
-            Node<K, V> parent = node.Parent;
-            while (parent != null && node == parent.Right)
-            {
-                node = parent;
-                parent = parent.Parent;
-            }
-            return parent;
+            return default;
         }
 
         /// <summary>
-        /// Finds the node with the key immediately less than <paramref name="node"/>.Key
-        /// </summary>
-        /// <param name="node">Node to find the predecessor of</param>
-        /// <returns>Node</returns>
-        public Node<K, V> PredecessorOf(Node<K, V> node)
-        {
-            if (node.Left != null)
-            {
-                return Maximum(node.Left);
-            }
-            Node<K, V> parent = node.Parent;
-            while (parent != null && node == parent.Left)
-            {
-                node = parent;
-                parent = parent.Parent;
-            }
-            return parent;
-        }
-
-        /// <summary>
-        /// Adds all the nodes in the dictionary into <paramref name="list"/>.
+        /// Adds all the nodes in the dictionary as key/value pairs into <paramref name="list"/>.
         /// <br></br>
-        /// The nodes will be added in Level Order.
+        /// The key/value pairs will be added in Level Order.
         /// </summary>
-        /// <param name="list">List to add the tree nodes into</param>
-        public void ToList(List<Node<K, V>> list)
+        /// <param name="list">List to add the tree pairs into</param>
+        public void ToList(List<KeyValuePair<K, V>> list)
         {
             if (list == null)
             {
@@ -305,7 +174,7 @@ namespace Ryujinx.Common.Collections
             while (nodes.Count > 0)
             {
                 Node<K, V> node = nodes.Dequeue();
-                list.Add(node);
+                list.Add(new KeyValuePair<K, V>(node.Key, node.Value));
                 if (node.Left != null)
                 {
                     nodes.Enqueue(node.Left);
@@ -350,6 +219,27 @@ namespace Ryujinx.Common.Collections
         }
         #endregion
         #region Private Methods (BST)
+
+        /// <summary>
+        /// Retrieve the node reference whose key is <paramref name="key"/>, or null if no such node exists.
+        /// </summary>
+        /// <param name="key">Key of the node to get</param>
+        /// <returns>Node reference in the tree</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
+        private Node<K, V> GetNode(K key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            // O(1) Lookup for keys
+            if (!_dictionary.ContainsKey(key))
+            {
+                return null;
+            }
+
+            return _dictionary[key];
+        }
 
         /// <summary>
         /// Inserts a new node into the tree whose key is <paramref name="key"/> and value is <paramref name="value"/>
@@ -498,6 +388,162 @@ namespace Ryujinx.Common.Collections
             }
 
             return tmp;
+        }
+
+        /// <summary>
+        /// Returns the node whose key is equal to or immediately less than <paramref name="key"/>
+        /// </summary>
+        /// <param name="key">Key for which to find the floor node of</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
+        private Node<K, V> FloorNode(K key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            else if (_dictionary.ContainsKey(key))
+            {
+                return _dictionary[key];
+            }
+            Node<K, V> tmp = _root;
+
+            while (tmp != null)
+            {
+                int cmp = key.CompareTo(tmp.Key);
+                if (cmp > 0)
+                {
+                    if (tmp.Right != null)
+                    {
+                        tmp = tmp.Right;
+                    }
+                    else
+                    {
+                        return tmp;
+                    }
+                }
+                else if (cmp < 0)
+                {
+                    if (tmp.Left != null)
+                    {
+                        tmp = tmp.Left;
+                    }
+                    else
+                    {
+                        Node<K, V> parent = tmp.Parent;
+                        Node<K, V> ptr = tmp;
+                        while (parent != null && ptr == parent.Left)
+                        {
+                            ptr = parent;
+                            parent = parent.Parent;
+                        }
+                        return parent;
+                    }
+                }
+                else
+                {
+                    return tmp;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
+        /// </summary>
+        /// <param name="key">Key for which to find the ceiling node of</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
+        private Node<K, V> CeilingNode(K key)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException($"{nameof(key)} may not be null");
+            }
+            else if (_dictionary.ContainsKey(key))
+            {
+                return _dictionary[key];
+            }
+            Node<K, V> tmp = _root;
+
+            while (tmp != null)
+            {
+                int cmp = key.CompareTo(tmp.Key);
+                if (cmp < 0)
+                {
+                    if (tmp.Left != null)
+                    {
+                        tmp = tmp.Left;
+                    }
+                    else
+                    {
+                        return tmp;
+                    }
+                }
+                else if (cmp > 0)
+                {
+                    if (tmp.Right != null)
+                    {
+                        tmp = tmp.Right;
+                    }
+                    else
+                    {
+                        Node<K, V> parent = tmp.Parent;
+                        Node<K, V> ptr = tmp;
+                        while (parent != null && ptr == parent.Right)
+                        {
+                            ptr = parent;
+                            parent = parent.Parent;
+                        }
+                        return parent;
+                    }
+                }
+                else
+                {
+                    return tmp;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>
+        /// Finds the node with the key immediately greater than <paramref name="node"/>.Key
+        /// </summary>
+        /// <param name="node">Node to find the successor of</param>
+        /// <returns>Node</returns>
+        private static Node<K, V> SuccessorOf(Node<K, V> node)
+        {
+            if (node.Right != null)
+            {
+                return Minimum(node.Right);
+            }
+            Node<K, V> parent = node.Parent;
+            while (parent != null && node == parent.Right)
+            {
+                node = parent;
+                parent = parent.Parent;
+            }
+            return parent;
+        }
+
+        /// <summary>
+        /// Finds the node whose key immediately less than <paramref name="node"/>.Key.
+        /// </summary>
+        /// <param name="node">Node to find the predecessor of</param>
+        /// <returns>Node</returns>
+        private static Node<K, V> PredecessorOf(Node<K, V> node)
+        {
+            if (node.Left != null)
+            {
+                return Maximum(node.Left);
+            }
+            Node<K, V> parent = node.Parent;
+            while (parent != null && node == parent.Left)
+            {
+                node = parent;
+                parent = parent.Parent;
+            }
+            return parent;
         }
         #endregion
         #region Private Methods (RBL)
@@ -754,7 +800,7 @@ namespace Ryujinx.Common.Collections
 
         public bool ContainsKey(K key)
         {
-            if(null == key)
+            if (null == key)
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
@@ -813,7 +859,7 @@ namespace Ryujinx.Common.Collections
 
         public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
         {
-            if(array.Length - arrayIndex < this.Count)
+            if (array.Length - arrayIndex < this.Count)
             {
                 throw new ArgumentOutOfRangeException($"There is not enough space in {nameof(array)}");
             }
@@ -822,7 +868,7 @@ namespace Ryujinx.Common.Collections
 
             int offset = 0;
 
-            for(int i = arrayIndex; i < array.Length && offset < list.Count; i++)
+            for (int i = arrayIndex; i < array.Length && offset < list.Count; i++)
             {
                 array[i] = list[offset];
                 offset++;
@@ -838,7 +884,7 @@ namespace Ryujinx.Common.Collections
                 return false;
             }
 
-            if(node.Value.Equals(item.Value))
+            if (node.Value.Equals(item.Value))
             {
                 int count = _dictionary.Count;
                 Remove(item.Key);
@@ -860,9 +906,9 @@ namespace Ryujinx.Common.Collections
 
         public int Count => count;
 
-        public ICollection<K> Keys => new List<K>(_dictionary.Keys);
+        public ICollection<K> Keys => GetKeys();
 
-        public ICollection<V> Values => null;
+        public ICollection<V> Values => GetValues();
 
         public bool IsReadOnly => false;
 
@@ -875,24 +921,84 @@ namespace Ryujinx.Common.Collections
         /// Creates a List of all the nodes in the tree as Key/Value pairs sorted in Depth Order.
         /// </summary>
         /// <returns></returns>
-        private List<KeyValuePair<K,V>> DepthOrderItemList()
+        private List<KeyValuePair<K, V>> DepthOrderItemList()
         {
             List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
             Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
-            if(null != _root)
+            if (null != _root)
             {
                 queue.Enqueue(_root);
             }
 
-            while(queue.Count > 0)
+            while (queue.Count > 0)
             {
                 Node<K, V> node = queue.Dequeue();
                 list.Add(new KeyValuePair<K, V>(node.Key, node.Value));
-                if(null != node.Left)
+                if (null != node.Left)
                 {
                     queue.Enqueue(node.Left);
                 }
-                if(null != node.Right)
+                if (null != node.Right)
+                {
+                    queue.Enqueue(node.Right);
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Returns a list of all the node keys in the tree.
+        /// </summary>
+        /// <returns>List of node keys</returns>
+        private List<K> GetKeys()
+        {
+            List<K> list = new List<K>();
+            Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
+            if (null != _root)
+            {
+                queue.Enqueue(_root);
+            }
+
+            while (queue.Count > 0)
+            {
+                Node<K, V> node = queue.Dequeue();
+                list.Add(node.Key);
+                if (null != node.Left)
+                {
+                    queue.Enqueue(node.Left);
+                }
+                if (null != node.Right)
+                {
+                    queue.Enqueue(node.Right);
+                }
+            }
+
+            return list;
+        }
+
+        /// <summary>
+        /// Returns a list of all the node values in the tree.
+        /// </summary>
+        /// <returns>List of node values</returns>
+        private List<V> GetValues()
+        {
+            List<V> list = new List<V>();
+            Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
+            if (null != _root)
+            {
+                queue.Enqueue(_root);
+            }
+
+            while (queue.Count > 0)
+            {
+                Node<K, V> node = queue.Dequeue();
+                list.Add(node.Value);
+                if (null != node.Left)
+                {
+                    queue.Enqueue(node.Left);
+                }
+                if (null != node.Right)
                 {
                     queue.Enqueue(node.Right);
                 }
@@ -908,14 +1014,14 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key of the node</typeparam>
     /// <typeparam name="V">Value of the node</typeparam>
-    public class Node<K, V>
+    internal class Node<K, V>
     {
         internal bool Color = true;
         internal Node<K, V> Left = null;
         internal Node<K, V> Right = null;
         internal Node<K, V> Parent = null;
-        public K Key;
-        public V Value;
+        internal K Key;
+        internal V Value;
 
         public Node(K key, V value)
         {

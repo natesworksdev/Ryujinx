@@ -97,13 +97,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 // the Offset field holds the alignment size instead.
                 if ((arguments.Flags & AddressSpaceFlags.FixedOffset) != 0)
                 {
-                    bool regionInUse = _memoryAllocator.IsRegionInUse((ulong) arguments.Offset, size, out Node<ulong, MemoryBlock> memoryBlock);
+                    bool regionInUse = _memoryAllocator.IsRegionInUse((ulong) arguments.Offset, size, out ulong targetAddress);
                     ulong address;
 
                     if (!regionInUse)
                     {
-                        _memoryAllocator.AllocateMemoryBlock((ulong) arguments.Offset, size, memoryBlock);
-                        address = memoryBlock.Value.Address;
+                        _memoryAllocator.AllocateMemoryBlock((ulong) arguments.Offset, size, targetAddress);
+                        address = targetAddress;
                     }
                     else
                     {
@@ -114,10 +114,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong address = _memoryAllocator.GetFreePosition((ulong)size, out Node<ulong, MemoryBlock> memoryBlock, (ulong)arguments.Offset);
+                    ulong address = _memoryAllocator.GetFreePosition((ulong)size, out ulong targetAddress, (ulong)arguments.Offset);
                     if(address != NvMemoryAllocator.PteUnmapped)
                     {
-                        _memoryAllocator.AllocateMemoryBlock(address, (ulong)size, memoryBlock);
+                        _memoryAllocator.AllocateMemoryBlock(address, (ulong)size, targetAddress);
                     }
 
                     arguments.Offset = unchecked((long)address);
@@ -278,10 +278,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong va = _memoryAllocator.GetFreePosition((ulong) size, out Node<ulong, MemoryBlock> memoryBlock, (ulong) pageSize);
+                    ulong va = _memoryAllocator.GetFreePosition((ulong) size, out ulong targetAddress, (ulong) pageSize);
                     if (va != NvMemoryAllocator.PteUnmapped)
                     {
-                        _memoryAllocator.AllocateMemoryBlock(va, (ulong)size, memoryBlock);
+                        _memoryAllocator.AllocateMemoryBlock(va, (ulong)size, targetAddress);
                     }
                     arguments.Offset = (long)addressSpaceContext.Gmm.Map((ulong)physicalAddress, va, (ulong) size);
                 }
