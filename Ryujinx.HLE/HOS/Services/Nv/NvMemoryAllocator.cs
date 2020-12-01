@@ -102,7 +102,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (freeAddressStartPosition != InvalidAddress)
                 {
                     LinkedListNode<ulong> node = _dictionary[freeAddressStartPosition];
-                    ulong targetPrevAddress = _dictionary[freeAddressStartPosition].Previous != null ? _dictionary[_dictionary[freeAddressStartPosition].Previous.Value].Value: InvalidAddress;
+                    ulong targetPrevAddress = _dictionary[freeAddressStartPosition].Previous != null ? _dictionary[_dictionary[freeAddressStartPosition].Previous.Value].Value : InvalidAddress;
                     ulong targetNextAddress = _dictionary[freeAddressStartPosition].Next != null ? _dictionary[_dictionary[freeAddressStartPosition].Next.Value].Value : InvalidAddress;
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;

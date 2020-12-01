@@ -60,7 +60,7 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentNullException($"{nameof(value)} may not be null");
             }
 
-            Insert(key, value);            
+            Insert(key, value);
         }
 
         /// <summary>
@@ -148,7 +148,7 @@ namespace Ryujinx.Common.Collections
         /// The key/value pairs will be added in Level Order.
         /// </summary>
         /// <param name="list">List to add the tree pairs into</param>
-        public List<KeyValuePair<K,V>> AsLevelOrderList()
+        public List<KeyValuePair<K, V>> AsLevelOrderList()
         {
             List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
 
@@ -363,7 +363,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Root Node</param>
         /// <returns>Node with the maximum key in the tree of <paramref name="node"/></returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="node"/> is null</exception>
         private static Node<K, V> Maximum(Node<K, V> node)
         {
             if (node == null)
@@ -384,7 +384,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="node">Root Node</param>
         /// <returns>Node with the minimum key in the tree of <paramref name="node"/></returns>
-        ///<exception cref="ArgumentNullException"></exception>
+        ///<exception cref="ArgumentNullException"><paramref name="node"/> is null</exception>
         private static Node<K, V> Minimum(Node<K, V> node)
         {
             if (node == null)
@@ -404,7 +404,7 @@ namespace Ryujinx.Common.Collections
         /// Returns the node whose key is equal to or immediately less than <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key for which to find the floor node of</param>
-        /// <returns></returns>
+        /// <returns>Floor Node</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         private Node<K, V> FloorNode(K key)
         {
@@ -458,7 +458,7 @@ namespace Ryujinx.Common.Collections
         /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key for which to find the ceiling node of</param>
-        /// <returns></returns>
+        /// <returns>Ceiling Node</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         private Node<K, V> CeilingNode(K key)
         {
@@ -871,7 +871,7 @@ namespace Ryujinx.Common.Collections
 
             for (int i = arrayIndex; i < array.Length && offset < list.Count; i++)
             {
-                array[i] = new KeyValuePair<K,V>(list.Keys[i], list.Values[i]);
+                array[i] = new KeyValuePair<K, V>(list.Keys[i], list.Values[i]);
                 offset++;
             }
         }
