@@ -26,7 +26,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key of the node to get</param>
         /// <returns>Node reference in the tree</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         public Node<K, V> GetNode(K key)
         {
             if (key == null)
@@ -46,8 +46,8 @@ namespace Ryujinx.Common.Collections
         /// Returns the value of the node whose key is <paramref name="key"/>, or the default value if no such node exists.
         /// </summary>
         /// <param name="key">Key of the node value to get</param>
-        /// <returns>Value</returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <returns>Value associated w/ <paramref name="key"/></returns>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         public V Get(K key)
         {
             if (key == null)
@@ -70,8 +70,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key of the node to add</param>
         /// <param name="value">Value of the node to add</param>
-        /// <exception cref="InvalidOperationException"></exception>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="value"/> are null</exception>
         public void Add(K key, V value)
         {
             if (null == key)
@@ -99,7 +98,7 @@ namespace Ryujinx.Common.Collections
         /// Removes the node whose key is <paramref name="key"/> from the tree.
         /// </summary>
         /// <param name="key">Key of the node to remove</param>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         public void Remove(K key)
         {
             if (key == null)
@@ -119,7 +118,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key for which to find the floor node of</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         public Node<K, V> FloorNode(K key)
         {
             if (key == null)
@@ -177,7 +176,7 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key for which to find the ceiling node of</param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         public Node<K, V> CeilingNode(K key)
         {
             if (key == null)
