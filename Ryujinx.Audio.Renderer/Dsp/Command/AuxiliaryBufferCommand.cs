@@ -65,7 +65,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             IsEffectEnabled = isEnabled;
         }
 
-        private uint Read(IAddressSpaceManager memoryManager, ulong bufferAddress, uint countMax, Span<int> outBuffer, uint count, uint readOffset, uint updateCount)
+        private uint Read(IVirtualMemoryManager memoryManager, ulong bufferAddress, uint countMax, Span<int> outBuffer, uint count, uint readOffset, uint updateCount)
         {
             if (countMax == 0 || bufferAddress == 0)
             {
@@ -104,7 +104,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             return count;
         }
 
-        private uint Write(IAddressSpaceManager memoryManager, ulong outBufferAddress, uint countMax, ReadOnlySpan<int> buffer, uint count, uint writeOffset, uint updateCount)
+        private uint Write(IVirtualMemoryManager memoryManager, ulong outBufferAddress, uint countMax, ReadOnlySpan<int> buffer, uint count, uint writeOffset, uint updateCount)
         {
             if (countMax == 0 || outBufferAddress == 0)
             {
@@ -185,7 +185,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
             }
         }
 
-        private static void ZeroFill(IAddressSpaceManager memoryManager, ulong address, int size)
+        private static void ZeroFill(IVirtualMemoryManager memoryManager, ulong address, int size)
         {
             ulong endAddress = address + (ulong)size;
 

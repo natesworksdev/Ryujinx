@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private readonly Switch _device;
 
-        private readonly IAddressSpaceManager _memory;
+        private readonly IVirtualMemoryManager _memory;
 
         public enum ResourcePolicy
         {
@@ -38,7 +38,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvFence _channelSyncpoint;
 
-        public NvHostChannelDeviceFile(ServiceCtx context, IAddressSpaceManager memory, long owner) : base(context, owner)
+        public NvHostChannelDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
             _device        = context.Device;
             _memory        = memory;

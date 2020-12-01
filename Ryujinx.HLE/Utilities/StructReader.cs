@@ -6,11 +6,11 @@ namespace Ryujinx.HLE.Utilities
 {
     class StructReader
     {
-        private IAddressSpaceManager _memory;
+        private IVirtualMemoryManager _memory;
 
         public long Position { get; private set; }
 
-        public StructReader(IAddressSpaceManager memory, long position)
+        public StructReader(IVirtualMemoryManager memory, long position)
         {
             _memory  = memory;
             Position = position;

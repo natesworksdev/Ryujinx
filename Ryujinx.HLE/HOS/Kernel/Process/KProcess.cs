@@ -80,7 +80,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
         private IProcessContextFactory _contextFactory;
         public IProcessContext Context { get; private set; }
-        public IAddressSpaceManager CpuMemory => Context.AddressSpace;
+        public IVirtualMemoryManager CpuMemory => Context.AddressSpace;
 
         public HleProcessDebugger Debugger { get; private set; }
 

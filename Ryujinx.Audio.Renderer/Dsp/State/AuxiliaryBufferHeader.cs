@@ -33,22 +33,22 @@ namespace Ryujinx.Audio.Renderer.Dsp.State
             public uint WriteOffset;
             private uint _reserved;
 
-            public static uint GetReadOffset(IAddressSpaceManager manager, ulong bufferAddress)
+            public static uint GetReadOffset(IVirtualMemoryManager manager, ulong bufferAddress)
             {
                 return manager.Read<uint>(bufferAddress + ReadOffsetPosition);
             }
 
-            public static uint GetWriteOffset(IAddressSpaceManager manager, ulong bufferAddress)
+            public static uint GetWriteOffset(IVirtualMemoryManager manager, ulong bufferAddress)
             {
                 return manager.Read<uint>(bufferAddress + WriteOffsetPosition);
             }
 
-            public static void SetReadOffset(IAddressSpaceManager manager, ulong bufferAddress, uint value)
+            public static void SetReadOffset(IVirtualMemoryManager manager, ulong bufferAddress, uint value)
             {
                 manager.Write(bufferAddress + ReadOffsetPosition, value);
             }
 
-            public static void SetWriteOffset(IAddressSpaceManager manager, ulong bufferAddress, uint value)
+            public static void SetWriteOffset(IVirtualMemoryManager manager, ulong bufferAddress, uint value)
             {
                 manager.Write(bufferAddress + WriteOffsetPosition, value);
             }

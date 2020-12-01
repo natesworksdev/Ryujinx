@@ -2092,7 +2092,7 @@ namespace Ryujinx.HLE.HOS.Kernel.SupervisorCall
                 return KernelResult.InvalidThread;
             }
 
-            IAddressSpaceManager memory = currentProcess.CpuMemory;
+            IVirtualMemoryManager memory = currentProcess.CpuMemory;
 
             memory.Write(address + 0x0, thread.Context.GetX(0));
             memory.Write(address + 0x8, thread.Context.GetX(1));

@@ -37,7 +37,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
 
         public List<ICommand> Commands { get; }
 
-        public IAddressSpaceManager MemoryManager { get; }
+        public IVirtualMemoryManager MemoryManager { get; }
 
         public HardwareDevice OutputDevice { get; private set; }
 
@@ -50,7 +50,7 @@ namespace Ryujinx.Audio.Renderer.Dsp.Command
         {
         }
 
-        public CommandList(IAddressSpaceManager memoryManager, Memory<float> mixBuffer, uint sampleCount, uint sampleRate, uint mixBufferCount, uint voiceChannelCountMax)
+        public CommandList(IVirtualMemoryManager memoryManager, Memory<float> mixBuffer, uint sampleCount, uint sampleRate, uint mixBufferCount, uint voiceChannelCountMax)
         {
             SampleCount = sampleCount;
             SampleRate = sampleRate;

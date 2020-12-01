@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
         }
 
-        public static void ProcessWaveBuffers(IAddressSpaceManager memoryManager, Span<float> outputBuffer, WaveBufferInformation info, uint targetSampleRate, int sampleCount)
+        public static void ProcessWaveBuffers(IVirtualMemoryManager memoryManager, Span<float> outputBuffer, WaveBufferInformation info, uint targetSampleRate, int sampleCount)
         {
             const int tempBufferSize = 0x3F00;
 

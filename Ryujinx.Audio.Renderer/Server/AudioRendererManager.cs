@@ -288,7 +288,7 @@ namespace Ryujinx.Audio.Renderer.Server
         /// <param name="workBufferSize">The guest work buffer size.</param>
         /// <param name="processHandle">The process handle of the application.</param>
         /// <returns>A <see cref="ResultCode"/> reporting an error or a success.</returns>
-        public ResultCode OpenAudioRenderer(out AudioRenderSystem renderer, IAddressSpaceManager memoryManager, ref AudioRendererConfiguration parameter, ulong appletResourceUserId, ulong workBufferAddress, ulong workBufferSize, uint processHandle)
+        public ResultCode OpenAudioRenderer(out AudioRenderSystem renderer, IVirtualMemoryManager memoryManager, ref AudioRendererConfiguration parameter, ulong appletResourceUserId, ulong workBufferAddress, ulong workBufferSize, uint processHandle)
         {
             int sessionId = AcquireSessionId();
 

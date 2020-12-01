@@ -1,8 +1,8 @@
-using System;
+﻿using System;
 
 namespace Ryujinx.Memory
 {
-    public interface IAddressSpaceManager
+    public interface IVirtualMemoryManager
     {
         void Map(ulong va, ulong pa, ulong size);
         void Unmap(ulong va, ulong size);
@@ -17,7 +17,12 @@ namespace Ryujinx.Memory
         WritableRegion GetWritableRegion(ulong va, int size);
         ref T GetRef<T>(ulong va) where T : unmanaged;
 
+        (ulong address, ulong size)[] GetPhysicalRegions(ulong va, ulong size);
+
         bool IsMapped(ulong va);
+        bool IsRangeMapped(ulong va, ulong size);
         ulong GetPhysicalAddress(ulong va);
+
+        void TrackingReprotect(ulong va, ulong size, MemoryPermission protection);
     }
 }

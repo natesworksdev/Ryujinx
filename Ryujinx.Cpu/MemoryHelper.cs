@@ -8,7 +8,7 @@ namespace Ryujinx.Cpu
 {
     public static class MemoryHelper
     {
-        public static void FillWithZeros(IAddressSpaceManager memory, long position, int size)
+        public static void FillWithZeros(IVirtualMemoryManager memory, long position, int size)
         {
             int size8 = size & ~(8 - 1);
 
@@ -23,7 +23,7 @@ namespace Ryujinx.Cpu
             }
         }
 
-        public unsafe static T Read<T>(IAddressSpaceManager memory, long position) where T : struct
+        public unsafe static T Read<T>(IVirtualMemoryManager memory, long position) where T : struct
         {
             long size = Marshal.SizeOf<T>();
 
@@ -37,7 +37,7 @@ namespace Ryujinx.Cpu
             }
         }
 
-        public unsafe static void Write<T>(IAddressSpaceManager memory, long position, T value) where T : struct
+        public unsafe static void Write<T>(IVirtualMemoryManager memory, long position, T value) where T : struct
         {
             long size = Marshal.SizeOf<T>();
 
@@ -51,7 +51,7 @@ namespace Ryujinx.Cpu
             memory.Write((ulong)position, data);
         }
 
-        public static string ReadAsciiString(IAddressSpaceManager memory, long position, long maxSize = -1)
+        public static string ReadAsciiString(IVirtualMemoryManager memory, long position, long maxSize = -1)
         {
             using (MemoryStream ms = new MemoryStream())
             {

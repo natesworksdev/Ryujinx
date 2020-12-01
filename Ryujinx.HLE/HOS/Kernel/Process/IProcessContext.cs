@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 {
     interface IProcessContext : IDisposable
     {
-        IAddressSpaceManager AddressSpace { get; }
+        IVirtualMemoryManager AddressSpace { get; }
 
         void Execute(ExecutionContext context, ulong codeAddress);
     }

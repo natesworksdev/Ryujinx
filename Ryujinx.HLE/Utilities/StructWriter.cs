@@ -6,11 +6,11 @@ namespace Ryujinx.HLE.Utilities
 {
     class StructWriter
     {
-        private IAddressSpaceManager _memory;
+        private IVirtualMemoryManager _memory;
 
         public long Position { get; private set; }
 
-        public StructWriter(IAddressSpaceManager memory, long position)
+        public StructWriter(IVirtualMemoryManager memory, long position)
         {
             _memory  = memory;
             Position = position;

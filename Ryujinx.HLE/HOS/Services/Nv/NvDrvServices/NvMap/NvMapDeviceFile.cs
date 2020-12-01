@@ -13,7 +13,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private static ConcurrentDictionary<long, IdDictionary> _maps = new ConcurrentDictionary<long, IdDictionary>();
 
-        public NvMapDeviceFile(ServiceCtx context, IAddressSpaceManager memory, long owner) : base(context, owner)
+        public NvMapDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
             IdDictionary dict = _maps.GetOrAdd(Owner, (key) => new IdDictionary());
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Ryujinx.Common;
+using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -8,7 +9,7 @@ namespace Ryujinx.Memory
     /// Represents a address space manager.
     /// Supports virtual memory region mapping, address translation and read/write access to mapped regions.
     /// </summary>
-    public sealed class AddressSpaceManager : IAddressSpaceManager
+    public sealed class AddressSpaceManager : IVirtualMemoryManager
     {
         public const int PageBits = 12;
         public const int PageSize = 1 << PageBits;
@@ -291,6 +292,18 @@ namespace Ryujinx.Memory
             return true;
         }
 
+        /// <summary>
+        /// Gets the physical regions that make up the given virtual address region.
+        /// If any part of the virtual region is unmapped, null is returned.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range</param>
+        /// <returns>Array of physical regions</returns>
+        public (ulong address, ulong size)[] GetPhysicalRegions(ulong va, ulong size)
+        {
+            throw new NotImplementedException();
+        }
+
         private void ReadImpl(ulong va, Span<byte> data)
         {
             if (data.Length == 0)
@@ -337,6 +350,36 @@ namespace Ryujinx.Memory
             return PtRead(va) != Unmapped;
         }
 
+        /// <summary>
+        /// Checks if a memory range is mapped.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range in bytes</param>
+        /// <returns>True if the entire range is mapped, false otherwise</returns>
+        public bool IsRangeMapped(ulong va, ulong size)
+        {
+            if (size == 0UL)
+            {
+                return true;
+            }
+
+            ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
+
+            va &= ~(ulong)PageMask;
+
+            while (va < endVa)
+            {
+                if (!IsMapped(va))
+                {
+                    return false;
+                }
+
+                va += PageSize;
+            }
+
+            return true;
+        }
+
         private bool ValidateAddress(ulong va)
         {
             return va < _addressSpaceSize;
@@ -364,6 +407,17 @@ namespace Ryujinx.Memory
         private ulong GetPhysicalAddressInternal(ulong va)
         {
             return PtRead(va) + (va & PageMask);
+        }
+
+        /// <summary>
+        /// Reprotect a region of virtual memory for tracking. Sets software protection bits.
+        /// </summary>
+        /// <param name="va">Virtual address base</param>
+        /// <param name="size">Size of the region to protect</param>
+        /// <param name="protection">Memory protection to set</param>
+        public void TrackingReprotect(ulong va, ulong size, MemoryPermission protection)
+        {
+            throw new NotImplementedException();
         }
 
         private ulong PtRead(ulong va)

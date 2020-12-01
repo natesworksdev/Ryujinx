@@ -10,7 +10,7 @@ namespace Ryujinx.HLE.HOS
         private readonly MemoryManager _memoryManager;
         private readonly CpuContext _cpuContext;
 
-        public IAddressSpaceManager AddressSpace => _memoryManager;
+        public IVirtualMemoryManager AddressSpace => _memoryManager;
 
         public ArmProcessContext(MemoryManager memoryManager)
         {

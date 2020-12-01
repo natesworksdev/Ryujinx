@@ -4,14 +4,14 @@ namespace Ryujinx.Memory
 {
     public sealed class WritableRegion : IDisposable
     {
-        private readonly IAddressSpaceManager _mm;
+        private readonly IVirtualMemoryManager _mm;
         private readonly ulong _va;
 
         private bool NeedsWriteback => _mm != null;
 
         public Memory<byte> Memory { get; }
 
-        public WritableRegion(IAddressSpaceManager mm, ulong va, Memory<byte> memory)
+        public WritableRegion(IVirtualMemoryManager mm, ulong va, Memory<byte> memory)
         {
             _mm = mm;
             _va = va;

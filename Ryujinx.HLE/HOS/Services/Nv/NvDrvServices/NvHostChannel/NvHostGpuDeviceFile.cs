@@ -12,7 +12,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         private KEvent _smExceptionBptPauseReportEvent;
         private KEvent _errorNotifierEvent;
 
-        public NvHostGpuDeviceFile(ServiceCtx context, IAddressSpaceManager memory, long owner) : base(context, memory, owner)
+        public NvHostGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, memory, owner)
         {
             _smExceptionBptIntReportEvent   = new KEvent(context.Device.System.KernelContext);
             _smExceptionBptPauseReportEvent = new KEvent(context.Device.System.KernelContext);

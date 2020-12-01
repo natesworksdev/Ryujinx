@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private readonly LinkedList<KMemoryBlock> _blocks;
 
-        private readonly IAddressSpaceManager _cpuMemory;
+        private readonly IVirtualMemoryManager _cpuMemory;
 
         private readonly KernelContext _context;
 
@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
 
         private MersenneTwister _randomNumberGenerator;
 
-        public KMemoryManager(KernelContext context, IAddressSpaceManager cpuMemory)
+        public KMemoryManager(KernelContext context, IVirtualMemoryManager cpuMemory)
         {
             _context   = context;
             _cpuMemory = cpuMemory;

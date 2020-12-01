@@ -235,7 +235,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private void LoadMod0Symbols(IAddressSpaceManager memory, ulong textOffset)
+        private void LoadMod0Symbols(IVirtualMemoryManager memory, ulong textOffset)
         {
             ulong mod0Offset = textOffset + memory.Read<uint>(textOffset + 4);
 
@@ -319,7 +319,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private ElfSymbol GetSymbol64(IAddressSpaceManager memory, ulong address, ulong strTblAddr)
+        private ElfSymbol GetSymbol64(IVirtualMemoryManager memory, ulong address, ulong strTblAddr)
         {
             ElfSymbol64 sym = memory.Read<ElfSymbol64>(address);
 
@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return new ElfSymbol(name, sym.Info, sym.Other, sym.SectionIndex, sym.ValueAddress, sym.Size);
         }
 
-        private ElfSymbol GetSymbol32(IAddressSpaceManager memory, ulong address, ulong strTblAddr)
+        private ElfSymbol GetSymbol32(IVirtualMemoryManager memory, ulong address, ulong strTblAddr)
         {
             ElfSymbol32 sym = memory.Read<ElfSymbol32>(address);
 
