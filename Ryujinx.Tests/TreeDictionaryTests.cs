@@ -24,7 +24,7 @@ namespace Ryujinx.Tests.Collections
 
             Assert.AreEqual(dictionary.Count, 7);
 
-            List<int> list = (List<int>)dictionary.Keys;
+            List<KeyValuePair<int, int>> list = dictionary.AsLevelOrderList();
 
             /*
              *  Tree Should Look as Follows After Rotations
@@ -37,13 +37,13 @@ namespace Ryujinx.Tests.Collections
              */
             
             Assert.AreEqual(list.Count, dictionary.Count);
-            Assert.AreEqual(list[0], 2);
-            Assert.AreEqual(list[1], 1);
-            Assert.AreEqual(list[2], 4);
-            Assert.AreEqual(list[3], 3);
-            Assert.AreEqual(list[4], 10);
-            Assert.AreEqual(list[5], 5);
-            Assert.AreEqual(list[6], 11);
+            Assert.AreEqual(list[0].Key, 2);
+            Assert.AreEqual(list[1].Key, 1);
+            Assert.AreEqual(list[2].Key, 4);
+            Assert.AreEqual(list[3].Key, 3);
+            Assert.AreEqual(list[4].Key, 10);
+            Assert.AreEqual(list[5].Key, 5);
+            Assert.AreEqual(list[6].Key, 11);
         }
 
         [Test]
@@ -68,9 +68,7 @@ namespace Ryujinx.Tests.Collections
             dictionary.Add(6, 2);
             Assert.AreEqual(dictionary.Count, 13);
 
-            List<KeyValuePair<int, int>> list = new List<KeyValuePair<int, int>>();
-
-            dictionary.ToList(list);
+            List<KeyValuePair<int, int>> list = dictionary.AsLevelOrderList();
 
             /*
              *  Tree Should Look as Follows After Rotations
@@ -82,7 +80,7 @@ namespace Ryujinx.Tests.Collections
              *                6  8 
              */
 
-            foreach(KeyValuePair<int, int> node in list)
+            foreach (KeyValuePair<int, int> node in list)
             {
                 Console.WriteLine($"{node.Key} -> {node.Value}");
             }
@@ -115,7 +113,7 @@ namespace Ryujinx.Tests.Collections
              *                  8 
              */
 
-            dictionary.ToList(list);
+            list = dictionary.AsLevelOrderList();
             foreach (KeyValuePair<int, int> node in list)
             {
                 Console.WriteLine($"{node.Key} -> {node.Value}");
@@ -137,7 +135,7 @@ namespace Ryujinx.Tests.Collections
 
             dictionary.Remove(10);
 
-            dictionary.ToList(list);
+            list = dictionary.AsLevelOrderList();
             /*
              *  Tree Should Look as Follows After Removal
              *  
@@ -186,9 +184,7 @@ namespace Ryujinx.Tests.Collections
             dictionary.Add(6, 2);
             Assert.AreEqual(dictionary.Count, 13);
 
-            List<KeyValuePair<int, int>> list = new List<KeyValuePair<int, int>>();
-
-            dictionary.ToList(list);
+            List<KeyValuePair<int, int>> list = dictionary.AsLevelOrderList();
 
             foreach (KeyValuePair<int, int> node in list)
             {
@@ -224,8 +220,7 @@ namespace Ryujinx.Tests.Collections
 
             dictionary.Add(3, 4);
 
-            list.Clear();
-            dictionary.ToList(list);
+            list = dictionary.AsLevelOrderList();
 
             Assert.AreEqual(list[4].Value, 4);
 

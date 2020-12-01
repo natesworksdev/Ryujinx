@@ -16,7 +16,6 @@ namespace Ryujinx.Common.Collections
         private const bool Red = false;
         private Node<K, V> _root = null;
         private int count = 0;
-        private readonly Dictionary<K, Node<K, V>> _dictionary = new Dictionary<K, Node<K, V>>();
         public TreeDictionary() { }
 
         #region Public Methods
@@ -61,16 +60,7 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentNullException($"{nameof(value)} may not be null");
             }
 
-            // O(1) Overwrites
-            if (_dictionary.ContainsKey(key))
-            {
-                _dictionary[key].Value = value;
-            }
-            else
-            {
-                Insert(key, value);
-                count++;
-            }
+            Insert(key, value);            
         }
 
         /// <summary>
@@ -84,12 +74,10 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            if (!_dictionary.ContainsKey(key))
+            if(Delete(key) != null)
             {
-                return;
+                count--;
             }
-            Delete(key);
-            count--;
         }
 
         /// <summary>
@@ -129,11 +117,12 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key to find the successor of</param>
         /// <returns>Value</returns>
-        public V SuccessorOf(K key)
+        public K SuccessorOf(K key)
         {
-            if (_dictionary.ContainsKey(key))
+            Node<K, V> node = GetNode(key);
+            if (node != null)
             {
-                return SuccessorOf(GetNode(key)).Value;
+                return SuccessorOf(node).Key;
             }
             return default;
         }
@@ -143,11 +132,12 @@ namespace Ryujinx.Common.Collections
         /// </summary>
         /// <param name="key">Key to find the predecessor of</param>
         /// <returns>Value</returns>
-        public V PredecessorOf(K key)
+        public K PredecessorOf(K key)
         {
-            if (_dictionary.ContainsKey(key))
+            Node<K, V> node = GetNode(key);
+            if (node != null)
             {
-                return PredecessorOf(GetNode(key)).Value;
+                return PredecessorOf(node).Key;
             }
             return default;
         }
@@ -158,12 +148,9 @@ namespace Ryujinx.Common.Collections
         /// The key/value pairs will be added in Level Order.
         /// </summary>
         /// <param name="list">List to add the tree pairs into</param>
-        public void ToList(List<KeyValuePair<K, V>> list)
+        public List<KeyValuePair<K,V>> AsLevelOrderList()
         {
-            if (list == null)
-            {
-                throw new ArgumentNullException($"{nameof(list)} must not be null");
-            }
+            List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
 
             Queue<Node<K, V>> nodes = new Queue<Node<K, V>>();
 
@@ -184,12 +171,13 @@ namespace Ryujinx.Common.Collections
                     nodes.Enqueue(node.Right);
                 }
             }
+            return list;
         }
 
         /// <summary>
         /// Adds all the nodes in the dictionary into <paramref name="list"/>.
         /// <br></br>
-        /// The nodes will be added in Level Order.
+        /// The nodes will be added in Sorted by Key Order.
         /// </summary>
         public List<KeyValuePair<K, V>> AsList()
         {
@@ -232,13 +220,25 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            // O(1) Lookup for keys
-            if (!_dictionary.ContainsKey(key))
-            {
-                return null;
-            }
 
-            return _dictionary[key];
+            Node<K, V> node = _root;
+            while(node != null)
+            {
+                int cmp = key.CompareTo(node.Key);
+                if(cmp < 0)
+                {
+                    node = node.Left;
+                }
+                else if(cmp > 0)
+                {
+                    node = node.Right;
+                }
+                else
+                {
+                    return node;
+                }
+            }
+            return null;
         }
 
         /// <summary>
@@ -268,7 +268,20 @@ namespace Ryujinx.Common.Collections
             while (node != null)
             {
                 parent = node;
-                node = key.CompareTo(node.Key) < 0 ? node.Left : node.Right;
+                int cmp = key.CompareTo(node.Key);
+                if(cmp < 0)
+                {
+                    node = node.Left;
+                }
+                else if(cmp > 0)
+                {
+                    node = node.Right;
+                }
+                else
+                {
+                    node.Value = value;
+                    return node;
+                }
             }
             Node<K, V> newNode = new Node<K, V>(key, value, parent);
             if (newNode.Parent == null)
@@ -283,7 +296,7 @@ namespace Ryujinx.Common.Collections
             {
                 parent.Right = newNode;
             }
-            _dictionary[key] = newNode;
+            count++;
             return newNode;
         }
 
@@ -298,8 +311,6 @@ namespace Ryujinx.Common.Collections
             Node<K, V> nodeToDelete = GetNode(key);
 
             if (nodeToDelete == null) return null;
-
-            _dictionary.Remove(key);
 
             Node<K, V> replacementNode;
 
@@ -337,7 +348,6 @@ namespace Ryujinx.Common.Collections
             {
                 nodeToDelete.Key = replacementNode.Key;
                 nodeToDelete.Value = replacementNode.Value;
-                _dictionary[replacementNode.Key] = nodeToDelete;
             }
 
             if (tmp != null && ColorOf(replacementNode) == Black)
@@ -402,10 +412,6 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            else if (_dictionary.ContainsKey(key))
-            {
-                return _dictionary[key];
-            }
             Node<K, V> tmp = _root;
 
             while (tmp != null)
@@ -459,10 +465,6 @@ namespace Ryujinx.Common.Collections
             if (key == null)
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
-            }
-            else if (_dictionary.ContainsKey(key))
-            {
-                return _dictionary[key];
             }
             Node<K, V> tmp = _root;
 
@@ -804,14 +806,14 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            return _dictionary.ContainsKey(key);
+            return GetNode(key) != null;
         }
 
         bool IDictionary<K, V>.Remove(K key)
         {
-            int count = _dictionary.Count;
+            int count = this.count;
             Remove(key);
-            return count > _dictionary.Count;
+            return count > this.count;
         }
 
         public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
@@ -820,9 +822,9 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            bool tryGet = _dictionary.TryGetValue(key, out Node<K, V> node);
+            Node<K, V> node = GetNode(key);
             value = node != null ? node.Value : default;
-            return tryGet;
+            return node != null;
         }
 
         public void Add(KeyValuePair<K, V> item)
@@ -838,7 +840,6 @@ namespace Ryujinx.Common.Collections
         public void Clear()
         {
             _root = null;
-            _dictionary.Clear();
             count = 0;
         }
 
@@ -864,13 +865,13 @@ namespace Ryujinx.Common.Collections
                 throw new ArgumentOutOfRangeException($"There is not enough space in {nameof(array)}");
             }
 
-            List<KeyValuePair<K, V>> list = DepthOrderItemList();
+            SortedList<K, V> list = GetKeyValues();
 
             int offset = 0;
 
             for (int i = arrayIndex; i < array.Length && offset < list.Count; i++)
             {
-                array[i] = list[offset];
+                array[i] = new KeyValuePair<K,V>(list.Keys[i], list.Values[i]);
                 offset++;
             }
         }
@@ -886,9 +887,9 @@ namespace Ryujinx.Common.Collections
 
             if (node.Value.Equals(item.Value))
             {
-                int count = _dictionary.Count;
+                int count = this.count;
                 Remove(item.Key);
-                return count > _dictionary.Count;
+                return count > this.count;
             }
 
             return false;
@@ -896,19 +897,19 @@ namespace Ryujinx.Common.Collections
 
         public IEnumerator<KeyValuePair<K, V>> GetEnumerator()
         {
-            return DepthOrderItemList().GetEnumerator();
+            return GetKeyValues().GetEnumerator();
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            return DepthOrderItemList().GetEnumerator();
+            return GetKeyValues().GetEnumerator();
         }
 
         public int Count => count;
 
-        public ICollection<K> Keys => GetKeys();
+        public ICollection<K> Keys => GetKeyValues().Keys;
 
-        public ICollection<V> Values => GetValues();
+        public ICollection<V> Values => GetKeyValues().Values;
 
         public bool IsReadOnly => false;
 
@@ -918,42 +919,12 @@ namespace Ryujinx.Common.Collections
         #region Private Interface Helper Methods
 
         /// <summary>
-        /// Creates a List of all the nodes in the tree as Key/Value pairs sorted in Depth Order.
-        /// </summary>
-        /// <returns></returns>
-        private List<KeyValuePair<K, V>> DepthOrderItemList()
-        {
-            List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
-            Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
-            if (null != _root)
-            {
-                queue.Enqueue(_root);
-            }
-
-            while (queue.Count > 0)
-            {
-                Node<K, V> node = queue.Dequeue();
-                list.Add(new KeyValuePair<K, V>(node.Key, node.Value));
-                if (null != node.Left)
-                {
-                    queue.Enqueue(node.Left);
-                }
-                if (null != node.Right)
-                {
-                    queue.Enqueue(node.Right);
-                }
-            }
-
-            return list;
-        }
-
-        /// <summary>
-        /// Returns a list of all the node keys in the tree.
+        /// Returns a sorted list of all the node keys / values in the tree.
         /// </summary>
         /// <returns>List of node keys</returns>
-        private List<K> GetKeys()
+        private SortedList<K, V> GetKeyValues()
         {
-            List<K> list = new List<K>();
+            SortedList<K, V> set = new SortedList<K, V>();
             Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
             if (null != _root)
             {
@@ -963,7 +934,7 @@ namespace Ryujinx.Common.Collections
             while (queue.Count > 0)
             {
                 Node<K, V> node = queue.Dequeue();
-                list.Add(node.Key);
+                set.Add(node.Key, node.Value);
                 if (null != node.Left)
                 {
                     queue.Enqueue(node.Left);
@@ -974,37 +945,7 @@ namespace Ryujinx.Common.Collections
                 }
             }
 
-            return list;
-        }
-
-        /// <summary>
-        /// Returns a list of all the node values in the tree.
-        /// </summary>
-        /// <returns>List of node values</returns>
-        private List<V> GetValues()
-        {
-            List<V> list = new List<V>();
-            Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
-            if (null != _root)
-            {
-                queue.Enqueue(_root);
-            }
-
-            while (queue.Count > 0)
-            {
-                Node<K, V> node = queue.Dequeue();
-                list.Add(node.Value);
-                if (null != node.Left)
-                {
-                    queue.Enqueue(node.Left);
-                }
-                if (null != node.Right)
-                {
-                    queue.Enqueue(node.Right);
-                }
-            }
-
-            return list;
+            return set;
         }
         #endregion
     }
