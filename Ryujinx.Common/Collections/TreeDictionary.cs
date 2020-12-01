@@ -74,7 +74,7 @@ namespace Ryujinx.Common.Collections
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
-            if(Delete(key) != null)
+            if (Delete(key) != null)
             {
                 count--;
             }
@@ -89,7 +89,7 @@ namespace Ryujinx.Common.Collections
         public K Floor(K key)
         {
             Node<K, V> node = FloorNode(key);
-            if(node != null)
+            if (node != null)
             {
                 return node.Key;
             }
@@ -225,11 +225,11 @@ namespace Ryujinx.Common.Collections
             while (node != null)
             {
                 int cmp = key.CompareTo(node.Key);
-                if(cmp < 0)
+                if (cmp < 0)
                 {
                     node = node.Left;
                 }
-                else if(cmp > 0)
+                else if (cmp > 0)
                 {
                     node = node.Right;
                 }
@@ -269,11 +269,11 @@ namespace Ryujinx.Common.Collections
             {
                 parent = node;
                 int cmp = key.CompareTo(node.Key);
-                if(cmp < 0)
+                if (cmp < 0)
                 {
                     node = node.Left;
                 }
-                else if(cmp > 0)
+                else if (cmp > 0)
                 {
                     node = node.Right;
                 }
