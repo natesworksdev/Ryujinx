@@ -222,7 +222,7 @@ namespace Ryujinx.Common.Collections
             }
 
             Node<K, V> node = _root;
-            while(node != null)
+            while (node != null)
             {
                 int cmp = key.CompareTo(node.Key);
                 if(cmp < 0)
