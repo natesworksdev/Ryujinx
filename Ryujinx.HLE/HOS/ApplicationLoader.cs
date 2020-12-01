@@ -21,6 +21,7 @@ using System.Linq;
 using System.Reflection;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
+using static Ryujinx.HLE.HOS.ModLoader;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 
 namespace Ryujinx.HLE.HOS
@@ -30,7 +31,23 @@ namespace Ryujinx.HLE.HOS
     public class ApplicationLoader
     {
         // Binaries from exefs are loaded into mem in this order. Do not change.
-        private static readonly string[] ExeFsPrefixes = { "rtld", "main", "subsdk*", "sdk" };
+        internal static readonly string[] ExeFsPrefixes =
+        {
+            "rtld",
+            "main",
+            "subsdk0",
+            "subsdk1",
+            "subsdk2",
+            "subsdk3",
+            "subsdk4",
+            "subsdk5",
+            "subsdk6",
+            "subsdk7",
+            "subsdk8",
+            "subsdk9",
+            "sdk"
+        };
+
 
         private readonly Switch            _device;
         private readonly ContentManager    _contentManager;
@@ -463,37 +480,40 @@ namespace Ryujinx.HLE.HOS
 
             metaData ??= ReadNpdm(codeFs);
 
-            List<NsoExecutable> nsos = new List<NsoExecutable>();
+            NsoExecutable[] nsos = new NsoExecutable[ExeFsPrefixes.Length];
 
-            foreach (string exePrefix in ExeFsPrefixes) // Load binaries with standard prefixes
+            for(int i = 0; i < nsos.Length; i++)
             {
-                foreach (DirectoryEntryEx file in codeFs.EnumerateEntries("/", exePrefix))
-                {
-                    if (Path.GetExtension(file.Name) != string.Empty)
-                    {
-                        continue;
-                    }
+                string name = ExeFsPrefixes[i];
 
-                    Logger.Info?.Print(LogClass.Loader, $"Loading {file.Name}...");
+                if (!codeFs.FileExists(name))
+                    continue; // file doesn't exist, skip
 
-                    codeFs.OpenFile(out IFile nsoFile, file.FullPath.ToU8Span(), OpenMode.Read).ThrowIfFailure();
+                Logger.Info?.Print(LogClass.Loader, $"Loading {name}...");
 
-                    NsoExecutable nso = new NsoExecutable(nsoFile.AsStorage(), file.Name);
+                codeFs.OpenFile(out IFile nsoFile, $"/{name}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                    nsos.Add(nso);
-                }
+                NsoExecutable nso = new NsoExecutable(nsoFile.AsStorage(), name);
+
+                nsos[i] = nso;
+
             }
 
             // ExeFs file replacements
-            bool modified = _fileSystem.ModLoader.ApplyExefsMods(TitleId, nsos);
+            ModLoadResult modres = _fileSystem.ModLoader.ApplyExefsMods(TitleId, nsos);
 
-            NsoExecutable[] programs = nsos.ToArray();
+            // collect the nsos, ignoring ones that aren't used
+            NsoExecutable[] programs = nsos.Where(x => x != null).ToArray();
 
-            modified |= _fileSystem.ModLoader.ApplyNsoPatches(TitleId, programs);
+            // take the npdm from mods if present
+            if(modres.Npdm != null)
+                metaData = modres.Npdm;
+
+            bool hasPatches = _fileSystem.ModLoader.ApplyNsoPatches(TitleId, programs);
 
             _contentManager.LoadEntries(_device);
 
-            if (_device.System.EnablePtc && modified)
+            if (_device.System.EnablePtc && (modres.Modified || hasPatches))
             {
                 Logger.Warning?.Print(LogClass.Ptc, $"Detected exefs modifications. PPTC disabled.");
             }
@@ -501,7 +521,7 @@ namespace Ryujinx.HLE.HOS
             Graphics.Gpu.GraphicsConfig.TitleId = TitleIdText;
             _device.Gpu.HostInitalized.Set();
 
-            Ptc.Initialize(TitleIdText, DisplayVersion, _device.System.EnablePtc && !modified);
+            Ptc.Initialize(TitleIdText, DisplayVersion, _device.System.EnablePtc && !modres.Modified);
 
             ProgramLoader.LoadNsos(_device.System.KernelContext, metaData, executables: programs);
         }
