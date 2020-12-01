@@ -42,46 +42,46 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// </summary>
         /// <param name="va">Virtual address at which to allocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
-        /// <param name="targetAddress">Reference to the block of memory where the allocation can take place</param>
+        /// <param name="referenceAddress">Reference to the address of memory where the allocation can take place</param>
         #region Memory Allocation
-        internal void AllocateMemoryBlock(ulong va, ulong size, ulong targetAddress = InvalidAddress)
+        internal void AllocateMemoryBlock(ulong va, ulong size, ulong referenceAddress = InvalidAddress)
         {
             lock (_tree)
             {
-                if (targetAddress != InvalidAddress)
+                if (referenceAddress != InvalidAddress)
                 {
                     ulong endAddress = va + size;
-                    ulong targetEndAddress = _tree.Get(targetAddress);
-                    if (va >= targetAddress)
+                    ulong referenceEndAddress = _tree.Get(referenceAddress);
+                    if (va >= referenceAddress)
                     {
                         // Need Left Node
-                        if (va > targetAddress)
+                        if (va > referenceAddress)
                         {
                             ulong leftEndAddress = va;
 
                             //Overwrite existing block with its new smaller range.
-                            _tree.Add(targetAddress, leftEndAddress);
+                            _tree.Add(referenceAddress, leftEndAddress);
                         }
                         else
                         {
                             // We need to get rid of the large chunk.
-                            _tree.Remove(targetAddress);
+                            _tree.Remove(referenceAddress);
                         }
 
-                        ulong rightSize = targetEndAddress - endAddress;
+                        ulong rightSize = referenceEndAddress - endAddress;
                         // If leftover space, create a right node.
                         if (rightSize > 0)
                         {
-                            _tree.Add(endAddress, targetEndAddress);
+                            _tree.Add(endAddress, referenceEndAddress);
 
-                            LinkedListNode<ulong> node = _list.AddAfter(_dictionary[targetAddress], endAddress);
+                            LinkedListNode<ulong> node = _list.AddAfter(_dictionary[referenceAddress], endAddress);
                             _dictionary[endAddress] = node;
                         }
 
-                        if (va == targetAddress)
+                        if (va == referenceAddress)
                         {
-                            _list.Remove(_dictionary[targetAddress]);
-                            _dictionary.Remove(targetAddress);
+                            _list.Remove(_dictionary[referenceAddress]);
+                            _dictionary.Remove(referenceAddress);
                         }
                     }
                 }
@@ -98,12 +98,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                ulong targetAddress = _tree.Floor(va);
-                if (targetAddress != InvalidAddress)
+                ulong freeAddressStartPosition = _tree.Floor(va);
+                if (freeAddressStartPosition != InvalidAddress)
                 {
-                    LinkedListNode<ulong> node = _dictionary[targetAddress];
-                    ulong targetPrevAddress = _dictionary[targetAddress].Previous != null ? _dictionary[_dictionary[targetAddress].Previous.Value].Value: InvalidAddress;
-                    ulong targetNextAddress = _dictionary[targetAddress].Next != null ? _dictionary[_dictionary[targetAddress].Next.Value].Value : InvalidAddress;
+                    LinkedListNode<ulong> node = _dictionary[freeAddressStartPosition];
+                    ulong targetPrevAddress = _dictionary[freeAddressStartPosition].Previous != null ? _dictionary[_dictionary[freeAddressStartPosition].Previous.Value].Value: InvalidAddress;
+                    ulong targetNextAddress = _dictionary[freeAddressStartPosition].Next != null ? _dictionary[_dictionary[freeAddressStartPosition].Next.Value].Value : InvalidAddress;
                     ulong expandedStart = va;
                     ulong expandedEnd = va + size;
 
@@ -170,10 +170,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// Gets the address of an unused (free) region of the specified size.
         /// </summary>
         /// <param name="size">Size of the region in bytes</param>
+        /// <param name="freeAddressStartPosition">Position at which memory can be allocated</param>
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        internal ulong GetFreePosition(ulong size, out ulong target, ulong alignment = 1, ulong start = DefaultStart)
+        internal ulong GetFreePosition(ulong size, out ulong freeAddressStartPosition, ulong alignment = 1, ulong start = DefaultStart)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -199,7 +200,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             {
                                 if (address + size <= _tree.Get(targetAddress))
                                 {
-                                    target = targetAddress;
+                                    freeAddressStartPosition = targetAddress;
                                     return address;
                                 }
                                 else
@@ -241,7 +242,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         }
                     }
                 }
-                target = InvalidAddress;
+                freeAddressStartPosition = InvalidAddress;
             }
 
             return PteUnmapped;
@@ -252,13 +253,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// </summary>
         /// <param name="gpuVa">GPU virtual address of the page</param>
         /// <param name="size">Size of the allocation in bytes</param>
+        /// <param name="freeAddressStartPosition">Nearest lower address that memory can be allocated</param>
         /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        internal bool IsRegionInUse(ulong gpuVa, ulong size, out ulong targetAddress)
+        internal bool IsRegionInUse(ulong gpuVa, ulong size, out ulong freeAddressStartPosition)
         {
             lock (_tree)
             {
                 ulong floorAddress = _tree.Floor(gpuVa);
-                targetAddress = floorAddress;
+                freeAddressStartPosition = floorAddress;
                 if (floorAddress != InvalidAddress)
                 {
                     return !(gpuVa >= floorAddress && ((gpuVa + size) < _tree.Get(floorAddress)));
