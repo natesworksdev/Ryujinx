@@ -24,9 +24,7 @@ namespace Ryujinx.Tests.Collections
 
             Assert.AreEqual(dictionary.Count, 7);
 
-            List<Node<int, int>> list = new List<Node<int, int>>();
-
-            dictionary.ToList(list);
+            List<int> list = (List<int>)dictionary.Keys;
 
             /*
              *  Tree Should Look as Follows After Rotations
@@ -39,13 +37,13 @@ namespace Ryujinx.Tests.Collections
              */
             
             Assert.AreEqual(list.Count, dictionary.Count);
-            Assert.AreEqual(list[0].Key, 2);
-            Assert.AreEqual(list[1].Key, 1);
-            Assert.AreEqual(list[2].Key, 4);
-            Assert.AreEqual(list[3].Key, 3);
-            Assert.AreEqual(list[4].Key, 10);
-            Assert.AreEqual(list[5].Key, 5);
-            Assert.AreEqual(list[6].Key, 11);
+            Assert.AreEqual(list[0], 2);
+            Assert.AreEqual(list[1], 1);
+            Assert.AreEqual(list[2], 4);
+            Assert.AreEqual(list[3], 3);
+            Assert.AreEqual(list[4], 10);
+            Assert.AreEqual(list[5], 5);
+            Assert.AreEqual(list[6], 11);
         }
 
         [Test]
@@ -70,7 +68,7 @@ namespace Ryujinx.Tests.Collections
             dictionary.Add(6, 2);
             Assert.AreEqual(dictionary.Count, 13);
 
-            List<Node<int, int>> list = new List<Node<int, int>>();
+            List<KeyValuePair<int, int>> list = new List<KeyValuePair<int, int>>();
 
             dictionary.ToList(list);
 
@@ -84,7 +82,7 @@ namespace Ryujinx.Tests.Collections
              *                6  8 
              */
 
-            foreach(Node<int, int> node in list)
+            foreach(KeyValuePair<int, int> node in list)
             {
                 Console.WriteLine($"{node.Key} -> {node.Value}");
             }
@@ -118,7 +116,7 @@ namespace Ryujinx.Tests.Collections
              */
 
             dictionary.ToList(list);
-            foreach (Node<int, int> node in list)
+            foreach (KeyValuePair<int, int> node in list)
             {
                 Console.WriteLine($"{node.Key} -> {node.Value}");
             }
@@ -149,7 +147,7 @@ namespace Ryujinx.Tests.Collections
              *              5      8  11    24
              *                   
              */
-            foreach (Node<int, int> node in list)
+            foreach (KeyValuePair<int, int> node in list)
             {
                 Console.WriteLine($"{node.Key} -> {node.Value}");
             }
@@ -188,11 +186,11 @@ namespace Ryujinx.Tests.Collections
             dictionary.Add(6, 2);
             Assert.AreEqual(dictionary.Count, 13);
 
-            List<Node<int, int>> list = new List<Node<int, int>>();
+            List<KeyValuePair<int, int>> list = new List<KeyValuePair<int, int>>();
 
             dictionary.ToList(list);
 
-            foreach (Node<int, int> node in list)
+            foreach (KeyValuePair<int, int> node in list)
             {
                 Console.WriteLine($"{node.Key} -> {node.Value}");
             }
