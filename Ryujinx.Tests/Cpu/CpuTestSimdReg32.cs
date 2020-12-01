@@ -184,8 +184,8 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCnt = 2;
 
         private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private static readonly bool NoInfs  = true;
+        private static readonly bool NoNaNs  = true;
 
         [Explicit]
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
@@ -346,14 +346,13 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VFNMS.F<size> <Vd>, <Vn>, <Vm>")]
-        public void Vfnms(
-                          [Values(0u, 1u)] uint rd,
+        public void Vfnms([Values(0u, 1u)] uint rd,
                           [Values(0u, 1u)] uint rn,
                           [Values(0u, 1u)] uint rm,
                           [Values(2u, 3u)] uint size,
-                          [Values(0u, 3u, 5u, 8u, 15u)] ulong z,
-                          [Values(0u, 3u, 5u, 8u, 15u)] ulong a,
-                          [Values(0u, 3u, 5u, 8u, 15u)] ulong b)
+                          [ValueSource("_2S_F_")] ulong z,
+                          [ValueSource("_2S_F_")] ulong a,
+                          [ValueSource("_2S_F_")] ulong b)
         {
             uint opcode = 0xee900a00;
 
