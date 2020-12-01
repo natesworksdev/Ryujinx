@@ -24,7 +24,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Retrieve the node reference whose key is <paramref name="key"/>, or null if no such node exists.
         /// </summary>
-        /// <param name="key">Key</param>
+        /// <param name="key">Key of the node to get</param>
         /// <returns>Node reference in the tree</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public Node<K, V> GetNode(K key)
@@ -45,7 +45,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Returns the value of the node whose key is <paramref name="key"/>, or the default value if no such node exists.
         /// </summary>
-        /// <param name="key">Key</param>
+        /// <param name="key">Key of the node value to get</param>
         /// <returns>Value</returns>
         /// <exception cref="ArgumentNullException"></exception>
         public V Get(K key)
@@ -68,8 +68,8 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Adds a new node into the tree whose key is <paramref name="key"/> key and value is <paramref name="value"/>.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <param name="key">Key of the node to add</param>
+        /// <param name="value">Value of the node to add</param>
         /// <exception cref="InvalidOperationException"></exception>
         /// <exception cref="ArgumentNullException"></exception>
         public void Add(K key, V value)
@@ -98,7 +98,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Removes the node whose key is <paramref name="key"/> from the tree.
         /// </summary>
-        /// <param name="key">Key</param>
+        /// <param name="key">Key of the node to remove</param>
         /// <exception cref="ArgumentNullException"></exception>
         public void Remove(K key)
         {
@@ -117,7 +117,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Returns the node whose key is equal to or immediately less than <paramref name="key"/>
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">Key for which to find the floor node of</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         public Node<K, V> FloorNode(K key)
@@ -175,7 +175,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
         /// </summary>
-        /// <param name="key"></param>
+        /// <param name="key">Key for which to find the ceiling node of</param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
         public Node<K, V> CeilingNode(K key)
@@ -289,8 +289,7 @@ namespace Ryujinx.Common.Collections
         /// <br></br>
         /// The nodes will be added in Level Order.
         /// </summary>
-        /// <param name="list"></param>
-        /// 
+        /// <param name="list">List to add the tree nodes into</param>
         public void ToList(List<Node<K, V>> list)
         {
             if (list == null)
@@ -324,8 +323,6 @@ namespace Ryujinx.Common.Collections
         /// <br></br>
         /// The nodes will be added in Level Order.
         /// </summary>
-        /// <param name="list"></param>
-        /// 
         public List<KeyValuePair<K, V>> AsList()
         {
             List<KeyValuePair<K, V>> list = new List<KeyValuePair<K, V>>();
@@ -360,8 +357,8 @@ namespace Ryujinx.Common.Collections
         /// <br></br>
         /// Adding the same key multiple times will overwrite the previous value.
         /// </summary>
-        /// <param name="key"></param>
-        /// <param name="value"></param>
+        /// <param name="key">Key of the node to insert</param>
+        /// <param name="value">Value of the node to insert</param>
         private void Insert(K key, V value)
         {
             Node<K, V> newNode = BSTInsert(key, value);
@@ -371,9 +368,9 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Standard Insertion Mechanism for a Binary Search Tree (BST)
         /// </summary>
-        /// <param name="key">Key</param>
-        /// <param name="value">Value</param>
-        /// <returns>Node</returns>
+        /// <param name="key">Key of the node to insert</param>
+        /// <param name="value">Value of the node to insert</param>
+        /// <returns>The inserted Node</returns>
         private Node<K, V> BSTInsert(K key, V value)
         {
             Node<K, V> parent = null;
@@ -404,8 +401,8 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Removes <paramref name="key"/> from the dictionary, if it exists.
         /// </summary>
-        /// <param name="key"></param>
-        /// <returns></returns>
+        /// <param name="key">Key of the node to delete</param>
+        /// <returns>The deleted Node</returns>
         private Node<K, V> Delete(K key)
         {
             // O(1) Retrieval
@@ -466,7 +463,7 @@ namespace Ryujinx.Common.Collections
         /// Returns the node with the largest key where <paramref name="node"/> is considered the root node.
         /// </summary>
         /// <param name="node">Root Node</param>
-        /// <returns>Node</returns>
+        /// <returns>Node with the maximum key in the tree of <paramref name="node"/></returns>
         /// <exception cref="ArgumentNullException"></exception>
         private static Node<K, V> Maximum(Node<K, V> node)
         {
@@ -487,7 +484,7 @@ namespace Ryujinx.Common.Collections
         /// Returns the node with the smallest key where <paramref name="node"/> is considered the root node.
         /// </summary>
         /// <param name="node">Root Node</param>
-        /// <returns></returns>
+        /// <returns>Node with the minimum key in the tree of <paramref name="node"/></returns>
         ///<exception cref="ArgumentNullException"></exception>
         private static Node<K, V> Minimum(Node<K, V> node)
         {
@@ -907,6 +904,11 @@ namespace Ryujinx.Common.Collections
         #endregion
     }
 
+    /// <summary>
+    /// Represents a node in the TreeDictionary which contains a key and value of generic type K and V, respectively.
+    /// </summary>
+    /// <typeparam name="K">Key of the node</typeparam>
+    /// <typeparam name="V">Value of the node</typeparam>
     public class Node<K, V>
     {
         internal bool Color = true;
