@@ -487,16 +487,15 @@ namespace Ryujinx.HLE.HOS
                 string name = ExeFsPrefixes[i];
 
                 if (!codeFs.FileExists(name))
+                {
                     continue; // file doesn't exist, skip
+                }
 
                 Logger.Info?.Print(LogClass.Loader, $"Loading {name}...");
 
                 codeFs.OpenFile(out IFile nsoFile, $"/{name}".ToU8Span(), OpenMode.Read).ThrowIfFailure();
 
-                NsoExecutable nso = new NsoExecutable(nsoFile.AsStorage(), name);
-
-                nsos[i] = nso;
-
+                nsos[i] = new NsoExecutable(nsoFile.AsStorage(), name);
             }
 
             // ExeFs file replacements
@@ -506,8 +505,10 @@ namespace Ryujinx.HLE.HOS
             NsoExecutable[] programs = nsos.Where(x => x != null).ToArray();
 
             // take the npdm from mods if present
-            if(modres.Npdm != null)
+            if (modres.Npdm != null)
+            {
                 metaData = modres.Npdm;
+            }
 
             bool hasPatches = _fileSystem.ModLoader.ApplyNsoPatches(TitleId, programs);
 
