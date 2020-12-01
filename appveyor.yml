@@ -31,7 +31,7 @@ build_script:
       
       
       mkdir -p AppDir/usr/bin ;
-      cp Ryujinx/bin/Release/netcoreapp3.1/linux-x64/publish/* AppDir/usr/bin/ ;
+      cp Ryujinx/bin/Release/net5.0/linux-x64/publish/* AppDir/usr/bin/ ;
       cp Ryujinx/Ui/assets/Icon.png AppDir/Ryujinx.png ;
       cp Ryujinx/Ui/assets/Ryujinx.desktop AppDir/Ryujinx.desktop ;
       curl -sL https://github.com/AppImage/AppImageKit/releases/download/continuous/AppRun-x86_64 -o AppDir/AppRun1 ;
