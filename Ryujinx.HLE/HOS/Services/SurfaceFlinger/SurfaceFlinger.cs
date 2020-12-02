@@ -64,7 +64,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             _chrono.Start();
 
             _ticks = 0;
-            _spinTicks = Stopwatch.Frequency / 1000;
+            _spinTicks = Stopwatch.Frequency / 500;
 
             UpdateSwapInterval(1);
 
@@ -209,14 +209,14 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 }
 
                 // Sleep the minimal amount of time to avoid being too expensive.
-                long diff = _ticksPerFrame - _chrono.ElapsedTicks;
+                long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
                 if (diff > 0)
                 {
                     if (diff < _spinTicks)
                     {
                         do
                         {
-                            Thread.SpinWait(50000);
+                            Thread.SpinWait(5);
                             ticks = _chrono.ElapsedTicks;
                             _ticks += ticks - lastTicks;
                             lastTicks = ticks;
