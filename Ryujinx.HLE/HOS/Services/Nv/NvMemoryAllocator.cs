@@ -5,7 +5,7 @@ using System;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
-    public class NvMemoryAllocator
+    class NvMemoryAllocator
     {
         public const ulong AddressSpaceSize = 1UL << 40;
 

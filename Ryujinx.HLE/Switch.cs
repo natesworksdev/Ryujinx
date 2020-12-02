@@ -27,7 +27,7 @@ namespace Ryujinx.HLE
 
         public GpuContext Gpu { get; private set; }
 
-        public NvMemoryAllocator MemoryAllocator { get; private set; }
+        internal NvMemoryAllocator MemoryAllocator { get; private set; }
 
         internal Host1xDevice Host1x { get; }
 
