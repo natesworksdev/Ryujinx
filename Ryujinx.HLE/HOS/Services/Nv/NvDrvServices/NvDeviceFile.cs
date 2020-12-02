@@ -30,7 +30,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         public virtual NvInternalResult MapSharedMemory(int sharedMemoryHandle, uint argument)
         {
-            // Close transfer memory immediately as we don't use it.
+            // Close shared memory immediately as we don't use it.
             Context.Device.System.KernelContext.Syscall.CloseHandle(sharedMemoryHandle);
 
             return NvInternalResult.NotImplemented;
