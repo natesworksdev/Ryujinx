@@ -1,4 +1,5 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Collections;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
@@ -22,7 +23,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private readonly Switch _device;
 
+
         private readonly IVirtualMemoryManager _memory;
+        private NvMemoryAllocator _memoryAllocator;
 
         public enum ResourcePolicy
         {
@@ -45,6 +48,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
             _timeout       = 3000;
             _submitTimeout = 0;
             _timeslice     = 0;
+            _memoryAllocator = _device.MemoryAllocator;
 
             ChannelSyncpoints = new uint[MaxModuleSyncpoint];
 
@@ -245,7 +249,17 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress == 0)
                     {
-                        map.DmaMapAddress = (long)gmm.MapLow((ulong)map.Address, (uint)map.Size);
+                        ulong va = _memoryAllocator.GetFreePosition((ulong) map.Size, out ulong freeAddressStartPosition, 1, NvMemoryAllocator.PageSize);
+
+                        if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
+                        {
+                            _memoryAllocator.AllocateMemoryBlock(va, (uint)map.Size, freeAddressStartPosition);
+                            map.DmaMapAddress = (long)gmm.Map((ulong)map.Address, va, (uint)map.Size);
+                        }
+                        else
+                        {
+                            map.DmaMapAddress = unchecked((long)NvMemoryAllocator.PteUnmapped);
+                        }
                     }
 
                     commandBufferEntry.MapAddress = (int)map.DmaMapAddress;
