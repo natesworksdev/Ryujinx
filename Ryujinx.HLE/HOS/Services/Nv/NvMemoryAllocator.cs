@@ -94,7 +94,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// </summary>
         /// <param name="va">Virtual address at which to deallocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
-        public void DeallocateMemoryRange(ulong va, ulong size)
+        public void DeallocateRange(ulong va, ulong size)
         {
             lock (_tree)
             {

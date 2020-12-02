@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                 if (addressSpaceContext.RemoveReservation(arguments.Offset))
                 {
-                    _memoryAllocator.DeallocateMemoryRange((ulong) arguments.Offset, size);
+                    _memoryAllocator.DeallocateRange((ulong) arguments.Offset, size);
                     addressSpaceContext.Gmm.Free((ulong)arguments.Offset, size);
                 }
                 else
@@ -177,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 {
                     if (size != 0)
                     {
-                        _memoryAllocator.DeallocateMemoryRange((ulong)arguments.Offset, (ulong) size);
+                        _memoryAllocator.DeallocateRange((ulong)arguments.Offset, (ulong) size);
                         addressSpaceContext.Gmm.Free((ulong)arguments.Offset, (ulong)size);
                     }
                 }
