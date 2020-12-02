@@ -37,14 +37,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         }
 
         /// <summary>
-        /// Marks a block of memory as consumed by removing it from the tree.
+        /// Marks a range of memory as consumed by removing it from the tree.
         /// This function will split memory regions if there is available space.
         /// </summary>
         /// <param name="va">Virtual address at which to allocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
         /// <param name="referenceAddress">Reference to the address of memory where the allocation can take place</param>
         #region Memory Allocation
-        internal void AllocateMemoryBlock(ulong va, ulong size, ulong referenceAddress = InvalidAddress)
+        internal void AllocateRange(ulong va, ulong size, ulong referenceAddress = InvalidAddress)
         {
             lock (_tree)
             {
@@ -89,12 +89,12 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         }
 
         /// <summary>
-        /// Marks a block of memory as free by adding it to the tree.
-        /// This function will automatically defragment the tree when it determines there are multiple blocks of free memory adjacent to each other.
+        /// Marks a range of memory as free by adding it to the tree.
+        /// This function will automatically compacts the tree when it determines there are multiple ranges of free memory adjacent to each other.
         /// </summary>
         /// <param name="va">Virtual address at which to deallocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
-        public void DeallocateMemoryBlock(ulong va, ulong size)
+        public void DeallocateMemoryRange(ulong va, ulong size)
         {
             lock (_tree)
             {

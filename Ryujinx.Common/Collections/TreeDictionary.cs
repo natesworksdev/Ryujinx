@@ -6,7 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Ryujinx.Common.Collections
 {
     /// <summary>
-    /// Hybrid-Type Dictionary that provides the ability for O(1) Lookups for keys that exist in the Dictionary, and O(logN) Lookups for keys immediately greater than or less than a specified key.
+    /// Dictionary that provides the ability for O(logN) Lookups for keys that exist in the Dictionary, and O(logN) lookups for keys immediately greater than or less than a specified key.
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
