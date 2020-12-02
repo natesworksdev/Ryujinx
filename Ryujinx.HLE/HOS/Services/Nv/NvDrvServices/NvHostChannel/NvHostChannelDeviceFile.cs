@@ -6,6 +6,7 @@ using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
+using Ryujinx.Memory;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -20,11 +21,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         private uint _submitTimeout;
         private uint _timeslice;
 
-        private Switch _device;
+        private readonly Switch _device;
 
+
+        private readonly IVirtualMemoryManager _memory;
         private NvMemoryAllocator _memoryAllocator;
-
-        private Cpu.MemoryManager _memory;
 
         public enum ResourcePolicy
         {
@@ -40,13 +41,13 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvFence _channelSyncpoint;
 
-        public NvHostChannelDeviceFile(ServiceCtx context) : base(context)
+        public NvHostChannelDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
-            _device          = context.Device;
-            _memory          = context.Memory;
-            _timeout         = 3000;
-            _submitTimeout   = 0;
-            _timeslice       = 0;
+            _device        = context.Device;
+            _memory        = memory;
+            _timeout       = 3000;
+            _submitTimeout = 0;
+            _timeslice     = 0;
             _memoryAllocator = _device.MemoryAllocator;
 
             ChannelSyncpoints = new uint[MaxModuleSyncpoint];

@@ -4,6 +4,7 @@ using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Concurrent;
 
@@ -12,12 +13,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
     class NvHostAsGpuDeviceFile : NvDeviceFile
     {
         private static ConcurrentDictionary<KProcess, AddressSpaceContext> _addressSpaceContextRegistry = new ConcurrentDictionary<KProcess, AddressSpaceContext>();
-
         private NvMemoryAllocator _memoryAllocator;
 
-        public NvHostAsGpuDeviceFile(ServiceCtx context) : base(context) 
-        {
-            _memoryAllocator = context.Device.MemoryAllocator;
+        public NvHostAsGpuDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
+        { 
+            _memoryAllocator = context.Device.MemoryAllocator; 
         }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
