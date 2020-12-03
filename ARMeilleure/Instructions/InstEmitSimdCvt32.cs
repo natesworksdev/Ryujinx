@@ -327,7 +327,7 @@ namespace ARMeilleure.Instructions
         public static void Vrintx_S(ArmEmitterContext context)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
-            if(Optimizations.UseSse2 && false)
+            if(Optimizations.UseSse2)
             {
                 EmitScalarUnaryOpSimd32(context, (m) => 
                 {

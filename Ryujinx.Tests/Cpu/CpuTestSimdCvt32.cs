@@ -221,11 +221,11 @@ namespace Ryujinx.Tests.Cpu
         public void Vrintx_S([Values(0u, 1u)] uint rd,
                              [Values(0u, 1u)] uint rm,
                              [Values(2u, 3u)] uint size,
-                             [Values(1u, 2u ] ulong s0,
+                             [Values(1u, 2u)] ulong s0,
                              [ValueSource(nameof(_1D_F_))] ulong s1,
                              [Values(RMode.Rn)] RMode rMode)
         {
-            uint opcode = 0xeeb70a40;
+            uint opcode = 0xEB70A40;
 
             if (size == 2)
             {
