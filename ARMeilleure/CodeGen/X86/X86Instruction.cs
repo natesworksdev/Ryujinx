@@ -53,7 +53,6 @@ namespace ARMeilleure.CodeGen.X86
         Divps,
         Divsd,
         Divss,
-        Frndint,
         Haddpd,
         Haddps,
         Idiv,

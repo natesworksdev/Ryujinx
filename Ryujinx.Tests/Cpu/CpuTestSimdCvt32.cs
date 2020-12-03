@@ -226,22 +226,22 @@ namespace Ryujinx.Tests.Cpu
                              [Values(RMode.Rn)] RMode rMode)
         {
             uint opcode = 0xEB70A40;
-
+            V128 v0;
             if (size == 2)
             {
                 opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
                 opcode |= ((rd & 0x1e) >> 11) | ((rm & 0x1) << 22);
+                v0 = MakeVectorE0E1((uint)BitConverter.SingleToInt32Bits(s0), (uint)BitConverter.SingleToInt32Bits(s0));
             }
             else
             {
                 opcode |= ((rm & 0xf) << 0) | ((rd & 0x10) << 1);
                 opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+                v0 = MakeVectorE0E1((uint)BitConverter.DoubleToInt64Bits(s0), (uint)BitConverter.DoubleToInt64Bits(s0));
             }
 
             opcode |= ((size & 3) << 8);
             
-            V128 v0 = MakeVectorE0E1((uint)BitConverter.SingleToInt32Bits(s0), (uint)BitConverter.SingleToInt32Bits(s0));
-
             int fpscr = (int)rMode << (int)Fpcr.RMode;
             SingleOpcode(opcode, v0: v0, fpscr: fpscr);
 

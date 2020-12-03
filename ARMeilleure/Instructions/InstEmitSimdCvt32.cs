@@ -328,10 +328,7 @@ namespace ARMeilleure.Instructions
         {
             if(Optimizations.UseSse2)
             {
-                EmitScalarUnaryOpSimd32(context, (m) => 
-                {
-                    return context.AddIntrinsic(Intrinsic.X86Frndint, m);
-                });
+                EmitScalarBinaryOpF32(context, Intrinsic.X86Roundss, Intrinsic.X86Roundsd);
             }
             else
             {
