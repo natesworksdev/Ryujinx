@@ -299,9 +299,9 @@ namespace Ryujinx.Tests.Cpu
                           [Values(0u, 1u)] uint rn,
                           [Values(0u, 1u)] uint rm,
                           [Values(0u, 1u)] uint Q,
-                          [Values(0f, 1.0f, 54.0f, 72.5f, float.MaxValue)] float z,
-                          [Values(0f, 1.0f, 54.0f, 72.5f, float.MaxValue)] float a,
-                          [Values(0f, 1.0f, 54.0f, 72.5f, float.MaxValue)] float b )
+                          [ValueSource("_2S_F_")] ulong z,
+                          [ValueSource("_2S_F_")] ulong a,
+                          [ValueSource("_2S_F_")] ulong b )
         {
             uint opcode = 0xf2000c10;
             
