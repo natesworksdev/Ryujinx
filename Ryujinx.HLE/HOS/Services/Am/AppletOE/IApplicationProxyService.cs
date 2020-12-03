@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Am
     [Service("appletOE")]
     class IApplicationProxyService : IpcService
     {
-        public IApplicationProxyService(ServiceCtx context) { }
+        public IApplicationProxyService(ServiceCtx context) : base(context.Device.System.AppletServer) { }
 
         [Command(0)]
         // OpenApplicationProxy(u64, pid, handle<copy>) -> object<nn::am::service::IApplicationProxy>

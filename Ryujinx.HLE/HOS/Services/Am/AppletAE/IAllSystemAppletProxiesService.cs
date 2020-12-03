@@ -5,7 +5,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE
     [Service("appletAE")]
     class IAllSystemAppletProxiesService : IpcService
     {
-        public IAllSystemAppletProxiesService(ServiceCtx context) { }
+        public IAllSystemAppletProxiesService(ServiceCtx context) : base(context.Device.System.AppletServer) { }
 
         [Command(100)]
         // OpenSystemAppletProxy(u64, pid, handle<copy>) -> object<nn::am::service::ISystemAppletProxy>

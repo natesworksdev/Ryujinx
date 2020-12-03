@@ -59,6 +59,7 @@ namespace Ryujinx.HLE.HOS
 
         internal AppletStateMgr AppletState { get; private set; }
 
+        internal ServerBase AppletServer { get; private set; }
         internal ServerBase BsdServer { get; private set; }
         internal ServerBase AudRenServer { get; private set; }
         internal ServerBase AudOutServer { get; private set; }
@@ -242,6 +243,7 @@ namespace Ryujinx.HLE.HOS
             sm.Server.InitDone.WaitOne();
             sm.Server.InitDone.Dispose();
 
+            AppletServer = new ServerBase(KernelContext, "AppletServer");
             BsdServer = new ServerBase(KernelContext, "BsdServer");
             AudRenServer = new ServerBase(KernelContext, "AudioRendererServer");
             AudOutServer = new ServerBase(KernelContext, "AudioOutServer");

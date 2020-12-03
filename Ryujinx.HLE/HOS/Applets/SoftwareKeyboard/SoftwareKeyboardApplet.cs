@@ -1,6 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Applets.SoftwareKeyboard;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+using Ryujinx.HLE.HOS.Kernel;
 using System;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -115,7 +116,10 @@ namespace Ryujinx.HLE.HOS.Applets
             }
             else
             {
-                _okPressed = _device.UiHandler.DisplayInputDialog(args, out _textValue);
+                KernelStatic.YieldUntilCompletion(() =>
+                {
+                    _okPressed = _device.UiHandler.DisplayInputDialog(args, out _textValue);
+                });
             }
 
             _textValue ??= initialText ?? DefaultText;

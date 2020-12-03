@@ -7,6 +7,7 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.FileSystem;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 using Ryujinx.HLE.HOS.SystemState;
+using Ryujinx.HLE.HOS.Kernel;
 using System;
 using System.IO;
 using System.Linq;
@@ -153,13 +154,22 @@ namespace Ryujinx.HLE.HOS.Applets.Error
 
             string[] buttons = GetButtonsText(module, description, "DlgBtn");
 
-            bool showDetails = _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Error Code: {module}-{description:0000}", "\n" + message, buttons);
+            bool showDetails = false;
+
+            KernelStatic.YieldUntilCompletion(() =>
+            {
+                showDetails = _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Error Code: {module}-{description:0000}", "\n" + message, buttons);
+            });
+
             if (showDetails)
             {
                 message = GetMessageText(module, description, "FlvMsg");
                 buttons = GetButtonsText(module, description, "FlvBtn");
 
-                _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Details: {module}-{description:0000}", "\n" + message, buttons);
+                KernelStatic.YieldUntilCompletion(() =>
+                {
+                    _horizon.Device.UiHandler.DisplayErrorAppletDialog($"Details: {module}-{description:0000}", "\n" + message, buttons);
+                });
             }
         }
 

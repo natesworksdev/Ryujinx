@@ -1,10 +1,11 @@
+using Ryujinx.Common.Logging;
+using Ryujinx.HLE.HOS.Services.Hid;
+using Ryujinx.HLE.HOS.Services.Am.AppletAE;
+using Ryujinx.HLE.HOS.Kernel;
 using System;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using Ryujinx.Common.Logging;
-using Ryujinx.HLE.HOS.Services.Hid;
-using Ryujinx.HLE.HOS.Services.Am.AppletAE;
 
 using static Ryujinx.HLE.HOS.Services.Hid.HidServer.HidUtils;
 
@@ -88,7 +89,14 @@ namespace Ryujinx.HLE.HOS.Applets
                     IsDocked = _system.State.DockedMode
                 };
 
-                if (!_system.Device.UiHandler.DisplayMessageDialog(uiArgs))
+                bool okPressed = false;
+
+                KernelStatic.YieldUntilCompletion(() =>
+                {
+                    okPressed = _system.Device.UiHandler.DisplayMessageDialog(uiArgs);
+                });
+
+                if (!okPressed)
                 {
                     break;
                 }
