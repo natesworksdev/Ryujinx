@@ -191,7 +191,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                 if (address < AddressSpaceSize)
                 {
                     bool completedFirstPass = false;
-                    ulong targetAddress = _tree.Count == 1 ? _tree.Floor(address) : (start == DefaultStart ? _list.Last.Value : _tree.Ceiling(address));
+                    ulong targetAddress;
+                    if(start == DefaultStart)
+                    {
+                        targetAddress = _list.Last.Value;
+                    }
+                    else
+                    {
+                        targetAddress = _tree.Floor(address);
+                        if(targetAddress == InvalidAddress)
+                        {
+                            targetAddress = _tree.Ceiling(address);
+                        }
+                    }
                     while (address < AddressSpaceSize)
                     {
                         if (targetAddress != InvalidAddress)
@@ -219,7 +231,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                         else
                                         {
                                             completedFirstPass = true;
-                                            targetAddress = _tree.Ceiling(address);
+                                            address = start;
+                                            targetAddress = _tree.Floor(address);
                                         }
                                     }
                                 }
