@@ -254,7 +254,7 @@ namespace ARMeilleure.Instructions
 
         public static void Vfma_V(ArmEmitterContext context) // Fused.
         {
-            if(Optimizations.FastFP && Optimizations.UseFma)
+            if (Optimizations.FastFP && Optimizations.UseFma)
             {
                 EmitVectorTernaryOpF32(context, Intrinsic.X86Vfmadd231ps, Intrinsic.X86Vfmadd231ps);
             }
@@ -262,8 +262,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
                 {
-                    Operand o = EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), op1, op2, op3);
-                    return EmitRoundMathCall(context, MidpointRounding.ToZero, o);
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), op1, op2, op3);
                 });
             }
         }
