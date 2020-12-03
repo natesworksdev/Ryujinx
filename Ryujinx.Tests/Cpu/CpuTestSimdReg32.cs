@@ -294,8 +294,7 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("VFMA.F<size> <Vd>, <Vn>, <Vm>")]
-        public void Vfma(
-                          [Values(0u, 1u)] uint rd,
+        public void Vfma( [Values(0u, 1u)] uint rd,
                           [Values(0u, 1u)] uint rn,
                           [Values(0u, 1u)] uint rm,
                           [Values(0u, 1u)] uint Q,
