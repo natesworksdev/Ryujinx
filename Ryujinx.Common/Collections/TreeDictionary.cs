@@ -122,7 +122,9 @@ namespace Ryujinx.Common.Collections
             Node<K, V> node = GetNode(key);
             if (node != null)
             {
-                return SuccessorOf(node).Key;
+                Node<K, V> successor =  SuccessorOf(node);
+
+                return successor != null ? successor.Key : default;
             }
             return default;
         }
@@ -137,7 +139,9 @@ namespace Ryujinx.Common.Collections
             Node<K, V> node = GetNode(key);
             if (node != null)
             {
-                return PredecessorOf(node).Key;
+                Node<K, V> predecessor = PredecessorOf(node);
+
+                return predecessor != null ? predecessor.Key : default;
             }
             return default;
         }
