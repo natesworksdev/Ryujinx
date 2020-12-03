@@ -256,7 +256,7 @@ namespace Ryujinx.Ui
 
         private void NVStutterWorkaround()
         {
-            while (IsActive)
+            while (_isActive)
             {
                 // When NVIDIA Threaded Optimization is on, the driver will snapshot all threads in the system whenever the application creates any new ones.
                 // The ThreadPool has something called a "GateThread" which terminates itself after some inactivity.
