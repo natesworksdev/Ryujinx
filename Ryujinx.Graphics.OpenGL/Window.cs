@@ -1,7 +1,7 @@
-using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
-using OpenTK.Platform;
+using Ryujinx.Common.Configuration;
+using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.OpenGL.Image;
 using System;
@@ -104,8 +104,13 @@ namespace Ryujinx.Graphics.OpenGL
                 srcY1 = (int)Math.Ceiling(srcY1 * scale);
             }
 
-            float ratioX = MathF.Min(1f, (_height * (float)NativeWidth)  / ((float)NativeHeight * _width));
-            float ratioY = MathF.Min(1f, (_width  * (float)NativeHeight) / ((float)NativeWidth  * _height));
+            AspectRatio aspectRatioSetting = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+
+            bool  isStretched = aspectRatioSetting == AspectRatio.Stretched;
+            float aspectRatio = aspectRatioSetting.ToFloat();
+
+            float ratioX = isStretched ? 1.0f : MathF.Min(1f, _height * (float)NativeHeight * aspectRatio / ((float)NativeHeight         * _width));
+            float ratioY = isStretched ? 1.0f : MathF.Min(1f, _width  * (float)NativeHeight                / (NativeHeight * aspectRatio * _height));
 
             int dstWidth  = (int)(_width  * ratioX);
             int dstHeight = (int)(_height * ratioY);

@@ -1,8 +1,14 @@
+<<<<<<< HEAD
 {
   "version": 17,
+=======
+{ 
+  "version": 18,
+>>>>>>> bf8345e4 (gui/gpu: Implement setting and toggle for Aspect Ratio)
   "res_scale": 1,
   "res_scale_custom": 1,
   "max_anisotropy": -1,
+  "aspect_ratio": "To169",
   "graphics_shaders_dump_path": "",
   "logging_enable_debug": false,
   "logging_enable_stub": true,

@@ -941,6 +941,20 @@
         16
       ]
     },
+    "aspect_ratio": {
+      "$id": "#/properties/aspect_ratio",
+      "type": "string",
+      "title": "Aspect Ratio applied to the renderer window.",
+      "description": "Aspect Ratio applied to the renderer window.",
+      "default": "To169",
+      "examples": [
+        "To43",
+        "To169",
+        "To219",
+        "To329",
+        "Stretched"
+      ]
+    },
     "graphics_shaders_dump_path": {
       "$id": "#/properties/graphics_shaders_dump_path",
       "type": "string",
