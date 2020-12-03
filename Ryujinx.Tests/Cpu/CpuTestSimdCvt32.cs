@@ -215,6 +215,22 @@ namespace Ryujinx.Tests.Cpu
 
             CompareAgainstUnicorn();
         }
+
+        [Explicit]
+        [Test, Pairwise, Description("VRINTX.F<size> <Sd>, <Sm>")]
+        public void Vrintx_S([Values(0u, 1u)] uint rd
+                             [Values(0u, 1u)] uint rm,
+                             [Values(0u, 1u)] uint rn,
+                            [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s0,
+                            [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s1,
+                            [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s2,
+
+                            )
+        {
+            uint opcode = 0xeeb70a40;
+
+
+        }
 #endif
     }
 }

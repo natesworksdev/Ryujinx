@@ -606,6 +606,7 @@ namespace ARMeilleure.Instructions
         Vqshrn,
         Vrev,
         Vrint,
+        Vrintx,
         Vrshr,
         Vsel,
         Vshl,
