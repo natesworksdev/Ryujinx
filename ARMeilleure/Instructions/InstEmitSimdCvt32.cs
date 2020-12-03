@@ -326,13 +326,36 @@ namespace ARMeilleure.Instructions
         // VRINTX (floating-point)
         public static void Vrintx_S(ArmEmitterContext context)
         {
-            if(Optimizations.UseSse2)
+            OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
+            int rm = op.Opc2 & 3;
+            Operand roundMode = Const(X86GetRoundControl(RMToRoundMode(rm)));
+            Intrinsic inst = (op.Size & 1) == 1 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+
+            if (Optimizations.UseSse2)
             {
-                EmitScalarBinaryOpF32(context, Intrinsic.X86Roundss, Intrinsic.X86Roundsd);
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    return context.AddIntrinsic(inst, op1, roundMode);
+                });
             }
             else
             {
-                EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Round), op1));
+                MethodInfo info;
+
+                EmitScalarUnaryOpF32(context, (op1) =>
+                {
+                    if (op1.Type == OperandType.FP64)
+                    {
+                        info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round));
+                    }
+                    else
+                    {
+                        info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF));
+
+                    }
+
+                    return context.Call(info, op1);
+                });
             }
         }
 
