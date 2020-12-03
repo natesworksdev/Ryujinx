@@ -2,6 +2,7 @@
 
 using ARMeilleure.State;
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Tests.Cpu
@@ -216,20 +217,35 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Explicit]
         [Test, Pairwise, Description("VRINTX.F<size> <Sd>, <Sm>")]
-        public void Vrintx_S([Values(0u, 1u)] uint rd
+        public void Vrintx_S([Values(0u, 1u)] uint rd,
                              [Values(0u, 1u)] uint rm,
-                             [Values(0u, 1u)] uint rn,
-                            [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s0,
-                            [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s1,
-                            [ValueSource(nameof(_1S_))][Random(RndCnt)] uint s2,
-
-                            )
+                             [Values(2u, 3u)] uint size,
+                             [Values(1u, 2u ] ulong s0,
+                             [ValueSource(nameof(_1D_F_))] ulong s1,
+                             [Values(RMode.Rn)] RMode rMode)
         {
             uint opcode = 0xeeb70a40;
 
+            if (size == 2)
+            {
+                opcode |= ((rm & 0x1e) >> 1) | ((rm & 0x1) << 5);
+                opcode |= ((rd & 0x1e) >> 11) | ((rm & 0x1) << 22);
+            }
+            else
+            {
+                opcode |= ((rm & 0xf) << 0) | ((rd & 0x10) << 1);
+                opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            }
 
+            opcode |= ((size & 3) << 8);
+            
+            V128 v0 = MakeVectorE0E1((uint)BitConverter.SingleToInt32Bits(s0), (uint)BitConverter.SingleToInt32Bits(s0));
+
+            int fpscr = (int)rMode << (int)Fpcr.RMode;
+            SingleOpcode(opcode, v0: v0, fpscr: fpscr);
+
+            CompareAgainstUnicorn();
         }
 #endif
     }
