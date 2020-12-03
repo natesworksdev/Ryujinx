@@ -153,6 +153,16 @@ namespace ARMeilleure.IntermediateRepresentation
         X86Unpcklps,
         X86Vcvtph2ps,
         X86Vcvtps2ph,
+        X86Vfmadd231ps,
+        X86Vfmadd231sd,
+        X86Vfmadd231ss,
+        X86Vfmsub231sd,
+        X86Vfmsub231ss,
+        X86Vfnmadd231ps,
+        X86Vfnmadd231sd,
+        X86Vfnmadd231ss,
+        X86Vfnmsub231sd,
+        X86Vfnmsub231ss,
         X86Xorpd,
         X86Xorps
     }
