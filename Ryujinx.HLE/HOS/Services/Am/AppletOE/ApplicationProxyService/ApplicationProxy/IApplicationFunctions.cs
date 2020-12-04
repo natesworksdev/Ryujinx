@@ -5,7 +5,6 @@ using LibHac.Fs;
 using LibHac.Ns;
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Memory;
@@ -18,7 +17,7 @@ using System;
 using System.Numerics;
 
 using static LibHac.Fs.ApplicationSaveDataManagement;
-using AccountUid = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
+using AccountUid    = Ryujinx.HLE.HOS.Services.Account.Acc.UserId;
 using ApplicationId = LibHac.Ncm.ApplicationId;
 
 namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy
@@ -29,11 +28,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         private KEvent _friendInvitationStorageChannelEvent;
         private KEvent _notificationStorageChannelEvent;
 
+        private int _gpuErrorDetectedSystemEventHandle;
+        private int _friendInvitationStorageChannelEventHandle;
+        private int _notificationStorageChannelEventHandle;
+
         public IApplicationFunctions(Horizon system)
         {
-            _gpuErrorDetectedSystemEvent = new KEvent(system.KernelContext);
+            _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
             _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
-            _notificationStorageChannelEvent = new KEvent(system.KernelContext);
+            _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
         }
 
         [Command(1)]
@@ -55,7 +58,6 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                     break;
                 case LaunchParameterKind.Unknown:
                     throw new NotImplementedException("Unknown LaunchParameterKind.");
-
                 default:
                     return ResultCode.ObjectInvalid;
             }
@@ -74,7 +76,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // EnsureSaveData(nn::account::Uid) -> u64
         public ResultCode EnsureSaveData(ServiceCtx context)
         {
-            Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+            Uid           userId        = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
             ApplicationId applicationId = new ApplicationId(context.Process.TitleId);
 
             BlitStruct<ApplicationControlProperty> controlHolder = context.Device.Application.ControlData;
@@ -88,15 +90,14 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 control = ref new BlitStruct<ApplicationControlProperty>(1).Value;
 
                 // The set sizes don't actually matter as long as they're non-zero because we use directory savedata.
-                control.UserAccountSaveDataSize = 0x4000;
+                control.UserAccountSaveDataSize        = 0x4000;
                 control.UserAccountSaveDataJournalSize = 0x4000;
 
                 Logger.Warning?.Print(LogClass.ServiceAm,
                     "No control file was found for this game. Using a dummy one instead. This may cause inaccuracies in some games.");
             }
 
-            Result result = EnsureApplicationSaveData(context.Device.FileSystem.FsClient, out long requiredSize, applicationId,
-                ref control, ref userId);
+            Result result = EnsureApplicationSaveData(context.Device.FileSystem.FsClient, out long requiredSize, applicationId, ref control, ref userId);
 
             context.ResponseData.Write(requiredSize);
 
@@ -113,9 +114,8 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             // TODO: When above calls are implemented, switch to using ns:am
 
             long desiredLanguageCode = context.Device.System.State.DesiredLanguageCode;
-
-            int supportedLanguages = (int)context.Device.Application.ControlData.Value.SupportedLanguages;
-            int firstSupported = BitOperations.TrailingZeroCount(supportedLanguages);
+            int  supportedLanguages  = (int)context.Device.Application.ControlData.Value.SupportedLanguages;
+            int  firstSupported      = BitOperations.TrailingZeroCount(supportedLanguages);
 
             if (firstSupported > (int)SystemState.TitleLanguage.Chinese)
             {
@@ -126,7 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 return ResultCode.Success;
             }
 
-            // If desired language is not supported by application, use first supported language from TitleLanguage. 
+            // If desired language is not supported by application, use first supported language from TitleLanguage.
             // TODO: In the future, a GUI could enable user-specified search priority
             if (((1 << (int)context.Device.System.State.DesiredTitleLanguage) & supportedLanguages) == 0)
             {
@@ -163,17 +163,19 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
             return ResultCode.Success;
         }
 
-        // GetSaveDataSize(u8, nn::account::Uid) -> (u64, u64)
         [Command(26)] // 3.0.0+
+        // GetSaveDataSize(u8 save_data_type, nn::account::Uid) -> (u64 save_size, u64 journal_size)
         public ResultCode GetSaveDataSize(ServiceCtx context)
         {
-            SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadByte();
-            context.RequestData.BaseStream.Seek(7, System.IO.SeekOrigin.Current);
+            SaveDataType saveDataType = (SaveDataType)context.RequestData.ReadUInt64();
+            Uid          userId       = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
 
-            Uid userId = context.RequestData.ReadStruct<AccountUid>().ToLibHacUid();
+            // NOTE: Service calls nn::fs::FindSaveDataWithFilter with SaveDataType = 1 hardcoded.
+            //       Then it calls nn::fs::GetSaveDataAvailableSize and nn::fs::GetSaveDataJournalSize to get the sizes.
+            //       Since LibHac currently doesn't support the 2 last methods, we can hardcode the values to 200mb.
 
-            // TODO: We return a size of 2GB as we use a directory based save system. This should be enough for most of the games.
-            context.ResponseData.Write(2000000000u);
+            context.ResponseData.Write((long)200000000);
+            context.ResponseData.Write((long)200000000);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm, new { saveDataType, userId });
 
@@ -282,10 +284,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // InitializeApplicationCopyrightFrameBuffer(s32 width, s32 height, handle<copy, transfer_memory> transfer_memory, u64 transfer_memory_size)
         public ResultCode InitializeApplicationCopyrightFrameBuffer(ServiceCtx context)
         {
-            int width = context.RequestData.ReadInt32();
-            int height = context.RequestData.ReadInt32();
-            ulong transferMemorySize = context.RequestData.ReadUInt64();
-            int transferMemoryHandle = context.Request.HandleDesc.ToCopy[0];
+            int   width                 = context.RequestData.ReadInt32();
+            int   height                = context.RequestData.ReadInt32();
+            ulong transferMemorySize    = context.RequestData.ReadUInt64();
+            int   transferMemoryHandle  = context.Request.HandleDesc.ToCopy[0];
             ulong transferMemoryAddress = context.Process.HandleTable.GetObject<KTransferMemory>(transferMemoryHandle).Address;
 
             ResultCode resultCode = ResultCode.InvalidParameters;
@@ -295,24 +297,22 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 resultCode = InitializeApplicationCopyrightFrameBufferImpl(transferMemoryAddress, transferMemorySize, width, height);
             }
 
-            /*
-            if (transferMemoryHandle)
+            if (transferMemoryHandle != 0)
             {
-                svcCloseHandle(transferMemoryHandle);
+                context.Device.System.KernelContext.Syscall.CloseHandle(transferMemoryHandle);
             }
-            */
 
             return resultCode;
         }
 
         private ResultCode InitializeApplicationCopyrightFrameBufferImpl(ulong transferMemoryAddress, ulong transferMemorySize, int width, int height)
         {
-            ResultCode resultCode = ResultCode.ObjectInvalid;
-
             if ((transferMemorySize & 0x3FFFF) != 0)
             {
                 return ResultCode.InvalidParameters;
             }
+
+            ResultCode resultCode;
 
             // if (_copyrightBuffer == null)
             {
@@ -330,12 +330,12 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // SetApplicationCopyrightImage(buffer<bytes, 0x45> frame_buffer, s32 x, s32 y, s32 width, s32 height, s32 window_origin_mode)
         public ResultCode SetApplicationCopyrightImage(ServiceCtx context)
         {
-            long frameBufferPos = context.Request.SendBuff[0].Position;
-            long frameBufferSize = context.Request.SendBuff[0].Size;
-            int x = context.RequestData.ReadInt32();
-            int y = context.RequestData.ReadInt32();
-            int width = context.RequestData.ReadInt32();
-            int height = context.RequestData.ReadInt32();
+            long frameBufferPos   = context.Request.SendBuff[0].Position;
+            long frameBufferSize  = context.Request.SendBuff[0].Size;
+            int  x                = context.RequestData.ReadInt32();
+            int  y                = context.RequestData.ReadInt32();
+            int  width            = context.RequestData.ReadInt32();
+            int  height           = context.RequestData.ReadInt32();
             uint windowOriginMode = context.RequestData.ReadUInt32();
 
             ResultCode resultCode = ResultCode.InvalidParameters;
@@ -457,15 +457,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetGpuErrorDetectedSystemEvent() -> handle<copy>
         public ResultCode GetGpuErrorDetectedSystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out int gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
+            if (_gpuErrorDetectedSystemEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out _gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(gpuErrorDetectedSystemEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_gpuErrorDetectedSystemEventHandle);
 
-            // NOTE: This is used by "sdk" NSO during applet-application initialization. 
-            //       A seperate thread is setup where event-waiting is handled. 
+            // NOTE: This is used by "sdk" NSO during applet-application initialization.
+            //       A seperate thread is setup where event-waiting is handled.
             //       When the Event is signaled, official sw will assert.
 
             return ResultCode.Success;
@@ -475,26 +478,46 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetFriendInvitationStorageChannelEvent() -> handle<copy>
         public ResultCode GetFriendInvitationStorageChannelEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out int friendInvitationStorageChannelEventHandle) != KernelResult.Success)
+            if (_friendInvitationStorageChannelEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out _friendInvitationStorageChannelEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(friendInvitationStorageChannelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_friendInvitationStorageChannelEventHandle);
 
             return ResultCode.Success;
+        }
+
+        [Command(141)] // 9.0.0+
+        // TryPopFromFriendInvitationStorageChannel() -> object<nn::am::service::IStorage>
+        public ResultCode TryPopFromFriendInvitationStorageChannel(ServiceCtx context)
+        {
+            // NOTE: IStorage are pushed in the channel with IApplicationAccessor PushToFriendInvitationStorageChannel
+            //       If _friendInvitationStorageChannelEvent is signaled, the event is cleared.
+            //       If an IStorage is available, returns it with ResultCode.Success. 
+            //       If not, just returns ResultCode.NotAvailable. Since we don't support friend feature for now, it's fine to do the same.
+
+            Logger.Stub?.PrintStub(LogClass.ServiceAm);
+
+            return ResultCode.NotAvailable;
         }
 
         [Command(150)] // 9.0.0+
         // GetNotificationStorageChannelEvent() -> handle<copy>
         public ResultCode GetNotificationStorageChannelEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out int notificationStorageChannelEventHandle) != KernelResult.Success)
+            if (_notificationStorageChannelEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out _notificationStorageChannelEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(notificationStorageChannelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_notificationStorageChannelEventHandle);
 
             return ResultCode.Success;
         }

@@ -1,5 +1,6 @@
-using Ryujinx.Graphics.GAL;
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common;
+using Ryujinx.Graphics.GAL;
 using System;
 
 namespace Ryujinx.Graphics.OpenGL.Image
@@ -33,37 +34,60 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.BindFramebuffer(FramebufferTarget.ReadFramebuffer, GetSrcFramebufferLazy());
             GL.BindFramebuffer(FramebufferTarget.DrawFramebuffer, GetDstFramebufferLazy());
 
-            Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle);
-            Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle);
+            int levels = Math.Min(src.Info.Levels, dst.Info.Levels);
+            int layers = Math.Min(src.Info.GetLayers(), dst.Info.GetLayers());
 
-            ClearBufferMask mask = GetMask(src.Format);
-
-            if ((mask & (ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit)) != 0 || src.Format.IsInteger())
+            for (int level = 0; level < levels; level++)
             {
-                linearFilter = false;
+                for (int layer = 0; layer < layers; layer++)
+                {
+                    if (layers > 1)
+                    {
+                        Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, level, layer);
+                        Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, level, layer);
+                    }
+                    else
+                    {
+                        Attach(FramebufferTarget.ReadFramebuffer, src.Format, srcConverted.Handle, level);
+                        Attach(FramebufferTarget.DrawFramebuffer, dst.Format, dst.Handle, level);
+                    }
+
+                    ClearBufferMask mask = GetMask(src.Format);
+
+                    if ((mask & (ClearBufferMask.DepthBufferBit | ClearBufferMask.StencilBufferBit)) != 0 || src.Format.IsInteger())
+                    {
+                        linearFilter = false;
+                    }
+
+                    BlitFramebufferFilter filter = linearFilter
+                        ? BlitFramebufferFilter.Linear
+                        : BlitFramebufferFilter.Nearest;
+
+                    GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
+                    GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
+
+                    GL.Disable(EnableCap.RasterizerDiscard);
+                    GL.Disable(IndexedEnableCap.ScissorTest, 0);
+
+                    GL.BlitFramebuffer(
+                        srcRegion.X1,
+                        srcRegion.Y1,
+                        srcRegion.X2,
+                        srcRegion.Y2,
+                        dstRegion.X1,
+                        dstRegion.Y1,
+                        dstRegion.X2,
+                        dstRegion.Y2,
+                        mask,
+                        filter);
+                }
+
+                if (level < levels - 1)
+                {
+                    srcRegion = srcRegion.Reduce(1);
+                    dstRegion = dstRegion.Reduce(1);
+                }
             }
-
-            BlitFramebufferFilter filter = linearFilter
-                ? BlitFramebufferFilter.Linear
-                : BlitFramebufferFilter.Nearest;
-
-            GL.ReadBuffer(ReadBufferMode.ColorAttachment0);
-            GL.DrawBuffer(DrawBufferMode.ColorAttachment0);
-
-            GL.Disable(EnableCap.RasterizerDiscard);
-            GL.Disable(IndexedEnableCap.ScissorTest, 0);
-
-            GL.BlitFramebuffer(
-                srcRegion.X1,
-                srcRegion.Y1,
-                srcRegion.X2,
-                srcRegion.Y2,
-                dstRegion.X1,
-                dstRegion.Y1,
-                dstRegion.X2,
-                dstRegion.Y2,
-                mask,
-                filter);
 
             Attach(FramebufferTarget.ReadFramebuffer, src.Format, 0);
             Attach(FramebufferTarget.DrawFramebuffer, dst.Format, 0);
@@ -80,24 +104,148 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
-        private static void Attach(FramebufferTarget target, Format format, int handle)
+        public void CopyUnscaled(
+            ITextureInfo src,
+            ITextureInfo dst,
+            int srcLayer,
+            int dstLayer,
+            int srcLevel,
+            int dstLevel)
+        {
+            TextureCreateInfo srcInfo = src.Info;
+            TextureCreateInfo dstInfo = dst.Info;
+
+            int srcHandle = src.Handle;
+            int dstHandle = dst.Handle;
+
+            int srcWidth = srcInfo.Width;
+            int srcHeight = srcInfo.Height;
+            int srcDepth = srcInfo.GetDepthOrLayers();
+            int srcLevels = srcInfo.Levels;
+
+            int dstWidth = dstInfo.Width;
+            int dstHeight = dstInfo.Height;
+            int dstDepth = dstInfo.GetDepthOrLayers();
+            int dstLevels = dstInfo.Levels;
+
+            srcWidth = Math.Max(1, srcWidth >> srcLevel);
+            srcHeight = Math.Max(1, srcHeight >> srcLevel);
+
+            dstWidth = Math.Max(1, dstWidth >> dstLevel);
+            dstHeight = Math.Max(1, dstHeight >> dstLevel);
+
+            if (dstInfo.Target == Target.Texture3D)
+            {
+                dstDepth = Math.Max(1, dstDepth >> dstLevel);
+            }
+
+            int blockWidth = 1;
+            int blockHeight = 1;
+            bool sizeInBlocks = false;
+
+            // When copying from a compressed to a non-compressed format,
+            // the non-compressed texture will have the size of the texture
+            // in blocks (not in texels), so we must adjust that size to
+            // match the size in texels of the compressed texture.
+            if (!srcInfo.IsCompressed && dstInfo.IsCompressed)
+            {
+                srcWidth *= dstInfo.BlockWidth;
+                srcHeight *= dstInfo.BlockHeight;
+                blockWidth = dstInfo.BlockWidth;
+                blockHeight = dstInfo.BlockHeight;
+
+                sizeInBlocks = true;
+            }
+            else if (srcInfo.IsCompressed && !dstInfo.IsCompressed)
+            {
+                dstWidth *= srcInfo.BlockWidth;
+                dstHeight *= srcInfo.BlockHeight;
+                blockWidth = srcInfo.BlockWidth;
+                blockHeight = srcInfo.BlockHeight;
+            }
+
+            int width = Math.Min(srcWidth, dstWidth);
+            int height = Math.Min(srcHeight, dstHeight);
+            int depth = Math.Min(srcDepth, dstDepth);
+            int levels = Math.Min(srcLevels, dstLevels);
+
+            for (int level = 0; level < levels; level++)
+            {
+                // Stop copy if we are already out of the levels range.
+                if (level >= srcInfo.Levels || dstLevel + level >= dstInfo.Levels)
+                {
+                    break;
+                }
+
+                if ((width % blockWidth != 0 || height % blockHeight != 0) && src is TextureView srcView && dst is TextureView dstView)
+                {
+                    PboCopy(srcView, dstView, srcLayer, dstLayer, srcLevel + level, dstLevel + level, width, height);
+                }
+                else
+                {
+                    int copyWidth = sizeInBlocks ? BitUtils.DivRoundUp(width, blockWidth) : width;
+                    int copyHeight = sizeInBlocks ? BitUtils.DivRoundUp(height, blockHeight) : height;
+
+                    GL.CopyImageSubData(
+                        srcHandle,
+                        srcInfo.Target.ConvertToImageTarget(),
+                        srcLevel + level,
+                        0,
+                        0,
+                        srcLayer,
+                        dstHandle,
+                        dstInfo.Target.ConvertToImageTarget(),
+                        dstLevel + level,
+                        0,
+                        0,
+                        dstLayer,
+                        copyWidth,
+                        copyHeight,
+                        depth);
+                }
+
+                width = Math.Max(1, width >> 1);
+                height = Math.Max(1, height >> 1);
+
+                if (srcInfo.Target == Target.Texture3D)
+                {
+                    depth = Math.Max(1, depth >> 1);
+                }
+            }
+        }
+
+        private static FramebufferAttachment AttachmentForFormat(Format format)
         {
             if (format == Format.D24UnormS8Uint || format == Format.D32FloatS8Uint)
             {
-                GL.FramebufferTexture(target, FramebufferAttachment.DepthStencilAttachment, handle, 0);
+                return FramebufferAttachment.DepthStencilAttachment;
             }
             else if (IsDepthOnly(format))
             {
-                GL.FramebufferTexture(target, FramebufferAttachment.DepthAttachment, handle, 0);
+                return FramebufferAttachment.DepthAttachment;
             }
             else if (format == Format.S8Uint)
             {
-                GL.FramebufferTexture(target, FramebufferAttachment.StencilAttachment, handle, 0);
+                return FramebufferAttachment.StencilAttachment;
             }
             else
             {
-                GL.FramebufferTexture(target, FramebufferAttachment.ColorAttachment0, handle, 0);
+                return FramebufferAttachment.ColorAttachment0;
             }
+        }
+
+        private static void Attach(FramebufferTarget target, Format format, int handle, int level = 0)
+        {
+            FramebufferAttachment attachment = AttachmentForFormat(format);
+
+            GL.FramebufferTexture(target, attachment, handle, level);
+        }
+
+        private static void Attach(FramebufferTarget target, Format format, int handle, int level, int layer)
+        {
+            FramebufferAttachment attachment = AttachmentForFormat(format);
+
+            GL.FramebufferTextureLayer(target, attachment, handle, level, layer);
         }
 
         private static ClearBufferMask GetMask(Format format)
@@ -141,6 +289,88 @@ namespace Ryujinx.Graphics.OpenGL.Image
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
 
             to.ReadFromPbo(0, _copyPboSize);
+
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
+
+            return to;
+        }
+
+        private TextureView PboCopy(TextureView from, TextureView to, int srcLayer, int dstLayer, int srcLevel, int dstLevel, int width, int height)
+        {
+            int dstWidth = width;
+            int dstHeight = height;
+
+            // The size of the source texture.
+            int unpackWidth = from.Width;
+            int unpackHeight = from.Height;
+
+            if (from.Info.IsCompressed != to.Info.IsCompressed)
+            {
+                if (from.Info.IsCompressed)
+                {
+                    // Dest size is in pixels, but should be in blocks
+                    dstWidth = BitUtils.DivRoundUp(width, from.Info.BlockWidth);
+                    dstHeight = BitUtils.DivRoundUp(height, from.Info.BlockHeight);
+
+                    // When copying from a compressed texture, the source size must be taken in blocks for unpacking to the uncompressed block texture.
+                    unpackWidth = BitUtils.DivRoundUp(from.Info.Width, from.Info.BlockWidth);
+                    unpackHeight = BitUtils.DivRoundUp(from.Info.Height, from.Info.BlockHeight);
+                }
+                else
+                {
+                    // When copying to a compressed texture, the source size must be scaled by the block width for unpacking on the compressed target.
+                    unpackWidth = from.Info.Width * to.Info.BlockWidth;
+                    unpackHeight = from.Info.Height * to.Info.BlockHeight;
+                }
+            }
+
+            EnsurePbo(from);
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, _copyPboHandle);
+
+            // The source texture is written out in full, then the destination is taken as a slice from the data using unpack params.
+            // The offset points to the base at which the requested layer is at.
+
+            int offset = from.WriteToPbo2D(0, srcLayer, srcLevel);
+
+            // If the destination size is not an exact match for the source unpack parameters, we need to set them to slice the data correctly.
+
+            bool slice = (unpackWidth != dstWidth || unpackHeight != dstHeight);
+
+            if (slice)
+            {
+                // Set unpack parameters to take a slice of width/height:
+                GL.PixelStore(PixelStoreParameter.UnpackRowLength, unpackWidth);
+                GL.PixelStore(PixelStoreParameter.UnpackImageHeight, unpackHeight);
+
+                if (to.Info.IsCompressed)
+                {
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, to.Info.BlockWidth);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, to.Info.BlockHeight);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 1);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, to.Info.BytesPerPixel);
+                }
+            }
+
+            GL.BindBuffer(BufferTarget.PixelPackBuffer, 0);
+            GL.BindBuffer(BufferTarget.PixelUnpackBuffer, _copyPboHandle);
+
+            to.ReadFromPbo2D(offset, dstLayer, dstLevel, dstWidth, dstHeight);
+
+            if (slice)
+            {
+                // Reset unpack parameters
+                GL.PixelStore(PixelStoreParameter.UnpackRowLength, 0);
+                GL.PixelStore(PixelStoreParameter.UnpackImageHeight, 0);
+
+                if (to.Info.IsCompressed)
+                {
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockWidth, 0);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockHeight, 0);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockDepth, 0);
+                    GL.PixelStore(PixelStoreParameter.UnpackCompressedBlockSize, 0);
+                }
+            }
 
             GL.BindBuffer(BufferTarget.PixelUnpackBuffer, 0);
 

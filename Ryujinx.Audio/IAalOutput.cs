@@ -13,17 +13,13 @@ namespace Ryujinx.Audio
                 return targetChannelCount;
             }
 
-            switch (targetChannelCount)
+            return targetChannelCount switch
             {
-                case 6:
-                    return SelectHardwareChannelCount(2);
-                case 2:
-                    return SelectHardwareChannelCount(1);
-                case 1:
-                    throw new ArgumentException("No valid channel configuration found!");
-                default:
-                    throw new ArgumentException($"Invalid targetChannelCount {targetChannelCount}");
-            }
+                6 => SelectHardwareChannelCount(2),
+                2 => SelectHardwareChannelCount(1),
+                1 => throw new ArgumentException("No valid channel configuration found!"),
+                _ => throw new ArgumentException($"Invalid targetChannelCount {targetChannelCount}"),
+            };
         }
 
         int OpenTrack(int sampleRate, int channels, ReleaseCallback callback)
@@ -45,9 +41,15 @@ namespace Ryujinx.Audio
 
         void Stop(int trackId);
 
-        float GetVolume();
+        uint GetBufferCount(int trackId);
 
-        void SetVolume(float volume);
+        ulong GetPlayedSampleCount(int trackId);
+
+        bool FlushBuffers(int trackId);
+
+        float GetVolume(int trackId);
+
+        void SetVolume(int trackId, float volume);
 
         PlaybackState GetState(int trackId);
     }

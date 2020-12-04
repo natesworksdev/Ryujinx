@@ -2,15 +2,17 @@ using Ryujinx.Common.Logging;
 using System;
 using System.Management;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 
 namespace Ryujinx.Common.SystemInfo
 {
-    internal class WindowsSysteminfo : SystemInfo
+    [SupportedOSPlatform("windows")]
+    internal class WindowsSystemInfo : SystemInfo
     {
         public override string CpuName { get; }
         public override ulong RamSize { get; }
 
-        public WindowsSysteminfo()
+        public WindowsSystemInfo()
         {
             bool wmiNotAvailable = false;
 

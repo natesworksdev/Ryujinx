@@ -31,6 +31,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         public Format Format => Info.FormatInfo.Format;
 
         /// <summary>
+        /// Texture target.
+        /// </summary>
+        public Target Target { get; private set; }
+
+        /// <summary>
         /// Texture information.
         /// </summary>
         public TextureInfo Info { get; private set; }
@@ -290,7 +295,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             width  <<= _firstLevel;
             height <<= _firstLevel;
 
-            if (Info.Target == Target.Texture3D)
+            if (Target == Target.Texture3D)
             {
                 depthOrLayers <<= _firstLevel;
             }
@@ -431,48 +436,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
-        /// Helper method for copying our Texture2DArray texture to the given target, with scaling.
-        /// This creates temporary views for each array layer on both textures, copying each one at a time.
-        /// </summary>
-        /// <param name="target">The texture array to copy to</param>
-        private void CopyArrayScaled(ITexture target)
-        {
-            TextureInfo viewInfo = new TextureInfo(
-                Info.Address,
-                Info.Width,
-                Info.Height,
-                1,
-                Info.Levels,
-                Info.SamplesInX,
-                Info.SamplesInY,
-                Info.Stride,
-                Info.IsLinear,
-                Info.GobBlocksInY,
-                Info.GobBlocksInZ,
-                Info.GobBlocksInTileX,
-                Target.Texture2D,
-                Info.FormatInfo,
-                Info.DepthStencilMode,
-                Info.SwizzleR,
-                Info.SwizzleG,
-                Info.SwizzleB,
-                Info.SwizzleA);
-
-            TextureCreateInfo createInfo = TextureManager.GetCreateInfo(viewInfo, _context.Capabilities, ScaleFactor);
-
-            for (int i = 0; i < Info.DepthOrLayers; i++)
-            {
-                ITexture from = HostTexture.CreateView(createInfo, i, 0);
-                ITexture to = target.CreateView(createInfo, i, 0);
-
-                from.CopyTo(to, new Extents2D(0, 0, from.Width, from.Height), new Extents2D(0, 0, to.Width, to.Height), true);
-
-                from.Release();
-                to.Release();
-            }
-        }
-
-        /// <summary>
         /// Copy the host texture to a scaled one. If a texture is not provided, create it with the given scale.
         /// </summary>
         /// <param name="scale">Scale factor</param>
@@ -486,14 +449,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 storage = _context.Renderer.CreateTexture(createInfo, scale);
             }
 
-            if (Info.Target == Target.Texture2DArray)
-            {
-                CopyArrayScaled(storage);
-            }
-            else
-            {
-                HostTexture.CopyTo(storage, new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), new Extents2D(0, 0, storage.Width, storage.Height), true);
-            }
+            HostTexture.CopyTo(storage, new Extents2D(0, 0, HostTexture.Width, HostTexture.Height), new Extents2D(0, 0, storage.Width, storage.Height), true);
 
             return storage;
         }
@@ -581,7 +537,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SynchronizeMemory()
         {
-            if (Info.Target == Target.TextureBuffer)
+            if (Target == Target.TextureBuffer)
             {
                 return;
             }
@@ -702,11 +658,11 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 data = decoded;
             }
-            else if (Info.Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
+            else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
             {
                 data = BCnDecoder.DecodeBC4(data, Info.Width, Info.Height, _depth, Info.Levels, _layers, Info.FormatInfo.Format == Format.Bc4Snorm);
             }
-            else if (Info.Target == Target.Texture3D && Info.FormatInfo.Format.IsBc5())
+            else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc5())
             {
                 data = BCnDecoder.DecodeBC5(data, Info.Width, Info.Height, _depth, Info.Levels, _layers, Info.FormatInfo.Format == Format.Bc5Snorm);
             }
@@ -809,7 +765,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 }
             }
 
-            if (Info.Target != Target.TextureBuffer)
+            if (Target != Target.TextureBuffer)
             {
                 if (Info.IsLinear)
                 {
@@ -849,29 +805,31 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="info">Texture information to compare against</param>
         /// <param name="flags">Comparison flags</param>
-        /// <returns>True if the textures are strictly equal or similar, false otherwise</returns>
-        public bool IsPerfectMatch(TextureInfo info, TextureSearchFlags flags)
+        /// <returns>A value indicating how well this texture matches the given info</returns>
+        public TextureMatchQuality IsExactMatch(TextureInfo info, TextureSearchFlags flags)
         {
-            if (!TextureCompatibility.FormatMatches(Info, info, (flags & TextureSearchFlags.ForSampler) != 0, (flags & TextureSearchFlags.ForCopy) != 0))
+            TextureMatchQuality matchQuality = TextureCompatibility.FormatMatches(Info, info, (flags & TextureSearchFlags.ForSampler) != 0, (flags & TextureSearchFlags.ForCopy) != 0);
+
+            if (matchQuality == TextureMatchQuality.NoMatch)
             {
-                return false;
+                return matchQuality;
             }
 
             if (!TextureCompatibility.LayoutMatches(Info, info))
             {
-                return false;
+                return TextureMatchQuality.NoMatch;
             }
 
             if (!TextureCompatibility.SizeMatches(Info, info, (flags & TextureSearchFlags.Strict) == 0))
             {
-                return false;
+                return TextureMatchQuality.NoMatch;
             }
 
             if ((flags & TextureSearchFlags.ForSampler) != 0 || (flags & TextureSearchFlags.Strict) != 0)
             {
                 if (!TextureCompatibility.SamplerParamsMatches(Info, info))
                 {
-                    return false;
+                    return TextureMatchQuality.NoMatch;
                 }
             }
 
@@ -881,15 +839,15 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (!msTargetCompatible && !TextureCompatibility.TargetAndSamplesCompatible(Info, info))
                 {
-                    return false;
+                    return TextureMatchQuality.NoMatch;
                 }
             }
             else if (!TextureCompatibility.TargetAndSamplesCompatible(Info, info))
             {
-                return false;
+                return TextureMatchQuality.NoMatch;
             }
 
-            return Info.Address == info.Address && Info.Levels == info.Levels;
+            return Info.Address == info.Address && Info.Levels == info.Levels ? matchQuality : TextureMatchQuality.NoMatch;
         }
 
         /// <summary>
@@ -950,7 +908,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>A view of this texture with the requested target, or null if the target is invalid for this texture</returns>
         public ITexture GetTargetTexture(Target target)
         {
-            if (target == Info.Target)
+            if (target == Target)
             {
                 return HostTexture;
             }
@@ -1055,6 +1013,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private void SetInfo(TextureInfo info)
         {
             Info = info;
+            Target = info.Target;
 
             _depth  = info.GetDepth();
             _layers = info.GetLayers();

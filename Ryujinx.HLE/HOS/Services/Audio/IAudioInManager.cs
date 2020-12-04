@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using System;
 using System.Text;
 
@@ -27,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
             return ResultCode.Success;
         }
 
-        [Command(3)] // 3.0.0+
+        [Command(2)] // 3.0.0+
         // ListAudioInsAuto() -> (u32 count, buffer<bytes, 0x22> names)
         public ResultCode ListAudioInsAuto(ServiceCtx context)
         {
@@ -57,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio
             return ResultCode.Success;
         }
 
-        private uint ListAudioInsImpl(MemoryManager memory, long bufferPosition, long bufferSize, bool filtered = false)
+        private uint ListAudioInsImpl(IVirtualMemoryManager memory, long bufferPosition, long bufferSize, bool filtered = false)
         {
             uint count = 0;
 
