@@ -25,6 +25,7 @@ namespace Ryujinx
             // Parse Arguments
             string launchPath = null;
             string baseDirPath = null;
+            bool startFullscreen = false;
             for (int i = 0; i < args.Length; ++i)
             {
                 string arg = args[i];
@@ -38,6 +39,10 @@ namespace Ryujinx
                     }
 
                     baseDirPath = args[++i];
+                }
+                else if (arg == "-f" || arg == "--fullscreen")
+                {
+                    startFullscreen = true;
                 }
                 else if (launchPath == null)
                 {
@@ -107,6 +112,11 @@ namespace Ryujinx
                 ConfigurationState.Instance.ToFileFormat().SaveConfig(appDataConfigurationPath);
             }
 
+            if (startFullscreen)
+            {
+                ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
+            }
+
             PrintSystemInfo();
 
             Application.Init();
@@ -128,7 +138,7 @@ namespace Ryujinx
 
             if (ConfigurationState.Instance.CheckUpdatesOnStart.Value && Updater.CanUpdate(false))
             {
-                Updater.BeginParse(mainWindow, false);
+                _ = Updater.BeginParse(mainWindow, false);
             }
 
             Application.Run();

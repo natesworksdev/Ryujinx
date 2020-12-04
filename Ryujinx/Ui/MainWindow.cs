@@ -57,6 +57,7 @@ namespace Ryujinx.Ui
         [GUI] Box             _statusBar;
         [GUI] MenuItem        _stopEmulation;
         [GUI] MenuItem        _fullScreen;
+        [GUI] CheckMenuItem   _startFullScreen;
         [GUI] CheckMenuItem   _favToggle;
         [GUI] MenuItem        _firmwareInstallDirectory;
         [GUI] MenuItem        _firmwareInstallFile;
@@ -135,6 +136,11 @@ namespace Ryujinx.Ui
             _virtualFileSystem.Reload();
 
             ApplyTheme();
+
+            if (ConfigurationState.Instance.Ui.StartFullscreen)
+            {
+                _startFullScreen.Active = true;
+            }
 
             _stopEmulation.Sensitive = false;
 
@@ -551,6 +557,10 @@ namespace Ryujinx.Ui
                 if (this.Window.State.HasFlag(Gdk.WindowState.Fullscreen))
                 {
                     ToggleExtraWidgets(false);
+                }
+                else if (ConfigurationState.Instance.Ui.StartFullscreen.Value)
+                {
+                    FullScreen_Toggled(null, null);
                 }
             });
 
@@ -1164,7 +1174,7 @@ namespace Ryujinx.Ui
             }
         }
 
-        private void FullScreen_Toggled(object o, EventArgs args)
+        private void FullScreen_Toggled(object sender, EventArgs args)
         {
             bool fullScreenToggled = this.Window.State.HasFlag(Gdk.WindowState.Fullscreen);
 
@@ -1182,6 +1192,13 @@ namespace Ryujinx.Ui
             }
         }
 
+        private void StartFullScreen_Toggled(object sender, EventArgs args)
+        {
+            ConfigurationState.Instance.Ui.StartFullscreen.Value = _startFullScreen.Active;
+
+            SaveConfig();
+        }
+
         private void Settings_Pressed(object sender, EventArgs args)
         {
             SettingsWindow settingsWin = new SettingsWindow(_virtualFileSystem, _contentManager);
@@ -1192,7 +1209,7 @@ namespace Ryujinx.Ui
         {
             if (Updater.CanUpdate(true))
             {
-                Updater.BeginParse(this, true);
+                _ = Updater.BeginParse(this, true);
             }
         }
 
