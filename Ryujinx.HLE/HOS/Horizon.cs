@@ -14,6 +14,7 @@ using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Kernel.Threading;
+using Ryujinx.HLE.HOS.Services;
 using Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.SystemAppletProxy;
 using Ryujinx.HLE.HOS.Services.Apm;
 using Ryujinx.HLE.HOS.Services.Arp;
@@ -57,6 +58,16 @@ namespace Ryujinx.HLE.HOS
         internal PerformanceState PerformanceState { get; private set; }
 
         internal AppletStateMgr AppletState { get; private set; }
+
+        internal ServerBase BsdServer { get; private set; }
+        internal ServerBase AudRenServer { get; private set; }
+        internal ServerBase AudOutServer { get; private set; }
+        internal ServerBase HidServer { get; private set; }
+        internal ServerBase NvDrvServer { get; private set; }
+        internal ServerBase TimeServer { get; private set; }
+        internal ServerBase ViServer { get; private set; }
+        internal ServerBase ViServerM { get; private set; }
+        internal ServerBase ViServerS { get; private set; }
 
         internal KSharedMemory HidSharedMem  { get; private set; }
         internal KSharedMemory FontSharedMem { get; private set; }
@@ -120,11 +131,11 @@ namespace Ryujinx.HLE.HOS
             iirsPageList.AddRange(iirsPa, IirsSize / KMemoryManager.PageSize);
             timePageList.AddRange(timePa, TimeSize / KMemoryManager.PageSize);
 
-            HidSharedMem  = new KSharedMemory(KernelContext, hidPageList,  0, 0, MemoryPermission.Read);
-            FontSharedMem = new KSharedMemory(KernelContext, fontPageList, 0, 0, MemoryPermission.Read);
-            IirsSharedMem = new KSharedMemory(KernelContext, iirsPageList, 0, 0, MemoryPermission.Read);
+            HidSharedMem  = new KSharedMemory(KernelContext, hidPageList,  0, 0, KMemoryPermission.Read);
+            FontSharedMem = new KSharedMemory(KernelContext, fontPageList, 0, 0, KMemoryPermission.Read);
+            IirsSharedMem = new KSharedMemory(KernelContext, iirsPageList, 0, 0, KMemoryPermission.Read);
 
-            KSharedMemory timeSharedMemory = new KSharedMemory(KernelContext, timePageList, 0, 0, MemoryPermission.Read);
+            KSharedMemory timeSharedMemory = new KSharedMemory(KernelContext, timePageList, 0, 0, KMemoryPermission.Read);
 
             TimeServiceManager.Instance.Initialize(device, this, timeSharedMemory, timePa - DramMemoryMap.DramBase, TimeSize);
 
@@ -133,8 +144,6 @@ namespace Ryujinx.HLE.HOS
             AppletState.SetFocus(true);
 
             Font = new SharedFontManager(device, fontPa - DramMemoryMap.DramBase);
-
-            IUserInterface.InitializePort(this);
 
             VsyncEvent = new KEvent(KernelContext);
 
@@ -222,6 +231,26 @@ namespace Ryujinx.HLE.HOS
             }
 
             AudioRendererManager.Initialize(writableEvents, devices);
+        }
+
+        public void InitializeServices()
+        {
+            IUserInterface sm = new IUserInterface(KernelContext);
+
+            // Wait until SM server thread is done with initialization,
+            // only then doing connections to SM is safe.
+            sm.Server.InitDone.WaitOne();
+            sm.Server.InitDone.Dispose();
+
+            BsdServer = new ServerBase(KernelContext, "BsdServer");
+            AudRenServer = new ServerBase(KernelContext, "AudioRendererServer");
+            AudOutServer = new ServerBase(KernelContext, "AudioOutServer");
+            HidServer = new ServerBase(KernelContext, "HidServer");
+            NvDrvServer = new ServerBase(KernelContext, "NvservicesServer");
+            TimeServer = new ServerBase(KernelContext, "TimeServer");
+            ViServer = new ServerBase(KernelContext, "ViServerU");
+            ViServerM = new ServerBase(KernelContext, "ViServerM");
+            ViServerS = new ServerBase(KernelContext, "ViServerS");
         }
 
         public void LoadKip(string kipPath)

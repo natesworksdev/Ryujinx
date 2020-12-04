@@ -228,8 +228,8 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCnt = 2;
 
         private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = false;
-        private static readonly bool NoNaNs  = false;
+        private static readonly bool NoInfs  = true;
+        private static readonly bool NoNaNs  = true;
 
         [Explicit]
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
