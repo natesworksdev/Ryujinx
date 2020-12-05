@@ -2076,7 +2076,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                 return KernelResult.OutOfResource;
             }
 
-            // Anything on the CPU side should see this memory as modified.
+            // Anything on the client side should see this memory as modified.
             _cpuMemory.SignalMemoryTracking(addressTruncated, endAddrRounded - addressTruncated, true);
 
             lock (_blocks)
