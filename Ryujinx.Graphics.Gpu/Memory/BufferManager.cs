@@ -512,6 +512,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         int dstOffset = (int)(buffer.Address - newBuffer.Address);
 
                         buffer.CopyTo(newBuffer, dstOffset);
+                        newBuffer.InheritModifiedRanges(buffer);
 
                         buffer.Dispose();
                     }
