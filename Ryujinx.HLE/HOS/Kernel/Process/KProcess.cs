@@ -755,7 +755,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private void InterruptHandler(object sender, EventArgs e)
         {
             KThread currentThread = KernelStatic.GetCurrentThread();
-            KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
+
+            if (currentThread.IsSchedulable)
+            {
+                KernelContext.Schedulers[currentThread.CurrentCore].Schedule();
+            }
+
             currentThread.HandlePostSyscall();
         }
 

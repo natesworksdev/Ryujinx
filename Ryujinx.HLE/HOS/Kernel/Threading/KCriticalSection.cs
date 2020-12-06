@@ -47,7 +47,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // If the thread exists but is not schedulable, we still want to suspend
                     // it if it's not runnable. That allows the kernel to still block HLE threads
                     // even if they are not scheduled on guest cores.
-                    if (currentThread != null && !currentThread.IsSchedulable)
+                    if (currentThread != null && !currentThread.IsSchedulable && currentThread.Context.Running)
                     {
                         currentThread.SchedulerWaitEvent.Wait();
                     }

@@ -13,8 +13,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
     {
         public const int MaxWaitSyncObjects = 64;
 
-        private readonly object _schedulerWaitEventLock = new object();
-
         public ManualResetEventSlim SchedulerWaitEvent { get; private set; }
 
         public Thread HostThread { get; private set; }
@@ -38,8 +36,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private ulong _entrypoint;
         private ThreadStart _customThreadStart;
+        private bool _forcedUnschedulable;
 
-        public bool IsSchedulable => _customThreadStart == null;
+        public bool IsSchedulable => _customThreadStart == null && !_forcedUnschedulable;
 
         public ulong MutexAddress { get; set; }
 
@@ -409,7 +408,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             bool decRef = ExitImpl();
 
-            RequestExit();
+            Context.StopRunning();
 
             KernelContext.CriticalSection.Leave();
 
@@ -432,21 +431,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             KernelContext.CriticalSection.Leave();
 
             return decRef;
-        }
-
-        private void RequestExit()
-        {
-            // Tell the thread it should exit.
-            Context.StopRunning();
-
-            // Make sure if will not be blocked by kernel.
-            lock (_schedulerWaitEventLock)
-            {
-                if (SchedulerWaitEvent != null)
-                {
-                    SchedulerWaitEvent.Set();
-                }
-            }
         }
 
         public KernelResult Sleep(long timeout)
@@ -1027,6 +1011,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
         }
 
+        public void MakeUnschedulable()
+        {
+            _forcedUnschedulable = true;
+        }
+
         private void ThreadStart()
         {
             SchedulerWaitEvent = new ManualResetEventSlim(true);
@@ -1043,12 +1032,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
 
             Context.Dispose();
-
-            lock (_schedulerWaitEventLock)
-            {
-                SchedulerWaitEvent.Dispose();
-                SchedulerWaitEvent = null;
-            }
+            SchedulerWaitEvent.Dispose();
         }
 
         public override bool IsSignaled()

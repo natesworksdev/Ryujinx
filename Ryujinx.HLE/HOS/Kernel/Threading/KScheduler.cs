@@ -304,11 +304,22 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 selectedThread = _state.SelectedThread;
             }
 
-            // Wait until the thread is scheduled again, unless it is supposed to exit now,
-            // in that case we just return to allow it to exit itself.
             if (currentThread.Context.Running)
             {
+                // Wait until the thread is scheduled again.
                 currentThread.SchedulerWaitEvent.Wait();
+            }
+            else
+            {
+                // We don't need to wait since the thread is exiting, however we need to
+                // make sure this thread will never call the scheduler again, since it is
+                // no longer assigned to a core.
+                currentThread.MakeUnschedulable();
+
+                // Just to be sure, set the core to a invalid value.
+                // This will trigger a exception if it attempts to call schedule again,
+                // rather than leaving the scheduler in a invalid state.
+                currentThread.CurrentCore = -1;
             }
         }
 
