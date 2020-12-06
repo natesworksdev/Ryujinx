@@ -65,7 +65,7 @@ namespace ARMeilleure.Translation
 
                     if (PtcProfiler.Enabled)
                     {
-                        PtcProfiler.UpdateEntries(request.Address, func.GuestSize, request.Mode, highCq: true);
+                        PtcProfiler.UpdateEntry(request.Address, request.Mode, highCq: true);
                     }
                 }
                 else
@@ -198,9 +198,7 @@ namespace ARMeilleure.Translation
                 context.Branch(context.GetLabel(address));
             }
 
-            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks, out Range funcRange);
-
-            ulong funcSize = funcRange.End - funcRange.Start;
+            ControlFlowGraph cfg = EmitAndGetCFG(context, blocks);
 
             Logger.EndPass(PassName.Translation);
 
@@ -233,42 +231,14 @@ namespace ARMeilleure.Translation
             ResetOperandPool(highCq);
             ResetOperationPool(highCq);
 
-            return new TranslatedFunction(func, funcSize, highCq);
+            return new TranslatedFunction(func, highCq);
         }
 
-        private struct Range
+        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)
         {
-            public ulong Start { get; }
-            public ulong End { get; }
-
-            public Range(ulong start, ulong end)
-            {
-                Start = start;
-                End = end;
-            }
-        }
-
-        private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks, out Range range)
-        {
-            ulong rangeStart = ulong.MaxValue;
-            ulong rangeEnd = 0;
-
             for (int blkIndex = 0; blkIndex < blocks.Length; blkIndex++)
             {
                 Block block = blocks[blkIndex];
-
-                if (!block.Exit)
-                {
-                    if (rangeStart > block.Address)
-                    {
-                        rangeStart = block.Address;
-                    }
-
-                    if (rangeEnd < block.EndAddress)
-                    {
-                        rangeEnd = block.EndAddress;
-                    }
-                }
 
                 context.CurrBlock = block;
 
@@ -318,8 +288,6 @@ namespace ARMeilleure.Translation
                     }
                 }
             }
-
-            range = new Range(rangeStart, rangeEnd);
 
             return context.GetControlFlowGraph();
         }

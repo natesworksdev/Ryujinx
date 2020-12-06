@@ -4,7 +4,7 @@ using System.Threading;
 
 namespace ARMeilleure.Translation
 {
-    sealed class TranslatedFunction
+    class TranslatedFunction
     {
         private const int MinCallsForRejit = 100;
 
@@ -12,17 +12,15 @@ namespace ARMeilleure.Translation
 
         private int _callCount = 0;
 
-        public ulong  GuestSize { get; }
-        public bool   HighCq    { get; }
-        public IntPtr FuncPtr   { get; }
+        public bool   HighCq  { get; }
+        public IntPtr FuncPtr { get; }
 
-        public TranslatedFunction(GuestFunction func, ulong guestSize, bool highCq)
+        public TranslatedFunction(GuestFunction func, bool highCq)
         {
             _func = func;
 
-            GuestSize = guestSize;
-            HighCq    = highCq;
-            FuncPtr   = Marshal.GetFunctionPointerForDelegate<GuestFunction>(func);
+            HighCq  = highCq;
+            FuncPtr = Marshal.GetFunctionPointerForDelegate<GuestFunction>(func);
         }
 
         public ulong Execute(State.ExecutionContext context)

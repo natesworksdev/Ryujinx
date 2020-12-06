@@ -25,14 +25,11 @@ namespace ARMeilleure.Translation.PTC
 
         private static readonly ManualResetEvent _waitEvent;
 
-        private static readonly ConcurrentQueue<(ulong address, ulong size, ExecutionMode mode)> _backgroundQueue;
-        private static readonly AutoResetEvent _backgroundEvent;
-
         private static readonly object _lock;
 
         private static bool _disposed;
 
-        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> ProfiledFuncs { get; private set; }
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> ProfiledFuncs { get; private set; }
 
         internal static bool Enabled { get; private set; }
 
@@ -50,14 +47,9 @@ namespace ARMeilleure.Translation.PTC
 
             _disposed = false;
 
-            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool, bool)>();
+            ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
 
             Enabled = false;
-
-            _backgroundQueue = new ConcurrentQueue<(ulong, ulong, ExecutionMode)>();
-            _backgroundEvent = new AutoResetEvent(false);
-
-            ThreadPool.QueueUserWorkItem(BackgroundOverlapFinder);
         }
 
         internal static void AddEntry(ulong address, ExecutionMode mode, bool highCq)
@@ -68,62 +60,22 @@ namespace ARMeilleure.Translation.PTC
 
                 lock (_lock)
                 {
-                    ProfiledFuncs.TryAdd(address, (mode, highCq: false, overlapped: false));
+                    ProfiledFuncs.TryAdd(address, (mode, highCq: false));
                 }
             }
         }
 
-        internal static void UpdateEntries(ulong address, ulong size, ExecutionMode mode, bool highCq)
+        internal static void UpdateEntry(ulong address, ExecutionMode mode, bool highCq)
         {
             if (IsAddressInStaticCodeRange(address))
             {
                 Debug.Assert(highCq);
 
-                _backgroundQueue.Enqueue((address, size, mode));
-                _backgroundEvent.Set();
-            }
-        }
-
-        private static void BackgroundOverlapFinder(object state)
-        {
-            while (!_disposed)
-            {
-                if (Enabled && _backgroundQueue.TryDequeue(out var item))
+                lock (_lock)
                 {
-                    lock (_lock)
-                    {
-                        if (Enabled)
-                        {
-                            ProfiledFuncs[item.address] = (item.mode, highCq: true, overlapped: false);
+                    Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
 
-                            foreach (ulong address in new List<ulong>(ProfiledFuncs.Keys))
-                            {
-                                var value = ProfiledFuncs[address];
-
-                                if (!value.highCq && address >= item.address && address < item.address + item.size)
-                                {
-                                    if (!Enabled)
-                                    {
-                                        break;
-                                    }
-
-                                    ProfiledFuncs[address] = (value.mode, highCq: false, overlapped: true);
-                                }
-                            }
-                        }
-                    }
-
-                    if (Enabled)
-                    {
-                        Thread.Sleep(1);
-                    }
-                }
-                else
-                {
-                    if (!_disposed)
-                    {
-                        _backgroundEvent.WaitOne();
-                    }
+                    ProfiledFuncs[address] = (mode, highCq: true);
                 }
             }
         }
@@ -133,15 +85,15 @@ namespace ARMeilleure.Translation.PTC
             return address >= StaticCodeStart && address < StaticCodeStart + StaticCodeSize;
         }
 
-        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> GetProfiledFuncsToTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcs)
+        internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> GetProfiledFuncsToTranslate(ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
-            var profiledFuncsToTranslate = new Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)>(ProfiledFuncs);
+            var profiledFuncsToTranslate = new Dictionary<ulong, (ExecutionMode mode, bool highCq)>(ProfiledFuncs);
 
-            foreach (var profiledFuncToTranslate in profiledFuncsToTranslate)
+            foreach (ulong address in profiledFuncsToTranslate.Keys)
             {
-                if (funcs.ContainsKey(profiledFuncToTranslate.Key) || profiledFuncToTranslate.Value.overlapped)
+                if (funcs.ContainsKey(address))
                 {
-                    profiledFuncsToTranslate.Remove(profiledFuncToTranslate.Key);
+                    profiledFuncsToTranslate.Remove(address);
                 }
             }
 
@@ -150,12 +102,7 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void ClearEntries()
         {
-            lock (_lock)
-            {
-                ProfiledFuncs.Clear();
-            }
-
-            _backgroundQueue.Clear();
+            ProfiledFuncs.Clear();
         }
 
         internal static void PreLoad()
@@ -240,7 +187,7 @@ namespace ARMeilleure.Translation.PTC
                 }
                 catch
                 {
-                    ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool, bool)>();
+                    ProfiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
 
                     InvalidateCompressedStream(compressedStream);
 
@@ -250,7 +197,7 @@ namespace ARMeilleure.Translation.PTC
 
             long fileSize = new FileInfo(fileName).Length;
 
-            Logger.Info?.Print(LogClass.Ptc, $"{(isBackup ? "Loaded Backup Profiling Info" : "Loaded Profiling Info")} (size: {fileSize:N0} byte, profiled functions: {ProfiledFuncs.Count}).");
+            Logger.Info?.Print(LogClass.Ptc, $"{(isBackup ? "Loaded Backup Profiling Info" : "Loaded Profiling Info")} (size: {fileSize} bytes, profiled functions: {ProfiledFuncs.Count}).");
 
             return true;
         }
@@ -274,11 +221,11 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static Dictionary<ulong, (ExecutionMode, bool, bool)> Deserialize(MemoryStream stream)
+        private static Dictionary<ulong, (ExecutionMode, bool)> Deserialize(MemoryStream stream)
         {
             using (BinaryReader reader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
             {
-                var profiledFuncs = new Dictionary<ulong, (ExecutionMode, bool, bool)>();
+                var profiledFuncs = new Dictionary<ulong, (ExecutionMode, bool)>();
 
                 int profiledFuncsCount = reader.ReadInt32();
 
@@ -288,9 +235,8 @@ namespace ARMeilleure.Translation.PTC
 
                     ExecutionMode mode = (ExecutionMode)reader.ReadInt32();
                     bool highCq = reader.ReadBoolean();
-                    bool overlapped = reader.ReadBoolean();
 
-                    profiledFuncs.Add(address, (mode, highCq, overlapped));
+                    profiledFuncs.Add(address, (mode, highCq));
                 }
 
                 return profiledFuncs;
@@ -302,7 +248,7 @@ namespace ARMeilleure.Translation.PTC
             compressedStream.SetLength(0L);
         }
 
-        internal static void PreSave(object source, System.Timers.ElapsedEventArgs e)
+        private static void PreSave(object source, System.Timers.ElapsedEventArgs e)
         {
             _waitEvent.Reset();
 
@@ -368,7 +314,7 @@ namespace ARMeilleure.Translation.PTC
 
             long fileSize = new FileInfo(fileName).Length;
 
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize:N0} byte, profiled functions: {profiledFuncsCount}).");
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize} bytes, profiled functions: {profiledFuncsCount}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -381,7 +327,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void Serialize(MemoryStream stream, Dictionary<ulong, (ExecutionMode mode, bool highCq, bool overlapped)> profiledFuncs)
+        private static void Serialize(MemoryStream stream, Dictionary<ulong, (ExecutionMode mode, bool highCq)> profiledFuncs)
         {
             using (BinaryWriter writer = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -393,7 +339,6 @@ namespace ARMeilleure.Translation.PTC
 
                     writer.Write((int)kv.Value.mode);
                     writer.Write((bool)kv.Value.highCq);
-                    writer.Write((bool)kv.Value.overlapped);
                 }
             }
         }
@@ -442,9 +387,6 @@ namespace ARMeilleure.Translation.PTC
 
                 Wait();
                 _waitEvent.Dispose();
-
-                _backgroundEvent.Set();
-                _backgroundEvent.Dispose();
             }
         }
     }

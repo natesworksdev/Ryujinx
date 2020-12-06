@@ -287,7 +287,7 @@ namespace ARMeilleure.Translation.PTC
 
             long fileSize = new FileInfo(fileName).Length;
 
-            Logger.Info?.Print(LogClass.Ptc, $"{(isBackup ? "Loaded Backup Translation Cache" : "Loaded Translation Cache")} (size: {fileSize:N0} byte, translated functions: {GetInfosEntriesCount()}).");
+            Logger.Info?.Print(LogClass.Ptc, $"{(isBackup ? "Loaded Backup Translation Cache" : "Loaded Translation Cache")} (size: {fileSize} bytes, translated functions: {GetInfosEntriesCount()}).");
 
             return true;
         }
@@ -387,7 +387,7 @@ namespace ARMeilleure.Translation.PTC
 
             long fileSize = new FileInfo(fileName).Length;
 
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize:N0} byte, translated functions: {GetInfosEntriesCount()}).");
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize} bytes, translated functions: {GetInfosEntriesCount()}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -439,7 +439,7 @@ namespace ARMeilleure.Translation.PTC
                         SkipReloc(infoEntry.RelocEntriesCount);
                         SkipUnwindInfo(unwindInfosReader);
                     }
-                    else if (infoEntry.HighCq || !PtcProfiler.ProfiledFuncs.TryGetValue(infoEntry.Address, out var value) || !(value.highCq || value.overlapped))
+                    else if (infoEntry.HighCq || !PtcProfiler.ProfiledFuncs.TryGetValue(infoEntry.Address, out var value) || !value.highCq)
                     {
                         byte[] code = ReadCode(codesReader, infoEntry.CodeLen);
 
@@ -466,11 +466,6 @@ namespace ARMeilleure.Translation.PTC
                         StubCode(infoEntry.CodeLen);
                         StubReloc(infoEntry.RelocEntriesCount);
                         StubUnwindInfo(unwindInfosReader);
-
-                        if (value.overlapped)
-                        {
-                            PtcJumpTable.Clean(infoEntry.Address);
-                        }
                     }
                 }
             }
@@ -610,7 +605,7 @@ namespace ARMeilleure.Translation.PTC
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc, 0ul, highCq); // TODO: #1518.
+            TranslatedFunction tFunc = new TranslatedFunction(gFunc, highCq);
 
             return tFunc;
         }

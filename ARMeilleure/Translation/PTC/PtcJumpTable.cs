@@ -237,7 +237,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        public void Clean(ulong guestAddress)
+        public void Clean(ulong guestAddress) // For future use.
         {
             if (Owners.TryGetValue(guestAddress, out List<int> entries))
             {
@@ -280,7 +280,7 @@ namespace ARMeilleure.Translation.PTC
 
         public void WriteJumpTable(JumpTable jumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcs)
         {
-            // Writes internal state to jump table in-memory, after PTC was deserialized.
+            // Writes internal state to jump table in-memory, after PtcJumpTable was deserialized.
 
             foreach (var tableEntry in _jumpTable)
             {
@@ -332,7 +332,7 @@ namespace ARMeilleure.Translation.PTC
 
         public void WriteDynamicTable(JumpTable jumpTable)
         {
-            // Writes internal state to jump table in-memory, after PTC was deserialized.
+            // Writes internal state to jump table in-memory, after PtcJumpTable was deserialized.
 
             if (JumpTable.DynamicTableElems > 1)
             {
@@ -373,7 +373,7 @@ namespace ARMeilleure.Translation.PTC
 
         public void ReadJumpTable(JumpTable jumpTable)
         {
-            // Reads in-memory jump table state and store internally for PTC serialization.
+            // Reads in-memory jump table state and store internally for PtcJumpTable serialization.
 
             _jumpTable.Clear();
 
@@ -407,7 +407,7 @@ namespace ARMeilleure.Translation.PTC
 
         public void ReadDynamicTable(JumpTable jumpTable)
         {
-            // Reads in-memory jump table state and store internally for PTC serialization.
+            // Reads in-memory jump table state and store internally for PtcJumpTable serialization.
 
             if (JumpTable.DynamicTableElems > 1)
             {
