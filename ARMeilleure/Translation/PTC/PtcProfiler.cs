@@ -73,7 +73,7 @@ namespace ARMeilleure.Translation.PTC
 
                 lock (_lock)
                 {
-                    Debug.Assert(highCq && ProfiledFuncs.ContainsKey(address));
+                    Debug.Assert(ProfiledFuncs.ContainsKey(address));
 
                     ProfiledFuncs[address] = (mode, highCq: true);
                 }
