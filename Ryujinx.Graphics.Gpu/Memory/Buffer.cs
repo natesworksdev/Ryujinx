@@ -39,6 +39,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public bool IsModified { get; internal set; }
 
+        /// <summary>
+        /// Ranges of the buffer that have been modified on the GPU.
+        /// Ranges defined here cannot be updated from CPU until a CPU waiting sync point is reached.
+        /// Then, write tracking will signal, wait for GPU sync (generated at the syncpoint) and flush these regions.
+        /// </summary>
+        /// <remarks>
+        /// This is null until at least one modification occurs.
+        /// </remarks>
+        private BufferModifiedRangeList _modifiedRanges = null;
+
         private CpuMultiRegionHandle _memoryTrackingGranular;
 
         private CpuRegionHandle _memoryTracking;
@@ -46,6 +56,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private int _sequenceNumber;
 
         private bool _useGranular;
+        private bool _syncActionRegistered;
 
         /// <summary>
         /// Creates a new instance of the buffer.
@@ -61,7 +72,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             Handle = context.Renderer.CreateBuffer((int)size);
 
-            _useGranular = false;// size > GranularBufferThreshold;
+            _useGranular = size > GranularBufferThreshold;
 
             if (_useGranular)
             {
@@ -119,16 +130,29 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                if (IsModified)
-                {
-
-                }
                 if (_memoryTracking.Dirty && _context.SequenceNumber != _sequenceNumber)
                 {
                     _memoryTracking.Reprotect();
-                    _context.Renderer.SetBufferData(Handle, 0, _context.PhysicalMemory.GetSpan(Address, (int)Size));
+
+                    if (_modifiedRanges != null)
+                    {
+                        _modifiedRanges.ExcludeModifiedRegions(Address, Size, LoadRegion);
+                    }
+                    else
+                    {
+                        _context.Renderer.SetBufferData(Handle, 0, _context.PhysicalMemory.GetSpan(Address, (int)Size));
+                    }
+                    
                     _sequenceNumber = _context.SequenceNumber;
                 }
+            }
+        }
+
+        private void EnsureRangeList()
+        {
+            if (_modifiedRanges == null)
+            {
+                _modifiedRanges = new BufferModifiedRangeList(_context);
             }
         }
 
@@ -136,13 +160,40 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             IsModified = true;
 
+            EnsureRangeList();
+
+            _modifiedRanges.SignalModified(address, size);
+
+            if (!_syncActionRegistered)
+            {
+                _context.RegisterSyncAction(SyncAction);
+                _syncActionRegistered = true;
+            }
+        }
+
+        public void SyncAction()
+        {
+            _syncActionRegistered = false;
+
             if (_useGranular)
             {
-                _memoryTrackingGranular.RegisterAction(ExternalFlush);
+                _modifiedRanges.GetRanges(Address, Size, (address, size) =>
+                {
+                    _memoryTrackingGranular?.RegisterAction(address, size, ExternalFlush);
+                });
             }
             else
             {
-                _memoryTracking.RegisterAction(ExternalFlush);
+                _memoryTracking?.RegisterAction(ExternalFlush);
+            }
+        }
+
+        public void InheritModifiedRanges(Buffer from)
+        {
+            if (from._modifiedRanges != null)
+            {
+                EnsureRangeList();
+                _modifiedRanges.InheritRanges(from._modifiedRanges);
             }
         }
 
@@ -165,6 +216,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 mSize = maxSize;
             }
 
+            if (_modifiedRanges != null)
+            {
+                _modifiedRanges.ExcludeModifiedRegions(mAddress, mSize, LoadRegion);
+            }
+            else
+            {
+                LoadRegion(mAddress, mSize);
+            }
+        }
+
+        /// <summary>
+        /// Load a region of the buffer from memory.
+        /// </summary>
+        /// <param name="mAddress">Start address of the modified region</param>
+        /// <param name="mSize">Size of the modified region</param>
+        private void LoadRegion(ulong mAddress, ulong mSize)
+        {
             int offset = (int)(mAddress - Address);
 
             _context.Renderer.SetBufferData(Handle, offset, _context.PhysicalMemory.GetSpan(mAddress, (int)mSize));
@@ -208,18 +276,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             _context.Renderer.BackgroundContextAction(() =>
             {
-                if (false)//_useGranular)
-                {
-                    // Granular flush will provide region that was triggered.
-                    ulong endAddress = address + size;
-                    ulong flushAddress = Math.Max(Address, address);
-                    ulong flushEndAddress = Math.Min(EndAddress, address + size);
+                var ranges = _modifiedRanges;
 
-                    Flush(flushAddress, flushEndAddress - flushAddress);
-                }
-                else
+                if (ranges != null)
                 {
-                    Flush(Address, Size);
+                    ranges.WaitForAndGetRanges(Address, Size, Flush);
                 }
             });
         }
@@ -235,8 +296,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _memoryTracking?.Reprotect();
             _memoryTracking?.RegisterAction(null);
 
-            _memoryTrackingGranular.QueryModified((address, size) => { });
-            _memoryTrackingGranular?.RegisterAction(null);
+            _memoryTrackingGranular?.QueryModified((address, size) => { });
+            _memoryTrackingGranular?.RegisterAction(Address, Size, null);
         }
 
         /// <summary>
