@@ -15,7 +15,7 @@ namespace ARMeilleure.Translation.PTC
     {
         private const string HeaderMagic = "Phd";
 
-        private const uint InternalVersion = 1712; //! Not to be incremented manually for each change to the ARMeilleure project.
+        private const uint InternalVersion = 1713; //! Not to be incremented manually for each change to the ARMeilleure project.
 
         private const int SaveInterval = 30; // Seconds.
 
