@@ -113,7 +113,7 @@ namespace ARMeilleure.Translation
                     {
                         int stackOffset = entry.StackOffsetOrAllocSize;
 
-                        Debug.Assert(stackOffset % 16 == 0);
+                        // Debug.Assert(stackOffset % 16 == 0);
 
                         if (stackOffset <= 0xFFFF0)
                         {

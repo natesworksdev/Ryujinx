@@ -304,7 +304,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (!_hasStarted)
             {
-                KernelContext.Scheduler.MultiCoreScheduling = true;
+                // KernelContext.Scheduler.MultiCoreScheduling = true;
             }
         }
 
@@ -312,7 +312,7 @@ namespace Ryujinx.HLE.HOS
         {
             if (!_hasStarted)
             {
-                KernelContext.Scheduler.MultiCoreScheduling = false;
+                // KernelContext.Scheduler.MultiCoreScheduling = false;
             }
         }
 
@@ -346,9 +346,7 @@ namespace Ryujinx.HLE.HOS
                     }
 
                     // Exit ourself now!
-                    KernelContext.Scheduler.ExitThread(terminationThread);
-                    KernelContext.Scheduler.GetCurrentThread().Exit();
-                    KernelContext.Scheduler.RemoveThread(terminationThread);
+                    KernelStatic.GetCurrentThread().Exit();
                 });
 
                 terminationThread.Start();

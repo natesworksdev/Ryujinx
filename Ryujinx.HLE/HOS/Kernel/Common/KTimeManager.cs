@@ -53,28 +53,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
             _waitEvent.Set();
         }
 
-        public static long ConvertNanosecondsToMilliseconds(long time)
-        {
-            time /= 1000000;
-
-            if ((ulong)time > int.MaxValue)
-            {
-                return int.MaxValue;
-            }
-
-            return time;
-        }
-
-        public static long ConvertMillisecondsToNanoseconds(long time)
-        {
-            return time * 1000000;
-        }
-
-        public static long ConvertMillisecondsToTicks(long time)
-        {
-            return time * 19200;
-        }
-
         public void UnscheduleFutureInvocation(IKFutureSchedulerObject Object)
         {
             lock (_waitingObjects)
@@ -126,6 +104,28 @@ namespace Ryujinx.HLE.HOS.Kernel.Common
                     }
                 }
             }
+        }
+
+        public static long ConvertNanosecondsToMilliseconds(long time)
+        {
+            time /= 1000000;
+
+            if ((ulong)time > int.MaxValue)
+            {
+                return int.MaxValue;
+            }
+
+            return time;
+        }
+
+        public static long ConvertMillisecondsToNanoseconds(long time)
+        {
+            return time * 1000000;
+        }
+
+        public static long ConvertHostTicksToTicks(long time)
+        {
+            return (long)((time / (double)PerformanceCounter.TicksPerSecond) * 19200000.0);
         }
 
         public void Dispose()
