@@ -2103,11 +2103,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Memory
                         }
                     }
                 }
+
+                InsertBlock(addressRounded, pagesCount, RestoreIpcMappingPermissions);
+
+                return KernelResult.Success;
             }
-
-            InsertBlock(addressRounded, pagesCount, RestoreIpcMappingPermissions);
-
-            return KernelResult.Success;
         }
 
         public KernelResult BorrowIpcBuffer(ulong address, ulong size)
