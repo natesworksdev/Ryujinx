@@ -328,36 +328,16 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
-            uint rm = (NativeInterface.GetFpscr() >> 22) & 3;
             bool doubleSize = (op.Size & 1) == 1;
-            Operand roundMode = Const(X86GetRoundControl((FPRoundingMode)Convert.ToInt32(rm)));
 
             Intrinsic inst = doubleSize ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+            String methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
 
-            if (Optimizations.UseSse2)
+            EmitScalarUnaryOpF32(context, (op1) =>
             {
-                OperandType type = doubleSize ? OperandType.FP64 : OperandType.FP32;
-                Operand op1 = ExtractScalar(context, type, op.Vm);
-                context.AddIntrinsic(inst, op1, roundMode);
-            }
-            else
-            {
-                MethodInfo info;
-
-                EmitScalarUnaryOpF32(context, (op1) =>
-                {
-                    if (doubleSize)
-                    {
-                        info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round));
-                    }
-                    else
-                    {
-                        info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF));
-                    }
-
-                    return context.Call(info, op1);
-                });
-            }
+                MethodInfo info = typeof(SoftFallback).GetMethod(methodName);
+                return context.Call(info, op1);
+            });   
         }
 
         // VRINTZ (floating-point).
