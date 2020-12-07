@@ -72,7 +72,6 @@ namespace ARMeilleure.CodeGen.X86
         {
             _instTable = new InstructionInfo[(int)X86Instruction.Count];
 
-
             //  Name                                            RM/R        RM/I8       RM/I32      R/I64       R/RM        Flags
             Add(X86Instruction.Add,         new InstructionInfo(0x00000001, 0x00000083, 0x00000081, BadOp,      0x00000003, InstructionFlags.None));
             Add(X86Instruction.Addpd,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f58, InstructionFlags.Vex | InstructionFlags.Prefix66));
