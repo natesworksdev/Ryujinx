@@ -15,7 +15,7 @@ namespace Ryujinx.Common.Collections
         private const bool Black = true;
         private const bool Red = false;
         private Node<K, V> _root = null;
-        private int count = 0;
+        private int _count = 0;
         public TreeDictionary() { }
 
         #region Public Methods
@@ -53,11 +53,11 @@ namespace Ryujinx.Common.Collections
         {
             if (key == null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
             if (null == value)
             {
-                throw new ArgumentNullException($"{nameof(value)} may not be null");
+                throw new ArgumentNullException(nameof(value));
             }
 
             Insert(key, value);
@@ -72,11 +72,11 @@ namespace Ryujinx.Common.Collections
         {
             if (key == null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
             if (Delete(key) != null)
             {
-                count--;
+                _count--;
             }
         }
 
@@ -222,7 +222,7 @@ namespace Ryujinx.Common.Collections
         {
             if (key == null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
 
             Node<K, V> node = _root;
@@ -300,7 +300,7 @@ namespace Ryujinx.Common.Collections
             {
                 parent.Right = newNode;
             }
-            count++;
+            _count++;
             return newNode;
         }
 
@@ -405,16 +405,16 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node whose key is equal to or immediately less than <paramref name="key"/>
+        /// Returns the node whose key immediately less than or equal to <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key for which to find the floor node of</param>
-        /// <returns>Floor Node</returns>
+        /// <returns>Node whose key is immediately less than or equal to <paramref name="key"/>, or null if no such node is found.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         private Node<K, V> FloorNode(K key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
             Node<K, V> tmp = _root;
 
@@ -459,16 +459,16 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
+        /// Returns the node whose key is immediately greater than or equal to than <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key for which to find the ceiling node of</param>
-        /// <returns>Ceiling Node</returns>
+        /// <returns>Node whose key is immediately greater than or equal to <paramref name="key"/>, or null if no such node is found.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
         private Node<K, V> CeilingNode(K key)
         {
             if (key == null)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
             Node<K, V> tmp = _root;
 
@@ -807,23 +807,23 @@ namespace Ryujinx.Common.Collections
         {
             if (null == key)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
             return GetNode(key) != null;
         }
 
         bool IDictionary<K, V>.Remove(K key)
         {
-            int count = this.count;
+            int count = this._count;
             Remove(key);
-            return count > this.count;
+            return count > this._count;
         }
 
         public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
         {
             if (null == key)
             {
-                throw new ArgumentNullException($"{nameof(key)} may not be null");
+                throw new ArgumentNullException(nameof(key));
             }
             Node<K, V> node = GetNode(key);
             value = node != null ? node.Value : default;
@@ -834,7 +834,7 @@ namespace Ryujinx.Common.Collections
         {
             if (null == item.Key)
             {
-                throw new ArgumentNullException($"{nameof(item)}.Key may not be null");
+                throw new ArgumentNullException(nameof(item));
             }
 
             Add(item.Key, item.Value);
@@ -843,7 +843,7 @@ namespace Ryujinx.Common.Collections
         public void Clear()
         {
             _root = null;
-            count = 0;
+            _count = 0;
         }
 
         public bool Contains(KeyValuePair<K, V> item)
@@ -890,9 +890,9 @@ namespace Ryujinx.Common.Collections
 
             if (node.Value.Equals(item.Value))
             {
-                int count = this.count;
+                int count = this._count;
                 Remove(item.Key);
-                return count > this.count;
+                return count > this._count;
             }
 
             return false;
@@ -908,7 +908,7 @@ namespace Ryujinx.Common.Collections
             return GetKeyValues().GetEnumerator();
         }
 
-        public int Count => count;
+        public int Count => _count;
 
         public ICollection<K> Keys => GetKeyValues().Keys;
 
