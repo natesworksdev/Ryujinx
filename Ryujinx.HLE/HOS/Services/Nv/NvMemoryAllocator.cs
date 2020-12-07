@@ -90,7 +90,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         /// <summary>
         /// Marks a range of memory as free by adding it to the tree.
-        /// This function will automatically compacts the tree when it determines there are multiple ranges of free memory adjacent to each other.
+        /// This function will automatically compact the tree when it determines there are multiple ranges of free memory adjacent to each other.
         /// </summary>
         /// <param name="va">Virtual address at which to deallocate</param>
         /// <param name="size">Size of the allocation in bytes</param>
