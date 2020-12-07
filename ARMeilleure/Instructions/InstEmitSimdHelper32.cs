@@ -901,7 +901,7 @@ namespace ARMeilleure.Instructions
             context.Copy(initialD, res);
         }
 
-        public static void EmitScalarTernaryOpF32(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
+        public static void EmitScalarTernaryOpF32(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64, bool negateFirstOperand = false, bool negateSecondOperand = false, bool negateThirdOperand = false)
         {
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
@@ -911,6 +911,18 @@ namespace ARMeilleure.Instructions
 
             EmitScalarTernaryOpSimd32(context, (d, n, m) =>
             {
+                if (negateFirstOperand)
+                {
+                    d = context.Negate(d);
+                }
+                if (negateSecondOperand)
+                {
+                    n = context.Negate(n);
+                }
+                if (negateThirdOperand)
+                {
+                    m = context.Negate(m);
+                }
                 return context.AddIntrinsic(inst, d, n, m);
             });
         }
