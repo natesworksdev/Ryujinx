@@ -327,16 +327,18 @@ namespace ARMeilleure.Instructions
         public static void Vrintx_S(ArmEmitterContext context)
         {
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
-            int rm = op.Opc2 & 3;
-            Operand roundMode = Const(X86GetRoundControl(RMToRoundMode(rm)));
-            Intrinsic inst = (op.Size & 1) == 1 ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
+
+            uint rm = (NativeInterface.GetFpscr() >> 22) & 3;
+            bool doubleSize = (op.Size & 1) == 1;
+            Operand roundMode = Const(X86GetRoundControl((FPRoundingMode)Convert.ToInt32(rm)));
+
+            Intrinsic inst = doubleSize ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
 
             if (Optimizations.UseSse2)
             {
-                EmitScalarUnaryOpF32(context, (op1) =>
-                {
-                    return context.AddIntrinsic(inst, op1, roundMode);
-                });
+                OperandType type = doubleSize ? OperandType.FP64 : OperandType.FP32;
+                Operand op1 = ExtractScalar(context, type, op.Vm);
+                context.AddIntrinsic(inst, op1, roundMode);
             }
             else
             {
@@ -344,14 +346,13 @@ namespace ARMeilleure.Instructions
 
                 EmitScalarUnaryOpF32(context, (op1) =>
                 {
-                    if (op1.Type == OperandType.FP64)
+                    if (doubleSize)
                     {
                         info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.Round));
                     }
                     else
                     {
                         info = typeof(SoftFallback).GetMethod(nameof(SoftFallback.RoundF));
-
                     }
 
                     return context.Call(info, op1);
