@@ -329,8 +329,6 @@ namespace ARMeilleure.Instructions
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) == 1;
-
-            Intrinsic inst = doubleSize ? Intrinsic.X86Roundsd : Intrinsic.X86Roundss;
             String methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
 
             EmitScalarUnaryOpF32(context, (op1) =>
