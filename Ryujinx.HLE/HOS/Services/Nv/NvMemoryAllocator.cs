@@ -2,25 +2,21 @@
 using System.Collections.Generic;
 using Ryujinx.Common;
 using System;
+using Ryujinx.Graphics.Gpu.Memory;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
     class NvMemoryAllocator
     {
-        public const ulong AddressSpaceSize = 1UL << 40;
-
-        public const ulong BadAddress = ulong.MaxValue;
-
-        public const int PtPageBits = 12;
+        private const ulong AddressSpaceSize = 1UL << 40;
 
         private const ulong DefaultStart = 1UL << 32;
         private const ulong InvalidAddress = 0;
 
-        public const ulong PageSize = 1UL << PtPageBits;
-        public const ulong PageMask = PageSize - 1;
+        private const ulong PageSize = MemoryManager.PageSize;
+        private const ulong PageMask = MemoryManager.PageMask;
 
         public const ulong PteUnmapped = 0xffffffff_ffffffff;
-        public const ulong PteReserved = 0xffffffff_fffffffe;
 
         // Key   --> Start Address of Region
         // Value --> End Address of Region
@@ -44,7 +40,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="size">Size of the allocation in bytes</param>
         /// <param name="referenceAddress">Reference to the address of memory where the allocation can take place</param>
         #region Memory Allocation
-        internal void AllocateRange(ulong va, ulong size, ulong referenceAddress = InvalidAddress)
+        public void AllocateRange(ulong va, ulong size, ulong referenceAddress = InvalidAddress)
         {
             lock (_tree)
             {
@@ -174,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        internal ulong GetFreePosition(ulong size, out ulong freeAddressStartPosition, ulong alignment = 1, ulong start = DefaultStart)
+        public ulong GetFreePosition(ulong size, out ulong freeAddressStartPosition, ulong alignment = 1, ulong start = DefaultStart)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.
@@ -268,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="size">Size of the allocation in bytes</param>
         /// <param name="freeAddressStartPosition">Nearest lower address that memory can be allocated</param>
         /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        internal bool IsRegionInUse(ulong gpuVa, ulong size, out ulong freeAddressStartPosition)
+        public bool IsRegionInUse(ulong gpuVa, ulong size, out ulong freeAddressStartPosition)
         {
             lock (_tree)
             {
