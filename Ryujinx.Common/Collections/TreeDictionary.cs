@@ -45,6 +45,8 @@ namespace Ryujinx.Common.Collections
 
         /// <summary>
         /// Adds a new node into the tree whose key is <paramref name="key"/> key and value is <paramref name="value"/>.
+        /// <br></br>
+        /// <b>Note:</b> Adding the same key multiple times will cause the value for that key to be overwritten.
         /// </summary>
         /// <param name="key">Key of the node to add</param>
         /// <param name="value">Value of the node to add</param>
