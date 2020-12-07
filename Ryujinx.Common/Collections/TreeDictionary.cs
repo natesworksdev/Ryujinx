@@ -51,7 +51,7 @@ namespace Ryujinx.Common.Collections
         /// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="value"/> are null</exception>
         public void Add(K key, V value)
         {
-            if (null == key)
+            if (key == null)
             {
                 throw new ArgumentNullException($"{nameof(key)} may not be null");
             }
