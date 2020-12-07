@@ -1,6 +1,7 @@
 using Ryujinx.Audio;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
+using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Common;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using System;
@@ -10,15 +11,20 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
 {
     class IAudioOut : IpcService, IDisposable
     {
-        private IAalOutput _audioOut;
-        private KEvent     _releaseEvent;
-        private int        _track;
+        private readonly KernelContext _kernelContext;
+        private readonly IAalOutput    _audioOut;
+        private readonly KEvent        _releaseEvent;
+        private          int           _releaseEventHandle;
+        private readonly int           _track;
+        private readonly int           _clientHandle;
 
-        public IAudioOut(IAalOutput audioOut, KEvent releaseEvent, int track)
+        public IAudioOut(KernelContext kernelContext, IAalOutput audioOut, KEvent releaseEvent, int track, int clientHandle)
         {
-            _audioOut     = audioOut;
-            _releaseEvent = releaseEvent;
-            _track        = track;
+            _kernelContext = kernelContext;
+            _audioOut      = audioOut;
+            _releaseEvent  = releaseEvent;
+            _track         = track;
+            _clientHandle  = clientHandle;
         }
 
         [Command(0)]
@@ -59,12 +65,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         // RegisterBufferEvent() -> handle<copy>
         public ResultCode RegisterBufferEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_releaseEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_releaseEvent.ReadableEvent, out _releaseEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_releaseEventHandle);
 
             return ResultCode.Success;
         }
@@ -85,16 +94,16 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         {
             long tag = context.RequestData.ReadInt64();
 
-            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag) ? 1 : 0);
+            context.ResponseData.Write(_audioOut.ContainsBuffer(_track, tag));
 
-            return 0;
+            return ResultCode.Success;
         }
 
         [Command(7)] // 3.0.0+
         // AppendAudioOutBufferAuto(u64 tag, buffer<nn::audio::AudioOutBuffer, 0x21>)
         public ResultCode AppendAudioOutBufferAuto(ServiceCtx context)
         {
-            (long position, long size) = context.Request.GetBufferType0x21();
+            (long position, _) = context.Request.GetBufferType0x21();
 
             return AppendAudioOutBufferImpl(context, position);
         }
@@ -103,14 +112,12 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         {
             long tag = context.RequestData.ReadInt64();
 
-            AudioOutData data = MemoryHelper.Read<AudioOutData>(
-                context.Memory,
-                position);
+            AudioOutData data = MemoryHelper.Read<AudioOutData>(context.Memory, position);
 
             // NOTE: Assume PCM16 all the time, change if new format are found.
             short[] buffer = new short[data.SampleBufferSize / sizeof(short)];
 
-            context.Memory.Read((ulong)data.SampleBufferPtr, MemoryMarshal.Cast<short, byte>(buffer));
+            context.Process.HandleTable.GetKProcess(_clientHandle).CpuMemory.Read((ulong)data.SampleBufferPtr, MemoryMarshal.Cast<short, byte>(buffer));
 
             _audioOut.AppendBuffer(_track, tag, buffer);
 
@@ -213,6 +220,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOutManager
         {
             if (disposing)
             {
+                _kernelContext.Syscall.CloseHandle(_clientHandle);
                 _audioOut.CloseTrack(_track);
             }
         }
