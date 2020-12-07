@@ -336,7 +336,6 @@ namespace Ryujinx.Tests.Cpu
             opcode |= ((Q & 1)  << 6);
 
             SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
-
             CompareAgainstUnicorn();
         }
 
