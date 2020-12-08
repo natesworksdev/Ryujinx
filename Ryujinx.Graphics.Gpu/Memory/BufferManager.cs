@@ -489,8 +489,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         address    = Math.Min(address,    buffer.Address);
                         endAddress = Math.Max(endAddress, buffer.EndAddress);
 
-                        buffer.SynchronizeMemory(buffer.Address, buffer.Size);
-
                         lock (_buffers)
                         {
                             _buffers.Remove(buffer);
@@ -510,6 +508,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         Buffer buffer = _bufferOverlaps[index];
 
                         int dstOffset = (int)(buffer.Address - newBuffer.Address);
+
+                        buffer.SynchronizeMemory(buffer.Address, buffer.Size);
 
                         buffer.CopyTo(newBuffer, dstOffset);
                         newBuffer.InheritModifiedRanges(buffer);
@@ -854,13 +854,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 dstOffset,
                 (int)size);
 
-            if (srcBuffer.IsModified)
-            {
-                srcBuffer.Flush(srcBuffer.Address, srcBuffer.Size);
-            }
-
-            // Copy the memory directly, so that we don't need to dirty the target buffer.
-            _context.PhysicalMemory.WriteUntracked(dstAddress, _context.PhysicalMemory.GetSpan(srcAddress, (int)size));
+            dstBuffer.SignalModified(dstAddress, size);
         }
 
         /// <summary>

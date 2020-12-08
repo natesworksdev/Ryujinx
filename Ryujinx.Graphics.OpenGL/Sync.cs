@@ -1,4 +1,5 @@
 ﻿using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,7 +62,12 @@ namespace Ryujinx.Graphics.OpenGL
                         return;
                     }
 
-                    WaitSyncStatus syncResult = GL.ClientWaitSync(result.Handle, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000);
+                    WaitSyncStatus syncResult = GL.ClientWaitSync(result.Handle, ClientWaitSyncFlags.SyncFlushCommandsBit, 1000000000);
+                    
+                    if (syncResult == WaitSyncStatus.TimeoutExpired)
+                    {
+                        Logger.Error?.PrintMsg(LogClass.Gpu, $"GL Sync Object {result.ID} failed to signal within 1000ms. Continuing...");
+                    }
                 }
             }
         }
