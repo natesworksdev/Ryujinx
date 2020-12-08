@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             ulong processVa = Translate(gpuVa);
 
-            return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, Unsafe.SizeOf<T>()))[0];
+            return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, Unsafe.SizeOf<T>(), true))[0];
         }
 
         /// <summary>
