@@ -8,7 +8,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         public bool Lock()
         {
-            return Interlocked.CompareExchange(ref _locked, 1, 0) == 0;
+            return Interlocked.Exchange(ref _locked, 1) == 0;
         }
 
         public void Unlock()

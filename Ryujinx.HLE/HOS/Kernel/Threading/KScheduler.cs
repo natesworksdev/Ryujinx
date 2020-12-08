@@ -52,7 +52,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             _currentThread = idleThread;
             _idleThread = idleThread;
 
-            idleThread.HostThread.Start();
+            idleThread.StartHostThread();
+            idleThread.SchedulerWaitEvent.Set();
         }
 
         private KThread CreateIdleThread(KernelContext context, int cpuCore)
@@ -229,11 +230,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
         private void IdleThreadLoop()
         {
-            _idleThread.SchedulerWaitEvent.Set();
-
             while (_context.Running)
             {
-                Schedule();
+                _state.NeedsScheduling = false;
+                Thread.MemoryBarrier();
+                KThread selectedThread = _state.SelectedThread;
+                KThread nextThread = PickNextThread(_idleThread, selectedThread);
+
+                if (_idleThread != nextThread)
+                {
+                    _idleThread.SchedulerWaitEvent.Reset();
+                    WaitHandle.SignalAndWait(nextThread.SchedulerWaitEvent, _idleThread.SchedulerWaitEvent);
+                }
+
                 _idleInterruptEvent.WaitOne();
             }
 
@@ -260,6 +269,38 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             currentThread.SchedulerWaitEvent.Reset();
             currentThread.ThreadContext.Unlock();
 
+            // Wake all the threads that might be waiting until this thread context is unlocked.
+            for (int core = 0; core < CpuCoresCount; core++)
+            {
+                _context.Schedulers[core]._idleInterruptEvent.Set();
+            }
+
+            KThread nextThread = PickNextThread(currentThread, selectedThread);
+
+            if (currentThread.Context.Running)
+            {
+                // Wait until the thread is scheduled again, and allow the next thread to run.
+                WaitHandle.SignalAndWait(nextThread.SchedulerWaitEvent, currentThread.SchedulerWaitEvent);
+            }
+            else
+            {
+                // Allow the next thread to run.
+                nextThread.SchedulerWaitEvent.Set();
+
+                // We don't need to wait since the thread is exiting, however we need to
+                // make sure this thread will never call the scheduler again, since it is
+                // no longer assigned to a core.
+                currentThread.MakeUnschedulable();
+
+                // Just to be sure, set the core to a invalid value.
+                // This will trigger a exception if it attempts to call schedule again,
+                // rather than leaving the scheduler in a invalid state.
+                currentThread.CurrentCore = -1;
+            }
+        }
+
+        private KThread PickNextThread(KThread currentThread, KThread selectedThread)
+        {
             while (true)
             {
                 if (selectedThread != null)
@@ -278,16 +319,14 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                         if (!_state.NeedsScheduling)
                         {
-                            _idleThread.SchedulerWaitEvent.Reset();
-                            selectedThread.Run();
-                            break;
+                            return selectedThread;
                         }
 
                         selectedThread.ThreadContext.Unlock();
                     }
                     else
                     {
-                        Thread.SpinWait(32);
+                        return _idleThread;
                     }
                 }
                 else
@@ -295,31 +334,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     // The core is idle now, make sure that the idle thread can run
                     // and switch the core when a thread is available.
                     SwitchTo(null);
-                    _idleThread.SchedulerWaitEvent.Set();
-                    break;
+                    return _idleThread;
                 }
 
                 _state.NeedsScheduling = false;
                 Thread.MemoryBarrier();
                 selectedThread = _state.SelectedThread;
-            }
-
-            if (currentThread.Context.Running)
-            {
-                // Wait until the thread is scheduled again.
-                currentThread.SchedulerWaitEvent.Wait();
-            }
-            else
-            {
-                // We don't need to wait since the thread is exiting, however we need to
-                // make sure this thread will never call the scheduler again, since it is
-                // no longer assigned to a core.
-                currentThread.MakeUnschedulable();
-
-                // Just to be sure, set the core to a invalid value.
-                // This will trigger a exception if it attempts to call schedule again,
-                // rather than leaving the scheduler in a invalid state.
-                currentThread.CurrentCore = -1;
             }
         }
 

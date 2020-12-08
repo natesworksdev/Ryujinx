@@ -13,7 +13,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
     {
         public const int MaxWaitSyncObjects = 64;
 
-        public ManualResetEventSlim SchedulerWaitEvent { get; private set; }
+        private ManualResetEvent _schedulerWaitEvent;
+
+        public ManualResetEvent SchedulerWaitEvent => _schedulerWaitEvent;
 
         public Thread HostThread { get; private set; }
 
@@ -260,7 +262,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                     if ((SchedFlags & ThreadSchedState.LowMask) != ThreadSchedState.None)
                     {
                         result = KernelResult.InvalidState;
-
                         break;
                     }
 
@@ -273,8 +274,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
                         SetNewSchedFlags(ThreadSchedState.Running);
 
-                        result = KernelResult.Success;
+                        StartHostThread();
 
+                        result = KernelResult.Success;
                         break;
                     }
                     else
@@ -833,16 +835,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
 
             if (!IsSchedulable)
             {
+                // Ensure our thread is running and we have an event.
+                StartHostThread();
+
                 // If the thread is not schedulable, we want to just run or pause
                 // it directly as we don't care about priority or the core it is
                 // running on in this case.
                 if (SchedFlags == ThreadSchedState.Running)
                 {
-                    Run();
+                    _schedulerWaitEvent.Set();
                 }
                 else
                 {
-                    SchedulerWaitEvent.Reset();
+                    _schedulerWaitEvent.Reset();
                 }
 
                 return;
@@ -999,27 +1004,26 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             Interlocked.Add(ref _totalTimeRunning, ticks);
         }
 
-        public void Run()
+        public void StartHostThread()
         {
-            if (SchedulerWaitEvent != null)
+            if (_schedulerWaitEvent == null)
             {
-                SchedulerWaitEvent.Set();
-            }
-            else
-            {
-                HostThread.Start();
-            }
-        }
+                var schedulerWaitEvent = new ManualResetEvent(false);
 
-        public void MakeUnschedulable()
-        {
-            _forcedUnschedulable = true;
+                if (Interlocked.Exchange(ref _schedulerWaitEvent, schedulerWaitEvent) == null)
+                {
+                    HostThread.Start();
+                }
+                else
+                {
+                    schedulerWaitEvent.Dispose();
+                }
+            }
         }
 
         private void ThreadStart()
         {
-            SchedulerWaitEvent = new ManualResetEventSlim(true);
-
+            _schedulerWaitEvent.WaitOne();
             KernelStatic.SetKernelContext(KernelContext, this);
 
             if (_customThreadStart != null)
@@ -1032,7 +1036,12 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
 
             Context.Dispose();
-            SchedulerWaitEvent.Dispose();
+            _schedulerWaitEvent.Dispose();
+        }
+
+        public void MakeUnschedulable()
+        {
+            _forcedUnschedulable = true;
         }
 
         public override bool IsSignaled()
