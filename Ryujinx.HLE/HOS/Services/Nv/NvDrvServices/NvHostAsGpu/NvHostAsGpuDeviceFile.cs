@@ -115,7 +115,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 else
                 {
                     ulong address = _memoryAllocator.GetFreeAddress((ulong)size, out ulong freeAddressStartPosition, (ulong)arguments.Offset);
-                    if(address != NvMemoryAllocator.PteUnmapped)
+                    if (address != NvMemoryAllocator.PteUnmapped)
                     {
                         _memoryAllocator.AllocateRange(address, (ulong)size, freeAddressStartPosition);
                     }
