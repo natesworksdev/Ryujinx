@@ -35,11 +35,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public ulong EndAddress => Address + Size;
 
         /// <summary>
-        /// Set when a buffer has been modified by the Host GPU since it was last flushed.
-        /// </summary>
-        public bool IsModified { get; internal set; }
-
-        /// <summary>
         /// Ranges of the buffer that have been modified on the GPU.
         /// Ranges defined here cannot be updated from CPU until a CPU waiting sync point is reached.
         /// Then, write tracking will signal, wait for GPU sync (generated at the syncpoint) and flush these regions.
@@ -158,8 +153,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public void SignalModified(ulong address, ulong size)
         {
-            IsModified = true;
-
             EnsureRangeList();
 
             _modifiedRanges.SignalModified(address, size);
@@ -179,12 +172,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 _modifiedRanges.GetRanges(Address, Size, (address, size) =>
                 {
-                    _memoryTrackingGranular?.RegisterAction(address, size, ExternalFlush);
+                    _memoryTrackingGranular.RegisterAction(address, size, ExternalFlush);
+                    SynchronizeMemory(address, size);
                 });
             }
             else
             {
-                _memoryTracking?.RegisterAction(ExternalFlush);
+                _memoryTracking.RegisterAction(ExternalFlush);
+                SynchronizeMemory(Address, Size);
             }
         }
 
@@ -192,8 +187,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (from._modifiedRanges != null)
             {
+                if (from._syncActionRegistered && !_syncActionRegistered)
+                {
+                    _context.RegisterSyncAction(SyncAction);
+                    _syncActionRegistered = true;
+                }
+
                 EnsureRangeList();
-                _modifiedRanges.InheritRanges(from._modifiedRanges);
+                _modifiedRanges.InheritRanges(from._modifiedRanges, (ulong address, ulong size) =>
+                {
+                    if (_useGranular)
+                    {
+                        _memoryTrackingGranular.RegisterAction(address, size, ExternalFlush);
+                    }
+                    else
+                    {
+                        _memoryTracking.RegisterAction(ExternalFlush);
+                    }
+                });
             }
         }
 
@@ -246,7 +257,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void CopyTo(Buffer destination, int dstOffset)
         {
             _context.Renderer.Pipeline.CopyBuffer(Handle, destination.Handle, 0, dstOffset, (int)Size);
-            //destination.SignalModified(destination.Address, destination.Size);
         }
 
         /// <summary>
@@ -257,8 +267,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the range</param>
         public void Flush(ulong address, ulong size)
         {
-            IsModified = false;
-
             int offset = (int)(address - Address);
 
             byte[] data = _context.Renderer.GetBufferData(Handle, offset, (int)size);
@@ -269,11 +277,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         public void ExternalFlush(ulong address, ulong size)
         {
-            if (!IsModified)
-            {
-                return;
-            }
-
             _context.Renderer.BackgroundContextAction(() =>
             {
                 var ranges = _modifiedRanges;
@@ -291,8 +294,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Unmapped()
         {
-            IsModified = false; // We shouldn't flush this buffer, as its memory is no longer mapped.
-
             _memoryTracking?.Reprotect();
             _memoryTracking?.RegisterAction(null);
 
@@ -305,10 +306,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Dispose()
         {
-            _context.Renderer.DeleteBuffer(Handle);
+            _modifiedRanges?.Clear();
 
             _memoryTrackingGranular?.Dispose();
             _memoryTracking?.Dispose();
+
+            _context.Renderer.DeleteBuffer(Handle);
         }
     }
 }

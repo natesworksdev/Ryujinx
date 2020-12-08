@@ -1,5 +1,6 @@
 ﻿using Ryujinx.Memory.Range;
 using System;
+using System.Linq;
 
 namespace Ryujinx.Graphics.Gpu.Memory
 {
@@ -260,17 +261,42 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Inherit ranges from another modified range list.
         /// </summary>
         /// <param name="ranges">The range list to inherit from</param>
-        public void InheritRanges(BufferModifiedRangeList ranges)
+        /// <param name="rangeAction">The action to call for each modified range</param>
+        public void InheritRanges(BufferModifiedRangeList ranges, Action<ulong, ulong> rangeAction)
         {
+            BufferModifiedRange[] inheritRanges;
+
             lock (ranges._lock)
             {
-                lock (_lock)
+                inheritRanges = ranges.ToArray();
+            }
+
+            lock (_lock)
+            {
+                foreach (BufferModifiedRange range in inheritRanges)
                 {
-                    foreach (var range in ranges)
-                    {
-                        Add(range);
-                    }
+                    Add(range);
                 }
+            }
+
+            ulong currentSync = _context.SyncNumber;
+            foreach (BufferModifiedRange range in inheritRanges)
+            {
+                if (range.SyncNumber != currentSync)
+                {
+                    rangeAction(range.Address, range.Size);
+                }
+            }
+        }
+
+        /// <summary>
+        /// Clear all modified ranges.
+        /// </summary>
+        public void Clear()
+        {
+            lock (_lock)
+            {
+                _items.Clear();
             }
         }
     }

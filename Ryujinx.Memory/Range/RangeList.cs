@@ -12,7 +12,7 @@ namespace Ryujinx.Memory.Range
     {
         private const int ArrayGrowthSize = 32;
 
-        private readonly List<T> _items;
+        protected readonly List<T> _items;
 
         public int Count => _items.Count;
 
