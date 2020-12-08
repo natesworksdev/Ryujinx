@@ -820,9 +820,9 @@ namespace Ryujinx.Common.Collections
 
         bool IDictionary<K, V>.Remove(K key)
         {
-            int count = this._count;
+            int count = _count;
             Remove(key);
-            return count > this._count;
+            return count > _count;
         }
 
         public bool TryGetValue(K key, [MaybeNullWhen(false)] out V value)
@@ -871,7 +871,7 @@ namespace Ryujinx.Common.Collections
         {
             if (array.Length - arrayIndex < this.Count)
             {
-                throw new ArgumentOutOfRangeException($"There is not enough space in {nameof(array)}");
+                throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
 
             SortedList<K, V> list = GetKeyValues();
@@ -896,9 +896,9 @@ namespace Ryujinx.Common.Collections
 
             if (node.Value.Equals(item.Value))
             {
-                int count = this._count;
+                int count = _count;
                 Remove(item.Key);
-                return count > this._count;
+                return count > _count;
             }
 
             return false;
@@ -922,7 +922,10 @@ namespace Ryujinx.Common.Collections
 
         public bool IsReadOnly => false;
 
-        public V this[K key] { get => Get(key); set => Add(key, value); }
+        public V this[K key] { 
+            get => Get(key);
+            set => Add(key, value); 
+        }
 
         #endregion
         #region Private Interface Helper Methods
@@ -972,12 +975,6 @@ namespace Ryujinx.Common.Collections
         internal Node<K, V> Parent = null;
         internal K Key;
         internal V Value;
-
-        public Node(K key, V value)
-        {
-            this.Key = key;
-            this.Value = value;
-        }
 
         public Node(K key, V value, Node<K, V> parent)
         {
