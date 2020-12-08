@@ -55,7 +55,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         {
                             ulong leftEndAddress = va;
 
-                            //Overwrite existing block with its new smaller range.
+                            // Overwrite existing block with its new smaller range.
                             _tree.Add(referenceAddress, leftEndAddress);
                         }
                         else
