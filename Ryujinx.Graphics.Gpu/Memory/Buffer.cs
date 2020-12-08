@@ -289,19 +289,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Called when the memory for this buffer has been unmapped.
-        /// Calls are from non-gpu threads.
-        /// </summary>
-        public void Unmapped()
-        {
-            _memoryTracking?.Reprotect();
-            _memoryTracking?.RegisterAction(null);
-
-            _memoryTrackingGranular?.QueryModified((address, size) => { });
-            _memoryTrackingGranular?.RegisterAction(Address, Size, null);
-        }
-
-        /// <summary>
         /// Disposes the host buffer.
         /// </summary>
         public void Dispose()
