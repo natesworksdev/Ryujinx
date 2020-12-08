@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         private const ulong PageSize = MemoryManager.PageSize;
         private const ulong PageMask = MemoryManager.PageMask;
 
-        public const ulong PteUnmapped = 0xffffffff_ffffffff;
+        public const ulong PteUnmapped = MemoryManager.PteUnmapped;
 
         // Key   --> Start Address of Region
         // Value --> End Address of Region
