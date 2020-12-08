@@ -395,14 +395,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
             Buffer[] overlaps = new Buffer[10];
             int overlapCount;
 
+            ulong address = _context.MemoryManager.Translate(e.Address);
+            ulong size = e.Size;
+
             lock (_buffers)
             {
-                overlapCount = _buffers.FindOverlaps(_context.MemoryManager.Translate(e.Address), e.Size, ref overlaps);
+                overlapCount = _buffers.FindOverlaps(address, size, ref overlaps);
             }
 
             for (int i = 0; i < overlapCount; i++)
             {
-                overlaps[i].Unmapped();
+                overlaps[i].Unmapped(address, size);
             }
         }
 
