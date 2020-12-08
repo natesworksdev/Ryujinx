@@ -82,9 +82,6 @@ namespace Ryujinx.HLE.HOS
 
         public Keyset KeySet => Device.FileSystem.KeySet;
 
-#pragma warning disable CS0649
-        private bool _hasStarted;
-#pragma warning restore CS0649
         private bool _isDisposed;
 
         public bool EnablePtc { get; set; }
@@ -298,22 +295,6 @@ namespace Ryujinx.HLE.HOS
         public void SignalVsync()
         {
             VsyncEvent.ReadableEvent.Signal();
-        }
-
-        public void EnableMultiCoreScheduling()
-        {
-            if (!_hasStarted)
-            {
-                // KernelContext.Scheduler.MultiCoreScheduling = true;
-            }
-        }
-
-        public void DisableMultiCoreScheduling()
-        {
-            if (!_hasStarted)
-            {
-                // KernelContext.Scheduler.MultiCoreScheduling = false;
-            }
         }
 
         public void Dispose()
