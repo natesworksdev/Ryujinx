@@ -922,7 +922,8 @@ namespace Ryujinx.Common.Collections
 
         public bool IsReadOnly => false;
 
-        public V this[K key] { 
+        public V this[K key] 
+        { 
             get => Get(key);
             set => Add(key, value); 
         }
