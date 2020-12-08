@@ -946,12 +946,13 @@
       "type": "string",
       "title": "Aspect Ratio applied to the renderer window.",
       "description": "Aspect Ratio applied to the renderer window.",
-      "default": "To169",
+      "default": "To16x9",
       "examples": [
-        "To43",
-        "To169",
-        "To219",
-        "To329",
+        "To4x3",
+        "To16x9",
+        "To16x10",
+        "To21x9",
+        "To32x9",
         "Stretched"
       ]
     },

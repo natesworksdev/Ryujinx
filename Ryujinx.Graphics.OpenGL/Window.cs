@@ -10,9 +10,6 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Window : IWindow, IDisposable
     {
-        private const int NativeWidth  = 1280;
-        private const int NativeHeight = 720;
-
         private readonly Renderer _renderer;
 
         private int _width;
@@ -25,9 +22,6 @@ namespace Ryujinx.Graphics.OpenGL
         public Window(Renderer renderer)
         {
             _renderer = renderer;
-
-            _width  = NativeWidth;
-            _height = NativeHeight;
         }
 
         public void Present(ITexture texture, ImageCrop crop)
@@ -104,13 +98,11 @@ namespace Ryujinx.Graphics.OpenGL
                 srcY1 = (int)Math.Ceiling(srcY1 * scale);
             }
 
-            AspectRatio aspectRatioSetting = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+            AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+            bool        isStretched = aspectRatio == AspectRatio.Stretched;
 
-            bool  isStretched = aspectRatioSetting == AspectRatio.Stretched;
-            float aspectRatio = aspectRatioSetting.ToFloat();
-
-            float ratioX = isStretched ? 1.0f : MathF.Min(1f, _height * (float)NativeHeight * aspectRatio / ((float)NativeHeight         * _width));
-            float ratioY = isStretched ? 1.0f : MathF.Min(1f, _width  * (float)NativeHeight                / (NativeHeight * aspectRatio * _height));
+            float ratioX = isStretched ? 1.0f : MathF.Min(1.0f, _height * aspectRatio.ToFloatX() / (_width  * aspectRatio.ToFloatY()));
+            float ratioY = isStretched ? 1.0f : MathF.Min(1.0f, _width  * aspectRatio.ToFloatY() / (_height * aspectRatio.ToFloatX()));
 
             int dstWidth  = (int)(_width  * ratioX);
             int dstHeight = (int)(_height * ratioY);
