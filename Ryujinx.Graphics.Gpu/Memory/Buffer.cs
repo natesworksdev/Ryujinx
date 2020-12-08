@@ -1,6 +1,7 @@
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Memory.Range;
+using Ryujinx.Memory.Tracking;
 using System;
 
 namespace Ryujinx.Graphics.Gpu.Memory
@@ -47,7 +48,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private CpuMultiRegionHandle _memoryTrackingGranular;
 
         private CpuRegionHandle _memoryTracking;
+
+        private readonly RegionSignal _externalFlushDelegate;
+        private readonly Action<ulong, ulong> _loadDelegate;
         private readonly Action<ulong, ulong> _modifiedDelegate;
+
         private int _sequenceNumber;
 
         private bool _useGranular;
@@ -78,6 +83,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 _memoryTracking = context.PhysicalMemory.BeginTracking(address, size);
             }
 
+            _externalFlushDelegate = new RegionSignal(ExternalFlush);
+            _loadDelegate = new Action<ulong, ulong>(LoadRegion);
             _modifiedDelegate = new Action<ulong, ulong>(RegionModified);
         }
 
@@ -131,7 +138,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (_modifiedRanges != null)
                     {
-                        _modifiedRanges.ExcludeModifiedRegions(Address, Size, LoadRegion);
+                        _modifiedRanges.ExcludeModifiedRegions(Address, Size, _loadDelegate);
                     }
                     else
                     {
@@ -172,13 +179,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 _modifiedRanges.GetRanges(Address, Size, (address, size) =>
                 {
-                    _memoryTrackingGranular.RegisterAction(address, size, ExternalFlush);
+                    _memoryTrackingGranular.RegisterAction(address, size, _externalFlushDelegate);
                     SynchronizeMemory(address, size);
                 });
             }
             else
             {
-                _memoryTracking.RegisterAction(ExternalFlush);
+                _memoryTracking.RegisterAction(_externalFlushDelegate);
                 SynchronizeMemory(Address, Size);
             }
         }
@@ -198,11 +205,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     if (_useGranular)
                     {
-                        _memoryTrackingGranular.RegisterAction(address, size, ExternalFlush);
+                        _memoryTrackingGranular.RegisterAction(address, size, _externalFlushDelegate);
                     }
                     else
                     {
-                        _memoryTracking.RegisterAction(ExternalFlush);
+                        _memoryTracking.RegisterAction(_externalFlushDelegate);
                     }
                 });
             }
@@ -229,7 +236,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (_modifiedRanges != null)
             {
-                _modifiedRanges.ExcludeModifiedRegions(mAddress, mSize, LoadRegion);
+                _modifiedRanges.ExcludeModifiedRegions(mAddress, mSize, _loadDelegate);
             }
             else
             {
