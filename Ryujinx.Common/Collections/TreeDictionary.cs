@@ -840,7 +840,7 @@ namespace Ryujinx.Common.Collections
         {
             if (item.Key == null)
             {
-                throw new ArgumentNullException(nameof(item));
+                throw new ArgumentNullException(nameof(item.Key));
             }
 
             Add(item.Key, item.Value);
