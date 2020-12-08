@@ -23,7 +23,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private readonly Switch _device;
 
-
         private readonly IVirtualMemoryManager _memory;
         private NvMemoryAllocator _memoryAllocator;
 
