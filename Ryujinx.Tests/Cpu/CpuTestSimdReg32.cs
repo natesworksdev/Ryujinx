@@ -339,7 +339,7 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
         
-                [Test, Pairwise, Description("VFNMA.F<size> <Vd>, <Vn>, <Vm>")]
+        [Test, Pairwise, Description("VFNMA.F<size> <Vd>, <Vn>, <Vm>")]
         public void Vfnma([Values(0u, 1u)] uint rd,
                           [Values(0u, 1u)] uint rn,
                           [Values(0u, 1u)] uint rm,
