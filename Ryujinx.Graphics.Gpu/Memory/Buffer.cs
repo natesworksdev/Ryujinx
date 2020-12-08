@@ -289,16 +289,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Called when the memory for this buffer has been unmapped.
+        /// Called when part of the memory for this buffer has been unmapped.
         /// Calls are from non-gpu threads.
         /// </summary>
-        public void Unmapped()
+        /// <param name="address">Start address of the unmapped region</param>
+        /// <param name="size">Size of the unmapped region</param>
+        public void Unmapped(ulong address, ulong size)
         {
-            _memoryTracking?.Reprotect();
-            _memoryTracking?.RegisterAction(null);
-
-            _memoryTrackingGranular?.QueryModified((address, size) => { });
-            _memoryTrackingGranular?.RegisterAction(Address, Size, null);
+            _modifiedRanges?.Clear(address, size);
         }
 
         /// <summary>

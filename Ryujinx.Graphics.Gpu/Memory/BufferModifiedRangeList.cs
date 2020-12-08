@@ -290,6 +290,43 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Clear modified ranges within the specified area.
+        /// </summary>
+        /// <param name="address">Start address to clear</param>
+        /// <param name="size">Size to clear</param>
+        public void Clear(ulong address, ulong size)
+        {
+            lock (_lock)
+            {
+                // This function can be called from any thread, so it cannot use the arrays for background or foreground.
+                BufferModifiedRange[] toClear = new BufferModifiedRange[1];
+
+                int rangeCount = FindOverlapsNonOverlapping(address, size, ref toClear);
+
+                ulong endAddress = address + size;
+
+                for (int i = 0; i < rangeCount; i++)
+                {
+                    BufferModifiedRange overlap = toClear[i];
+
+                    Remove(overlap);
+
+                    // If the overlap extends outside of the clear range, make sure those parts still exist.
+
+                    if (overlap.Address < address)
+                    {
+                        Add(new BufferModifiedRange(overlap.Address, address - overlap.Address, overlap.SyncNumber));
+                    }
+
+                    if (overlap.EndAddress > endAddress)
+                    {
+                        Add(new BufferModifiedRange(endAddress, overlap.EndAddress - endAddress, overlap.SyncNumber));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
         /// Clear all modified ranges.
         /// </summary>
         public void Clear()
