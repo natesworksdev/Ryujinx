@@ -115,7 +115,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the value whose key is immediately greater than <paramref name="key"/>.Key
+        /// Finds the value whose key is immediately greater than <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key to find the successor of</param>
         /// <returns>Value</returns>
@@ -132,7 +132,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the value whose key is immediately less than <paramref name="key"/>.Key
+        /// Finds the value whose key is immediately less than <paramref name="key"/>
         /// </summary>
         /// <param name="key">Key to find the predecessor of</param>
         /// <returns>Value</returns>
