@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace Ryujinx.Graphics.OpenGL
 {
-    class Sync
+    class Sync : IDisposable
     {
         private class SyncHandle
         {
@@ -103,6 +103,23 @@ namespace Ryujinx.Graphics.OpenGL
                     // This sync handle and any following have not been reached yet.
                     break;
                 }
+            }
+        }
+
+        public void Dispose()
+        {
+            lock (Handles)
+            {
+                foreach (SyncHandle handle in Handles)
+                {
+                    lock (handle)
+                    {
+                        GL.DeleteSync(handle.Handle);
+                        handle.Handle = IntPtr.Zero;
+                    }
+                }
+
+                Handles.Clear();
             }
         }
     }
