@@ -131,6 +131,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Imul128,      new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x050000f7, InstructionFlags.None));
             Add(X86Instruction.Insertps,     new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x000f3a21, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Jmp,          new InstructionInfo(0x040000ff, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.None));
+            Add(X86Instruction.Ldmxcsr,      new InstructionInfo(0x02000fae, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.Vex));
             Add(X86Instruction.Lea,          new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x0000008d, InstructionFlags.None));
             Add(X86Instruction.Maxpd,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Maxps,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5f, InstructionFlags.Vex));
@@ -257,6 +258,7 @@ namespace ARMeilleure.CodeGen.X86
             Add(X86Instruction.Sqrtps,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstructionFlags.Vex));
             Add(X86Instruction.Sqrtsd,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstructionFlags.Vex | InstructionFlags.PrefixF2));
             Add(X86Instruction.Sqrtss,       new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f51, InstructionFlags.Vex | InstructionFlags.PrefixF3));
+            Add(X86Instruction.Stmxcsr,      new InstructionInfo(0x03000fae, BadOp,      BadOp,      BadOp,      BadOp,      InstructionFlags.Vex));
             Add(X86Instruction.Sub,          new InstructionInfo(0x00000029, 0x05000083, 0x05000081, BadOp,      0x0000002b, InstructionFlags.None));
             Add(X86Instruction.Subpd,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstructionFlags.Vex | InstructionFlags.Prefix66));
             Add(X86Instruction.Subps,        new InstructionInfo(BadOp,      BadOp,      BadOp,      BadOp,      0x00000f5c, InstructionFlags.Vex));
@@ -532,6 +534,11 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(dest, null, OperandType.None, X86Instruction.Jmp);
         }
 
+        public void Ldmxcsr(Operand dest)
+        {
+            WriteInstruction(dest, null, OperandType.I32, X86Instruction.Ldmxcsr);
+        }
+
         public void Lea(Operand dest, Operand source, OperandType type)
         {
             WriteInstruction(dest, source, type, X86Instruction.Lea);
@@ -800,6 +807,11 @@ namespace ARMeilleure.CodeGen.X86
             InstructionInfo info = _instTable[(int)X86Instruction.Setcc];
 
             WriteOpCode(dest, null, null, OperandType.None, info.Flags, info.OpRRM | (int)condition);
+        }
+
+        public void Stmxcsr(Operand dest)
+        {
+            WriteInstruction(dest, null, OperandType.I32, X86Instruction.Stmxcsr);
         }
 
         public void Sub(Operand dest, Operand source, OperandType type)
