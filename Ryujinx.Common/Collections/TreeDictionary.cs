@@ -869,7 +869,7 @@ namespace Ryujinx.Common.Collections
 
         public void CopyTo(KeyValuePair<K, V>[] array, int arrayIndex)
         {
-            if (array.Length - arrayIndex < this.Count)
+            if (arrayIndex < 0 || array.Length - arrayIndex < this.Count)
             {
                 throw new ArgumentOutOfRangeException(nameof(arrayIndex));
             }
