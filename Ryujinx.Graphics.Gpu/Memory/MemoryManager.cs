@@ -10,8 +10,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// </summary>
     public class MemoryManager
     {
-        public const ulong BadAddress = ulong.MaxValue;
-
         private const int PtLvl0Bits = 14;
         private const int PtLvl1Bits = 14;
         public  const int PtPageBits = 12;
@@ -27,8 +25,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;
 
-        private const ulong PteUnmapped = 0xffffffff_ffffffff;
-        private const ulong PteReserved = 0xffffffff_fffffffe;
+        public const ulong PteUnmapped = 0xffffffff_ffffffff;
 
         private readonly ulong[][] _pageTable;
 
@@ -172,7 +169,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             ulong baseAddress = GetPte(gpuVa);
 
-            if (baseAddress == PteUnmapped || baseAddress == PteReserved)
+            if (baseAddress == PteUnmapped)
             {
                 return PteUnmapped;
             }

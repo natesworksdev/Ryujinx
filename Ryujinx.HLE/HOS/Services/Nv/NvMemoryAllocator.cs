@@ -170,7 +170,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         /// <param name="alignment">Required alignment of the region address in bytes</param>
         /// <param name="start">Start address of the search on the address space</param>
         /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        public ulong GetFreePosition(ulong size, out ulong freeAddressStartPosition, ulong alignment = 1, ulong start = DefaultStart)
+        public ulong GetFreeAddress(ulong size, out ulong freeAddressStartPosition, ulong alignment = 1, ulong start = DefaultStart)
         {
             // Note: Address 0 is not considered valid by the driver,
             // when 0 is returned it's considered a mapping error.

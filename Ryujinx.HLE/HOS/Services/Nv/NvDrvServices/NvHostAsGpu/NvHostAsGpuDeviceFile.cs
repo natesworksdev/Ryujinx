@@ -114,7 +114,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong address = _memoryAllocator.GetFreePosition((ulong)size, out ulong freeAddressStartPosition, (ulong)arguments.Offset);
+                    ulong address = _memoryAllocator.GetFreeAddress((ulong)size, out ulong freeAddressStartPosition, (ulong)arguments.Offset);
                     if(address != NvMemoryAllocator.PteUnmapped)
                     {
                         _memoryAllocator.AllocateRange(address, (ulong)size, freeAddressStartPosition);
@@ -278,7 +278,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    ulong va = _memoryAllocator.GetFreePosition((ulong) size, out ulong freeAddressStartPosition, (ulong) pageSize);
+                    ulong va = _memoryAllocator.GetFreeAddress((ulong) size, out ulong freeAddressStartPosition, (ulong) pageSize);
                     if (va != NvMemoryAllocator.PteUnmapped)
                     {
                         _memoryAllocator.AllocateRange(va, (ulong)size, freeAddressStartPosition);
