@@ -386,6 +386,27 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Handles removal of bufferss written to a memory region being unmapped.
+        /// </summary>
+        /// <param name="sender">Sender object</param>
+        /// <param name="e">Event arguments</param>
+        public void MemoryUnmappedHandler(object sender, UnmapEventArgs e)
+        {
+            Buffer[] overlaps = new Buffer[10];
+            int overlapCount;
+
+            lock (_buffers)
+            {
+                overlapCount = _buffers.FindOverlaps(_context.MemoryManager.Translate(e.Address), e.Size, ref overlaps);
+            }
+
+            for (int i = 0; i < overlapCount; i++)
+            {
+                overlaps[i].Unmapped();
+            }
+        }
+
+        /// <summary>
         /// Performs address translation of the GPU virtual address, and creates a
         /// new buffer, if needed, for the specified range.
         /// </summary>
@@ -443,7 +464,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="size">Size in bytes of the buffer</param>
         private void CreateBufferAligned(ulong address, ulong size)
         {
-            int overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
+            int overlapsCount;
+
+            lock (_buffers)
+            {
+                overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
+            }
 
             if (overlapsCount != 0)
             {
@@ -463,13 +489,19 @@ namespace Ryujinx.Graphics.Gpu.Memory
                         address    = Math.Min(address,    buffer.Address);
                         endAddress = Math.Max(endAddress, buffer.EndAddress);
 
-                        _buffers.Remove(buffer);
+                        lock (_buffers)
+                        {
+                            _buffers.Remove(buffer);
+                        }
                     }
 
                     Buffer newBuffer = new Buffer(_context, address, endAddress - address);
                     newBuffer.SynchronizeMemory(address, endAddress - address);
 
-                    _buffers.Add(newBuffer);
+                    lock (_buffers)
+                    {
+                        _buffers.Add(newBuffer);
+                    }
 
                     for (int index = 0; index < overlapsCount; index++)
                     {
@@ -494,7 +526,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // No overlap, just create a new buffer.
                 Buffer buffer = new Buffer(_context, address, size);
 
-                _buffers.Add(buffer);
+                lock (_buffers)
+                {
+                    _buffers.Add(buffer);
+                }
             }
 
             ShrinkOverlapsBufferIfNeeded();
@@ -868,7 +903,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             if (size != 0)
             {
-                buffer = _buffers.FindFirstOverlap(address, size);
+                lock (_buffers)
+                {
+                    buffer = _buffers.FindFirstOverlap(address, size);
+                }
 
                 buffer.SynchronizeMemory(address, size);
 
@@ -879,7 +917,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                buffer = _buffers.FindFirstOverlap(address, 1);
+                lock (_buffers)
+                {
+                    buffer = _buffers.FindFirstOverlap(address, 1);
+                }
             }
 
             return buffer;
@@ -894,7 +935,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             if (size != 0)
             {
-                Buffer buffer = _buffers.FindFirstOverlap(address, size);
+                Buffer buffer;
+
+                lock (_buffers)
+                {
+                    buffer = _buffers.FindFirstOverlap(address, size);
+                }
 
                 buffer.SynchronizeMemory(address, size);
             }
@@ -906,9 +952,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         public void Dispose()
         {
-            foreach (Buffer buffer in _buffers)
+            lock (_buffers)
             {
-                buffer.Dispose();
+                foreach (Buffer buffer in _buffers)
+                {
+                    buffer.Dispose();
+                }
             }
         }
     }
