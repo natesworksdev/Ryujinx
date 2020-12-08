@@ -83,7 +83,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the value whose key is equal to or immediately less than <paramref name="key"/>
+        /// Returns the value whose key is equal to or immediately less than <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key for which to find the floor value of</param>
         /// <returns>Key of node immediately less than <paramref name="key"/></returns>
@@ -99,7 +99,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>
+        /// Returns the node whose key is equal to or immediately greater than <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key for which to find the ceiling node of</param>
         /// <returns>Key of node immediately greater than <paramref name="key"/></returns>
@@ -115,7 +115,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the value whose key is immediately greater than <paramref name="key"/>
+        /// Finds the value whose key is immediately greater than <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key to find the successor of</param>
         /// <returns>Value</returns>
@@ -132,7 +132,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the value whose key is immediately less than <paramref name="key"/>
+        /// Finds the value whose key is immediately less than <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key to find the predecessor of</param>
         /// <returns>Value</returns>
@@ -248,7 +248,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Inserts a new node into the tree whose key is <paramref name="key"/> and value is <paramref name="value"/>
+        /// Inserts a new node into the tree whose key is <paramref name="key"/> and value is <paramref name="value"/>.
         /// <br></br>
         /// Adding the same key multiple times will overwrite the previous value.
         /// </summary>
@@ -261,7 +261,11 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Standard Insertion Mechanism for a Binary Search Tree (BST)
+        /// Insertion Mechanism for a Binary Search Tree (BST).
+        /// <br></br>
+        /// Iterates the tree starting from the root and inserts a new node where all children in the left subtree are less than <paramref name="key"/>, and all children in the right subtree are greater than <paramref name="key"/>.
+        /// <br></br>
+        /// <b>Note: </b> If a node whose key is <paramref name="key"/> already exists, it's value will be overwritten.
         /// </summary>
         /// <param name="key">Key of the node to insert</param>
         /// <param name="value">Value of the node to insert</param>
@@ -407,7 +411,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node whose key immediately less than or equal to <paramref name="key"/>
+        /// Returns the node whose key immediately less than or equal to <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key for which to find the floor node of</param>
         /// <returns>Node whose key is immediately less than or equal to <paramref name="key"/>, or null if no such node is found.</returns>
@@ -461,7 +465,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Returns the node whose key is immediately greater than or equal to than <paramref name="key"/>
+        /// Returns the node whose key is immediately greater than or equal to than <paramref name="key"/>.
         /// </summary>
         /// <param name="key">Key for which to find the ceiling node of</param>
         /// <returns>Node whose key is immediately greater than or equal to <paramref name="key"/>, or null if no such node is found.</returns>
@@ -515,7 +519,7 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Finds the node with the key immediately greater than <paramref name="node"/>.Key
+        /// Finds the node with the key immediately greater than <paramref name="node"/>.Key.
         /// </summary>
         /// <param name="node">Node to find the successor of</param>
         /// <returns>Successor of <paramref name="node"/></returns>
@@ -757,11 +761,11 @@ namespace Ryujinx.Common.Collections
         }
 
         /// <summary>
-        /// Sets the color of <paramref name="node"/> node to <paramref name="color"/>
+        /// Sets the color of <paramref name="node"/> node to <paramref name="color"/>.
         /// <br></br>
         /// This method does nothing if <paramref name="node"/> is null.
         /// </summary>
-        /// <param name="node">Node</param>
+        /// <param name="node">Node to set the color of</param>
         /// <param name="color">Color (Boolean)</param>
         private static void SetColor(Node<K, V> node, bool color)
         {
@@ -774,7 +778,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// This method returns the left node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
-        /// <param name="node">Node</param>
+        /// <param name="node">Node to retrieve the left child from</param>
         /// <returns>Left child of <paramref name="node"/></returns>
         private static Node<K, V> LeftOf(Node<K, V> node)
         {
@@ -784,7 +788,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// This method returns the right node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
-        /// <param name="node">Node</param>
+        /// <param name="node">Node to retrieve the right child from</param>
         /// <returns>Right child of <paramref name="node"/></returns>
         private static Node<K, V> RightOf(Node<K, V> node)
         {
@@ -794,7 +798,7 @@ namespace Ryujinx.Common.Collections
         /// <summary>
         /// Returns the parent node of <paramref name="node"/>, or null if <paramref name="node"/> is null.
         /// </summary>
-        /// <param name="node">Node</param>
+        /// <param name="node">Node to retrieve the parent from</param>
         /// <returns>Parent of <paramref name="node"/></returns>
         private static Node<K, V> ParentOf(Node<K, V> node)
         {
@@ -807,7 +811,7 @@ namespace Ryujinx.Common.Collections
         // Method descriptions are not provided as they are already included as part of the interface.
         public bool ContainsKey(K key)
         {
-            if (null == key)
+            if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -834,7 +838,7 @@ namespace Ryujinx.Common.Collections
 
         public void Add(KeyValuePair<K, V> item)
         {
-            if (null == item.Key)
+            if (item.Key == null)
             {
                 throw new ArgumentNullException(nameof(item));
             }
@@ -850,7 +854,7 @@ namespace Ryujinx.Common.Collections
 
         public bool Contains(KeyValuePair<K, V> item)
         {
-            if (null == item.Key)
+            if (item.Key == null)
             {
                 return false;
             }
@@ -885,7 +889,7 @@ namespace Ryujinx.Common.Collections
         {
             Node<K, V> node = GetNode(item.Key);
 
-            if (null == node)
+            if (node == null)
             {
                 return false;
             }
@@ -931,7 +935,7 @@ namespace Ryujinx.Common.Collections
         {
             SortedList<K, V> set = new SortedList<K, V>();
             Queue<Node<K, V>> queue = new Queue<Node<K, V>>();
-            if (null != _root)
+            if (_root != null)
             {
                 queue.Enqueue(_root);
             }
