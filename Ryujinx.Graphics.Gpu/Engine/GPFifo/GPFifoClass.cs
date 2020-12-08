@@ -136,6 +136,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             }
             else if (operation == SyncpointbOperation.Incr)
             {
+                _context.CreateHostSyncIfNeeded();
                 _context.Synchronization.IncrementSyncpoint(syncpointId);
             }
 
