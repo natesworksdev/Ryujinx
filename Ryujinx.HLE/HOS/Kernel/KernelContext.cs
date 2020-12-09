@@ -79,7 +79,7 @@ namespace Ryujinx.HLE.HOS.Kernel
             CriticalSection = new KCriticalSection(this);
             Schedulers = new KScheduler[KScheduler.CpuCoresCount];
             PriorityQueue = new KPriorityQueue();
-            TimeManager = new KTimeManager();
+            TimeManager = new KTimeManager(this);
             Synchronization = new KSynchronization(this);
             ContextIdManager = new KContextIdManager();
 

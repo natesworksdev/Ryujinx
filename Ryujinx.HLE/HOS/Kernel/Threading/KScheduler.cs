@@ -234,8 +234,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             {
                 _state.NeedsScheduling = false;
                 Thread.MemoryBarrier();
-                KThread selectedThread = _state.SelectedThread;
-                KThread nextThread = PickNextThread(_idleThread, selectedThread);
+                KThread nextThread = PickNextThread(_state.SelectedThread);
 
                 if (_idleThread != nextThread)
                 {
@@ -275,11 +274,11 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 _context.Schedulers[core]._idleInterruptEvent.Set();
             }
 
-            KThread nextThread = PickNextThread(currentThread, selectedThread);
+            KThread nextThread = PickNextThread(selectedThread);
 
             if (currentThread.Context.Running)
             {
-                // Wait until the thread is scheduled again, and allow the next thread to run.
+                // Wait until this thread is scheduled again, and allow the next thread to run.
                 WaitHandle.SignalAndWait(nextThread.SchedulerWaitEvent, currentThread.SchedulerWaitEvent);
             }
             else
@@ -299,7 +298,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             }
         }
 
-        private KThread PickNextThread(KThread currentThread, KThread selectedThread)
+        private KThread PickNextThread(KThread selectedThread)
         {
             while (true)
             {
@@ -307,9 +306,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 {
                     // Try to run the selected thread.
                     // We need to acquire the context lock to be sure the thread is not
-                    // already running on another core. If it is, then we spin wait here
-                    // until we have something available for scheduling. The thread
-                    // currently running on the core should have been requested to
+                    // already running on another core. If it is, then we return here
+                    // and the caller should try again once there is something available for scheduling.
+                    // The thread currently running on the core should have been requested to
                     // interrupt so this is not expected to take long.
                     // The idle thread must also be paused if we are scheduling a thread
                     // on the core, as the scheduled thread will handle the next switch.

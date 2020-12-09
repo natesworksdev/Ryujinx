@@ -8,6 +8,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
         private readonly object _lock;
         private int _recursionCount;
 
+        public object Lock => _lock;
+
         public KCriticalSection(KernelContext context)
         {
             _context = context;
