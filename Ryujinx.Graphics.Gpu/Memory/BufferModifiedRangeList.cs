@@ -173,7 +173,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void GetRanges(ulong address, ulong size, Action<ulong, ulong> rangeAction)
         {
             int count = 0;
-            // Range list must be consistent for this operation
+            // Range list must be consistent for this operation.
             lock (_lock)
             {
                 count = FindOverlapsNonOverlapping(address, size, ref _foregroundOverlaps);
@@ -183,6 +183,21 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 BufferModifiedRange overlap = _foregroundOverlaps[i];
                 rangeAction(overlap.Address, overlap.Size);
+            }
+        }
+
+        /// <summary>
+        /// Queries if a range exists within the specified region.
+        /// </summary>
+        /// <param name="address">Start address to query</param>
+        /// <param name="size">Size to query</param>
+        /// <returns>True if a range exists in the specified region, false otherwise</returns>
+        public bool HasRange(ulong address, ulong size)
+        {
+            // Range list must be consistent for this operation.
+            lock (_lock)
+            {
+                return FindOverlapsNonOverlapping(address, size, ref _foregroundOverlaps) > 0;
             }
         }
 

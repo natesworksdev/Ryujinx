@@ -857,7 +857,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 dstOffset,
                 (int)size);
 
-            dstBuffer.SignalModified(dstAddress, size);
+            if (srcBuffer.IsModified(srcAddress, size))
+            {
+                dstBuffer.SignalModified(dstAddress, size);
+            }
+            else
+            {
+                // Optimization: If the data being copied is already in memory, then copy it directly instead of flushing from GPU.
+
+                dstBuffer.ClearModified(dstAddress, size);
+                _context.PhysicalMemory.WriteUntracked(dstAddress, _context.PhysicalMemory.GetSpan(srcAddress, (int)size));
+            }
         }
 
         /// <summary>

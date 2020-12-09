@@ -150,6 +150,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Ensure that the modified range list exists.
+        /// </summary>
         private void EnsureRangeList()
         {
             if (_modifiedRanges == null)
@@ -158,6 +161,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Signal that the given region of the buffer has been modified.
+        /// </summary>
+        /// <param name="address">The start address of the modified region</param>
+        /// <param name="size">The size of the modified region</param>
         public void SignalModified(ulong address, ulong size)
         {
             EnsureRangeList();
@@ -171,7 +179,24 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
-        public void SyncAction()
+        /// <summary>
+        /// Indicate that mofifications in a given region of this buffer have been overwritten.
+        /// </summary>
+        /// <param name="address">The start address of the region</param>
+        /// <param name="size">The size of the region</param>
+        public void ClearModified(ulong address, ulong size)
+        {
+            if (_modifiedRanges != null)
+            {
+                _modifiedRanges.Clear(address, size);
+            }
+        }
+
+        /// <summary>
+        /// Action to be performed when a syncpoint is reached after modification.
+        /// This will register read/write tracking to flush the buffer from GPU when its memory is used.
+        /// </summary>
+        private void SyncAction()
         {
             _syncActionRegistered = false;
 
@@ -190,6 +215,10 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        /// <summary>
+        /// Inherit modified ranges from another buffer.
+        /// </summary>
+        /// <param name="from">The buffer to inherit from</param>
         public void InheritModifiedRanges(Buffer from)
         {
             if (from._modifiedRanges != null)
@@ -213,6 +242,22 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     }
                 });
             }
+        }
+
+        /// <summary>
+        /// Determine if a given region of the buffer has been modified, and must be flushed.
+        /// </summary>
+        /// <param name="address">The start address of the region</param>
+        /// <param name="size">The size of the region</param>
+        /// <returns></returns>
+        public bool IsModified(ulong address, ulong size)
+        {
+            if (_modifiedRanges != null)
+            {
+                return _modifiedRanges.HasRange(address, size);
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -282,6 +327,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context.PhysicalMemory.WriteUntracked(address, data);
         }
 
+        /// <summary>
+        /// Flush modified ranges of the buffer from another thread.
+        /// This will flush all modifications made before the active SyncNumber was set, and may block to wait for GPU sync.
+        /// </summary>
+        /// <param name="address">Address of the memory action</param>
+        /// <param name="size">Size in bytes</param>
         public void ExternalFlush(ulong address, ulong size)
         {
             _context.Renderer.BackgroundContextAction(() =>
@@ -297,7 +348,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         /// <summary>
         /// Called when part of the memory for this buffer has been unmapped.
-        /// Calls are from non-gpu threads.
+        /// Calls are from non-GPU threads.
         /// </summary>
         /// <param name="address">Start address of the unmapped region</param>
         /// <param name="size">Size of the unmapped region</param>
