@@ -1933,17 +1933,11 @@ namespace ARMeilleure.Instructions
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
             int size = (op.Size & 3);
             int eSize = 8 << size;
-            if (size == 0)
-            {
-                EmitVectorWidenRnRmBinaryOpZx(context, (op1, op2) =>
-                {
-                    return EmitPolynomialMultiply(context, op1, op2, eSize);
-                });
-            }
-            else
-            {
 
-            }
+            EmitVectorWidenRnRmBinaryOpZx(context, (op1, op2) =>
+            {
+                return EmitPolynomialMultiply(context, op1, op2, eSize);
+            });
         }
         public static void Raddhn_V(ArmEmitterContext context)
         {
