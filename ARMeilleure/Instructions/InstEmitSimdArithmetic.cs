@@ -1928,6 +1928,14 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Pmull_V(ArmEmitterContext context)
+        {
+            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            EmitVectorWidenRnRmBinaryOpZx(context, (op1, op2) =>
+            {
+                return EmitPolynomialMultiply(context, op1, op2, 32);
+            });
+        }
         public static void Raddhn_V(ArmEmitterContext context)
         {
             EmitHighNarrow(context, (op1, op2) => context.Add(op1, op2), round: true);
@@ -3228,6 +3236,28 @@ namespace ARMeilleure.Instructions
                 : context.ICompareLessOrEqualUI(op1, op2);
 
             return context.ConditionalSelect(cmp, op1, op2);
+        }
+
+        private static Operand EmitPolynomialMultiply(ArmEmitterContext context, Operand op1, Operand op2, int eSize)
+        {
+            Debug.Assert(eSize <= 32);
+
+            Operand result = eSize == 32 ? Const(0L) : Const(0);
+
+            if (eSize == 32)
+            {
+                op1 = context.ZeroExtend32(OperandType.I64, op1);
+                op2 = context.ZeroExtend32(OperandType.I64, op2);
+            }
+
+            for (int i = 0; i < eSize; i++)
+            {
+                Operand mask = context.BitwiseAnd(op1, Const(op1.Type, 1L << i));
+
+                result = context.BitwiseExclusiveOr(result, context.Multiply(op2, mask));
+            }
+
+            return result;
         }
 
         private static void EmitScalarRoundOpF(ArmEmitterContext context, FPRoundingMode roundMode)

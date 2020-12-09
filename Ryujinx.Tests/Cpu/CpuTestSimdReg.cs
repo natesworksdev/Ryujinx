@@ -1977,6 +1977,26 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
+        [Test, Pairwise, Description("PMULL <Vd>.<Ta>, <Vn>.<Tb>, <Vm>.<Tb>")]
+        public void Pmull_V([Values(0u)] uint rd,
+                              [Values(1u, 0u)] uint rn,
+                              [Values(2u, 0u)] uint rm,
+                              [ValueSource("_8B_")][Random(RndCnt)] ulong z,
+                              [ValueSource("_8B_")][Random(RndCnt)] ulong a,
+                              [ValueSource("_8B_")][Random(RndCnt)] ulong b)
+        {
+            uint opcode = 0xE20E000;
+            opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0E1(a, a);
+            V128 v2 = MakeVectorE0E1(b, b);
+
+            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
         [Test, Pairwise, Description("RADDHN{2} <Vd>.<Tb>, <Vn>.<Ta>, <Vm>.<Ta>")]
         public void Raddhn_V_8H8B_4S4H_2D2S([Values(0u)]     uint rd,
                                             [Values(1u, 0u)] uint rn,

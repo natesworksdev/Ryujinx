@@ -216,6 +216,7 @@ namespace ARMeilleure.CodeGen.X86
         Vfnmsub231ss,
         Vfnmsub231sd,
         Vpblendvb,
+        Vpclmulqdq,
         Xor,
         Xorpd,
         Xorps,
