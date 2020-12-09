@@ -1931,10 +1931,19 @@ namespace ARMeilleure.Instructions
         public static void Pmull_V(ArmEmitterContext context)
         {
             OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
-            EmitVectorWidenRnRmBinaryOpZx(context, (op1, op2) =>
+            int size = (op.Size & 3);
+            int eSize = 8 << size;
+            if (size == 0)
             {
-                return EmitPolynomialMultiply(context, op1, op2, 32);
-            });
+                EmitVectorWidenRnRmBinaryOpZx(context, (op1, op2) =>
+                {
+                    return EmitPolynomialMultiply(context, op1, op2, eSize);
+                });
+            }
+            else
+            {
+
+            }
         }
         public static void Raddhn_V(ArmEmitterContext context)
         {

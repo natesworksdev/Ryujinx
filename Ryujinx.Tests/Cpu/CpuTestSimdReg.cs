@@ -1958,16 +1958,15 @@ namespace Ryujinx.Tests.Cpu
         }
 
         [Test, Pairwise, Description("ORR <Vd>.<T>, <Vn>.<T>, <Vm>.<T>")]
-        public void Orr_V_16B([Values(0u)]     uint rd,
-                              [Values(1u, 0u)] uint rn,
-                              [Values(2u, 0u)] uint rm,
+        public void Orr_V_16B([Values(0u)]             uint rd,
+                              [Values(1u, 0u)]         uint rn,
+                              [Values(2u, 0u)]         uint rm,
                               [ValueSource("_8B_")] [Random(RndCnt)] ulong z,
                               [ValueSource("_8B_")] [Random(RndCnt)] ulong a,
                               [ValueSource("_8B_")] [Random(RndCnt)] ulong b)
         {
             uint opcode = 0x4EA01C00; // ORR V0.16B, V0.16B, V0.16B
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
-
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, a);
             V128 v2 = MakeVectorE0E1(b, b);
@@ -1987,7 +1986,6 @@ namespace Ryujinx.Tests.Cpu
         {
             uint opcode = 0xE20E000;
             opcode |= ((rm & 31) << 16) | ((rn & 31) << 5) | ((rd & 31) << 0);
-
             V128 v0 = MakeVectorE0E1(z, z);
             V128 v1 = MakeVectorE0E1(a, a);
             V128 v2 = MakeVectorE0E1(b, b);
