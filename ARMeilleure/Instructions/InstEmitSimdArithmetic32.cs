@@ -288,12 +288,7 @@ namespace ARMeilleure.Instructions
         {
             if (Optimizations.FastFP && Optimizations.UseFma)
             {
-                OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
-
-                Operand negVm = context.Negate(ExtractScalar(context, op.GetOperandType(), op.Vm));
-                InsertScalar(context, op.Vm, negVm);
-
-                EmitScalarTernaryOpF32(context, Intrinsic.X86Vfmsub231ss, Intrinsic.X86Vfmsub231sd);
+                EmitScalarTernaryOpF32(context, Intrinsic.X86Vfnmsub231ss, Intrinsic.X86Vfnmsub231sd);
             }
             else
             {
