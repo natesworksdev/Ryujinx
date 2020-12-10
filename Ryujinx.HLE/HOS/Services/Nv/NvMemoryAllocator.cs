@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
                                 Logger.Debug?.Print(LogClass.ServiceNv, $"Reset and aligned address to {address:X}.");
 
-                                if(address + size > AddressSpaceSize && !reachedEndOfAddresses)
+                                if (address + size > AddressSpaceSize && !reachedEndOfAddresses)
                                 {
                                     reachedEndOfAddresses = true;
                                     address = start;
