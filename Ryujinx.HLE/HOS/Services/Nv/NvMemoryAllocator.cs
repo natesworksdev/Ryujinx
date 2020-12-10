@@ -162,7 +162,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         }
                     }
 
-                    Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation resulted in new free range from 0x{expandedStart} to 0x{expandedEnd}.");
+                    Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation resulted in new free range from 0x{expandedStart:X} to 0x{expandedEnd:X}.");
 
                     _tree.Add(expandedStart, expandedEnd);
                     LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
