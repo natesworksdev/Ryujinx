@@ -45,6 +45,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
+                Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Allocating range @ {va} to {va + size}");
                 if (referenceAddress != InvalidAddress)
                 {
                     ulong endAddress = va + size;
@@ -58,6 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
                             // Overwrite existing block with its new smaller range.
                             _tree.Add(referenceAddress, leftEndAddress);
+                            Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Created smaller range range @ {referenceAddress} to {leftEndAddress}");
                         }
                         else
                         {
@@ -69,6 +71,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         // If leftover space, create a right node.
                         if (rightSize > 0)
                         {
+                            Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Created smaller range range @ {endAddress} to {referenceEndAddress}");
                             _tree.Add(endAddress, referenceEndAddress);
 
                             LinkedListNode<ulong> node = _list.AddAfter(_dictionary[referenceAddress], endAddress);
@@ -95,6 +98,8 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
+                Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Deallocating range @ {va} to {va + size}");
+
                 ulong freeAddressStartPosition = _tree.Floor(va);
                 if (freeAddressStartPosition != InvalidAddress)
                 {
@@ -156,6 +161,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             break;
                         }
                     }
+
+                    Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Freed range @ {expandedStart} to {expandedEnd}");
+
                     _tree.Add(expandedStart, expandedEnd);
                     LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
                     _dictionary[expandedStart] = nodePtr;
