@@ -5,13 +5,9 @@ namespace ARMeilleure.State
 {
     public class ExecutionContext
     {
-        private const int MinCountForCheck = 4000;
-
         private NativeContext _nativeContext;
 
         internal IntPtr NativeContextPtr => _nativeContext.BasePtr;
-
-        private bool _interrupted;
 
         private readonly ICounter _counter;
 
@@ -101,8 +97,7 @@ namespace ARMeilleure.State
             _undefinedCallback = undefinedCallback;
 
             Running = true;
-
-            _nativeContext.SetCounter(MinCountForCheck);
+            _nativeContext.SetInterruptState(0);
         }
 
         public ulong GetX(int index) => _nativeContext.GetX(index);
@@ -119,19 +114,13 @@ namespace ARMeilleure.State
 
         internal void CheckInterrupt()
         {
-            if (_interrupted)
-            {
-                _interrupted = false;
-
-                _interruptCallback?.Invoke(this);
-            }
-
-            _nativeContext.SetCounter(MinCountForCheck);
+            _nativeContext.SetInterruptState(0);
+            _interruptCallback?.Invoke(this);
         }
 
         public void RequestInterrupt()
         {
-            _interrupted = true;
+            _nativeContext.SetInterruptState(1);
         }
 
         internal void OnBreak(ulong address, int imm)
@@ -152,8 +141,7 @@ namespace ARMeilleure.State
         public void StopRunning()
         {
             Running = false;
-
-            _nativeContext.SetCounter(0);
+            _nativeContext.SetInterruptState(1);
         }
 
         public void Dispose()
