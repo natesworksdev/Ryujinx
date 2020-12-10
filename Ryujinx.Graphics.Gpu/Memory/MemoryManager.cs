@@ -116,7 +116,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="va">GPU virtual address to be mapped</param>
         /// <param name="size">Size in bytes of the mapping</param>
         /// <returns>GPU virtual address of the mapping</returns>
-        public ulong Map(ulong pa, ulong va, ulong size)
+        public void Map(ulong pa, ulong va, ulong size)
         {
             lock (_pageTable)
             {
@@ -127,8 +127,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     SetPte(va + offset, pa + offset);
                 }
             }
-
-            return va;
         }
 
         /// <summary>
