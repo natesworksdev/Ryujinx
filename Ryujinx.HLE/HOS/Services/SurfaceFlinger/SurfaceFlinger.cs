@@ -27,6 +27,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private long _ticks;
         private long _ticksPerFrame;
         private long _spinTicks;
+        private long _1msTicks;
 
         private int _swapInterval;
 
@@ -65,6 +66,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             _ticks = 0;
             _spinTicks = Stopwatch.Frequency / 500;
+            _1msTicks = Stopwatch.Frequency / 1000;
 
             UpdateSwapInterval(1);
 
@@ -224,7 +226,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                     }
                     else
                     {
-                        _event.WaitOne(1);
+                        _event.WaitOne((int)(diff / _1msTicks));
                     }
                 }
             }
