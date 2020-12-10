@@ -28,7 +28,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
         public NvMemoryAllocator()
         {
-            _tree.Add(PageSize, PageSize + AddressSpaceSize);
+            _tree.Add(PageSize, AddressSpaceSize);
             LinkedListNode<ulong> node = _list.AddFirst(PageSize);
             _dictionary[PageSize] = node;
         }
