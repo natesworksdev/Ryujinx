@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Ryujinx.Common;
 using System;
 using Ryujinx.Graphics.Gpu.Memory;
+using Ryujinx.Common.Logging;
 
 namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 {
@@ -176,6 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             // when 0 is returned it's considered a mapping error.
             lock (_tree)
             {
+                Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Getting Free Address Search @ {start} w/ Size {size}");
                 ulong address = start;
 
                 if (alignment == 0)
@@ -190,14 +192,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                     ulong targetAddress;
                     if(start == DefaultStart)
                     {
+                        Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Using Last Value in List: {_list.Last.Value}");
                         targetAddress = _list.Last.Value;
                     }
                     else
                     {
                         targetAddress = _tree.Floor(address);
-                        if(targetAddress == InvalidAddress)
+                        Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Using Floor of Tree: {targetAddress}");
+                        if (targetAddress == InvalidAddress)
                         {
+                            Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Using Ceiling of Address: {address}");
                             targetAddress = _tree.Ceiling(address);
+                            Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Ceiling Found: {address}");
                         }
                     }
                     while (address < AddressSpaceSize)
@@ -208,20 +214,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                             {
                                 if (address + size <= _tree.Get(targetAddress))
                                 {
+                                    Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Found Free Address: {targetAddress} for {address}");
                                     freeAddressStartPosition = targetAddress;
                                     return address;
                                 }
                                 else
                                 {
+                                    Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Need Successor");
                                     LinkedListNode<ulong> nextPtr = _dictionary[targetAddress];
                                     if (nextPtr.Next != null)
                                     {
                                         targetAddress = nextPtr.Next.Value;
+                                        Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Using Successor: {targetAddress}");
                                     }
                                     else
                                     {
                                         if (completedFirstPass)
                                         {
+                                            Logger.Debug?.PrintMsg(LogClass.ServiceNv, "Exiting Loop ( Completed First Pass )");
                                             break;
                                         }
                                         else
@@ -229,6 +239,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                             completedFirstPass = true;
                                             address = start;
                                             targetAddress = _tree.Floor(address);
+                                            Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Completed First Pass, Starting Loop @ {targetAddress} for {address}");
                                         }
                                     }
                                 }
@@ -243,6 +254,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                 {
                                     address = (address - remainder) + alignment;
                                 }
+                                Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Incrementing & Aligned Address: {address}");
                             }
                         }
                         else
@@ -251,6 +263,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         }
                     }
                 }
+                Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"No Suitable Address Found, Returning: {InvalidAddress}");
                 freeAddressStartPosition = InvalidAddress;
             }
 
