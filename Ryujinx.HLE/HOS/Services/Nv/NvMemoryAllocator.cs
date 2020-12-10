@@ -264,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                 }
                                 Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Incrementing & Aligned Address: {address}");
 
-                                if(address > AddressSpaceSize && !completedFirstPass)
+                                if(address + size > AddressSpaceSize && !completedFirstPass)
                                 {
                                     completedFirstPass = true;
                                     address = start;
