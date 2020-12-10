@@ -263,6 +263,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                                     address = (address - remainder) + alignment;
                                 }
                                 Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Incrementing & Aligned Address: {address}");
+
+                                if(address > AddressSpaceSize && !completedFirstPass)
+                                {
+                                    completedFirstPass = true;
+                                    address = start;
+                                    targetAddress = _tree.Floor(address);
+                                    Logger.Debug?.PrintMsg(LogClass.ServiceNv, $"Completed First Pass, (Address greater than maximum allowed); Starting Loop @ {targetAddress} for {address}");
+                                }
                             }
                         }
                         else
