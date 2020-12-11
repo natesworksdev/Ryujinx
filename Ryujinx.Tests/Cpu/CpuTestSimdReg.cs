@@ -1700,9 +1700,9 @@ namespace Ryujinx.Tests.Cpu
         public void F_Max_Min_Nm_P_2D([ValueSource("_F_Max_Min_Nm_P_2D_")] uint opcodes,
                                       [Values(0u)]     uint rd,
                                       [Values(1u, 0u)] uint rn,
-                                      [ValueSource("_2S_F_")] ulong z,
-                                      [ValueSource("_2S_F_")] ulong a,
-                                      [ValueSource("_2S_F_")] ulong b)
+                                      [ValueSource("_1D_F_")] ulong z,
+                                      [ValueSource("_1D_F_")] ulong a,
+                                      [ValueSource("_1D_F_")] ulong b)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
