@@ -220,6 +220,7 @@ namespace ARMeilleure.Instructions
         Fmin_V,
         Fminnm_S,
         Fminnm_V,
+        Fminnmp_S,
         Fminnmp_V,
         Fminnmv_V,
         Fminp_V,

@@ -369,6 +369,23 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+
+        private static uint[] _F_Max_Min_N_P_S_2SS()
+        {
+            return new uint[]
+            {
+                0x7EB0C800, // FMINNMP V0.2S, V0.2S, V0.2S
+            };
+        }
+
+        private static uint[] _F_Max_Min_N_P_S_2DS()
+        {
+            return new uint[]
+            {
+                0x7EF0C800, // FMINNMP V0.2S, V0.2S, V0.2S
+            };
+        }
+
         private static uint[] _F_Max_Min_Nm_P_V_2S_4S_()
         {
             return new uint[]
@@ -1655,6 +1672,47 @@ namespace Ryujinx.Tests.Cpu
             SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2, fpcr: fpcr);
 
             CompareAgainstUnicorn(fpsrMask: Fpsr.Ioc | Fpsr.Idc);
+        }
+
+        [Test, Pairwise]
+        [Explicit]
+        public void F_Max_Min_N_P_S_2S([ValueSource("_F_Max_Min_N_P_S_2S_")] uint opcodes,
+                                   [Values(0u)] uint rd,
+                                   [Values(1u, 0u)] uint rn,
+                                   [ValueSource("_2S_F_")] ulong z,
+                                   [ValueSource("_2S_F_")] ulong a,
+                                   [ValueSource("_2S_F_")] ulong b)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0E1(a, a);
+            V128 v2 = MakeVectorE0E1(b, b);
+
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
+        }
+
+        [Test, Pairwise]
+        [Explicit]
+        public void F_Max_Min_N_P_S_2D([ValueSource("_F_Max_Min_N_P_S_2D_")] uint opcodes,
+                           [Values(0u)] uint rd,
+                           [Values(1u, 0u)] uint rn,
+                           [ValueSource("_2S_F_")] ulong z,
+                           [ValueSource("_2S_F_")] ulong a,
+                           [ValueSource("_2S_F_")] ulong b)
+        {
+            opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
+
+            V128 v0 = MakeVectorE0E1(z, z);
+            V128 v1 = MakeVectorE0E1(a, a);
+            V128 v2 = MakeVectorE0E1(b, b);
+
+            SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
+
+            CompareAgainstUnicorn();
         }
 
         [Test, Pairwise] [Explicit]

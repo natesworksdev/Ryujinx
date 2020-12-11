@@ -707,6 +707,47 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Fminnmp_S(ArmEmitterContext context)
+        {
+            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+
+            if (Optimizations.FastFP && Optimizations.UseSse41 && false)
+            {
+                if((op.Size & 1) == 1)
+                {
+                    EmitSse2VectorPairwiseOpF(context, (op1, op2) =>
+                    {
+                        return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: true, op1, op2);
+                    });
+                }
+                else
+                {
+                    EmitSse2VectorAcrossVectorOpF(context, (op1, op2) => 
+                    {
+                        return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: true, op1, op2);
+                    });
+                }
+            }
+            else
+            {
+
+                if ((op.Size & 1) == 1)
+                {
+                    EmitVectorPairwiseOpF(context, (op1, op2) =>
+                    {
+                        return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
+                    });
+                }
+                else
+                {
+                    EmitVectorAcrossVectorOpF(context, (op1, op2) =>
+                    {
+                        return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
+                    });
+                }
+            }
+        }
+
         public static void Fminnmp_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse41)
