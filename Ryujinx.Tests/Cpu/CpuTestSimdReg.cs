@@ -373,7 +373,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
-                0x7EB0C800, // FMINNMP V0.2S, V0.2S, V0.2S
+                0x7EB0C800, // FMINNMP V0.2S, V0.2S
             };
         }
 
@@ -381,7 +381,7 @@ namespace Ryujinx.Tests.Cpu
         {
             return new uint[]
             {
-                0x7EF0C800, // FMINNMP V0.2S, V0.2S, V0.2S
+                0x7EF0C800, // FMINNMP V0.2D, V0.2D
             };
         }
 
