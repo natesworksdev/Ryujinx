@@ -753,7 +753,7 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.FastFP && Optimizations.UseSse41)
             {
-                if((op.Size & 1) == 1)
+                if ((op.Size & 1) == 1)
                 {
                     EmitSse2VectorPairwiseOpF(context, (op1, op2) =>
                     {
