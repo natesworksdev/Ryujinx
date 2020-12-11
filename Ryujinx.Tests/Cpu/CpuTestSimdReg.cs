@@ -369,7 +369,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Max_Min_Nm_P_2S_()
+        private static uint[] _F_Max_Min_Nm_P_2S_4S_()
         {
             return new uint[]
             {
@@ -1677,7 +1677,7 @@ namespace Ryujinx.Tests.Cpu
 
         [Test, Pairwise]
         [Explicit]
-        public void F_Max_Min_Nm_P_2S([ValueSource("_F_Max_Min_Nm_P_2S_")] uint opcodes,
+        public void F_Max_Min_Nm_P_2S_4S([ValueSource("_F_Max_Min_Nm_P_2S_4S_")] uint opcodes,
                                       [Values(0u)]     uint rd,
                                       [Values(1u, 0u)] uint rn,
                                       [ValueSource("_2S_F_")] ulong z,
