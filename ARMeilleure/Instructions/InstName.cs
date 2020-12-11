@@ -212,6 +212,7 @@ namespace ARMeilleure.Instructions
         Fmax_V,
         Fmaxnm_S,
         Fmaxnm_V,
+        Fmaxnmp_S,
         Fmaxnmp_V,
         Fmaxnmv_V,
         Fmaxp_V,
