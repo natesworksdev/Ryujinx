@@ -1678,11 +1678,11 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         [Explicit]
         public void F_Max_Min_Nm_P_2S([ValueSource("_F_Max_Min_Nm_P_2S_")] uint opcodes,
-                                       [Values(0u)]     uint rd,
-                                       [Values(1u, 0u)] uint rn,
-                                       [ValueSource("_2S_F_")] ulong z,
-                                       [ValueSource("_2S_F_")] ulong a,
-                                       [ValueSource("_2S_F_")] ulong b)
+                                      [Values(0u)]     uint rd,
+                                      [Values(1u, 0u)] uint rn,
+                                      [ValueSource("_2S_F_")] ulong z,
+                                      [ValueSource("_2S_F_")] ulong a,
+                                      [ValueSource("_2S_F_")] ulong b)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
@@ -1699,11 +1699,11 @@ namespace Ryujinx.Tests.Cpu
         [Test, Pairwise]
         [Explicit]
         public void F_Max_Min_Nm_P_2D([ValueSource("_F_Max_Min_Nm_P_2D_")] uint opcodes,
-                                       [Values(0u)]     uint rd,
-                                       [Values(1u, 0u)] uint rn,
-                                       [ValueSource("_2S_F_")] ulong z,
-                                       [ValueSource("_2S_F_")] ulong a,
-                                       [ValueSource("_2S_F_")] ulong b)
+                                      [Values(0u)]     uint rd,
+                                      [Values(1u, 0u)] uint rn,
+                                      [ValueSource("_2S_F_")] ulong z,
+                                      [ValueSource("_2S_F_")] ulong a,
+                                      [ValueSource("_2S_F_")] ulong b)
         {
             opcodes |= ((rn & 31) << 5) | ((rd & 31) << 0);
 
