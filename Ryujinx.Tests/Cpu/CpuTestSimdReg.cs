@@ -1690,7 +1690,6 @@ namespace Ryujinx.Tests.Cpu
             V128 v1 = MakeVectorE0E1(a, a);
             V128 v2 = MakeVectorE0E1(b, b);
 
-
             SingleOpcode(opcodes, v0: v0, v1: v1, v2: v2);
 
             CompareAgainstUnicorn();
