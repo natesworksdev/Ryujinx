@@ -574,7 +574,6 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-
                 if ((op.Size & 1) == 1)
                 {
                     EmitVectorPairwiseOpF(context, (op1, op2) =>
@@ -771,7 +770,6 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-
                 if ((op.Size & 1) == 1)
                 {
                     EmitVectorPairwiseOpF(context, (op1, op2) =>
