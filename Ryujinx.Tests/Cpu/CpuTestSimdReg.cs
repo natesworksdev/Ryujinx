@@ -369,8 +369,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-
-        private static uint[] _F_Max_Min_N_P_S_2SS()
+        private static uint[] _F_Max_Min_N_P_S_2S_()
         {
             return new uint[]
             {
@@ -378,7 +377,7 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
-        private static uint[] _F_Max_Min_N_P_S_2DS()
+        private static uint[] _F_Max_Min_N_P_S_2D_()
         {
             return new uint[]
             {
