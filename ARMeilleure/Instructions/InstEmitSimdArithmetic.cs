@@ -555,7 +555,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            if (Optimizations.FastFP && Optimizations.UseSse41 && false)
+            if (Optimizations.FastFP && Optimizations.UseSse41)
             {
                 if ((op.Size & 1) == 1)
                 {
@@ -752,7 +752,7 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            if (Optimizations.FastFP && Optimizations.UseSse41 && false)
+            if (Optimizations.FastFP && Optimizations.UseSse41)
             {
                 if((op.Size & 1) == 1)
                 {
