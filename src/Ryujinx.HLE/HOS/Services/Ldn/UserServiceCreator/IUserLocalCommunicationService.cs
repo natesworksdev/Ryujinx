@@ -120,7 +120,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                 return resultCode;
             }
 
-            MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
+            long infoSize = MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
+
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(infoSize);
 
             return ResultCode.Success;
         }
