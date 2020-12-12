@@ -106,9 +106,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         public ResultCode GetNetworkInfo(ServiceCtx context)
         {
             long bufferPosition = context.Request.RecvListBuff[0].Position;
-            long bufferSize     = context.Request.RecvListBuff[0].Size;
 
-            MemoryHelper.FillWithZeros(context.Memory, bufferPosition, (int)bufferSize);
+            MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x480);
 
             if (_nifmResultCode != ResultCode.Success)
             {
@@ -300,8 +299,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             ushort     channel    = (ushort)context.RequestData.ReadUInt64();
             ScanFilter scanFilter = context.RequestData.ReadStruct<ScanFilter>();
 
-            long bufferPosition = context.Request.ReceiveBuff[0].Position;
-            long bufferSize     = context.Request.ReceiveBuff[0].Size;
+            (long bufferPosition, long bufferSize) = context.Request.GetBufferType0x22(0);
 
             if (_nifmResultCode != ResultCode.Success)
             {
@@ -569,6 +567,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                     return ResultCode.Success;
                 }
 
+                CloseAccessPoint();
+
                 return ResultCode.InvalidState;
             }
 
@@ -603,8 +603,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // SetAdvertiseData(buffer<advertise_data, 0x21>)
         public ResultCode SetAdvertiseData(ServiceCtx context)
         {
-            long bufferPosition = context.Request.PtrBuff[0].Position;
-            long bufferSize     = context.Request.PtrBuff[0].Size;
+            (long bufferPosition, long bufferSize) = context.Request.GetBufferType0x21(0);
 
             if (_nifmResultCode != ResultCode.Success)
             {
@@ -699,6 +698,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
             SetState(NetworkState.Station);
 
+            _station?.Dispose();
             _station = new Station(this);
 
             // NOTE: Calls nifm service and return related result codes.
@@ -732,7 +732,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private void CloseStation()
         {
-            _station.Dispose();
+            _station?.Dispose();
 
             _station = null;
         }
@@ -855,6 +855,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                     return ResultCode.Success;
                 }
+
+                CloseStation();
 
                 return ResultCode.InvalidState;
             }
