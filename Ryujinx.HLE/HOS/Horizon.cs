@@ -320,7 +320,7 @@ namespace Ryujinx.HLE.HOS
                     lock (KernelContext.Processes)
                     {
                         // Terminate application.
-                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.TitleId != 0))
+                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.Flags.HasFlag(ProcessCreationFlags.IsApplication)))
                         {
                             process.Terminate();
                         }
@@ -330,7 +330,7 @@ namespace Ryujinx.HLE.HOS
 
                         // Terminate HLE services (must be done after the application is already terminated,
                         // otherwise the application will receive errors due to service termination.
-                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.TitleId == 0))
+                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => !x.Flags.HasFlag(ProcessCreationFlags.IsApplication)))
                         {
                             process.Terminate();
                         }
