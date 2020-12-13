@@ -32,6 +32,7 @@ using Ryujinx.HLE.Loaders.Executables;
 using Ryujinx.HLE.Utilities;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 
 namespace Ryujinx.HLE.HOS
@@ -310,8 +311,6 @@ namespace Ryujinx.HLE.HOS
 
                 _isDisposed = true;
 
-                SurfaceFlinger.Dispose();
-
                 KProcess terminationProcess = new KProcess(KernelContext);
                 KThread terminationThread = new KThread(KernelContext);
 
@@ -320,7 +319,18 @@ namespace Ryujinx.HLE.HOS
                     // Force all threads to exit.
                     lock (KernelContext.Processes)
                     {
-                        foreach (KProcess process in KernelContext.Processes.Values)
+                        // Terminate application.
+                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.TitleId != 0))
+                        {
+                            process.Terminate();
+                        }
+
+                        // The application existed, now surface flinger can exit too.
+                        SurfaceFlinger.Dispose();
+
+                        // Terminate HLE services (must be done after the application is already terminated,
+                        // otherwise the application will receive errors due to service termination.
+                        foreach (KProcess process in KernelContext.Processes.Values.Where(x => x.TitleId == 0))
                         {
                             process.Terminate();
                         }
