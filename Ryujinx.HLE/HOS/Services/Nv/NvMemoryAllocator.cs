@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
                             // Overwrite existing block with its new smaller range.
                             _tree.Add(referenceAddress, leftEndAddress);
-                            Logger.Debug?.Print(LogClass.ServiceNv, $"Created smaller address range from 0x{referenceAddress:X} to 0x{leftEndAddress:X}.");
+                            Logger.Debug?.Print(LogClass.ServiceNv, $"Overwrite smaller address range from 0x{referenceAddress:X} to 0x{leftEndAddress:X}.");
                         }
                         else
                         {
@@ -116,6 +116,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (prevEndAddress >= expandedStart)
                         {
                             expandedStart = targetPrevAddress;
+                            Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation start address expanded to 0x{expandedStart:X}.");
                             LinkedListNode<ulong> prevPtr = _dictionary[prevAddress];
                             if (prevPtr.Previous != null)
                             {
@@ -143,6 +144,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
                         if (nextAddress <= expandedEnd)
                         {
                             expandedEnd = Math.Max(expandedEnd, nextEndAddress);
+                            Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation end address expanded to 0x{expandedEnd:X}.");
                             LinkedListNode<ulong> nextPtr = _dictionary[nextAddress];
                             if (nextPtr.Next != null)
                             {
