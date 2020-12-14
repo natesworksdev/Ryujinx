@@ -198,7 +198,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
             NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments.NvMapHandle, true);
 
-            if (map == null)
+            if (map == null || map.Size == 0)
             {
                 Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments.NvMapHandle:x8}!");
 
@@ -251,7 +251,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
             if (size == 0)
             {
-                size = (uint)map.Size;
+                return NvInternalResult.InvalidInput;
             }
 
             NvInternalResult result = NvInternalResult.Success;
@@ -299,10 +299,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    if (size > 0)
-                    {
-                        addressSpaceContext.AddMap(arguments.Offset, size, physicalAddress, virtualAddressAllocated);
-                    }
+                    addressSpaceContext.AddMap(arguments.Offset, size, physicalAddress, virtualAddressAllocated);
                 }
             }
 
