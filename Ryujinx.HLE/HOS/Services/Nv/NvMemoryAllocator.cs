@@ -45,43 +45,46 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                Logger.Debug?.Print(LogClass.ServiceNv, $"Allocating range from 0x{va:X} to 0x{(va + size):X}.");
-                if (referenceAddress != InvalidAddress)
+                if (size > 0)
                 {
-                    ulong endAddress = va + size;
-                    ulong referenceEndAddress = _tree.Get(referenceAddress);
-                    if (va >= referenceAddress)
+                    Logger.Debug?.Print(LogClass.ServiceNv, $"Allocating range from 0x{va:X} to 0x{(va + size):X}.");
+                    if (referenceAddress != InvalidAddress)
                     {
-                        // Need Left Node
-                        if (va > referenceAddress)
+                        ulong endAddress = va + size;
+                        ulong referenceEndAddress = _tree.Get(referenceAddress);
+                        if (va >= referenceAddress)
                         {
-                            ulong leftEndAddress = va;
+                            // Need Left Node
+                            if (va > referenceAddress)
+                            {
+                                ulong leftEndAddress = va;
 
-                            // Overwrite existing block with its new smaller range.
-                            _tree.Add(referenceAddress, leftEndAddress);
-                            Logger.Debug?.Print(LogClass.ServiceNv, $"Overwrite smaller address range from 0x{referenceAddress:X} to 0x{leftEndAddress:X}.");
-                        }
-                        else
-                        {
-                            // We need to get rid of the large chunk.
-                            _tree.Remove(referenceAddress);
-                        }
+                                // Overwrite existing block with its new smaller range.
+                                _tree.Add(referenceAddress, leftEndAddress);
+                                Logger.Debug?.Print(LogClass.ServiceNv, $"Overwrite smaller address range from 0x{referenceAddress:X} to 0x{leftEndAddress:X}.");
+                            }
+                            else
+                            {
+                                // We need to get rid of the large chunk.
+                                _tree.Remove(referenceAddress);
+                            }
 
-                        ulong rightSize = referenceEndAddress - endAddress;
-                        // If leftover space, create a right node.
-                        if (rightSize > 0)
-                        {
-                            Logger.Debug?.Print(LogClass.ServiceNv, $"Created smaller address range from 0x{endAddress:X} to 0x{referenceEndAddress:X}.");
-                            _tree.Add(endAddress, referenceEndAddress);
+                            ulong rightSize = referenceEndAddress - endAddress;
+                            // If leftover space, create a right node.
+                            if (rightSize > 0)
+                            {
+                                Logger.Debug?.Print(LogClass.ServiceNv, $"Created smaller address range from 0x{endAddress:X} to 0x{referenceEndAddress:X}.");
+                                _tree.Add(endAddress, referenceEndAddress);
 
-                            LinkedListNode<ulong> node = _list.AddAfter(_dictionary[referenceAddress], endAddress);
-                            _dictionary[endAddress] = node;
-                        }
+                                LinkedListNode<ulong> node = _list.AddAfter(_dictionary[referenceAddress], endAddress);
+                                _dictionary[endAddress] = node;
+                            }
 
-                        if (va == referenceAddress)
-                        {
-                            _list.Remove(_dictionary[referenceAddress]);
-                            _dictionary.Remove(referenceAddress);
+                            if (va == referenceAddress)
+                            {
+                                _list.Remove(_dictionary[referenceAddress]);
+                                _dictionary.Remove(referenceAddress);
+                            }
                         }
                     }
                 }
@@ -98,77 +101,80 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
         {
             lock (_tree)
             {
-                Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocating address range from 0x{va:X} to 0x{(va + size):X}.");
-
-                ulong freeAddressStartPosition = _tree.Floor(va);
-                if (freeAddressStartPosition != InvalidAddress)
+                if (size > 0)
                 {
-                    LinkedListNode<ulong> node = _dictionary[freeAddressStartPosition];
-                    ulong targetPrevAddress = _dictionary[freeAddressStartPosition].Previous != null ? _dictionary[_dictionary[freeAddressStartPosition].Previous.Value].Value : InvalidAddress;
-                    ulong targetNextAddress = _dictionary[freeAddressStartPosition].Next != null ? _dictionary[_dictionary[freeAddressStartPosition].Next.Value].Value : InvalidAddress;
-                    ulong expandedStart = va;
-                    ulong expandedEnd = va + size;
+                    Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocating address range from 0x{va:X} to 0x{(va + size):X}.");
 
-                    while (targetPrevAddress != InvalidAddress)
+                    ulong freeAddressStartPosition = _tree.Floor(va);
+                    if (freeAddressStartPosition != InvalidAddress)
                     {
-                        ulong prevAddress = targetPrevAddress;
-                        ulong prevEndAddress = _tree.Get(targetPrevAddress);
-                        if (prevEndAddress >= expandedStart)
+                        LinkedListNode<ulong> node = _dictionary[freeAddressStartPosition];
+                        ulong targetPrevAddress = _dictionary[freeAddressStartPosition].Previous != null ? _dictionary[_dictionary[freeAddressStartPosition].Previous.Value].Value : InvalidAddress;
+                        ulong targetNextAddress = _dictionary[freeAddressStartPosition].Next != null ? _dictionary[_dictionary[freeAddressStartPosition].Next.Value].Value : InvalidAddress;
+                        ulong expandedStart = va;
+                        ulong expandedEnd = va + size;
+
+                        while (targetPrevAddress != InvalidAddress)
                         {
-                            expandedStart = targetPrevAddress;
-                            Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation start address expanded to 0x{expandedStart:X}.");
-                            LinkedListNode<ulong> prevPtr = _dictionary[prevAddress];
-                            if (prevPtr.Previous != null)
+                            ulong prevAddress = targetPrevAddress;
+                            ulong prevEndAddress = _tree.Get(targetPrevAddress);
+                            if (prevEndAddress >= expandedStart)
                             {
-                                targetPrevAddress = prevPtr.Previous.Value;
+                                expandedStart = targetPrevAddress;
+                                Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation start address expanded to 0x{expandedStart:X}.");
+                                LinkedListNode<ulong> prevPtr = _dictionary[prevAddress];
+                                if (prevPtr.Previous != null)
+                                {
+                                    targetPrevAddress = prevPtr.Previous.Value;
+                                }
+                                else
+                                {
+                                    targetPrevAddress = InvalidAddress;
+                                }
+                                node = node.Previous;
+                                _tree.Remove(prevAddress);
+                                _list.Remove(_dictionary[prevAddress]);
+                                _dictionary.Remove(prevAddress);
                             }
                             else
                             {
-                                targetPrevAddress = InvalidAddress;
+                                break;
                             }
-                            node = node.Previous;
-                            _tree.Remove(prevAddress);
-                            _list.Remove(_dictionary[prevAddress]);
-                            _dictionary.Remove(prevAddress);
                         }
-                        else
-                        {
-                            break;
-                        }
-                    }
 
-                    while (targetNextAddress != InvalidAddress)
-                    {
-                        ulong nextAddress = targetNextAddress;
-                        ulong nextEndAddress = _tree.Get(targetNextAddress);
-                        if (nextAddress <= expandedEnd)
+                        while (targetNextAddress != InvalidAddress)
                         {
-                            expandedEnd = Math.Max(expandedEnd, nextEndAddress);
-                            Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation end address expanded to 0x{expandedEnd:X}.");
-                            LinkedListNode<ulong> nextPtr = _dictionary[nextAddress];
-                            if (nextPtr.Next != null)
+                            ulong nextAddress = targetNextAddress;
+                            ulong nextEndAddress = _tree.Get(targetNextAddress);
+                            if (nextAddress <= expandedEnd)
                             {
-                                targetNextAddress = nextPtr.Next.Value;
+                                expandedEnd = Math.Max(expandedEnd, nextEndAddress);
+                                Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation end address expanded to 0x{expandedEnd:X}.");
+                                LinkedListNode<ulong> nextPtr = _dictionary[nextAddress];
+                                if (nextPtr.Next != null)
+                                {
+                                    targetNextAddress = nextPtr.Next.Value;
+                                }
+                                else
+                                {
+                                    targetNextAddress = InvalidAddress;
+                                }
+                                _tree.Remove(nextAddress);
+                                _list.Remove(_dictionary[nextAddress]);
+                                _dictionary.Remove(nextAddress);
                             }
                             else
                             {
-                                targetNextAddress = InvalidAddress;
+                                break;
                             }
-                            _tree.Remove(nextAddress);
-                            _list.Remove(_dictionary[nextAddress]);
-                            _dictionary.Remove(nextAddress);
                         }
-                        else
-                        {
-                            break;
-                        }
+
+                        Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation resulted in new free range from 0x{expandedStart:X} to 0x{expandedEnd:X}.");
+
+                        _tree.Add(expandedStart, expandedEnd);
+                        LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
+                        _dictionary[expandedStart] = nodePtr;
                     }
-
-                    Logger.Debug?.Print(LogClass.ServiceNv, $"Deallocation resulted in new free range from 0x{expandedStart:X} to 0x{expandedEnd:X}.");
-
-                    _tree.Add(expandedStart, expandedEnd);
-                    LinkedListNode<ulong> nodePtr = _list.AddAfter(node, expandedStart);
-                    _dictionary[expandedStart] = nodePtr;
                 }
             }
         }
