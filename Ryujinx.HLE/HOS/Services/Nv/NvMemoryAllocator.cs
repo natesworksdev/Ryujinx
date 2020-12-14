@@ -59,7 +59,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
 
                             // Overwrite existing block with its new smaller range.
                             _tree.Add(referenceAddress, leftEndAddress);
-                            Logger.Debug?.Print(LogClass.ServiceNv, $"Created smaller address range from 0x{referenceAddress:X} to 0x{leftEndAddress:X}.");
+                            Logger.Debug?.Print(LogClass.ServiceNv, $"Overwrote smaller address range from 0x{referenceAddress:X} to 0x{leftEndAddress:X}.");
                         }
                         else
                         {
