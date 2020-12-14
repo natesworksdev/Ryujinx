@@ -75,6 +75,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
             int size = BitUtils.AlignUp(arguments.Size, (int)MemoryManager.PageSize);
 
+            if(size == 0)
+            {
+                Logger.Debug?.Print(LogClass.ServiceNv, "AlignUp caused map size to be zero!");
+            }
+
             arguments.Handle = CreateHandleFromMap(new NvMapHandle(size));
 
             Logger.Info?.Print(LogClass.ServiceNv, $"Created map {arguments.Handle} with size 0x{size:x8}!");
