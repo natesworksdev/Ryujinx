@@ -257,8 +257,8 @@ namespace ARMeilleure.Instructions
             if (Optimizations.FastFP && Optimizations.UseFma)
             {
                 // Vectors contain elements that are 32-bits in length always. The only thing that will change is the number of elements in a vector. 
-                // PS for both intrinsics is intentional.
-                EmitVectorTernaryOpF32(context, Intrinsic.X86Vfmadd231ps, Intrinsic.X86Vfmadd231ps);
+                // The 64-bit variant will never be used.
+                EmitVectorTernaryOpF32(context, Intrinsic.X86Vfmadd231ps, Intrinsic.X86Vfmadd231pd);
             }
             else
             {
