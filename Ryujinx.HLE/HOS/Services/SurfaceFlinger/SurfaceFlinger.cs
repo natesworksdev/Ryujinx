@@ -229,7 +229,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame * 3);
                     }
 
-                    // Sleep the minimal amount of time to avoid being too expensive.
+                    // Sleep if possible. If the time til the next frame is too low, spin wait instead.
                     long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
                     if (diff > 0)
                     {
