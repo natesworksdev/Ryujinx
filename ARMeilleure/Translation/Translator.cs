@@ -130,6 +130,8 @@ namespace ARMeilleure.Translation
             if (Interlocked.Decrement(ref _threadCount) == 0)
             {
                 _backgroundTranslatorEvent.Set();
+
+                // ResetPools(); // TODO: To be uncommented below ClearJitCache() @ #1518 when it lands.
             }
         }
 
@@ -228,10 +230,16 @@ namespace ARMeilleure.Translation
                 }
             }
 
-            ResetOperandPool(highCq);
-            ResetOperationPool(highCq);
+            ReturnOperandPool(highCq);
+            ReturnOperationPool(highCq);
 
             return new TranslatedFunction(func, highCq);
+        }
+
+        internal static void ResetPools()
+        {
+            ResetOperandPools();
+            ResetOperationPools();
         }
 
         private static ControlFlowGraph EmitAndGetCFG(ArmEmitterContext context, Block[] blocks)
