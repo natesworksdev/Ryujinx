@@ -299,7 +299,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
-                    addressSpaceContext.AddMap(arguments.Offset, size, physicalAddress, virtualAddressAllocated);
+                    if (size > 0)
+                    {
+                        addressSpaceContext.AddMap(arguments.Offset, size, physicalAddress, virtualAddressAllocated);
+                    }
                 }
             }
 
