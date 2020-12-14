@@ -41,7 +41,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetAccountId() -> nn::account::NetworkServiceAccountId
         public ResultCode GetAccountId(ServiceCtx context)
         {
-            // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted 
+            // NOTE: This opens the file at "su/baas/USERID_IN_UUID_STRING.dat" (where USERID_IN_UUID_STRING is formatted
             //       as "%08x-%04x-%04x-%02x%02x-%08x%04x") in the account:/ savedata.
             //       Then it searches the NetworkServiceAccountId related to the UserId in this file and returns it.
 
@@ -115,14 +115,14 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         }
 
         [Command(130)]
-        // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, buffer<nn::account::nas::NasUserBaseForApplication, 0x1a>, buffer<bytes, 6>)
+        // GetNintendoAccountUserResourceCacheForApplication() -> (nn::account::NintendoAccountId, nn::account::nas::NasUserBaseForApplication, buffer<bytes, 6>)
         public ResultCode GetNintendoAccountUserResourceCacheForApplication(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceAcc, new { NetworkServiceAccountId });
 
             context.ResponseData.Write(NetworkServiceAccountId);
 
-            // TODO: determine and fill the two output IPC buffers.
+            // TODO: determine and fill the output IPC buffer.
 
             return ResultCode.Success;
         }
