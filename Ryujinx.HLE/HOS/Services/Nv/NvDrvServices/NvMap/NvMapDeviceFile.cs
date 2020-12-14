@@ -16,8 +16,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
         public NvMapDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
             IdDictionary dict = _maps.GetOrAdd(Owner, (key) => new IdDictionary());
-
-            dict.Add(0, new NvMapHandle());
         }
 
         public override NvInternalResult Ioctl(NvIoctl command, Span<byte> arguments)
@@ -74,11 +72,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             }
 
             int size = BitUtils.AlignUp(arguments.Size, (int)MemoryManager.PageSize);
-
-            if(size == 0)
-            {
-                Logger.Debug?.Print(LogClass.ServiceNv, "AlignUp caused map size to be zero!");
-            }
 
             arguments.Handle = CreateHandleFromMap(new NvMapHandle(size));
 
@@ -240,8 +233,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             IdDictionary dict = _maps.GetOrAdd(Owner, (key) =>
             {
                 IdDictionary newDict = new IdDictionary();
-
-                newDict.Add(0, new NvMapHandle());
 
                 return newDict;
             });
