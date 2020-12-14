@@ -24,6 +24,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         private Stopwatch _chrono;
 
         private ManualResetEvent _event = new ManualResetEvent(false);
+        private AutoResetEvent _nextFrameEvent = new AutoResetEvent(true);
         private long _ticks;
         private long _ticksPerFrame;
         private long _spinTicks;
@@ -80,6 +81,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             // If the swap interval is 0, Game VSync is disabled.
             if (_swapInterval == 0)
             {
+                _nextFrameEvent.Set();
                 _ticksPerFrame = 1;
             }
             else
@@ -132,6 +134,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 Logger.Info?.Print(LogClass.SurfaceFlinger, $"Creating layer {layerId}");
 
                 BufferQueueCore core = BufferQueue.CreateBufferQueue(_device, pid, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
+
+                core.BufferQueued += () =>
+                {
+                    _nextFrameEvent.Set();
+                };
 
                 _layers.Add(layerId, new Layer
                 {
@@ -198,35 +205,48 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             while (_isRunning)
             {
                 long ticks = _chrono.ElapsedTicks;
-                _ticks += ticks - lastTicks;
-                lastTicks = ticks;
 
-                if (_ticks >= _ticksPerFrame)
+                if (_swapInterval == 0)
                 {
                     Compose();
 
                     _device.System?.SignalVsync();
-                    
-                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame * 3);
-                }
 
-                // Sleep the minimal amount of time to avoid being too expensive.
-                long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
-                if (diff > 0)
+                    _nextFrameEvent.WaitOne(17);
+                    lastTicks = ticks;
+                }
+                else
                 {
-                    if (diff < _spinTicks)
+                    _ticks += ticks - lastTicks;
+                    lastTicks = ticks;
+
+                    if (_ticks >= _ticksPerFrame)
                     {
-                        do
-                        {
-                            Thread.SpinWait(5);
-                            ticks = _chrono.ElapsedTicks;
-                            _ticks += ticks - lastTicks;
-                            lastTicks = ticks;
-                        } while (_ticks < _ticksPerFrame);
+                        Compose();
+
+                        _device.System?.SignalVsync();
+
+                        _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame * 3);
                     }
-                    else
+
+                    // Sleep the minimal amount of time to avoid being too expensive.
+                    long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
+                    if (diff > 0)
                     {
-                        _event.WaitOne((int)(diff / _1msTicks));
+                        if (diff < _spinTicks)
+                        {
+                            do
+                            {
+                                Thread.SpinWait(5);
+                                ticks = _chrono.ElapsedTicks;
+                                _ticks += ticks - lastTicks;
+                                lastTicks = ticks;
+                            } while (_ticks < _ticksPerFrame);
+                        }
+                        else
+                        {
+                            _event.WaitOne((int)(diff / _1msTicks));
+                        }
                     }
                 }
             }
