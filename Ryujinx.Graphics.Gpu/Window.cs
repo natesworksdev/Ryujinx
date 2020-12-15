@@ -175,7 +175,7 @@ namespace Ryujinx.Graphics.Gpu
         /// <returns>True if a frame is available, false otherwise</returns>
         public bool ConsumeFrameAvailable()
         {
-            if (_framesAvailable > 0)
+            if (Interlocked.CompareExchange(ref _framesAvailable, 0, 0) != 0)
             {
                 Interlocked.Decrement(ref _framesAvailable);
 

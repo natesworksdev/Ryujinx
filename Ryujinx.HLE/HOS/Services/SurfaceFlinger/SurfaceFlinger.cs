@@ -226,6 +226,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
                         _device.System?.SignalVsync();
 
+                        // Apply a maximum bound of 3 frames to the tick remainder, in case some event causes Ryujinx to pause for a long time or messes with the timer.
                         _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame * 3);
                     }
 
@@ -237,7 +238,10 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                         {
                             do
                             {
+                                // SpinWait is a little more HT/SMT friendly than aggressively updating/checking ticks.
+                                // The value of 5 still gives us quite a bit of precision (~0.0003ms variance at worst) while waiting a reasonable amount of time.
                                 Thread.SpinWait(5);
+
                                 ticks = _chrono.ElapsedTicks;
                                 _ticks += ticks - lastTicks;
                                 lastTicks = ticks;
