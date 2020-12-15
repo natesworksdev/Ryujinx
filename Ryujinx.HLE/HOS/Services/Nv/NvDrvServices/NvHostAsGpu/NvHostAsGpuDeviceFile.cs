@@ -196,22 +196,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
             AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context);
 
-            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments.NvMapHandle, true);
-
-            if (map == null)
-            {
-                Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments.NvMapHandle:x8}!");
-
-                return NvInternalResult.InvalidInput;
-            }
-
-            ulong pageSize = (ulong)arguments.PageSize;
-
-            if (pageSize == 0)
-            {
-                pageSize = (ulong)map.Align;
-            }
-
             long physicalAddress;
 
             if ((arguments.Flags & AddressSpaceFlags.RemapSubRange) != 0)
@@ -227,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                         if (virtualAddress < 0)
                         {
-                            string message = string.Format(mapErrorMsg, virtualAddress, arguments.MappingSize, pageSize);
+                            string message = string.Format(mapErrorMsg, virtualAddress, arguments.MappingSize);
 
                             Logger.Warning?.Print(LogClass.ServiceNv, message);
 
@@ -243,6 +227,22 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                         return NvInternalResult.InvalidInput;
                     }
                 }
+            }
+
+            NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments.NvMapHandle, true);
+
+            if (map == null)
+            {
+                Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments.NvMapHandle:x8}!");
+
+                return NvInternalResult.InvalidInput;
+            }
+
+            ulong pageSize = (ulong)arguments.PageSize;
+
+            if (pageSize == 0)
+            {
+                pageSize = (ulong)map.Align;
             }
 
             physicalAddress = map.Address + arguments.BufferOffset;
