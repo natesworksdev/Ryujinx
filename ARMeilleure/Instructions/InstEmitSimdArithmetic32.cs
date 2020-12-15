@@ -252,21 +252,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static void Vfma_V(ArmEmitterContext context) // Fused.
-        {
-            if (Optimizations.FastFP && Optimizations.UseFma)
-            {
-                EmitVectorTernaryOpF32(context, Intrinsic.X86Vfmadd231ps);
-            }
-            else
-            {
-                EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
-                {
-                    return EmitSoftFloatCallDefaultFpscr(context, nameof(SoftFloat32.FPMulAddFpscr), op1, op2, op3);
-                });
-            }
-        }
-
         public static void Vfma_S(ArmEmitterContext context) // Fused.
         {
             if (Optimizations.FastFP && Optimizations.UseFma)
@@ -282,6 +267,21 @@ namespace ARMeilleure.Instructions
                 EmitScalarTernaryOpF32(context, (op1, op2, op3) =>
                 {
                     return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMulAdd), op1, op2, op3);
+                });
+            }
+        }
+
+        public static void Vfma_V(ArmEmitterContext context) // Fused.
+        {
+            if (Optimizations.FastFP && Optimizations.UseFma)
+            {
+                EmitVectorTernaryOpF32(context, Intrinsic.X86Vfmadd231ps);
+            }
+            else
+            {
+                EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, nameof(SoftFloat32.FPMulAddFpscr), op1, op2, op3);
                 });
             }
         }
