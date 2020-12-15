@@ -230,12 +230,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private int CreateHandleFromMap(NvMapHandle map)
         {
-            IdDictionary dict = _maps.GetOrAdd(Owner, (key) =>
-            {
-                IdDictionary newDict = new IdDictionary();
-
-                return newDict;
-            });
+            IdDictionary dict = _maps.GetOrAdd(Owner, (key) => new IdDictionary());
 
             return dict.Add(map);
         }
