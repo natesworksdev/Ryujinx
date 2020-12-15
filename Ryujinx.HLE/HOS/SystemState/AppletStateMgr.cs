@@ -6,7 +6,7 @@ namespace Ryujinx.HLE.HOS.SystemState
 {
     class AppletStateMgr
     {
-        public ConcurrentQueue<MessageInfo> Messages { get; private set; }
+        public ConcurrentQueue<MessageInfo> Messages { get; }
 
         public FocusState FocusState { get; private set; }
 

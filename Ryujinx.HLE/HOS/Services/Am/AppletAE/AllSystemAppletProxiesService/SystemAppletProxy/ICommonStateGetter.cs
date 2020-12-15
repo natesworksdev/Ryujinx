@@ -29,7 +29,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         {
             KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
 
+<<<<<<< HEAD
             if (_messageEventHandle == 0)
+=======
+            if (context.Process.HandleTable.GenerateHandle(messageEvent.ReadableEvent, out int messageEventHandle) != KernelResult.Success)
+>>>>>>> dc0a846f (Address gdkchan feedback)
             {
                 if (context.Process.HandleTable.GenerateHandle(messageEvent.ReadableEvent, out _messageEventHandle) != KernelResult.Success)
                 {
@@ -37,7 +41,11 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 }
             }
 
+<<<<<<< HEAD
             context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_messageEventHandle);
+=======
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(messageEventHandle);
+>>>>>>> dc0a846f (Address gdkchan feedback)
 
             return ResultCode.Success;
         }
