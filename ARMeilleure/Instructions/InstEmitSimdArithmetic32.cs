@@ -305,6 +305,21 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Vfms_V(ArmEmitterContext context) // Fused.
+        {
+            if (Optimizations.FastFP && Optimizations.UseFma)
+            {
+                EmitVectorTernaryOpF32(context, Intrinsic.X86Vfnmadd231ps);
+            }
+            else
+            {
+                EmitVectorTernaryOpF32(context, (op1, op2, op3) =>
+                {
+                    return EmitSoftFloatCallDefaultFpscr(context, nameof(SoftFloat32.FPMulSubFpscr), op1, op2, op3);
+                });
+            }
+        }
+
         public static void Vfnma_S(ArmEmitterContext context) // Fused.
         {
             if (Optimizations.FastFP && Optimizations.UseFma)
