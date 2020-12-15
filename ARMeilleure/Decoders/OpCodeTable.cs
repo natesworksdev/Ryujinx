@@ -413,6 +413,8 @@ namespace ARMeilleure.Decoders
             SetA64("0x001110101xxxxx000111xxxxxxxxxx", InstName.Orr_V,           InstEmit.Orr_V,           OpCodeSimdReg.Create);
             SetA64("0x00111100000xxx0xx101xxxxxxxxxx", InstName.Orr_Vi,          InstEmit.Orr_Vi,          OpCodeSimdImm.Create);
             SetA64("0x00111100000xxx10x101xxxxxxxxxx", InstName.Orr_Vi,          InstEmit.Orr_Vi,          OpCodeSimdImm.Create);
+            SetA64("0x001110001xxxxx111000xxxxxxxxxx", InstName.Pmull_V,         InstEmit.Pmull_V,         OpCodeSimdReg.Create);
+            SetA64("0x001110111xxxxx111000xxxxxxxxxx", InstName.Pmull_V,         InstEmit.Pmull_V,         OpCodeSimdReg.Create);
             SetA64("0x101110<<1xxxxx010000xxxxxxxxxx", InstName.Raddhn_V,        InstEmit.Raddhn_V,        OpCodeSimdReg.Create);
             SetA64("0x10111001100000010110xxxxxxxxxx", InstName.Rbit_V,          InstEmit.Rbit_V,          OpCodeSimd.Create);
             SetA64("0x00111000100000000110xxxxxxxxxx", InstName.Rev16_V,         InstEmit.Rev16_V,         OpCodeSimd.Create);

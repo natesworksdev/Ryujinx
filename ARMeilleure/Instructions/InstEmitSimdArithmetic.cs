@@ -1928,6 +1928,71 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Pmull_V(ArmEmitterContext context)
+        {
+            if (Optimizations.UseSse41)
+            {
+                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    n = context.VectorZeroUpper64(n);
+                    m = context.VectorZeroUpper64(m);
+                }
+                else /* if (op.RegisterSize == RegisterSize.Simd128) */
+                {
+                    n = context.AddIntrinsic(Intrinsic.X86Psrldq, n, Const(8));
+                    m = context.AddIntrinsic(Intrinsic.X86Psrldq, m, Const(8));
+                }
+
+                if (op.Size == 0)
+                {
+                    n = context.AddIntrinsic(Intrinsic.X86Pmovzxbw, n);
+                    m = context.AddIntrinsic(Intrinsic.X86Pmovzxbw, m);
+                }
+
+                Operand res = context.VectorZero();
+
+                if (op.Size == 0)
+                {
+                    for (int i = 0; i < 8; i++)
+                    {
+                        Operand mask = context.AddIntrinsic(Intrinsic.X86Psllw, n, Const(15 - i));
+                                mask = context.AddIntrinsic(Intrinsic.X86Psraw, mask, Const(15));
+
+                        Operand tmp = context.AddIntrinsic(Intrinsic.X86Psllw, m, Const(i));
+                                tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
+
+                        res = context.AddIntrinsic(Intrinsic.X86Pxor, res, tmp);
+                    }
+                }
+                else /* if (op.Size == 3) */
+                {
+                    for (int i = 0; i < 64; i++)
+                    {
+                        Operand mask = context.AddIntrinsic(Intrinsic.X86Movlhps, n, n);
+                                mask = context.AddIntrinsic(Intrinsic.X86Psllq, mask, Const(63 - i));
+                                mask = context.AddIntrinsic(Intrinsic.X86Psrlq, mask, Const(63));
+                                mask = context.AddIntrinsic(Intrinsic.X86Psubq, context.VectorZero(), mask);
+
+                        Operand tmp = EmitSse2Sll_128(context, m, i);
+                                tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
+
+                        res = context.AddIntrinsic(Intrinsic.X86Pxor, res, tmp);
+                    }
+                }
+
+                context.Copy(GetVec(op.Rd), res);
+            }
+            else
+            {
+                throw new NotImplementedException("Pmull_V slow path not implemented.");
+            }
+        }
+
         public static void Raddhn_V(ArmEmitterContext context)
         {
             EmitHighNarrow(context, (op1, op2) => context.Add(op1, op2), round: true);
@@ -3689,6 +3754,24 @@ namespace ARMeilleure.Instructions
             }
 
             context.Copy(GetVec(op.Rd), res);
+        }
+
+        private static Operand EmitSse2Sll_128(ArmEmitterContext context, Operand op, int shift)
+        {
+            // The upper part of op is assumed to be zero.
+            Debug.Assert(shift >= 0 && shift < 64);
+
+            if (shift == 0)
+            {
+                return op;
+            }
+
+            Operand high = context.AddIntrinsic(Intrinsic.X86Pslldq, op, Const(8));
+                    high = context.AddIntrinsic(Intrinsic.X86Psrlq, high, Const(64 - shift));
+
+            Operand low = context.AddIntrinsic(Intrinsic.X86Psllq, op, Const(shift));
+
+            return context.AddIntrinsic(Intrinsic.X86Por, high, low);
         }
     }
 }
