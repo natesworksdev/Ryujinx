@@ -44,6 +44,15 @@ namespace Ryujinx.Tests.Cpu
             };
         }
 
+        private static uint[] _Vfma_Vfms_V_F32_()
+        {
+            return new uint[]
+            {
+                0xF2000C10u, // VFMA.F32 D0, D0, D0
+                0xF2200C10u  // VFMS.F32 D0, D0, D0
+            };
+        }
+
         private static uint[] _Vmla_Vmls_Vnmla_Vnmls_S_F32_()
         {
             return new uint[]
@@ -228,8 +237,8 @@ namespace Ryujinx.Tests.Cpu
         private const int RndCnt = 2;
 
         private static readonly bool NoZeros = false;
-        private static readonly bool NoInfs  = true;
-        private static readonly bool NoNaNs  = true;
+        private static readonly bool NoInfs  = false;
+        private static readonly bool NoNaNs  = false;
 
         [Explicit]
         [Test, Pairwise, Description("VADD.f32 V0, V0, V0")]
@@ -377,49 +386,35 @@ namespace Ryujinx.Tests.Cpu
             CompareAgainstUnicorn();
         }
 
-        [Test, Pairwise, Description("VFMA.F<size> <Vd>, <Vn>, <Vm>")]
-        public void Vfma_V([Values(0u, 1u)] uint rd,
-                           [Values(0u, 1u)] uint rn,
-                           [Values(0u, 1u)] uint rm,
-                           [Values(0u, 1u)] uint Q,
-                           [ValueSource("_2S_F_")] ulong z,
-                           [ValueSource("_2S_F_")] ulong a,
-                           [ValueSource("_2S_F_")] ulong b )
+        [Test, Pairwise] [Explicit] // Fused.
+        public void Vfma_Vfms_V_F32([ValueSource(nameof(_Vfma_Vfms_V_F32_))] uint opcode,
+                                    [Values(0u, 1u, 2u, 3u)] uint rd,
+                                    [Values(0u, 1u, 2u, 3u)] uint rn,
+                                    [Values(0u, 1u, 2u, 3u)] uint rm,
+                                    [ValueSource(nameof(_2S_F_))] ulong d0,
+                                    [ValueSource(nameof(_2S_F_))] ulong d1,
+                                    [ValueSource(nameof(_2S_F_))] ulong d2,
+                                    [ValueSource(nameof(_2S_F_))] ulong d3,
+                                    [Values] bool q)
         {
-            uint opcode = 0xf2000c10;
-            
-            V128 v0;
-            V128 v1;
-            V128 v2;
-
-            uint c = (uint) BitConverter.SingleToInt32Bits(z);
-            uint d = (uint) BitConverter.SingleToInt32Bits(a);
-            uint e = (uint) BitConverter.SingleToInt32Bits(b);
-            if (Q == 0)
+            if (q)
             {
-                opcode |= (((rm & 0x1) << 5) | (rm & 0x1e) >> 1);
-                opcode |= (((rd & 0x1) << 22) | (rd & 0x1e) << 11);
-                opcode |= (((rn & 0x1) << 7) | (rn & 0x1e) >> 15);
+                opcode |= 1 << 6;
 
-                v0 = MakeVectorE0E1(c, c);
-                v1 = MakeVectorE0E1(d, c);
-                v2 = MakeVectorE0E1(e, c);
-            }
-            else
-            {
-                rd = rn = rm = 0; // Needed, as these values cannot be odd values if Q == 1.
-                opcode |= (((rm & 0x10) << 1) | (rm & 0xf) << 0);
-                opcode |= (((rd & 0x10) << 18) | (rd & 0xf) << 12);
-                opcode |= (((rn & 0x10) << 3) | (rn & 0xf) << 16);
-
-                v0 = MakeVectorE0E1E2E3(c, c, d, e);
-                v1 = MakeVectorE0E1E2E3(d, c, e, c);
-                v2 = MakeVectorE0E1E2E3(e, c, d, c);
+                rd >>= 1; rd <<= 1;
+                rn >>= 1; rn <<= 1;
+                rm >>= 1; rm <<= 1;
             }
 
-            opcode |= ((Q & 1)  << 6);
+            opcode |= ((rd & 0xf) << 12) | ((rd & 0x10) << 18);
+            opcode |= ((rn & 0xf) << 16) | ((rn & 0x10) << 3);
+            opcode |= ((rm & 0xf) << 0)  | ((rm & 0x10) << 1);
 
-            SingleOpcode(opcode, v0: v0, v1: v1, v2: v2);
+            V128 v0 = MakeVectorE0E1(d0, d1);
+            V128 v1 = MakeVectorE0E1(d2, d3);
+
+            SingleOpcode(opcode, v0: v0, v1: v1);
+
             CompareAgainstUnicorn();
         }
 
