@@ -179,6 +179,7 @@ namespace ARMeilleure.Translation.Cache
             return entry;
         }
 
+        // For future use.
         public void RemoveFunctionEntries(ulong guestAddress)
         {
             if (Owners.TryRemove(guestAddress, out List<int> list))
