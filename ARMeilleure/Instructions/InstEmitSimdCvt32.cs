@@ -348,7 +348,7 @@ namespace ARMeilleure.Instructions
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) == 1;
-            String methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
+            string methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
 
             EmitScalarUnaryOpF32(context, (op1) =>
             {
