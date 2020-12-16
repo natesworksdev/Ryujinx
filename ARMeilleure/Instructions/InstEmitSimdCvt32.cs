@@ -323,21 +323,6 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        // VRINTX (floating-point).
-        public static void Vrintx_S(ArmEmitterContext context)
-        {
-            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
-
-            bool doubleSize = (op.Size & 1) == 1;
-            String methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
-
-            EmitScalarUnaryOpF32(context, (op1) =>
-            {
-                MethodInfo info = typeof(SoftFallback).GetMethod(methodName);
-                return context.Call(info, op1);
-            });
-        }
-
         // VRINTZ (floating-point).
         public static void Vrint_Z(ArmEmitterContext context)
         {
@@ -355,6 +340,21 @@ namespace ARMeilleure.Instructions
             {
                 EmitScalarUnaryOpF32(context, (op1) => EmitUnaryMathCall(context, nameof(Math.Truncate), op1));
             }
+        }
+
+        // VRINTX (floating-point).
+        public static void Vrintx_S(ArmEmitterContext context)
+        {
+            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
+
+            bool doubleSize = (op.Size & 1) == 1;
+            String methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
+
+            EmitScalarUnaryOpF32(context, (op1) =>
+            {
+                MethodInfo info = typeof(SoftFallback).GetMethod(methodName);
+                return context.Call(info, op1);
+            });
         }
 
         private static Operand EmitFPConvert(ArmEmitterContext context, Operand value, OperandType type, bool signed)
