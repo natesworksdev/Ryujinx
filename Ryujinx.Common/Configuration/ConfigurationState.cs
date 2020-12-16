@@ -456,7 +456,7 @@ namespace Ryujinx.Configuration
             Graphics.ResScale.Value                = 1;
             Graphics.ResScaleCustom.Value          = 1.0f;
             Graphics.MaxAnisotropy.Value           = -1.0f;
-            Graphics.AspectRatio.Value             = AspectRatio.To16x9;
+            Graphics.AspectRatio.Value             = AspectRatio.Fixed16x9;
             Graphics.ShadersDumpPath.Value         = "";
             Logger.EnableDebug.Value               = false;
             Logger.EnableStub.Value                = true;
@@ -765,7 +765,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 18.");
 
-                configurationFileFormat.AspectRatio = AspectRatio.To16x9;
+                configurationFileFormat.AspectRatio = AspectRatio.Fixed16x9;
 
                 configurationFileUpdated = true;
             }

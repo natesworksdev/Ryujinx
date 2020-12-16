@@ -2,11 +2,11 @@
 {
     public enum AspectRatio
     {
-        To4x3,
-        To16x9,
-        To16x10,
-        To21x9,
-        To32x9,
+        Fixed4x3,
+        Fixed16x9,
+        Fixed16x10,
+        Fixed21x9,
+        Fixed32x9,
         Stretched
     }
 
@@ -21,12 +21,12 @@
         {
             return aspectRatio switch
             {
-                AspectRatio.To4x3   => 4.0f,
-                AspectRatio.To16x9  => 16.0f,
-                AspectRatio.To16x10 => 16.0f,
-                AspectRatio.To21x9  => 21.0f,
-                AspectRatio.To32x9  => 32.0f,
-                _                   => 16.0f
+                AspectRatio.Fixed4x3   => 4.0f,
+                AspectRatio.Fixed16x9  => 16.0f,
+                AspectRatio.Fixed16x10 => 16.0f,
+                AspectRatio.Fixed21x9  => 21.0f,
+                AspectRatio.Fixed32x9  => 32.0f,
+                _                      => 16.0f
             };
         }
 
@@ -34,12 +34,12 @@
         {
             return aspectRatio switch
             {
-                AspectRatio.To4x3   => 3.0f,
-                AspectRatio.To16x9  => 9.0f,
-                AspectRatio.To16x10 => 10.0f,
-                AspectRatio.To21x9  => 9.0f,
-                AspectRatio.To32x9  => 9.0f,
-                _                   => 9.0f
+                AspectRatio.Fixed4x3   => 3.0f,
+                AspectRatio.Fixed16x9  => 9.0f,
+                AspectRatio.Fixed16x10 => 10.0f,
+                AspectRatio.Fixed21x9  => 9.0f,
+                AspectRatio.Fixed32x9  => 9.0f,
+                _                      => 9.0f
             };
         }
 
@@ -47,12 +47,12 @@
         {
             return aspectRatio switch
             {
-                AspectRatio.To4x3   => "4:3",
-                AspectRatio.To16x9  => "16:9",
-                AspectRatio.To16x10 => "16:10",
-                AspectRatio.To21x9  => "21:9",
-                AspectRatio.To32x9  => "32:9",
-                _                   => "Stretched"
+                AspectRatio.Fixed4x3   => "4:3",
+                AspectRatio.Fixed16x9  => "16:9",
+                AspectRatio.Fixed16x10 => "16:10",
+                AspectRatio.Fixed21x9  => "21:9",
+                AspectRatio.Fixed32x9  => "32:9",
+                _                      => "Stretched"
             };
         }
     }
