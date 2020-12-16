@@ -1959,16 +1959,13 @@ namespace ARMeilleure.Instructions
                     m = context.AddIntrinsic(Intrinsic.X86Psrldq, m, Const(8));
                 }
 
-                if (op.Size == 0)
-                {
-                    n = context.AddIntrinsic(Intrinsic.X86Pmovzxbw, n);
-                    m = context.AddIntrinsic(Intrinsic.X86Pmovzxbw, m);
-                }
-
                 Operand res = context.VectorZero();
 
                 if (op.Size == 0)
                 {
+                    n = context.AddIntrinsic(Intrinsic.X86Pmovzxbw, n);
+                    m = context.AddIntrinsic(Intrinsic.X86Pmovzxbw, m);
+
                     for (int i = 0; i < 8; i++)
                     {
                         Operand mask = context.AddIntrinsic(Intrinsic.X86Psllw, n, Const(15 - i));
@@ -1982,12 +1979,14 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (op.Size == 3) */
                 {
+                    Operand zero = context.VectorZero();
+
                     for (int i = 0; i < 64; i++)
                     {
                         Operand mask = context.AddIntrinsic(Intrinsic.X86Movlhps, n, n);
                                 mask = context.AddIntrinsic(Intrinsic.X86Psllq, mask, Const(63 - i));
                                 mask = context.AddIntrinsic(Intrinsic.X86Psrlq, mask, Const(63));
-                                mask = context.AddIntrinsic(Intrinsic.X86Psubq, context.VectorZero(), mask);
+                                mask = context.AddIntrinsic(Intrinsic.X86Psubq, zero, mask);
 
                         Operand tmp = EmitSse2Sll_128(context, m, i);
                                 tmp = context.AddIntrinsic(Intrinsic.X86Pand, tmp, mask);
