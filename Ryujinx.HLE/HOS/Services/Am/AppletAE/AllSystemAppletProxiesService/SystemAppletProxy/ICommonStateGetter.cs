@@ -51,18 +51,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 return ResultCode.NoMessages;
             }
 
-            KEvent Event = context.Device.System.AppletState.MessageEvent;
+            KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
 
             // NOTE: Service checks if current states are different than the stored ones.
             //       Since we don't support any states for now, it's fine to check if there is still messages available.
 
-            if (context.Device.System.AppletState.Messages.Count == 0)
+            if (context.Device.System.AppletState.Messages.IsEmpty)
             {
-                Event.ReadableEvent.Clear();
+                messageEvent.ReadableEvent.Clear();
             }
             else
             {
-                Event.ReadableEvent.Signal();
+                messageEvent.ReadableEvent.Signal();
             }
 
             context.ResponseData.Write((int)message);
