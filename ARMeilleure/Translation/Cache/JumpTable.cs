@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 
 namespace ARMeilleure.Translation.Cache
 {
-    class JumpTable
+    class JumpTable : IDisposable
     {
         // The jump table is a block of (guestAddress, hostAddress) function mappings.
         // Each entry corresponds to one branch in a JIT compiled function. The entries are
@@ -256,6 +256,12 @@ namespace ARMeilleure.Translation.Cache
             Debug.Assert(DynTable.EntryIsValid(entry));
 
             return _dynamicRegion.Pointer + entry * DynamicTableStride;
+        }
+
+        public void Dispose()
+        {
+            _jumpRegion.Dispose();
+            _dynamicRegion.Dispose();
         }
     }
 }

@@ -9,6 +9,7 @@ using ARMeilleure.Translation.PTC;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 
@@ -19,6 +20,7 @@ namespace ARMeilleure.Translation
 {
     public class Translator
     {
+        private readonly IJitMemoryAllocator _allocator;
         private readonly IMemoryManager _memory;
 
         private readonly ConcurrentDictionary<ulong, TranslatedFunction> _funcs;
@@ -28,7 +30,7 @@ namespace ARMeilleure.Translation
         private readonly AutoResetEvent _backgroundTranslatorEvent;
         private readonly ReaderWriterLock _backgroundTranslatorLock;
 
-        private readonly JumpTable _jumpTable;
+        private JumpTable _jumpTable;
 
         private volatile int _threadCount;
 
@@ -37,6 +39,7 @@ namespace ARMeilleure.Translation
 
         public Translator(IJitMemoryAllocator allocator, IMemoryManager memory)
         {
+            _allocator = allocator;
             _memory = memory;
 
             _funcs = new ConcurrentDictionary<ulong, TranslatedFunction>();
@@ -46,16 +49,9 @@ namespace ARMeilleure.Translation
             _backgroundTranslatorEvent = new AutoResetEvent(false);
             _backgroundTranslatorLock = new ReaderWriterLock();
 
-            _jumpTable = new JumpTable(allocator);
-
             JitCache.Initialize(allocator);
 
             DirectCallStubs.InitializeStubs();
-
-            if (Ptc.State == PtcState.Enabled)
-            {
-                Ptc.LoadTranslations(_funcs, memory.PageTablePointer, _jumpTable);
-            }
         }
 
         private void TranslateStackedSubs()
@@ -99,8 +95,12 @@ namespace ARMeilleure.Translation
             {
                 IsReadyForTranslation.WaitOne();
 
+                Debug.Assert(_jumpTable == null);
+                _jumpTable = new JumpTable(_allocator);
+
                 if (Ptc.State == PtcState.Enabled)
                 {
+                    Ptc.LoadTranslations(_funcs, _memory.PageTablePointer, _jumpTable);
                     Ptc.MakeAndSaveTranslations(_funcs, _memory, _jumpTable);
                 }
 
@@ -146,6 +146,9 @@ namespace ARMeilleure.Translation
                 _backgroundTranslatorEvent.Set();
 
                 ClearJitCache();
+
+                _jumpTable.Dispose();
+                _jumpTable = null;
             }
         }
 
@@ -411,7 +414,6 @@ namespace ARMeilleure.Translation
             foreach (var kv in _funcs)
             {
                 JitCache.Unmap(kv.Value.FuncPtr);
-                _jumpTable.RemoveFunctionEntries(kv.Key);
             }
 
             _funcs.Clear();
@@ -419,7 +421,6 @@ namespace ARMeilleure.Translation
             while (_oldFuncs.TryDequeue(out var kv))
             {
                 JitCache.Unmap(kv.Value);
-                _jumpTable.RemoveFunctionEntries(kv.Key);
             }
         }
 
