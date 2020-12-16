@@ -323,7 +323,7 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        // VRINTX (floating-point)
+        // VRINTX (floating-point).
         public static void Vrintx_S(ArmEmitterContext context)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
