@@ -1930,10 +1930,21 @@ namespace ARMeilleure.Instructions
 
         public static void Pmull_V(ArmEmitterContext context)
         {
-            if (Optimizations.UseSse41)
-            {
-                OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
+            OpCodeSimdReg op = (OpCodeSimdReg)context.CurrOp;
 
+            if (Optimizations.UsePclmulqdq && op.Size == 3)
+            {
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                int imm8 = op.RegisterSize == RegisterSize.Simd64 ? 0b0000_0000 : 0b0001_0001;
+
+                Operand res = context.AddIntrinsic(Intrinsic.X86Pclmulqdq, n, m, Const(imm8));
+
+                context.Copy(GetVec(op.Rd), res);
+            }
+            else if (Optimizations.UseSse41)
+            {
                 Operand n = GetVec(op.Rn);
                 Operand m = GetVec(op.Rm);
 
