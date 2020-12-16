@@ -326,7 +326,7 @@ namespace ARMeilleure.Instructions
         // VRINTX (floating-point)
         public static void Vrintx_S(ArmEmitterContext context)
         {
-            OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
+            OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
 
             bool doubleSize = (op.Size & 1) == 1;
             String methodName = doubleSize ? nameof(SoftFallback.Round) : nameof(SoftFallback.RoundF);
