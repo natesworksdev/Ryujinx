@@ -335,7 +335,7 @@ namespace ARMeilleure.Instructions
             {
                 MethodInfo info = typeof(SoftFallback).GetMethod(methodName);
                 return context.Call(info, op1);
-            });   
+            });
         }
 
         // VRINTZ (floating-point).
