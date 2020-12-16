@@ -632,18 +632,18 @@ namespace Ryujinx.Ui
             // OpenTK always captures mouse events, even if out of focus, so check if window is focused.
             if (_isFocused && _mousePressed)
             {
-                float aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat();
+                float aspectWidth = SwitchPanelHeight * ConfigurationState.Instance.Graphics.AspectRatio.Value.ToFloat();
 
                 int screenWidth  = AllocatedWidth;
                 int screenHeight = AllocatedHeight;
 
-                if (AllocatedWidth > AllocatedHeight * (SwitchPanelHeight * aspectRatio) / SwitchPanelHeight)
+                if (AllocatedWidth > AllocatedHeight * aspectWidth / SwitchPanelHeight)
                 {
-                    screenWidth = (int)(AllocatedHeight * (SwitchPanelHeight * aspectRatio)) / SwitchPanelHeight;
+                    screenWidth = (int)(AllocatedHeight * aspectWidth) / SwitchPanelHeight;
                 }
                 else
                 {
-                    screenHeight = (AllocatedWidth * SwitchPanelHeight) / (int)(SwitchPanelHeight * aspectRatio);
+                    screenHeight = (AllocatedWidth * SwitchPanelHeight) / (int)aspectWidth;
                 }
 
                 int startX = (AllocatedWidth  - screenWidth)  >> 1;
@@ -661,7 +661,7 @@ namespace Ryujinx.Ui
                     int screenMouseX = (int)_mouseX - startX;
                     int screenMouseY = (int)_mouseY - startY;
 
-                    int mX = (screenMouseX * (int)(SwitchPanelHeight * aspectRatio)) / screenWidth;
+                    int mX = (screenMouseX * (int)aspectWidth)  / screenWidth;
                     int mY = (screenMouseY * SwitchPanelHeight) / screenHeight;
 
                     TouchPoint currentPoint = new TouchPoint
