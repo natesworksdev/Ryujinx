@@ -245,9 +245,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             return false;
         }
 
-        public static void IncrementMapRefCount(long pid, int handle, bool allowHandleZero = false)
+        public static void IncrementMapRefCount(long pid, int handle)
         {
-            GetMapFromHandle(pid, handle, allowHandleZero)?.IncrementRefCount();
+            GetMapFromHandle(pid, handle)?.IncrementRefCount();
         }
 
         public static bool DecrementMapRefCount(long pid, int handle)
@@ -273,9 +273,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             }
         }
 
-        public static NvMapHandle GetMapFromHandle(long pid, int handle, bool allowHandleZero = false)
+        public static NvMapHandle GetMapFromHandle(long pid, int handle)
         {
-            if ((allowHandleZero || handle != 0) && _maps.TryGetValue(pid, out IdDictionary dict))
+            if (handle != 0 && _maps.TryGetValue(pid, out IdDictionary dict))
             {
                 return dict.GetData<NvMapHandle>(handle);
             }
