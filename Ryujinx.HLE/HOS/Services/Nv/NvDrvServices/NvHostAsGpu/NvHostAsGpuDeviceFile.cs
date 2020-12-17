@@ -340,7 +340,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     }
                     else
                     {
-                        Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments[index].NvMapHandle:x8}!");
+                        Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid GPU Virtual Address 0x{shiftedGpuOffset:x8}!");
 
                         return NvInternalResult.InvalidInput;
                     }
