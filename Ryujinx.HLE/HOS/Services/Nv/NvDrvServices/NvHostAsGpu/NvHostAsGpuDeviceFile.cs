@@ -343,9 +343,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     if(addressSpaceContext.TryGetMapPhysicalAddress(shiftedGpuOffset, out long physicalAddress))
                     {
                         gmm.Map(
-                        ((ulong)arguments[index].MapOffset << 16) + (ulong)physicalAddress,
-                         (ulong)shiftedGpuOffset,
-                         (ulong)arguments[index].Pages << 16);
+                            ((ulong)arguments[index].MapOffset << 16) + (ulong)physicalAddress,
+                             (ulong)shiftedGpuOffset,
+                             (ulong)arguments[index].Pages << 16);
                     }
                     else
                     {
