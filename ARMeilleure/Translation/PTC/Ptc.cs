@@ -618,6 +618,7 @@ namespace ARMeilleure.Translation.PTC
 
             // WriteInfo.
             _infosWriter.Write((ulong)infoEntry.Address);
+            _infosWriter.Write((ulong)infoEntry.GuestSize);
             _infosWriter.Write((bool)infoEntry.HighCq);
             _infosWriter.Write((bool)infoEntry.Stubbed);
             _infosWriter.Write((int)infoEntry.CodeLen);
