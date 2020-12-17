@@ -1,3 +1,4 @@
+using ARMeilleure.Translation.Cache;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -237,7 +238,8 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        public void Clean(ulong guestAddress) // For future use.
+        // For future use.
+        public void Clean(ulong guestAddress)
         {
             if (Owners.TryGetValue(guestAddress, out List<int> entries))
             {

@@ -3,6 +3,7 @@ using ARMeilleure.Instructions;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Memory;
 using ARMeilleure.State;
+using ARMeilleure.Translation.Cache;
 using System.Collections.Generic;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
