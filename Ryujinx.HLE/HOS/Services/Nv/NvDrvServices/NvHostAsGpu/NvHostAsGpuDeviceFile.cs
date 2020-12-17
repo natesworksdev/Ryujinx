@@ -340,11 +340,19 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                 if (arguments[index].NvMapHandle == 0)
                 {
-                    addressSpaceContext.TryGetMapPhysicalAddress(shiftedGpuOffset, out long physicalAddress);
-                    gmm.Map(
+                    if(addressSpaceContext.TryGetMapPhysicalAddress(shiftedGpuOffset, out long physicalAddress))
+                    {
+                        gmm.Map(
                         ((ulong)arguments[index].MapOffset << 16) + (ulong)physicalAddress,
                          (ulong)shiftedGpuOffset,
                          (ulong)arguments[index].Pages << 16);
+                    }
+                    else
+                    {
+                        Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments[index].NvMapHandle:x8}!");
+
+                        return NvInternalResult.InvalidInput;
+                    }
                 }
                 else
                 {
@@ -352,13 +360,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                         ((ulong)arguments[index].MapOffset << 16) + (ulong)map.Address,
                          (ulong)shiftedGpuOffset,
                          (ulong)arguments[index].Pages << 16);
-                }
-                if (shiftedGpuOffset < 0)
-                {
-                    Logger.Warning?.Print(LogClass.ServiceNv,
-                        $"Page 0x{arguments[index].GpuOffset:x16} size 0x{arguments[index].Pages:x16} not allocated!");
-
-                    return NvInternalResult.InvalidInput;
                 }
             }
 
