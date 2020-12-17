@@ -252,7 +252,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         public static bool DecrementMapRefCount(long pid, int handle)
         {
-            NvMapHandle map = GetMapFromHandle(pid, handle, false);
+            NvMapHandle map = GetMapFromHandle(pid, handle);
 
             if (map == null)
             {
