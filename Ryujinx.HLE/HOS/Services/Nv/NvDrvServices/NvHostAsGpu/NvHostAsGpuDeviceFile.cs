@@ -322,9 +322,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
         private NvInternalResult Remap(Span<RemapArguments> arguments)
         {
+            AddressSpaceContext addressSpaceContext = GetAddressSpaceContext(Context);
             for (int index = 0; index < arguments.Length; index++)
             {
-                MemoryManager gmm = GetAddressSpaceContext(Context).Gmm;
+                MemoryManager gmm = addressSpaceContext.Gmm;
 
                 NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments[index].NvMapHandle, true);
 
@@ -335,13 +336,24 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     return NvInternalResult.InvalidInput;
                 }
 
+
                 long shiftedGpuOffset = (long)((ulong)arguments[index].GpuOffset << 16);
 
-                gmm.Map(
-                    ((ulong)arguments[index].MapOffset << 16) + (ulong)map.Address,
-                     (ulong)shiftedGpuOffset,
-                     (ulong)arguments[index].Pages     << 16);
-
+                if (arguments[index].NvMapHandle == 0)
+                {
+                    addressSpaceContext.TryGetMapPhysicalAddress(shiftedGpuOffset, out long physicalAddress);
+                    gmm.Map(
+                        ((ulong)arguments[index].MapOffset << 16) + (ulong)physicalAddress,
+                         (ulong)shiftedGpuOffset,
+                         (ulong)arguments[index].Pages << 16);
+                }
+                else
+                {
+                    gmm.Map(
+                        ((ulong)arguments[index].MapOffset << 16) + (ulong)map.Address,
+                         (ulong)shiftedGpuOffset,
+                         (ulong)arguments[index].Pages << 16);
+                }
                 if (shiftedGpuOffset < 0)
                 {
                     Logger.Warning?.Print(LogClass.ServiceNv,
