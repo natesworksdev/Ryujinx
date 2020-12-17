@@ -327,15 +327,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
             {
                 MemoryManager gmm = addressSpaceContext.Gmm;
 
-                NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments[index].NvMapHandle);
-
-                if (map == null)
-                {
-                    Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments[index].NvMapHandle:x8}!");
-
-                    return NvInternalResult.InvalidInput;
-                }
-
                 long shiftedGpuOffset = (long)((ulong)arguments[index].GpuOffset << 16);
 
                 if (arguments[index].NvMapHandle == 0)
@@ -356,6 +347,15 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 }
                 else
                 {
+                    NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(Owner, arguments[index].NvMapHandle);
+
+                    if (map == null)
+                    {
+                        Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid NvMap handle 0x{arguments[index].NvMapHandle:x8}!");
+
+                        return NvInternalResult.InvalidInput;
+                    }
+
                     gmm.Map(
                         ((ulong)arguments[index].MapOffset << 16) + (ulong)map.Address,
                          (ulong)shiftedGpuOffset,
