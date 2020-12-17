@@ -336,7 +336,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     return NvInternalResult.InvalidInput;
                 }
 
-
                 long shiftedGpuOffset = (long)((ulong)arguments[index].GpuOffset << 16);
 
                 if (arguments[index].NvMapHandle == 0)
