@@ -275,7 +275,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         public static NvMapHandle GetMapFromHandle(long pid, int handle)
         {
-            if (handle != 0 && _maps.TryGetValue(pid, out IdDictionary dict))
+            if (_maps.TryGetValue(pid, out IdDictionary dict))
             {
                 return dict.GetData<NvMapHandle>(handle);
             }
