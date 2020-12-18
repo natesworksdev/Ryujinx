@@ -820,6 +820,18 @@ namespace ARMeilleure.Instructions
             });
         }
 
+        public static void EmitVectorTernaryOpF32(ArmEmitterContext context, Intrinsic inst32)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            Debug.Assert((op.Size & 1) == 0);
+
+            EmitVectorTernaryOpSimd32(context, (d, n, m) =>
+            {
+                return context.AddIntrinsic(inst32, d, n, m);
+            });
+        }
+
         public static void EmitScalarUnaryOpSimd32(ArmEmitterContext context, Func1I scalarFunc)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
@@ -915,7 +927,13 @@ namespace ARMeilleure.Instructions
             });
         }
 
-        public static void EmitScalarTernaryOpF32(ArmEmitterContext context, Intrinsic inst32pt1, Intrinsic inst64pt1, Intrinsic inst32pt2, Intrinsic inst64pt2)
+        public static void EmitScalarTernaryOpF32(
+            ArmEmitterContext context,
+            Intrinsic inst32pt1,
+            Intrinsic inst64pt1,
+            Intrinsic inst32pt2,
+            Intrinsic inst64pt2,
+            bool isNegD = false)
         {
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
@@ -927,6 +945,18 @@ namespace ARMeilleure.Instructions
             EmitScalarTernaryOpSimd32(context, (d, n, m) =>
             {
                 Operand res = context.AddIntrinsic(inst1, n, m);
+
+                if (isNegD)
+                {
+                    Operand mask = doubleSize
+                        ? X86GetScalar(context, -0d)
+                        : X86GetScalar(context, -0f);
+
+                    d = doubleSize
+                        ? context.AddIntrinsic(Intrinsic.X86Xorpd, mask, d)
+                        : context.AddIntrinsic(Intrinsic.X86Xorps, mask, d);
+                }
+
                 return context.AddIntrinsic(inst2, d, res);
             });
         }

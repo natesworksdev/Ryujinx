@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen;
 using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Memory;
+using ARMeilleure.Translation.Cache;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using System;
@@ -21,7 +22,7 @@ namespace ARMeilleure.Translation.PTC
     {
         private const string HeaderMagic = "PTChd";
 
-        private const uint InternalVersion = 1713; //! To be incremented manually for each change to the ARMeilleure project.
+        private const int InternalVersion = 1775; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
@@ -452,7 +453,7 @@ namespace ARMeilleure.Translation.PTC
 
                         UnwindInfo unwindInfo = ReadUnwindInfo(unwindInfosReader);
 
-                        TranslatedFunction func = FastTranslate(code, unwindInfo, infoEntry.HighCq);
+                        TranslatedFunction func = FastTranslate(code, infoEntry.GuestSize, unwindInfo, infoEntry.HighCq);
 
                         bool isAddressUnique = funcs.TryAdd(infoEntry.Address, func);
 
@@ -496,6 +497,7 @@ namespace ARMeilleure.Translation.PTC
             InfoEntry infoEntry = new InfoEntry();
 
             infoEntry.Address = infosReader.ReadUInt64();
+            infoEntry.GuestSize = infosReader.ReadUInt64();
             infoEntry.HighCq = infosReader.ReadBoolean();
             infoEntry.Stubbed = infosReader.ReadBoolean();
             infoEntry.CodeLen = infosReader.ReadInt32();
@@ -597,7 +599,7 @@ namespace ARMeilleure.Translation.PTC
             return new UnwindInfo(pushEntries, prologueSize);
         }
 
-        private static TranslatedFunction FastTranslate(byte[] code, UnwindInfo unwindInfo, bool highCq)
+        private static TranslatedFunction FastTranslate(byte[] code, ulong guestSize, UnwindInfo unwindInfo, bool highCq)
         {
             CompiledFunction cFunc = new CompiledFunction(code, unwindInfo);
 
@@ -605,7 +607,7 @@ namespace ARMeilleure.Translation.PTC
 
             GuestFunction gFunc = Marshal.GetDelegateForFunctionPointer<GuestFunction>(codePtr);
 
-            TranslatedFunction tFunc = new TranslatedFunction(gFunc, highCq);
+            TranslatedFunction tFunc = new TranslatedFunction(gFunc, guestSize, highCq);
 
             return tFunc;
         }
@@ -616,6 +618,7 @@ namespace ARMeilleure.Translation.PTC
 
             // WriteInfo.
             _infosWriter.Write((ulong)infoEntry.Address);
+            _infosWriter.Write((ulong)infoEntry.GuestSize);
             _infosWriter.Write((bool)infoEntry.HighCq);
             _infosWriter.Write((bool)infoEntry.Stubbed);
             _infosWriter.Write((int)infoEntry.CodeLen);
@@ -675,11 +678,6 @@ namespace ARMeilleure.Translation.PTC
 
                     Debug.Assert(isAddressUnique, $"The address 0x{address:X16} is not unique.");
 
-                    if (func.HighCq)
-                    {
-                        jumpTable.RegisterFunction(address, func);
-                    }
-
                     Interlocked.Increment(ref _translateCount);
 
                     if (State != PtcState.Enabled)
@@ -733,12 +731,13 @@ namespace ARMeilleure.Translation.PTC
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
         }
 
-        internal static void WriteInfoCodeReloc(ulong address, bool highCq, PtcInfo ptcInfo)
+        internal static void WriteInfoCodeReloc(ulong address, ulong guestSize, bool highCq, PtcInfo ptcInfo)
         {
             lock (_lock)
             {
                 // WriteInfo.
                 _infosWriter.Write((ulong)address); // InfoEntry.Address
+                _infosWriter.Write((ulong)guestSize); // InfoEntry.GuestSize
                 _infosWriter.Write((bool)highCq); // InfoEntry.HighCq
                 _infosWriter.Write((bool)false); // InfoEntry.Stubbed
                 _infosWriter.Write((int)ptcInfo.CodeStream.Length); // InfoEntry.CodeLen
@@ -788,9 +787,10 @@ namespace ARMeilleure.Translation.PTC
 
         private struct InfoEntry
         {
-            public const int Stride = 18; // Bytes.
+            public const int Stride = 26; // Bytes.
 
             public ulong Address;
+            public ulong GuestSize;
             public bool HighCq;
             public bool Stubbed;
             public int CodeLen;
