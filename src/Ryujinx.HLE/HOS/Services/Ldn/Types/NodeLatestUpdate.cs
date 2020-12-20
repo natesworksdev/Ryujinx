@@ -20,7 +20,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
                 for (int i = 0; i < 8; i++)
                 {
                     NodeInfo before = beforeNodes == null ? new NodeInfo() : beforeNodes[i];
-                    NodeInfo after = afterNodes[i];
+                    NodeInfo after = afterNodes == null ? new NodeInfo() : afterNodes[i];
 
                     if (before.IsConnected == 0)
                     {

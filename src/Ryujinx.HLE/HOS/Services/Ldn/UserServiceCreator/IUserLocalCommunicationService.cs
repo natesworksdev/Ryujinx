@@ -538,7 +538,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             NetworkConfig networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
 
             // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF which is wrong.
-            networkConfig.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
+            //networkConfig.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkConfig.IntentId.LocalCommunicationId);
             if (!isLocalCommunicationIdValid)
