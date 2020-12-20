@@ -392,12 +392,10 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                             }
                             else
                             {
-                                // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF or 0x0000000000000000 which is wrong.
-                                ulong defaultLocalCommunicationId = scanFilter.NetworkId.IntentId.LocalCommunicationId;
-
+                                // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF which is wrong.
                                 scanFilter.NetworkId.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
 
-                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, defaultLocalCommunicationId, out long counter);
+                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
 
                                 context.ResponseData.Write(counter);
                             }
@@ -413,22 +411,26 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return resultCode;
         }
 
-        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, ulong defaultLocalCommunicationId, out long counter)
+        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
         {
             long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
+            long maxGames        = bufferSize / networkInfoSize;
 
             MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
 
             NetworkInfo[] availableGames = NetworkClient.Scan(channel, scanFilter);
 
-            for (int i = 0; i < availableGames.Length; i++)
+            counter = 0;
+
+            foreach (NetworkInfo networkInfo in availableGames)
             {
-                availableGames[i].NetworkId.IntentId.LocalCommunicationId = defaultLocalCommunicationId;
+                MemoryHelper.Write(memory, bufferPosition + (networkInfoSize * counter), networkInfo);
 
-                MemoryHelper.Write(memory, bufferPosition + (networkInfoSize * i), availableGames[i]);
+                if (++counter >= maxGames)
+                {
+                    break;
+                }
             }
-
-            counter = availableGames.Length;
 
             return ResultCode.Success;
         }
