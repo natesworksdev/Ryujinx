@@ -147,6 +147,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return ResultCode.Success;
         }
 
+        private NodeLatestUpdate[] GetNodeLatestUpdateImpl(int count)
+        {
+            if (_state == NetworkState.StationConnected)
+            {
+                return _station.LatestUpdates.ConsumeLatestUpdate(count);
+            }
+            else if (_state == NetworkState.AccessPointCreated)
+            {
+                return _accessPoint.LatestUpdates.ConsumeLatestUpdate(count);
+            }
+            else
+            {
+                return new NodeLatestUpdate[0];
+            }
+        }
+
         [Command(2)]
         // GetIpv4Address() -> (u32 ip_address, u32 subnet_mask)
         public ResultCode GetIpv4Address(ServiceCtx context)
@@ -279,7 +295,43 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
         // GetNetworkInfoLatestUpdate() -> (buffer<network_info<0x480>, 0x1a>, buffer<node_latest_update, 0xa>)
         public ResultCode GetNetworkInfoLatestUpdate(ServiceCtx context)
         {
-            throw new NotImplementedException();
+            long bufferPosition = context.Request.RecvListBuff[0].Position;
+
+            MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x480);
+
+            if (_nifmResultCode != ResultCode.Success)
+            {
+                return _nifmResultCode;
+            }
+
+            ResultCode resultCode = GetNetworkInfoImpl(out NetworkInfo networkInfo);
+            if (resultCode != ResultCode.Success)
+            {
+                return resultCode;
+            }
+
+            long outputPosition = context.Request.RecvListBuff[0].Position;
+            long outputSize = context.Request.RecvListBuff[0].Size;
+
+            long latestUpdateSize = Marshal.SizeOf<NodeLatestUpdate>();
+            int count = (int)(outputSize / latestUpdateSize);
+
+            NodeLatestUpdate[] latestUpdate = GetNodeLatestUpdateImpl(count);
+
+            MemoryHelper.FillWithZeros(context.Memory, outputPosition, (int)outputSize);
+
+            foreach (NodeLatestUpdate node in latestUpdate)
+            {
+                MemoryHelper.Write(context.Memory, outputPosition, node);
+
+                outputPosition += latestUpdateSize;
+            }
+
+            long infoSize = MemoryHelper.Write(context.Memory, bufferPosition, networkInfo);
+
+            context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(infoSize);
+
+            return ResultCode.Success;
         }
 
         [Command(102)]

@@ -8,6 +8,7 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
     class Station : IDisposable
     {
         public NetworkInfo NetworkInfo;
+        public NodeLatestUpdate[] LatestUpdates = new NodeLatestUpdate[8];
 
         private IUserLocalCommunicationService _parent;
 
@@ -22,6 +23,8 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         private void NetworkChanged(object sender, RyuLdn.NetworkChangeEventArgs e)
         {
+            LatestUpdates.CalculateLatestUpdate(NetworkInfo.Ldn.Nodes, e.Info.Ldn.Nodes);
+
             NetworkInfo = e.Info;
 
             if (Connected != e.Connected)
