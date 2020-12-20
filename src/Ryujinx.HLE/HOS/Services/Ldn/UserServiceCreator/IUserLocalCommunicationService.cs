@@ -59,17 +59,13 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             // TODO: Call nn::arp::GetApplicationControlProperty here when implemented.
             ApplicationControlProperty controlProperty = context.Device.Application.ControlData.Value;
 
-            bool isValid = false;
-
-            foreach (ulong localCommunicationId in controlProperty.LocalCommunicationIds)
-            {
-                if (localCommunicationId == localCommunicationIdChecked)
-                {
-                    isValid = true;
-                }
-            }
-
-            return isValid;
+            return (controlProperty.LocalCommunicationIds[0] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationIds[1] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationIds[2] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationIds[3] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationIds[4] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationIds[5] == localCommunicationIdChecked
+                 || controlProperty.LocalCommunicationIds[6] == localCommunicationIdChecked) | (controlProperty.LocalCommunicationIds[7] == localCommunicationIdChecked);
         }
 
         [Command(0)]
@@ -396,6 +392,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                             }
                             else
                             {
+                                // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF which is wrong.
+                                scanFilter.NetworkId.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
+
                                 resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
 
                                 context.ResponseData.Write(counter);
@@ -536,9 +535,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             SecurityConfig    securityConfig    = context.RequestData.ReadStruct<SecurityConfig>();
             SecurityParameter securityParameter = isPrivate ? context.RequestData.ReadStruct<SecurityParameter>() : new SecurityParameter();
 
-            UserConfig userConfig = context.RequestData.ReadStruct<UserConfig>();
-            context.RequestData.ReadUInt32(); // Alignment?
+            UserConfig    userConfig    = context.RequestData.ReadStruct<UserConfig>();
+            uint          unknown       = context.RequestData.ReadUInt32(); // Alignment?
             NetworkConfig networkConfig = context.RequestData.ReadStruct<NetworkConfig>();
+
+            // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF which is wrong.
+            networkConfig.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkConfig.IntentId.LocalCommunicationId);
             if (!isLocalCommunicationIdValid)
@@ -834,6 +836,9 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
                 networkInfo = LdnHelper.FromBytes<NetworkInfo>(networkInfoBytes);
             }
+
+            // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF which is wrong.
+            networkConfig.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
 
             bool isLocalCommunicationIdValid = CheckLocalCommunicationIdPermission(context, networkInfo.NetworkId.IntentId.LocalCommunicationId);
             if (!isLocalCommunicationIdValid)
