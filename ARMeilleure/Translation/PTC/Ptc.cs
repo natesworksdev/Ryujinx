@@ -704,9 +704,9 @@ namespace ARMeilleure.Translation.PTC
 
             threads.Clear();
 
-            _loggerEvent.Set();
-
             Translator.ResetPools();
+
+            _loggerEvent.Set();
 
             PtcJumpTable.Initialize(jumpTable);
 

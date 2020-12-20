@@ -7,7 +7,8 @@ namespace ARMeilleure.Common
 {
     class ThreadStaticPool<T> where T : class, new()
     {
-        private const int PoolSizeIncrement = 200;
+        private const int ChunkSizeLimit = 1000; // even
+        private const int PoolSizeIncrement = 200; // > 0
 
         [ThreadStatic]
         private static ThreadStaticPool<T> _instance;
@@ -41,7 +42,7 @@ namespace ARMeilleure.Common
                 var pools = GetPools(groupId);
                 lock (pools)
                 {
-                    _instance = (pools.Count != 0) ? pools.Pop() : new ThreadStaticPool<T>(PoolSizeIncrement * 2);
+                    _instance = (pools.Count != 0) ? pools.Pop() : new ThreadStaticPool<T>();
                 }
             }
         }
@@ -54,6 +55,7 @@ namespace ARMeilleure.Common
             lock (pools)
             {
                 _instance.Clear();
+                _instance.ChunkSizeLimiter();
                 pools.Push(_instance);
 
                 _instance = null;
@@ -66,58 +68,87 @@ namespace ARMeilleure.Common
 
             foreach (var pools in _pools.Values)
             {
+                foreach (var pool in pools)
+                {
+                    pool.Dispose();
+                }
+
                 pools.Clear();
             }
 
             _pools.Clear();
         }
 
-        private T[] _pool;
-        private int _poolUsed = -1;
+        private List<T[]> _pool;
+        private int _chunkIndex = -1;
+        private int _chunkSize;
+        private int _poolIndex = -1;
         private int _poolSize;
 
-        public ThreadStaticPool(int initialSize)
+        private ThreadStaticPool()
         {
-            _pool = new T[initialSize];
+            _pool = new List<T[]>(ChunkSizeLimit * 2);
 
-            for (int i = 0; i < initialSize; i++)
-            {
-                _pool[i] = new T();
-            }
-
-            _poolSize = initialSize;
+            AddChunkIfNeeded();
         }
 
         public T Allocate()
         {
-            int index = Interlocked.Increment(ref _poolUsed);
+            int poolIndex = Interlocked.Increment(ref _poolIndex);
 
-            if (index >= _poolSize)
+            if (poolIndex >= PoolSizeIncrement)
             {
-                IncreaseSize();
+                AddChunkIfNeeded();
+
+                poolIndex = _poolIndex = 0;
             }
 
-            return _pool[index];
+            return _pool[_chunkIndex][poolIndex];
         }
 
-        private void IncreaseSize()
+        private void AddChunkIfNeeded()
         {
-            _poolSize += PoolSizeIncrement;
+            int chunkIndex = Interlocked.Increment(ref _chunkIndex);
 
-            T[] newArray = new T[_poolSize];
-            Array.Copy(_pool, 0, newArray, 0, _pool.Length);
-
-            for (int i = _pool.Length; i < _poolSize; i++)
+            if (chunkIndex >= _chunkSize)
             {
-                newArray[i] = new T();
-            }
+                T[] pool = new T[PoolSizeIncrement];
 
-            Interlocked.Exchange(ref _pool, newArray);
+                for (int i = 0; i < PoolSizeIncrement; i++)
+                {
+                    pool[i] = new T();
+                }
+
+                _pool.Add(pool);
+
+                _chunkSize++;
+                _poolSize += PoolSizeIncrement;
+            }
         }
 
         public void Clear()
         {
-            _poolUsed = -1;
+            _chunkIndex = 0;
+            _poolIndex = -1;
+        }
+
+        private void ChunkSizeLimiter()
+        {
+            if (_chunkSize >= ChunkSizeLimit)
+            {
+                int chunkSize = _chunkSize;
+
+                _chunkSize = ChunkSizeLimit / 2;
+                _poolSize = _chunkSize * PoolSizeIncrement;
+
+                _pool.RemoveRange(_chunkSize, chunkSize - _chunkSize);
+                _pool.Capacity = ChunkSizeLimit * 2;
+            }
+        }
+
+        private void Dispose()
+        {
+            _pool.Clear();
         }
     }
 }
