@@ -392,10 +392,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
                             }
                             else
                             {
-                                // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF which is wrong.
+                                // NOTE: This is a hack because sometimes networkConfig.IntentId.LocalCommunicationId = 0xFFFFFFFFFFFFFFFF or 0x0000000000000000 which is wrong.
+                                ulong defaultLocalCommunicationId = scanFilter.NetworkId.IntentId.LocalCommunicationId;
+
                                 scanFilter.NetworkId.IntentId.LocalCommunicationId = context.Device.Application.TitleId;
 
-                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, out long counter);
+                                resultCode = ScanInternal(context.Memory, channel, scanFilter, bufferPosition, bufferSize, defaultLocalCommunicationId, out long counter);
 
                                 context.ResponseData.Write(counter);
                             }
@@ -411,26 +413,22 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             return resultCode;
         }
 
-        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, out long counter)
+        private ResultCode ScanInternal(IVirtualMemoryManager memory, ushort channel, ScanFilter scanFilter, long bufferPosition, long bufferSize, ulong defaultLocalCommunicationId, out long counter)
         {
             long networkInfoSize = Marshal.SizeOf(typeof(NetworkInfo));
-            long maxGames        = bufferSize / networkInfoSize;
 
             MemoryHelper.FillWithZeros(memory, bufferPosition, (int)bufferSize);
 
             NetworkInfo[] availableGames = NetworkClient.Scan(channel, scanFilter);
 
-            counter = 0;
-
-            foreach (NetworkInfo networkInfo in availableGames)
+            for (int i = 0; i < availableGames.Length; i++)
             {
-                MemoryHelper.Write(memory, bufferPosition + (networkInfoSize * counter), networkInfo);
+                availableGames[i].NetworkId.IntentId.LocalCommunicationId = defaultLocalCommunicationId;
 
-                if (++counter >= maxGames)
-                {
-                    break;
-                }
+                MemoryHelper.Write(memory, bufferPosition + (networkInfoSize * i), availableGames[i]);
             }
+
+            counter = availableGames.Length;
 
             return ResultCode.Success;
         }
