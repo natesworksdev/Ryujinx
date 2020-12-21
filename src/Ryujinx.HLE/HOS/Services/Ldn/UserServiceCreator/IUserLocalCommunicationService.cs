@@ -18,7 +18,7 @@ using System.Runtime.InteropServices;
 
 namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 {
-    class IUserLocalCommunicationService : IpcService
+    class IUserLocalCommunicationService : IpcService, IDisposable
     {
         public INetworkClient NetworkClient { get; private set; }
 
@@ -1078,6 +1078,15 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
             }
 
             return resultCode;
+        }
+
+        public void Dispose()
+        {
+            _station?.Dispose();
+            _accessPoint?.Dispose();
+
+            NetworkClient?.DisconnectAndStop();
+            NetworkClient = null;
         }
     }
 }
