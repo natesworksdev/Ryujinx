@@ -91,12 +91,15 @@ namespace Ryujinx.Graphics.OpenGL
                 if (syncResult == WaitSyncStatus.AlreadySignaled)
                 {
                     // Delete the sync object.
-                    lock (first)
+                    lock (Handles)
                     {
-                        _firstHandle = first.ID + 1;
-                        Handles.RemoveAt(0);
-                        GL.DeleteSync(first.Handle);
-                        first.Handle = IntPtr.Zero;
+                        lock (first)
+                        {
+                            _firstHandle = first.ID + 1;
+                            Handles.RemoveAt(0);
+                            GL.DeleteSync(first.Handle);
+                            first.Handle = IntPtr.Zero;
+                        }
                     }
                 } else
                 {
