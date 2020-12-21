@@ -15,6 +15,12 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.Types
     {
         public static void CalculateLatestUpdate(this NodeLatestUpdate[] array, NodeInfo[] beforeNodes, NodeInfo[] afterNodes)
         {
+            if (beforeNodes == null)
+            {
+                // If there is no initial state, do not flag anyone as connected. (they are assumed to be connected before we joined)
+                return;
+            }
+
             lock (array)
             {
                 for (int i = 0; i < 8; i++)
