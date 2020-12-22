@@ -26,11 +26,11 @@ namespace ARMeilleure.Common
             }
         }
 
-        private static ConcurrentDictionary<int, Stack<ThreadStaticPool<T>>> _pools = new ConcurrentDictionary<int, Stack<ThreadStaticPool<T>>>();
+        private static ConcurrentDictionary<int, Stack<ThreadStaticPool<T>>> _pools = new();
 
         private static Stack<ThreadStaticPool<T>> GetPools(int groupId)
         {
-            return _pools.GetOrAdd(groupId, x => new Stack<ThreadStaticPool<T>>());
+            return _pools.GetOrAdd(groupId, (groupId) => new());
         }
 
         public static void PreparePool(int groupId)
@@ -42,7 +42,7 @@ namespace ARMeilleure.Common
                 var pools = GetPools(groupId);
                 lock (pools)
                 {
-                    _instance = (pools.Count != 0) ? pools.Pop() : new ThreadStaticPool<T>();
+                    _instance = (pools.Count != 0) ? pools.Pop() : new();
                 }
             }
         }
@@ -68,9 +68,9 @@ namespace ARMeilleure.Common
 
             foreach (var pools in _pools.Values)
             {
-                foreach (var pool in pools)
+                foreach (var instance in pools)
                 {
-                    pool.Dispose();
+                    instance.Dispose();
                 }
 
                 pools.Clear();
@@ -87,7 +87,7 @@ namespace ARMeilleure.Common
 
         private ThreadStaticPool()
         {
-            _pool = new List<T[]>(ChunkSizeLimit * 2);
+            _pool = new(ChunkSizeLimit * 2);
 
             AddChunkIfNeeded();
         }
@@ -136,13 +136,13 @@ namespace ARMeilleure.Common
         {
             if (_chunkSize >= ChunkSizeLimit)
             {
-                int chunkSize = _chunkSize;
+                int newChunkSize = ChunkSizeLimit / 2;
 
-                _chunkSize = ChunkSizeLimit / 2;
-                _poolSize = _chunkSize * PoolSizeIncrement;
-
-                _pool.RemoveRange(_chunkSize, chunkSize - _chunkSize);
+                _pool.RemoveRange(newChunkSize, _chunkSize - newChunkSize);
                 _pool.Capacity = ChunkSizeLimit * 2;
+
+                _chunkSize = newChunkSize;
+                _poolSize = newChunkSize * PoolSizeIncrement;
             }
         }
 
