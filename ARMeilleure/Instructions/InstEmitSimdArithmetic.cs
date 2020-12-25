@@ -10,6 +10,7 @@ using System.Diagnostics;
 
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitSimdHelper;
+using static ARMeilleure.Instructions.InstEmitSimdHelper32;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 
 namespace ARMeilleure.Instructions
@@ -1999,7 +2000,38 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                throw new NotImplementedException("Pmull_V slow path not implemented.");
+                Operand n = GetVec(op.Rn);
+                Operand m = GetVec(op.Rm);
+
+                Operand res;
+
+                if (op.Size == 0)
+                {
+                    res = context.VectorZero();
+
+                    int part = op.RegisterSize == RegisterSize.Simd64 ? 0 : 8;
+
+                    for (int index = 0; index < 8; index++)
+                    {
+                        Operand ne = context.VectorExtract8(n, part + index);
+                        Operand me = context.VectorExtract8(m, part + index);
+
+                        Operand de = EmitPolynomialMultiply(context, ne, me, 8);
+
+                        res = EmitVectorInsert(context, res, de, index, 1);
+                    }
+                }
+                else /* if (op.Size == 3) */
+                {
+                    int part = op.RegisterSize == RegisterSize.Simd64 ? 0 : 1;
+
+                    Operand ne = context.VectorExtract(OperandType.I64, n, part);
+                    Operand me = context.VectorExtract(OperandType.I64, m, part);
+
+                    res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.PolynomialMult64_128)), ne, me);
+                }
+
+                context.Copy(GetVec(op.Rd), res);
             }
         }
 
