@@ -499,22 +499,29 @@ namespace Ryujinx.HLE.HOS
             }
 
             // ExeFs file replacements
-            ModLoadResult modres = _fileSystem.ModLoader.ApplyExefsMods(TitleId, nsos);
+            ModLoadResult modLoadResult = _fileSystem.ModLoader.ApplyExefsMods(TitleId, nsos);
 
             // collect the nsos, ignoring ones that aren't used
             NsoExecutable[] programs = nsos.Where(x => x != null).ToArray();
 
             // take the npdm from mods if present
-            if (modres.Npdm != null)
+            if (modLoadResult.Npdm != null)
             {
-                metaData = modres.Npdm;
+                metaData = modLoadResult.Npdm;
             }
 
             bool hasPatches = _fileSystem.ModLoader.ApplyNsoPatches(TitleId, programs);
 
             _contentManager.LoadEntries(_device);
 
-            if (_device.System.EnablePtc && (modres.Modified || hasPatches))
+            bool usePtc = _device.System.EnablePtc;
+
+            // don't use PTC if exefs files have been replaced
+            usePtc &= !modLoadResult.Modified;
+            // don't use PTC if exefs files have been patched
+            usePtc &= !hasPatches;
+
+            if (_device.System.EnablePtc && !usePtc)
             {
                 Logger.Warning?.Print(LogClass.Ptc, $"Detected exefs modifications. PPTC disabled.");
             }
@@ -522,7 +529,7 @@ namespace Ryujinx.HLE.HOS
             Graphics.Gpu.GraphicsConfig.TitleId = TitleIdText;
             _device.Gpu.HostInitalized.Set();
 
-            Ptc.Initialize(TitleIdText, DisplayVersion, _device.System.EnablePtc && !modres.Modified);
+            Ptc.Initialize(TitleIdText, DisplayVersion, usePtc);
 
             ProgramLoader.LoadNsos(_device.System.KernelContext, metaData, executables: programs);
         }
