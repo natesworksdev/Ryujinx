@@ -1,5 +1,6 @@
 using Ryujinx.HLE.HOS.Diagnostics.Demangler;
 using Ryujinx.HLE.HOS.Kernel.Memory;
+using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.Loaders.Elf;
 using Ryujinx.Memory;
 using System.Collections.Generic;
@@ -18,12 +19,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private class Image
         {
             public ulong BaseAddress { get; }
+            public ulong Size { get; }
+            public ulong EndAddress => BaseAddress + Size;
 
             public ElfSymbol[] Symbols { get; }
 
-            public Image(ulong baseAddress, ElfSymbol[] symbols)
+            public Image(ulong baseAddress, ulong size, ElfSymbol[] symbols)
             {
                 BaseAddress = baseAddress;
+                Size = size;
                 Symbols     = symbols;
             }
         }
@@ -39,40 +43,26 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             _images = new List<Image>();
         }
 
-        public string GetGuestStackTrace(ARMeilleure.State.ExecutionContext context)
+        public string GetGuestStackTrace(KThread thread)
         {
             EnsureLoaded();
 
+            var context = thread.Context;
+
             StringBuilder trace = new StringBuilder();
+
+            trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
             void AppendTrace(ulong address)
             {
-                Image image = GetImage(address, out int imageIndex);
-
-                if (image == null || !TryGetSubName(image, address, out string subName))
+                if(AnalyzePointer(out PointerInfo info, address, thread))
                 {
-                    subName = $"Sub{address:x16}";
-                }
-                else if (subName.StartsWith("_Z"))
+                    trace.AppendLine($"   {address:x16}\t{info.ImageDisplay}\t{info.SubDisplay}");
+                } else
                 {
-                    subName = Demangler.Parse(subName);
-                }
-
-                if (image != null)
-                {
-                    ulong offset = address - image.BaseAddress;
-
-                    string imageName = GetGuessedNsoNameFromIndex(imageIndex);
-
-                    trace.AppendLine($"   {imageName}:0x{offset:x8} {subName}");
-                }
-                else
-                {
-                    trace.AppendLine($"   ??? {subName}");
+                    trace.AppendLine($"   {address:x16}");
                 }
             }
-
-            trace.AppendLine($"Process: {_owner.Name}, PID: {_owner.Pid}");
 
             if (context.IsAarch32)
             {
@@ -114,7 +104,41 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             return trace.ToString();
         }
 
-        private bool TryGetSubName(Image image, ulong address, out string name)
+        public string GetCpuRegisterPrintout(KThread thread)
+        {
+            EnsureLoaded();
+
+            var context = thread.Context;
+
+            StringBuilder sb = new StringBuilder();
+
+            string GetReg(int x)
+            {
+                var v = x == 32 ? (ulong)thread.LastPc : context.GetX(x);
+                if (!AnalyzePointer(out PointerInfo info, v, thread))
+                    return $"{v:x16}";
+                else
+                {
+                    if (!string.IsNullOrEmpty(info.ImageName))
+                        return $"{v:x16} ({info.ImageDisplay})\t=> {info.SubDisplay}";
+                    else
+                        return $"{v:x16} ({info.SpDisplay})";
+                }
+            }
+
+            for (int i = 0; i <= 28; i++)
+            {
+                sb.AppendLine($"\tX[{i:d2}]:\t{GetReg(i)}");
+            }
+            sb.AppendLine($"\tFP:\t{GetReg(29)}");
+            sb.AppendLine($"\tLR:\t{GetReg(30)}");
+            sb.AppendLine($"\tSP:\t{GetReg(31)}");
+            sb.AppendLine($"\tPC:\t{GetReg(32)}");
+
+            return sb.ToString();
+        }
+
+        private bool TryGetSubName(Image image, ulong address, out ElfSymbol symbol)
         {
             address -= image.BaseAddress;
 
@@ -126,16 +150,25 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 int size = right - left;
 
                 int middle = left + (size >> 1);
-
-                ElfSymbol symbol = image.Symbols[middle];
+                    
+                symbol = image.Symbols[middle];
 
                 ulong endAddr = symbol.Value + symbol.Size;
 
                 if ((ulong)address >= symbol.Value && (ulong)address < endAddr)
                 {
-                    name = symbol.Name;
-
                     return true;
+                }
+
+                if(middle + 1 < image.Symbols.Length)
+                {
+                    ElfSymbol next = image.Symbols[middle + 1];
+                    
+                    // if our symbol points inbetween two symbols, we can *guess* that it's referring to the first one
+                    if(address >= symbol.Value && address < next.Value)
+                    {
+                        return true;
+                    }
                 }
 
                 if ((ulong)address < (ulong)symbol.Value)
@@ -148,9 +181,87 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 }
             }
 
-            name = null;
+            symbol = default(ElfSymbol);
 
             return false;
+        }
+
+        struct PointerInfo
+        {
+            public string ImageName;
+            public string SubName;
+
+            public ulong Offset;
+            public ulong SubOffset;
+
+            public string ImageDisplay => $"{ImageName}:0x{Offset:x4}";
+            public string SubDisplay => SubOffset == 0 ? SubName : $"{SubName}:0x{SubOffset:x4}";
+            public string SpDisplay => SubOffset == 0 ? "SP" : $"SP:-0x{SubOffset:x4}";
+
+        }
+
+        private bool AnalyzePointer(out PointerInfo info, ulong address, KThread thread)
+        {
+            if (AnalyzePointerFromImages(out info, address))
+                return true;
+            if (AnalyzePointerFromStack(out info, address, thread))
+                return true;
+            return false;
+        }
+
+        private bool AnalyzePointerFromImages(out PointerInfo info, ulong address)
+        {
+            info = default(PointerInfo);
+
+            Image image = GetImage(address, out int imageIndex);
+
+            if (image == null)
+            {
+                // value isn't a pointer to a known image...
+                return false;
+            }
+
+            info.Offset = address - image.BaseAddress;
+
+            // try to find what this pointer is referring to
+            if (TryGetSubName(image, address, out ElfSymbol symbol))
+            {
+                info.SubName = symbol.Name;
+
+                // demangle string if possible
+                if (info.SubName.StartsWith("_Z"))
+                {
+                    info.SubName = Demangler.Parse(info.SubName);
+                }
+                info.SubOffset = info.Offset - symbol.Value;
+            }
+            else
+            {
+                info.SubName = "";
+            }
+
+            info.ImageName = GetGuessedNsoNameFromIndex(imageIndex);
+
+            return true;
+        }
+
+        private bool AnalyzePointerFromStack(out PointerInfo info, ulong address, KThread thread)
+        {
+            info = default(PointerInfo);
+
+            ulong sp = thread.Context.GetX(31);
+            var meminfo = _owner.MemoryManager.QueryMemory(address);
+            uint type = (uint)meminfo.State;
+            type &= 0xff; // take lower 8 bits
+
+            if(type != 0x0B) // is this pointer within the stack?
+            {
+                return false;
+            }
+
+            info.SubOffset = address - sp;
+
+            return true;
         }
 
         private Image GetImage(ulong address, out int index)
@@ -159,7 +270,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             {
                 for (index = _images.Count - 1; index >= 0; index--)
                 {
-                    if (address >= _images[index].BaseAddress)
+                    if (address >= _images[index].BaseAddress && address < _images[index].EndAddress)
                     {
                         return _images[index];
                     }
@@ -226,7 +337,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
                 if (info.State == MemoryState.CodeStatic && info.Permission == KMemoryPermission.ReadAndExecute)
                 {
-                    LoadMod0Symbols(_owner.CpuMemory, info.Address);
+                    LoadMod0Symbols(_owner.CpuMemory, info.Address, info.Size);
                 }
 
                 oldAddress = address;
@@ -235,7 +346,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             }
         }
 
-        private void LoadMod0Symbols(IVirtualMemoryManager memory, ulong textOffset)
+        private void LoadMod0Symbols(IVirtualMemoryManager memory, ulong textOffset, ulong textSize)
         {
             ulong mod0Offset = textOffset + memory.Read<uint>(textOffset + 4);
 
@@ -315,7 +426,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
 
             lock (_images)
             {
-                _images.Add(new Image(textOffset, symbols.OrderBy(x => x.Value).ToArray()));
+                _images.Add(new Image(textOffset, textSize, symbols.OrderBy(x => x.Value).ToArray()));
             }
         }
 
