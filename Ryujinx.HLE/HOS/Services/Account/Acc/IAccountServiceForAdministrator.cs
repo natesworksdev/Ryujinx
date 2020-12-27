@@ -83,11 +83,11 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
         // GetBaasAccountManagerForSystemService(nn::account::Uid) -> object<nn::account::baas::IManagerForApplication>
         public ResultCode GetBaasAccountManagerForSystemService(ServiceCtx context)
         {
-            UserId userId = context.RequestData.ReadStruct<UserId>();
+            ResultCode resultCode = _applicationServiceServer.CheckUserId(context, out UserId userId);
 
-            if (userId.IsNull)
+            if (resultCode != ResultCode.Success)
             {
-                return ResultCode.NullArgument;
+                return resultCode;
             }
 
             MakeObject(context, new IManagerForSystemService(userId));

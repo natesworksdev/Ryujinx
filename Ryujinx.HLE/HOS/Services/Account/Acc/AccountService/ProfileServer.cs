@@ -22,13 +22,17 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc.AccountService
         {
             context.Response.PtrBuff[0] = context.Response.PtrBuff[0].WithSize(0x80L);
 
-            long position = context.Request.ReceiveBuff[0].Position;
+            long bufferPosition = context.Request.RecvListBuff[0].Position;
 
-            MemoryHelper.FillWithZeros(context.Memory, position, 0x80);
+            MemoryHelper.FillWithZeros(context.Memory, bufferPosition, 0x80);
 
-            context.Memory.Write((ulong)position,     0);
-            context.Memory.Write((ulong)position + 4, 1);
-            context.Memory.Write((ulong)position + 8, 1L);
+            // TODO: Determine the struct.
+            context.Memory.Write((ulong)bufferPosition,           0); // Unknown
+            context.Memory.Write((ulong)bufferPosition + 4,       1); // Icon ID. 0 = Mii, the rest are character icon IDs.
+            context.Memory.Write((ulong)bufferPosition + 8, (byte)1); // Profile icon background color ID
+            // 0x07 bytes - Unknown
+            // 0x10 bytes - Some ID related to the Mii? All zeros when a character icon is used.
+            // 0x60 bytes - Usually zeros?
 
             Logger.Stub?.PrintStub(LogClass.ServiceAcc);
 
