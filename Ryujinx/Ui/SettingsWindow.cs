@@ -1,14 +1,14 @@
 using Gtk;
 using Ryujinx.Audio;
-using Ryujinx.Configuration;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
-using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.HLE.FileSystem;
+using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Threading.Tasks;
@@ -43,7 +43,6 @@ namespace Ryujinx.Ui
         [GUI] CheckButton     _checkUpdatesToggle;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
-        [GUI] CheckButton     _multiSchedToggle;
         [GUI] CheckButton     _ptcToggle;
         [GUI] CheckButton     _fsicToggle;
         [GUI] CheckButton     _ignoreToggle;
@@ -72,6 +71,7 @@ namespace Ryujinx.Ui
         [GUI] Entry           _addGameDirBox;
         [GUI] Entry           _graphicsShadersDumpPath;
         [GUI] ComboBoxText    _anisotropy;
+        [GUI] ComboBoxText    _aspectRatio;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
         [GUI] ToggleButton    _configureController1;
@@ -188,11 +188,6 @@ namespace Ryujinx.Ui
                 _shaderCacheToggle.Click();
             }
 
-            if (ConfigurationState.Instance.System.EnableMulticoreScheduling)
-            {
-                _multiSchedToggle.Click();
-            }
-
             if (ConfigurationState.Instance.System.EnablePtc)
             {
                 _ptcToggle.Click();
@@ -255,6 +250,7 @@ namespace Ryujinx.Ui
             _systemRegionSelect.SetActiveId(ConfigurationState.Instance.System.Region.Value.ToString());
             _resScaleCombo.SetActiveId(ConfigurationState.Instance.Graphics.ResScale.Value.ToString());
             _anisotropy.SetActiveId(ConfigurationState.Instance.Graphics.MaxAnisotropy.Value.ToString());
+            _aspectRatio.SetActiveId(((int)ConfigurationState.Instance.Graphics.AspectRatio.Value).ToString());
 
             _custThemePath.Buffer.Text           = ConfigurationState.Instance.Ui.CustomThemePath;
             _resScaleText.Buffer.Text            = ConfigurationState.Instance.Graphics.ResScaleCustom.Value.ToString();
@@ -401,7 +397,6 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.CheckUpdatesOnStart.Value              = _checkUpdatesToggle.Active;
             ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
-            ConfigurationState.Instance.System.EnableMulticoreScheduling.Value = _multiSchedToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;
             ConfigurationState.Instance.System.EnableFsIntegrityChecks.Value   = _fsicToggle.Active;
             ConfigurationState.Instance.System.IgnoreMissingServices.Value     = _ignoreToggle.Active;
@@ -414,7 +409,8 @@ namespace Ryujinx.Ui
             ConfigurationState.Instance.Graphics.ShadersDumpPath.Value         = _graphicsShadersDumpPath.Buffer.Text;
             ConfigurationState.Instance.Ui.GameDirs.Value                      = gameDirs;
             ConfigurationState.Instance.System.FsGlobalAccessLogMode.Value     = (int)_fsLogSpinAdjustment.Value;
-            ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId);
+            ConfigurationState.Instance.Graphics.MaxAnisotropy.Value           = float.Parse(_anisotropy.ActiveId, CultureInfo.InvariantCulture);
+            ConfigurationState.Instance.Graphics.AspectRatio.Value             = Enum.Parse<AspectRatio>(_aspectRatio.ActiveId);
             ConfigurationState.Instance.Graphics.ResScale.Value                = int.Parse(_resScaleCombo.ActiveId);
             ConfigurationState.Instance.Graphics.ResScaleCustom.Value          = resScaleCustom;
 
@@ -429,7 +425,7 @@ namespace Ryujinx.Ui
         }
 
         //Events
-        private void TimeZoneEntry_FocusOut(Object sender, FocusOutEventArgs e)
+        private void TimeZoneEntry_FocusOut(object sender, FocusOutEventArgs e)
         {
             if (!_validTzRegions.Contains(_systemTimeZoneEntry.Text))
             {
@@ -446,7 +442,7 @@ namespace Ryujinx.Ui
                    ((string)compl.Model.GetValue(iter, 0)).Substring(3).StartsWith(key); // offset
         }
 
-        private void SystemTimeSpin_ValueChanged(Object sender, EventArgs e)
+        private void SystemTimeSpin_ValueChanged(object sender, EventArgs e)
         {
             int year   = _systemTimeYearSpin.ValueAsInt;
             int month  = _systemTimeMonthSpin.ValueAsInt;
@@ -490,7 +486,7 @@ namespace Ryujinx.Ui
                     foreach (string directory in fileChooser.Filenames)
                     {
                         bool directoryAdded = false;
-                        
+
                         if (_gameDirsBoxStore.GetIterFirst(out TreeIter treeIter))
                         {
                             do

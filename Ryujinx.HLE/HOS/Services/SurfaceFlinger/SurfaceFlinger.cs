@@ -1,10 +1,9 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Configuration;
+using Ryujinx.Common.Logging;
+using Ryujinx.Configuration;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu;
-using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
-using Ryujinx.HLE.HOS.Services.Nv.Types;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -26,8 +25,12 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
         private Stopwatch _chrono;
 
+        private ManualResetEvent _event = new ManualResetEvent(false);
+        private AutoResetEvent _nextFrameEvent = new AutoResetEvent(true);
         private long _ticks;
         private long _ticksPerFrame;
+        private long _spinTicks;
+        private long _1msTicks;
 
         private int _swapInterval;
 
@@ -40,7 +43,8 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             public int                    ProducerBinderId;
             public IGraphicBufferProducer Producer;
             public BufferItemConsumer     Consumer;
-            public KProcess               Owner;
+            public BufferQueueCore        Core;
+            public long                   Owner;
         }
 
         private class TextureCallbackInformation
@@ -61,8 +65,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             };
 
             _chrono = new Stopwatch();
+            _chrono.Start();
 
             _ticks = 0;
+            _spinTicks = Stopwatch.Frequency / 500;
+            _1msTicks = Stopwatch.Frequency / 1000;
 
             UpdateSwapInterval(1);
 
@@ -76,6 +83,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             // If the swap interval is 0, Game VSync is disabled.
             if (_swapInterval == 0)
             {
+                _nextFrameEvent.Set();
                 _ticksPerFrame = 1;
             }
             else
@@ -84,7 +92,7 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             }
         }
 
-        public IGraphicBufferProducer OpenLayer(KProcess process, long layerId)
+        public IGraphicBufferProducer OpenLayer(long pid, long layerId)
         {
             bool needCreate;
 
@@ -95,13 +103,13 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
 
             if (needCreate)
             {
-                CreateLayerFromId(process, layerId);
+                CreateLayerFromId(pid, layerId);
             }
 
             return GetProducerByLayerId(layerId);
         }
 
-        public IGraphicBufferProducer CreateLayer(KProcess process, out long layerId)
+        public IGraphicBufferProducer CreateLayer(long pid, out long layerId)
         {
             layerId = 1;
 
@@ -116,25 +124,31 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 }
             }
 
-            CreateLayerFromId(process, layerId);
+            CreateLayerFromId(pid, layerId);
 
             return GetProducerByLayerId(layerId);
         }
 
-        private void CreateLayerFromId(KProcess process, long layerId)
+        private void CreateLayerFromId(long pid, long layerId)
         {
             lock (Lock)
             {
                 Logger.Info?.Print(LogClass.SurfaceFlinger, $"Creating layer {layerId}");
 
-                BufferQueue.CreateBufferQueue(_device, process, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
+                BufferQueueCore core = BufferQueue.CreateBufferQueue(_device, pid, out BufferQueueProducer producer, out BufferQueueConsumer consumer);
+
+                core.BufferQueued += () =>
+                {
+                    _nextFrameEvent.Set();
+                };
 
                 _layers.Add(layerId, new Layer
                 {
                     ProducerBinderId = HOSBinderDriverServer.RegisterBinderObject(producer),
                     Producer         = producer,
                     Consumer         = new BufferItemConsumer(_device, consumer, 0, -1, false, this),
-                    Owner            = process
+                    Core             = core,
+                    Owner            = pid
                 });
 
                 LastId = layerId;
@@ -188,23 +202,59 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         {
             _isRunning = true;
 
+            long lastTicks = _chrono.ElapsedTicks;
+
             while (_isRunning)
             {
-                _ticks += _chrono.ElapsedTicks;
+                long ticks = _chrono.ElapsedTicks;
 
-                _chrono.Restart();
-
-                if (_ticks >= _ticksPerFrame)
+                if (_swapInterval == 0)
                 {
                     Compose();
 
                     _device.System?.SignalVsync();
 
-                    _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame);
+                    _nextFrameEvent.WaitOne(17);
+                    lastTicks = ticks;
                 }
+                else
+                {
+                    _ticks += ticks - lastTicks;
+                    lastTicks = ticks;
 
-                // Sleep the minimal amount of time to avoid being too expensive.
-                Thread.Sleep(1);
+                    if (_ticks >= _ticksPerFrame)
+                    {
+                        Compose();
+
+                        _device.System?.SignalVsync();
+
+                        // Apply a maximum bound of 3 frames to the tick remainder, in case some event causes Ryujinx to pause for a long time or messes with the timer.
+                        _ticks = Math.Min(_ticks - _ticksPerFrame, _ticksPerFrame * 3);
+                    }
+
+                    // Sleep if possible. If the time til the next frame is too low, spin wait instead.
+                    long diff = _ticksPerFrame - (_ticks + _chrono.ElapsedTicks - ticks);
+                    if (diff > 0)
+                    {
+                        if (diff < _spinTicks)
+                        {
+                            do
+                            {
+                                // SpinWait is a little more HT/SMT friendly than aggressively updating/checking ticks.
+                                // The value of 5 still gives us quite a bit of precision (~0.0003ms variance at worst) while waiting a reasonable amount of time.
+                                Thread.SpinWait(5);
+
+                                ticks = _chrono.ElapsedTicks;
+                                _ticks += ticks - lastTicks;
+                                lastTicks = ticks;
+                            } while (_ticks < _ticksPerFrame);
+                        }
+                        else
+                        {
+                            _event.WaitOne((int)(diff / _1msTicks));
+                        }
+                    }
+                }
             }
         }
 
@@ -278,19 +328,31 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             bool flipX = item.Transform.HasFlag(NativeWindowTransform.FlipX);
             bool flipY = item.Transform.HasFlag(NativeWindowTransform.FlipY);
 
+            AspectRatio aspectRatio = ConfigurationState.Instance.Graphics.AspectRatio.Value;
+            bool        isStretched = aspectRatio == AspectRatio.Stretched;
+
             ImageCrop crop = new ImageCrop(
                 cropRect.Left,
                 cropRect.Right,
                 cropRect.Top,
                 cropRect.Bottom,
                 flipX,
-                flipY);
+                flipY,
+                isStretched,
+                aspectRatio.ToFloatX(),
+                aspectRatio.ToFloatY());
 
             TextureCallbackInformation textureCallbackInformation = new TextureCallbackInformation
             {
                 Layer = layer,
                 Item  = item,
             };
+
+            item.Fence.RegisterCallback(_device.Gpu, () => 
+            {
+                _device.Gpu.Window.SignalFrameReady();
+                _device.Gpu.GPFifo.Interrupt();
+            });
 
             _device.Gpu.Window.EnqueueFrameThreadSafe(
                 frameBufferAddress,
@@ -345,6 +407,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
         public void Dispose()
         {
             _isRunning = false;
+
+            foreach (Layer layer in _layers.Values)
+            {
+                layer.Core.PrepareForExit();
+            }
         }
 
         public void OnFrameAvailable(ref BufferItem item)

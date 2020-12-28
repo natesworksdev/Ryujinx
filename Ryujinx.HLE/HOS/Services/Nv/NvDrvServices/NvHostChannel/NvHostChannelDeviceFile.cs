@@ -1,10 +1,12 @@
-﻿using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Collections;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel.Types;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostCtrl;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap;
 using Ryujinx.HLE.HOS.Services.Nv.Types;
+using Ryujinx.Memory;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -19,9 +21,10 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
         private uint _submitTimeout;
         private uint _timeslice;
 
-        private Switch _device;
+        private readonly Switch _device;
 
-        private Cpu.MemoryManager _memory;
+        private readonly IVirtualMemoryManager _memory;
+        private NvMemoryAllocator _memoryAllocator;
 
         public enum ResourcePolicy
         {
@@ -37,13 +40,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
 
         private NvFence _channelSyncpoint;
 
-        public NvHostChannelDeviceFile(ServiceCtx context) : base(context)
+        public NvHostChannelDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
             _device        = context.Device;
-            _memory        = context.Memory;
+            _memory        = memory;
             _timeout       = 3000;
             _submitTimeout = 0;
             _timeslice     = 0;
+            _memoryAllocator = _device.MemoryAllocator;
 
             ChannelSyncpoints = new uint[MaxModuleSyncpoint];
 
@@ -244,7 +248,18 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostChannel
                 {
                     if (map.DmaMapAddress == 0)
                     {
-                        map.DmaMapAddress = (long)gmm.MapLow((ulong)map.Address, (uint)map.Size);
+                        ulong va = _memoryAllocator.GetFreeAddress((ulong) map.Size, out ulong freeAddressStartPosition, 1, MemoryManager.PageSize);
+
+                        if (va != NvMemoryAllocator.PteUnmapped && va <= uint.MaxValue && (va + (uint)map.Size) <= uint.MaxValue)
+                        {
+                            _memoryAllocator.AllocateRange(va, (uint)map.Size, freeAddressStartPosition);
+                            gmm.Map((ulong)map.Address, va, (uint)map.Size);
+                            map.DmaMapAddress = (long)va;
+                        }
+                        else
+                        {
+                            map.DmaMapAddress = unchecked((long)NvMemoryAllocator.PteUnmapped);
+                        }
                     }
 
                     commandBufferEntry.MapAddress = (int)map.DmaMapAddress;

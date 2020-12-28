@@ -9,9 +9,6 @@ using Ryujinx.Graphics.Shader.Translation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
 namespace Ryujinx.Graphics.Gpu.Shader
 {
@@ -37,7 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Version of the codegen (to be changed when codegen or guest format change).
         /// </summary>
-        private const ulong ShaderCodeGenVersion = 1717;
+        private const ulong ShaderCodeGenVersion = 1759;
 
         /// <summary>
         /// Creates a new instance of the shader cache.
@@ -64,7 +61,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 _cacheManager = new CacheManager(CacheGraphicsApi.OpenGL, CacheHashType.XxHash128, "glsl", GraphicsConfig.TitleId, ShaderCodeGenVersion);
 
-                HashSet<Hash128> invalidEntries = new HashSet<Hash128>();
+                bool isReadOnly = _cacheManager.IsReadOnly;
+
+                HashSet<Hash128> invalidEntries = null;
+
+                if (isReadOnly)
+                {
+                    Logger.Warning?.Print(LogClass.Gpu, "Loading shader cache in read-only mode (cache in use by another program!)");
+                }
+                else
+                {
+                    invalidEntries = new HashSet<Hash128>();
+                }
 
                 ReadOnlySpan<Hash128> guestProgramList = _cacheManager.GetGuestProgramList();
 
@@ -87,7 +95,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         Logger.Error?.Print(LogClass.Gpu, $"Ignoring orphan shader hash {key} in cache (is the cache incomplete?)");
 
                         // Should not happen, but if someone messed with the cache it's better to catch it.
-                        invalidEntries.Add(key);
+                        invalidEntries?.Add(key);
 
                         continue;
                     }
@@ -144,15 +152,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
                             // As the host program was invalidated, save the new entry in the cache.
                             hostProgramBinary = HostShaderCacheEntry.Create(hostProgram.GetBinary(), new ShaderCodeHolder[] { shader });
 
-                            if (hasHostCache)
+                            if (!isReadOnly)
                             {
-                                _cacheManager.ReplaceHostProgram(ref key, hostProgramBinary);
-                            }
-                            else
-                            {
-                                Logger.Warning?.Print(LogClass.Gpu, $"Add missing host shader {key} in cache (is the cache incomplete?)");
+                                if (hasHostCache)
+                                {
+                                    _cacheManager.ReplaceHostProgram(ref key, hostProgramBinary);
+                                }
+                                else
+                                {
+                                    Logger.Warning?.Print(LogClass.Gpu, $"Add missing host shader {key} in cache (is the cache incomplete?)");
 
-                                _cacheManager.AddHostProgram(ref key, hostProgramBinary);
+                                    _cacheManager.AddHostProgram(ref key, hostProgramBinary);
+                                }
                             }
                         }
 
@@ -165,7 +176,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         ShaderCodeHolder[] shaders = new ShaderCodeHolder[cachedShaderEntries.Length];
                         List<ShaderProgram> shaderPrograms = new List<ShaderProgram>();
 
-                        TransformFeedbackDescriptor[] tfd = ReadTransformationFeedbackInformations(ref guestProgramReadOnlySpan, fileHeader);
+                        TransformFeedbackDescriptor[] tfd = CacheHelper.ReadTransformationFeedbackInformations(ref guestProgramReadOnlySpan, fileHeader);
 
                         TranslationFlags flags = DefaultFlags;
 
@@ -273,15 +284,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
                             // As the host program was invalidated, save the new entry in the cache.
                             hostProgramBinary = HostShaderCacheEntry.Create(hostProgram.GetBinary(), shaders);
 
-                            if (hasHostCache)
+                            if (!isReadOnly)
                             {
-                                _cacheManager.ReplaceHostProgram(ref key, hostProgramBinary);
-                            }
-                            else
-                            {
-                                Logger.Warning?.Print(LogClass.Gpu, $"Add missing host shader {key} in cache (is the cache incomplete?)");
+                                if (hasHostCache)
+                                {
+                                    _cacheManager.ReplaceHostProgram(ref key, hostProgramBinary);
+                                }
+                                else
+                                {
+                                    Logger.Warning?.Print(LogClass.Gpu, $"Add missing host shader {key} in cache (is the cache incomplete?)");
 
-                                _cacheManager.AddHostProgram(ref key, hostProgramBinary);
+                                    _cacheManager.AddHostProgram(ref key, hostProgramBinary);
+                                }
                             }
                         }
 
@@ -289,10 +303,13 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     }
                 }
 
-                // Remove entries that are broken in the cache
-                _cacheManager.RemoveManifestEntries(invalidEntries);
-                _cacheManager.FlushToArchive();
-                _cacheManager.Synchronize();
+                if (!isReadOnly)
+                {
+                    // Remove entries that are broken in the cache
+                    _cacheManager.RemoveManifestEntries(invalidEntries);
+                    _cacheManager.FlushToArchive();
+                    _cacheManager.Synchronize();
+                }
 
                 Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
             }
@@ -346,15 +363,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 sharedMemorySize);
 
             bool isShaderCacheEnabled = _cacheManager != null;
+            bool isShaderCacheReadOnly = false;
 
-            byte[] programCode = null;
             Hash128 programCodeHash = default;
-            GuestShaderCacheEntryHeader[] shaderCacheEntries = null;
+            GuestShaderCacheEntry[] shaderCacheEntries = null;
 
             if (isShaderCacheEnabled)
             {
+                isShaderCacheReadOnly = _cacheManager.IsReadOnly;
+
                 // Compute hash and prepare data for shader disk cache comparison.
-                GetProgramInformations(null, shaderContexts, out programCode, out programCodeHash, out shaderCacheEntries);
+                shaderCacheEntries = CacheHelper.CreateShaderCacheEntries(_context.MemoryManager, shaderContexts);
+                programCodeHash = CacheHelper.ComputeGuestHashFromCache(shaderCacheEntries);
             }
 
             ShaderBundle cpShader;
@@ -381,7 +401,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 if (isShaderCacheEnabled)
                 {
                     _cpProgramsDiskCache.Add(programCodeHash, cpShader);
-                    _cacheManager.SaveProgram(ref programCodeHash, CreateGuestProgramDump(programCode, shaderCacheEntries, null), hostProgramBinary);
+
+                    if (!isShaderCacheReadOnly)
+                    {
+                        _cacheManager.SaveProgram(ref programCodeHash, CacheHelper.CreateGuestProgramDump(shaderCacheEntries), hostProgramBinary);
+                    }
                 }
             }
 
@@ -450,15 +474,18 @@ namespace Ryujinx.Graphics.Gpu.Shader
             shaderContexts[4] = DecodeGraphicsShader(state, counts, flags, ShaderStage.Fragment, addresses.Fragment);
 
             bool isShaderCacheEnabled = _cacheManager != null;
+            bool isShaderCacheReadOnly = false;
 
-            byte[] programCode = null;
             Hash128 programCodeHash = default;
-            GuestShaderCacheEntryHeader[] shaderCacheEntries = null;
+            GuestShaderCacheEntry[] shaderCacheEntries = null;
 
             if (isShaderCacheEnabled)
             {
+                isShaderCacheReadOnly = _cacheManager.IsReadOnly;
+
                 // Compute hash and prepare data for shader disk cache comparison.
-                GetProgramInformations(tfd, shaderContexts, out programCode, out programCodeHash, out shaderCacheEntries);
+                shaderCacheEntries = CacheHelper.CreateShaderCacheEntries(_context.MemoryManager, shaderContexts);
+                programCodeHash = CacheHelper.ComputeGuestHashFromCache(shaderCacheEntries, tfd);
             }
 
             ShaderBundle gpShaders;
@@ -507,7 +534,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                 if (isShaderCacheEnabled)
                 {
                     _gpProgramsDiskCache.Add(programCodeHash, gpShaders);
-                    _cacheManager.SaveProgram(ref programCodeHash, CreateGuestProgramDump(programCode, shaderCacheEntries, tfd), hostProgramBinary);
+
+                    if (!isShaderCacheReadOnly)
+                    {
+                        _cacheManager.SaveProgram(ref programCodeHash, CacheHelper.CreateGuestProgramDump(shaderCacheEntries, tfd), hostProgramBinary);
+                    }
                 }
             }
 
@@ -765,192 +796,6 @@ namespace Ryujinx.Graphics.Gpu.Shader
             }
 
             _cacheManager?.Dispose();
-        }
-
-        /// <summary>
-        /// Create a guest shader program.
-        /// </summary>
-        /// <param name="programCode">The program code of the shader code</param>
-        /// <param name="shaderCacheEntries">The resulting guest shader entries header</param>
-        /// <param name="tfd">The transform feedback descriptors in use</param>
-        /// <returns>The resulting guest shader program</returns>
-        private static byte[] CreateGuestProgramDump(ReadOnlySpan<byte> programCode, GuestShaderCacheEntryHeader[] shaderCacheEntries, TransformFeedbackDescriptor[] tfd)
-        {
-            using (MemoryStream resultStream = new MemoryStream())
-            {
-                BinaryWriter resultStreamWriter = new BinaryWriter(resultStream);
-
-                byte transformFeedbackCount = 0;
-
-                if (tfd != null)
-                {
-                    transformFeedbackCount = (byte)tfd.Length;
-                }
-
-                // Header
-                resultStreamWriter.WriteStruct(new GuestShaderCacheHeader((byte)shaderCacheEntries.Length, transformFeedbackCount));
-
-                // Write all entries header
-                foreach (GuestShaderCacheEntryHeader entry in shaderCacheEntries)
-                {
-                    resultStreamWriter.WriteStruct(entry);
-                }
-
-                // Finally, write all program code and all transform feedback information.
-                resultStreamWriter.Write(programCode);
-
-                return resultStream.ToArray();
-            }
-        }
-
-        /// <summary>
-        /// Write transform feedback guest information to the given stream.
-        /// </summary>
-        /// <param name="stream">The stream to write data to</param>
-        /// <param name="tfd">The current transform feedback descriptors used</param>
-        private static void WriteTransformationFeedbackInformation(Stream stream, TransformFeedbackDescriptor[] tfd)
-        {
-            if (tfd != null)
-            {
-                BinaryWriter writer = new BinaryWriter(stream);
-
-                foreach (TransformFeedbackDescriptor transform in tfd)
-                {
-                    writer.WriteStruct(new GuestShaderCacheTransformFeedbackHeader(transform.BufferIndex, transform.Stride, transform.VaryingLocations.Length));
-                    writer.Write(transform.VaryingLocations);
-                }
-            }
-        }
-
-        /// <summary>
-        /// Read transform feedback descriptors from guest.
-        /// </summary>
-        /// <param name="data">The raw guest transform feedback descriptors</param>
-        /// <param name="header">The guest shader program header</param>
-        /// <returns>The transform feedback descriptors read from guest</returns>
-        private static TransformFeedbackDescriptor[] ReadTransformationFeedbackInformations(ref ReadOnlySpan<byte> data, GuestShaderCacheHeader header)
-        {
-            if (header.TransformFeedbackCount != 0)
-            {
-                TransformFeedbackDescriptor[] result = new TransformFeedbackDescriptor[header.TransformFeedbackCount];
-
-                for (int i = 0; i < result.Length; i++)
-                {
-                    GuestShaderCacheTransformFeedbackHeader feedbackHeader = MemoryMarshal.Read<GuestShaderCacheTransformFeedbackHeader>(data);
-
-                    result[i] = new TransformFeedbackDescriptor(feedbackHeader.BufferIndex, feedbackHeader.Stride, data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>(), feedbackHeader.VaryingLocationsLength).ToArray());
-
-                    data = data.Slice(Unsafe.SizeOf<GuestShaderCacheTransformFeedbackHeader>() + feedbackHeader.VaryingLocationsLength);
-                }
-
-                return result;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Create a new instance of <see cref="GuestGpuAccessorHeader"/> from an gpu accessor.
-        /// </summary>
-        /// <param name="gpuAccessor">The gpu accessor</param>
-        /// <returns>a new instance of <see cref="GuestGpuAccessorHeader"/></returns>
-        private static GuestGpuAccessorHeader CreateGuestGpuAccessorCache(IGpuAccessor gpuAccessor)
-        {
-            return new GuestGpuAccessorHeader
-            {
-                ComputeLocalSizeX = gpuAccessor.QueryComputeLocalSizeX(),
-                ComputeLocalSizeY = gpuAccessor.QueryComputeLocalSizeY(),
-                ComputeLocalSizeZ = gpuAccessor.QueryComputeLocalSizeZ(),
-                ComputeLocalMemorySize = gpuAccessor.QueryComputeLocalMemorySize(),
-                ComputeSharedMemorySize = gpuAccessor.QueryComputeSharedMemorySize(),
-                PrimitiveTopology = gpuAccessor.QueryPrimitiveTopology(),
-            };
-        }
-
-        /// <summary>
-        /// Write the guest GpuAccessor informations to the given stream.
-        /// </summary>
-        /// <param name="stream">The stream to write the guest GpuAcessor</param>
-        /// <param name="shaderContext">The shader tranlator context in use</param>
-        /// <returns>The guest gpu accessor header</returns>
-        private static GuestGpuAccessorHeader WriteGuestGpuAccessorCache(Stream stream, TranslatorContext shaderContext)
-        {
-            BinaryWriter writer = new BinaryWriter(stream);
-
-            GuestGpuAccessorHeader header = CreateGuestGpuAccessorCache(shaderContext.GpuAccessor);
-
-            // If we have a full gpu accessor, cache textures descriptors
-            if (shaderContext.GpuAccessor is GpuAccessor gpuAccessor)
-            {
-                HashSet<int> textureHandlesInUse = shaderContext.TextureHandlesForCache;
-
-                header.TextureDescriptorCount = textureHandlesInUse.Count;
-
-                foreach (int textureHandle in textureHandlesInUse)
-                {
-                    GuestTextureDescriptor textureDescriptor = ((Image.TextureDescriptor)gpuAccessor.GetTextureDescriptor(textureHandle)).ToCache();
-
-                    textureDescriptor.Handle = (uint)textureHandle;
-
-                    writer.WriteStruct(textureDescriptor);
-                }
-            }
-
-            return header;
-        }
-
-        /// <summary>
-        /// Get the shader program information for use on the shader cache.
-        /// </summary>
-        /// <param name="tfd">The current transform feedback descriptors used</param>
-        /// <param name="shaderContexts">The shader translators context in use</param>
-        /// <param name="programCode">The resulting raw shader program code</param>
-        /// <param name="programCodeHash">The resulting raw shader program code hash</param>
-        /// <param name="entries">The resulting guest shader entries header</param>
-        private void GetProgramInformations(TransformFeedbackDescriptor[] tfd, ReadOnlySpan<TranslatorContext> shaderContexts, out byte[] programCode, out Hash128 programCodeHash, out GuestShaderCacheEntryHeader[] entries)
-        {
-            GuestShaderCacheEntryHeader ComputeStage(Stream stream, TranslatorContext context)
-            {
-                if (context == null)
-                {
-                    return new GuestShaderCacheEntryHeader();
-                }
-
-                ReadOnlySpan<byte> data = _context.MemoryManager.GetSpan(context.Address, context.Size);
-
-                stream.Write(data);
-
-                int size = data.Length;
-                int sizeA = 0;
-
-                if (context.AddressA != 0)
-                {
-                    data = _context.MemoryManager.GetSpan(context.AddressA, context.SizeA);
-
-                    sizeA = data.Length;
-
-                    stream.Write(data);
-                }
-
-                GuestGpuAccessorHeader gpuAccessorHeader = WriteGuestGpuAccessorCache(stream, context);
-
-                return new GuestShaderCacheEntryHeader(context.Stage, size, sizeA, gpuAccessorHeader);
-            }
-
-            entries = new GuestShaderCacheEntryHeader[shaderContexts.Length];
-
-            using (MemoryStream stream = new MemoryStream())
-            {
-                for (int i = 0; i < shaderContexts.Length; i++)
-                {
-                    entries[i] = ComputeStage(stream, shaderContexts[i]);
-                }
-
-                WriteTransformationFeedbackInformation(stream, tfd);
-
-                programCode = stream.ToArray();
-                programCodeHash = _cacheManager.ComputeHash(programCode);
-            }
         }
     }
 }

@@ -27,12 +27,20 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         private KEvent _gpuErrorDetectedSystemEvent;
         private KEvent _friendInvitationStorageChannelEvent;
         private KEvent _notificationStorageChannelEvent;
+        private KEvent _healthWarningDisappearedSystemEvent;
+
+        private int _gpuErrorDetectedSystemEventHandle;
+        private int _friendInvitationStorageChannelEventHandle;
+        private int _notificationStorageChannelEventHandle;
+        private int _healthWarningDisappearedSystemEventHandle;
 
         public IApplicationFunctions(Horizon system)
         {
+            // TODO: Find where they are signaled.
             _gpuErrorDetectedSystemEvent         = new KEvent(system.KernelContext);
             _friendInvitationStorageChannelEvent = new KEvent(system.KernelContext);
             _notificationStorageChannelEvent     = new KEvent(system.KernelContext);
+            _healthWarningDisappearedSystemEvent = new KEvent(system.KernelContext);
         }
 
         [Command(1)]
@@ -122,7 +130,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 return ResultCode.Success;
             }
 
-            // If desired language is not supported by application, use first supported language from TitleLanguage. 
+            // If desired language is not supported by application, use first supported language from TitleLanguage.
             // TODO: In the future, a GUI could enable user-specified search priority
             if (((1 << (int)context.Device.System.State.DesiredTitleLanguage) & supportedLanguages) == 0)
             {
@@ -293,12 +301,10 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
                 resultCode = InitializeApplicationCopyrightFrameBufferImpl(transferMemoryAddress, transferMemorySize, width, height);
             }
 
-            /*
-            if (transferMemoryHandle)
+            if (transferMemoryHandle != 0)
             {
-                svcCloseHandle(transferMemoryHandle);
+                context.Device.System.KernelContext.Syscall.CloseHandle(transferMemoryHandle);
             }
-            */
 
             return resultCode;
         }
@@ -455,15 +461,18 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetGpuErrorDetectedSystemEvent() -> handle<copy>
         public ResultCode GetGpuErrorDetectedSystemEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out int gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
+            if (_gpuErrorDetectedSystemEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_gpuErrorDetectedSystemEvent.ReadableEvent, out _gpuErrorDetectedSystemEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(gpuErrorDetectedSystemEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_gpuErrorDetectedSystemEventHandle);
 
-            // NOTE: This is used by "sdk" NSO during applet-application initialization. 
-            //       A seperate thread is setup where event-waiting is handled. 
+            // NOTE: This is used by "sdk" NSO during applet-application initialization.
+            //       A seperate thread is setup where event-waiting is handled.
             //       When the Event is signaled, official sw will assert.
 
             return ResultCode.Success;
@@ -473,12 +482,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetFriendInvitationStorageChannelEvent() -> handle<copy>
         public ResultCode GetFriendInvitationStorageChannelEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out int friendInvitationStorageChannelEventHandle) != KernelResult.Success)
+            if (_friendInvitationStorageChannelEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_friendInvitationStorageChannelEvent.ReadableEvent, out _friendInvitationStorageChannelEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(friendInvitationStorageChannelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_friendInvitationStorageChannelEventHandle);
 
             return ResultCode.Success;
         }
@@ -501,12 +513,32 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.Applicati
         // GetNotificationStorageChannelEvent() -> handle<copy>
         public ResultCode GetNotificationStorageChannelEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out int notificationStorageChannelEventHandle) != KernelResult.Success)
+            if (_notificationStorageChannelEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(_notificationStorageChannelEvent.ReadableEvent, out _notificationStorageChannelEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(notificationStorageChannelEventHandle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_notificationStorageChannelEventHandle);
+
+            return ResultCode.Success;
+        }
+
+        [Command(160)] // 9.0.0+
+        // GetHealthWarningDisappearedSystemEvent() -> handle<copy>
+        public ResultCode GetHealthWarningDisappearedSystemEvent(ServiceCtx context)
+        {
+            if (_healthWarningDisappearedSystemEventHandle == 0)
+            {
+                if (context.Process.HandleTable.GenerateHandle(_healthWarningDisappearedSystemEvent.ReadableEvent, out _healthWarningDisappearedSystemEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
+            }
+
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_healthWarningDisappearedSystemEventHandle);
 
             return ResultCode.Success;
         }

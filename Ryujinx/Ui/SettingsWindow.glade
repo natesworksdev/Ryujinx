@@ -1440,24 +1440,6 @@
                                   </packing>
                                 </child>
                                 <child>
-                                  <object class="GtkCheckButton" id="_multiSchedToggle">
-                                    <property name="label" translatable="yes">Enable Multicore Scheduling</property>
-                                    <property name="visible">True</property>
-                                    <property name="can-focus">True</property>
-                                    <property name="receives-default">False</property>
-                                    <property name="tooltip-text" translatable="yes">Enables or disables multi-core scheduling of threads</property>
-                                    <property name="halign">start</property>
-                                    <property name="margin-top">5</property>
-                                    <property name="margin-bottom">5</property>
-                                    <property name="draw-indicator">True</property>
-                                  </object>
-                                  <packing>
-                                    <property name="expand">False</property>
-                                    <property name="fill">True</property>
-                                    <property name="position">5</property>
-                                  </packing>
-                                </child>
-                                <child>
                                   <object class="GtkCheckButton" id="_ptcToggle">
                                     <property name="label" translatable="yes">Enable Profiled Persistent Translation Cache</property>
                                     <property name="visible">True</property>
@@ -1827,6 +1809,55 @@
                                     <property name="fill">True</property>
                                     <property name="padding">5</property>
                                     <property name="position">1</property>
+                                  </packing>
+                                </child>
+                                <child>
+                                  <object class="GtkBox">
+                                    <property name="visible">True</property>
+                                    <property name="can-focus">False</property>
+                                    <property name="margin-top">5</property>
+                                    <property name="margin-bottom">5</property>
+                                    <child>
+                                      <object class="GtkLabel">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Aspect Ratio applied to the renderer window.</property>
+                                        <property name="label" translatable="yes">Aspect Ratio:</property>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="padding">5</property>
+                                        <property name="position">0</property>
+                                      </packing>
+                                    </child>
+                                    <child>
+                                      <object class="GtkComboBoxText" id="_aspectRatio">
+                                        <property name="visible">True</property>
+                                        <property name="can-focus">False</property>
+                                        <property name="tooltip-text" translatable="yes">Aspect Ratio applied to the renderer window.</property>
+                                        <property name="active-id">1</property>
+                                        <items>
+                                          <item id="0" translatable="yes">4:3</item>
+                                          <item id="1" translatable="yes">16:9</item>
+                                          <item id="2" translatable="yes">16:10</item>
+                                          <item id="3" translatable="yes">21:9</item>
+                                          <item id="4" translatable="yes">32:9</item>
+                                          <item id="5" translatable="yes">Stretch to Fit Window</item>
+                                        </items>
+                                      </object>
+                                      <packing>
+                                        <property name="expand">False</property>
+                                        <property name="fill">True</property>
+                                        <property name="position">1</property>
+                                      </packing>
+                                    </child>
+                                  </object>
+                                  <packing>
+                                    <property name="expand">False</property>
+                                    <property name="fill">True</property>
+                                    <property name="padding">5</property>
+                                    <property name="position">3</property>
                                   </packing>
                                 </child>
                               </object>

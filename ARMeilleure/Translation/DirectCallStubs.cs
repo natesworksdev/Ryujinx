@@ -34,6 +34,8 @@ namespace ARMeilleure.Translation
                 _indirectCallStubPtr     = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateIndirectCallStub(false));
                 _indirectTailCallStubPtr = Marshal.GetFunctionPointerForDelegate<GuestFunction>(GenerateIndirectCallStub(true));
 
+                Translator.ResetPools();
+
                 _initialized = true;
             }
         }
@@ -77,7 +79,6 @@ namespace ARMeilleure.Translation
 
             Operand address = context.Load(OperandType.I64, context.Add(nativeContextPtr, Const((long)NativeContext.GetCallAddressOffset())));
 
-            address = context.BitwiseOr(address, Const(address.Type, 1)); // Set call flag.
             Operand functionAddr = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFunctionAddress)), address);
             EmitCall(context, functionAddr, tailCall);
 
