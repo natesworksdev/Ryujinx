@@ -526,6 +526,8 @@ namespace ARMeilleure.CodeGen.X86
                 // Moves to the same register are useless.
                 if (dest.Kind == src1.Kind && dest.Value == src1.Value)
                 {
+                    ValidateBinOp(dest, src1, src2);
+
                     context.Assembler.Add(dest, src2, dest.Type);
                 }
                 else
