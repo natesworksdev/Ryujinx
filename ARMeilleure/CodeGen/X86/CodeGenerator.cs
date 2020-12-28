@@ -518,12 +518,19 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type.IsInteger())
             {
-                int offset    = src2.Kind == OperandKind.Constant ? src2.AsInt32() : 0;
-                Operand index = src2.Kind != OperandKind.Constant ? src2           : null;
+                if (dest == src1)
+                {
+                    context.Assembler.Add(dest, src2, dest.Type);
+                }
+                else
+                {
+                    int offset = src2.Kind == OperandKind.Constant ? src2.AsInt32() : 0;
+                    Operand index = src2.Kind != OperandKind.Constant ? src2 : null;
 
-                MemoryOperand memOp = MemoryOp(dest.Type, src1, index, Multiplier.x1, offset);
+                    MemoryOperand memOp = MemoryOp(dest.Type, src1, index, Multiplier.x1, offset);
 
-                context.Assembler.Lea(dest, memOp, dest.Type);
+                    context.Assembler.Lea(dest, memOp, dest.Type);
+                }
             }
             else if (dest.Type == OperandType.FP32)
             {
