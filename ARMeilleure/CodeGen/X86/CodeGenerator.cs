@@ -532,6 +532,8 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
+                    EnsureSameType(dest, src1, src2);
+
                     int offset;
                     Operand index;
 
