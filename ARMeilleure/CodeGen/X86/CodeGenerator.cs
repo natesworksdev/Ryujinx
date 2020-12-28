@@ -521,12 +521,15 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     ValidateBinOp(dest, src1, src2);
 
+            if (dest.Type.IsInteger())
+            {
+                // Moves to the same register are useless.
+                if (dest.Kind == src1.Kind && dest.Value == src1.Value)
+                {
                     context.Assembler.Add(dest, src2, dest.Type);
                 }
                 else
                 {
-                    EnsureSameType(dest, src1, src2);
-
                     int offset;
                     Operand index;
 
