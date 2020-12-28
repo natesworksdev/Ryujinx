@@ -920,7 +920,19 @@ namespace ARMeilleure.Instructions
 
             if (op.Polynomial)
             {
-                EmitVectorBinaryLongOpI32(context, (op1, op2) => EmitPolynomialMultiply(context, op1, op2, 8 << op.Size), false);
+                if (op.Size == 0) // P8
+                {
+                    EmitVectorBinaryLongOpI32(context, (op1, op2) => EmitPolynomialMultiply(context, op1, op2, 8 << op.Size), false);
+                }
+                else /* if (op.Size == 2) // P64 */
+                {
+                    Operand ne = context.VectorExtract(OperandType.I64, GetVec(op.Qn), op.In);
+                    Operand me = context.VectorExtract(OperandType.I64, GetVec(op.Qm), op.Im);
+
+                    Operand res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.PolynomialMult64_128)), ne, me);
+
+                    context.Copy(GetVecA32(op.Qd), res);
+                }
             }
             else
             {

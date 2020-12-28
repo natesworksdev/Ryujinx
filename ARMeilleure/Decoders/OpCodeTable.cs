@@ -888,7 +888,7 @@ namespace ARMeilleure.Decoders
             SetA32("111100110x00xxxxxxxx1101xxx1xxxx", InstName.Vmul,     InstEmit32.Vmul_V,   OpCode32SimdReg.Create);
             SetA32("1111001x1x<<xxxxxxx01010x1x0xxxx", InstName.Vmull,    InstEmit32.Vmull_1,  OpCode32SimdRegElemLong.Create);
             SetA32("1111001x1x<<xxxxxxx01100x0x0xxxx", InstName.Vmull,    InstEmit32.Vmull_I,  OpCode32SimdRegLong.Create);
-            SetA32("111100101x00xxxxxxx01110x0x0xxxx", InstName.Vmull,    InstEmit32.Vmull_I,  OpCode32SimdRegLong.Create); // Polynomial
+            SetA32("111100101xx0xxxxxxx01110x0x0xxxx", InstName.Vmull,    InstEmit32.Vmull_I,  OpCode32SimdRegLong.Create); // P8/P64
             SetA32("111100111x110000xxxx01011xx0xxxx", InstName.Vmvn,     InstEmit32.Vmvn_I,   OpCode32SimdBinary.Create);
             SetA32("1111001x1x000xxxxxxx0xx00x11xxxx", InstName.Vmvn,     InstEmit32.Vmvn_II,  OpCode32SimdImm.Create); // D/Q vector I32.
             SetA32("1111001x1x000xxxxxxx10x00x11xxxx", InstName.Vmvn,     InstEmit32.Vmvn_II,  OpCode32SimdImm.Create);
