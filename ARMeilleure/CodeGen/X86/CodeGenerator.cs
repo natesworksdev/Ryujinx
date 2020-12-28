@@ -1605,10 +1605,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateZeroUpper64(CodeGenContext context, Operand dest, Operand source)
         {
-            if (!dest.GetRegister().Equals(source.GetRegister()))
-            {
-                context.Assembler.Movq(dest, source);
-            }
+            context.Assembler.Movq(dest, source);
         }
 
         private static void GenerateZeroUpper96(CodeGenContext context, Operand dest, Operand source)
