@@ -514,13 +514,13 @@ namespace ARMeilleure.CodeGen.X86
             Operand src1 = operation.GetSource(0);
             Operand src2 = operation.GetSource(1);
 
-            ValidateBinOp(dest, src1, src2);
-
             if (dest.Type.IsInteger())
             {
                 // Moves to the same register are useless.
                 if (dest.Kind == src1.Kind && dest.Value == src1.Value)
                 {
+                    ValidateBinOp(dest, src1, src2);
+
                     context.Assembler.Add(dest, src2, dest.Type);
                 }
                 else
@@ -544,13 +544,17 @@ namespace ARMeilleure.CodeGen.X86
                     context.Assembler.Lea(dest, memOp, dest.Type);
                 }
             }
-            else if (dest.Type == OperandType.FP32)
-            {
-                context.Assembler.Addss(dest, src1, src2);
-            }
-            else /* if (dest.Type == OperandType.FP64) */
-            {
-                context.Assembler.Addsd(dest, src1, src2);
+            else {
+                ValidateBinOp(dest, src1, src2);
+
+                if (dest.Type == OperandType.FP32)
+                {
+                    context.Assembler.Addss(dest, src1, src2);
+                }
+                else /* if (dest.Type == OperandType.FP64) */
+                {
+                    context.Assembler.Addsd(dest, src1, src2);
+                }
             }
         }
 
