@@ -95,6 +95,8 @@ namespace ARMeilleure.Translation.PTC
         public static void Initialize(string titleIdText, string displayVersion, bool enabled)
         {
             Wait();
+            ClearMemoryStreams();
+            PtcJumpTable.Clear();
 
             PtcProfiler.Wait();
             PtcProfiler.ClearEntries();
