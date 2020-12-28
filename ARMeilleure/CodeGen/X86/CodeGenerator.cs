@@ -1556,10 +1556,13 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
 
-            if (!dest.GetRegister().Equals(source.GetRegister()))
+            // Moves to the same register are useless.
+            if (dest.Kind == source.Kind && dest.Value == source.Value)
             {
-                context.Assembler.Mov(dest, source, OperandType.I32);
+                return;
             }
+
+            context.Assembler.Mov(dest, source, OperandType.I32);   
         }
 
         private static void GenerateZeroExtend8(CodeGenContext context, Operation operation)
