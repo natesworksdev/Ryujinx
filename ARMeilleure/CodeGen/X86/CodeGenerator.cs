@@ -1556,8 +1556,8 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
 
-            // Moves to the same register are useless.
-            if (dest.Kind == source.Kind && dest.Value == source.Value)
+            // Moves to the same register are useless when the SourceType is I32 as the upper bits are already zeroed.
+            if (dest.Kind == source.Kind && dest.Value == source.Value && source.Type == OperandType.I32)
             {
                 return;
             }
