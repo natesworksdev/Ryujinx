@@ -1082,6 +1082,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private void UndefinedInstructionHandler(object sender, InstUndefinedEventArgs e)
         {
             KernelStatic.GetCurrentThread().PrintGuestStackTrace();
+            KernelStatic.GetCurrentThread().PrintGuestRegisterPrintout();
 
             throw new UndefinedInstructionException(e.Address, e.OpCode);
         }
