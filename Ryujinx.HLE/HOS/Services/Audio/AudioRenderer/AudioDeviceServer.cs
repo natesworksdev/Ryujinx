@@ -28,15 +28,13 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
             long position = context.Request.ReceiveBuff[0].Position;
             long size = context.Request.ReceiveBuff[0].Size;
 
-            long basePosition = position;
-
             int count = 0;
 
             foreach (string name in deviceNames)
             {
                 byte[] buffer = Encoding.ASCII.GetBytes(name);
 
-                if ((position - basePosition) + buffer.Length > size)
+                if (count + 1 * AudioDeviceNameSize > size)
                 {
                     Logger.Error?.Print(LogClass.ServiceAudio, $"Output buffer size {size} too small!");
 
@@ -148,15 +146,13 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioRenderer
 
             (long position, long size) = context.Request.GetBufferType0x22();
 
-            long basePosition = position;
-
             int count = 0;
 
             foreach (string name in deviceNames)
             {
                 byte[] buffer = Encoding.ASCII.GetBytes(name);
 
-                if ((position - basePosition) + buffer.Length > size)
+                if (count + 1 * AudioDeviceNameSize > size)
                 {
                     Logger.Error?.Print(LogClass.ServiceAudio, $"Output buffer size {size} too small!");
 
