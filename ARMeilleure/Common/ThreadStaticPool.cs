@@ -48,7 +48,7 @@ namespace ARMeilleure.Common
 
         public static void ReturnPool(int groupId)
         {
-            // Reset and return the pool for this thread to the specified group.
+            // Reset, limit if necessary, and return the pool for this thread to the specified group.
 
             var pools = GetPools(groupId);
             lock (pools)
