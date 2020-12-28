@@ -518,7 +518,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type.IsInteger())
             {
-                if (dest == src1)
+                if (dest.GetRegister().Equals(src1.GetRegister()))
                 {
                     context.Assembler.Add(dest, src2, dest.Type);
                 }
