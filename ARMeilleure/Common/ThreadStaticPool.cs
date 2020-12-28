@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Threading;
 
 namespace ARMeilleure.Common
 {
@@ -81,9 +80,7 @@ namespace ARMeilleure.Common
 
         private List<T[]> _pool;
         private int _chunkIndex = -1;
-        private int _chunkSize;
         private int _poolIndex = -1;
-        private int _poolSize;
 
         private ThreadStaticPool()
         {
@@ -94,23 +91,19 @@ namespace ARMeilleure.Common
 
         public T Allocate()
         {
-            int poolIndex = Interlocked.Increment(ref _poolIndex);
-
-            if (poolIndex >= PoolSizeIncrement)
+            if (++_poolIndex >= PoolSizeIncrement)
             {
                 AddChunkIfNeeded();
 
-                poolIndex = _poolIndex = 0;
+                _poolIndex = 0;
             }
 
-            return _pool[_chunkIndex][poolIndex];
+            return _pool[_chunkIndex][_poolIndex];
         }
 
         private void AddChunkIfNeeded()
         {
-            int chunkIndex = Interlocked.Increment(ref _chunkIndex);
-
-            if (chunkIndex >= _chunkSize)
+            if (++_chunkIndex >= _pool.Count)
             {
                 T[] pool = new T[PoolSizeIncrement];
 
@@ -120,9 +113,6 @@ namespace ARMeilleure.Common
                 }
 
                 _pool.Add(pool);
-
-                _chunkSize++;
-                _poolSize += PoolSizeIncrement;
             }
         }
 
@@ -134,15 +124,12 @@ namespace ARMeilleure.Common
 
         private void ChunkSizeLimiter()
         {
-            if (_chunkSize >= ChunkSizeLimit)
+            if (_pool.Count >= ChunkSizeLimit)
             {
                 int newChunkSize = ChunkSizeLimit / 2;
 
-                _pool.RemoveRange(newChunkSize, _chunkSize - newChunkSize);
+                _pool.RemoveRange(newChunkSize, _pool.Count - newChunkSize);
                 _pool.Capacity = ChunkSizeLimit * 2;
-
-                _chunkSize = newChunkSize;
-                _poolSize = newChunkSize * PoolSizeIncrement;
             }
         }
 
