@@ -1556,7 +1556,10 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(dest.Type.IsInteger() && source.Type.IsInteger());
 
-            context.Assembler.Mov(dest, source, OperandType.I32);
+            if (!dest.GetRegister().Equals(source.GetRegister()))
+            {
+                context.Assembler.Mov(dest, source, OperandType.I32);
+            }
         }
 
         private static void GenerateZeroExtend8(CodeGenContext context, Operation operation)
@@ -1599,10 +1602,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void GenerateZeroUpper64(CodeGenContext context, Operand dest, Operand source)
         {
-            if (!dest.GetRegister().Equals(source.GetRegister()))
-            {
-                context.Assembler.Movq(dest, source);
-            }
+            context.Assembler.Movq(dest, source);
         }
 
         private static void GenerateZeroUpper96(CodeGenContext context, Operand dest, Operand source)
