@@ -518,14 +518,26 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type.IsInteger())
             {
-                if (dest.GetRegister().Equals(src1.GetRegister()))
+                // Moves to the same register are useless.
+                if (dest.Kind == src1.Kind && dest.Value == src1.Value)
                 {
                     context.Assembler.Add(dest, src2, dest.Type);
                 }
                 else
                 {
-                    int offset = src2.Kind == OperandKind.Constant ? src2.AsInt32() : 0;
-                    Operand index = src2.Kind != OperandKind.Constant ? src2 : null;
+                    int offset;
+                    Operand index;
+
+                    if (src2.Kind == OperandKind.Constant)
+                    {
+                        offset = src2.AsInt32();
+                        index = null;
+                    }
+                    else
+                    {
+                        offset = 0;
+                        index = src2;
+                    }
 
                     MemoryOperand memOp = MemoryOp(dest.Type, src1, index, Multiplier.x1, offset);
 
