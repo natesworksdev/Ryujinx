@@ -448,6 +448,7 @@ namespace Ryujinx.HLE.HOS
                     }
 
                     modLoadResult.Npdm = new Npdm(npdmFile.OpenRead());
+                    
                     Logger.Info?.Print(LogClass.ModLoader, $"main.npdm replaced");
                 }
             }
