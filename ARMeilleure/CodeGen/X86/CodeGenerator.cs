@@ -525,6 +525,8 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
+                    EnsureSameType(dest, src1, src2);
+
                     int offset;
                     Operand index;
 
@@ -544,7 +546,8 @@ namespace ARMeilleure.CodeGen.X86
                     context.Assembler.Lea(dest, memOp, dest.Type);
                 }
             }
-            else {
+            else 
+            {
                 ValidateBinOp(dest, src1, src2);
 
                 if (dest.Type == OperandType.FP32)
