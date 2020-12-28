@@ -48,7 +48,6 @@ namespace Ryujinx.HLE.HOS
             "sdk"
         };
 
-
         private readonly Switch            _device;
         private readonly ContentManager    _contentManager;
         private readonly VirtualFileSystem _fileSystem;
