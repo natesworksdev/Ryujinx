@@ -26,6 +26,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <TargetPath>libsoundio.so</TargetPath>
     </ContentWithTargetPath>
+    <ContentWithTargetPath Include="Native\openal\libs\OpenAL32.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>OpenAL32.dll</TargetPath>
+    </ContentWithTargetPath>
   </ItemGroup>
 
 </Project>
