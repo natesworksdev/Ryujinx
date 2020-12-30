@@ -926,8 +926,8 @@ namespace ARMeilleure.Instructions
                 }
                 else /* if (op.Size == 2) // P64 */
                 {
-                    Operand ne = context.VectorExtract(OperandType.I64, GetVec(op.Qn), op.In);
-                    Operand me = context.VectorExtract(OperandType.I64, GetVec(op.Qm), op.Im);
+                    Operand ne = context.VectorExtract(OperandType.I64, GetVec(op.Qn), op.Vn & 1);
+                    Operand me = context.VectorExtract(OperandType.I64, GetVec(op.Qm), op.Vm & 1);
 
                     Operand res = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.PolynomialMult64_128)), ne, me);
 
