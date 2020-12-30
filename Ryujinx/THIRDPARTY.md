@@ -1,4 +1,4 @@
-﻿# ffmpeg (LGPLv3)
+# ffmpeg (LGPLv3)
 <details>
   <summary>See License</summary>
   
@@ -209,14 +209,14 @@
   ```
 </details>
 
-# Atmosph�re (MIT)
+# Atmosphère (MIT)
 <details>
   <summary>See License</summary>
   
   ```
   MIT License
 
-  Copyright (c) 2018-2020 Atmosph�re-NX
+  Copyright (c) 2018-2020 Atmosphère-NX
 
   Permission is hereby granted, free of charge, to any person obtaining a copy
   of this software and associated documentation files (the "Software"), to deal
