@@ -549,6 +549,8 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
+            DisplaySleep.Prevent();
+
             GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
@@ -600,6 +602,7 @@ namespace Ryujinx.Ui
 
                 _windowsMultimediaTimerResolution?.Dispose();
                 _windowsMultimediaTimerResolution = null;
+                DisplaySleep.Restore();
 
                 _viewBox.Add(_gameTableWindow);
 
