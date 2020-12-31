@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             public Image(ulong baseAddress, ulong size, ElfSymbol[] symbols)
             {
                 BaseAddress = baseAddress;
-                Size = size;
+                Size        = size;
                 Symbols     = symbols;
             }
         }
@@ -58,7 +58,8 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
                 if(AnalyzePointer(out PointerInfo info, address, thread))
                 {
                     trace.AppendLine($"   {address:x16}\t{info.ImageDisplay}\t{info.SubDisplay}");
-                } else
+                }
+                else
                 {
                     trace.AppendLine($"   {address:x16}");
                 }
@@ -116,13 +117,19 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             {
                 var v = x == 32 ? (ulong)thread.LastPc : context.GetX(x);
                 if (!AnalyzePointer(out PointerInfo info, v, thread))
+                {
                     return $"{v:x16}";
+                }
                 else
                 {
                     if (!string.IsNullOrEmpty(info.ImageName))
+                    {
                         return $"{v:x16} ({info.ImageDisplay})\t=> {info.SubDisplay}";
+                    }
                     else
+                    {
                         return $"{v:x16} ({info.SpDisplay})";
+                    }
                 }
             }
 
@@ -203,9 +210,15 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
         private bool AnalyzePointer(out PointerInfo info, ulong address, KThread thread)
         {
             if (AnalyzePointerFromImages(out info, address))
+            {
                 return true;
+            }
+
             if (AnalyzePointerFromStack(out info, address, thread))
+            {
                 return true;
+            }
+
             return false;
         }
 
@@ -252,6 +265,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Process
             ulong sp = thread.Context.GetX(31);
             var meminfo = _owner.MemoryManager.QueryMemory(address);
             uint type = (uint)meminfo.State;
+
             type &= 0xff; // take lower 8 bits
 
             if(type != 0x0B) // is this pointer within the stack?
