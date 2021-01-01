@@ -309,7 +309,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 currentThread.MutexAddress         = address;
                 currentThread.WaitingInArbitration = true;
 
-                InsertSortedByPriority(_arbiterThreads, currentThread);
+                _arbiterThreads.Add(currentThread);
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
@@ -387,7 +387,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
                 currentThread.MutexAddress         = address;
                 currentThread.WaitingInArbitration = true;
 
-                InsertSortedByPriority(_arbiterThreads, currentThread);
+                _arbiterThreads.Add(currentThread);
 
                 currentThread.Reschedule(ThreadSchedState.Paused);
 
@@ -420,30 +420,6 @@ namespace Ryujinx.HLE.HOS.Kernel.Threading
             _context.CriticalSection.Leave();
 
             return KernelResult.InvalidState;
-        }
-
-        private static void InsertSortedByPriority(List<KThread> threads, KThread thread)
-        {
-            int nextIndex = -1;
-
-            for (int index = 0; index < threads.Count; index++)
-            {
-                if (threads[index].DynamicPriority > thread.DynamicPriority)
-                {
-                    nextIndex = index;
-
-                    break;
-                }
-            }
-
-            if (nextIndex != -1)
-            {
-                threads.Insert(nextIndex, thread);
-            }
-            else
-            {
-                threads.Add(thread);
-            }
         }
 
         public KernelResult Signal(ulong address, int count)
