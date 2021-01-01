@@ -523,7 +523,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest.Type.IsInteger())
             {
-                // Moves to the same register are useless.
+                // If Destination and Source 1 Operands are the same, perform a standard add as there are no benefits to using LEA.
                 if (dest.Kind == src1.Kind && dest.Value == src1.Value)
                 {
                     ValidateBinOp(dest, src1, src2);
