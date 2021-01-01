@@ -22,7 +22,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types
         private class MappedMemory : Range
         {
             public ulong PhysicalAddress { get; private set; }
-            public bool VaAllocated     { get; private set; }
+            public bool  VaAllocated     { get; private set; }
 
             public MappedMemory(
                 ulong position,
