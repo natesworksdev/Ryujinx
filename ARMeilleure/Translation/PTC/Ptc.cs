@@ -742,7 +742,7 @@ namespace ARMeilleure.Translation.PTC
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
         }
 
-        internal static void WriteInfoCodeReloc(ulong address, ulong guestSize, bool highCq, PtcInfo ptcInfo)
+        internal static void WriteInfoCodeRelocUnwindInfo(ulong address, ulong guestSize, bool highCq, PtcInfo ptcInfo)
         {
             lock (_lock)
             {

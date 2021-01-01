@@ -248,7 +248,7 @@ namespace ARMeilleure.Translation
 
                 ReturnPool(highCq);
 
-                Ptc.WriteInfoCodeReloc(address, funcSize, highCq, ptcInfo);
+                Ptc.WriteInfoCodeRelocUnwindInfo(address, funcSize, highCq, ptcInfo);
             }
 
             return new TranslatedFunction(func, funcSize, highCq);
