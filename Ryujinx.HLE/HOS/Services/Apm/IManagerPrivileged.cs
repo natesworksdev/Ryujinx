@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    [Service("apm:p")] // 8.0.0-
+    [Service("apm:p")] // 1.0.0-7.0.1
     class IManagerPrivileged : IManager
     {
         private readonly ServiceCtx _context;
