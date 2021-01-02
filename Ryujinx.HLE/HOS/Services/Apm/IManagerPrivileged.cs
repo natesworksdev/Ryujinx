@@ -1,31 +1,19 @@
 namespace Ryujinx.HLE.HOS.Services.Apm
 {
-    [Service("apm:p")] // 1.0.0-7.0.1
-    class IManagerPrivileged : IManager
-    {
-        private readonly ServiceCtx _context;
+    // NOTE: This service doesn’t exist anymore after firmware 7.0.1. But some outdated homebrew still uses it.
 
-        public IManagerPrivileged(ServiceCtx context) : base(context)
-        {
-            _context = context;
-        }
+    [Service("apm:p")] // 1.0.0-7.0.1
+    class IManagerPrivileged : IpcService
+    {
+        public IManagerPrivileged(ServiceCtx context) { }
 
         [Command(0)]
-        protected override ResultCode OpenSession(out SessionServer sessionServer)
+        // OpenSession() -> object<nn::apm::ISession>
+        public ResultCode OpenSession(ServiceCtx context)
         {
-            sessionServer = new SessionServer(_context);
+            MakeObject(context, new SessionServer(context));
 
             return ResultCode.Success;
-        }
-
-        protected override PerformanceMode GetPerformanceMode()
-        {
-            return PerformanceMode.Default;
-        }
-
-        protected override bool IsCpuOverclockEnabled()
-        {
-            return false;
         }
     }
 }
