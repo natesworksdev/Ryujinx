@@ -20,14 +20,12 @@ namespace Ryujinx.HLE.HOS.Services.Apm
 
         protected override PerformanceMode GetPerformanceMode()
         {
-            // not implemented
-            return _context.Device.System.PerformanceState.PerformanceMode;
+            return PerformanceMode.Default;
         }
 
         protected override bool IsCpuOverclockEnabled()
         {
-            // not implemented
-            return _context.Device.System.PerformanceState.CpuOverclockEnabled;
+            return false;
         }
     }
 }
