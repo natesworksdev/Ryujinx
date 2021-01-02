@@ -83,9 +83,9 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             return ResultCode.Success;
         }
 
-        public ResultCode GetProfile(ServiceCtx context, out IProfile iProfile)
+        public ResultCode GetProfile(ServiceCtx context, out IProfile profile)
         {
-            iProfile = default;
+            profile = default;
 
             ResultCode resultCode = CheckUserId(context, out UserId userId);
 
@@ -101,7 +101,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
                 return ResultCode.UserNotFound;
             }
 
-            iProfile = new IProfile(userProfile);
+            profile = new IProfile(userProfile);
 
             // Doesn't occur in our case.
             // return ResultCode.NullObject;
@@ -111,7 +111,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
 
         public ResultCode IsUserRegistrationRequestPermitted(ServiceCtx context)
         {
-            context.ResponseData.Write(_serviceFlag == AccountServiceFlag.Application ? false : true);
+            context.ResponseData.Write(_serviceFlag != AccountServiceFlag.Application);
 
             return ResultCode.Success;
         }
@@ -121,7 +121,7 @@ namespace Ryujinx.HLE.HOS.Services.Account.Acc
             if (context.Device.System.State.Account.GetUserCount() != 1)
             {
                 // Invalid UserId.
-                new UserId(0, 0).Write(context.ResponseData);
+                UserId.Null.Write(context.ResponseData);
 
                 return ResultCode.UserNotFound;
             }
