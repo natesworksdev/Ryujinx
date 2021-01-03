@@ -712,8 +712,8 @@ namespace Ryujinx.Ui
 
             Dispose();
 
-            DiscordIntegrationModule.Exit();
             Program.Exit();
+            Application.Quit();
         }
 
         //

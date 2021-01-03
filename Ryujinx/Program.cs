@@ -192,12 +192,12 @@ namespace Ryujinx
 
         public static void Exit()
         {
+            DiscordIntegrationModule.Exit();
+
             Ptc.Dispose();
             PtcProfiler.Dispose();
 
             Logger.Shutdown();
-
-            Application.Quit();
         }
     }
 }
