@@ -854,7 +854,7 @@ namespace Ryujinx.Ui
 
             BlitStruct<ApplicationControlProperty> controlData = (BlitStruct<ApplicationControlProperty>)_tableStore.GetValue(treeIter, 10);
 
-            _ = new GameTableContextMenu(_virtualFileSystem, titleFilePath, titleName, titleId, controlData);
+            _ = new GameTableContextMenu(this, _virtualFileSystem, titleFilePath, titleName, titleId, controlData);
         }
 
         private void Load_Application_File(object sender, EventArgs args)

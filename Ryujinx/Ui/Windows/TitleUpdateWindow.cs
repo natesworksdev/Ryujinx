@@ -22,6 +22,7 @@ namespace Ryujinx.Ui.Windows
 {
     public class TitleUpdateWindow : Window
     {
+        private readonly MainWindow        _parent;
         private readonly VirtualFileSystem _virtualFileSystem;
         private readonly string            _titleId;
         private readonly string            _updateJsonPath;
@@ -36,10 +37,12 @@ namespace Ryujinx.Ui.Windows
         [GUI] RadioButton _noUpdateRadioButton;
 #pragma warning restore CS0649, IDE0044
 
-        public TitleUpdateWindow(VirtualFileSystem virtualFileSystem, string titleId, string titleName) : this(new Builder("Ryujinx.Ui.Windows.TitleUpdateWindow.glade"), virtualFileSystem, titleId, titleName) { }
+        public TitleUpdateWindow(MainWindow parent, VirtualFileSystem virtualFileSystem, string titleId, string titleName) : this(new Builder("Ryujinx.Ui.Windows.TitleUpdateWindow.glade"), parent, virtualFileSystem, titleId, titleName) { }
 
-        private TitleUpdateWindow(Builder builder, VirtualFileSystem virtualFileSystem, string titleId, string titleName) : base(builder.GetObject("_titleUpdateWindow").Handle)
+        private TitleUpdateWindow(Builder builder, MainWindow parent, VirtualFileSystem virtualFileSystem, string titleId, string titleName) : base(builder.GetObject("_titleUpdateWindow").Handle)
         {
+            _parent = parent;
+
             builder.Autoconnect(this);
 
             _titleId                     = titleId;
@@ -181,7 +184,7 @@ namespace Ryujinx.Ui.Windows
                 dlcJsonStream.Write(Encoding.UTF8.GetBytes(JsonHelper.Serialize(_titleUpdateWindowData, true)));
             }
 
-            ((MainWindow)Parent).UpdateGameTable();
+            _parent.UpdateGameTable();
             Dispose();
         }
 

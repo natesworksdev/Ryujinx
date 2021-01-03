@@ -28,6 +28,7 @@ namespace Ryujinx.Ui.Widgets
 {
     public partial class GameTableContextMenu : Menu
     {
+        private readonly MainWindow                             _parent;
         private readonly VirtualFileSystem                      _virtualFileSystem;
         private readonly BlitStruct<ApplicationControlProperty> _controlData;
 
@@ -39,8 +40,10 @@ namespace Ryujinx.Ui.Widgets
         private MessageDialog _dialog;
         private bool          _cancel;
 
-        public GameTableContextMenu(VirtualFileSystem virtualFileSystem, string titleFilePath, string titleName, string titleId, BlitStruct<ApplicationControlProperty> controlData)
+        public GameTableContextMenu(MainWindow parent, VirtualFileSystem virtualFileSystem, string titleFilePath, string titleName, string titleId, BlitStruct<ApplicationControlProperty> controlData)
         {
+            _parent = parent;
+
             InitializeComponent();
 
             _virtualFileSystem = virtualFileSystem;
@@ -445,7 +448,7 @@ namespace Ryujinx.Ui.Widgets
 
         private void ManageTitleUpdates_Clicked(object sender, EventArgs args)
         {
-            new TitleUpdateWindow(_virtualFileSystem, _titleIdText, _titleName).Show();
+            new TitleUpdateWindow(_parent, _virtualFileSystem, _titleIdText, _titleName).Show();
         }
 
         private void ManageDlc_Clicked(object sender, EventArgs args)
