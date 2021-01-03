@@ -409,37 +409,37 @@ namespace Ryujinx.Ui.Windows
         {
             if (_inputDevice.ActiveId.StartsWith("keyboard"))
             {
-                _ = Enum.TryParse(_lStickUp.Label,     out Key lStickUp);
-                _ = Enum.TryParse(_lStickDown.Label,   out Key lStickDown);
-                _ = Enum.TryParse(_lStickLeft.Label,   out Key lStickLeft);
-                _ = Enum.TryParse(_lStickRight.Label,  out Key lStickRight);
-                _ = Enum.TryParse(_lStickButton.Label, out Key lStickButton);
-                _ = Enum.TryParse(_dpadUp.Label,       out Key lDPadUp);
-                _ = Enum.TryParse(_dpadDown.Label,     out Key lDPadDown);
-                _ = Enum.TryParse(_dpadLeft.Label,     out Key lDPadLeft);
-                _ = Enum.TryParse(_dpadRight.Label,    out Key lDPadRight);
-                _ = Enum.TryParse(_minus.Label,        out Key lButtonMinus);
-                _ = Enum.TryParse(_l.Label,            out Key lButtonL);
-                _ = Enum.TryParse(_zL.Label,           out Key lButtonZl);
-                _ = Enum.TryParse(_lSl.Label,          out Key lButtonSl);
-                _ = Enum.TryParse(_lSr.Label,          out Key lButtonSr);
+                Enum.TryParse(_lStickUp.Label,     out Key lStickUp);
+                Enum.TryParse(_lStickDown.Label,   out Key lStickDown);
+                Enum.TryParse(_lStickLeft.Label,   out Key lStickLeft);
+                Enum.TryParse(_lStickRight.Label,  out Key lStickRight);
+                Enum.TryParse(_lStickButton.Label, out Key lStickButton);
+                Enum.TryParse(_dpadUp.Label,       out Key lDPadUp);
+                Enum.TryParse(_dpadDown.Label,     out Key lDPadDown);
+                Enum.TryParse(_dpadLeft.Label,     out Key lDPadLeft);
+                Enum.TryParse(_dpadRight.Label,    out Key lDPadRight);
+                Enum.TryParse(_minus.Label,        out Key lButtonMinus);
+                Enum.TryParse(_l.Label,            out Key lButtonL);
+                Enum.TryParse(_zL.Label,           out Key lButtonZl);
+                Enum.TryParse(_lSl.Label,          out Key lButtonSl);
+                Enum.TryParse(_lSr.Label,          out Key lButtonSr);
 
-                _ = Enum.TryParse(_rStickUp.Label,     out Key rStickUp);
-                _ = Enum.TryParse(_rStickDown.Label,   out Key rStickDown);
-                _ = Enum.TryParse(_rStickLeft.Label,   out Key rStickLeft);
-                _ = Enum.TryParse(_rStickRight.Label,  out Key rStickRight);
-                _ = Enum.TryParse(_rStickButton.Label, out Key rStickButton);
-                _ = Enum.TryParse(_a.Label,            out Key rButtonA);
-                _ = Enum.TryParse(_b.Label,            out Key rButtonB);
-                _ = Enum.TryParse(_x.Label,            out Key rButtonX);
-                _ = Enum.TryParse(_y.Label,            out Key rButtonY);
-                _ = Enum.TryParse(_plus.Label,         out Key rButtonPlus);
-                _ = Enum.TryParse(_r.Label,            out Key rButtonR);
-                _ = Enum.TryParse(_zR.Label,           out Key rButtonZr);
-                _ = Enum.TryParse(_rSl.Label,          out Key rButtonSl);
-                _ = Enum.TryParse(_rSr.Label,          out Key rButtonSr);
+                Enum.TryParse(_rStickUp.Label,     out Key rStickUp);
+                Enum.TryParse(_rStickDown.Label,   out Key rStickDown);
+                Enum.TryParse(_rStickLeft.Label,   out Key rStickLeft);
+                Enum.TryParse(_rStickRight.Label,  out Key rStickRight);
+                Enum.TryParse(_rStickButton.Label, out Key rStickButton);
+                Enum.TryParse(_a.Label,            out Key rButtonA);
+                Enum.TryParse(_b.Label,            out Key rButtonB);
+                Enum.TryParse(_x.Label,            out Key rButtonX);
+                Enum.TryParse(_y.Label,            out Key rButtonY);
+                Enum.TryParse(_plus.Label,         out Key rButtonPlus);
+                Enum.TryParse(_r.Label,            out Key rButtonR);
+                Enum.TryParse(_zR.Label,           out Key rButtonZr);
+                Enum.TryParse(_rSl.Label,          out Key rButtonSl);
+                Enum.TryParse(_rSr.Label,          out Key rButtonSr);
 
-                _ = int.TryParse(_dsuServerPort.Buffer.Text, out int port);
+                int.TryParse(_dsuServerPort.Buffer.Text, out int port);
 
                 return new KeyboardConfig
                 {
@@ -493,33 +493,33 @@ namespace Ryujinx.Ui.Windows
             
             if (_inputDevice.ActiveId.StartsWith("controller"))
             {
-                _ = Enum.TryParse(_lStickX.Label,      out ControllerInputId lStickX);
-                _ = Enum.TryParse(_lStickY.Label,      out ControllerInputId lStickY);
-                _ = Enum.TryParse(_lStickButton.Label, out ControllerInputId lStickButton);
-                _ = Enum.TryParse(_minus.Label,        out ControllerInputId lButtonMinus);
-                _ = Enum.TryParse(_l.Label,            out ControllerInputId lButtonL);
-                _ = Enum.TryParse(_zL.Label,           out ControllerInputId lButtonZl);
-                _ = Enum.TryParse(_lSl.Label,          out ControllerInputId lButtonSl);
-                _ = Enum.TryParse(_lSr.Label,          out ControllerInputId lButtonSr);
-                _ = Enum.TryParse(_dpadUp.Label,       out ControllerInputId lDPadUp);
-                _ = Enum.TryParse(_dpadDown.Label,     out ControllerInputId lDPadDown);
-                _ = Enum.TryParse(_dpadLeft.Label,     out ControllerInputId lDPadLeft);
-                _ = Enum.TryParse(_dpadRight.Label,    out ControllerInputId lDPadRight);
+                Enum.TryParse(_lStickX.Label,      out ControllerInputId lStickX);
+                Enum.TryParse(_lStickY.Label,      out ControllerInputId lStickY);
+                Enum.TryParse(_lStickButton.Label, out ControllerInputId lStickButton);
+                Enum.TryParse(_minus.Label,        out ControllerInputId lButtonMinus);
+                Enum.TryParse(_l.Label,            out ControllerInputId lButtonL);
+                Enum.TryParse(_zL.Label,           out ControllerInputId lButtonZl);
+                Enum.TryParse(_lSl.Label,          out ControllerInputId lButtonSl);
+                Enum.TryParse(_lSr.Label,          out ControllerInputId lButtonSr);
+                Enum.TryParse(_dpadUp.Label,       out ControllerInputId lDPadUp);
+                Enum.TryParse(_dpadDown.Label,     out ControllerInputId lDPadDown);
+                Enum.TryParse(_dpadLeft.Label,     out ControllerInputId lDPadLeft);
+                Enum.TryParse(_dpadRight.Label,    out ControllerInputId lDPadRight);
 
-                _ = Enum.TryParse(_rStickX.Label,      out ControllerInputId rStickX);
-                _ = Enum.TryParse(_rStickY.Label,      out ControllerInputId rStickY);
-                _ = Enum.TryParse(_rStickButton.Label, out ControllerInputId rStickButton);
-                _ = Enum.TryParse(_a.Label,            out ControllerInputId rButtonA);
-                _ = Enum.TryParse(_b.Label,            out ControllerInputId rButtonB);
-                _ = Enum.TryParse(_x.Label,            out ControllerInputId rButtonX);
-                _ = Enum.TryParse(_y.Label,            out ControllerInputId rButtonY);
-                _ = Enum.TryParse(_plus.Label,         out ControllerInputId rButtonPlus);
-                _ = Enum.TryParse(_r.Label,            out ControllerInputId rButtonR);
-                _ = Enum.TryParse(_zR.Label,           out ControllerInputId rButtonZr);
-                _ = Enum.TryParse(_rSl.Label,          out ControllerInputId rButtonSl);
-                _ = Enum.TryParse(_rSr.Label,          out ControllerInputId rButtonSr);
+                Enum.TryParse(_rStickX.Label,      out ControllerInputId rStickX);
+                Enum.TryParse(_rStickY.Label,      out ControllerInputId rStickY);
+                Enum.TryParse(_rStickButton.Label, out ControllerInputId rStickButton);
+                Enum.TryParse(_a.Label,            out ControllerInputId rButtonA);
+                Enum.TryParse(_b.Label,            out ControllerInputId rButtonB);
+                Enum.TryParse(_x.Label,            out ControllerInputId rButtonX);
+                Enum.TryParse(_y.Label,            out ControllerInputId rButtonY);
+                Enum.TryParse(_plus.Label,         out ControllerInputId rButtonPlus);
+                Enum.TryParse(_r.Label,            out ControllerInputId rButtonR);
+                Enum.TryParse(_zR.Label,           out ControllerInputId rButtonZr);
+                Enum.TryParse(_rSl.Label,          out ControllerInputId rButtonSl);
+                Enum.TryParse(_rSr.Label,          out ControllerInputId rButtonSr);
 
-                _ = int.TryParse(_dsuServerPort.Buffer.Text, out int port);
+                int.TryParse(_dsuServerPort.Buffer.Text, out int port);
 
                 return new ControllerConfig
                 {
@@ -611,9 +611,8 @@ namespace Ryujinx.Ui.Windows
             {
                 if (joystickState.IsButtonDown(i))
                 {
-                    _ = Enum.TryParse($"Button{i}", out pressedButton);
-
-                    return true;
+                    Enum.TryParse($"Button{i}", out pressedButton);
+                                        return true;
                 }
             }
 
@@ -622,7 +621,7 @@ namespace Ryujinx.Ui.Windows
             {
                 if (joystickState.GetAxis(i) > 0.5f && joystickState.GetAxis(i) > triggerThreshold)
                 {
-                    _ = Enum.TryParse($"Axis{i}", out pressedButton);
+                    Enum.TryParse($"Axis{i}", out pressedButton);
 
                     return true;
                 }
@@ -640,7 +639,7 @@ namespace Ryujinx.Ui.Windows
                 if (hatState.IsRight) pos = "Right";
                 if (pos == null)      continue;
 
-                _ = Enum.TryParse($"Hat{i}{pos}", out pressedButton);
+                Enum.TryParse($"Hat{i}{pos}", out pressedButton);
 
                 return true;
             }
