@@ -14,7 +14,7 @@ namespace Ryujinx.Ui.Widgets
         [GUI] Label _errorMessage;
 #pragma warning restore CS0649, IDE0044
 
-        public ProfileDialog() : this(new Builder("Ryujinx.Ui.Widget.ProfileDialog.glade")) { }
+        public ProfileDialog() : this(new Builder("Ryujinx.Ui.Widgets.ProfileDialog.glade")) { }
 
         private ProfileDialog(Builder builder) : base(builder.GetObject("_profileDialog").Handle)
         {
