@@ -153,7 +153,6 @@ namespace Ryujinx.Ui.Windows
                         AddUpdate(path);
                     }
                 }
-
             }
         }
 
@@ -191,6 +190,7 @@ namespace Ryujinx.Ui.Windows
             }
 
             _parent.UpdateGameTable();
+
             Dispose();
         }
 
