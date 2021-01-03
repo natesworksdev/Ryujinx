@@ -64,16 +64,22 @@ namespace Ryujinx.Ui.Windows
             }
 
             _baseTitleInfoLabel.Text = $"Updates Available for {titleName} [{titleId.ToUpper()}]";
-            _noUpdateRadioButton.Active = true;
-
+            
             foreach (string path in _titleUpdateWindowData.Paths)
             {
                 AddUpdate(path);
             }
 
-            foreach ((RadioButton update, var _) in _radioButtonToPathDictionary.Where(keyValuePair => keyValuePair.Value == _titleUpdateWindowData.Selected))
+            if (_titleUpdateWindowData.Selected == "")
             {
-                update.Active = true;
+                _noUpdateRadioButton.Active = true;
+            }
+            else
+            {
+                foreach ((RadioButton update, var _) in _radioButtonToPathDictionary.Where(keyValuePair => keyValuePair.Value == _titleUpdateWindowData.Selected))
+                {
+                    update.Active = true;
+                }
             }
         }
 
