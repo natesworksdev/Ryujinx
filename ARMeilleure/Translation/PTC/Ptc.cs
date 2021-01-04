@@ -23,7 +23,7 @@ namespace ARMeilleure.Translation.PTC
     {
         private const string HeaderMagic = "PTChd";
 
-        private const int InternalVersion = 1814; //! To be incremented manually for each change to the ARMeilleure project.
+        private const int InternalVersion = 1865; //! To be incremented manually for each change to the ARMeilleure project.
 
         private const string ActualDir = "0";
         private const string BackupDir = "1";
