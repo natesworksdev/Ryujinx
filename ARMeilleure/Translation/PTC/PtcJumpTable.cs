@@ -238,7 +238,6 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        // For future use.
         public void Clean(ulong guestAddress)
         {
             if (Owners.TryGetValue(guestAddress, out List<int> entries))
