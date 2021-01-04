@@ -25,6 +25,7 @@
   "check_updates_on_start": true,
   "show_confirm_exit": true,
   "hide_cursor_on_idle": false,
+  "show_console": true,
   "enable_vsync": true,
   "enable_shader_cache": true,
   "enable_multicore_scheduling": false,

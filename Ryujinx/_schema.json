@@ -1222,6 +1222,17 @@
         false
       ]
     },
+    "show_console": {
+      "$id": "#/properties/show_console",
+      "type": "boolean",
+      "title": "Shows or hides the console",
+      "description": "Shows or hides the console",
+      "default": true,
+      "examples": [
+        true,
+        false
+      ]
+    },
     "enable_vsync": {
       "$id": "#/properties/enable_vsync",
       "type": "boolean",
