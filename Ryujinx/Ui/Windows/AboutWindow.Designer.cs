@@ -398,7 +398,7 @@ namespace Ryujinx.Ui.Windows
             {
                 WrapMode = Gtk.WrapMode.Word
             };
-            _patreonNamesText.Buffer.Text = "Soon.";
+            _patreonNamesText.Buffer.Text = "Loading...";
             _patreonNamesText.SetProperty("editable", new GLib.Value(false));
 
 #pragma warning restore CS0612
