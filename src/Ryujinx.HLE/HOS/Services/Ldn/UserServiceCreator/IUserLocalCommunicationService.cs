@@ -1082,8 +1082,11 @@ namespace Ryujinx.HLE.HOS.Services.Ldn.UserServiceCreator
 
         public void Dispose()
         {
-            _station?.Dispose();
-            _accessPoint?.Dispose();
+            if (NetworkClient != null)
+            {
+                _station?.Dispose();
+                _accessPoint?.Dispose();
+            }
 
             NetworkClient?.DisconnectAndStop();
             NetworkClient = null;
