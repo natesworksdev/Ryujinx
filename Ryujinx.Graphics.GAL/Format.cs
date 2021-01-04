@@ -82,6 +82,7 @@ namespace Ryujinx.Graphics.GAL
         Bc7Srgb,
         Bc6HSfloat,
         Bc6HUfloat,
+        Etc2Rgba,
         R8Uscaled,
         R8Sscaled,
         R16Uscaled,
