@@ -5,6 +5,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using Ryujinx.Common.System;
 using Ryujinx.Common.SystemInfo;
+using Ryujinx.Common.Platform;
 using Ryujinx.Configuration;
 using Ryujinx.Modules;
 using Ryujinx.Ui;
@@ -118,6 +119,11 @@ namespace Ryujinx
             if (startFullscreenArg)
             {
                 ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
+            }
+
+            if (!ConfigurationState.Instance.ShowConsole)
+            {
+                Platform.Instance.HideConsole();
             }
 
             // Logging system informations.
