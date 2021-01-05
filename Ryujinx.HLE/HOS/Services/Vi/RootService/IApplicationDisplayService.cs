@@ -1,4 +1,5 @@
 using Ryujinx.Common;
+using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Ipc;
 using Ryujinx.HLE.HOS.Kernel.Common;
@@ -234,6 +235,21 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
             }
 
             return null;
+        }
+
+        [Command(2450)]
+        // GetIndirectLayerImageMap(u64 width, u64 height, u64 handle, u64 ??, u64 ??, u64 ??) -> (u64 size, u64 alignment)
+        public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
+        {
+            Logger.Stub?.PrintStub(LogClass.ServiceDisplay, $"GetIndirectLayerImageMap");
+
+            ulong width = context.RequestData.ReadUInt64();
+            ulong height = context.RequestData.ReadUInt64();
+
+            context.ResponseData.Write(width);
+            context.ResponseData.Write(height);
+
+            return ResultCode.Success;
         }
 
         [Command(2460)]
