@@ -91,7 +91,7 @@ namespace Ryujinx.HLE.HOS.Applets
             }
         }
 
-        public static byte[] DecidedCancel(uint state = 1)
+        public static byte[] DecidedCancel(uint state = 4)
         {
             using (MemoryStream stream = new MemoryStream(new byte[2*sizeof(uint) + 0x0]))
             using (BinaryWriter writer = new BinaryWriter(stream))
