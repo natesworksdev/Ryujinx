@@ -5,6 +5,8 @@ using System;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Ryujinx.HLE.HOS.Applets
 {
@@ -25,10 +27,14 @@ namespace Ryujinx.HLE.HOS.Applets
         private AppletSession _interactiveSession;
 
         // Configuration for foreground mode
-        private SoftwareKeyboardConfig _keyboardFgConfig;
+        private SoftwareKeyboardConfig  _keyboardFgConfig;
+        private SoftwareKeyboardCalc    _keyboardCalc;
+        private SoftwareKeyboardDictSet _keyboardDict;
 
         // Configuration for background mode
         private SoftwareKeyboardInitialize _keyboardBgInitialize;
+        private bool                       _useChangedStringV2 = false;
+        private bool                       _useMovedCursorV2 = false;
 
         private byte[] _transferMemory;
 
@@ -190,7 +196,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
             if (_isBackground)
             {
-                Logger.Stub?.PrintStub(LogClass.ServiceAm, "OnInteractiveData for background keyboard");
+                OnBackgroundInteractiveData(data);
             }
             else
             {
@@ -227,6 +233,93 @@ namespace Ryujinx.HLE.HOS.Applets
                 // We shouldn't be able to get here through standard swkbd execution.
                 throw new InvalidOperationException("Software Keyboard is in an invalid state.");
             }
+        }
+
+        private void OnBackgroundInteractiveData(byte[] data)
+        {
+            using (MemoryStream stream = new MemoryStream(data))
+            using (BinaryReader reader = new BinaryReader(stream))
+            {
+                var request = (InlineKeyboardRequest)reader.ReadUInt32();
+
+                if (_state == SoftwareKeyboardState.Uninitialized) // Pre-calc / Post-Ok / Post-Cancel
+                {
+                    switch (request)
+                    {
+                        case InlineKeyboardRequest.UseChangedStringV2:
+                            _useChangedStringV2 = true;
+                            _interactiveSession.Push(InlineResponses.Default());
+                            return;
+                        case InlineKeyboardRequest.UseMovedCursorV2:
+                            _useMovedCursorV2 = true;
+                            _interactiveSession.Push(InlineResponses.Default());
+                            return;
+                        case InlineKeyboardRequest.Calc:
+                            long remaining = stream.Length - stream.Position;
+                            if (remaining != Marshal.SizeOf<SoftwareKeyboardCalc>())
+                            {
+                                Logger.Error?.PrintStub(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes!");
+                            }
+                            else
+                            {
+                                var keyboardCalcData = reader.ReadBytes((int)remaining);
+                                _keyboardCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
+
+                                if (_keyboardCalc.Utf8Mode == 0x1)
+                                    _encoding = Encoding.UTF8;
+                            }
+                            // The inline keyboard is ready to start pushing data to the game
+                            _state = SoftwareKeyboardState.Ready;
+                            _interactiveSession.Push(InlineResponses.FinishedInitialize());
+                            // Push a placeholder text for now
+                            new Task(() =>
+                            {
+                                Thread.Sleep(1000);
+                                Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard OK...");
+                                if (_encoding == Encoding.UTF8)
+                                {
+                                    _interactiveSession.Push(InlineResponses.DecidedEnterUtf8(DefaultText));
+                                }
+                                else
+                                {
+                                    _interactiveSession.Push(InlineResponses.DecidedEnter(DefaultText));
+                                }
+                                Thread.Sleep(1000);
+                                Logger.Debug?.Print(LogClass.ServiceAm, "Resetting state of the keyboard...");
+                                _interactiveSession.Push(InlineResponses.Default(1));
+                                // Get back to the uninitialized to wait for another Calc
+                                _state = SoftwareKeyboardState.Uninitialized;
+                            }).Start();
+                            return;
+                    }
+                }
+                else if (_state == SoftwareKeyboardState.Ready)
+                {
+                    switch (request)
+                    {
+                        case (InlineKeyboardRequest)0: // Unknown request sent by some games after calc
+                            _interactiveSession.Push(InlineResponses.Default());
+                            return;
+                        case InlineKeyboardRequest.SetCustomizeDic:
+                            long remaining = stream.Length - stream.Position;
+                            if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
+                            {
+                                Logger.Error?.PrintStub(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes!");
+                            }
+                            else
+                            {
+                                var keyboardDictData = reader.ReadBytes((int)remaining);
+                                _keyboardDict = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
+
+                            }
+                            _interactiveSession.Push(InlineResponses.Default());
+                            return;
+                    }
+                }
+            }
+
+            // We shouldn't be able to get here through standard swkbd execution.
+            throw new InvalidOperationException("Software Keyboard is in an invalid state.");
         }
 
         private byte[] BuildResponse(string text, bool interactive)
