@@ -19,10 +19,17 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private SoftwareKeyboardState _state = SoftwareKeyboardState.Uninitialized;
 
+        private bool _isBackground = false;
+
         private AppletSession _normalSession;
         private AppletSession _interactiveSession;
 
-        private SoftwareKeyboardConfig _keyboardConfig;
+        // Configuration for foreground mode
+        private SoftwareKeyboardConfig _keyboardFgConfig;
+
+        // Configuration for background mode
+        private SoftwareKeyboardInitialize _keyboardBgInitialize;
+
         private byte[] _transferMemory;
 
         private string   _textValue = null;
@@ -47,30 +54,46 @@ namespace Ryujinx.HLE.HOS.Applets
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
 
-            if (keyboardConfig.Length < Marshal.SizeOf<SoftwareKeyboardConfig>())
+            // TODO a better way would be handling the background creation properly
+            // in LibraryAppleCreator / Acessor instead of guessing by size
+            if (keyboardConfig.Length == Marshal.SizeOf<SoftwareKeyboardInitialize>())
             {
-                Logger.Error?.Print(LogClass.ServiceAm, $"SoftwareKeyboardConfig size mismatch. Expected {Marshal.SizeOf<SoftwareKeyboardConfig>():x}. Got {keyboardConfig.Length:x}");
+                _isBackground = true;
+
+                _keyboardBgInitialize = ReadStruct<SoftwareKeyboardInitialize>(keyboardConfig);
+                _state = SoftwareKeyboardState.Uninitialized;
+
+                return ResultCode.Success;
             }
             else
             {
-                _keyboardConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+                _isBackground = false;
+
+                if (keyboardConfig.Length < Marshal.SizeOf<SoftwareKeyboardConfig>())
+                {
+                    Logger.Error?.Print(LogClass.ServiceAm, $"SoftwareKeyboardConfig size mismatch. Expected {Marshal.SizeOf<SoftwareKeyboardConfig>():x}. Got {keyboardConfig.Length:x}");
+                }
+                else
+                {
+                    _keyboardFgConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+                }
+
+                if (!_normalSession.TryPop(out _transferMemory))
+                {
+                    Logger.Error?.Print(LogClass.ServiceAm, "SwKbd Transfer Memory is null");
+                }
+
+                if (_keyboardFgConfig.UseUtf8)
+                {
+                    _encoding = Encoding.UTF8;
+                }
+
+                _state = SoftwareKeyboardState.Ready;
+
+                ExecuteForegroundKeyboard();
+
+                return ResultCode.Success;
             }
-
-            if (!_normalSession.TryPop(out _transferMemory))
-            {
-                Logger.Error?.Print(LogClass.ServiceAm, "SwKbd Transfer Memory is null");
-            }
-
-            if (_keyboardConfig.UseUtf8)
-            {
-                _encoding = Encoding.UTF8;
-            }
-
-            _state = SoftwareKeyboardState.Ready;
-
-            Execute();
-
-            return ResultCode.Success;
         }
 
         public ResultCode GetResult()
@@ -78,32 +101,32 @@ namespace Ryujinx.HLE.HOS.Applets
             return ResultCode.Success;
         }
 
-        private void Execute()
+        private void ExecuteForegroundKeyboard()
         {
             string initialText = null;
 
             // Initial Text is always encoded as a UTF-16 string in the work buffer (passed as transfer memory)
             // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
-            if (_transferMemory != null && _keyboardConfig.InitialStringLength > 0)
+            if (_transferMemory != null && _keyboardFgConfig.InitialStringLength > 0)
             {
-                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardConfig.InitialStringOffset, 2 * _keyboardConfig.InitialStringLength);
+                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardFgConfig.InitialStringOffset, 2 * _keyboardFgConfig.InitialStringLength);
             }
 
             // If the max string length is 0, we set it to a large default
             // length.
-            if (_keyboardConfig.StringLengthMax == 0)
+            if (_keyboardFgConfig.StringLengthMax == 0)
             {
-                _keyboardConfig.StringLengthMax = 100;
+                _keyboardFgConfig.StringLengthMax = 100;
             }
 
             var args = new SoftwareKeyboardUiArgs
             {
-                HeaderText = _keyboardConfig.HeaderText,
-                SubtitleText = _keyboardConfig.SubtitleText,
-                GuideText = _keyboardConfig.GuideText,
-                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardConfig.SubmitText) ? _keyboardConfig.SubmitText : "OK"),
-                StringLengthMin = _keyboardConfig.StringLengthMin, 
-                StringLengthMax = _keyboardConfig.StringLengthMax,
+                HeaderText = _keyboardFgConfig.HeaderText,
+                SubtitleText = _keyboardFgConfig.SubtitleText,
+                GuideText = _keyboardFgConfig.GuideText,
+                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardFgConfig.SubmitText) ? _keyboardFgConfig.SubmitText : "OK"),
+                StringLengthMin = _keyboardFgConfig.StringLengthMin,
+                StringLengthMax = _keyboardFgConfig.StringLengthMax,
                 InitialText = initialText
             };
 
@@ -122,22 +145,22 @@ namespace Ryujinx.HLE.HOS.Applets
 
             // If the game requests a string with a minimum length less
             // than our default text, repeat our default text until we meet
-            // the minimum length requirement. 
+            // the minimum length requirement.
             // This should always be done before the text truncation step.
-            while (_textValue.Length < _keyboardConfig.StringLengthMin)
+            while (_textValue.Length < _keyboardFgConfig.StringLengthMin)
             {
                 _textValue = String.Join(" ", _textValue, _textValue);
             }
 
             // If our default text is longer than the allowed length,
             // we truncate it.
-            if (_textValue.Length > _keyboardConfig.StringLengthMax)
+            if (_textValue.Length > _keyboardFgConfig.StringLengthMax)
             {
-                _textValue = _textValue.Substring(0, (int)_keyboardConfig.StringLengthMax);
+                _textValue = _textValue.Substring(0, (int)_keyboardFgConfig.StringLengthMax);
             }
 
             // Does the application want to validate the text itself?
-            if (_keyboardConfig.CheckText)
+            if (_keyboardFgConfig.CheckText)
             {
                 // The application needs to validate the response, so we
                 // submit it to the interactive output buffer, and poll it
@@ -151,7 +174,7 @@ namespace Ryujinx.HLE.HOS.Applets
             {
                 // If the application doesn't need to validate the response,
                 // we push the data to the non-interactive output buffer
-                // and poll it for completion.             
+                // and poll it for completion.
                 _state = SoftwareKeyboardState.Complete;
 
                 _normalSession.Push(BuildResponse(_textValue, false));
@@ -162,16 +185,28 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void OnInteractiveData(object sender, EventArgs e)
         {
-            // Obtain the validation status response, 
+            // Obtain the validation status response,
             var data = _interactiveSession.Pop();
 
+            if (_isBackground)
+            {
+                Logger.Stub?.PrintStub(LogClass.ServiceAm, "OnInteractiveData for background keyboard");
+            }
+            else
+            {
+                OnForegroundInteractiveData(data);
+            }
+        }
+
+        private void OnForegroundInteractiveData(byte[] data)
+        {
             if (_state == SoftwareKeyboardState.ValidationPending)
             {
                 // TODO(jduncantor):
                 // If application rejects our "attempt", submit another attempt,
                 // and put the applet back in PendingValidation state.
 
-                // For now we assume success, so we push the final result 
+                // For now we assume success, so we push the final result
                 // to the standard output buffer and carry on our merry way.
                 _normalSession.Push(BuildResponse(_textValue, false));
 
@@ -227,7 +262,7 @@ namespace Ryujinx.HLE.HOS.Applets
             GCHandle handle = GCHandle.Alloc(data, GCHandleType.Pinned);
 
             try
-            {    
+            {
                 return Marshal.PtrToStructure<T>(handle.AddrOfPinnedObject());
             }
             finally
