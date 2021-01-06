@@ -91,13 +91,13 @@ Don't hesitate to open a new issue if a game isn't already on there!
 
 ## Help
 
-If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, you can contact us through our [Discord server](https://discord.gg/N2FmfVc). We'll take note of whatever is causing the app/game to not work, put it on the watch list and fix it at a later date.
+If you are having problems launching homebrew or a particular game marked status-playable or status-ingame in our compatibility list, you can contact us through our [Discord server](https://discord.gg/Ryujinx). We'll take note of whatever is causing the app/game to not work, put it on the watch list and fix it at a later date.
 
-If you need help with setting up Ryujinx, you can ask questions in the #support channel of our [Discord server](https://discord.gg/N2FmfVc).
+If you need help with setting up Ryujinx, you can ask questions in the #support channel of our [Discord server](https://discord.gg/Ryujinx).
 
 ## Contact
 
-If you have contributions, need support, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/N2FmfVc)!
+If you have contributions, need support, have suggestions, or just want to get in touch with the team, join our [Discord server](https://discord.gg/Ryujinx)!
 
 If you'd like to donate, please take a look at our [Patreon](https://www.patreon.com/ryujinx).
 
