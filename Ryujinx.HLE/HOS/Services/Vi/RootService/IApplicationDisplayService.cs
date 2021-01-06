@@ -238,16 +238,28 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         }
 
         [Command(2450)]
-        // GetIndirectLayerImageMap(u64 width, u64 height, u64 handle, u64 ??, u64 ??, u64 ??) -> (u64 size, u64 alignment)
+        // GetIndirectLayerImageMap(u64 width, u64 height, u64 handle, u64 ??, u64 ??, u64 ??) -> nothing??
         public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServiceDisplay, $"GetIndirectLayerImageMap");
 
-            ulong width = context.RequestData.ReadUInt64();
-            ulong height = context.RequestData.ReadUInt64();
+            var numBuffs = context.Request.ReceiveBuff.Count;
 
-            context.ResponseData.Write(width);
-            context.ResponseData.Write(height);
+            if (numBuffs != 1)
+            {
+                Logger.Stub?.PrintStub(LogClass.ServiceDisplay, $"GetIndirectLayerImageMap expects just 1 receive buffer instead of {numBuffs}!");
+                return ResultCode.Success;
+            }
+
+            // The size of the layer buffer should be an aligned multiple of width * height
+            // because it was created using GetIndirectLayerImageRequiredMemoryInfo as a guide
+
+            var layerBuff = context.Request.ReceiveBuff[0];
+            var layerBuffPtr = layerBuff.Position;
+            var layerBuffSz = layerBuff.Size;
+
+            // Fill the layer with zeros
+            context.Memory.Fill((ulong)layerBuffPtr, (ulong)layerBuffSz, 0x00);
 
             return ResultCode.Success;
         }
