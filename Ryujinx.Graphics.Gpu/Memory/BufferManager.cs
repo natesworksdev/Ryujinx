@@ -591,6 +591,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (bounds.Address != 0)
                 {
+                    // The storage buffer size is not reliable (it might be lower than the actual size),
+                    // so we bind the entire buffer to allow otherwise out of range accesses to work.
                     sRanges[bindingInfo.Binding] = GetBufferRangeTillEnd(
                         bounds.Address,
                         bounds.Size,
@@ -906,7 +908,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
         /// <param name="write">Whether the buffer will be written to by this use</param>
-        /// <returns>The buffer sub-range starting at rhe given memory address</returns>
+        /// <returns>The buffer sub-range starting at the given memory address</returns>
         private BufferRange GetBufferRangeTillEnd(ulong address, ulong size, bool write = false)
         {
             return GetBuffer(address, size, write).GetRange(address);
