@@ -33,8 +33,6 @@ namespace Ryujinx.HLE.HOS.Applets
 
         // Configuration for background mode
         private SoftwareKeyboardInitialize _keyboardBgInitialize;
-        private bool                       _useChangedStringV2 = false;
-        private bool                       _useMovedCursorV2 = false;
 
         private byte[] _transferMemory;
 
@@ -60,8 +58,8 @@ namespace Ryujinx.HLE.HOS.Applets
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
 
-            // TODO a better way would be handling the background creation properly
-            // in LibraryAppleCreator / Acessor instead of guessing by size
+            // TODO: a better way would be handling the background creation properly
+            // in LibraryAppleCreator / Acessor instead of guessing by size.
             if (keyboardConfig.Length == Marshal.SizeOf<SoftwareKeyboardInitialize>())
             {
                 _isBackground = true;
@@ -139,7 +137,7 @@ namespace Ryujinx.HLE.HOS.Applets
             // Call the configured GUI handler to get user's input
             if (_device.UiHandler == null)
             {
-                Logger.Warning?.Print(LogClass.Application, $"GUI Handler is not set. Falling back to default");
+                Logger.Warning?.Print(LogClass.Application, "GUI Handler is not set. Falling back to default");
                 _okPressed = true;
             }
             else
@@ -191,7 +189,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void OnInteractiveData(object sender, EventArgs e)
         {
-            // Obtain the validation status response,
+            // Obtain the validation status response.
             var data = _interactiveSession.Pop();
 
             if (_isBackground)
@@ -237,8 +235,8 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void OnBackgroundInteractiveData(byte[] data)
         {
-            // WARNING Do not invoke applet state changes because the inline keyboard
-            // is expected to be always running once it is initialized
+            // WARNING: Do not invoke applet state changes because the inline keyboard
+            // is expected to be always running once it is initialized.
 
             using (MemoryStream stream = new MemoryStream(data))
             using (BinaryReader reader = new BinaryReader(stream))
@@ -250,11 +248,11 @@ namespace Ryujinx.HLE.HOS.Applets
                     switch (request)
                     {
                         case InlineKeyboardRequest.UseChangedStringV2:
-                            _useChangedStringV2 = true;
+                            // Not used because we only send the entire string after confirmation.
                             _interactiveSession.Push(InlineResponses.Default());
                             return;
                         case InlineKeyboardRequest.UseMovedCursorV2:
-                            _useMovedCursorV2 = true;
+                            // Not used because we only send the entire string after confirmation.
                             _interactiveSession.Push(InlineResponses.Default());
                             return;
                         case InlineKeyboardRequest.Calc:
@@ -270,14 +268,14 @@ namespace Ryujinx.HLE.HOS.Applets
 
                     switch (request)
                     {
-                        case (InlineKeyboardRequest)0: // Unknown request sent by some games after calc
+                        case InlineKeyboardRequest.Unknown0: // Unknown request sent by some games after calc
                             _interactiveSession.Push(InlineResponses.Default());
                             return;
                         case InlineKeyboardRequest.SetCustomizeDic:
                             remaining = stream.Length - stream.Position;
                             if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
                             {
-                                Logger.Error?.PrintStub(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes!");
+                                Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes!");
                             }
                             else
                             {
@@ -291,7 +289,7 @@ namespace Ryujinx.HLE.HOS.Applets
                             remaining = stream.Length - stream.Position;
                             if (remaining != Marshal.SizeOf<SoftwareKeyboardCalc>())
                             {
-                                Logger.Error?.PrintStub(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes!");
+                                Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes!");
                             }
                             else
                             {
@@ -312,7 +310,7 @@ namespace Ryujinx.HLE.HOS.Applets
                                 // Call the configured GUI handler to get user's input
                                 if (_device.UiHandler == null)
                                 {
-                                    Logger.Warning?.Print(LogClass.Application, $"GUI Handler is not set. Falling back to default");
+                                    Logger.Warning?.Print(LogClass.Application, "GUI Handler is not set. Falling back to default");
                                 }
                                 else
                                 {
@@ -347,7 +345,7 @@ namespace Ryujinx.HLE.HOS.Applets
                                     _interactiveSession.Push(InlineResponses.DecidedCancel());
                                 }
 
-                                // TODO why is this necessary? Does the software expect a constant stream of responses?
+                                // TODO: why is this necessary? Does the software expect a constant stream of responses?
                                 Thread.Sleep(500);
 
                                 Logger.Debug?.Print(LogClass.ServiceAm, "Resetting state of the keyboard...");
@@ -358,7 +356,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 }
 
                 // We shouldn't be able to get here through standard swkbd execution.
-                Logger.Error?.PrintStub(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_state}!");
+                Logger.Error?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_state}!");
                 _interactiveSession.Push(InlineResponses.Default());
             }
         }

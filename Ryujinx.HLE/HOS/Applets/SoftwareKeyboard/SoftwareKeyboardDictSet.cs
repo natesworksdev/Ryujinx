@@ -2,7 +2,7 @@
 
 namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
-    [StructLayout(LayoutKind.Sequential, Pack=4)]
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     struct SoftwareKeyboardDictSet
     {
         [MarshalAs(UnmanagedType.ByValArray, SizeConst = 28)]
