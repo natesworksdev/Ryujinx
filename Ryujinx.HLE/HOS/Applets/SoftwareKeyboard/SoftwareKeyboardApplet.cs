@@ -235,13 +235,24 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void OnBackgroundInteractiveData(byte[] data)
         {
-            // WARNING: Do not invoke applet state changes because the inline keyboard
-            // is expected to be always running once it is initialized.
+            // WARNING: Only invoke applet state changes after an explicit finalization
+            // request from the game, this is because the inline keyboard is expected to
+            // keep running in the background sending data by itself.
 
             using (MemoryStream stream = new MemoryStream(data))
             using (BinaryReader reader = new BinaryReader(stream))
             {
                 var request = (InlineKeyboardRequest)reader.ReadUInt32();
+
+                // The game will signal the intention to close the keyboard applet
+                // and wait for a state change. Signal that change and reset the
+                // internal state of the applet to Uninitialized
+                if (request == InlineKeyboardRequest.Finalize)
+                {
+                    _state = SoftwareKeyboardState.Uninitialized;
+                    AppletStateChanged?.Invoke(this, null);
+                    return;
+                }
 
                 if (_state == SoftwareKeyboardState.Uninitialized) // Pre-calc / Post-Ok / Post-Cancel
                 {
