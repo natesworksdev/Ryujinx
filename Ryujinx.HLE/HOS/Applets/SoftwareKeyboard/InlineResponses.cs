@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
     internal class InlineResponses
     {
-        private static readonly uint maxStrLenUTF8 = 0x7D4;
-        private static readonly uint maxStrLenUTF16 = 0x3EC;
+        private const uint maxStrLenUTF8 = 0x7D4;
+        private const uint maxStrLenUTF16 = 0x3EC;
 
         private static void BeginResponse(InlineKeyboardState state, InlineKeyboardResponse resCode, BinaryWriter writer)
         {
