@@ -591,7 +591,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (bounds.Address != 0)
                 {
-                    sRanges[bindingInfo.Binding] = GetBufferRange(bounds.Address, bounds.Size, bounds.Flags.HasFlag(BufferUsageFlags.Write));
+                    sRanges[bindingInfo.Binding] = GetBufferRange(bounds.Address, bounds.Flags.HasFlag(BufferUsageFlags.Write));
                 }
             }
 
@@ -764,7 +764,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (bounds.Address != 0)
                     {
-                        ranges[bindingInfo.Binding] = GetBufferRange(bounds.Address, bounds.Size, bounds.Flags.HasFlag(BufferUsageFlags.Write));
+                        ranges[bindingInfo.Binding] = isStorage
+                            ? GetBufferRange(bounds.Address, bounds.Flags.HasFlag(BufferUsageFlags.Write))
+                            : GetBufferRange(bounds.Address, bounds.Size, bounds.Flags.HasFlag(BufferUsageFlags.Write));
                     }
                 }
             }
@@ -893,6 +895,17 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _context.Renderer.Pipeline.ClearBuffer(buffer.Handle, offset, (int)size, value);
 
             buffer.SignalModified(address, size);
+        }
+
+        /// <summary>
+        /// Gets a buffer sub-range starting at a given memory address.
+        /// </summary>
+        /// <param name="address">Start address of the memory range</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
+        /// <returns>The buffer sub-range starting at rhe given memory address</returns>
+        private BufferRange GetBufferRange(ulong address, bool write = false)
+        {
+            return GetBuffer(address, 1, write).GetRange(address);
         }
 
         /// <summary>
