@@ -28,7 +28,6 @@ namespace Ryujinx.Common.Logging
         ServiceBsd,
         ServiceBtm,
         ServiceCaps,
-        ServiceDisplay,
         ServiceFriend,
         ServiceFs,
         ServiceHid,

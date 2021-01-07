@@ -241,13 +241,13 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // GetIndirectLayerImageMap(u64 width, u64 height, u64 handle, u64 ??, u64 ??, u64 ??) -> nothing??
         public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceDisplay);
+            Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             var numBuffs = context.Request.ReceiveBuff.Count;
 
             if (numBuffs != 1)
             {
-                Logger.Warning?.Print(LogClass.ServiceDisplay, $"GetIndirectLayerImageMap expects just 1 receive buffer instead of {numBuffs}!");
+                Logger.Warning?.Print(LogClass.ServiceVi, $"GetIndirectLayerImageMap expects just 1 receive buffer instead of {numBuffs}!");
                 return ResultCode.Success;
             }
 
