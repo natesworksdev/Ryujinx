@@ -5,8 +5,8 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
     internal class InlineResponses
     {
-        private const uint maxStrLenUTF8 = 0x7D4;
-        private const uint maxStrLenUTF16 = 0x3EC;
+        private const uint MaxStrLenUTF8 = 0x7D4;
+        private const uint MaxStrLenUTF16 = 0x3EC;
 
         private static void BeginResponse(InlineKeyboardState state, InlineKeyboardResponse resCode, BinaryWriter writer)
         {
@@ -71,14 +71,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedString(string text)
         {
-            uint resSize = 4 * sizeof(uint) + maxStrLenUTF16;
+            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.Initializing,
                               InlineKeyboardResponse.ChangedString, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF16, Encoding.Unicode);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF16, Encoding.Unicode);
                 writer.Write((int)0); // ?
                 writer.Write((int)0); // ?
                 return stream.ToArray();
@@ -87,14 +87,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursor(string text)
         {
-            uint resSize = 4 * sizeof(uint) + maxStrLenUTF16;
+            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.Initializing,
                               InlineKeyboardResponse.MovedCursor, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF16, Encoding.Unicode);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF16, Encoding.Unicode);
                 return stream.ToArray();
             }
         }
@@ -103,28 +103,28 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
         {
             // Should be the same as MovedCursor.
 
-            uint resSize = 4 * sizeof(uint) + maxStrLenUTF16;
+            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.Initializing,
                               InlineKeyboardResponse.MovedTab, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF16, Encoding.Unicode);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF16, Encoding.Unicode);
                 return stream.ToArray();
             }
         }
 
         public static byte[] DecidedEnter(string text)
         {
-            uint resSize = 3 * sizeof(uint) + maxStrLenUTF16;
+            uint resSize = 3 * sizeof(uint) + MaxStrLenUTF16;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.Completed,
                               InlineKeyboardResponse.DecidedEnter, writer);
-                WriteString(text, writer, maxStrLenUTF16, Encoding.Unicode);
+                WriteString(text, writer, MaxStrLenUTF16, Encoding.Unicode);
                 return stream.ToArray();
             }
         }
@@ -144,14 +144,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedStringUtf8(string text)
         {
-            uint resSize = 6 * sizeof(uint) + maxStrLenUTF8;
+            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF8;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.DataAvailable,
                               InlineKeyboardResponse.ChangedStringUtf8, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF8, Encoding.UTF8);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF8, Encoding.UTF8);
                 writer.Write((int)0); // ?
                 writer.Write((int)0); // ?
                 return stream.ToArray();
@@ -160,28 +160,28 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursorUtf8(string text)
         {
-            uint resSize = 4 * sizeof(uint) + maxStrLenUTF8;
+            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF8;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.DataAvailable,
                               InlineKeyboardResponse.MovedCursorUtf8, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF8, Encoding.UTF8);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF8, Encoding.UTF8);
                 return stream.ToArray();
             }
         }
 
         public static byte[] DecidedEnterUtf8(string text)
         {
-            uint resSize = 3 * sizeof(uint) + maxStrLenUTF8;
+            uint resSize = 3 * sizeof(uint) + MaxStrLenUTF8;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.Completed,
                               InlineKeyboardResponse.DecidedEnterUtf8, writer);
-                WriteString(text, writer, maxStrLenUTF8, Encoding.UTF8);
+                WriteString(text, writer, MaxStrLenUTF8, Encoding.UTF8);
                 return stream.ToArray();
             }
         }
@@ -227,14 +227,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedStringV2(string text)
         {
-            uint resSize = 6 * sizeof(uint) + maxStrLenUTF16 + 0x1;
+            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF16 + 0x1;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.DataAvailable,
                               InlineKeyboardResponse.ChangedStringV2, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF16, Encoding.Unicode);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF16, Encoding.Unicode);
                 writer.Write((int)0); // ?
                 writer.Write((int)0); // ?
                 writer.Write((byte)0); // Flag == 0
@@ -244,14 +244,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursorV2(string text)
         {
-            uint resSize = 4 * sizeof(uint) + maxStrLenUTF16 + 0x1;
+            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16 + 0x1;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.DataAvailable,
                               InlineKeyboardResponse.MovedCursorV2, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF16, Encoding.Unicode);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF16, Encoding.Unicode);
                 writer.Write((byte)0); // Flag == 0
                 return stream.ToArray();
             }
@@ -259,14 +259,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedStringUtf8V2(string text)
         {
-            uint resSize = 6 * sizeof(uint) + maxStrLenUTF8 + 0x1;
+            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF8 + 0x1;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.DataAvailable,
                               InlineKeyboardResponse.ChangedStringUtf8V2, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF8, Encoding.UTF8);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF8, Encoding.UTF8);
                 writer.Write((int)0); // ?
                 writer.Write((int)0); // ?
                 writer.Write((byte)0); // Flag == 0
@@ -276,14 +276,14 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] MovedCursorUtf8V2(string text)
         {
-            uint resSize = 4 * sizeof(uint) + maxStrLenUTF8 + 0x1;
+            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF8 + 0x1;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
             {
                 BeginResponse(InlineKeyboardState.DataAvailable,
                               InlineKeyboardResponse.MovedCursorUtf8V2, writer);
-                WriteStringWithCursor(text, writer, maxStrLenUTF8, Encoding.UTF8);
+                WriteStringWithCursor(text, writer, MaxStrLenUTF8, Encoding.UTF8);
                 writer.Write((byte)0); // Flag == 0
                 return stream.ToArray();
             }
