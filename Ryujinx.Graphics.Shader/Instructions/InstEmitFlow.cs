@@ -176,9 +176,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             Operand pred = Register(op.Predicate);
 
-            if (op is OpCodeBranch opBranch && opBranch.Condition != Condition.Always)
+            if (op is OpCodeConditional opCond && opCond.Condition != Condition.Always)
             {
-                Operand cond = GetCondition(context, opBranch.Condition);
+                Operand cond = GetCondition(context, opCond.Condition);
 
                 if (op.Predicate.IsPT)
                 {
