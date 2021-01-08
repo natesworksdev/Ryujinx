@@ -146,6 +146,7 @@ namespace Ryujinx.Graphics.Shader.Instructions
             }
             else
             {
+                // TODO: Support CC here aswell (condition).
                 foreach (KeyValuePair<OpCodePush, int> kv in op.Targets)
                 {
                     OpCodePush pushOp = kv.Key;
