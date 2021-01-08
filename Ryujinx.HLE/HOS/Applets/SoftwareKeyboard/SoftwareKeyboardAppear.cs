@@ -7,7 +7,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
     {
         private const int OkTextLength = 8;
 
-        public uint Unknown;
+        // Some games send a Calc without intention of showing the keyboard, a
+        // common trend observed is that this field will be != 0 in such cases.
+        public uint ShouldBeHidden;
 
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = OkTextLength + 1)]
         public string OkText;

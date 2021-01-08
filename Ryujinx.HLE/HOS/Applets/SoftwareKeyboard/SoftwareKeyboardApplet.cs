@@ -244,131 +244,135 @@ namespace Ryujinx.HLE.HOS.Applets
             {
                 var request = (InlineKeyboardRequest)reader.ReadUInt32();
 
-                // The game will signal the intention to close the keyboard applet
-                // and wait for a state change. Signal that change and reset the
-                // internal state of the applet to Uninitialized
-                if (request == InlineKeyboardRequest.Finalize)
-                {
-                    _state = SoftwareKeyboardState.Uninitialized;
-                    AppletStateChanged?.Invoke(this, null);
-                    return;
-                }
+                long remaining;
 
-                if (_state == SoftwareKeyboardState.Uninitialized) // Pre-calc / Post-Ok / Post-Cancel
-                {
-                    switch (request)
-                    {
-                        case InlineKeyboardRequest.UseChangedStringV2:
-                            // Not used because we only send the entire string after confirmation.
-                            _interactiveSession.Push(InlineResponses.Default());
-                            return;
-                        case InlineKeyboardRequest.UseMovedCursorV2:
-                            // Not used because we only send the entire string after confirmation.
-                            _interactiveSession.Push(InlineResponses.Default());
-                            return;
-                        case InlineKeyboardRequest.Calc:
-                            // Ignore the processing of the first Calc because it is not asking for a real input yet
-                            _state = SoftwareKeyboardState.Ready;
-                            _interactiveSession.Push(InlineResponses.FinishedInitialize());
-                            return;
-                    }
-                }
-                else if (_state == SoftwareKeyboardState.Ready)
-                {
-                    long remaining;
+                // Always show the keyboard if the state is 'Ready'.
+                bool showKeyboard = _state == SoftwareKeyboardState.Ready;
 
-                    switch (request)
-                    {
-                        case InlineKeyboardRequest.Unknown0: // Unknown request sent by some games after calc
-                            _interactiveSession.Push(InlineResponses.Default());
-                            return;
-                        case InlineKeyboardRequest.SetCustomizeDic:
-                            remaining = stream.Length - stream.Position;
-                            if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
+                switch (request)
+                {
+                    case InlineKeyboardRequest.Unknown0: // Unknown request sent by some games after calc
+                        _interactiveSession.Push(InlineResponses.Default());
+                        break;
+                    case InlineKeyboardRequest.UseChangedStringV2:
+                        // Not used because we only send the entire string after confirmation.
+                        _interactiveSession.Push(InlineResponses.Default());
+                        break;
+                    case InlineKeyboardRequest.UseMovedCursorV2:
+                        // Not used because we only send the entire string after confirmation.
+                        _interactiveSession.Push(InlineResponses.Default());
+                        break;
+                    case InlineKeyboardRequest.SetCustomizeDic:
+                        remaining = stream.Length - stream.Position;
+                        if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
+                        {
+                            Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes!");
+                        }
+                        else
+                        {
+                            var keyboardDictData = reader.ReadBytes((int)remaining);
+                            _keyboardDict = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
+
+                        }
+                        _interactiveSession.Push(InlineResponses.Default());
+                        break;
+                    case InlineKeyboardRequest.Calc:
+                        // Put the keyboard in a Ready state, this will force showing
+                        _state = SoftwareKeyboardState.Ready;
+                        remaining = stream.Length - stream.Position;
+                        if (remaining != Marshal.SizeOf<SoftwareKeyboardCalc>())
+                        {
+                            Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes!");
+                        }
+                        else
+                        {
+                            var keyboardCalcData = reader.ReadBytes((int)remaining);
+                            _keyboardCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
+
+                            if (_keyboardCalc.Utf8Mode == 0x1)
+                                _encoding = Encoding.UTF8;
+
+                            // Force showing the keyboard regardless of the state, an unwanted
+                            // input dialog may show, but it is better than a soft lock.
+                            if (_keyboardCalc.Appear.ShouldBeHidden == 0)
+                                showKeyboard = true;
+                        }
+                        // Send an initialization finished signal.
+                        _interactiveSession.Push(InlineResponses.FinishedInitialize());
+                        // Start a task with the GUI handler to get user's input.
+                        new Task(() =>
+                        {
+                            bool submit = true;
+                            string inputText = (!string.IsNullOrWhiteSpace(
+                                _keyboardCalc.InputText) ?
+                                _keyboardCalc.InputText : DefaultText);
+
+                            // Call the configured GUI handler to get user's input.
+                            if (!showKeyboard)
                             {
-                                Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes!");
+                                // Submit the default text to avoid soft locking if the keyboard was ignored by
+                                // accident. It's better to change the name than being locked out of the game.
+                                submit = true;
+                                inputText = DefaultText;
+
+                                Logger.Debug?.Print(LogClass.Application, "Received a dummy Calc, keyboard will not be shown");
+                            }
+                            else if (_device.UiHandler == null)
+                            {
+                                Logger.Warning?.Print(LogClass.Application, "GUI Handler is not set. Falling back to default");
                             }
                             else
                             {
-                                var keyboardDictData = reader.ReadBytes((int)remaining);
-                                _keyboardDict = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
+                                var args = new SoftwareKeyboardUiArgs
+                                {
+                                    HeaderText = "", // The inline keyboard lacks these texts
+                                    SubtitleText = "",
+                                    GuideText = "",
+                                    SubmitText = (!string.IsNullOrWhiteSpace(
+                                        _keyboardCalc.Appear.OkText) ?
+                                        _keyboardCalc.Appear.OkText : "OK"),
+                                    StringLengthMin = 0,
+                                    StringLengthMax = 100,
+                                    InitialText = inputText
+                                };
 
+                                submit = _device.UiHandler.DisplayInputDialog(args, out inputText);
                             }
-                            _interactiveSession.Push(InlineResponses.Default());
-                            return;
-                        case InlineKeyboardRequest.Calc:
-                            remaining = stream.Length - stream.Position;
-                            if (remaining != Marshal.SizeOf<SoftwareKeyboardCalc>())
+
+                            if (submit)
                             {
-                                Logger.Error?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Calc of {remaining} bytes!");
+                                Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard OK...");
+
+                                if (_encoding == Encoding.UTF8)
+                                    _interactiveSession.Push(InlineResponses.DecidedEnterUtf8(inputText));
+                                else
+                                    _interactiveSession.Push(InlineResponses.DecidedEnter(inputText));
                             }
                             else
                             {
-                                var keyboardCalcData = reader.ReadBytes((int)remaining);
-                                _keyboardCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
-
-                                if (_keyboardCalc.Utf8Mode == 0x1)
-                                    _encoding = Encoding.UTF8;
+                                Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard Cancel...");
+                                _interactiveSession.Push(InlineResponses.DecidedCancel());
                             }
-                            // Start a task with the GUI handler to get user's input
-                            new Task(() =>
-                            {
-                                bool submit = true;
-                                string inputText = (!string.IsNullOrWhiteSpace(
-                                    _keyboardCalc.InputText) ?
-                                    _keyboardCalc.InputText : DefaultText);
 
-                                // Call the configured GUI handler to get user's input
-                                if (_device.UiHandler == null)
-                                {
-                                    Logger.Warning?.Print(LogClass.Application, "GUI Handler is not set. Falling back to default");
-                                }
-                                else
-                                {
-                                    var args = new SoftwareKeyboardUiArgs
-                                    {
-                                        HeaderText = "", // The inline keyboard lacks these texts
-                                        SubtitleText = "",
-                                        GuideText = "",
-                                        SubmitText = (!string.IsNullOrWhiteSpace(
-                                            _keyboardCalc.Appear.OkText) ?
-                                            _keyboardCalc.Appear.OkText : "OK"),
-                                        StringLengthMin = 0,
-                                        StringLengthMax = 100,
-                                        InitialText = inputText
-                                    };
+                            // TODO: why is this necessary? Does the software expect a constant stream of responses?
+                            Thread.Sleep(500);
 
-                                    submit = _device.UiHandler.DisplayInputDialog(args, out inputText);
-                                }
-
-                                if (submit)
-                                {
-                                    Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard OK...");
-
-                                    if (_encoding == Encoding.UTF8)
-                                        _interactiveSession.Push(InlineResponses.DecidedEnterUtf8(inputText));
-                                    else
-                                        _interactiveSession.Push(InlineResponses.DecidedEnter(inputText));
-                                }
-                                else
-                                {
-                                    Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard Cancel...");
-                                    _interactiveSession.Push(InlineResponses.DecidedCancel());
-                                }
-
-                                // TODO: why is this necessary? Does the software expect a constant stream of responses?
-                                Thread.Sleep(500);
-
-                                Logger.Debug?.Print(LogClass.ServiceAm, "Resetting state of the keyboard...");
-                                _interactiveSession.Push(InlineResponses.Default());
-                            }).Start();
-                            return;
-                    }
+                            Logger.Debug?.Print(LogClass.ServiceAm, "Resetting state of the keyboard...");
+                            _interactiveSession.Push(InlineResponses.Default());
+                        }).Start();
+                        break;
+                    case InlineKeyboardRequest.Finalize:
+                        // The game wants to close the keyboard applet and will wait for a state change.
+                        _state = SoftwareKeyboardState.Uninitialized;
+                        AppletStateChanged?.Invoke(this, null);
+                        break;
+                    default:
+                        // We shouldn't be able to get here through standard swkbd execution.
+                        Logger.Error?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_state}!");
+                        _interactiveSession.Push(InlineResponses.Default());
+                        break;
                 }
 
-                // We shouldn't be able to get here through standard swkbd execution.
-                Logger.Error?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_state}!");
-                _interactiveSession.Push(InlineResponses.Default());
             }
         }
 
