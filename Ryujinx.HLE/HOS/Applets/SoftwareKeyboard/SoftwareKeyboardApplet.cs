@@ -58,7 +58,7 @@ namespace Ryujinx.HLE.HOS.Applets
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
 
-            // TODO: a better way would be handling the background creation properly
+            // TODO: A better way would be handling the background creation properly
             // in LibraryAppleCreator / Acessor instead of guessing by size.
             if (keyboardConfig.Length == Marshal.SizeOf<SoftwareKeyboardInitialize>())
             {
@@ -354,7 +354,7 @@ namespace Ryujinx.HLE.HOS.Applets
                                 _interactiveSession.Push(InlineResponses.DecidedCancel());
                             }
 
-                            // TODO: why is this necessary? Does the software expect a constant stream of responses?
+                            // TODO: Why is this necessary? Does the software expect a constant stream of responses?
                             Thread.Sleep(500);
 
                             Logger.Debug?.Print(LogClass.ServiceAm, "Resetting state of the keyboard...");

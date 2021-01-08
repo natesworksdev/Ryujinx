@@ -238,28 +238,28 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         }
 
         [Command(2450)]
-        // GetIndirectLayerImageMap(u64 width, u64 height, u64 handle, u64 ??, u64 ??, u64 ??) -> nothing??
+        // GetIndirectLayerImageMap(s64 width, s64 height, u64 handle, nn::applet::AppletResourceUserId, pid) -> (s64, s64, buffer<bytes, 0x46>)
         public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
         {
-            Logger.Stub?.PrintStub(LogClass.ServiceVi);
+            int buffersCount = context.Request.ReceiveBuff.Count;
 
-            var numBuffs = context.Request.ReceiveBuff.Count;
-
-            if (numBuffs != 1)
+            if (buffersCount != 1)
             {
-                Logger.Warning?.Print(LogClass.ServiceVi, $"GetIndirectLayerImageMap expects just 1 receive buffer instead of {numBuffs}!");
+                Logger.Warning?.Print(LogClass.ServiceVi, $"GetIndirectLayerImageMap expects just 1 receive buffer instead of {buffersCount}!");
+
                 return ResultCode.Success;
             }
 
             // The size of the layer buffer should be an aligned multiple of width * height
-            // because it was created using GetIndirectLayerImageRequiredMemoryInfo as a guide
+            // because it was created using GetIndirectLayerImageRequiredMemoryInfo as a guide.
 
-            var layerBuff = context.Request.ReceiveBuff[0];
-            var layerBuffPtr = layerBuff.Position;
-            var layerBuffSz = layerBuff.Size;
+            long layerBuffPosition = context.Request.ReceiveBuff[0].Position;
+            long layerBuffSize     = context.Request.ReceiveBuff[0].Size;
 
-            // Fill the layer with zeros
-            context.Memory.Fill((ulong)layerBuffPtr, (ulong)layerBuffSz, 0x00);
+            // Fill the layer with zeros.
+            context.Memory.Fill((ulong)layerBuffPosition, (ulong)layerBuffSize, 0x00);
+
+            Logger.Stub?.PrintStub(LogClass.ServiceVi);
 
             return ResultCode.Success;
         }
