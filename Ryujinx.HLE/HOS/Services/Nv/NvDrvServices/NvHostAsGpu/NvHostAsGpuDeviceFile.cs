@@ -338,11 +338,6 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     }
 
                     gmm.Map(mapOffs + map.Address, gpuVa, size);
-
-                    if (!addressSpaceContext.TryGetMapPhysicalAddress(gpuVa, out _))
-                    {
-                        addressSpaceContext.AddMap(gpuVa, size, map.Address, false);
-                    }
                 }
             }
 
