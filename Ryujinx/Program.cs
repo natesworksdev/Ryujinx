@@ -80,8 +80,15 @@ namespace Ryujinx
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
             AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
 
+            // Initialize Gtk.
+            Application.Init();
+
             // Setup base data directory.
-            AppDataManager.Initialize(baseDirPathArg);
+            AppDataManager.Initialize(baseDirPathArg, () => GtkDialog.CreateChoiceDialog(
+                "Ryujinx - First Run",
+                "Do you want to enable portable mode?",
+                $"In portable mode, all Ryujinx-specific data is stored within your Ryujinx program folder.\n\nIf No (default) is chosen, data will be stored in your user profile directory."
+            ));
 
             // Initialize the configuration.
             ConfigurationState.Initialize();
@@ -131,13 +138,10 @@ namespace Ryujinx
             // Logging system information.
             PrintSystemInfo();
 
-            // Initialize Gtk.
-            Application.Init();
-
             // Check if keys exists.
-            bool hasGlobalProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
-            bool hasAltProdKeys    = !AppDataManager.IsCustomBasePath && File.Exists(Path.Combine(AppDataManager.KeysDirPathAlt, "prod.keys"));
-            if (!hasGlobalProdKeys && !hasAltProdKeys)
+            bool hasSystemProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
+            bool hasCommonProdKeys = AppDataManager.Mode == AppDataManager.LaunchMode.UserProfile && File.Exists(Path.Combine(AppDataManager.KeysDirPathUser, "prod.keys"));
+            if (!hasSystemProdKeys && !hasCommonProdKeys)
             {
                 UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
             }
@@ -175,9 +179,13 @@ namespace Ryujinx
             var enabledLogs = Logger.GetEnabledLevels();
             Logger.Notice.Print(LogClass.Application, $"Logs Enabled: {(enabledLogs.Count == 0 ? "<None>" : string.Join(", ", enabledLogs))}");
 
-            if (AppDataManager.IsCustomBasePath)
+            if (AppDataManager.Mode == AppDataManager.LaunchMode.Custom)
             {
-                Logger.Notice.Print(LogClass.Application, $"Custom Data Directory: {AppDataManager.BaseDirPath}");
+                Logger.Notice.Print(LogClass.Application, $"Launch Mode: Custom Path {AppDataManager.BaseDirPath}");
+            }
+            else
+            {
+                Logger.Notice.Print(LogClass.Application, $"Launch Mode: {AppDataManager.Mode}");
             }
         }
 
