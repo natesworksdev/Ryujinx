@@ -1,5 +1,4 @@
-﻿using Ryujinx.Common.Collections;
-using Ryujinx.Common.Logging;
+﻿using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu.Types;
@@ -123,7 +122,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     arguments.Offset = address;
                 }
 
-                if (arguments.Offset < 0)
+                if (arguments.Offset == NvMemoryAllocator.PteUnmapped)
                 {
                     arguments.Offset = 0;
 
@@ -153,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                 if (addressSpaceContext.RemoveReservation(arguments.Offset))
                 {
                     _memoryAllocator.DeallocateRange(arguments.Offset, size);
-                    addressSpaceContext.Gmm.Free(arguments.Offset, size);
+                    addressSpaceContext.Gmm.Unmap(arguments.Offset, size);
                 }
                 else
                 {
@@ -178,7 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
                     if (size != 0)
                     {
                         _memoryAllocator.DeallocateRange(arguments.Offset, size);
-                        addressSpaceContext.Gmm.Free(arguments.Offset, size);
+                        addressSpaceContext.Gmm.Unmap(arguments.Offset, size);
                     }
                 }
                 else
@@ -325,16 +324,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvHostAsGpu
 
                 if (arguments[index].NvMapHandle == 0)
                 {
-                    if (addressSpaceContext.TryGetMapPhysicalAddress(gpuVa, out ulong physicalAddress))
-                    {
-                        gmm.Map(mapOffs + physicalAddress, gpuVa, size);
-                    }
-                    else
-                    {
-                        Logger.Warning?.Print(LogClass.ServiceNv, $"Invalid GPU Virtual Address 0x{gpuVa:x8}!");
-
-                        return NvInternalResult.InvalidInput;
-                    }
+                    gmm.Unmap(gpuVa, size);
                 }
                 else
                 {
