@@ -328,6 +328,20 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
+        /// Align a given address and size region to page boundaries.
+        /// </summary>
+        /// <param name="address">The start address of the region</param>
+        /// <param name="size">The size of the region</param>
+        /// <returns>The page aligned address and size</returns>
+        private (ulong address, ulong size) PageAlign(ulong address, ulong size)
+        {
+            ulong pageMask = (ulong)MemoryManager.PageSize - 1;
+            ulong rA = address & ~pageMask;
+            ulong rS = ((address + size + pageMask) & ~pageMask) - rA;
+            return (rA, rS);
+        }
+
+        /// <summary>
         /// Flush modified ranges of the buffer from another thread.
         /// This will flush all modifications made before the active SyncNumber was set, and may block to wait for GPU sync.
         /// </summary>
@@ -341,7 +355,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                 if (ranges != null)
                 {
-                    ranges.WaitForAndGetRanges(Address, Size, Flush);
+                    (address, size) = PageAlign(address, size);
+                    ranges.WaitForAndGetRanges(address, size, Flush);
                 }
             });
         }
