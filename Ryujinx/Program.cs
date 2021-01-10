@@ -80,15 +80,8 @@ namespace Ryujinx
             AppDomain.CurrentDomain.UnhandledException += (object sender, UnhandledExceptionEventArgs e) => ProcessUnhandledException(e.ExceptionObject as Exception, e.IsTerminating);
             AppDomain.CurrentDomain.ProcessExit        += (object sender, EventArgs e)                   => Exit();
 
-            // Initialize Gtk.
-            Application.Init();
-
             // Setup base data directory.
-            AppDataManager.Initialize(baseDirPathArg, () => GtkDialog.CreateChoiceDialog(
-                "Ryujinx - First Run",
-                "Do you want to enable portable mode?",
-                $"In portable mode, all Ryujinx-specific data is stored within your Ryujinx program folder.\n\nIf No (default) is chosen, data will be stored in your user profile directory."
-            ));
+            AppDataManager.Initialize(baseDirPathArg);
 
             // Initialize the configuration.
             ConfigurationState.Initialize();
@@ -137,6 +130,9 @@ namespace Ryujinx
 
             // Logging system information.
             PrintSystemInfo();
+
+            // Initialize Gtk.
+            Application.Init();
 
             // Check if keys exists.
             bool hasSystemProdKeys = File.Exists(Path.Combine(AppDataManager.KeysDirPath, "prod.keys"));
