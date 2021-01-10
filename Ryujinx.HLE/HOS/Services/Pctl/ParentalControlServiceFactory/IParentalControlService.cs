@@ -79,13 +79,13 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
             {
-                // TODO: It seems to checks if an entry exist in the FreeCommunicationApplicationList using the TitleId.
-                //       Then it's return FreeCommunicationDisabled if the entry don't exists.
+                // TODO: It seems to checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
+                //       Then it returns FreeCommunicationDisabled if the entry doesn't exist.
 
                 return ResultCode.FreeCommunicationDisabled;
             }
 
-            // NOTE: This set an internal field to true here. Usage have to be determined.
+            // NOTE: This sets an internal field to true. Usage have to be determined.
 
             Logger.Stub?.PrintStub(LogClass.ServicePctl);
 
@@ -105,8 +105,8 @@ namespace Ryujinx.HLE.HOS.Services.Pctl.ParentalControlServiceFactory
         {
             if (_parentalControlFlag == ParentalControlFlagValue.FreeCommunication && _restrictionEnabled)
             {
-                // TODO: It seems to checks if an entry exist in the FreeCommunicationApplicationList using the TitleId.
-                //       Then it's return FreeCommunicationDisabled if the entry don't exists.
+                // TODO: It seems to checks if an entry exists in the FreeCommunicationApplicationList using the TitleId.
+                //       Then it returns FreeCommunicationDisabled if the entry doesn't exist.
 
                 return ResultCode.FreeCommunicationDisabled;
             }
