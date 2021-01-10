@@ -21,41 +21,41 @@ namespace Ryujinx.Graphics.Gpu.Image
             R16G16B16A16        = 0x03,
             R32G32B32A32        = 0x01,
             X8Z24X20V4S8COV4R4V = 0x3A,
-            ZF32                = 0x2F,
+            Zf32                = 0x2F,
             G24R8               = 0x0E,
             Z24S8               = 0x29,
             R32B24G8            = 0x05,
-            ZF32X24S8           = 0x30,
+            Zf32X24S8           = 0x30,
             A4B4G4R4            = 0x12,
             A1B5G5R5            = 0x14,
             B5G6R5              = 0x15,
             A2B10G10R10         = 0x09,
-            BF10GF11RF11        = 0x21,
-            E5B9G9R9SHAREDEXP   = 0x20,
-            DXT1                = 0x24,
-            DXT23               = 0x25,
-            DXT45               = 0x26,
+            Bf10GF11RF11        = 0x21,
+            E5B9G9R9SHaredexp   = 0x20,
+            Dxt1                = 0x24,
+            Dxt23               = 0x25,
+            Dxt45               = 0x26,
             A5B5G5R1            = 0x13,
-            DXN1                = 0x27,
-            DXN2                = 0x28,
-            BC7U                = 0x17,
-            ETC2RGBA            = 0x0B,
-            RTDOUBLEBIND        = 0x10,
-            RTTYPESMISMATCH     = 0x11,
-            ASTC2D4X4           = 0x40,
-            ASTC2D5X4           = 0x50,
-            ASTC2D5X5           = 0x41,
-            ASTC2D6X5           = 0x51,
-            ASTC2D6X6           = 0x42,
-            ASTC2D8X5           = 0x55,
-            ASTC2D8X6           = 0x52,
-            ASTC2D8X8           = 0x44,
-            ASTC2D10X5          = 0x56,
-            ASTC2D10X6          = 0x57,
-            ASTC2D10X8          = 0x53,
-            ASTC2D10X10         = 0x45,
-            ASTC2D12X10         = 0x54,
-            ASTC2D12X12         = 0x46,
+            Dxn1                = 0x27,
+            Dxn2                = 0x28,
+            Bc7U                = 0x17,
+            Etc2Rgba            = 0x0B,
+            Rtdoublebind        = 0x10,
+            Rttypesmismatch     = 0x11,
+            Astc2D4X4           = 0x40,
+            Astc2D5x4           = 0x50,
+            Astc2D5x5           = 0x41,
+            Astc2D6x5           = 0x51,
+            Astc2D6x6           = 0x42,
+            Astc2D8x5           = 0x55,
+            Astc2D8x6           = 0x52,
+            Astc2D8x8           = 0x44,
+            Astc2D10x5          = 0x56,
+            Astc2D10x6          = 0x57,
+            Astc2D10x8          = 0x53,
+            Astc2D10x10         = 0x45,
+            Astc2D12x10         = 0x54,
+            Astc2D12x12         = 0x46,
             X8Z24               = 0x2a,
             S8Z24               = 0x2b,
             G8B8G8R8            = 0x22,
@@ -91,211 +91,211 @@ namespace Ryujinx.Graphics.Gpu.Image
             BFloat = 0x7 << 13,
             AFloat = 0x7 << 16,
 
-            SRGB = 0x1 << 19,
+            Srgb = 0x1 << 19,
 
             // Texture Names
-            R8Unorm                  = R8                  | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x2491d
-            R8Snorm                  = R8                  | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x1249d
-            R8Uint                   = R8                  | RUint  | GUint  | BUint  | AUint        , // 0x4921d
-            R8Sint                   = R8                  | RSint  | GSint  | BSint  | ASint        , // 0x36d9d
-            R16Float                 = R16                 | RFloat | GFloat | BFloat | AFloat       , // 0x7ff9b
-            R16Unorm                 = R16                 | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x2491b
-            R16Snorm                 = R16                 | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x1249b
-            R16Uint                  = R16                 | RUint  | GUint  | BUint  | AUint        , // 0x4921b
-            R16Sint                  = R16                 | RSint  | GSint  | BSint  | ASint        , // 0x36d9b
-            R32Float                 = R32                 | RFloat | GFloat | BFloat | AFloat       , // 0x7ff8f
-            R32Uint                  = R32                 | RUint  | GUint  | BUint  | AUint        , // 0x4920f
-            R32Sint                  = R32                 | RSint  | GSint  | BSint  | ASint        , // 0x36d8f
-            G8R8Unorm                = G8R8                | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24918
-            G8R8Snorm                = G8R8                | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x12498
-            G8R8Uint                 = G8R8                | RUint  | GUint  | BUint  | AUint        , // 0x49218
-            G8R8Sint                 = G8R8                | RSint  | GSint  | BSint  | ASint        , // 0x36d98
-            R16G16Float              = R16G16              | RFloat | GFloat | BFloat | AFloat       , // 0x7ff8c
-            R16G16Unorm              = R16G16              | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x2490c
-            R16G16Snorm              = R16G16              | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x1248c
-            R16G16Uint               = R16G16              | RUint  | GUint  | BUint  | AUint        , // 0x4920c
-            R16G16Sint               = R16G16              | RSint  | GSint  | BSint  | ASint        , // 0x36d8c
-            R32G32Float              = R32G32              | RFloat | GFloat | BFloat | AFloat       , // 0x7ff84
-            R32G32Uint               = R32G32              | RUint  | GUint  | BUint  | AUint        , // 0x49204
-            R32G32Sint               = R32G32              | RSint  | GSint  | BSint  | ASint        , // 0x36d84
-            R32G32B32Float           = R32G32B32           | RFloat | GFloat | BFloat | AFloat       , // 0x7ff82
-            R32G32B32Uint            = R32G32B32           | RUint  | GUint  | BUint  | AUint        , // 0x49202
-            R32G32B32Sint            = R32G32B32           | RSint  | GSint  | BSint  | ASint        , // 0x36d82
-            A8B8G8R8Unorm            = A8B8G8R8            | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24908
-            A8B8G8R8Snorm            = A8B8G8R8            | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x12488
-            A8B8G8R8Uint             = A8B8G8R8            | RUint  | GUint  | BUint  | AUint        , // 0x49208
-            A8B8G8R8Sint             = A8B8G8R8            | RSint  | GSint  | BSint  | ASint        , // 0x36d88
-            R16G16B16A16Float        = R16G16B16A16        | RFloat | GFloat | BFloat | AFloat       , // 0x7ff83
-            R16G16B16A16Unorm        = R16G16B16A16        | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24903
-            R16G16B16A16Snorm        = R16G16B16A16        | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x12483
-            R16G16B16A16Uint         = R16G16B16A16        | RUint  | GUint  | BUint  | AUint        , // 0x49203
-            R16G16B16A16Sint         = R16G16B16A16        | RSint  | GSint  | BSint  | ASint        , // 0x36d83
-            R32G32B32A32Float        = R32G32B32A32        | RFloat | GFloat | BFloat | AFloat       , // 0x7ff81
-            R32G32B32A32Uint         = R32G32B32A32        | RUint  | GUint  | BUint  | AUint        , // 0x49201
-            R32G32B32A32Sint         = R32G32B32A32        | RSint  | GSint  | BSint  | ASint        , // 0x36d81
-            X8Z24X20V4S8COV4R4VUnorm = X8Z24X20V4S8COV4R4V | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x2493a
-            ZF32Float                = ZF32                | RFloat | GFloat | BFloat | AFloat       , // 0x7ffaf
-            G24R8UintUnorm           = G24R8               | RUint  | GUnorm | BUnorm | AUnorm       , // 0x24a0e
-            Z24S8UintUnormUnorm      = Z24S8               | RUint  | GUnorm | BUnorm | AUnorm       , // 0x24a29
-            Z24S8UintUnormUint       = Z24S8               | RUint  | GUnorm | BUint  | AUint        , // 0x48a29
-            R32B24G8FloatUint        = R32B24G8            | RFloat | GUint  | BUnorm | AUnorm       , // 0x25385
-            ZF32X24S8FloatUint       = ZF32X24S8           | RFloat | GUint  | BUnorm | AUnorm       , // 0x253b0
-            A8B8G8R8UnormSRGB        = A8B8G8R8            | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4908
-            A4B4G4R4Unorm            = A4B4G4R4            | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24912
-            A1B5G5R5Unorm            = A1B5G5R5            | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24914
-            B5G6R5Unorm              = B5G6R5              | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24915
-            A2B10G10R10Unorm         = A2B10G10R10         | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24909
-            A2B10G10R10Uint          = A2B10G10R10         | RUint  | GUint  | BUint  | AUint        , // 0x49209
-            BF10GF11RF11Float        = BF10GF11RF11        | RFloat | GFloat | BFloat | AFloat       , // 0x7ffa1
-            E5B9G9R9SHAREDEXPFloat   = E5B9G9R9SHAREDEXP   | RFloat | GFloat | BFloat | AFloat       , // 0x7ffa0
-            DXT1Unorm                = DXT1                | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24924
-            DXT23Unorm               = DXT23               | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24925
-            DXT45Unorm               = DXT45               | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24926
-            DXT1UnormSRGB            = DXT1                | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4924
-            DXT23UnormSRGB           = DXT23               | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4925
-            DXT45UnormSRGB           = DXT45               | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4926
-            DXN1Unorm                = DXN1                | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24927
-            DXN1Snorm                = DXN1                | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x124a7
-            DXN2Unorm                = DXN2                | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24928
-            DXN2Snorm                = DXN2                | RSnorm | GSnorm | BSnorm | ASnorm       , // 0x124a8
-            BC7UUnorm                = BC7U                | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24917
-            BC7UUnormSRGB            = BC7U                | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4917
-            RTDOUBLEBINDFloat        = RTDOUBLEBIND        | RFloat | GFloat | BFloat | AFloat       , // 0x7ff90
-            RTTYPESMISMATCHFloat     = RTTYPESMISMATCH     | RFloat | GFloat | BFloat | AFloat       , // 0x7ff91
-            ETC2RGBAUnorm            = ETC2RGBA            | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x2490b
-            ETC2RGBAUnormSRGB        = ETC2RGBA            | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa490b
-            ASTC2D4X4Unorm           = ASTC2D4X4           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24940
-            ASTC2D5X4Unorm           = ASTC2D5X4           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24950
-            ASTC2D5X5Unorm           = ASTC2D5X5           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24941
-            ASTC2D6X5Unorm           = ASTC2D6X5           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24951
-            ASTC2D6X6Unorm           = ASTC2D6X6           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24942
-            ASTC2D8X5Unorm           = ASTC2D8X5           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24955
-            ASTC2D8X6Unorm           = ASTC2D8X6           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24952
-            ASTC2D8X8Unorm           = ASTC2D8X8           | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24944
-            ASTC2D10X5Unorm          = ASTC2D10X5          | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24956
-            ASTC2D10X6Unorm          = ASTC2D10X6          | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24957
-            ASTC2D10X8Unorm          = ASTC2D10X8          | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24953
-            ASTC2D10X10Unorm         = ASTC2D10X10         | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24945
-            ASTC2D12X10Unorm         = ASTC2D12X10         | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24954
-            ASTC2D12X12Unorm         = ASTC2D12X12         | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24946
-            ASTC2D4X4UnormSRGB       = ASTC2D4X4           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4940
-            ASTC2D5X4UnormSRGB       = ASTC2D5X4           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4950
-            ASTC2D5X5UnormSRGB       = ASTC2D5X5           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4941
-            ASTC2D6X5UnormSRGB       = ASTC2D6X5           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4951
-            ASTC2D6X6UnormSRGB       = ASTC2D6X6           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4942
-            ASTC2D8X5UnormSRGB       = ASTC2D8X5           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4955
-            ASTC2D8X6UnormSRGB       = ASTC2D8X6           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4952
-            ASTC2D8X8UnormSRGB       = ASTC2D8X8           | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4944
-            ASTC2D10X5UnormSRGB      = ASTC2D10X5          | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4956
-            ASTC2D10X6UnormSRGB      = ASTC2D10X6          | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4957
-            ASTC2D10X8UnormSRGB      = ASTC2D10X8          | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4953
-            ASTC2D10X10UnormSRGB     = ASTC2D10X10         | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4945
-            ASTC2D12X10UnormSRGB     = ASTC2D12X10         | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4954
-            ASTC2D12X12UnormSRGB     = ASTC2D12X12         | RUnorm | GUnorm | BUnorm | AUnorm | SRGB, // 0xa4946
-            A5B5G5R1Unorm            = A5B5G5R1            | RUnorm | GUnorm | BUnorm | AUnorm       , // 0x24913
+            R8Unorm                  = R8                  | RUnorm | GUnorm | BUnorm | AUnorm,
+            R8Snorm                  = R8                  | RSnorm | GSnorm | BSnorm | ASnorm,
+            R8Uint                   = R8                  | RUint  | GUint  | BUint  | AUint,
+            R8Sint                   = R8                  | RSint  | GSint  | BSint  | ASint,
+            R16Float                 = R16                 | RFloat | GFloat | BFloat | AFloat,
+            R16Unorm                 = R16                 | RUnorm | GUnorm | BUnorm | AUnorm,
+            R16Snorm                 = R16                 | RSnorm | GSnorm | BSnorm | ASnorm,
+            R16Uint                  = R16                 | RUint  | GUint  | BUint  | AUint,
+            R16Sint                  = R16                 | RSint  | GSint  | BSint  | ASint,
+            R32Float                 = R32                 | RFloat | GFloat | BFloat | AFloat,
+            R32Uint                  = R32                 | RUint  | GUint  | BUint  | AUint,
+            R32Sint                  = R32                 | RSint  | GSint  | BSint  | ASint,
+            G8R8Unorm                = G8R8                | RUnorm | GUnorm | BUnorm | AUnorm,
+            G8R8Snorm                = G8R8                | RSnorm | GSnorm | BSnorm | ASnorm,
+            G8R8Uint                 = G8R8                | RUint  | GUint  | BUint  | AUint,
+            G8R8Sint                 = G8R8                | RSint  | GSint  | BSint  | ASint,
+            R16G16Float              = R16G16              | RFloat | GFloat | BFloat | AFloat,
+            R16G16Unorm              = R16G16              | RUnorm | GUnorm | BUnorm | AUnorm,
+            R16G16Snorm              = R16G16              | RSnorm | GSnorm | BSnorm | ASnorm,
+            R16G16Uint               = R16G16              | RUint  | GUint  | BUint  | AUint,
+            R16G16Sint               = R16G16              | RSint  | GSint  | BSint  | ASint,
+            R32G32Float              = R32G32              | RFloat | GFloat | BFloat | AFloat,
+            R32G32Uint               = R32G32              | RUint  | GUint  | BUint  | AUint,
+            R32G32Sint               = R32G32              | RSint  | GSint  | BSint  | ASint,
+            R32G32B32Float           = R32G32B32           | RFloat | GFloat | BFloat | AFloat,
+            R32G32B32Uint            = R32G32B32           | RUint  | GUint  | BUint  | AUint,
+            R32G32B32Sint            = R32G32B32           | RSint  | GSint  | BSint  | ASint,
+            A8B8G8R8Unorm            = A8B8G8R8            | RUnorm | GUnorm | BUnorm | AUnorm,
+            A8B8G8R8Snorm            = A8B8G8R8            | RSnorm | GSnorm | BSnorm | ASnorm,
+            A8B8G8R8Uint             = A8B8G8R8            | RUint  | GUint  | BUint  | AUint,
+            A8B8G8R8Sint             = A8B8G8R8            | RSint  | GSint  | BSint  | ASint,
+            R16G16B16A16Float        = R16G16B16A16        | RFloat | GFloat | BFloat | AFloat,
+            R16G16B16A16Unorm        = R16G16B16A16        | RUnorm | GUnorm | BUnorm | AUnorm,
+            R16G16B16A16Snorm        = R16G16B16A16        | RSnorm | GSnorm | BSnorm | ASnorm,
+            R16G16B16A16Uint         = R16G16B16A16        | RUint  | GUint  | BUint  | AUint,
+            R16G16B16A16Sint         = R16G16B16A16        | RSint  | GSint  | BSint  | ASint,
+            R32G32B32A32Float        = R32G32B32A32        | RFloat | GFloat | BFloat | AFloat,
+            R32G32B32A32Uint         = R32G32B32A32        | RUint  | GUint  | BUint  | AUint,
+            R32G32B32A32Sint         = R32G32B32A32        | RSint  | GSint  | BSint  | ASint,
+            X8Z24X20V4S8COV4R4VUnorm = X8Z24X20V4S8COV4R4V | RUnorm | GUnorm | BUnorm | AUnorm,
+            Zf32Float                = Zf32                | RFloat | GFloat | BFloat | AFloat,
+            G24R8UintUnorm           = G24R8               | RUint  | GUnorm | BUnorm | AUnorm,
+            Z24S8UintUnormUnorm      = Z24S8               | RUint  | GUnorm | BUnorm | AUnorm,
+            Z24S8UintUnormUint       = Z24S8               | RUint  | GUnorm | BUint  | AUint,
+            R32B24G8FloatUint        = R32B24G8            | RFloat | GUint  | BUnorm | AUnorm,
+            Zf32X24S8FloatUint       = Zf32X24S8           | RFloat | GUint  | BUnorm | AUnorm,
+            A8B8G8R8UnormSrgb        = A8B8G8R8            | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            A4B4G4R4Unorm            = A4B4G4R4            | RUnorm | GUnorm | BUnorm | AUnorm,
+            A1B5G5R5Unorm            = A1B5G5R5            | RUnorm | GUnorm | BUnorm | AUnorm,
+            B5G6R5Unorm              = B5G6R5              | RUnorm | GUnorm | BUnorm | AUnorm,
+            A2B10G10R10Unorm         = A2B10G10R10         | RUnorm | GUnorm | BUnorm | AUnorm,
+            A2B10G10R10Uint          = A2B10G10R10         | RUint  | GUint  | BUint  | AUint,
+            Bf10GF11RF11Float        = Bf10GF11RF11        | RFloat | GFloat | BFloat | AFloat,
+            E5B9G9R9SHaredexpFloat   = E5B9G9R9SHaredexp   | RFloat | GFloat | BFloat | AFloat,
+            Dxt1Unorm                = Dxt1                | RUnorm | GUnorm | BUnorm | AUnorm,
+            Dxt23Unorm               = Dxt23               | RUnorm | GUnorm | BUnorm | AUnorm,
+            Dxt45Unorm               = Dxt45               | RUnorm | GUnorm | BUnorm | AUnorm,
+            Dxt1UnormSrgb            = Dxt1                | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Dxt23UnormSrgb           = Dxt23               | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Dxt45UnormSrgb           = Dxt45               | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Dxn1Unorm                = Dxn1                | RUnorm | GUnorm | BUnorm | AUnorm,
+            Dxn1Snorm                = Dxn1                | RSnorm | GSnorm | BSnorm | ASnorm,
+            Dxn2Unorm                = Dxn2                | RUnorm | GUnorm | BUnorm | AUnorm,
+            Dxn2Snorm                = Dxn2                | RSnorm | GSnorm | BSnorm | ASnorm,
+            Bc7UUnorm                = Bc7U                | RUnorm | GUnorm | BUnorm | AUnorm,
+            Bc7UUnormSrgb            = Bc7U                | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            RtdoublebindFloat        = Rtdoublebind        | RFloat | GFloat | BFloat | AFloat,
+            Rttypesmismatchfloat     = Rttypesmismatch     | RFloat | GFloat | BFloat | AFloat,
+            Etc2RgbaUnorm            = Etc2Rgba            | RUnorm | GUnorm | BUnorm | AUnorm,
+            Etc2RgbaUnormSrgb        = Etc2Rgba            | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D4x4Unorm           = Astc2D4X4           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D5x4Unorm           = Astc2D5x4           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D5x5Unorm           = Astc2D5x5           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D6x5Unorm           = Astc2D6x5           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D6x6Unorm           = Astc2D6x6           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D8x5Unorm           = Astc2D8x5           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D8x6Unorm           = Astc2D8x6           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D8x8Unorm           = Astc2D8x8           | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D10x5Unorm          = Astc2D10x5          | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D10x6Unorm          = Astc2D10x6          | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D10x8Unorm          = Astc2D10x8          | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D10x10Unorm         = Astc2D10x10         | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D12x10Unorm         = Astc2D12x10         | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D12x12Unorm         = Astc2D12x12         | RUnorm | GUnorm | BUnorm | AUnorm,
+            Astc2D4x4UnormSrgb       = Astc2D4X4           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D5x4UnormSrgb       = Astc2D5x4           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D5x5UnormSrgb       = Astc2D5x5           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D6x5UnormSrgb       = Astc2D6x5           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D6x6UnormSrgb       = Astc2D6x6           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D8x5UnormSrgb       = Astc2D8x5           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D8x6UnormSrgb       = Astc2D8x6           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D8x8UnormSrgb       = Astc2D8x8           | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D10x5UnormSrgb      = Astc2D10x5          | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D10x6UnormSrgb      = Astc2D10x6          | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D10x8UnormSrgb      = Astc2D10x8          | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D10x10UnormSrgb     = Astc2D10x10         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D12x10UnormSrgb     = Astc2D12x10         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            Astc2D12x12UnormSrgb     = Astc2D12x12         | RUnorm | GUnorm | BUnorm | AUnorm | Srgb,
+            A5B5G5R1Unorm            = A5B5G5R1            | RUnorm | GUnorm | BUnorm | AUnorm,
         }
 
-        private static Dictionary<uint, FormatInfo> _textureFormats = new Dictionary<uint, FormatInfo>()
+        private static Dictionary<GpuFormat, FormatInfo> _textureFormats = new Dictionary<GpuFormat, FormatInfo>()
         {
-            { (uint) GpuFormat.R8Unorm                  , new FormatInfo(Format.R8Unorm           , 1  , 1  , 1  , 1) },
-            { (uint) GpuFormat.R8Snorm                  , new FormatInfo(Format.R8Snorm           , 1  , 1  , 1  , 1) },
-            { (uint) GpuFormat.R8Uint                   , new FormatInfo(Format.R8Uint            , 1  , 1  , 1  , 1) },
-            { (uint) GpuFormat.R8Sint                   , new FormatInfo(Format.R8Sint            , 1  , 1  , 1  , 1) },
-            { (uint) GpuFormat.R16Float                 , new FormatInfo(Format.R16Float          , 1  , 1  , 2  , 1) },
-            { (uint) GpuFormat.R16Unorm                 , new FormatInfo(Format.R16Unorm          , 1  , 1  , 2  , 1) },
-            { (uint) GpuFormat.R16Snorm                 , new FormatInfo(Format.R16Snorm          , 1  , 1  , 2  , 1) },
-            { (uint) GpuFormat.R16Uint                  , new FormatInfo(Format.R16Uint           , 1  , 1  , 2  , 1) },
-            { (uint) GpuFormat.R16Sint                  , new FormatInfo(Format.R16Sint           , 1  , 1  , 2  , 1) },
-            { (uint) GpuFormat.R32Float                 , new FormatInfo(Format.R32Float          , 1  , 1  , 4  , 1) },
-            { (uint) GpuFormat.R32Uint                  , new FormatInfo(Format.R32Uint           , 1  , 1  , 4  , 1) },
-            { (uint) GpuFormat.R32Sint                  , new FormatInfo(Format.R32Sint           , 1  , 1  , 4  , 1) },
-            { (uint) GpuFormat.G8R8Unorm                , new FormatInfo(Format.R8G8Unorm         , 1  , 1  , 2  , 2) },
-            { (uint) GpuFormat.G8R8Snorm                , new FormatInfo(Format.R8G8Snorm         , 1  , 1  , 2  , 2) },
-            { (uint) GpuFormat.G8R8Uint                 , new FormatInfo(Format.R8G8Uint          , 1  , 1  , 2  , 2) },
-            { (uint) GpuFormat.G8R8Sint                 , new FormatInfo(Format.R8G8Sint          , 1  , 1  , 2  , 2) },
-            { (uint) GpuFormat.R16G16Float              , new FormatInfo(Format.R16G16Float       , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.R16G16Unorm              , new FormatInfo(Format.R16G16Unorm       , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.R16G16Snorm              , new FormatInfo(Format.R16G16Snorm       , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.R16G16Uint               , new FormatInfo(Format.R16G16Uint        , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.R16G16Sint               , new FormatInfo(Format.R16G16Sint        , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.R32G32Float              , new FormatInfo(Format.R32G32Float       , 1  , 1  , 8  , 2) },
-            { (uint) GpuFormat.R32G32Uint               , new FormatInfo(Format.R32G32Uint        , 1  , 1  , 8  , 2) },
-            { (uint) GpuFormat.R32G32Sint               , new FormatInfo(Format.R32G32Sint        , 1  , 1  , 8  , 2) },
-            { (uint) GpuFormat.R32G32B32Float           , new FormatInfo(Format.R32G32B32Float    , 1  , 1  , 12 , 3) },
-            { (uint) GpuFormat.R32G32B32Uint            , new FormatInfo(Format.R32G32B32Uint     , 1  , 1  , 12 , 3) },
-            { (uint) GpuFormat.R32G32B32Sint            , new FormatInfo(Format.R32G32B32Sint     , 1  , 1  , 12 , 3) },
-            { (uint) GpuFormat.A8B8G8R8Unorm            , new FormatInfo(Format.R8G8B8A8Unorm     , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.A8B8G8R8Snorm            , new FormatInfo(Format.R8G8B8A8Snorm     , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.A8B8G8R8Uint             , new FormatInfo(Format.R8G8B8A8Uint      , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.A8B8G8R8Sint             , new FormatInfo(Format.R8G8B8A8Sint      , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.R16G16B16A16Float        , new FormatInfo(Format.R16G16B16A16Float , 1  , 1  , 8  , 4) },
-            { (uint) GpuFormat.R16G16B16A16Unorm        , new FormatInfo(Format.R16G16B16A16Unorm , 1  , 1  , 8  , 4) },
-            { (uint) GpuFormat.R16G16B16A16Snorm        , new FormatInfo(Format.R16G16B16A16Snorm , 1  , 1  , 8  , 4) },
-            { (uint) GpuFormat.R16G16B16A16Uint         , new FormatInfo(Format.R16G16B16A16Uint  , 1  , 1  , 8  , 4) },
-            { (uint) GpuFormat.R16G16B16A16Sint         , new FormatInfo(Format.R16G16B16A16Sint  , 1  , 1  , 8  , 4) },
-            { (uint) GpuFormat.R32G32B32A32Float        , new FormatInfo(Format.R32G32B32A32Float , 1  , 1  , 16 , 4) },
-            { (uint) GpuFormat.R32G32B32A32Uint         , new FormatInfo(Format.R32G32B32A32Uint  , 1  , 1  , 16 , 4) },
-            { (uint) GpuFormat.R32G32B32A32Sint         , new FormatInfo(Format.R32G32B32A32Sint  , 1  , 1  , 16 , 4) },
-            { (uint) GpuFormat.X8Z24X20V4S8COV4R4VUnorm , new FormatInfo(Format.D16Unorm          , 1  , 1  , 2  , 1) },
-            { (uint) GpuFormat.ZF32Float                , new FormatInfo(Format.D32Float          , 1  , 1  , 4  , 1) },
-            { (uint) GpuFormat.G24R8UintUnorm           , new FormatInfo(Format.D24UnormS8Uint    , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.Z24S8UintUnormUnorm      , new FormatInfo(Format.D24UnormS8Uint    , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.Z24S8UintUnormUint       , new FormatInfo(Format.D24UnormS8Uint    , 1  , 1  , 4  , 2) },
-            { (uint) GpuFormat.R32B24G8FloatUint        , new FormatInfo(Format.D32FloatS8Uint    , 1  , 1  , 8  , 2) },
-            { (uint) GpuFormat.ZF32X24S8FloatUint       , new FormatInfo(Format.D32FloatS8Uint    , 1  , 1  , 8  , 2) },
-            { (uint) GpuFormat.A8B8G8R8UnormSRGB        , new FormatInfo(Format.R8G8B8A8Srgb      , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.A4B4G4R4Unorm            , new FormatInfo(Format.R4G4B4A4Unorm     , 1  , 1  , 2  , 4) },
-            { (uint) GpuFormat.A1B5G5R5Unorm            , new FormatInfo(Format.R5G5B5A1Unorm     , 1  , 1  , 2  , 4) },
-            { (uint) GpuFormat.B5G6R5Unorm              , new FormatInfo(Format.R5G6B5Unorm       , 1  , 1  , 2  , 3) },
-            { (uint) GpuFormat.A2B10G10R10Unorm         , new FormatInfo(Format.R10G10B10A2Unorm  , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.A2B10G10R10Uint          , new FormatInfo(Format.R10G10B10A2Uint   , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.BF10GF11RF11Float        , new FormatInfo(Format.R11G11B10Float    , 1  , 1  , 4  , 3) },
-            { (uint) GpuFormat.E5B9G9R9SHAREDEXPFloat   , new FormatInfo(Format.R9G9B9E5Float     , 1  , 1  , 4  , 4) },
-            { (uint) GpuFormat.DXT1Unorm                , new FormatInfo(Format.Bc1RgbaUnorm      , 4  , 4  , 8  , 4) },
-            { (uint) GpuFormat.DXT23Unorm               , new FormatInfo(Format.Bc2Unorm          , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.DXT45Unorm               , new FormatInfo(Format.Bc3Unorm          , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.DXT1UnormSRGB            , new FormatInfo(Format.Bc1RgbaSrgb       , 4  , 4  , 8  , 4) },
-            { (uint) GpuFormat.DXT23UnormSRGB           , new FormatInfo(Format.Bc2Srgb           , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.DXT45UnormSRGB           , new FormatInfo(Format.Bc3Srgb           , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.DXN1Unorm                , new FormatInfo(Format.Bc4Unorm          , 4  , 4  , 8  , 1) },
-            { (uint) GpuFormat.DXN1Snorm                , new FormatInfo(Format.Bc4Snorm          , 4  , 4  , 8  , 1) },
-            { (uint) GpuFormat.DXN2Unorm                , new FormatInfo(Format.Bc5Unorm          , 4  , 4  , 16 , 2) },
-            { (uint) GpuFormat.DXN2Snorm                , new FormatInfo(Format.Bc5Snorm          , 4  , 4  , 16 , 2) },
-            { (uint) GpuFormat.BC7UUnorm                , new FormatInfo(Format.Bc7Unorm          , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.BC7UUnormSRGB            , new FormatInfo(Format.Bc7Srgb           , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.RTDOUBLEBINDFloat        , new FormatInfo(Format.Bc6HSfloat        , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.RTTYPESMISMATCHFloat     , new FormatInfo(Format.Bc6HUfloat        , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ETC2RGBAUnorm            , new FormatInfo(Format.Etc2RgbaUnorm     , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ETC2RGBAUnormSRGB        , new FormatInfo(Format.Etc2RgbaSrgb      , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D4X4Unorm           , new FormatInfo(Format.Astc4x4Unorm      , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D5X4Unorm           , new FormatInfo(Format.Astc5x4Unorm      , 5  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D5X5Unorm           , new FormatInfo(Format.Astc5x5Unorm      , 5  , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D6X5Unorm           , new FormatInfo(Format.Astc6x5Unorm      , 6  , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D6X6Unorm           , new FormatInfo(Format.Astc6x6Unorm      , 6  , 6  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D8X5Unorm           , new FormatInfo(Format.Astc8x5Unorm      , 8  , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D8X6Unorm           , new FormatInfo(Format.Astc8x6Unorm      , 8  , 6  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D8X8Unorm           , new FormatInfo(Format.Astc8x8Unorm      , 8  , 8  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X5Unorm          , new FormatInfo(Format.Astc10x5Unorm     , 10 , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X6Unorm          , new FormatInfo(Format.Astc10x6Unorm     , 10 , 6  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X8Unorm          , new FormatInfo(Format.Astc10x8Unorm     , 10 , 8  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X10Unorm         , new FormatInfo(Format.Astc10x10Unorm    , 10 , 10 , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D12X10Unorm         , new FormatInfo(Format.Astc12x10Unorm    , 12 , 10 , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D12X12Unorm         , new FormatInfo(Format.Astc12x12Unorm    , 12 , 12 , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D4X4UnormSRGB       , new FormatInfo(Format.Astc4x4Srgb       , 4  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D5X4UnormSRGB       , new FormatInfo(Format.Astc5x4Srgb       , 5  , 4  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D5X5UnormSRGB       , new FormatInfo(Format.Astc5x5Srgb       , 5  , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D6X5UnormSRGB       , new FormatInfo(Format.Astc6x5Srgb       , 6  , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D6X6UnormSRGB       , new FormatInfo(Format.Astc6x6Srgb       , 6  , 6  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D8X5UnormSRGB       , new FormatInfo(Format.Astc8x5Srgb       , 8  , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D8X6UnormSRGB       , new FormatInfo(Format.Astc8x6Srgb       , 8  , 6  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D8X8UnormSRGB       , new FormatInfo(Format.Astc8x8Srgb       , 8  , 8  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X5UnormSRGB      , new FormatInfo(Format.Astc10x5Srgb      , 10 , 5  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X6UnormSRGB      , new FormatInfo(Format.Astc10x6Srgb      , 10 , 6  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X8UnormSRGB      , new FormatInfo(Format.Astc10x8Srgb      , 10 , 8  , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D10X10UnormSRGB     , new FormatInfo(Format.Astc10x10Srgb     , 10 , 10 , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D12X10UnormSRGB     , new FormatInfo(Format.Astc12x10Srgb     , 12 , 10 , 16 , 4) },
-            { (uint) GpuFormat.ASTC2D12X12UnormSRGB     , new FormatInfo(Format.Astc12x12Srgb     , 12 , 12 , 16 , 4) },
-            { (uint) GpuFormat.A5B5G5R1Unorm            , new FormatInfo(Format.A1B5G5R5Unorm     , 1  , 1  , 2  , 4) }
+            { GpuFormat.R8Unorm,                   new FormatInfo(Format.R8Unorm,              1,   1,   1, 1) },
+            { GpuFormat.R8Snorm,                   new FormatInfo(Format.R8Snorm,              1,   1,   1, 1) },
+            { GpuFormat.R8Uint,                    new FormatInfo(Format.R8Uint,               1,   1,   1, 1) },
+            { GpuFormat.R8Sint,                    new FormatInfo(Format.R8Sint,               1,   1,   1, 1) },
+            { GpuFormat.R16Float,                  new FormatInfo(Format.R16Float,             1,   1,   2, 1) },
+            { GpuFormat.R16Unorm,                  new FormatInfo(Format.R16Unorm,             1,   1,   2, 1) },
+            { GpuFormat.R16Snorm,                  new FormatInfo(Format.R16Snorm,             1,   1,   2, 1) },
+            { GpuFormat.R16Uint,                   new FormatInfo(Format.R16Uint,              1,   1,   2, 1) },
+            { GpuFormat.R16Sint,                   new FormatInfo(Format.R16Sint,              1,   1,   2, 1) },
+            { GpuFormat.R32Float,                  new FormatInfo(Format.R32Float,             1,   1,   4, 1) },
+            { GpuFormat.R32Uint,                   new FormatInfo(Format.R32Uint,              1,   1,   4, 1) },
+            { GpuFormat.R32Sint,                   new FormatInfo(Format.R32Sint,              1,   1,   4, 1) },
+            { GpuFormat.G8R8Unorm,                 new FormatInfo(Format.R8G8Unorm,            1,   1,   2, 2) },
+            { GpuFormat.G8R8Snorm,                 new FormatInfo(Format.R8G8Snorm,            1,   1,   2, 2) },
+            { GpuFormat.G8R8Uint,                  new FormatInfo(Format.R8G8Uint,             1,   1,   2, 2) },
+            { GpuFormat.G8R8Sint,                  new FormatInfo(Format.R8G8Sint,             1,   1,   2, 2) },
+            { GpuFormat.R16G16Float,               new FormatInfo(Format.R16G16Float,          1,   1,   4, 2) },
+            { GpuFormat.R16G16Unorm,               new FormatInfo(Format.R16G16Unorm,          1,   1,   4, 2) },
+            { GpuFormat.R16G16Snorm,               new FormatInfo(Format.R16G16Snorm,          1,   1,   4, 2) },
+            { GpuFormat.R16G16Uint,                new FormatInfo(Format.R16G16Uint,           1,   1,   4, 2) },
+            { GpuFormat.R16G16Sint,                new FormatInfo(Format.R16G16Sint,           1,   1,   4, 2) },
+            { GpuFormat.R32G32Float,               new FormatInfo(Format.R32G32Float,          1,   1,   8, 2) },
+            { GpuFormat.R32G32Uint,                new FormatInfo(Format.R32G32Uint,           1,   1,   8, 2) },
+            { GpuFormat.R32G32Sint,                new FormatInfo(Format.R32G32Sint,           1,   1,   8, 2) },
+            { GpuFormat.R32G32B32Float,            new FormatInfo(Format.R32G32B32Float,       1,   1,  12, 3) },
+            { GpuFormat.R32G32B32Uint,             new FormatInfo(Format.R32G32B32Uint,        1,   1,  12, 3) },
+            { GpuFormat.R32G32B32Sint,             new FormatInfo(Format.R32G32B32Sint,        1,   1,  12, 3) },
+            { GpuFormat.A8B8G8R8Unorm,             new FormatInfo(Format.R8G8B8A8Unorm,        1,   1,   4, 4) },
+            { GpuFormat.A8B8G8R8Snorm,             new FormatInfo(Format.R8G8B8A8Snorm,        1,   1,   4, 4) },
+            { GpuFormat.A8B8G8R8Uint,              new FormatInfo(Format.R8G8B8A8Uint,         1,   1,   4, 4) },
+            { GpuFormat.A8B8G8R8Sint,              new FormatInfo(Format.R8G8B8A8Sint,         1,   1,   4, 4) },
+            { GpuFormat.R16G16B16A16Float,         new FormatInfo(Format.R16G16B16A16Float,    1,   1,   8, 4) },
+            { GpuFormat.R16G16B16A16Unorm,         new FormatInfo(Format.R16G16B16A16Unorm,    1,   1,   8, 4) },
+            { GpuFormat.R16G16B16A16Snorm,         new FormatInfo(Format.R16G16B16A16Snorm,    1,   1,   8, 4) },
+            { GpuFormat.R16G16B16A16Uint,          new FormatInfo(Format.R16G16B16A16Uint,     1,   1,   8, 4) },
+            { GpuFormat.R16G16B16A16Sint,          new FormatInfo(Format.R16G16B16A16Sint,     1,   1,   8, 4) },
+            { GpuFormat.R32G32B32A32Float,         new FormatInfo(Format.R32G32B32A32Float,    1,   1,  16, 4) },
+            { GpuFormat.R32G32B32A32Uint,          new FormatInfo(Format.R32G32B32A32Uint,     1,   1,  16, 4) },
+            { GpuFormat.R32G32B32A32Sint,          new FormatInfo(Format.R32G32B32A32Sint,     1,   1,  16, 4) },
+            { GpuFormat.X8Z24X20V4S8COV4R4VUnorm,  new FormatInfo(Format.D16Unorm,             1,   1,   2, 1) },
+            { GpuFormat.Zf32Float,                 new FormatInfo(Format.D32Float,             1,   1,   4, 1) },
+            { GpuFormat.G24R8UintUnorm,            new FormatInfo(Format.D24UnormS8Uint,       1,   1,   4, 2) },
+            { GpuFormat.Z24S8UintUnormUnorm,       new FormatInfo(Format.D24UnormS8Uint,       1,   1,   4, 2) },
+            { GpuFormat.Z24S8UintUnormUint,        new FormatInfo(Format.D24UnormS8Uint,       1,   1,   4, 2) },
+            { GpuFormat.R32B24G8FloatUint,         new FormatInfo(Format.D32FloatS8Uint,       1,   1,   8, 2) },
+            { GpuFormat.Zf32X24S8FloatUint,        new FormatInfo(Format.D32FloatS8Uint,       1,   1,   8, 2) },
+            { GpuFormat.A8B8G8R8UnormSrgb,         new FormatInfo(Format.R8G8B8A8Srgb,         1,   1,   4, 4) },
+            { GpuFormat.A4B4G4R4Unorm,             new FormatInfo(Format.R4G4B4A4Unorm,        1,   1,   2, 4) },
+            { GpuFormat.A1B5G5R5Unorm,             new FormatInfo(Format.R5G5B5A1Unorm,        1,   1,   2, 4) },
+            { GpuFormat.B5G6R5Unorm,               new FormatInfo(Format.R5G6B5Unorm,          1,   1,   2, 3) },
+            { GpuFormat.A2B10G10R10Unorm,          new FormatInfo(Format.R10G10B10A2Unorm,     1,   1,   4, 4) },
+            { GpuFormat.A2B10G10R10Uint,           new FormatInfo(Format.R10G10B10A2Uint,      1,   1,   4, 4) },
+            { GpuFormat.Bf10GF11RF11Float,         new FormatInfo(Format.R11G11B10Float,       1,   1,   4, 3) },
+            { GpuFormat.E5B9G9R9SHaredexpFloat,    new FormatInfo(Format.R9G9B9E5Float,        1,   1,   4, 4) },
+            { GpuFormat.Dxt1Unorm,                 new FormatInfo(Format.Bc1RgbaUnorm,         4,   4,   8, 4) },
+            { GpuFormat.Dxt23Unorm,                new FormatInfo(Format.Bc2Unorm,             4,   4,  16, 4) },
+            { GpuFormat.Dxt45Unorm,                new FormatInfo(Format.Bc3Unorm,             4,   4,  16, 4) },
+            { GpuFormat.Dxt1UnormSrgb,             new FormatInfo(Format.Bc1RgbaSrgb,          4,   4,   8, 4) },
+            { GpuFormat.Dxt23UnormSrgb,            new FormatInfo(Format.Bc2Srgb,              4,   4,  16, 4) },
+            { GpuFormat.Dxt45UnormSrgb,            new FormatInfo(Format.Bc3Srgb,              4,   4,  16, 4) },
+            { GpuFormat.Dxn1Unorm,                 new FormatInfo(Format.Bc4Unorm,             4,   4,   8, 1) },
+            { GpuFormat.Dxn1Snorm,                 new FormatInfo(Format.Bc4Snorm,             4,   4,   8, 1) },
+            { GpuFormat.Dxn2Unorm,                 new FormatInfo(Format.Bc5Unorm,             4,   4,  16, 2) },
+            { GpuFormat.Dxn2Snorm,                 new FormatInfo(Format.Bc5Snorm,             4,   4,  16, 2) },
+            { GpuFormat.Bc7UUnorm,                 new FormatInfo(Format.Bc7Unorm,             4,   4,  16, 4) },
+            { GpuFormat.Bc7UUnormSrgb,             new FormatInfo(Format.Bc7Srgb,              4,   4,  16, 4) },
+            { GpuFormat.RtdoublebindFloat,         new FormatInfo(Format.Bc6HSfloat,           4,   4,  16, 4) },
+            { GpuFormat.Rttypesmismatchfloat,      new FormatInfo(Format.Bc6HUfloat,           4,   4,  16, 4) },
+            { GpuFormat.Etc2RgbaUnorm,             new FormatInfo(Format.Etc2RgbaUnorm,        4,   4,  16, 4) },
+            { GpuFormat.Etc2RgbaUnormSrgb,         new FormatInfo(Format.Etc2RgbaSrgb,         4,   4,  16, 4) },
+            { GpuFormat.Astc2D4x4Unorm,            new FormatInfo(Format.Astc4x4Unorm,         4,   4,  16, 4) },
+            { GpuFormat.Astc2D5x4Unorm,            new FormatInfo(Format.Astc5x4Unorm,         5,   4,  16, 4) },
+            { GpuFormat.Astc2D5x5Unorm,            new FormatInfo(Format.Astc5x5Unorm,         5,   5,  16, 4) },
+            { GpuFormat.Astc2D6x5Unorm,            new FormatInfo(Format.Astc6x5Unorm,         6,   5,  16, 4) },
+            { GpuFormat.Astc2D6x6Unorm,            new FormatInfo(Format.Astc6x6Unorm,         6,   6,  16, 4) },
+            { GpuFormat.Astc2D8x5Unorm,            new FormatInfo(Format.Astc8x5Unorm,         8,   5,  16, 4) },
+            { GpuFormat.Astc2D8x6Unorm,            new FormatInfo(Format.Astc8x6Unorm,         8,   6,  16, 4) },
+            { GpuFormat.Astc2D8x8Unorm,            new FormatInfo(Format.Astc8x8Unorm,         8,   8,  16, 4) },
+            { GpuFormat.Astc2D10x5Unorm,           new FormatInfo(Format.Astc10x5Unorm,       10,   5,  16, 4) },
+            { GpuFormat.Astc2D10x6Unorm,           new FormatInfo(Format.Astc10x6Unorm,       10,   6,  16, 4) },
+            { GpuFormat.Astc2D10x8Unorm,           new FormatInfo(Format.Astc10x8Unorm,       10,   8,  16, 4) },
+            { GpuFormat.Astc2D10x10Unorm,          new FormatInfo(Format.Astc10x10Unorm,      10,  10,  16, 4) },
+            { GpuFormat.Astc2D12x10Unorm,          new FormatInfo(Format.Astc12x10Unorm,      12,  10,  16, 4) },
+            { GpuFormat.Astc2D12x12Unorm,          new FormatInfo(Format.Astc12x12Unorm,      12,  12,  16, 4) },
+            { GpuFormat.Astc2D4x4UnormSrgb,        new FormatInfo(Format.Astc4x4Srgb,          4,   4,  16, 4) },
+            { GpuFormat.Astc2D5x4UnormSrgb,        new FormatInfo(Format.Astc5x4Srgb,          5,   4,  16, 4) },
+            { GpuFormat.Astc2D5x5UnormSrgb,        new FormatInfo(Format.Astc5x5Srgb,          5,   5,  16, 4) },
+            { GpuFormat.Astc2D6x5UnormSrgb,        new FormatInfo(Format.Astc6x5Srgb,          6,   5,  16, 4) },
+            { GpuFormat.Astc2D6x6UnormSrgb,        new FormatInfo(Format.Astc6x6Srgb,          6,   6,  16, 4) },
+            { GpuFormat.Astc2D8x5UnormSrgb,        new FormatInfo(Format.Astc8x5Srgb,          8,   5,  16, 4) },
+            { GpuFormat.Astc2D8x6UnormSrgb,        new FormatInfo(Format.Astc8x6Srgb,          8,   6,  16, 4) },
+            { GpuFormat.Astc2D8x8UnormSrgb,        new FormatInfo(Format.Astc8x8Srgb,          8,   8,  16, 4) },
+            { GpuFormat.Astc2D10x5UnormSrgb,       new FormatInfo(Format.Astc10x5Srgb,        10,   5,  16, 4) },
+            { GpuFormat.Astc2D10x6UnormSrgb,       new FormatInfo(Format.Astc10x6Srgb,        10,   6,  16, 4) },
+            { GpuFormat.Astc2D10x8UnormSrgb,       new FormatInfo(Format.Astc10x8Srgb,        10,   8,  16, 4) },
+            { GpuFormat.Astc2D10x10UnormSrgb,      new FormatInfo(Format.Astc10x10Srgb,       10,  10,  16, 4) },
+            { GpuFormat.Astc2D12x10UnormSrgb,      new FormatInfo(Format.Astc12x10Srgb,       12,  10,  16, 4) },
+            { GpuFormat.Astc2D12x12UnormSrgb,      new FormatInfo(Format.Astc12x12Srgb,       12,  12,  16, 4) },
+            { GpuFormat.A5B5G5R1Unorm,             new FormatInfo(Format.A1B5G5R5Unorm,        1,   1,   2, 4) }
         };
 
         private static Dictionary<ulong, Format> _attribFormats = new Dictionary<ulong, Format>()
@@ -392,7 +392,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             encoded |= (isSrgb ? 1u << 19 : 0u);
 
-            return _textureFormats.TryGetValue(encoded, out format);
+            return _textureFormats.TryGetValue((GpuFormat) encoded, out format);
         }
 
         /// <summary>
