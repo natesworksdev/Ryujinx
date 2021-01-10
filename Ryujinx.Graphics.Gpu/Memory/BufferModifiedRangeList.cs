@@ -215,6 +215,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="rangeAction">The action to call for each modified range</param>
         public void WaitForAndGetRanges(ulong address, ulong size, Action<ulong, ulong> rangeAction)
         {
+            ulong endAddress = address + size;
             ulong currentSync = _context.SyncNumber;
 
             int rangeCount = 0;
@@ -265,8 +266,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
                     if (diff <= highestDiff)
                     {
-                        Remove(overlap);
-                        rangeAction(overlap.Address, overlap.Size);
+                        ulong clampAddress = Math.Max(address, overlap.Address);
+                        ulong clampEnd = Math.Min(endAddress, overlap.EndAddress);
+
+                        ClearPart(overlap, clampAddress, clampEnd);
+
+                        rangeAction(clampAddress, clampEnd - clampAddress);
                     }
                 }
             }
@@ -304,6 +309,23 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
         }
 
+        private void ClearPart(BufferModifiedRange overlap, ulong address, ulong endAddress)
+        {
+            Remove(overlap);
+
+            // If the overlap extends outside of the clear range, make sure those parts still exist.
+
+            if (overlap.Address < address)
+            {
+                Add(new BufferModifiedRange(overlap.Address, address - overlap.Address, overlap.SyncNumber));
+            }
+
+            if (overlap.EndAddress > endAddress)
+            {
+                Add(new BufferModifiedRange(endAddress, overlap.EndAddress - endAddress, overlap.SyncNumber));
+            }
+        }
+
         /// <summary>
         /// Clear modified ranges within the specified area.
         /// </summary>
@@ -324,19 +346,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     BufferModifiedRange overlap = toClear[i];
 
-                    Remove(overlap);
-
-                    // If the overlap extends outside of the clear range, make sure those parts still exist.
-
-                    if (overlap.Address < address)
-                    {
-                        Add(new BufferModifiedRange(overlap.Address, address - overlap.Address, overlap.SyncNumber));
-                    }
-
-                    if (overlap.EndAddress > endAddress)
-                    {
-                        Add(new BufferModifiedRange(endAddress, overlap.EndAddress - endAddress, overlap.SyncNumber));
-                    }
+                    ClearPart(overlap, address, endAddress);
                 }
             }
         }
