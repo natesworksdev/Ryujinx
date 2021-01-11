@@ -26,7 +26,9 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
                 // This loop will probably will run only once.
                 bytes = encoding.GetBytes(text.Substring(0, maxStr));
                 if (bytes.Length <= maxSize)
+                {
                     break;
+                }
             }
 
             writer.Write(bytes);

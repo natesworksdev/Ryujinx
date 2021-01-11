@@ -241,15 +241,6 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
         // GetIndirectLayerImageMap(s64 width, s64 height, u64 handle, nn::applet::AppletResourceUserId, pid) -> (s64, s64, buffer<bytes, 0x46>)
         public ResultCode GetIndirectLayerImageMap(ServiceCtx context)
         {
-            int buffersCount = context.Request.ReceiveBuff.Count;
-
-            if (buffersCount != 1)
-            {
-                Logger.Warning?.Print(LogClass.ServiceVi, $"GetIndirectLayerImageMap expects just 1 receive buffer instead of {buffersCount}!");
-
-                return ResultCode.Success;
-            }
-
             // The size of the layer buffer should be an aligned multiple of width * height
             // because it was created using GetIndirectLayerImageRequiredMemoryInfo as a guide.
 
@@ -296,8 +287,8 @@ namespace Ryujinx.HLE.HOS.Services.Vi.RootService
                 const ulong defaultAlignment = 0x1000;
                 const ulong defaultSize      = 0x20000;
 
-                // NOTE: The official service setup a A8B8G8R8 texture with a linear layout and then query its size. 
-                //       As we don't need this texture on the emulator, we can just simplify this logic and directly 
+                // NOTE: The official service setup a A8B8G8R8 texture with a linear layout and then query its size.
+                //       As we don't need this texture on the emulator, we can just simplify this logic and directly
                 //       do a linear layout size calculation. (stride * height * bytePerPixel)
                 int   pitch              = BitUtils.AlignUp(BitUtils.DivRoundUp(width * 32, 8), 64);
                 int   memorySize         = pitch * BitUtils.AlignUp(height, 64);

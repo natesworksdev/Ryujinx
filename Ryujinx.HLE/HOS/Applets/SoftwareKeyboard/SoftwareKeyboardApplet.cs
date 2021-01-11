@@ -272,7 +272,6 @@ namespace Ryujinx.HLE.HOS.Applets
                         {
                             var keyboardDictData = reader.ReadBytes((int)remaining);
                             _keyboardDict = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
-
                         }
                         _interactiveSession.Push(InlineResponses.Default());
                         break;
@@ -290,12 +289,16 @@ namespace Ryujinx.HLE.HOS.Applets
                             _keyboardCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
 
                             if (_keyboardCalc.Utf8Mode == 0x1)
+                            {
                                 _encoding = Encoding.UTF8;
+                            }
 
                             // Force showing the keyboard regardless of the state, an unwanted
                             // input dialog may show, but it is better than a soft lock.
                             if (_keyboardCalc.Appear.ShouldBeHidden == 0)
+                            {
                                 showKeyboard = true;
+                            }
                         }
                         // Send an initialization finished signal.
                         _interactiveSession.Push(InlineResponses.FinishedInitialize());
@@ -303,9 +306,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         new Task(() =>
                         {
                             bool submit = true;
-                            string inputText = (!string.IsNullOrWhiteSpace(
-                                _keyboardCalc.InputText) ?
-                                _keyboardCalc.InputText : DefaultText);
+                            string inputText = (!string.IsNullOrWhiteSpace(_keyboardCalc.InputText) ? _keyboardCalc.InputText : DefaultText);
 
                             // Call the configured GUI handler to get user's input.
                             if (!showKeyboard)
@@ -328,9 +329,7 @@ namespace Ryujinx.HLE.HOS.Applets
                                     HeaderText = "", // The inline keyboard lacks these texts
                                     SubtitleText = "",
                                     GuideText = "",
-                                    SubmitText = (!string.IsNullOrWhiteSpace(
-                                        _keyboardCalc.Appear.OkText) ?
-                                        _keyboardCalc.Appear.OkText : "OK"),
+                                    SubmitText = (!string.IsNullOrWhiteSpace(_keyboardCalc.Appear.OkText) ? _keyboardCalc.Appear.OkText : "OK"),
                                     StringLengthMin = 0,
                                     StringLengthMax = 100,
                                     InitialText = inputText
@@ -344,9 +343,13 @@ namespace Ryujinx.HLE.HOS.Applets
                                 Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard OK...");
 
                                 if (_encoding == Encoding.UTF8)
+                                {
                                     _interactiveSession.Push(InlineResponses.DecidedEnterUtf8(inputText));
+                                }
                                 else
+                                {
                                     _interactiveSession.Push(InlineResponses.DecidedEnter(inputText));
+                                }
                             }
                             else
                             {
@@ -372,7 +375,6 @@ namespace Ryujinx.HLE.HOS.Applets
                         _interactiveSession.Push(InlineResponses.Default());
                         break;
                 }
-
             }
         }
 
