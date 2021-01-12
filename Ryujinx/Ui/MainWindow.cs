@@ -591,7 +591,6 @@ namespace Ryujinx.Ui
                     ToggleExtraWidgets(true);
                 }
 
-                _viewBox.Remove(GlRendererWidget);
                 GlRendererWidget.Exit();
 
                 if(GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
@@ -604,6 +603,7 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution?.Dispose();
                 _windowsMultimediaTimerResolution = null;
 
+                _viewBox.Remove(GlRendererWidget);
                 _viewBox.Add(_gameTableWindow);
 
                 _gameTableWindow.Expand = true;
@@ -711,6 +711,7 @@ namespace Ryujinx.Ui
 
                     // Wait for the other thread to dispose the HLE context before exiting.
                     _deviceExitStatus.WaitOne();
+                    GlRendererWidget.Dispose();
                 }
             }
 
