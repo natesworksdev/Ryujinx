@@ -501,7 +501,9 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
             for (int index = 0; index < count; index++)
             {
-                Register rd = new Register(op.Rd.Index + index, RegisterType.Gpr);
+                bool isRz = op.Rd.IsRZ;
+
+                Register rd = new Register(isRz ? op.Rd.Index : op.Rd.Index + index, RegisterType.Gpr);
 
                 Operand value = Register(rd);
 
@@ -524,11 +526,6 @@ namespace Ryujinx.Graphics.Shader.Instructions
                 {
                     case MemoryRegion.Local:  context.StoreLocal (offset, value); break;
                     case MemoryRegion.Shared: context.StoreShared(offset, value); break;
-                }
-
-                if (rd.IsRZ)
-                {
-                    break;
                 }
             }
         }
