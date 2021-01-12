@@ -829,37 +829,37 @@ namespace Ryujinx.Graphics.Shader.Instructions
 
                 switch (cond)
                 {
-                    case IntegerCondition.Equal: // r = xh == yh && xl == yl
+                    case Decoders.IntegerCondition.Equal: // r = xh == yh && xl == yl
                         res = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), GetZF());
                         break;
-                    case IntegerCondition.Less: // r = xh < yh || (xh == yh && xl < yl)
-                        Operand prevLt = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), GetCF());
+                    case Decoders.IntegerCondition.Less: // r = xh < yh || (xh == yh && xl < yl)
+                        Operand notC = context.BitwiseNot(GetCF());
+                        Operand prevLt = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), notC);
                         res = isSigned
                             ? context.BitwiseOr(context.ICompareLess(srcA, srcB), prevLt)
                             : context.BitwiseOr(context.ICompareLessUnsigned(srcA, srcB), prevLt);
                         break;
-                    case IntegerCondition.LessOrEqual: // r = xh < yh || (xh == yh && xl <= yl)
-                        Operand zOrC = context.BitwiseOr(GetZF(), GetCF());
-                        Operand prevLe = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), zOrC);
+                    case Decoders.IntegerCondition.LessOrEqual: // r = xh < yh || (xh == yh && xl <= yl)
+                        Operand zOrNotC = context.BitwiseOr(GetZF(), context.BitwiseNot(GetCF()));
+                        Operand prevLe = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), zOrNotC);
                         res = isSigned
                             ? context.BitwiseOr(context.ICompareLess(srcA, srcB), prevLe)
                             : context.BitwiseOr(context.ICompareLessUnsigned(srcA, srcB), prevLe);
                         break;
-                    case IntegerCondition.Greater: // r = xh > yh || (xh == yh && xl > yl)
-                        Operand notZOrC = context.BitwiseNot(context.BitwiseOr(GetZF(), GetCF()));
-                        Operand prevGt = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), notZOrC);
+                    case Decoders.IntegerCondition.Greater: // r = xh > yh || (xh == yh && xl > yl)
+                        Operand notZAndC = context.BitwiseAnd(context.BitwiseNot(GetZF()), GetCF());
+                        Operand prevGt = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), notZAndC);
                         res = isSigned
                             ? context.BitwiseOr(context.ICompareGreater(srcA, srcB), prevGt)
                             : context.BitwiseOr(context.ICompareGreaterUnsigned(srcA, srcB), prevGt);
                         break;
-                    case IntegerCondition.GreaterOrEqual: // r = xh > yh || (xh == yh && xl >= yl)
-                        Operand notC = context.BitwiseNot(GetCF());
-                        Operand prevGe = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), notC);
+                    case Decoders.IntegerCondition.GreaterOrEqual: // r = xh > yh || (xh == yh && xl >= yl)
+                        Operand prevGe = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), GetCF());
                         res = isSigned
                             ? context.BitwiseOr(context.ICompareGreater(srcA, srcB), prevGe)
                             : context.BitwiseOr(context.ICompareGreaterUnsigned(srcA, srcB), prevGe);
                         break;
-                    case IntegerCondition.NotEqual: // r = xh != yh || xl != yl
+                    case Decoders.IntegerCondition.NotEqual: // r = xh != yh || xl != yl
                         context.BitwiseOr(context.ICompareNotEqual(srcA, srcB), context.BitwiseNot(GetZF()));
                         break;
                     default:
