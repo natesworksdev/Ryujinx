@@ -136,6 +136,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             }
             else if (operation == SyncpointbOperation.Incr)
             {
+                _context.CreateHostSyncIfNeeded();
                 _context.Synchronization.IncrementSyncpoint(syncpointId);
             }
 
@@ -150,6 +151,8 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
         {
             _context.Methods.PerformDeferredDraws();
             _context.Renderer.Pipeline.Barrier();
+
+            _context.CreateHostSyncIfNeeded();
         }
 
         /// <summary>

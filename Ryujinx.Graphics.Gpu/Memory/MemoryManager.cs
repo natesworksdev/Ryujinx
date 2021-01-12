@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             ulong processVa = Translate(gpuVa);
 
-            return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, Unsafe.SizeOf<T>()))[0];
+            return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, Unsafe.SizeOf<T>(), true))[0];
         }
 
         /// <summary>
@@ -61,11 +61,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="gpuVa">GPU virtual address where the data is located</param>
         /// <param name="size">Size of the data</param>
         /// <returns>The span of the data at the specified memory location</returns>
-        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, int size)
+        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, int size, bool tracked = false)
         {
             ulong processVa = Translate(gpuVa);
 
-            return _context.PhysicalMemory.GetSpan(processVa, size);
+            return _context.PhysicalMemory.GetSpan(processVa, size, tracked);
         }
 
         /// <summary>
