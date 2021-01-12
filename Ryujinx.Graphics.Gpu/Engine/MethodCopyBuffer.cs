@@ -218,7 +218,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
                     // Buffer to buffer copy.
                     BufferManager.CopyBuffer(cbp.SrcAddress, cbp.DstAddress, (uint)size);
                 }
-
             }
         }
     }
