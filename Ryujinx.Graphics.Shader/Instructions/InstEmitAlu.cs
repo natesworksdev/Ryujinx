@@ -846,8 +846,8 @@ namespace Ryujinx.Graphics.Shader.Instructions
                             : context.BitwiseOr(context.ICompareLessUnsigned(srcA, srcB), prevLe);
                         break;
                     case IntegerCondition.Greater: // r = xh > yh || (xh == yh && xl > yl)
-                        Operand notZAndC = context.BitwiseNot(context.BitwiseOr(GetZF(), GetCF()));
-                        Operand prevGt = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), notZAndC);
+                        Operand notZOrC = context.BitwiseNot(context.BitwiseOr(GetZF(), GetCF()));
+                        Operand prevGt = context.BitwiseAnd(context.ICompareEqual(srcA, srcB), notZOrC);
                         res = isSigned
                             ? context.BitwiseOr(context.ICompareGreater(srcA, srcB), prevGt)
                             : context.BitwiseOr(context.ICompareGreaterUnsigned(srcA, srcB), prevGt);
