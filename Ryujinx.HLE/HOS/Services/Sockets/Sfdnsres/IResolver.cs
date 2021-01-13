@@ -1,6 +1,7 @@
 using Ryujinx.Common.Logging;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -136,6 +137,94 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
                     result.Add(ip);
             }
             return result;
+        }
+
+        private AddrInfo ParseAddrInfoFromBytes(byte[] addrInfoBytes)
+        {
+            Span<byte> addrInfoBytesSpan = addrInfoBytes.ToArray().AsSpan();
+            Span<byte> magicSpan = addrInfoBytesSpan.Slice(0, 4);
+            Span<byte> flagsSpan = addrInfoBytesSpan.Slice(4, 4);
+            Span<byte> familySpan = addrInfoBytesSpan.Slice(8, 4);
+            Span<byte> socketTypeSpan = addrInfoBytesSpan.Slice(12, 4);
+            Span<byte> protocolSpan = addrInfoBytesSpan.Slice(16, 4);
+            Span<byte> addrLenSpan = addrInfoBytesSpan.Slice(20, 4);
+
+            if (BitConverter.IsLittleEndian)
+            {
+                magicSpan.Reverse();
+                flagsSpan.Reverse();
+                familySpan.Reverse();
+                socketTypeSpan.Reverse();
+                protocolSpan.Reverse();
+                addrLenSpan.Reverse();
+            }
+
+            int addrLen = BitConverter.ToInt32(addrLenSpan);
+            // If ai_family is recognized as AF_INET6 (28) or AF_INET (2),
+            // ai_addr is read as struct sockaddr_in or struct sockaddr_in6.
+            // Otherwise, it's just read as u8[ai_addrlen].
+            byte[] addrs = addrInfoBytesSpan.Slice(24, (addrLen != 0 ? addrLen : 4)).ToArray();
+            string canonName = Encoding.ASCII.GetString(addrInfoBytesSpan.Slice(24 + (addrLen != 0 ? addrLen : 4))).Replace("\0", "");
+
+            return new AddrInfo
+            {
+                Magic = BitConverter.ToInt32(magicSpan),
+                Flags = BitConverter.ToInt32(flagsSpan),
+                Family = (AddressFamily)BitConverter.ToInt32(familySpan),
+                SocketType = BitConverter.ToInt32(socketTypeSpan),
+                Protocol = BitConverter.ToInt32(protocolSpan),
+                Addrs = addrs,
+                CanonName = canonName
+            };
+        }
+
+        private long SerializeAddrInfo(ServiceCtx context, long offset, AddrInfo hints, IPAddress address)
+        {
+            long originalBufferPosition = context.Request.ReceiveBuff[0].Position + offset;
+            long bufferPosition         = originalBufferPosition;
+            long bufferSize             = context.Request.ReceiveBuff[0].Size;
+
+            // Magic
+            unchecked
+            {
+                context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder((int)0xBEEFCAFE));
+            }
+            bufferPosition += 4;
+
+            // ai_flags
+            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(hints.Flags));
+            bufferPosition += 4;
+
+            // ai_family
+            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder((int)address.AddressFamily));
+            bufferPosition += 4;
+
+            // ai_socktype
+            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(hints.SocketType));
+            bufferPosition += 4;
+
+            // ai_protocol
+            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(hints.Protocol));
+            bufferPosition += 4;
+
+            // Use the fact that IPAddress.Any = 0.0.0.0 as a helper to fill 0s, if address is empty.
+            byte[] ipBytes = (address ?? IPAddress.Any).GetAddressBytes();
+
+            // ai_addrlen
+            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(ipBytes.Length));
+            bufferPosition += 4;
+
+            // ai_addr
+            // IPAddress.GetAddressBytes is already in network byte order.
+            context.Memory.Write((ulong)bufferPosition, ipBytes);
+            bufferPosition += 4;
+
+            // ai_canonname
+            byte[] canonName = Encoding.ASCII.GetBytes("" + '\0');
+            context.Memory.Write((ulong)bufferPosition, canonName);
+            bufferPosition += canonName.Length;
+
+            return bufferPosition - originalBufferPosition;
         }
 
         [Command(0)]
@@ -351,6 +440,82 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             }
 
             return resultCode;
+        }
+
+        [Command(6)]
+        // GetAddrInfo(bool enable_nsd_resolve, u32, u64 pid_placeholder, pid, buffer<i8, 5, 0> host, buffer<i8, 5, 0> service, buffer<packed_addrinfo, 5, 0> hints) -> (i32 ret, u32 bsd_errno, u32 packed_addrinfo_size, buffer<packed_addrinfo, 6, 0> response)
+        public ResultCode GetAddrInfo(ServiceCtx context)
+        {
+            byte[] host = new byte[context.Request.SendBuff[0].Size];
+            byte[] service = new byte[context.Request.SendBuff[1].Size];
+            byte[] hints = new byte[context.Request.SendBuff[2].Size];
+
+            bool enableNsdResolve = context.RequestData.ReadInt32() == 1;
+            uint unknown0 = context.RequestData.ReadUInt32();
+            // ulong pidPlaceholder = context.RequestData.ReadUInt64();
+            ulong pid = context.RequestData.ReadUInt64();
+            context.Memory.Read((ulong)context.Request.SendBuff[0].Position, host);
+            context.Memory.Read((ulong)context.Request.SendBuff[1].Position, service);
+            context.Memory.Read((ulong)context.Request.SendBuff[2].Position, hints);
+
+            IPAddress[] addresses = null;
+            AddrInfo hintsAddrInfo = null;
+
+            NetDbError ret = NetDbError.Success;
+            GaiError bsdErrno = GaiError.Success;
+            long packedAddrInfoSize = 0;
+
+            try
+            {
+                hintsAddrInfo = ParseAddrInfoFromBytes(hints);
+                addresses = Dns.GetHostAddresses(Encoding.ASCII.GetString(host));
+                addresses = addresses.Where(a => a.AddressFamily == hintsAddrInfo.Family).ToArray();
+            }
+            catch (SocketException exception)
+            {
+                ret = NetDbError.Internal;
+                if (exception.ErrorCode == 11001)
+                {
+                    ret = NetDbError.HostNotFound;
+                    bsdErrno = GaiError.NoData;
+                }
+                else if (exception.ErrorCode == 11002)
+                {
+                    ret = NetDbError.TryAgain;
+                }
+                else if (exception.ErrorCode == 11003)
+                {
+                    ret = NetDbError.NoRecovery;
+                }
+                else if (exception.ErrorCode == 11004)
+                {
+                    ret = NetDbError.NoData;
+                }
+                else if (exception.ErrorCode == 10060)
+                {
+                    bsdErrno = GaiError.Again;
+                }
+            }
+
+            if (addresses == null)
+            {
+                ret = NetDbError.NoAddress;
+            }
+            else
+            {
+                foreach (IPAddress address in addresses)
+                {
+                    packedAddrInfoSize += SerializeAddrInfo(context, packedAddrInfoSize, hintsAddrInfo, address);
+                }
+                // The list should be terminated with a sentinel four-byte zero value.
+                context.Memory.Write((ulong)(context.Request.ReceiveBuff[0].Position + packedAddrInfoSize), 0x00000000);
+            }
+
+            context.ResponseData.Write((int)ret);
+            context.ResponseData.Write((int)bsdErrno);
+            context.ResponseData.Write((uint)packedAddrInfoSize);
+
+            return ResultCode.Success;
         }
 
         [Command(8)]
