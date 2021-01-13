@@ -1,6 +1,8 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Gpu.Memory;
+using Ryujinx.Graphics.Texture;
+using System;
 using System.Collections.Generic;
 
 namespace Ryujinx.Graphics.Gpu.Image
@@ -141,6 +143,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         private TextureInfo GetInfo(TextureDescriptor descriptor)
         {
             ulong address = Context.MemoryManager.Translate(descriptor.UnpackAddress());
+            bool addressIsValid = address != MemoryManager.PteUnmapped;
 
             int width         = descriptor.UnpackWidth();
             int height        = descriptor.UnpackHeight();
@@ -181,7 +184,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!FormatTable.TryGetTextureFormat(format, srgb, out FormatInfo formatInfo))
             {
-                if ((long)address > 0L && (int)format > 0)
+                if (addressIsValid && (int)format > 0)
                 {
                     Logger.Error?.Print(LogClass.Gpu, $"Invalid texture format 0x{format:X} (sRGB: {srgb}).");
                 }
@@ -193,6 +196,54 @@ namespace Ryujinx.Graphics.Gpu.Image
             int gobBlocksInZ = descriptor.UnpackGobBlocksInZ();
 
             int gobBlocksInTileX = descriptor.UnpackGobBlocksInTileX();
+
+            // If the base level is not zero, we additionally add the mip level offset
+            // to the address, this allows the texture manager to find the base level from the
+            // address if there is a overlapping texture on the cache that can contain the new texture.
+            // Linear textures don't support mipmaps, so we don't handle this case here.
+            int baseLevel = descriptor.UnpackBaseLevel();
+            if (baseLevel != 0 && !isLinear && addressIsValid)
+            {
+                int depth, layers;
+
+                if (target == Target.Texture3D)
+                {
+                    depth = depthOrLayers;
+                    layers = 1;
+                }
+                else
+                {
+                    depth = 1;
+                    layers = depthOrLayers;
+                }
+
+                SizeInfo sizeInfo = SizeCalculator.GetBlockLinearTextureSize(
+                    width,
+                    height,
+                    depth,
+                    levels,
+                    layers,
+                    formatInfo.BlockWidth,
+                    formatInfo.BlockHeight,
+                    formatInfo.BytesPerPixel,
+                    gobBlocksInY,
+                    gobBlocksInZ,
+                    gobBlocksInTileX);
+
+                address += (ulong)sizeInfo.GetMipOffset(baseLevel);
+
+                width = Math.Max(1, width >> baseLevel);
+                height = Math.Max(1, height >> baseLevel);
+
+                if (target == Target.Texture3D)
+                {
+                    depthOrLayers = Math.Max(1, depthOrLayers >> baseLevel);
+                }
+
+                levels -= baseLevel;
+
+                (gobBlocksInY, gobBlocksInZ) = SizeCalculator.GetMipGobBlockSizes(height, depth, formatInfo.BlockHeight, gobBlocksInY, gobBlocksInZ);
+            }
 
             SwizzleComponent swizzleR = descriptor.UnpackSwizzleR().Convert();
             SwizzleComponent swizzleG = descriptor.UnpackSwizzleG().Convert();
