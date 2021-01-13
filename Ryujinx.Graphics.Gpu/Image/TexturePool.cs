@@ -143,7 +143,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The texture information</returns>
         private TextureInfo GetInfo(TextureDescriptor descriptor, out int layerSize)
         {
-            ulong address = Context.MemoryManager.Translate(descriptor.UnpackAddress());
+            ulong gpuVa = descriptor.UnpackAddress();
+            ulong address = Context.MemoryManager.Translate(gpuVa);
             bool addressIsValid = address != MemoryManager.PteUnmapped;
 
             int width         = descriptor.UnpackWidth();
@@ -204,7 +205,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             int maxLod = descriptor.UnpackMaxLevelInclusive();
 
             // Linear textures don't support mipmaps, so we don't handle this case here.
-            if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear && addressIsValid)
+            if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear)
             {
                 int depth  = TextureInfo.GetDepth(target, depthOrLayers);
                 int layers = TextureInfo.GetLayers(target, depthOrLayers);
@@ -229,7 +230,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     // If the base level is not zero, we additionally add the mip level offset
                     // to the address, this allows the texture manager to find the base level from the
                     // address if there is a overlapping texture on the cache that can contain the new texture.
-                    address += (ulong)sizeInfo.GetMipOffset(minLod);
+                    gpuVa += (ulong)sizeInfo.GetMipOffset(minLod);
 
                     width  = Math.Max(1, width  >> minLod);
                     height = Math.Max(1, height >> minLod);
@@ -275,6 +276,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             return new TextureInfo(
                 address,
+                gpuVa,
                 width,
                 height,
                 depthOrLayers,

@@ -50,9 +50,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>The data at the specified memory location</returns>
         public T Read<T>(ulong gpuVa) where T : unmanaged
         {
-            ulong processVa = Translate(gpuVa);
-
-            return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, Unsafe.SizeOf<T>()))[0];
+            return MemoryMarshal.Cast<byte, T>(GetSpan(gpuVa, Unsafe.SizeOf<T>()))[0];
         }
 
         /// <summary>
@@ -61,11 +59,68 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="gpuVa">GPU virtual address where the data is located</param>
         /// <param name="size">Size of the data</param>
         /// <returns>The span of the data at the specified memory location</returns>
-        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, int size)
+        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, int size, bool tracked = false)
         {
             ulong processVa = Translate(gpuVa);
 
-            return _context.PhysicalMemory.GetSpan(processVa, size);
+            if (IsContiguous(gpuVa, size))
+            {
+                return _context.PhysicalMemory.GetSpan(processVa, size, tracked);
+            }
+            else
+            {
+                Span<byte> data = new byte[size];
+
+                ReadImpl(gpuVa, data, tracked);
+
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// Reads data from a possibly non-contiguous region of GPU mapped memory.
+        /// </summary>
+        /// <param name="va">GPU virtual address of the data</param>
+        /// <param name="data">Span to write the read data into</param>
+        /// <param name="tracked">True to enable write tracking on read, false otherwise</param>
+        private void ReadImpl(ulong va, Span<byte> data, bool tracked)
+        {
+            if (data.Length == 0)
+            {
+                return;
+            }
+
+            int offset = 0, size;
+
+            if ((va & PageMask) != 0)
+            {
+                ulong pa = Translate(va);
+
+                if (pa == PteUnmapped)
+                {
+                    return;
+                }
+
+                size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
+
+                _context.PhysicalMemory.GetSpan(pa, size, tracked).CopyTo(data.Slice(0, size));
+
+                offset += size;
+            }
+
+            for (; offset < data.Length; offset += size)
+            {
+                ulong pa = Translate(va + (ulong)offset);
+
+                if (pa == PteUnmapped)
+                {
+                    break;
+                }
+
+                size = Math.Min(data.Length - offset, (int)PageSize);
+
+                _context.PhysicalMemory.GetSpan(pa, size, tracked).CopyTo(data.Slice(offset, size));
+            }
         }
 
         /// <summary>
@@ -76,9 +131,16 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>A writable region with the data at the specified memory location</returns>
         public WritableRegion GetWritableRegion(ulong gpuVa, int size)
         {
-            ulong processVa = Translate(gpuVa);
+            if (IsContiguous(gpuVa, size))
+            {
+                ulong processVa = Translate(gpuVa);
 
-            return _context.PhysicalMemory.GetWritableRegion(processVa, size);
+                return _context.PhysicalMemory.GetWritableRegion(processVa, size);
+            }
+            else
+            {
+                throw new NotImplementedException();
+            }
         }
 
         /// <summary>
@@ -89,9 +151,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="value">The value to be written</param>
         public void Write<T>(ulong gpuVa, T value) where T : unmanaged
         {
-            ulong processVa = Translate(gpuVa);
-
-            _context.PhysicalMemory.Write(processVa, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
+            Write(gpuVa, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
         }
 
         /// <summary>
@@ -101,9 +161,69 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="data">The data to be written</param>
         public void Write(ulong gpuVa, ReadOnlySpan<byte> data)
         {
-            ulong processVa = Translate(gpuVa);
+            WriteImpl(gpuVa, data, _context.PhysicalMemory.Write);
+        }
 
-            _context.PhysicalMemory.Write(processVa, data);
+        /// <summary>
+        /// Writes data to GPU mapped memory without write tracking.
+        /// </summary>
+        /// <param name="gpuVa">GPU virtual address to write the data into</param>
+        /// <param name="data">The data to be written</param>
+        public void WriteUntracked(ulong gpuVa, ReadOnlySpan<byte> data)
+        {
+            WriteImpl(gpuVa, data, _context.PhysicalMemory.WriteUntracked);
+        }
+
+        private delegate void WriteCallback(ulong address, ReadOnlySpan<byte> data);
+
+        /// <summary>
+        /// Writes data to possibly non-contiguous GPU mapped memory.
+        /// </summary>
+        /// <param name="va">GPU virtual address of the region to write into</param>
+        /// <param name="data">Data to be written</param>
+        /// <param name="writeCallback">Write callback</param>
+        private void WriteImpl(ulong va, ReadOnlySpan<byte> data, WriteCallback writeCallback)
+        {
+            if (IsContiguous(va, data.Length))
+            {
+                ulong processVa = Translate(va);
+
+                writeCallback(processVa, data);
+            }
+            else
+            {
+                int offset = 0, size;
+
+                if ((va & PageMask) != 0)
+                {
+                    ulong pa = Translate(va);
+
+                    if (pa == PteUnmapped)
+                    {
+                        return;
+                    }
+
+                    size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
+
+                    writeCallback(pa, data.Slice(0, size));
+
+                    offset += size;
+                }
+
+                for (; offset < data.Length; offset += size)
+                {
+                    ulong pa = Translate(va + (ulong)offset);
+
+                    if (pa == PteUnmapped)
+                    {
+                        break;
+                    }
+
+                    size = Math.Min(data.Length - offset, (int)PageSize);
+
+                    writeCallback(pa, data.Slice(offset, size));
+                }
+            }
         }
 
         /// <summary>
@@ -145,6 +265,54 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     SetPte(va + offset, PteUnmapped);
                 }
             }
+        }
+
+        /// <summary>
+        /// Checks if a region of GPU mapped memory is contiguous.
+        /// </summary>
+        /// <param name="va">GPU virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <returns>True if the region is contiguous, false otherwise</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsContiguous(ulong va, int size)
+        {
+            if (!ValidateAddress(va) || GetPte(va) == PteUnmapped)
+            {
+                return false;
+            }
+
+            ulong endVa = (va + (ulong)size + PageMask) & ~(ulong)PageMask;
+
+            va &= ~(ulong)PageMask;
+
+            int pages = (int)((endVa - va) / PageSize);
+
+            for (int page = 0; page < pages - 1; page++)
+            {
+                if (!ValidateAddress(va + PageSize)|| GetPte(va + PageSize) == PteUnmapped)
+                {
+                    return false;
+                }
+
+                if (Translate(va) + PageSize != Translate(va + PageSize))
+                {
+                    return false;
+                }
+
+                va += PageSize;
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Validates a GPU virtual address.
+        /// </summary>
+        /// <param name="va">Address to validate</param>
+        /// <returns>True if the address is valid, false otherwise</returns>
+        private static bool ValidateAddress(ulong va)
+        {
+            return va < (1UL << 40);
         }
 
         /// <summary>

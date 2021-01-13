@@ -119,6 +119,7 @@ namespace Ryujinx.Graphics.Gpu
 
             TextureInfo info = new TextureInfo(
                 address,
+                0UL,
                 width,
                 height,
                 1,
