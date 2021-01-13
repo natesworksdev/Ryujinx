@@ -308,11 +308,11 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
                 nvMapHandle = item.GraphicBuffer.Object.Buffer.NvMapId;
             }
 
-            int bufferOffset = item.GraphicBuffer.Object.Buffer.Surfaces[0].Offset;
+            ulong bufferOffset = (ulong)item.GraphicBuffer.Object.Buffer.Surfaces[0].Offset;
 
             NvMapHandle map = NvMapDeviceFile.GetMapFromHandle(layer.Owner, nvMapHandle);
 
-            ulong frameBufferAddress = (ulong)(map.Address + bufferOffset);
+            ulong frameBufferAddress = map.Address + bufferOffset;
 
             Format format = ConvertColorFormat(item.GraphicBuffer.Object.Buffer.Surfaces[0].ColorFormat);
 
@@ -345,14 +345,22 @@ namespace Ryujinx.HLE.HOS.Services.SurfaceFlinger
             TextureCallbackInformation textureCallbackInformation = new TextureCallbackInformation
             {
                 Layer = layer,
-                Item  = item,
+                Item  = item
             };
 
-            item.Fence.RegisterCallback(_device.Gpu, () => 
+            if (item.Fence.FenceCount == 0)
             {
                 _device.Gpu.Window.SignalFrameReady();
                 _device.Gpu.GPFifo.Interrupt();
-            });
+            }
+            else
+            {
+                item.Fence.RegisterCallback(_device.Gpu, () =>
+                {
+                    _device.Gpu.Window.SignalFrameReady();
+                    _device.Gpu.GPFifo.Interrupt();
+                });
+            }
 
             _device.Gpu.Window.EnqueueFrameThreadSafe(
                 frameBufferAddress,

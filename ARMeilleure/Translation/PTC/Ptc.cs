@@ -99,7 +99,6 @@ namespace ARMeilleure.Translation.PTC
             ClearMemoryStreams();
             PtcJumpTable.Clear();
 
-            PtcProfiler.Stop();
             PtcProfiler.Wait();
             PtcProfiler.ClearEntries();
 
@@ -346,6 +345,8 @@ namespace ARMeilleure.Translation.PTC
 
         private static void Save(string fileName)
         {
+            int translatedFuncsCount;
+
             using (MemoryStream stream = new MemoryStream())
             using (MD5 md5 = MD5.Create())
             {
@@ -361,6 +362,11 @@ namespace ARMeilleure.Translation.PTC
                 _unwindInfosStream.WriteTo(stream);
 
                 PtcJumpTable.Serialize(stream, PtcJumpTable);
+
+                translatedFuncsCount = GetInfosEntriesCount();
+
+                ClearMemoryStreams();
+                PtcJumpTable.Clear();
 
                 stream.Seek((long)hashSize, SeekOrigin.Begin);
                 byte[] hash = md5.ComputeHash(stream);
@@ -389,7 +395,7 @@ namespace ARMeilleure.Translation.PTC
 
             long fileSize = new FileInfo(fileName).Length;
 
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize} bytes, translated functions: {GetInfosEntriesCount()}).");
+            Logger.Info?.Print(LogClass.Ptc, $"Saved Translation Cache (size: {fileSize} bytes, translated functions: {translatedFuncsCount}).");
         }
 
         private static void WriteHeader(MemoryStream stream)
@@ -727,9 +733,9 @@ namespace ARMeilleure.Translation.PTC
 
             threads.Clear();
 
-            _loggerEvent.Set();
-
             Translator.ResetPools();
+
+            _loggerEvent.Set();
 
             PtcJumpTable.Initialize(jumpTable);
 
