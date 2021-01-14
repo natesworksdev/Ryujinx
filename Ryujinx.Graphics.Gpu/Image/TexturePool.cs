@@ -52,7 +52,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 TextureDescriptor descriptor = GetDescriptor(id);
 
-                TextureInfo info = GetInfo(descriptor);
+                TextureInfo info = GetInfo(descriptor, out int layerSize);
 
                 // Bad address. We can't add a texture with a invalid address
                 // to the cache.
@@ -61,7 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     return null;
                 }
 
-                texture = Context.Methods.TextureManager.FindOrCreateTexture(info, TextureSearchFlags.ForSampler);
+                texture = Context.Methods.TextureManager.FindOrCreateTexture(info, TextureSearchFlags.ForSampler, layerSize);
 
                 texture.IncrementReferenceCount();
 
@@ -123,7 +123,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (texture.IsExactMatch(GetInfo(descriptor), TextureSearchFlags.Strict) != TextureMatchQuality.NoMatch)
+                    if (texture.IsExactMatch(GetInfo(descriptor, out _), TextureSearchFlags.Strict) != TextureMatchQuality.NoMatch)
                     {
                         continue;
                     }
@@ -140,7 +140,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         /// <param name="descriptor">The texture descriptor</param>
         /// <returns>The texture information</returns>
-        private TextureInfo GetInfo(TextureDescriptor descriptor)
+        private TextureInfo GetInfo(TextureDescriptor descriptor, out int layerSize)
         {
             ulong address = Context.MemoryManager.Translate(descriptor.UnpackAddress());
             bool addressIsValid = address != MemoryManager.PteUnmapped;
@@ -197,25 +197,19 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             int gobBlocksInTileX = descriptor.UnpackGobBlocksInTileX();
 
+            layerSize = 0;
+
             // If the base level is not zero, we additionally add the mip level offset
             // to the address, this allows the texture manager to find the base level from the
             // address if there is a overlapping texture on the cache that can contain the new texture.
             // Linear textures don't support mipmaps, so we don't handle this case here.
-            int baseLevel = descriptor.UnpackBaseLevel();
-            if (baseLevel != 0 && !isLinear && addressIsValid)
-            {
-                int depth, layers;
+            int minLod = descriptor.UnpackBaseLevel();
+            int maxLod = descriptor.UnpackMaxLevelInclusive();
 
-                if (target == Target.Texture3D)
-                {
-                    depth = depthOrLayers;
-                    layers = 1;
-                }
-                else
-                {
-                    depth = 1;
-                    layers = depthOrLayers;
-                }
+            if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear && addressIsValid)
+            {
+                int depth  = TextureInfo.GetDepth(target, depthOrLayers);
+                int layers = TextureInfo.GetLayers(target, depthOrLayers);
 
                 SizeInfo sizeInfo = SizeCalculator.GetBlockLinearTextureSize(
                     width,
@@ -230,19 +224,24 @@ namespace Ryujinx.Graphics.Gpu.Image
                     gobBlocksInZ,
                     gobBlocksInTileX);
 
-                address += (ulong)sizeInfo.GetMipOffset(baseLevel);
+                layerSize = sizeInfo.LayerSize;
 
-                width = Math.Max(1, width >> baseLevel);
-                height = Math.Max(1, height >> baseLevel);
-
-                if (target == Target.Texture3D)
+                if (minLod != 0)
                 {
-                    depthOrLayers = Math.Max(1, depthOrLayers >> baseLevel);
+                    address += (ulong)sizeInfo.GetMipOffset(minLod);
+
+                    width  = Math.Max(1, width  >> minLod);
+                    height = Math.Max(1, height >> minLod);
+
+                    if (target == Target.Texture3D)
+                    {
+                        depthOrLayers = Math.Max(1, depthOrLayers >> minLod);
+                    }
+
+                    (gobBlocksInY, gobBlocksInZ) = SizeCalculator.GetMipGobBlockSizes(height, depth, formatInfo.BlockHeight, gobBlocksInY, gobBlocksInZ);
                 }
 
-                levels -= baseLevel;
-
-                (gobBlocksInY, gobBlocksInZ) = SizeCalculator.GetMipGobBlockSizes(height, depth, formatInfo.BlockHeight, gobBlocksInY, gobBlocksInZ);
+                levels = (maxLod - minLod) + 1;
             }
 
             SwizzleComponent swizzleR = descriptor.UnpackSwizzleR().Convert();
