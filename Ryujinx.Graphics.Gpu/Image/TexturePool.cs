@@ -139,6 +139,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Gets texture information from a texture descriptor.
         /// </summary>
         /// <param name="descriptor">The texture descriptor</param>
+        /// <param name="layerSize">Layer size for textures using a sub-range of mipmap levels, otherwise 0</param>
         /// <returns>The texture information</returns>
         private TextureInfo GetInfo(TextureDescriptor descriptor, out int layerSize)
         {
@@ -199,13 +200,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             layerSize = 0;
 
-            // If the base level is not zero, we additionally add the mip level offset
-            // to the address, this allows the texture manager to find the base level from the
-            // address if there is a overlapping texture on the cache that can contain the new texture.
-            // Linear textures don't support mipmaps, so we don't handle this case here.
             int minLod = descriptor.UnpackBaseLevel();
             int maxLod = descriptor.UnpackMaxLevelInclusive();
 
+            // Linear textures don't support mipmaps, so we don't handle this case here.
             if ((minLod != 0 || maxLod + 1 != levels) && target != Target.TextureBuffer && !isLinear && addressIsValid)
             {
                 int depth  = TextureInfo.GetDepth(target, depthOrLayers);
@@ -228,6 +226,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 if (minLod != 0)
                 {
+                    // If the base level is not zero, we additionally add the mip level offset
+                    // to the address, this allows the texture manager to find the base level from the
+                    // address if there is a overlapping texture on the cache that can contain the new texture.
                     address += (ulong)sizeInfo.GetMipOffset(minLod);
 
                     width  = Math.Max(1, width  >> minLod);
