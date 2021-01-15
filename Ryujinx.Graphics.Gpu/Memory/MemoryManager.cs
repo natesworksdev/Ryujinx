@@ -98,11 +98,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 ulong pa = Translate(va);
 
-                if (pa == PteUnmapped)
-                {
-                    return;
-                }
-
                 size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
 
                 _context.PhysicalMemory.GetSpan(pa, size, tracked).CopyTo(data.Slice(0, size));
@@ -113,11 +108,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
             for (; offset < data.Length; offset += size)
             {
                 ulong pa = Translate(va + (ulong)offset);
-
-                if (pa == PteUnmapped)
-                {
-                    break;
-                }
 
                 size = Math.Min(data.Length - offset, (int)PageSize);
 
@@ -200,11 +190,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 {
                     ulong pa = Translate(va);
 
-                    if (pa == PteUnmapped)
-                    {
-                        return;
-                    }
-
                     size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
 
                     writeCallback(pa, data.Slice(0, size));
@@ -215,11 +200,6 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 for (; offset < data.Length; offset += size)
                 {
                     ulong pa = Translate(va + (ulong)offset);
-
-                    if (pa == PteUnmapped)
-                    {
-                        break;
-                    }
 
                     size = Math.Min(data.Length - offset, (int)PageSize);
 
@@ -326,6 +306,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 return default;
             }
 
+            ulong regionStart = Translate(va);
+            ulong regionSize = Math.Min(size, PageSize - (va & PageMask));
+
             ulong endVa = va + size;
             ulong endVaRounded = (endVa + PageMask) & ~PageMask;
 
@@ -333,10 +316,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             int pages = (int)((endVaRounded - va) / PageSize);
 
-            var regions = new List<Ryujinx.Memory.Range.Range>();
-
-            ulong regionStart = Translate(va);
-            ulong regionSize = Math.Min(size, PageSize);
+            var regions = new List<Ryujinx.Memory.Range.Range>();            
 
             for (int page = 0; page < pages - 1; page++)
             {
