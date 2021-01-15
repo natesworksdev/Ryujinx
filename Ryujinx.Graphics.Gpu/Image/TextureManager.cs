@@ -37,14 +37,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         private readonly TextureBindingsManager _gpBindingsManager;
 
         private readonly Texture[] _rtColors;
-
-        private Texture _rtDepthStencil;
-
         private readonly ITexture[] _rtHostColors;
-
+        private Texture _rtDepthStencil;
         private ITexture _rtHostDs;
 
-        private readonly RangeList<Texture> _textures;
+        private readonly MultiRangeList<Texture> _textures;
 
         private Texture[] _textureOverlaps;
         private OverlapInfo[] _overlapInfo;
@@ -70,10 +67,9 @@ namespace Ryujinx.Graphics.Gpu.Image
             _gpBindingsManager = new TextureBindingsManager(context, texturePoolCache, isCompute: false);
 
             _rtColors = new Texture[Constants.TotalRenderTargets];
-
             _rtHostColors = new ITexture[Constants.TotalRenderTargets];
 
-            _textures = new RangeList<Texture>();
+            _textures = new MultiRangeList<Texture>();
 
             _textureOverlaps = new Texture[OverlapsBufferInitialCapacity];
             _overlapInfo = new OverlapInfo[OverlapsBufferInitialCapacity];
@@ -733,8 +729,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             // Calculate texture sizes, used to find all overlapping textures.
             SizeInfo sizeInfo = info.CalculateSizeInfo(layerSize);
 
-            // Find view compatible matches.
             ulong size = (ulong)sizeInfo.TotalSize;
+
+            MultiRange range = new MultiRange(info.Address, size);
+
+            // Find view compatible matches.
             int overlapsCount;
 
             lock (_textures)
@@ -745,7 +744,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             for (int index = 0; index < overlapsCount; index++)
             {
                 Texture overlap = _textureOverlaps[index];
-                TextureViewCompatibility overlapCompatibility = overlap.IsViewCompatible(info, size, out int firstLayer, out int firstLevel);
+                TextureViewCompatibility overlapCompatibility = overlap.IsViewCompatible(info, range, out int firstLayer, out int firstLevel);
 
                 if (overlapCompatibility == TextureViewCompatibility.Full)
                 {
@@ -756,7 +755,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         info = oInfo;
                     }
 
-                    texture = overlap.CreateView(oInfo, sizeInfo, firstLayer, firstLevel);
+                    texture = overlap.CreateView(oInfo, sizeInfo, range, firstLayer, firstLevel);
 
                     if (overlap.IsModified)
                     {
@@ -777,7 +776,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // No match, create a new texture.
             if (texture == null)
             {
-                texture = new Texture(_context, info, sizeInfo, scaleMode);
+                texture = new Texture(_context, info, sizeInfo, range, scaleMode);
 
                 // Step 1: Find textures that are view compatible with the new texture.
                 // Any textures that are incompatible will contain garbage data, so they should be removed where possible.
@@ -790,7 +789,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     Texture overlap = _textureOverlaps[index];
                     bool overlapInCache = overlap.CacheNode != null;
 
-                    TextureViewCompatibility compatibility = texture.IsViewCompatible(overlap.Info, overlap.Size, out int firstLayer, out int firstLevel);
+                    TextureViewCompatibility compatibility = texture.IsViewCompatible(overlap.Info, overlap.Range, out int firstLayer, out int firstLevel);
 
                     if (compatibility != TextureViewCompatibility.Incompatible)
                     {
@@ -818,7 +817,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         // If the data has been modified by the CPU, then it also shouldn't be flushed.
                         bool modified = overlap.ConsumeModified();
 
-                        bool flush = overlapInCache && !modified && (overlap.Address < texture.Address || overlap.EndAddress > texture.EndAddress) && overlap.HasViewCompatibleChild(texture);
+                        bool flush = overlapInCache && !modified && !texture.Range.CanContain(overlap.Range) && overlap.HasViewCompatibleChild(texture);
 
                         setData |= modified || flush;
 

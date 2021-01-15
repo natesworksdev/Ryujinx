@@ -1,6 +1,7 @@
 using Ryujinx.Cpu;
 using Ryujinx.Cpu.Tracking;
 using Ryujinx.Memory;
+using Ryujinx.Memory.Range;
 using System;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -36,6 +37,37 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public ReadOnlySpan<byte> GetSpan(ulong address, int size, bool tracked = false)
         {
             return _cpuMemory.GetSpan(address, size, tracked);
+        }
+
+        /// <summary>
+        /// Gets a span of data from the application process.
+        /// </summary>
+        /// <param name="range">Ranges of physical memory where the data is located</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
+        /// <returns>A read only span of the data at the specified memory location</returns>
+        public ReadOnlySpan<byte> GetSpan(MultiRange range, bool tracked = false)
+        {
+            if (range.Count == 1)
+            {
+                var singleRange = range.GetRange(0);
+                return _cpuMemory.GetSpan(singleRange.Address, (int)singleRange.Size, tracked);
+            }
+            else
+            {
+                Span<byte> data = new byte[range.GetTotalSize()];
+
+                int offset = 0;
+
+                for (int i = 0; i < range.Count; i++)
+                {
+                    var currentRange = range.GetRange(i);
+                    int size = (int)currentRange.Size;
+                    _cpuMemory.GetSpan(currentRange.Address, size, tracked).CopyTo(data.Slice(offset, size));
+                    offset += size;
+                }
+
+                return data;
+            }
         }
 
         /// <summary>
