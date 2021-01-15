@@ -731,7 +731,16 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             ulong size = (ulong)sizeInfo.TotalSize;
 
-            MultiRange range = new MultiRange(info.Address, size);
+            MultiRange range;
+            
+            if (info.GpuAddress != 0UL)
+            {
+                range = _context.MemoryManager.GetPhysicalRegions(info.GpuAddress, size);
+            }
+            else
+            {
+                range = new MultiRange(info.Address, size);
+            }
 
             // Find view compatible matches.
             int overlapsCount;
@@ -817,7 +826,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         // If the data has been modified by the CPU, then it also shouldn't be flushed.
                         bool modified = overlap.ConsumeModified();
 
-                        bool flush = overlapInCache && !modified && !texture.Range.CanContain(overlap.Range) && overlap.HasViewCompatibleChild(texture);
+                        bool flush = overlapInCache && !modified && !texture.Range.Contains(overlap.Range) && overlap.HasViewCompatibleChild(texture);
 
                         setData |= modified || flush;
 

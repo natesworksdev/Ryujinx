@@ -1,5 +1,7 @@
 using Ryujinx.Memory;
+using Ryujinx.Memory.Range;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -281,15 +283,15 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 return false;
             }
 
-            ulong endVa = (va + (ulong)size + PageMask) & ~(ulong)PageMask;
+            ulong endVa = (va + (ulong)size + PageMask) & ~PageMask;
 
-            va &= ~(ulong)PageMask;
+            va &= ~PageMask;
 
             int pages = (int)((endVa - va) / PageSize);
 
             for (int page = 0; page < pages - 1; page++)
             {
-                if (!ValidateAddress(va + PageSize)|| GetPte(va + PageSize) == PteUnmapped)
+                if (!ValidateAddress(va + PageSize) || GetPte(va + PageSize) == PteUnmapped)
                 {
                     return false;
                 }
@@ -303,6 +305,62 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the physical regions that make up the given virtual address region.
+        /// If any part of the virtual region is unmapped, null is returned.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range</param>
+        /// <returns>Array of physical regions</returns>
+        public MultiRange GetPhysicalRegions(ulong va, ulong size)
+        {
+            if (IsContiguous(va, (int)size))
+            {
+                return new MultiRange(Translate(va), size);
+            }
+
+            if (!ValidateAddress(va))
+            {
+                return default;
+            }
+
+            ulong endVa = va + size;
+            ulong endVaRounded = (endVa + PageMask) & ~PageMask;
+
+            va &= ~PageMask;
+
+            int pages = (int)((endVaRounded - va) / PageSize);
+
+            var regions = new List<Ryujinx.Memory.Range.Range>();
+
+            ulong regionStart = Translate(va);
+            ulong regionSize = Math.Min(size, PageSize);
+
+            for (int page = 0; page < pages - 1; page++)
+            {
+                if (!ValidateAddress(va + PageSize))
+                {
+                    return default;
+                }
+
+                ulong newPa = Translate(va + PageSize);
+
+                if (Translate(va) + PageSize != newPa)
+                {
+                    regions.Add(new(regionStart, regionSize));
+                    regionStart = newPa;
+                    regionSize = 0;
+                }
+
+                va += PageSize;
+                regionSize += Math.Min(endVa - va, PageSize);
+            }
+
+            regions.Add(new(regionStart, regionSize));
+
+            return new MultiRange(regions.ToArray());
         }
 
         /// <summary>

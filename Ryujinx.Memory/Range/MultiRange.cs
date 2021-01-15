@@ -62,7 +62,7 @@ namespace Ryujinx.Memory.Range
             _ranges = ranges ?? throw new ArgumentNullException(nameof(ranges));
         }
 
-        public Range GetRange(int index)
+        public Range GetSubRange(int index)
         {
             if (HasSingleRange)
             {
@@ -84,7 +84,7 @@ namespace Ryujinx.Memory.Range
             }
         }
 
-        private Range GetRangeUnchecked(int index)
+        private Range GetSubRangeUnchecked(int index)
         {
             return HasSingleRange ? _singleRange : _ranges[index];
         }
@@ -99,11 +99,11 @@ namespace Ryujinx.Memory.Range
             {
                 for (int i = 0; i < Count; i++)
                 {
-                    Range currentRange = GetRangeUnchecked(i);
+                    Range currentRange = GetSubRangeUnchecked(i);
 
                     for (int j = 0; j < other.Count; j++)
                     {
-                        if (currentRange.OverlapsWith(other.GetRangeUnchecked(j)))
+                        if (currentRange.OverlapsWith(other.GetSubRangeUnchecked(j)))
                         {
                             return true;
                         }
@@ -114,17 +114,20 @@ namespace Ryujinx.Memory.Range
             return false;
         }
 
-        public bool CanContain(MultiRange other)
+        public bool Contains(MultiRange other)
         {
             return FindOffset(other) >= 0;
         }
 
         public int FindOffset(MultiRange other)
         {
-            if (Count == other.Count)
+            int thisCount = Count;
+            int otherCount = other.Count;
+
+            if (thisCount == 1 && otherCount == 1)
             {
-                Range otherFirstRange = other.GetRangeUnchecked(0);
-                Range currentFirstRange = GetRangeUnchecked(0);
+                Range otherFirstRange = other.GetSubRangeUnchecked(0);
+                Range currentFirstRange = GetSubRangeUnchecked(0);
 
                 if (otherFirstRange.Address >= currentFirstRange.Address &&
                     otherFirstRange.EndAddress <= currentFirstRange.EndAddress)
@@ -132,19 +135,17 @@ namespace Ryujinx.Memory.Range
                     return (int)(otherFirstRange.Address - currentFirstRange.Address);
                 }
             }
-            else if (Count > other.Count)
+            else if (thisCount >= otherCount)
             {
-                int thisCount = Count;
-                int otherCount = other.Count;
                 ulong baseOffset = 0;
 
-                Range otherFirstRange = other.GetRangeUnchecked(0);
-                Range otherLastRange = other.GetRangeUnchecked(otherCount - 1);
+                Range otherFirstRange = other.GetSubRangeUnchecked(0);
+                Range otherLastRange = other.GetSubRangeUnchecked(otherCount - 1);
 
-                for (int i = 0; i < (thisCount - otherCount) + 1; baseOffset += GetRangeUnchecked(i).Size, i++)
+                for (int i = 0; i < (thisCount - otherCount) + 1; baseOffset += GetSubRangeUnchecked(i).Size, i++)
                 {
-                    Range currentFirstRange = GetRangeUnchecked(i);
-                    Range currentLastRange = GetRangeUnchecked(i + otherCount - 1);
+                    Range currentFirstRange = GetSubRangeUnchecked(i);
+                    Range currentLastRange = GetSubRangeUnchecked(i + otherCount - 1);
 
                     if (otherCount > 1)
                     {
@@ -164,7 +165,7 @@ namespace Ryujinx.Memory.Range
 
                         for (int j = 1; j < otherCount - 1; j++)
                         {
-                            if (!GetRangeUnchecked(i + j).Equals(other.GetRangeUnchecked(j)))
+                            if (!GetSubRangeUnchecked(i + j).Equals(other.GetSubRangeUnchecked(j)))
                             {
                                 fullMatch = false;
                                 break;

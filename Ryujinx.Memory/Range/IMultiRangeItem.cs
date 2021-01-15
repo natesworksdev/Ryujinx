@@ -4,6 +4,6 @@
     {
         MultiRange Range { get; }
 
-        ulong BaseAddress => Range.GetRange(0).Address;
+        ulong BaseAddress => Range.GetSubRange(0).Address;
     }
 }

@@ -1,7 +1,7 @@
 using Ryujinx.Common;
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu.Tracking;
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using Ryujinx.Graphics.Texture.Astc;
 using Ryujinx.Memory.Range;
@@ -104,7 +104,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public ulong Size => (ulong)_sizeInfo.TotalSize;
 
-        private CpuRegionHandle _memoryTracking;
+        private GpuRegionHandle _memoryTracking;
 
         private int _referenceCount;
 
@@ -186,8 +186,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="withData">True if the texture is to be initialized with data</param>
         public void InitializeData(bool isView, bool withData = false)
         {
-            // TODO: Proper tracking.
-            _memoryTracking = _context.PhysicalMemory.BeginTracking(Range.GetRange(0).Address, Size);
+            _memoryTracking = _context.PhysicalMemory.BeginTracking(Range);
 
             if (withData)
             {
@@ -590,6 +589,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             _hasData = true;
         }
 
+        /// <summary>
+        /// Uploads new texture data to the host GPU.
+        /// </summary>
+        /// <param name="data">New data</param>
         public void SetData(ReadOnlySpan<byte> data)
         {
             BlacklistScale();
@@ -693,14 +696,13 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (tracked)
             {
-                _context.MemoryManager.Write(Info.GpuAddress, GetTextureDataFromGpu(tracked));
+                _context.PhysicalMemory.Write(Range, GetTextureDataFromGpu(tracked));
             }
             else
             {
-                _context.MemoryManager.WriteUntracked(Info.GpuAddress, GetTextureDataFromGpu(tracked));
+                _context.PhysicalMemory.WriteUntracked(Range, GetTextureDataFromGpu(tracked));
             }
         }
-
 
         /// <summary>
         /// Flushes the texture data, to be called from an external thread.
@@ -729,7 +731,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     texture = _flushHostTexture = GetScaledHostTexture(1f, _flushHostTexture);
                 }
 
-                _context.MemoryManager.WriteUntracked(Info.GpuAddress, GetTextureDataFromGpu(false, texture));
+                _context.PhysicalMemory.WriteUntracked(Range, GetTextureDataFromGpu(false, texture));
             });
         }
 
@@ -1142,7 +1144,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             IsModified = false; // We shouldn't flush this texture, as its memory is no longer mapped.
 
-            CpuRegionHandle tracking = _memoryTracking;
+            var tracking = _memoryTracking;
             tracking?.Reprotect();
             tracking?.RegisterAction(null);
         }
