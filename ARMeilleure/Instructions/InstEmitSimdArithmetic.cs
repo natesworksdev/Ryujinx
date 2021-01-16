@@ -163,7 +163,7 @@ namespace ARMeilleure.Instructions
             }
 
             // CLZ nibble table.
-            Operand clzTable = context.VectorCreateScalar(Const(0x01_01_01_01_02_02_03_04));
+            Operand clzTable = X86GetScalar(context, 0x01_01_01_01_02_02_03_04);
 
             Operand maskLow = X86GetAllElements(context, 0x0f_0f_0f_0f);
             Operand c04     = X86GetAllElements(context, 0x04_04_04_04);
@@ -192,19 +192,16 @@ namespace ARMeilleure.Instructions
                 return null;
             }
 
-            Operand maskSwap = X86GetElements(context, 0x0e_0f_0c_0d_0a_0b_08_09, 0x06_07_04_05_02_03_00_01);
+            Operand maskSwap = X86GetElements(context, 0x80_0f_80_0d_80_0b_80_09, 0x80_07_80_05_80_03_80_01);
             Operand maskLow  = X86GetAllElements(context, 0x00ff_00ff);
             Operand c0008    = X86GetAllElements(context, 0x0008_0008);
 
             // CLZ pair of high 8 and low 8 bits of elements in arg.
             Operand hiloClz = Clz_V_I8(context, arg);
-
             // Get CLZ of low 8 bits in each pair.
             Operand loClz = context.AddIntrinsic(Intrinsic.X86Pand, hiloClz, maskLow);
-
             // Get CLZ of high 8 bits in each pair.
             Operand hiClz = context.AddIntrinsic(Intrinsic.X86Pshufb, hiloClz, maskSwap);
-                    hiClz = context.AddIntrinsic(Intrinsic.X86Pand, hiClz, maskLow);
 
             // If high 8 bits are not all zero, we discard the CLZ of the low 8 bits.
             Operand mask = context.AddIntrinsic(Intrinsic.X86Pcmpeqw, hiClz, c0008);
@@ -238,11 +235,11 @@ namespace ARMeilleure.Instructions
             Operand res;
 
             // Set all bits after highest set bit to 1.
-            res  = OrVector(ShiftRightUIVector32(arg, 1), arg);
-            res  = OrVector(ShiftRightUIVector32(res, 2), res);
-            res  = OrVector(ShiftRightUIVector32(res, 4), res);
-            res  = OrVector(ShiftRightUIVector32(res, 8), res);
-            res  = OrVector(ShiftRightUIVector32(res, 16), res);
+            res = OrVector(ShiftRightUIVector32(arg, 1), arg);
+            res = OrVector(ShiftRightUIVector32(res, 2), res);
+            res = OrVector(ShiftRightUIVector32(res, 4), res);
+            res = OrVector(ShiftRightUIVector32(res, 8), res);
+            res = OrVector(ShiftRightUIVector32(res, 16), res);
 
             // Count trailing 1s, which is the population count.
             tmp0 = ShiftRightUIVector32(res, 1);
