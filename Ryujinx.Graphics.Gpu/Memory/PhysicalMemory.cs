@@ -54,7 +54,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                Span<byte> data = new byte[range.GetTotalSize()];
+                Span<byte> data = new byte[range.GetSize()];
 
                 int offset = 0;
 

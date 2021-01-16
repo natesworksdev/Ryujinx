@@ -54,14 +54,13 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                 TextureInfo info = GetInfo(descriptor, out int layerSize);
 
-                // Bad address. We can't add a texture with a invalid address
-                // to the cache.
-                if (info.Address == MemoryManager.PteUnmapped)
+                texture = Context.Methods.TextureManager.FindOrCreateTexture(TextureSearchFlags.ForSampler, info, layerSize);
+
+                // If this happens, then the texture address is invalid, we can't add it to the cache.
+                if (texture == null)
                 {
                     return null;
                 }
-
-                texture = Context.Methods.TextureManager.FindOrCreateTexture(info, TextureSearchFlags.ForSampler, layerSize);
 
                 texture.IncrementReferenceCount();
 
@@ -123,7 +122,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (texture.IsExactMatch(GetInfo(descriptor, out _), TextureSearchFlags.Strict) != TextureMatchQuality.NoMatch)
+                    if (texture.Info.GpuAddress == descriptor.UnpackAddress() &&
+                        texture.IsExactMatch(GetInfo(descriptor, out _), TextureSearchFlags.Strict) != TextureMatchQuality.NoMatch)
                     {
                         continue;
                     }
@@ -143,10 +143,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The texture information</returns>
         private TextureInfo GetInfo(TextureDescriptor descriptor, out int layerSize)
         {
-            ulong gpuVa = descriptor.UnpackAddress();
-            ulong address = Context.MemoryManager.Translate(gpuVa);
-            bool addressIsValid = address != MemoryManager.PteUnmapped;
-
             int width         = descriptor.UnpackWidth();
             int height        = descriptor.UnpackHeight();
             int depthOrLayers = descriptor.UnpackDepth();
@@ -184,9 +180,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             uint format = descriptor.UnpackFormat();
             bool srgb   = descriptor.UnpackSrgb();
 
+            ulong gpuVa = descriptor.UnpackAddress();
+
             if (!FormatTable.TryGetTextureFormat(format, srgb, out FormatInfo formatInfo))
             {
-                if (addressIsValid && (int)format > 0)
+                if (Context.MemoryManager.IsMapped(gpuVa) && (int)format > 0)
                 {
                     Logger.Error?.Print(LogClass.Gpu, $"Invalid texture format 0x{format:X} (sRGB: {srgb}).");
                 }
@@ -275,7 +273,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
 
             return new TextureInfo(
-                address,
                 gpuVa,
                 width,
                 height,

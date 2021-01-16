@@ -9,11 +9,6 @@ namespace Ryujinx.Graphics.Gpu.Image
     struct TextureInfo
     {
         /// <summary>
-        /// Address of the texture in guest memory.
-        /// </summary>
-        public ulong Address { get; }
-
-        /// <summary>
         /// Address of the texture in GPU mapped memory.
         /// </summary>
         public ulong GpuAddress { get; }
@@ -117,7 +112,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Constructs the texture information structure.
         /// </summary>
-        /// <param name="cpuAddress">The CPU address of the texture</param>
         /// <param name="gpuAddress">The GPU address of the texture</param>
         /// <param name="width">The width of the texture</param>
         /// <param name="height">The height or the texture</param>
@@ -138,7 +132,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="swizzleB">Swizzle for the blue color channel</param>
         /// <param name="swizzleA">Swizzle for the alpha color channel</param>
         public TextureInfo(
-            ulong            cpuAddress,
             ulong            gpuAddress,
             int              width,
             int              height,
@@ -159,7 +152,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             SwizzleComponent swizzleB         = SwizzleComponent.Blue,
             SwizzleComponent swizzleA         = SwizzleComponent.Alpha)
         {
-            Address          = cpuAddress;
             GpuAddress       = gpuAddress;
             Width            = width;
             Height           = height;

@@ -369,7 +369,6 @@ namespace Ryujinx.Graphics.Gpu.Image
             ChangedSize = true;
 
             SetInfo(new TextureInfo(
-                Info.Address,
                 Info.GpuAddress,
                 width,
                 height,
@@ -660,7 +659,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 {
                     string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
 
-                    Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.Address:X} ({texInfo}).");
+                    Logger.Debug?.Print(LogClass.Gpu, $"Invalid ASTC texture at 0x{Info.GpuAddress:X} ({texInfo}).");
                 }
 
                 data = decoded;
@@ -853,7 +852,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return TextureMatchQuality.NoMatch;
             }
 
-            return Info.Address == info.Address && Info.Levels == info.Levels ? matchQuality : TextureMatchQuality.NoMatch;
+            return Info.Levels == info.Levels ? matchQuality : TextureMatchQuality.NoMatch;
         }
 
         /// <summary>
