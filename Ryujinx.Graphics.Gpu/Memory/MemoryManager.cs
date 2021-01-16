@@ -10,7 +10,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// GPU memory manager.
     /// </summary>
-    public class MemoryManager
+    public class MemoryManager : IWritableBlock
     {
         private const int PtLvl0Bits = 14;
         private const int PtLvl1Bits = 14;
@@ -128,7 +128,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             }
             else
             {
-                throw new NotImplementedException();
+                Memory<byte> memory = new byte[size];
+
+                GetSpan(va, size).CopyTo(memory.Span);
+
+                return new WritableRegion(this, va, memory);
             }
         }
 
