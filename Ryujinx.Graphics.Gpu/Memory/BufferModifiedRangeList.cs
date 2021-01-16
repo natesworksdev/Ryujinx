@@ -173,6 +173,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         public void GetRanges(ulong address, ulong size, Action<ulong, ulong> rangeAction)
         {
             int count = 0;
+
             // Range list must be consistent for this operation.
             lock (_lock)
             {
@@ -219,6 +220,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             ulong currentSync = _context.SyncNumber;
 
             int rangeCount = 0;
+
             // Range list must be consistent for this operation
             lock (_lock)
             {

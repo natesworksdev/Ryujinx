@@ -68,6 +68,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             /// <param name="index">Buffer slot</param>
             /// <param name="address">Region virtual address</param>
             /// <param name="size">Region size in bytes</param>
+            /// <param name="flags">Buffer usage flags</param>
             public void SetBounds(int index, ulong address, ulong size, BufferUsageFlags flags = BufferUsageFlags.None)
             {
                 Buffers[index] = new BufferBounds(address, size, flags);
@@ -219,6 +220,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="index">Index of the storage buffer</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the storage buffer</param>
+        /// <param name="flags">Buffer usage flags</param>
         public void SetComputeStorageBuffer(int index, ulong gpuVa, ulong size, BufferUsageFlags flags)
         {
             size += gpuVa & ((ulong)_context.Capabilities.StorageBufferOffsetAlignment - 1);
@@ -238,6 +240,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="index">Index of the storage buffer</param>
         /// <param name="gpuVa">Start GPU virtual address of the buffer</param>
         /// <param name="size">Size in bytes of the storage buffer</param>
+        /// <param name="flags">Buffer usage flags</param>
         public void SetGraphicsStorageBuffer(int stage, int index, ulong gpuVa, ulong size, BufferUsageFlags flags)
         {
             size += gpuVa & ((ulong)_context.Capabilities.StorageBufferOffsetAlignment - 1);
@@ -386,7 +389,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Handles removal of bufferss written to a memory region being unmapped.
+        /// Handles removal of buffers written to a memory region being unmapped.
         /// </summary>
         /// <param name="sender">Sender object</param>
         /// <param name="e">Event arguments</param>
@@ -897,6 +900,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer sub-range for the given range</returns>
         private BufferRange GetBufferRange(ulong address, ulong size, bool write = false)
         {
@@ -909,6 +913,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Start address of the memory range</param>
         /// <param name="size">Size in bytes of the memory range</param>
+        /// <param name="write">Whether the buffer will be written to by this use</param>
         /// <returns>The buffer where the range is fully contained</returns>
         private Buffer GetBuffer(ulong address, ulong size, bool write = false)
         {

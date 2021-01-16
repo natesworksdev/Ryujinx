@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="address">Region address</param>
         /// <param name="size">Region size</param>
+        /// <param name="flags">Buffer usage flags</param>
         public BufferBounds(ulong address, ulong size, BufferUsageFlags flags = BufferUsageFlags.None)
         {
             Address = address;

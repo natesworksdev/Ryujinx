@@ -137,7 +137,7 @@ namespace Ryujinx.Graphics.Gpu
         /// Registers an action to be performed the next time a syncpoint is incremented.
         /// This will also ensure a host sync object is created, and SyncNumber is incremented.
         /// </summary>
-        /// <param name="action"></param>
+        /// <param name="action">The action to be performed on sync object creation</param>
         public void RegisterSyncAction(Action action)
         {
             SyncActions.Add(action);
