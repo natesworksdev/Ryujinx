@@ -220,51 +220,53 @@ namespace ARMeilleure.Instructions
 
             Operand AddVectorI32(Operand op0, Operand op1)      => context.AddIntrinsic(Intrinsic.X86Paddd, op0, op1);
             Operand SubVectorI32(Operand op0, Operand op1)      => context.AddIntrinsic(Intrinsic.X86Psubd, op0, op1);
+            Operand ShiftRightVectorUI32(Operand op0, int imm8) => context.AddIntrinsic(Intrinsic.X86Psrld, op0, Const(imm8));
             Operand OrVector(Operand op0, Operand op1)          => context.AddIntrinsic(Intrinsic.X86Por, op0, op1);
             Operand AndVector(Operand op0, Operand op1)         => context.AddIntrinsic(Intrinsic.X86Pand, op0, op1);
-            Operand ShiftRightUIVector32(Operand op0, int imm8) => context.AddIntrinsic(Intrinsic.X86Psrld, op0, Const(imm8));
+            Operand NotVector(Operand op0)                      => context.AddIntrinsic(Intrinsic.X86Pandn, op0, context.VectorOne());
 
             Operand c55555555 = X86GetAllElements(context, 0x55555555);
             Operand c33333333 = X86GetAllElements(context, 0x33333333);
             Operand c0f0f0f0f = X86GetAllElements(context, 0x0f0f0f0f);
             Operand c0000003f = X86GetAllElements(context, 0x0000003f);
-            Operand c00000020 = X86GetAllElements(context, 0x00000020);
 
             Operand tmp0;
             Operand tmp1;
             Operand res;
 
             // Set all bits after highest set bit to 1.
-            res = OrVector(ShiftRightUIVector32(arg, 1), arg);
-            res = OrVector(ShiftRightUIVector32(res, 2), res);
-            res = OrVector(ShiftRightUIVector32(res, 4), res);
-            res = OrVector(ShiftRightUIVector32(res, 8), res);
-            res = OrVector(ShiftRightUIVector32(res, 16), res);
+            res = OrVector(ShiftRightVectorUI32(arg, 1), arg);
+            res = OrVector(ShiftRightVectorUI32(res, 2), res);
+            res = OrVector(ShiftRightVectorUI32(res, 4), res);
+            res = OrVector(ShiftRightVectorUI32(res, 8), res);
+            res = OrVector(ShiftRightVectorUI32(res, 16), res);
 
-            // Count trailing 1s, which is the population count.
-            tmp0 = ShiftRightUIVector32(res, 1);
+            // Make leading 0s into leading 1s.
+            res = NotVector(res);
+
+            // Count leading 1s, which is the population count.
+            tmp0 = ShiftRightVectorUI32(res, 1);
             tmp0 = AndVector(tmp0, c55555555);
             res  = SubVectorI32(res, tmp0);
 
-            tmp0 = ShiftRightUIVector32(res, 2);
+            tmp0 = ShiftRightVectorUI32(res, 2);
             tmp0 = AndVector(tmp0, c33333333);
             tmp1 = AndVector(res, c33333333);
             res  = AddVectorI32(tmp0, tmp1);
 
-            tmp0 = ShiftRightUIVector32(res, 4);
+            tmp0 = ShiftRightVectorUI32(res, 4);
             tmp0 = AddVectorI32(tmp0, res);
             res  = AndVector(tmp0, c0f0f0f0f);
 
-            tmp0 = ShiftRightUIVector32(res, 8);
+            tmp0 = ShiftRightVectorUI32(res, 8);
             res  = AddVectorI32(tmp0, res);
 
-            tmp0 = ShiftRightUIVector32(res, 16);
+            tmp0 = ShiftRightVectorUI32(res, 16);
             res  = AddVectorI32(tmp0, res);
 
             res  = AndVector(res, c0000003f);
 
-            // Convert trailing 1s to leading 0s.
-            return SubVectorI32(c00000020, res);
+            return res;
         }
 
         public static void Cnt_V(ArmEmitterContext context)
