@@ -335,7 +335,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <returns>The page aligned address and size</returns>
         private (ulong address, ulong size) PageAlign(ulong address, ulong size)
         {
-            ulong pageMask = (ulong)MemoryManager.PageSize - 1;
+            ulong pageMask = MemoryManager.PageMask;
             ulong rA = address & ~pageMask;
             ulong rS = ((address + size + pageMask) & ~pageMask) - rA;
             return (rA, rS);

@@ -67,7 +67,7 @@ namespace Ryujinx.Graphics.Gpu
 
         /// <summary>
         /// Actions to be performed when a CPU waiting sync point is triggered.
-        /// If there are more than 0 items when this happens, a host sync object will be generated for the given SyncNumber,
+        /// If there are more than 0 items when this happens, a host sync object will be generated for the given <see cref="SyncNumber"/>,
         /// and the SyncNumber will be incremented.
         /// </summary>
         internal List<Action> SyncActions { get; }
@@ -135,7 +135,7 @@ namespace Ryujinx.Graphics.Gpu
 
         /// <summary>
         /// Registers an action to be performed the next time a syncpoint is incremented.
-        /// This will also ensure a host sync object is created, and SyncNumber is incremented.
+        /// This will also ensure a host sync object is created, and <see cref="SyncNumber"/> is incremented.
         /// </summary>
         /// <param name="action">The action to be performed on sync object creation</param>
         public void RegisterSyncAction(Action action)
