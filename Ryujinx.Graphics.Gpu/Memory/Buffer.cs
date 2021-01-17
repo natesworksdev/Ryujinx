@@ -333,7 +333,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="address">The start address of the region</param>
         /// <param name="size">The size of the region</param>
         /// <returns>The page aligned address and size</returns>
-        private (ulong address, ulong size) PageAlign(ulong address, ulong size)
+        private static (ulong address, ulong size) PageAlign(ulong address, ulong size)
         {
             ulong pageMask = MemoryManager.PageMask;
             ulong rA = address & ~pageMask;
