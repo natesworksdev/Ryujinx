@@ -292,7 +292,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="va">Virtual address of the range</param>
         /// <param name="size">Size of the range</param>
         /// <returns>Multi-range with the physical regions</returns>
-        /// <exception cref="InvalidMemoryRegionException">The memory region specifieed by <paramref name="va"/> and <paramref name="size"/> is not fully mapped</exception>
+        /// <exception cref="InvalidMemoryRegionException">The memory region specified by <paramref name="va"/> and <paramref name="size"/> is not fully mapped</exception>
         public MultiRange GetPhysicalRegions(ulong va, ulong size)
         {
             if (IsContiguous(va, (int)size))
@@ -315,7 +315,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             int pages = (int)((endVaRounded - va) / PageSize);
 
-            var regions = new List<MemoryRange>();            
+            var regions = new List<MemoryRange>();
 
             for (int page = 0; page < pages - 1; page++)
             {
