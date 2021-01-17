@@ -33,8 +33,7 @@ namespace Ryujinx.Graphics.OpenGL
         {
             FramebufferAttachment attachment = FramebufferAttachment.ColorAttachment0 + index;
 
-            if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Amd ||
-                HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
+            if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
             {
                 GL.FramebufferTexture(FramebufferTarget.Framebuffer, attachment, color?.GetIncompatibleFormatViewHandle() ?? 0, 0);
 
@@ -87,8 +86,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public void SignalModified()
         {
-            if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Amd ||
-                HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
+            if (HwCapabilities.Vendor == HwCapabilities.GpuVendor.Intel)
             {
                 for (int i = 0; i < 8; i++)
                 {
