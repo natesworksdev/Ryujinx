@@ -39,6 +39,7 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
                 { nameof(GPFifoClassState.Semaphored), new RwCallback(Semaphored, null) },
                 { nameof(GPFifoClassState.Syncpointb), new RwCallback(Syncpointb, null) },
                 { nameof(GPFifoClassState.WaitForIdle), new RwCallback(WaitForIdle, null) },
+                { nameof(GPFifoClassState.SetReference), new RwCallback(SetReference, null) },
                 { nameof(GPFifoClassState.LoadMmeInstructionRam), new RwCallback(LoadMmeInstructionRam, null) },
                 { nameof(GPFifoClassState.LoadMmeStartAddressRam), new RwCallback(LoadMmeStartAddressRam, null) },
                 { nameof(GPFifoClassState.SetMmeShadowRamControl), new RwCallback(SetMmeShadowRamControl, null) }
@@ -152,6 +153,15 @@ namespace Ryujinx.Graphics.Gpu.Engine.GPFifo
             _context.Methods.PerformDeferredDraws();
             _context.Renderer.Pipeline.Barrier();
 
+            _context.CreateHostSyncIfNeeded();
+        }
+
+        /// <summary>
+        /// Used as an indirect data barrier on NVN. When used, access to previously written data must be coherent.
+        /// </summary>
+        /// <param name="argument">Method call argument</param>
+        public void SetReference(int argument)
+        {
             _context.CreateHostSyncIfNeeded();
         }
 
