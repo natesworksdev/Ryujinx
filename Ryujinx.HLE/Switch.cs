@@ -43,6 +43,8 @@ namespace Ryujinx.HLE
 
         public Hid Hid { get; private set; }
 
+        public TamperMachine TamperMachine { get; private set; }
+
         public IHostUiHandler UiHandler { get; set; }
 
         public bool EnableDeviceVsync { get; set; } = true;
@@ -106,6 +108,8 @@ namespace Ryujinx.HLE
             Hid.InitDevices();
 
             Application = new ApplicationLoader(this, fileSystem, contentManager);
+
+            TamperMachine = new TamperMachine(this);
         }
 
         public void Initialize()
