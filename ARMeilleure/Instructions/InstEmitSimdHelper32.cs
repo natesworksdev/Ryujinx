@@ -820,6 +820,18 @@ namespace ARMeilleure.Instructions
             });
         }
 
+        public static void EmitVectorTernaryOpF32(ArmEmitterContext context, Intrinsic inst32)
+        {
+            OpCode32SimdReg op = (OpCode32SimdReg)context.CurrOp;
+
+            Debug.Assert((op.Size & 1) == 0);
+
+            EmitVectorTernaryOpSimd32(context, (d, n, m) =>
+            {
+                return context.AddIntrinsic(inst32, d, n, m);
+            });
+        }
+
         public static void EmitScalarUnaryOpSimd32(ArmEmitterContext context, Func1I scalarFunc)
         {
             OpCode32SimdS op = (OpCode32SimdS)context.CurrOp;
@@ -901,7 +913,27 @@ namespace ARMeilleure.Instructions
             context.Copy(initialD, res);
         }
 
-        public static void EmitScalarTernaryOpF32(ArmEmitterContext context, Intrinsic inst32pt1, Intrinsic inst64pt1, Intrinsic inst32pt2, Intrinsic inst64pt2)
+        public static void EmitScalarTernaryOpF32(ArmEmitterContext context, Intrinsic inst32, Intrinsic inst64)
+        {
+            OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
+
+            bool doubleSize = (op.Size & 1) != 0;
+
+            Intrinsic inst = doubleSize ? inst64 : inst32;
+
+            EmitScalarTernaryOpSimd32(context, (d, n, m) =>
+            {
+                return context.AddIntrinsic(inst, d, n, m);
+            });
+        }
+
+        public static void EmitScalarTernaryOpF32(
+            ArmEmitterContext context,
+            Intrinsic inst32pt1,
+            Intrinsic inst64pt1,
+            Intrinsic inst32pt2,
+            Intrinsic inst64pt2,
+            bool isNegD = false)
         {
             OpCode32SimdRegS op = (OpCode32SimdRegS)context.CurrOp;
 
@@ -913,6 +945,18 @@ namespace ARMeilleure.Instructions
             EmitScalarTernaryOpSimd32(context, (d, n, m) =>
             {
                 Operand res = context.AddIntrinsic(inst1, n, m);
+
+                if (isNegD)
+                {
+                    Operand mask = doubleSize
+                        ? X86GetScalar(context, -0d)
+                        : X86GetScalar(context, -0f);
+
+                    d = doubleSize
+                        ? context.AddIntrinsic(Intrinsic.X86Xorpd, mask, d)
+                        : context.AddIntrinsic(Intrinsic.X86Xorps, mask, d);
+                }
+
                 return context.AddIntrinsic(inst2, d, res);
             });
         }
@@ -1122,6 +1166,28 @@ namespace ARMeilleure.Instructions
             }
 
             return res;
+        }
+
+        public static Operand EmitPolynomialMultiply(ArmEmitterContext context, Operand op1, Operand op2, int eSize)
+        {
+            Debug.Assert(eSize <= 32);
+
+            Operand result = eSize == 32 ? Const(0L) : Const(0);
+
+            if (eSize == 32)
+            {
+                op1 = context.ZeroExtend32(OperandType.I64, op1);
+                op2 = context.ZeroExtend32(OperandType.I64, op2);
+            }
+
+            for (int i = 0; i < eSize; i++)
+            {
+                Operand mask = context.BitwiseAnd(op1, Const(op1.Type, 1L << i));
+
+                result = context.BitwiseExclusiveOr(result, context.Multiply(op2, mask));
+            }
+
+            return result;
         }
     }
 }

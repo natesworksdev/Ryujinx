@@ -10,6 +10,8 @@ namespace Ryujinx.Graphics.OpenGL
 {
     class Pipeline : IPipeline, IDisposable
     {
+        internal ulong DrawCount { get; private set; }
+
         private Program _program;
 
         private bool _rasterizerDiscard;
@@ -89,6 +91,11 @@ namespace Ryujinx.Graphics.OpenGL
             _tfEnabled = true;
         }
 
+        public void ClearBuffer(BufferHandle destination, int offset, int size, uint value)
+        {
+            Buffer.Clear(destination, offset, size, value);
+        }
+
         public void ClearRenderTargetColor(int index, uint componentMask, ColorF color)
         {
             GL.ColorMask(
@@ -100,7 +107,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             float[] colors = new float[] { color.Red, color.Green, color.Blue, color.Alpha };
 
-            GL.ClearBuffer(ClearBuffer.Color, index, colors);
+            GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Color, index, colors);
 
             RestoreComponentMask(index);
 
@@ -131,11 +138,11 @@ namespace Ryujinx.Graphics.OpenGL
             }
             else if (depthMask)
             {
-                GL.ClearBuffer(ClearBuffer.Depth, 0, ref depthValue);
+                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Depth, 0, ref depthValue);
             }
             else if (stencilMask != 0)
             {
-                GL.ClearBuffer(ClearBuffer.Stencil, 0, ref stencilValue);
+                GL.ClearBuffer(OpenTK.Graphics.OpenGL.ClearBuffer.Stencil, 0, ref stencilValue);
             }
 
             if (stencilMaskChanged)
@@ -1196,6 +1203,8 @@ namespace Ryujinx.Graphics.OpenGL
 
         private void PreDraw()
         {
+            DrawCount++;
+
             _vertexArray.Validate();
 
             if (_unit0Texture != null)

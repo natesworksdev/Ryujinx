@@ -250,6 +250,40 @@ namespace ARMeilleure.CodeGen.X86
                         break;
                     }
 
+                    case IntrinsicType.Mxcsr:
+                    {
+                        Operand offset = operation.GetSource(0);
+                        Operand bits   = operation.GetSource(1);
+
+                        Debug.Assert(offset.Kind == OperandKind.Constant && bits.Kind == OperandKind.Constant);
+                        Debug.Assert(offset.Type == OperandType.I32 && bits.Type == OperandType.I32);
+
+                        int offs = offset.AsInt32() + context.CallArgsRegionSize;
+
+                        Operand rsp = Register(X86Register.Rsp);
+
+                        MemoryOperand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, offs);
+
+                        Debug.Assert(HardwareCapabilities.SupportsSse || HardwareCapabilities.SupportsVexEncoding);
+
+                        context.Assembler.Stmxcsr(memOp);
+
+                        if (intrinOp.Intrinsic == Intrinsic.X86Mxcsrmb)
+                        {
+                            context.Assembler.Or(memOp, bits, OperandType.I32);
+                        }
+                        else /* if (intrinOp.Intrinsic == Intrinsic.X86Mxcsrub) */
+                        {
+                            Operand notBits = Const(~bits.AsInt32());
+
+                            context.Assembler.And(memOp, notBits, OperandType.I32);
+                        }
+
+                        context.Assembler.Ldmxcsr(memOp);
+
+                        break;
+                    }
+
                     case IntrinsicType.PopCount:
                     {
                         Operand dest   = operation.Destination;
@@ -432,6 +466,28 @@ namespace ARMeilleure.CodeGen.X86
                         Debug.Assert(!dest.Type.IsInteger() && src3.Kind == OperandKind.Constant);
 
                         context.Assembler.WriteInstruction(info.Inst, dest, src1, src2, src3.AsByte());
+
+                        break;
+                    }
+
+                    case IntrinsicType.Fma:
+                    {
+                        Operand dest = operation.Destination;
+                        Operand src1 = operation.GetSource(0);
+                        Operand src2 = operation.GetSource(1);
+                        Operand src3 = operation.GetSource(2);
+
+                        Debug.Assert(HardwareCapabilities.SupportsVexEncoding);
+
+                        Debug.Assert(dest.Kind == OperandKind.Register && src1.Kind == OperandKind.Register && src2.Kind == OperandKind.Register);
+                        Debug.Assert(src3.Kind == OperandKind.Register || src3.Kind == OperandKind.Memory);
+
+                        EnsureSameType(dest, src1, src2, src3);
+                        Debug.Assert(dest.Type == OperandType.V128);
+
+                        Debug.Assert(dest.Value == src1.Value);
+
+                        context.Assembler.WriteInstruction(info.Inst, dest, src2, src3);
 
                         break;
                     }

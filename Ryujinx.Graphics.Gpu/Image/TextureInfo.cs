@@ -1,4 +1,5 @@
 using Ryujinx.Graphics.GAL;
+using Ryujinx.Graphics.Texture;
 
 namespace Ryujinx.Graphics.Gpu.Image
 {
@@ -8,9 +9,9 @@ namespace Ryujinx.Graphics.Gpu.Image
     struct TextureInfo
     {
         /// <summary>
-        /// Address of the texture in guest memory.
+        /// Address of the texture in GPU mapped memory.
         /// </summary>
-        public ulong Address { get; }
+        public ulong GpuAddress { get; }
 
         /// <summary>
         /// The width of the texture.
@@ -92,14 +93,17 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// Texture swizzle for the red color channel.
         /// </summary>
         public SwizzleComponent SwizzleR { get; }
+
         /// <summary>
         /// Texture swizzle for the green color channel.
         /// </summary>
         public SwizzleComponent SwizzleG { get; }
+
         /// <summary>
         /// Texture swizzle for the blue color channel.
         /// </summary>
         public SwizzleComponent SwizzleB { get; }
+
         /// <summary>
         /// Texture swizzle for the alpha color channel.
         /// </summary>
@@ -108,7 +112,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Constructs the texture information structure.
         /// </summary>
-        /// <param name="address">The address of the texture</param>
+        /// <param name="gpuAddress">The GPU address of the texture</param>
         /// <param name="width">The width of the texture</param>
         /// <param name="height">The height or the texture</param>
         /// <param name="depthOrLayers">The depth or layers count of the texture</param>
@@ -128,7 +132,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="swizzleB">Swizzle for the blue color channel</param>
         /// <param name="swizzleA">Swizzle for the alpha color channel</param>
         public TextureInfo(
-            ulong            address,
+            ulong            gpuAddress,
             int              width,
             int              height,
             int              depthOrLayers,
@@ -148,7 +152,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             SwizzleComponent swizzleB         = SwizzleComponent.Blue,
             SwizzleComponent swizzleA         = SwizzleComponent.Alpha)
         {
-            Address          = address;
+            GpuAddress       = gpuAddress;
             Width            = width;
             Height           = height;
             DepthOrLayers    = depthOrLayers;
@@ -176,7 +180,19 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>Texture depth</returns>
         public int GetDepth()
         {
-            return Target == Target.Texture3D ? DepthOrLayers : 1;
+            return GetDepth(Target, DepthOrLayers);
+        }
+
+        /// <summary>
+        /// Gets the real texture depth.
+        /// Returns 1 for any target other than 3D textures.
+        /// </summary>
+        /// <param name="target">Texture target</param>
+        /// <param name="depthOrLayers">Texture depth if the texture is 3D, otherwise ignored</param>
+        /// <returns>Texture depth</returns>
+        public static int GetDepth(Target target, int depthOrLayers)
+        {
+            return target == Target.Texture3D ? depthOrLayers : 1;
         }
 
         /// <summary>
@@ -186,21 +202,69 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>The number of texture layers</returns>
         public int GetLayers()
         {
-            if (Target == Target.Texture2DArray || Target == Target.Texture2DMultisampleArray)
+            return GetLayers(Target, DepthOrLayers);
+        }
+
+        /// <summary>
+        /// Gets the number of layers of the texture.
+        /// Returns 1 for non-array textures, 6 for cubemap textures, and layer faces for cubemap array textures.
+        /// </summary>
+        /// <param name="target">Texture target</param>
+        /// <param name="depthOrLayers">Texture layers if the is a array texture, ignored otherwise</param>
+        /// <returns>The number of texture layers</returns>
+        public static int GetLayers(Target target, int depthOrLayers)
+        {
+            if (target == Target.Texture2DArray || target == Target.Texture2DMultisampleArray)
             {
-                return DepthOrLayers;
+                return depthOrLayers;
             }
-            else if (Target == Target.CubemapArray)
+            else if (target == Target.CubemapArray)
             {
-                return DepthOrLayers * 6;
+                return depthOrLayers * 6;
             }
-            else if (Target == Target.Cubemap)
+            else if (target == Target.Cubemap)
             {
                 return 6;
             }
             else
             {
                 return 1;
+            }
+        }
+
+        /// <summary>
+        /// Calculates the size information from the texture information.
+        /// </summary>
+        /// <param name="layerSize">Optional size of each texture layer in bytes</param>
+        /// <returns>Texture size information</returns>
+        public SizeInfo CalculateSizeInfo(int layerSize = 0)
+        {
+            if (Target == Target.TextureBuffer)
+            {
+                return new SizeInfo(Width * FormatInfo.BytesPerPixel);
+            }
+            else if (IsLinear)
+            {
+                return SizeCalculator.GetLinearTextureSize(
+                    Stride,
+                    Height,
+                    FormatInfo.BlockHeight);
+            }
+            else
+            {
+                return SizeCalculator.GetBlockLinearTextureSize(
+                    Width,
+                    Height,
+                    GetDepth(),
+                    Levels,
+                    GetLayers(),
+                    FormatInfo.BlockWidth,
+                    FormatInfo.BlockHeight,
+                    FormatInfo.BytesPerPixel,
+                    GobBlocksInY,
+                    GobBlocksInZ,
+                    GobBlocksInTileX,
+                    layerSize);
             }
         }
     }

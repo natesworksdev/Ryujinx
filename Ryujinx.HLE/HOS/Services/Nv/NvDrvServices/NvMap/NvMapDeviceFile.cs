@@ -1,7 +1,7 @@
 ﻿using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.Gpu.Memory;
-using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.Memory;
 using System;
 using System.Collections.Concurrent;
 
@@ -11,9 +11,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
     {
         private const int FlagNotFreedYet = 1;
 
-        private static ConcurrentDictionary<KProcess, IdDictionary> _maps = new ConcurrentDictionary<KProcess, IdDictionary>();
+        private static ConcurrentDictionary<long, IdDictionary> _maps = new ConcurrentDictionary<long, IdDictionary>();
 
-        public NvMapDeviceFile(ServiceCtx context) : base(context)
+        public NvMapDeviceFile(ServiceCtx context, IVirtualMemoryManager memory, long owner) : base(context, owner)
         {
             IdDictionary dict = _maps.GetOrAdd(Owner, (key) => new IdDictionary());
 
@@ -134,7 +134,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
                 int size = BitUtils.AlignUp(map.Size, (int)MemoryManager.PageSize);
 
-                long address = arguments.Address;
+                ulong address = arguments.Address;
 
                 if (address == 0)
                 {
@@ -232,21 +232,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
         private int CreateHandleFromMap(NvMapHandle map)
         {
-            IdDictionary dict = _maps.GetOrAdd(Owner, (key) =>
-            {
-                IdDictionary newDict = new IdDictionary();
-
-                newDict.Add(0, new NvMapHandle());
-
-                return newDict;
-            });
+            IdDictionary dict = _maps.GetOrAdd(Owner, (key) => new IdDictionary());
 
             return dict.Add(map);
         }
 
-        private static bool DeleteMapWithHandle(KProcess process, int handle)
+        private static bool DeleteMapWithHandle(long pid, int handle)
         {
-            if (_maps.TryGetValue(process, out IdDictionary dict))
+            if (_maps.TryGetValue(pid, out IdDictionary dict))
             {
                 return dict.Delete(handle) != null;
             }
@@ -254,14 +247,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             return false;
         }
 
-        public static void IncrementMapRefCount(KProcess process, int handle, bool allowHandleZero = false)
+        public static void IncrementMapRefCount(long pid, int handle)
         {
-            GetMapFromHandle(process, handle, allowHandleZero)?.IncrementRefCount();
+            GetMapFromHandle(pid, handle)?.IncrementRefCount();
         }
 
-        public static bool DecrementMapRefCount(KProcess process, int handle)
+        public static bool DecrementMapRefCount(long pid, int handle)
         {
-            NvMapHandle map = GetMapFromHandle(process, handle, false);
+            NvMapHandle map = GetMapFromHandle(pid, handle);
 
             if (map == null)
             {
@@ -270,7 +263,7 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
 
             if (map.DecrementRefCount() <= 0)
             {
-                DeleteMapWithHandle(process, handle);
+                DeleteMapWithHandle(pid, handle);
 
                 Logger.Info?.Print(LogClass.ServiceNv, $"Deleted map {handle}!");
 
@@ -282,9 +275,9 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices.NvMap
             }
         }
 
-        public static NvMapHandle GetMapFromHandle(KProcess process, int handle, bool allowHandleZero = false)
+        public static NvMapHandle GetMapFromHandle(long pid, int handle)
         {
-            if ((allowHandleZero || handle != 0) && _maps.TryGetValue(process, out IdDictionary dict))
+            if (_maps.TryGetValue(pid, out IdDictionary dict))
             {
                 return dict.GetData<NvMapHandle>(handle);
             }

@@ -13,7 +13,7 @@ namespace Ryujinx.Cpu
     /// <summary>
     /// Represents a CPU memory manager.
     /// </summary>
-    public sealed class MemoryManager : IMemoryManager, IDisposable, IVirtualMemoryManager
+    public sealed class MemoryManager : IMemoryManager, IVirtualMemoryManager, IWritableBlock, IDisposable
     {
         public const int PageBits = 12;
         public const int PageSize = 1 << PageBits;
@@ -39,6 +39,8 @@ namespace Ryujinx.Cpu
         public IntPtr PageTablePointer => _pageTable.Pointer;
 
         public MemoryTracking Tracking { get; }
+
+        internal event Action<ulong, ulong> UnmapEvent;
 
         /// <summary>
         /// Creates a new instance of the memory manager.
@@ -100,6 +102,14 @@ namespace Ryujinx.Cpu
         /// <param name="size">Size of the range to be unmapped</param>
         public void Unmap(ulong va, ulong size)
         {
+            // If size is 0, there's nothing to unmap, just exit early.
+            if (size == 0)
+            {
+                return;
+            }
+
+            UnmapEvent?.Invoke(va, size);
+
             ulong remainingSize = size;
             ulong oVa = va;
             while (remainingSize != 0)
@@ -121,7 +131,7 @@ namespace Ryujinx.Cpu
         /// <exception cref="InvalidMemoryRegionException">Throw for unhandled invalid or unmapped memory accesses</exception>
         public T Read<T>(ulong va) where T : unmanaged
         {
-            return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>()))[0];
+            return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>(), true))[0];
         }
 
         /// <summary>
@@ -192,12 +202,12 @@ namespace Ryujinx.Cpu
             WriteImpl(va, data);
         }
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         /// <summary>
         /// Writes data to CPU mapped memory.
         /// </summary>
         /// <param name="va">Virtual address to write the data into</param>
         /// <param name="data">Data to be written</param>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         private void WriteImpl(ulong va, ReadOnlySpan<byte> data)
         {
             try
@@ -468,6 +478,11 @@ namespace Ryujinx.Cpu
         /// <returns>True if the entire range is mapped, false otherwise</returns>
         public bool IsRangeMapped(ulong va, ulong size)
         {
+            if (size == 0UL)
+            {
+                return true;
+            }
+
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
 
             va &= ~(ulong)PageMask;

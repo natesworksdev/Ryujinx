@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019-2020 Ryujinx
+// Copyright (c) 2019-2021 Ryujinx
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -18,7 +18,7 @@
 using Ryujinx.Audio.Renderer.Common;
 using Ryujinx.Audio.Renderer.Dsp.State;
 using Ryujinx.Common.Logging;
-using Ryujinx.Cpu;
+using Ryujinx.Memory;
 using System;
 using System.Buffers;
 using System.Diagnostics;
@@ -63,7 +63,7 @@ namespace Ryujinx.Audio.Renderer.Dsp
             }
         }
 
-        public static void ProcessWaveBuffers(MemoryManager memoryManager, Span<float> outputBuffer, WaveBufferInformation info, uint targetSampleRate, int sampleCount)
+        public static void ProcessWaveBuffers(IVirtualMemoryManager memoryManager, Span<float> outputBuffer, WaveBufferInformation info, uint targetSampleRate, int sampleCount)
         {
             const int tempBufferSize = 0x3F00;
 

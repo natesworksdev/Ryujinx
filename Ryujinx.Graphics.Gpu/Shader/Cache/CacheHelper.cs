@@ -333,6 +333,23 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         }
 
         /// <summary>
+        /// Builds gpu state flags using information from the given gpu accessor.
+        /// </summary>
+        /// <param name="gpuAccessor">The gpu accessor</param>
+        /// <returns>The gpu state flags</returns>
+        private static GuestGpuStateFlags GetGpuStateFlags(IGpuAccessor gpuAccessor)
+        {
+            GuestGpuStateFlags flags = 0;
+
+            if (gpuAccessor.QueryEarlyZForce())
+            {
+                flags |= GuestGpuStateFlags.EarlyZForce;
+            }
+
+            return flags;
+        }
+
+        /// <summary>
         /// Create a new instance of <see cref="GuestGpuAccessorHeader"/> from an gpu accessor.
         /// </summary>
         /// <param name="gpuAccessor">The gpu accessor</param>
@@ -347,6 +364,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                 ComputeLocalMemorySize = gpuAccessor.QueryComputeLocalMemorySize(),
                 ComputeSharedMemorySize = gpuAccessor.QueryComputeSharedMemorySize(),
                 PrimitiveTopology = gpuAccessor.QueryPrimitiveTopology(),
+                StateFlags = GetGpuStateFlags(gpuAccessor)
             };
         }
 
@@ -476,6 +494,28 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
 
                     File.Delete(cacheTempFilePath);
                 }
+            }
+        }
+
+        public static bool IsArchiveReadOnly(string archivePath)
+        {
+            FileInfo info = new FileInfo(archivePath);
+
+            if (!info.Exists)
+            {
+                return false;
+            }
+
+            try
+            {
+                using (FileStream stream = info.Open(FileMode.Open, FileAccess.Read, FileShare.None))
+                {
+                    return false;
+                }
+            }
+            catch (IOException)
+            {
+                return true;
             }
         }
     }

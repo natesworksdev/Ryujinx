@@ -1,5 +1,5 @@
 //
-// Copyright (c) 2019-2020 Ryujinx
+// Copyright (c) 2019-2021 Ryujinx
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Lesser General Public License as published by
@@ -277,7 +277,7 @@ namespace Ryujinx.Audio.Renderer.Server.Performance
 
         public override void TapFrame(bool dspRunningBehind, uint voiceDropCount, ulong startRenderingTicks)
         {
-            if (_availableFrameCount > 1)
+            if (_availableFrameCount > 0)
             {
                 int targetIndexForHistory = _indexHistoryWrite;
 

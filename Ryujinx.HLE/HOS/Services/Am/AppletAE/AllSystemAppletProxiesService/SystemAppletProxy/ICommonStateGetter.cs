@@ -12,7 +12,9 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         private Apm.SystemManagerServer _apmSystemManagerServer;
         private Lbl.LblControllerServer _lblControllerServer;
 
-        private bool _vrModeEnabled = false;
+        private bool _vrModeEnabled;
+        private int _messageEventHandle;
+        private int _displayResolutionChangedEventHandle;
 
         public ICommonStateGetter(ServiceCtx context)
         {
@@ -25,14 +27,17 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetEventHandle() -> handle<copy>
         public ResultCode GetEventHandle(ServiceCtx context)
         {
-            KEvent Event = context.Device.System.AppletState.MessageEvent;
+            KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
 
-            if (context.Process.HandleTable.GenerateHandle(Event.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_messageEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(messageEvent.ReadableEvent, out _messageEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_messageEventHandle);
 
             return ResultCode.Success;
         }
@@ -41,9 +46,23 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // ReceiveMessage() -> nn::am::AppletMessage
         public ResultCode ReceiveMessage(ServiceCtx context)
         {
-            if (!context.Device.System.AppletState.TryDequeueMessage(out MessageInfo message))
+            if (!context.Device.System.AppletState.Messages.TryDequeue(out MessageInfo message))
             {
                 return ResultCode.NoMessages;
+            }
+
+            KEvent messageEvent = context.Device.System.AppletState.MessageEvent;
+
+            // NOTE: Service checks if current states are different than the stored ones.
+            //       Since we don't support any states for now, it's fine to check if there is still messages available.
+
+            if (context.Device.System.AppletState.Messages.IsEmpty)
+            {
+                messageEvent.ReadableEvent.Clear();
+            }
+            else
+            {
+                messageEvent.ReadableEvent.Signal();
             }
 
             context.ResponseData.Write((int)message);
@@ -147,7 +166,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
                 _lblControllerServer.DisableVrMode();
             }
 
-            // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used. 
+            // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used.
         }
 
         [Command(60)] // 3.0.0+
@@ -164,12 +183,15 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
         // GetDefaultDisplayResolutionChangeEvent() -> handle<copy>
         public ResultCode GetDefaultDisplayResolutionChangeEvent(ServiceCtx context)
         {
-            if (context.Process.HandleTable.GenerateHandle(context.Device.System.DisplayResolutionChangeEvent.ReadableEvent, out int handle) != KernelResult.Success)
+            if (_displayResolutionChangedEventHandle == 0)
             {
-                throw new InvalidOperationException("Out of handles!");
+                if (context.Process.HandleTable.GenerateHandle(context.Device.System.DisplayResolutionChangeEvent.ReadableEvent, out _displayResolutionChangedEventHandle) != KernelResult.Success)
+                {
+                    throw new InvalidOperationException("Out of handles!");
+                }
             }
 
-            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(handle);
+            context.Response.HandleDesc = IpcHandleDesc.MakeCopy(_displayResolutionChangedEventHandle);
 
             Logger.Stub?.PrintStub(LogClass.ServiceAm);
 
@@ -189,7 +211,7 @@ namespace Ryujinx.HLE.HOS.Services.Am.AppletAE.AllSystemAppletProxiesService.Sys
 
             _apmSystemManagerServer.SetCpuBoostMode((Apm.CpuBoostMode)cpuBoostMode);
 
-            // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used. 
+            // TODO: It signals an internal event of ICommonStateGetter. We have to determine where this event is used.
 
             return ResultCode.Success;
         }

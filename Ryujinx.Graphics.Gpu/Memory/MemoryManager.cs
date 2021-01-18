@@ -1,5 +1,7 @@
-using Ryujinx.Cpu;
+using Ryujinx.Memory;
+using Ryujinx.Memory.Range;
 using System;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -8,12 +10,8 @@ namespace Ryujinx.Graphics.Gpu.Memory
     /// <summary>
     /// GPU memory manager.
     /// </summary>
-    public class MemoryManager
+    public class MemoryManager : IWritableBlock
     {
-        private const ulong AddressSpaceSize = 1UL << 40;
-
-        public const ulong BadAddress = ulong.MaxValue;
-
         private const int PtLvl0Bits = 14;
         private const int PtLvl1Bits = 14;
         public  const int PtPageBits = 12;
@@ -28,9 +26,9 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
         private const int PtLvl0Bit = PtPageBits + PtLvl1Bits;
         private const int PtLvl1Bit = PtPageBits;
+        private const int AddressSpaceBits = PtPageBits + PtLvl1Bits + PtLvl0Bits;
 
-        private const ulong PteUnmapped = 0xffffffff_ffffffff;
-        private const ulong PteReserved = 0xffffffff_fffffffe;
+        public const ulong PteUnmapped = 0xffffffff_ffffffff;
 
         private readonly ulong[][] _pageTable;
 
@@ -51,26 +49,70 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// Reads data from GPU mapped memory.
         /// </summary>
         /// <typeparam name="T">Type of the data</typeparam>
-        /// <param name="gpuVa">GPU virtual address where the data is located</param>
+        /// <param name="va">GPU virtual address where the data is located</param>
         /// <returns>The data at the specified memory location</returns>
-        public T Read<T>(ulong gpuVa) where T : unmanaged
+        public T Read<T>(ulong va) where T : unmanaged
         {
-            ulong processVa = Translate(gpuVa);
-
-            return MemoryMarshal.Cast<byte, T>(_context.PhysicalMemory.GetSpan(processVa, Unsafe.SizeOf<T>()))[0];
+            return MemoryMarshal.Cast<byte, T>(GetSpan(va, Unsafe.SizeOf<T>()))[0];
         }
 
         /// <summary>
         /// Gets a read-only span of data from GPU mapped memory.
         /// </summary>
-        /// <param name="gpuVa">GPU virtual address where the data is located</param>
+        /// <param name="va">GPU virtual address where the data is located</param>
         /// <param name="size">Size of the data</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
         /// <returns>The span of the data at the specified memory location</returns>
-        public ReadOnlySpan<byte> GetSpan(ulong gpuVa, int size)
+        public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
-            ulong processVa = Translate(gpuVa);
+            if (IsContiguous(va, size))
+            {
+                return _context.PhysicalMemory.GetSpan(Translate(va), size, tracked);
+            }
+            else
+            {
+                Span<byte> data = new byte[size];
 
-            return _context.PhysicalMemory.GetSpan(processVa, size);
+                ReadImpl(va, data, tracked);
+
+                return data;
+            }
+        }
+
+        /// <summary>
+        /// Reads data from a possibly non-contiguous region of GPU mapped memory.
+        /// </summary>
+        /// <param name="va">GPU virtual address of the data</param>
+        /// <param name="data">Span to write the read data into</param>
+        /// <param name="tracked">True to enable write tracking on read, false otherwise</param>
+        private void ReadImpl(ulong va, Span<byte> data, bool tracked)
+        {
+            if (data.Length == 0)
+            {
+                return;
+            }
+
+            int offset = 0, size;
+
+            if ((va & PageMask) != 0)
+            {
+                ulong pa = Translate(va);
+
+                size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
+
+                _context.PhysicalMemory.GetSpan(pa, size, tracked).CopyTo(data.Slice(0, size));
+
+                offset += size;
+            }
+
+            for (; offset < data.Length; offset += size)
+            {
+                ulong pa = Translate(va + (ulong)offset);
+
+                size = Math.Min(data.Length - offset, (int)PageSize);
+
+                _context.PhysicalMemory.GetSpan(pa, size, tracked).CopyTo(data.Slice(offset, size));
+            }
         }
 
         /// <summary>
@@ -79,36 +121,91 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="address">Start address of the range</param>
         /// <param name="size">Size in bytes to be range</param>
         /// <returns>A writable region with the data at the specified memory location</returns>
-        public WritableRegion GetWritableRegion(ulong gpuVa, int size)
+        public WritableRegion GetWritableRegion(ulong va, int size)
         {
-            ulong processVa = Translate(gpuVa);
+            if (IsContiguous(va, size))
+            {
+                return _context.PhysicalMemory.GetWritableRegion(Translate(va), size);
+            }
+            else
+            {
+                Memory<byte> memory = new byte[size];
 
-            return _context.PhysicalMemory.GetWritableRegion(processVa, size);
+                GetSpan(va, size).CopyTo(memory.Span);
+
+                return new WritableRegion(this, va, memory);
+            }
         }
 
         /// <summary>
         /// Writes data to GPU mapped memory.
         /// </summary>
         /// <typeparam name="T">Type of the data</typeparam>
-        /// <param name="gpuVa">GPU virtual address to write the value into</param>
+        /// <param name="va">GPU virtual address to write the value into</param>
         /// <param name="value">The value to be written</param>
-        public void Write<T>(ulong gpuVa, T value) where T : unmanaged
+        public void Write<T>(ulong va, T value) where T : unmanaged
         {
-            ulong processVa = Translate(gpuVa);
-
-            _context.PhysicalMemory.Write(processVa, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
+            Write(va, MemoryMarshal.Cast<T, byte>(MemoryMarshal.CreateSpan(ref value, 1)));
         }
 
         /// <summary>
         /// Writes data to GPU mapped memory.
         /// </summary>
-        /// <param name="gpuVa">GPU virtual address to write the data into</param>
+        /// <param name="va">GPU virtual address to write the data into</param>
         /// <param name="data">The data to be written</param>
-        public void Write(ulong gpuVa, ReadOnlySpan<byte> data)
+        public void Write(ulong va, ReadOnlySpan<byte> data)
         {
-            ulong processVa = Translate(gpuVa);
+            WriteImpl(va, data, _context.PhysicalMemory.Write);
+        }
 
-            _context.PhysicalMemory.Write(processVa, data);
+        /// <summary>
+        /// Writes data to GPU mapped memory without write tracking.
+        /// </summary>
+        /// <param name="va">GPU virtual address to write the data into</param>
+        /// <param name="data">The data to be written</param>
+        public void WriteUntracked(ulong va, ReadOnlySpan<byte> data)
+        {
+            WriteImpl(va, data, _context.PhysicalMemory.WriteUntracked);
+        }
+
+        private delegate void WriteCallback(ulong address, ReadOnlySpan<byte> data);
+
+        /// <summary>
+        /// Writes data to possibly non-contiguous GPU mapped memory.
+        /// </summary>
+        /// <param name="va">GPU virtual address of the region to write into</param>
+        /// <param name="data">Data to be written</param>
+        /// <param name="writeCallback">Write callback</param>
+        private void WriteImpl(ulong va, ReadOnlySpan<byte> data, WriteCallback writeCallback)
+        {
+            if (IsContiguous(va, data.Length))
+            {
+                writeCallback(Translate(va), data);
+            }
+            else
+            {
+                int offset = 0, size;
+
+                if ((va & PageMask) != 0)
+                {
+                    ulong pa = Translate(va);
+
+                    size = Math.Min(data.Length, (int)PageSize - (int)(va & PageMask));
+
+                    writeCallback(pa, data.Slice(0, size));
+
+                    offset += size;
+                }
+
+                for (; offset < data.Length; offset += size)
+                {
+                    ulong pa = Translate(va + (ulong)offset);
+
+                    size = Math.Min(data.Length - offset, (int)PageSize);
+
+                    writeCallback(pa, data.Slice(offset, size));
+                }
+            }
         }
 
         /// <summary>
@@ -120,8 +217,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <param name="pa">CPU virtual address to map into</param>
         /// <param name="va">GPU virtual address to be mapped</param>
         /// <param name="size">Size in bytes of the mapping</param>
-        /// <returns>GPU virtual address of the mapping</returns>
-        public ulong Map(ulong pa, ulong va, ulong size)
+        public void Map(ulong pa, ulong va, ulong size)
         {
             lock (_pageTable)
             {
@@ -132,126 +228,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
                     SetPte(va + offset, pa + offset);
                 }
             }
-
-            return va;
         }
 
         /// <summary>
-        /// Maps a given range of pages to an allocated GPU virtual address.
-        /// The memory is automatically allocated by the memory manager.
+        /// Unmaps a given range of pages at the specified GPU virtual memory region.
         /// </summary>
-        /// <param name="pa">CPU virtual address to map into</param>
-        /// <param name="size">Size in bytes of the mapping</param>
-        /// <param name="alignment">Required alignment of the GPU virtual address in bytes</param>
-        /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
-        public ulong MapAllocate(ulong pa, ulong size, ulong alignment)
-        {
-            lock (_pageTable)
-            {
-                ulong va = GetFreePosition(size, alignment);
-
-                if (va != PteUnmapped)
-                {
-                    for (ulong offset = 0; offset < size; offset += PageSize)
-                    {
-                        SetPte(va + offset, pa + offset);
-                    }
-                }
-
-                return va;
-            }
-        }
-
-        /// <summary>
-        /// Maps a given range of pages to an allocated GPU virtual address.
-        /// The memory is automatically allocated by the memory manager.
-        /// This also ensures that the mapping is always done in the first 4GB of GPU address space.
-        /// </summary>
-        /// <param name="pa">CPU virtual address to map into</param>
-        /// <param name="size">Size in bytes of the mapping</param>
-        /// <returns>GPU virtual address where the range was mapped, or an all ones mask in case of failure</returns>
-        public ulong MapLow(ulong pa, ulong size)
-        {
-            lock (_pageTable)
-            {
-                ulong va = GetFreePosition(size, 1, PageSize);
-
-                if (va != PteUnmapped && va <= uint.MaxValue && (va + size) <= uint.MaxValue)
-                {
-                    for (ulong offset = 0; offset < size; offset += PageSize)
-                    {
-                        SetPte(va + offset, pa + offset);
-                    }
-                }
-                else
-                {
-                    va = PteUnmapped;
-                }
-
-                return va;
-            }
-        }
-
-        /// <summary>
-        /// Reserves memory at a fixed GPU memory location.
-        /// This prevents the reserved region from being used for memory allocation for map.
-        /// </summary>
-        /// <param name="va">GPU virtual address to reserve</param>
-        /// <param name="size">Size in bytes of the reservation</param>
-        /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
-        public ulong ReserveFixed(ulong va, ulong size)
-        {
-            lock (_pageTable)
-            {
-                MemoryUnmapped?.Invoke(this, new UnmapEventArgs(va, size));
-
-                for (ulong offset = 0; offset < size; offset += PageSize)
-                {
-                    if (IsPageInUse(va + offset))
-                    {
-                        return PteUnmapped;
-                    }
-                }
-
-                for (ulong offset = 0; offset < size; offset += PageSize)
-                {
-                    SetPte(va + offset, PteReserved);
-                }
-            }
-
-            return va;
-        }
-
-        /// <summary>
-        /// Reserves memory at any GPU memory location.
-        /// </summary>
-        /// <param name="size">Size in bytes of the reservation</param>
-        /// <param name="alignment">Reservation address alignment in bytes</param>
-        /// <returns>GPU virtual address of the reservation, or an all ones mask in case of failure</returns>
-        public ulong Reserve(ulong size, ulong alignment)
-        {
-            lock (_pageTable)
-            {
-                ulong address = GetFreePosition(size, alignment);
-
-                if (address != PteUnmapped)
-                {
-                    for (ulong offset = 0; offset < size; offset += PageSize)
-                    {
-                        SetPte(address + offset, PteReserved);
-                    }
-                }
-
-                return address;
-            }
-        }
-
-        /// <summary>
-        /// Frees memory that was previously allocated by a map or reserved.
-        /// </summary>
-        /// <param name="va">GPU virtual address to free</param>
-        /// <param name="size">Size in bytes of the region being freed</param>
-        public void Free(ulong va, ulong size)
+        /// <param name="va">GPU virtual address to unmap</param>
+        /// <param name="size">Size in bytes of the region being unmapped</param>
+        public void Unmap(ulong va, ulong size)
         {
             lock (_pageTable)
             {
@@ -266,113 +250,150 @@ namespace Ryujinx.Graphics.Gpu.Memory
         }
 
         /// <summary>
-        /// Gets the address of an unused (free) region of the specified size.
+        /// Checks if a region of GPU mapped memory is contiguous.
         /// </summary>
-        /// <param name="size">Size of the region in bytes</param>
-        /// <param name="alignment">Required alignment of the region address in bytes</param>
-        /// <param name="start">Start address of the search on the address space</param>
-        /// <returns>GPU virtual address of the allocation, or an all ones mask in case of failure</returns>
-        private ulong GetFreePosition(ulong size, ulong alignment = 1, ulong start = 1UL << 32)
+        /// <param name="va">GPU virtual address of the region</param>
+        /// <param name="size">Size of the region</param>
+        /// <returns>True if the region is contiguous, false otherwise</returns>
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool IsContiguous(ulong va, int size)
         {
-            // Note: Address 0 is not considered valid by the driver,
-            // when 0 is returned it's considered a mapping error.
-            ulong address  = start;
-            ulong freeSize = 0;
-
-            if (alignment == 0)
+            if (!ValidateAddress(va) || GetPte(va) == PteUnmapped)
             {
-                alignment = 1;
+                return false;
             }
 
-            alignment = (alignment + PageMask) & ~PageMask;
+            ulong endVa = (va + (ulong)size + PageMask) & ~PageMask;
 
-            while (address + freeSize < AddressSpaceSize)
+            va &= ~PageMask;
+
+            int pages = (int)((endVa - va) / PageSize);
+
+            for (int page = 0; page < pages - 1; page++)
             {
-                if (!IsPageInUse(address + freeSize))
+                if (!ValidateAddress(va + PageSize) || GetPte(va + PageSize) == PteUnmapped)
                 {
-                    freeSize += PageSize;
-
-                    if (freeSize >= size)
-                    {
-                        return address;
-                    }
+                    return false;
                 }
-                else
+
+                if (Translate(va) + PageSize != Translate(va + PageSize))
                 {
-                    address += freeSize + PageSize;
-                    freeSize = 0;
-
-                    ulong remainder = address % alignment;
-
-                    if (remainder != 0)
-                    {
-                        address = (address - remainder) + alignment;
-                    }
+                    return false;
                 }
+
+                va += PageSize;
             }
 
-            return PteUnmapped;
+            return true;
+        }
+
+        /// <summary>
+        /// Gets the physical regions that make up the given virtual address region.
+        /// </summary>
+        /// <param name="va">Virtual address of the range</param>
+        /// <param name="size">Size of the range</param>
+        /// <returns>Multi-range with the physical regions</returns>
+        /// <exception cref="InvalidMemoryRegionException">The memory region specified by <paramref name="va"/> and <paramref name="size"/> is not fully mapped</exception>
+        public MultiRange GetPhysicalRegions(ulong va, ulong size)
+        {
+            if (IsContiguous(va, (int)size))
+            {
+                return new MultiRange(Translate(va), size);
+            }
+
+            if (!IsMapped(va))
+            {
+                throw new InvalidMemoryRegionException($"The specified GPU virtual address 0x{va:X} is not mapped.");
+            }
+
+            ulong regionStart = Translate(va);
+            ulong regionSize = Math.Min(size, PageSize - (va & PageMask));
+
+            ulong endVa = va + size;
+            ulong endVaRounded = (endVa + PageMask) & ~PageMask;
+
+            va &= ~PageMask;
+
+            int pages = (int)((endVaRounded - va) / PageSize);
+
+            var regions = new List<MemoryRange>();
+
+            for (int page = 0; page < pages - 1; page++)
+            {
+                if (!IsMapped(va + PageSize))
+                {
+                    throw new InvalidMemoryRegionException($"The specified GPU virtual memory range 0x{va:X}..0x{(va + size):X} is not fully mapped.");
+                }
+
+                ulong newPa = Translate(va + PageSize);
+
+                if (Translate(va) + PageSize != newPa)
+                {
+                    regions.Add(new MemoryRange(regionStart, regionSize));
+                    regionStart = newPa;
+                    regionSize = 0;
+                }
+
+                va += PageSize;
+                regionSize += Math.Min(endVa - va, PageSize);
+            }
+
+            regions.Add(new MemoryRange(regionStart, regionSize));
+
+            return new MultiRange(regions.ToArray());
+        }
+
+        /// <summary>
+        /// Validates a GPU virtual address.
+        /// </summary>
+        /// <param name="va">Address to validate</param>
+        /// <returns>True if the address is valid, false otherwise</returns>
+        private static bool ValidateAddress(ulong va)
+        {
+            return va < (1UL << AddressSpaceBits);
         }
 
         /// <summary>
         /// Checks if a given page is mapped.
         /// </summary>
-        /// <param name="gpuVa">GPU virtual address of the page to check</param>
+        /// <param name="va">GPU virtual address of the page to check</param>
         /// <returns>True if the page is mapped, false otherwise</returns>
-        public bool IsMapped(ulong gpuVa)
+        public bool IsMapped(ulong va)
         {
-            return Translate(gpuVa) != PteUnmapped;
+            return Translate(va) != PteUnmapped;
         }
 
         /// <summary>
         /// Translates a GPU virtual address to a CPU virtual address.
         /// </summary>
-        /// <param name="gpuVa">GPU virtual address to be translated</param>
-        /// <returns>CPU virtual address</returns>
-        public ulong Translate(ulong gpuVa)
+        /// <param name="va">GPU virtual address to be translated</param>
+        /// <returns>CPU virtual address, or <see cref="PteUnmapped"/> if unmapped</returns>
+        public ulong Translate(ulong va)
         {
-            ulong baseAddress = GetPte(gpuVa);
-
-            if (baseAddress == PteUnmapped || baseAddress == PteReserved)
+            if (!ValidateAddress(va))
             {
                 return PteUnmapped;
             }
 
-            return baseAddress + (gpuVa & PageMask);
-        }
+            ulong baseAddress = GetPte(va);
 
-        /// <summary>
-        /// Checks if a given memory page is mapped or reserved.
-        /// </summary>
-        /// <param name="gpuVa">GPU virtual address of the page</param>
-        /// <returns>True if the page is mapped or reserved, false otherwise</returns>
-        private bool IsPageInUse(ulong gpuVa)
-        {
-            if (gpuVa >> PtLvl0Bits + PtLvl1Bits + PtPageBits != 0)
+            if (baseAddress == PteUnmapped)
             {
-                return false;
+                return PteUnmapped;
             }
 
-            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
-
-            if (_pageTable[l0] == null)
-            {
-                return false;
-            }
-
-            return _pageTable[l0][l1] != PteUnmapped;
+            return baseAddress + (va & PageMask);
         }
 
         /// <summary>
         /// Gets the Page Table entry for a given GPU virtual address.
         /// </summary>
-        /// <param name="gpuVa">GPU virtual address</param>
+        /// <param name="va">GPU virtual address</param>
         /// <returns>Page table entry (CPU virtual address)</returns>
-        private ulong GetPte(ulong gpuVa)
+        private ulong GetPte(ulong va)
         {
-            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
+            ulong l0 = (va >> PtLvl0Bit) & PtLvl0Mask;
+            ulong l1 = (va >> PtLvl1Bit) & PtLvl1Mask;
 
             if (_pageTable[l0] == null)
             {
@@ -385,12 +406,12 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// <summary>
         /// Sets a Page Table entry at a given GPU virtual address.
         /// </summary>
-        /// <param name="gpuVa">GPU virtual address</param>
+        /// <param name="va">GPU virtual address</param>
         /// <param name="pte">Page table entry (CPU virtual address)</param>
-        private void SetPte(ulong gpuVa, ulong pte)
+        private void SetPte(ulong va, ulong pte)
         {
-            ulong l0 = (gpuVa >> PtLvl0Bit) & PtLvl0Mask;
-            ulong l1 = (gpuVa >> PtLvl1Bit) & PtLvl1Mask;
+            ulong l0 = (va >> PtLvl0Bit) & PtLvl0Mask;
+            ulong l1 = (va >> PtLvl1Bit) & PtLvl1Mask;
 
             if (_pageTable[l0] == null)
             {

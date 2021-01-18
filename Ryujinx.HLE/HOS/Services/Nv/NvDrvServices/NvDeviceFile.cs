@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Memory;
-using Ryujinx.HLE.HOS.Kernel.Process;
 using System;
 using System.Diagnostics;
 using System.Reflection;
@@ -12,14 +11,14 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
     abstract class NvDeviceFile
     {
         public readonly ServiceCtx Context;
-        public readonly KProcess   Owner;
+        public readonly long       Owner;
 
         public string Path;
 
-        public NvDeviceFile(ServiceCtx context)
+        public NvDeviceFile(ServiceCtx context, long owner)
         {
             Context = context;
-            Owner   = context.Process;
+            Owner   = owner;
         }
 
         public virtual NvInternalResult QueryEvent(out int eventHandle, uint eventId)
@@ -29,8 +28,11 @@ namespace Ryujinx.HLE.HOS.Services.Nv.NvDrvServices
             return NvInternalResult.NotImplemented;
         }
 
-        public virtual NvInternalResult MapSharedMemory(KSharedMemory sharedMemory, uint argument)
+        public virtual NvInternalResult MapSharedMemory(int sharedMemoryHandle, uint argument)
         {
+            // Close shared memory immediately as we don't use it.
+            Context.Device.System.KernelContext.Syscall.CloseHandle(sharedMemoryHandle);
+
             return NvInternalResult.NotImplemented;
         }
 

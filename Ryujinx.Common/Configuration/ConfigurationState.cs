@@ -25,7 +25,7 @@ namespace Ryujinx.Configuration
                 public ReactiveObject<bool> DevColumn        { get; private set; }
                 public ReactiveObject<bool> VersionColumn    { get; private set; }
                 public ReactiveObject<bool> TimePlayedColumn { get; private set; }
-                public ReactiveObject<bool> LastPlayedColumn { get; private set; } 
+                public ReactiveObject<bool> LastPlayedColumn { get; private set; }
                 public ReactiveObject<bool> FileExtColumn    { get; private set; }
                 public ReactiveObject<bool> FileSizeColumn   { get; private set; }
                 public ReactiveObject<bool> PathColumn       { get; private set; }
@@ -199,11 +199,6 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableDockedMode { get; private set; }
 
             /// <summary>
-            /// Enables or disables multi-core scheduling of threads
-            /// </summary>
-            public ReactiveObject<bool> EnableMulticoreScheduling { get; private set; }
-
-            /// <summary>
             /// Enables or disables profiled translation cache persistency
             /// </summary>
             public ReactiveObject<bool> EnablePtc { get; private set; }
@@ -230,17 +225,16 @@ namespace Ryujinx.Configuration
 
             public SystemSection()
             {
-                Language                  = new ReactiveObject<Language>();
-                Region                    = new ReactiveObject<Region>();
-                TimeZone                  = new ReactiveObject<string>();
-                SystemTimeOffset          = new ReactiveObject<long>();
-                EnableDockedMode          = new ReactiveObject<bool>();
-                EnableMulticoreScheduling = new ReactiveObject<bool>();
-                EnablePtc                 = new ReactiveObject<bool>();
-                EnableFsIntegrityChecks   = new ReactiveObject<bool>();
-                FsGlobalAccessLogMode     = new ReactiveObject<int>();
-                AudioBackend              = new ReactiveObject<AudioBackend>();
-                IgnoreMissingServices     = new ReactiveObject<bool>();
+                Language                = new ReactiveObject<Language>();
+                Region                  = new ReactiveObject<Region>();
+                TimeZone                = new ReactiveObject<string>();
+                SystemTimeOffset        = new ReactiveObject<long>();
+                EnableDockedMode        = new ReactiveObject<bool>();
+                EnablePtc               = new ReactiveObject<bool>();
+                EnableFsIntegrityChecks = new ReactiveObject<bool>();
+                FsGlobalAccessLogMode   = new ReactiveObject<int>();
+                AudioBackend            = new ReactiveObject<AudioBackend>();
+                IgnoreMissingServices   = new ReactiveObject<bool>();
             }
         }
 
@@ -285,6 +279,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<float> MaxAnisotropy { get; private set; }
 
             /// <summary>
+            /// Aspect Ratio applied to the renderer window.
+            /// </summary>
+            public ReactiveObject<AspectRatio> AspectRatio { get; private set; }
+
+            /// <summary>
             /// Resolution Scale. An integer scale applied to applicable render targets. Values 1-4, or -1 to use a custom floating point scale instead.
             /// </summary>
             public ReactiveObject<int> ResScale { get; private set; }
@@ -314,6 +313,7 @@ namespace Ryujinx.Configuration
                 ResScale          = new ReactiveObject<int>();
                 ResScaleCustom    = new ReactiveObject<float>();
                 MaxAnisotropy     = new ReactiveObject<float>();
+                AspectRatio       = new ReactiveObject<AspectRatio>();
                 ShadersDumpPath   = new ReactiveObject<string>();
                 EnableVsync       = new ReactiveObject<bool>();
                 EnableShaderCache = new ReactiveObject<bool>();
@@ -360,6 +360,11 @@ namespace Ryujinx.Configuration
         /// </summary>
         public ReactiveObject<bool> CheckUpdatesOnStart { get; private set; }
 
+        /// <summary>
+        /// Show "Confirm Exit" Dialog
+        /// </summary>
+        public ReactiveObject<bool> ShowConfirmExit { get; private set; }
+
         private ConfigurationState()
         {
             Ui                       = new UiSection();
@@ -369,6 +374,7 @@ namespace Ryujinx.Configuration
             Hid                      = new HidSection();
             EnableDiscordIntegration = new ReactiveObject<bool>();
             CheckUpdatesOnStart      = new ReactiveObject<bool>();
+            ShowConfirmExit          = new ReactiveObject<bool>();
         }
 
         public ConfigurationFileFormat ToFileFormat()
@@ -394,6 +400,7 @@ namespace Ryujinx.Configuration
                 ResScale                  = Graphics.ResScale,
                 ResScaleCustom            = Graphics.ResScaleCustom,
                 MaxAnisotropy             = Graphics.MaxAnisotropy,
+                AspectRatio               = Graphics.AspectRatio,
                 GraphicsShadersDumpPath   = Graphics.ShadersDumpPath,
                 LoggingEnableDebug        = Logger.EnableDebug,
                 LoggingEnableStub         = Logger.EnableStub,
@@ -412,9 +419,9 @@ namespace Ryujinx.Configuration
                 DockedMode                = System.EnableDockedMode,
                 EnableDiscordIntegration  = EnableDiscordIntegration,
                 CheckUpdatesOnStart       = CheckUpdatesOnStart,
+                ShowConfirmExit           = ShowConfirmExit,
                 EnableVsync               = Graphics.EnableVsync,
                 EnableShaderCache         = Graphics.EnableShaderCache,
-                EnableMulticoreScheduling = System.EnableMulticoreScheduling,
                 EnablePtc                 = System.EnablePtc,
                 EnableFsIntegrityChecks   = System.EnableFsIntegrityChecks,
                 FsGlobalAccessLogMode     = System.FsGlobalAccessLogMode,
@@ -456,6 +463,7 @@ namespace Ryujinx.Configuration
             Graphics.ResScale.Value                = 1;
             Graphics.ResScaleCustom.Value          = 1.0f;
             Graphics.MaxAnisotropy.Value           = -1.0f;
+            Graphics.AspectRatio.Value             = AspectRatio.Fixed16x9;
             Graphics.ShadersDumpPath.Value         = "";
             Logger.EnableDebug.Value               = false;
             Logger.EnableStub.Value                = true;
@@ -464,7 +472,7 @@ namespace Ryujinx.Configuration
             Logger.EnableError.Value               = true;
             Logger.EnableGuest.Value               = true;
             Logger.EnableFsAccessLog.Value         = false;
-            Logger.FilteredClasses.Value           = new LogClass[] { };
+            Logger.FilteredClasses.Value           = Array.Empty<LogClass>();
             Logger.GraphicsDebugLevel.Value        = GraphicsDebugLevel.None;
             Logger.EnableFileLog.Value             = true;
             System.Language.Value                  = Language.AmericanEnglish;
@@ -474,10 +482,10 @@ namespace Ryujinx.Configuration
             System.EnableDockedMode.Value          = false;
             EnableDiscordIntegration.Value         = true;
             CheckUpdatesOnStart.Value              = true;
+            ShowConfirmExit.Value                  = true;
             Graphics.EnableVsync.Value             = true;
             Graphics.EnableShaderCache.Value       = true;
-            System.EnableMulticoreScheduling.Value = true;
-            System.EnablePtc.Value                 = false;
+            System.EnablePtc.Value                 = true;
             System.EnableFsIntegrityChecks.Value   = true;
             System.FsGlobalAccessLogMode.Value     = 0;
             System.AudioBackend.Value              = AudioBackend.OpenAl;
@@ -683,7 +691,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 8.");
 
-                configurationFileFormat.EnablePtc = false;
+                configurationFileFormat.EnablePtc = true;
 
                 configurationFileUpdated = true;
             }
@@ -761,6 +769,24 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 18)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 18.");
+
+                configurationFileFormat.AspectRatio = AspectRatio.Fixed16x9;
+
+                configurationFileUpdated = true;
+            }
+
+            if (configurationFileFormat.Version < 20)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 20.");
+
+                configurationFileFormat.ShowConfirmExit = true;
+
+                configurationFileUpdated = true;
+            }
+
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(configurationFileFormat.ControllerConfig);
             inputConfig.AddRange(configurationFileFormat.KeyboardConfig);
@@ -768,6 +794,7 @@ namespace Ryujinx.Configuration
             Graphics.ResScale.Value                = configurationFileFormat.ResScale;
             Graphics.ResScaleCustom.Value          = configurationFileFormat.ResScaleCustom;
             Graphics.MaxAnisotropy.Value           = configurationFileFormat.MaxAnisotropy;
+            Graphics.AspectRatio.Value             = configurationFileFormat.AspectRatio;
             Graphics.ShadersDumpPath.Value         = configurationFileFormat.GraphicsShadersDumpPath;
             Logger.EnableDebug.Value               = configurationFileFormat.LoggingEnableDebug;
             Logger.EnableStub.Value                = configurationFileFormat.LoggingEnableStub;
@@ -786,9 +813,9 @@ namespace Ryujinx.Configuration
             System.EnableDockedMode.Value          = configurationFileFormat.DockedMode;
             EnableDiscordIntegration.Value         = configurationFileFormat.EnableDiscordIntegration;
             CheckUpdatesOnStart.Value              = configurationFileFormat.CheckUpdatesOnStart;
+            ShowConfirmExit.Value                  = configurationFileFormat.ShowConfirmExit;
             Graphics.EnableVsync.Value             = configurationFileFormat.EnableVsync;
             Graphics.EnableShaderCache.Value       = configurationFileFormat.EnableShaderCache;
-            System.EnableMulticoreScheduling.Value = configurationFileFormat.EnableMulticoreScheduling;
             System.EnablePtc.Value                 = configurationFileFormat.EnablePtc;
             System.EnableFsIntegrityChecks.Value   = configurationFileFormat.EnableFsIntegrityChecks;
             System.FsGlobalAccessLogMode.Value     = configurationFileFormat.FsGlobalAccessLogMode;

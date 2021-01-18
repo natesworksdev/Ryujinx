@@ -214,7 +214,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public KernelResult Receive(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread  serverThread  = KernelContext.Scheduler.GetCurrentThread();
+            KThread  serverThread  = KernelStatic.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
 
             KernelContext.CriticalSection.Enter();
@@ -430,7 +430,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         descriptor.BufferAddress,
                         MemoryState.IsPoolAllocated,
                         MemoryState.IsPoolAllocated,
-                        MemoryPermission.Read,
+                        KMemoryPermission.Read,
                         MemoryAttribute.Uncached,
                         MemoryAttribute.None);
 
@@ -473,9 +473,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                 bool notReceiveDesc = isSendDesc || isExchangeDesc;
                 bool isReceiveDesc  = !notReceiveDesc;
 
-                MemoryPermission permission = index >= clientHeader.SendBuffersCount
-                    ? MemoryPermission.ReadAndWrite
-                    : MemoryPermission.Read;
+                KMemoryPermission permission = index >= clientHeader.SendBuffersCount
+                    ? KMemoryPermission.ReadAndWrite
+                    : KMemoryPermission.Read;
 
                 uint sizeHigh4 = (descWord2 >> 24) & 0xf;
 
@@ -559,9 +559,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 if (serverMsg.IsCustom || clientMsg.IsCustom)
                 {
-                    MemoryPermission permission = clientMsg.IsCustom
-                        ? MemoryPermission.None
-                        : MemoryPermission.Read;
+                    KMemoryPermission permission = clientMsg.IsCustom
+                        ? KMemoryPermission.None
+                        : KMemoryPermission.Read;
 
                     clientResult = clientProcess.MemoryManager.CopyDataToCurrentProcess(
                         copyDst,
@@ -594,7 +594,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         public KernelResult Reply(ulong customCmdBuffAddr = 0, ulong customCmdBuffSize = 0)
         {
-            KThread  serverThread  = KernelContext.Scheduler.GetCurrentThread();
+            KThread  serverThread  = KernelStatic.GetCurrentThread();
             KProcess serverProcess = serverThread.Owner;
 
             KernelContext.CriticalSection.Enter();
@@ -795,7 +795,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
                         descriptor.BufferSize,
                         MemoryState.IsPoolAllocated,
                         MemoryState.IsPoolAllocated,
-                        MemoryPermission.Read,
+                        KMemoryPermission.Read,
                         MemoryAttribute.Uncached,
                         MemoryAttribute.None,
                         descriptor.BufferAddress);
@@ -849,9 +849,9 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
                 if (serverMsg.IsCustom || clientMsg.IsCustom)
                 {
-                    MemoryPermission permission = clientMsg.IsCustom
-                        ? MemoryPermission.None
-                        : MemoryPermission.Read;
+                    KMemoryPermission permission = clientMsg.IsCustom
+                        ? KMemoryPermission.None
+                        : KMemoryPermission.Read;
 
                     clientResult = clientProcess.MemoryManager.CopyDataFromCurrentProcess(
                         copyDst,
@@ -889,7 +889,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
 
         private MessageHeader GetServerMessageHeader(Message serverMsg)
         {
-            KProcess currentProcess = KernelContext.Scheduler.GetCurrentProcess();
+            KProcess currentProcess = KernelStatic.GetCurrentProcess();
 
             uint word0 = currentProcess.CpuMemory.Read<uint>(serverMsg.Address + 0);
             uint word1 = currentProcess.CpuMemory.Read<uint>(serverMsg.Address + 4);
@@ -898,11 +898,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             return new MessageHeader(word0, word1, word2);
         }
 
-        private KernelResult GetCopyObjectHandle(
-            KThread  srcThread,
-            KProcess dstProcess,
-            int      srcHandle,
-            out int  dstHandle)
+        private KernelResult GetCopyObjectHandle(KThread srcThread, KProcess dstProcess, int srcHandle, out int dstHandle)
         {
             dstHandle = 0;
 
@@ -933,11 +929,7 @@ namespace Ryujinx.HLE.HOS.Kernel.Ipc
             }
         }
 
-        private KernelResult GetMoveObjectHandle(
-            KProcess srcProcess,
-            KProcess dstProcess,
-            int      srcHandle,
-            out int  dstHandle)
+        private KernelResult GetMoveObjectHandle(KProcess srcProcess, KProcess dstProcess, int srcHandle, out int dstHandle)
         {
             dstHandle = 0;
 
