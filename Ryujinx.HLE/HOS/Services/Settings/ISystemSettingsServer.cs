@@ -221,9 +221,11 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         }
 
        [Command(60)]
+        // // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
-            context.ResponseData.Write(true);
+            context.ResponseData.Write(true);//True means that the clock is synced with the internet, when on false it's not synced
+            
             return ResultCode.Success;
         }
 
