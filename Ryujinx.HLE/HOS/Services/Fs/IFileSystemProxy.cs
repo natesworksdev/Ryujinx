@@ -8,7 +8,7 @@ using Ryujinx.Common;
 using Ryujinx.Common.Logging;
 using Ryujinx.Cpu;
 using Ryujinx.HLE.HOS.Services.Fs.FileSystemProxy;
-using System.IO;
+
 
 using static Ryujinx.HLE.Utilities.StringUtils;
 using StorageId = Ryujinx.HLE.FileSystem.StorageId;
