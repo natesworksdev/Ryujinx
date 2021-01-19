@@ -343,6 +343,32 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return new MultiRange(regions.ToArray());
         }
 
+        public bool CompareRange(MultiRange range, ulong va)
+        {
+            va &= ~PageMask;
+
+            for (int i = 0; i < range.Count; i++)
+            {
+                MemoryRange currentRange = range.GetSubRange(i);
+
+                ulong address = currentRange.Address & ~PageMask;
+                ulong endAddress = (currentRange.EndAddress + PageMask) & ~PageMask;
+
+                while (address < endAddress)
+                {
+                    if (Translate(va) != address)
+                    {
+                        return false;
+                    }
+
+                    va += PageSize;
+                    address += PageSize;
+                }
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Validates a GPU virtual address.
         /// </summary>

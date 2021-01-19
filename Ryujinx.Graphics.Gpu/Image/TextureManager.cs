@@ -685,13 +685,20 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 Texture overlap = _textureOverlaps[index];
 
-                bool rangeMatches = range != null ? overlap.Range.Equals(range.Value) : overlap.Info.GpuAddress == info.GpuAddress;
-                if (!rangeMatches)
-                {
-                    continue;
-                }
-
                 TextureMatchQuality matchQuality = overlap.IsExactMatch(info, flags);
+
+                if (matchQuality != TextureMatchQuality.NoMatch)
+                {
+                    if (range != null && !overlap.Range.Equals(range.Value))
+                    {
+                        continue;
+                    }
+
+                    if (overlap.Info.GpuAddress != info.GpuAddress && !_context.MemoryManager.CompareRange(overlap.Range, info.GpuAddress))
+                    {
+                        continue;
+                    }
+                }
 
                 if (matchQuality == TextureMatchQuality.Perfect)
                 {
