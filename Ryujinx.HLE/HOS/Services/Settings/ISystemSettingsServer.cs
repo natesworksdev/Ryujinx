@@ -225,11 +225,7 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         // IsUserSystemClockAutomaticCorrectionEnabled() -> bool
         public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
         {
-            // NOTE: When set to true, is automatically synced with the internet.
             context.ResponseData.Write(true);
-
-            Logger.Stub?.PrintStub(LogClass.ServiceSet, "Stubbed");
-
             return ResultCode.Success;
         }
 
