@@ -343,6 +343,13 @@ namespace Ryujinx.Graphics.Gpu.Memory
             return new MultiRange(regions.ToArray());
         }
 
+        /// <summary>
+        /// Checks if a given GPU virtual memory range is mapped to the same physical regions
+        /// as the specified physical memory multi-range.
+        /// </summary>
+        /// <param name="range">Physical memory multi-range</param>
+        /// <param name="va">GPU virtual memory address</param>
+        /// <returns>True if the virtual memory region is mapped into the specified physical one, false otherwise</returns>
         public bool CompareRange(MultiRange range, ulong va)
         {
             va &= ~PageMask;
