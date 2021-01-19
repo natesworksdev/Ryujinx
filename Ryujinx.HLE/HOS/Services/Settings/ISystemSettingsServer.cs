@@ -219,7 +219,12 @@ namespace Ryujinx.HLE.HOS.Services.Settings
 
             return ResultCode.Success;
         }
-
+       [Command(60)]
+        public ResultCode IsUserSystemClockAutomaticCorrectionEnabled(ServiceCtx context)
+        {
+            context.ResponseData.Write(true);
+            return ResultCode.Success;
+        }
         public byte[] GetFirmwareData(Switch device)
         {
             long   titleId     = 0x0100000000000809;
