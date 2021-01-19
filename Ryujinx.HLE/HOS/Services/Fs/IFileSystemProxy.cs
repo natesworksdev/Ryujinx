@@ -465,6 +465,15 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             return ResultCode.Success;
         }
 
+        [Command(205)]
+        // OpenDataStorageWithProgramIndex(u8 storageId) -> object<nn::fssrv::sf::IStorage>
+        public ResultCode OpenDataStorageWithProgramIndex(ServiceCtx context)
+        {
+            byte unknown = context.RequestData.ReadByte();
+            MakeObject(context, new FileSystemProxy.IStorage(context.Device.FileSystem.RomFs.AsStorage()));
+            return ResultCode.Success;
+        }
+
         [Command(400)]
         // OpenDataStorageByCurrentProcess() -> object<nn::fssrv::sf::IStorage> dataStorage
         public ResultCode OpenDeviceOperator(ServiceCtx context)
