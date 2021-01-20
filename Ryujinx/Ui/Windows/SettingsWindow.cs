@@ -2,6 +2,7 @@ using Gtk;
 using Ryujinx.Audio;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
+using Ryujinx.Common.Logging;
 using Ryujinx.Configuration;
 using Ryujinx.Configuration.System;
 using Ryujinx.HLE.FileSystem;
@@ -389,6 +390,14 @@ namespace Ryujinx.Ui.Windows
             {
                 ConfigurationState.Instance.System.TimeZone.Value = _systemTimeZoneEntry.Text;
             }
+            if(ConfigurationState.Instance.Graphics.EnableVsync.Value != _vSyncToggle.Active)
+            {
+                Logger.Notice.Print(LogClass.Application, $"Vsync changed to: {_vSyncToggle.Active}");
+            }
+            if(ConfigurationState.Instance.System.EnableDockedMode.Value != _dockedModeToggle.Active)
+            {
+                Logger.Notice.Print(LogClass.Application, $"IsDocked changed to: {_dockedModeToggle.Active}");
+            }
 
             ConfigurationState.Instance.Logger.EnableError.Value               = _errorLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableWarn.Value                = _warningLogToggle.Active;
@@ -424,7 +433,10 @@ namespace Ryujinx.Ui.Windows
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
-                ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+                if((AudioBackend)_audioBackendStore.GetValue(activeIter, 1)!= ConfigurationState.Instance.System.AudioBackend.Value) { 
+                    ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+                    Logger.Notice.Print(LogClass.Application, $"AudioBackend changed to: {ConfigurationState.Instance.System.AudioBackend.Value}");
+                }
             }
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
