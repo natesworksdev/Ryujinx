@@ -461,7 +461,9 @@ namespace Ryujinx.Ui
                         return;
                     }
                 }
-
+                Logger.Notice.Print(LogClass.Application, $"AudioBackend: {ConfigurationState.Instance.System.AudioBackend.Value}");
+                Logger.Notice.Print(LogClass.Application, $"IsDocked: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
+                Logger.Notice.Print(LogClass.Application, $"Vsync: {ConfigurationState.Instance.Graphics.EnableVsync.Value}");
                 Logger.Notice.Print(LogClass.Application, $"Using Firmware Version: {firmwareVersion?.VersionString}");
 
                 if (Directory.Exists(path))
