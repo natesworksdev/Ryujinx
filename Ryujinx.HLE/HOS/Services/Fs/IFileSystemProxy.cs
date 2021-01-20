@@ -465,11 +465,20 @@ namespace Ryujinx.HLE.HOS.Services.Fs
             return ResultCode.Success;
         }
         [Command(205)]
-        // OpenDataStorageWithProgramIndex(u8 unknown) -> object<nn::fssrv::sf::IStorage>
+        // OpenDataStorageWithProgramIndex(u8 programIndex) -> object<nn::fssrv::sf::IStorage>
         public ResultCode OpenDataStorageWithProgramIndex(ServiceCtx context)
         {
-            byte unknown = context.RequestData.ReadByte();
-            MakeObject(context, new FileSystemProxy.IStorage(context.Device.FileSystem.RomFs.AsStorage()));
+            //This should use LibHac to parse the NCA contained in the game dump. 
+            //Then find the right one related to the needed program index and return the corresponding RomFS.
+            byte programIndex = context.RequestData.ReadByte();//was always 0 in my testing
+            if (programIndex == 0) { 
+                MakeObject(context, new FileSystemProxy.IStorage(context.Device.FileSystem.RomFs.AsStorage()));
+            }
+            else
+            {
+                throw new System.NotImplementedException();
+            }
+
             return ResultCode.Success;
         }
 
