@@ -1,5 +1,6 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
+using Ryujinx.HLE.HOS.Tamper.Conditions;
 using Ryujinx.HLE.HOS.Tamper.Operations;
 using Ryujinx.Memory;
 using System;
@@ -10,12 +11,15 @@ namespace Ryujinx.HLE.HOS.Tamper
 {
     public class AtmosphereCompiler
     {
-        const byte OpCodeStoreImmA   = 0;
-        const byte OpCodeSet         = 4;
-        const byte OpCodeLoad        = 5;
-        const byte OpCodeStoreRegA   = 6;
-        const byte OpCodeArithmetic1 = 7;
-        const byte OpCodeArithmetic2 = 9;
+        const byte OpCodeStoreImmA   = 0x0;
+        const byte OpCodeBeginCond   = 0x1;
+        const byte OpCodeEndCond     = 0x2;
+        const byte OpCodeFor         = 0x3;
+        const byte OpCodeSet         = 0x4;
+        const byte OpCodeLoad        = 0x5;
+        const byte OpCodeStoreRegA   = 0x6;
+        const byte OpCodeArithmetic1 = 0x7;
+        const byte OpCodeArithmetic2 = 0x9;
 
         /////////////////////////////////////////////
 
@@ -67,6 +71,26 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         /////////////////////////////////////////////
 
+        const int StAWidthIndex   = 1;
+        const int StASrcRegIndex  = 2;
+        const int StAAddrRegIndex = 3;
+        const int StADoIncIndex   = 4;
+        const int StAOffTypeIndex = 5;
+        const int StAOffRegIndex  = 6;
+        const int StAOffImmIndex  = 7;
+
+        const int StANoOff           = 0;
+        const int StARegOff          = 1;
+        const int StAImmOff          = 2;
+        const int StAMRWithBaseReg   = 3;
+        const int StAMRWithImmOff    = 4;
+        const int StAMRWithImmRegOff = 5;
+
+        const int StAValueSize1  = 1;
+        const int StAValueSize8  = 9;
+
+        /////////////////////////////////////////////
+
         const int Ar1WidthIndex  = 1;
         const int Ar1DstRegIndex = 3;
         const int Ar1OpTypeIndex = 4;
@@ -102,29 +126,70 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         /////////////////////////////////////////////
 
+        const int IfWidthIndex    = 1;
+        const int IfMemIndex      = 2;
+        const int IfCondTypeIndex = 3;
+        const int IfOffImmIndex   = 6;
+        const int IfValueIndex    = 16;
+
+        const int IfOffImmSize = 10;
+        const int IfValueSize4 = 8;
+        const int IfValueSize8 = 16;
+
+        /////////////////////////////////////////////
+
+        const int ForModeIndex  = 1;
+        const int ForRegIndex   = 3;
+        const int ForItersIndex = 8;
+
+        const int ForItersSize = 8;
+
+        const byte ForModeBegin = 0;
+        const byte ForModeEnd   = 1;
+
+        /////////////////////////////////////////////
+
+        const byte CmpCondGT = 1;
+        const byte CmpCondGE = 2;
+        const byte CmpCondLT = 3;
+        const byte CmpCondLE = 4;
+        const byte CmpCondEQ = 5;
+        const byte CmpCondNE = 6;
+
+        /////////////////////////////////////////////
+
+        struct CompilationBlock
+        {
+            public byte[] BaseInstruction;
+            public List<IOperation> Operations;
+
+            public CompilationBlock(byte[] baseInstruction)
+            {
+                BaseInstruction = baseInstruction;
+                Operations = new List<IOperation>();
+            }
+        }
+
         struct CompilationData
         {
-            public List<IOperation> CurrentBlock;
+            public CompilationBlock CurrentBlock { get { return BlockStack.Peek(); } }
+            public List<IOperation> CurrentOperations { get { return CurrentBlock.Operations; } }
+
             public Parameter<IVirtualMemoryManager> Memory;
+            public Stack<CompilationBlock> BlockStack;
             public Dictionary<byte, Register> Registers;
             public ulong ExeAddress;
             public ulong HeapAddress;
 
             public CompilationData(ulong exeAddress, ulong heapAddress)
             {
-                CurrentBlock = new List<IOperation>();
                 Memory = new Parameter<IVirtualMemoryManager>(null);
+                BlockStack = new Stack<CompilationBlock>();
                 Registers = new Dictionary<byte, Register>();
                 ExeAddress = exeAddress;
                 HeapAddress = heapAddress;
             }
         }
-
-        // TODO: The rest of the opcodes
-        // const byte OpCodeBeginIf = 1;
-        // const byte OpCodeEndIf = 2;
-        // const byte OpCodeLoop = 3;
-        // ...
 
         public TamperProgram Compile(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress)
         {
@@ -150,6 +215,7 @@ namespace Ryujinx.HLE.HOS.Tamper
         private TamperProgram CompileImpl(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress)
         {
             CompilationData data = new CompilationData(exeAddress, heapAddress);
+            data.BlockStack.Push(new CompilationBlock(null));
 
             // Parse the instructions.
 
@@ -163,6 +229,9 @@ namespace Ryujinx.HLE.HOS.Tamper
                 switch (opcode)
                 {
                     case OpCodeStoreImmA:   EmitStoreImmA  (instruction, ref data); break;
+                    case OpCodeBeginCond:   EmitBeginCond  (instruction, ref data); break;
+                    case OpCodeFor:         EmitFor        (instruction, ref data); break;
+                    case OpCodeEndCond:     EmitEndCond    (instruction, ref data); break;
                     case OpCodeSet:         EmitSet        (instruction, ref data); break;
                     case OpCodeLoad:        EmitLoad       (instruction, ref data); break;
                     case OpCodeStoreRegA:   EmitStoreRegA  (instruction, ref data); break;
@@ -180,11 +249,13 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             foreach (Register register in data.Registers.Values)
             {
-                data.CurrentBlock.Insert(position, new OpMov<ulong>(register, zero));
+                data.CurrentOperations.Insert(position, new OpMov<ulong>(register, zero));
                 position++;
             }
 
-            return new TamperProgram(data.Memory, new Block(data.CurrentBlock));
+            // TODO check block stack size
+
+            return new TamperProgram(data.Memory, new Block(data.CurrentOperations));
         }
 
         private void EmitSet(byte[] instruction, ref CompilationData data)
@@ -193,7 +264,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             ulong value = GetImmediate(instruction, SetValueIndex, SetValueSize);
             Value<ulong> dstValue = new Value<ulong>(value);
 
-            data.CurrentBlock.Add(new OpMov<ulong>(srcReg, dstValue));
+            data.CurrentOperations.Add(new OpMov<ulong>(srcReg, dstValue));
         }
 
         private void EmitLoad(byte[] instruction, ref CompilationData data)
@@ -230,7 +301,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             Value<ulong> storeAddr = new Value<ulong>(0);
             Value<ulong> offImmValue = new Value<ulong>(offImm);
-            data.CurrentBlock.Add(new OpAdd<ulong>(storeAddr, offReg, offImmValue));
+            data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, offReg, offImmValue));
 
             Pointer dstMem = new Pointer(storeAddr, data.Memory);
 
@@ -264,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                     // Replace the source address by the sum of the base and offset registers.
                     storeAddr = new Value<ulong>(0);
                     IOperand offsetReg = GetRegister(instruction[StROffRegIndex], ref data);
-                    data.CurrentBlock.Add(new OpAdd<ulong>(storeAddr, srcReg, offsetReg));
+                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, srcReg, offsetReg));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid offset mode {doIncrement} in Atmosphere cheat");
@@ -282,7 +353,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                 case 1:
                     // Increment the address register by width.
                     IOperand increment = new Value<ulong>(width);
-                    data.CurrentBlock.Add(new OpAdd<ulong>(srcReg, srcReg, increment));
+                    data.CurrentOperations.Add(new OpAdd<ulong>(srcReg, srcReg, increment));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid increment mode {doIncrement} in Atmosphere cheat");
@@ -370,7 +441,122 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
         }
 
+        private void EmitBeginCond(byte[] instruction, ref CompilationData data)
+        {
+            // Just start a new compilation block and parse the instruction itself at the end.
+            data.BlockStack.Push(new CompilationBlock(instruction));
+        }
+
+        private void EmitEndCond(byte[] instruction, ref CompilationData data)
+        {
+            // 1TMC00AA AAAAAAAA VVVVVVVV (VVVVVVVV)
+            // T: Width of memory write (1, 2, 4, or 8 bytes).
+            // M: Memory region to write to (0 = Main NSO, 1 = Heap).
+            // C: Condition to use, see below.
+            // A: Immediate offset to use from memory region base.
+            // V: Value to compare to.
+
+            // 20000000
+
+            // Use the conditional begin instruction stored in the stack.
+            instruction = data.CurrentBlock.BaseInstruction;
+
+            byte opcode = instruction[OpCodeIndex];
+
+            if (opcode != OpCodeBeginCond)
+            {
+                throw new TamperCompilationException($"Conditional end does not match opcode {opcode} in Atmosphere cheat");
+            }
+
+            byte width = instruction[IfWidthIndex];
+            byte source = instruction[IfMemIndex];
+            byte condition = instruction[IfCondTypeIndex];
+
+            ulong address = GetImmediate(instruction, IfOffImmIndex, IfOffImmSize);
+            address += GetAddressShift(source, ref data);
+
+            Value<ulong> loadAddr = new Value<ulong>(address);
+            Pointer srcMem = new Pointer(loadAddr, data.Memory);
+
+            ulong value = GetImmediate(instruction, IfValueIndex, width > 4 ? IfValueSize4 : IfValueSize8);
+            Value<ulong> compValue = new Value<ulong>(address);
+
+            ICondition condOp = null;
+
+            switch (condition)
+            {
+                case CmpCondGT: condOp = (ICondition)Create(typeof(CondGT<>), width, srcMem, compValue); break;
+                case CmpCondGE: condOp = (ICondition)Create(typeof(CondGE<>), width, srcMem, compValue); break;
+                case CmpCondLT: condOp = (ICondition)Create(typeof(CondLT<>), width, srcMem, compValue); break;
+                case CmpCondLE: condOp = (ICondition)Create(typeof(CondLE<>), width, srcMem, compValue); break;
+                case CmpCondEQ: condOp = (ICondition)Create(typeof(CondEQ<>), width, srcMem, compValue); break;
+                case CmpCondNE: condOp = (ICondition)Create(typeof(CondNE<>), width, srcMem, compValue); break;
+            }
+
+            // Create a conditional block with the current operations and nest it in the upper
+            // block of the stack.
+
+            IfBlock block = new IfBlock(condOp, data.CurrentOperations);
+            data.BlockStack.Pop();
+            data.CurrentOperations.Add(block);
+        }
+
+        private void EmitFor(byte[] instruction, ref CompilationData data)
+        {
+            // 300R0000 VVVVVVVV
+            // R: Register to use as loop counter.
+            // V: Number of iterations to loop.
+
+            // 310R0000
+
+            byte mode = instruction[ForModeIndex];
+            byte countRegIndex = instruction[ForRegIndex];
+
+            switch (mode)
+            {
+                case ForModeBegin:
+                    // Just start a new compilation block and parse the instruction itself at the end.
+                    data.BlockStack.Push(new CompilationBlock(instruction));
+                    return;
+                case ForModeEnd:
+                    break;
+                default:
+                    throw new TamperCompilationException($"Invalid loop {mode} in Atmosphere cheat");
+            }
+
+            // Use the loop begin instruction stored in the stack.
+            instruction = data.CurrentBlock.BaseInstruction;
+
+            byte opcode = instruction[OpCodeIndex];
+
+            if (opcode != OpCodeFor)
+            {
+                throw new TamperCompilationException($"Loop end does not match opcode {opcode} in Atmosphere cheat");
+            }
+
+            byte newCountRegIndex = instruction[ForRegIndex];
+            Register countReg = GetRegister(countRegIndex, ref data);
+            ulong countImm = GetImmediate(instruction, ForItersIndex, ForItersSize);
+
+            if (countRegIndex != newCountRegIndex)
+            {
+                throw new TamperCompilationException($"The register used for the loop changed from {countRegIndex} to {newCountRegIndex} in Atmosphere cheat");
+            }
+
+            // Create a loop block with the current operations and nest it in the upper
+            // block of the stack.
+
+            ForBlock block = new ForBlock(countImm, countReg, data.CurrentOperations);
+            data.BlockStack.Pop();
+            data.CurrentOperations.Add(block);
+        }
+
         private void Emit(Type instruction, byte width, ref CompilationData data, params IOperand[] operands)
+        {
+            data.CurrentOperations.Add((IOperation)Create(instruction, width, operands));
+        }
+
+        private Object Create(Type instruction, byte width, params IOperand[] operands)
         {
             Type realType;
 
@@ -384,7 +570,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                     throw new TamperCompilationException($"Invalid instruction width {width} in Atmosphere cheat");
             }
 
-            data.CurrentBlock.Add((IOperation)Activator.CreateInstance(realType, operands));
+            return Activator.CreateInstance(realType, operands);
         }
 
         private ulong GetImmediate(byte[] instruction, int index, int quartetCount)
