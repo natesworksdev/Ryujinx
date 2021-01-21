@@ -3560,24 +3560,24 @@ namespace ARMeilleure.Instructions
         {
             Operand roundMask;
             Operand truncMask;
-            Operand isNaNInfMask;
+            Operand expMask;
 
             if (scalar)
             {
-                roundMask = X86GetScalar(context, 0x00004000);
+                roundMask = X86GetScalar(context, 0x4000);
                 truncMask = X86GetScalar(context, unchecked((int)0xFFFF8000));
-                isNaNInfMask = X86GetScalar(context, 0x7F800000);
+                expMask = X86GetScalar(context, 0x7F800000);
             }
             else
             {
-                roundMask = X86GetAllElements(context, 0x00004000);
+                roundMask = X86GetAllElements(context, 0x4000);
                 truncMask = X86GetAllElements(context, unchecked((int)0xFFFF8000));
-                isNaNInfMask = X86GetAllElements(context, 0x7F800000);
+                expMask = X86GetAllElements(context, 0x7F800000);
             }
 
             Operand oValue = value;
-            Operand masked = context.AddIntrinsic(Intrinsic.X86Pand, value, isNaNInfMask);
-            Operand isNaNInf = context.AddIntrinsic(Intrinsic.X86Pcmpeqw, masked, isNaNInfMask);
+            Operand masked = context.AddIntrinsic(Intrinsic.X86Pand, value, expMask);
+            Operand isNaNInf = context.AddIntrinsic(Intrinsic.X86Pcmpeqw, masked, expMask);
 
             value = context.AddIntrinsic(Intrinsic.X86Paddw, value, roundMask);
             value = context.AddIntrinsic(Intrinsic.X86Pand, value, truncMask);
