@@ -118,7 +118,6 @@ namespace Ryujinx.Ui
 
             // Hide emulation context status bar.
             _statusBar.Hide();
-
             // Instanciate HLE objects.
             _virtualFileSystem      = VirtualFileSystem.CreateInstance();
             _contentManager         = new ContentManager(_virtualFileSystem);
@@ -206,30 +205,54 @@ namespace Ryujinx.Ui
 
             if (args.ShaderUpdate)
             {
-                _status.Visible = true;
-                _status.Text = "Compiling Shader...";
-                Thread.Sleep(20);
-                _status.Visible = false;
+
+                    Application.Invoke(delegate
+                    {
+                    if (!_statusProgressBar.Visible)
+                    {
+      
+                        }
+                        if (args.ShouldDisable)
+                        {
+                            _status.Visible = false;
+                        }
+                        else
+                        {
+                            Console.WriteLine("Compiling Shader");
+                            _status.Visible = true;
+                            _status.Text = "Compiling Shader...";
+
+
+                        }
+                    });
+             
             }
             else
             {
-                _status.Text = args.ClassName + ": " + args.Current.ToString() + " / " + args.Total.ToString();
-                if (args.Current > 0)
+                Application.Invoke(delegate
                 {
-                    _statusProgressBar.Value = args.Current;
-                    _statusProgressBar.MaxValue = args.Total;
-                }
 
-                if (args.ShouldDisable)
-                {
-                    _statusProgressBar.Visible = false;
-                    _status.Visible = false;
-                }
-                else if (_status.Visible == false)
-                {
-                    _statusProgressBar.Visible = true;
-                    _status.Visible = true;
-                }
+                    _status.Text = args.ClassName + ": " + args.Current.ToString() + " / " + args.Total.ToString();
+                    if (args.Current != 0) {
+                        Console.WriteLine((float)((float)args.Current / (float)args.Total) * 100f);
+                    _statusProgressBar.Value = (int)((float)((float)args.Current / (float)args.Total) * 100f);
+                    _statusProgressBar.MaxValue = 100;
+                    }
+
+                    if (args.ShouldDisable)
+                    {
+                        _statusProgressBar.Visible = false;
+                        _status.Visible = false;
+                    }
+                    else if (_status.Visible == false)
+                    {
+                        _statusProgressBar.Visible = true;
+                        _status.Visible = true;
+                    }
+
+
+                });
+            
             }
             //Note: Sometimes it weirdly failes and gives System.AccessViolationException when changing the text
         }

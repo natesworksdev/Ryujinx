@@ -741,7 +741,7 @@ namespace ARMeilleure.Translation.PTC
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
 
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
-            Logger.UpdateStatus(_translateCount, profiledFuncsToTranslateCount, "Ptc", true);
+            Logger.UpdateStatus(_translateCount, profiledFuncsToTranslateCount, "PPTC", true);
         }
 
         internal static void WriteInfoCodeRelocUnwindInfo(ulong address, ulong guestSize, bool highCq, PtcInfo ptcInfo)

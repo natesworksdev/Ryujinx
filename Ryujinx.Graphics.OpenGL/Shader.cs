@@ -27,6 +27,7 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.ShaderSource(Handle, code);
             GL.CompileShader(Handle);
+            Logger.UpdateStatus(0, 0, "Compiling shader...", true, true);
         }
 
         public void Dispose()
