@@ -81,7 +81,11 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     Hash128 key = guestProgramList[programIndex];
 
                     Logger.Info?.Print(LogClass.Gpu, $"Compiling shader {key} ({programIndex + 1} / {guestProgramList.Length})");
-
+                    
+                    if ((programIndex+1) % 50==0) { 
+                        Logger.UpdateStatus(programIndex + 1, guestProgramList.Length, "ShaderCache",false);
+                    }
+                    
                     byte[] hostProgramBinary = _cacheManager.GetHostProgramByHash(ref key);
                     bool hasHostCache = hostProgramBinary != null;
 
@@ -310,7 +314,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     _cacheManager.FlushToArchive();
                     _cacheManager.Synchronize();
                 }
-
+                Logger.UpdateStatus(0, 0, "ShaderCache",true);
                 Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
             }
         }

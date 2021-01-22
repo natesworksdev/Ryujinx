@@ -1,4 +1,5 @@
 using OpenTK.Graphics.OpenGL;
+using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
 using Ryujinx.Graphics.Shader;
 
@@ -10,6 +11,7 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Shader(ShaderStage stage, string code)
         {
+            Logger.UpdateStatus(0, 0, "Compiling shader...", false, true);
             ShaderType type = stage switch
             {
                 ShaderStage.Compute => ShaderType.ComputeShader,

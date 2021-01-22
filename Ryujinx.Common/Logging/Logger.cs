@@ -1,3 +1,4 @@
+using Ryujinx.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -15,6 +16,8 @@ namespace Ryujinx.Common.Logging
         private static readonly List<ILogTarget> m_LogTargets;
 
         public static event EventHandler<LogEventArgs> Updated;
+
+        public static event EventHandler<StatusChangedEventArgs> StatusChanged;
 
         public struct Log
         {
@@ -42,7 +45,6 @@ namespace Ryujinx.Common.Logging
                     Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
                 }
             }
-
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Print(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
             {
@@ -122,6 +124,11 @@ namespace Ryujinx.Common.Logging
         public static void RestartTime()
         {
             m_Time.Restart();
+        }
+
+        public static void UpdateStatus(int current,int total,string className,bool shouldDisable=false,bool shaderUpdate=false)
+        {
+            StatusChanged?.Invoke(null, new StatusChangedEventArgs(current, total, className,shouldDisable,shaderUpdate));
         }
 
         private static ILogTarget GetTarget(string targetName)

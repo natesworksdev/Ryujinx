@@ -86,9 +86,11 @@ namespace Ryujinx.Ui
         [GUI] TreeSelection   _gameTableSelection;
         [GUI] ScrolledWindow  _gameTableWindow;
         [GUI] Label           _gpuName;
+        [GUI] Label           _status;
         [GUI] Label           _progressLabel;
         [GUI] Label           _firmwareVersionLabel;
         [GUI] LevelBar        _progressBar;
+        [GUI] LevelBar        _statusProgressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
         [GUI] Box             _listStatusBox;
@@ -130,6 +132,8 @@ namespace Ryujinx.Ui
             WindowStateEvent += WindowStateEvent_Changed;
             DeleteEvent      += Window_Close;
 
+            Logger.StatusChanged += shaderCacheStatusChanged;
+
             _applicationLibrary.ApplicationAdded        += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
 
@@ -138,6 +142,7 @@ namespace Ryujinx.Ui
 
             GlRenderer.StatusUpdatedEvent += Update_StatusBar;
 
+            
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
                 _startFullScreen.Active = true;
@@ -194,6 +199,39 @@ namespace Ryujinx.Ui
             };
 
             Task.Run(RefreshFirmwareLabel);
+        }
+
+        private void shaderCacheStatusChanged(object o,StatusChangedEventArgs args)
+        {
+
+            if (args.ShaderUpdate)
+            {
+                _status.Visible = true;
+                _status.Text = "Compiling Shader...";
+                Thread.Sleep(20);
+                _status.Visible = false;
+            }
+            else
+            {
+                _status.Text = args.ClassName + ": " + args.Current.ToString() + " / " + args.Total.ToString();
+                if (args.Current > 0)
+                {
+                    _statusProgressBar.Value = args.Current;
+                    _statusProgressBar.MaxValue = args.Total;
+                }
+
+                if (args.ShouldDisable)
+                {
+                    _statusProgressBar.Visible = false;
+                    _status.Visible = false;
+                }
+                else if (_status.Visible == false)
+                {
+                    _statusProgressBar.Visible = true;
+                    _status.Visible = true;
+                }
+            }
+            //Note: Sometimes it weirdly failes and gives System.AccessViolationException when changing the text
         }
 
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)
@@ -335,6 +373,7 @@ namespace Ryujinx.Ui
 
                 _updatingGameTable = false;
             });
+
             applicationLibraryThread.Name         = "GUI.ApplicationLibraryThread";
             applicationLibraryThread.IsBackground = true;
             applicationLibraryThread.Start();
@@ -631,6 +670,7 @@ namespace Ryujinx.Ui
                 _firmwareInstallFile.Sensitive      = true;
                 _firmwareInstallDirectory.Sensitive = true;
             });
+            
         }
 
         private void RecreateFooterForMenu()
@@ -766,7 +806,6 @@ namespace Ryujinx.Ui
                 }
             });
         }
-
         private void Update_StatusBar(object sender, StatusUpdatedEventArgs args)
         {
             Application.Invoke(delegate
@@ -776,7 +815,6 @@ namespace Ryujinx.Ui
                 _gpuName.Text     = args.GpuName;
                 _dockedMode.Text  = args.DockedMode;
                 _aspectRatio.Text = args.AspectRatio;
-
                 if (args.VSyncEnabled)
                 {
                     _vSyncStatus.Attributes = new Pango.AttrList();
