@@ -806,6 +806,7 @@ namespace Ryujinx.Ui
                 }
             });
         }
+
         private void Update_StatusBar(object sender, StatusUpdatedEventArgs args)
         {
             Application.Invoke(delegate
