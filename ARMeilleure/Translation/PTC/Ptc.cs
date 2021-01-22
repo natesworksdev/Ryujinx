@@ -736,7 +736,6 @@ namespace ARMeilleure.Translation.PTC
             do
             {
                 Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
-                Logger.Status = $"Ptc: {_translateCount} of {profiledFuncsToTranslateCount} functions translated";
                 Logger.UpdateStatus(_translateCount, profiledFuncsToTranslateCount, "PPTC", false);
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
