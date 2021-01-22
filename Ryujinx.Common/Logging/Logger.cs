@@ -45,6 +45,7 @@ namespace Ryujinx.Common.Logging
                     Updated?.Invoke(null, new LogEventArgs(Level, m_Time.Elapsed, Thread.CurrentThread.Name, FormatMessage(logClass, caller, message)));
                 }
             }
+
             [MethodImpl(MethodImplOptions.AggressiveInlining)]
             public void Print(LogClass logClass, string message, object data, [CallerMemberName] string caller = "")
             {
