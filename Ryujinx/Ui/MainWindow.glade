@@ -469,13 +469,14 @@
                       </packing>
                     </child>
                     <child>
-                      <object class="GtkLevelBar" id="_progressBar">
+                      <object class="GtkProgressBar" id="_progressBar">
                         <property name="width_request">200</property>
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
                         <property name="halign">start</property>
                         <property name="margin_left">10</property>
                         <property name="margin_right">5</property>
+                        <property name="margin_bottom">6</property>
                       </object>
                       <packing>
                         <property name="expand">True</property>
@@ -680,16 +681,17 @@
                     </packing>
                   </child>
                   <child>
-                    <object class="GtkLevelBar" id="_statusProgressBar">
+                    <object class="GtkProgressBar" id="_statusProgressBar">
                       <property name="width_request">200</property>
                       <property name="can_focus">False</property>
                       <property name="margin_left">5</property>
                       <property name="margin_right">5</property>
+                      <property name="margin_bottom">6</property>
                       <property name="visible">False</property>
                     </object>
                     <packing>
                       <property name="expand">False</property>
-                      <property name="fill">False</property>
+                      <property name="fill">True</property>
                       <property name="position">12</property>
                     </packing>
                 </child>

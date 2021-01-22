@@ -89,8 +89,8 @@ namespace Ryujinx.Ui
         [GUI] Label           _status;
         [GUI] Label           _progressLabel;
         [GUI] Label           _firmwareVersionLabel;
-        [GUI] LevelBar        _progressBar;
-        [GUI] LevelBar        _statusProgressBar;
+        [GUI] ProgressBar        _progressBar;
+        [GUI] ProgressBar        _statusProgressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
         [GUI] Box             _listStatusBox;
@@ -200,61 +200,49 @@ namespace Ryujinx.Ui
             Task.Run(RefreshFirmwareLabel);
         }
 
-        private void shaderCacheStatusChanged(object o,StatusChangedEventArgs args)
+        private void shaderCacheStatusChanged(object o, StatusChangedEventArgs args)
         {
-
             if (args.ShaderUpdate)
             {
-
-                    Application.Invoke(delegate
-                    {
+                Application.Invoke(delegate
+                {
                     if (!_statusProgressBar.Visible)
                     {
-      
-                        }
                         if (args.ShouldDisable)
                         {
                             _status.Visible = false;
                         }
+
                         else
                         {
                             Console.WriteLine("Compiling Shader");
                             _status.Visible = true;
                             _status.Text = "Compiling Shader...";
-
-
                         }
-                    });
-             
+                    }
+                });
             }
+
             else
             {
                 Application.Invoke(delegate
                 {
-
                     _status.Text = args.ClassName + ": " + args.Current.ToString() + " / " + args.Total.ToString();
-                    if (args.Current != 0) {
-                        Console.WriteLine((float)((float)args.Current / (float)args.Total) * 100f);
-                    _statusProgressBar.Value = (int)((float)((float)args.Current / (float)args.Total) * 100f);
-                    _statusProgressBar.MaxValue = 100;
-                    }
-
+                    _statusProgressBar.Fraction = ((double)((double)args.Current / (double)args.Total));
+                    
                     if (args.ShouldDisable)
                     {
                         _statusProgressBar.Visible = false;
                         _status.Visible = false;
                     }
+
                     else if (_status.Visible == false)
                     {
                         _statusProgressBar.Visible = true;
                         _status.Visible = true;
                     }
-
-
                 });
-            
             }
-            //Note: Sometimes it weirdly failes and gives System.AccessViolationException when changing the text
         }
 
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)
@@ -378,7 +366,7 @@ namespace Ryujinx.Ui
 
             _emulationContext.Initialize();
         }
-
+        
         public void UpdateGameTable()
         {
             if (_updatingGameTable || _gameLoaded)
@@ -820,7 +808,7 @@ namespace Ryujinx.Ui
                     barValue = (float)args.NumAppsLoaded / args.NumAppsFound;
                 }
 
-                _progressBar.Value = barValue;
+                _progressBar.Fraction = barValue;
 
                 // Reset the vertical scrollbar to the top when titles finish loading
                 if (args.NumAppsLoaded == args.NumAppsFound)
