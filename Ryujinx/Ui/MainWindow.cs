@@ -830,11 +830,13 @@ namespace Ryujinx.Ui
         private void VSyncStatus_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             _emulationContext.EnableDeviceVsync = !_emulationContext.EnableDeviceVsync;
+            Logger.Notice.Print(LogClass.Application, $"VSync changed to: {_emulationContext.EnableDeviceVsync}");
         }
 
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
+            Logger.Notice.Print(LogClass.Application, $"IsDocked changed to: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
         }
 
         private void AspectRatio_Clicked(object sender, ButtonReleaseEventArgs args)

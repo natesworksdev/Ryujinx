@@ -433,9 +433,10 @@ namespace Ryujinx.Ui.Windows
 
             if (_audioBackendSelect.GetActiveIter(out TreeIter activeIter))
             {
-                if((AudioBackend)_audioBackendStore.GetValue(activeIter, 1)!= ConfigurationState.Instance.System.AudioBackend.Value) { 
-                    ConfigurationState.Instance.System.AudioBackend.Value = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
-                    Logger.Notice.Print(LogClass.Application, $"AudioBackend changed to: {ConfigurationState.Instance.System.AudioBackend.Value}");
+                AudioBackend audioBackend = (AudioBackend)_audioBackendStore.GetValue(activeIter, 1);
+                if (audioBackend != ConfigurationState.Instance.System.AudioBackend.Value) { 
+                    ConfigurationState.Instance.System.AudioBackend.Value = audioBackend;
+                    Logger.Notice.Print(LogClass.Application, $"AudioBackend changed to: {audioBackend}");
                 }
             }
 
