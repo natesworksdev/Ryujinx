@@ -226,7 +226,9 @@ namespace Ryujinx.HLE.HOS.Services.Settings
         {
             // NOTE: Set it to true means the clock is synced with internet. It's false instead.
             context.ResponseData.Write(true);
-            
+
+            Logger.Stub?.PrintStub(LogClass.ServiceSet, "Stubbed");
+
             return ResultCode.Success;
         }
 
