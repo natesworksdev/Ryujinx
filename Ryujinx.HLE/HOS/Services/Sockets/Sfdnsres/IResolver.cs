@@ -1,5 +1,6 @@
 using Ryujinx.Common.Logging;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -139,40 +140,27 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             return result;
         }
 
-        private AddrInfo ParseAddrInfoFromBytes(byte[] addrInfoBytes)
+        private AddrInfo ParseAddrInfoFromBytes(ReadOnlySpan<byte> addrInfoBytes)
         {
-            Span<byte> addrInfoBytesSpan = addrInfoBytes.ToArray().AsSpan();
-            Span<byte> magicSpan = addrInfoBytesSpan.Slice(0, 4);
-            Span<byte> flagsSpan = addrInfoBytesSpan.Slice(4, 4);
-            Span<byte> familySpan = addrInfoBytesSpan.Slice(8, 4);
-            Span<byte> socketTypeSpan = addrInfoBytesSpan.Slice(12, 4);
-            Span<byte> protocolSpan = addrInfoBytesSpan.Slice(16, 4);
-            Span<byte> addrLenSpan = addrInfoBytesSpan.Slice(20, 4);
-
-            if (BitConverter.IsLittleEndian)
-            {
-                magicSpan.Reverse();
-                flagsSpan.Reverse();
-                familySpan.Reverse();
-                socketTypeSpan.Reverse();
-                protocolSpan.Reverse();
-                addrLenSpan.Reverse();
-            }
-
-            int addrLen = BitConverter.ToInt32(addrLenSpan);
+            int magic = BinaryPrimitives.ReadInt32BigEndian(addrInfoBytes.Slice(0, 4));
+            int flags = BinaryPrimitives.ReadInt32BigEndian(addrInfoBytes.Slice(4, 4));
+            AddressFamily addressFamily = (AddressFamily)BinaryPrimitives.ReadInt32BigEndian(addrInfoBytes.Slice(8, 4));
+            int socketType = BinaryPrimitives.ReadInt32BigEndian(addrInfoBytes.Slice(12, 4));
+            int protocol = BinaryPrimitives.ReadInt32BigEndian(addrInfoBytes.Slice(16, 4));
+            int addrLen = BinaryPrimitives.ReadInt32BigEndian(addrInfoBytes.Slice(20, 4));
             // If ai_family is recognized as AF_INET6 (28) or AF_INET (2),
             // ai_addr is read as struct sockaddr_in or struct sockaddr_in6.
             // Otherwise, it's just read as u8[ai_addrlen].
-            byte[] addrs = addrInfoBytesSpan.Slice(24, (addrLen != 0 ? addrLen : 4)).ToArray();
-            string canonName = Encoding.ASCII.GetString(addrInfoBytesSpan.Slice(24 + (addrLen != 0 ? addrLen : 4))).Replace("\0", "");
+            byte[] addrs = addrInfoBytes.Slice(24, (addrLen != 0 ? addrLen : 4)).ToArray();
+            string canonName = Encoding.ASCII.GetString(addrInfoBytes.Slice(24 + (addrLen != 0 ? addrLen : 4))).Replace("\0", "");
 
             return new AddrInfo
             {
-                Magic = BitConverter.ToInt32(magicSpan),
-                Flags = BitConverter.ToInt32(flagsSpan),
-                Family = (AddressFamily)BitConverter.ToInt32(familySpan),
-                SocketType = BitConverter.ToInt32(socketTypeSpan),
-                Protocol = BitConverter.ToInt32(protocolSpan),
+                Magic = magic,
+                Flags = flags,
+                Family = addressFamily,
+                SocketType = socketType,
+                Protocol = protocol,
                 Addrs = addrs,
                 CanonName = canonName
             };
