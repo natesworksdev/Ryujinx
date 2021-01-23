@@ -1,5 +1,6 @@
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
+using System.Collections.Generic;
 using System.Diagnostics;
 
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -10,6 +11,8 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static void RunPass(ControlFlowGraph cfg)
         {
+            var uses = BuildUses(cfg);
+
             bool modified;
 
             do
@@ -26,11 +29,11 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         bool isUnused = IsUnused(node);
 
-                        if (!(node is Operation operation) || isUnused)
+                        if (node is not Operation operation || isUnused)
                         {
                             if (isUnused)
                             {
-                                RemoveNode(block, node);
+                                RemoveNode(block, uses, node);
 
                                 modified = true;
                             }
@@ -40,9 +43,21 @@ namespace ARMeilleure.CodeGen.Optimizations
                             continue;
                         }
 
-                        ConstantFolding.RunPass(operation);
+                        Operand op = ConstantFolding.RunPass(operation);
 
-                        Simplification.RunPass(operation);
+                        if (op != null)
+                        {
+                            RemoveAllUses(uses, node);
+                            operation.TurnIntoCopy(op);
+                        }
+
+                        op = Simplification.RunPass(operation);
+
+                        if (op != null)
+                        {
+                            RemoveAllUses(uses, node);
+                            operation.TurnIntoCopy(op);
+                        }
 
                         if (DestIsLocalVar(operation))
                         {   
@@ -52,14 +67,14 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                                 if (modified && IsUnused(operation))
                                 {
-                                    RemoveNode(block, node);
+                                    RemoveNode(block, uses, node);
                                 }
                             }
                             else if (IsPropagableCopy(operation))
                             {
                                 PropagateCopy(operation);
 
-                                RemoveNode(block, node);
+                                RemoveNode(block, uses, node);
 
                                 modified = true;
                             }
@@ -74,6 +89,8 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         public static void RemoveUnusedNodes(ControlFlowGraph cfg)
         {
+            var uses = BuildUses(cfg);
+
             bool modified;
 
             do
@@ -90,7 +107,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         if (IsUnused(node))
                         {
-                            RemoveNode(block, node);
+                            RemoveNode(block, uses, node);
 
                             modified = true;
                         }
@@ -100,6 +117,35 @@ namespace ARMeilleure.CodeGen.Optimizations
                 }
             }
             while (modified);
+        }
+
+        private static Dictionary<Operand, List<Node>> BuildUses(ControlFlowGraph cfg)
+        {
+            var uses = new Dictionary<Operand, List<Node>>();
+
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
+            {
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                {
+                    for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
+                    {
+                        Operand source = node.GetSource(srcIndex);
+
+                        if (source.Kind == OperandKind.LocalVariable)
+                        {
+                            if (!uses.TryGetValue(source, out var list))
+                            {
+                                list = new List<Node>();
+                                uses.Add(source, list);
+                            }
+
+                            list.Add(node);
+                        }
+                    }
+                }
+            }
+
+            return uses;
         }
 
         private static bool PropagateCompare(Operation compOp)
@@ -207,11 +253,12 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static void RemoveNode(BasicBlock block, Node node)
+        private static void RemoveNode(BasicBlock block, Dictionary<Operand, List<Node>> uses, Node node)
         {
             // Remove a node from the nodes list, and also remove itself
             // from all the use lists on the operands that this node uses.
             block.Operations.Remove(node);
+            RemoveAllUses(uses, node);
 
             for (int index = 0; index < node.SourcesCount; index++)
             {
@@ -221,6 +268,26 @@ namespace ARMeilleure.CodeGen.Optimizations
             Debug.Assert(node.Destination == null || node.Destination.Uses.Count == 0);
 
             node.Destination = null;
+        }
+
+        private static void RemoveAllUses(Dictionary<Operand, List<Node>> uses, Node node)
+        {
+            for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
+            {
+                Operand source = node.GetSource(srcIndex);
+
+                if (uses.TryGetValue(source, out var list))
+                {
+                    if (list.Count > 1)
+                    {
+                        list.Remove(node);
+                    }
+                    else
+                    {
+                        uses.Remove(source);
+                    }
+                }
+            }
         }
 
         private static bool IsUnused(Node node)

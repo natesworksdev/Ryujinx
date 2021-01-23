@@ -49,9 +49,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             public bool IsBlockLocal => _first == _last;
 
-            public LocalInfo(OperandType type, int uses)
+            public LocalInfo(OperandType type)
             {
-                Uses = uses;
                 Type = type;
 
                 _first = -1;
@@ -69,6 +68,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 {
                     _last = blkIndex;
                 }
+
+                Uses++;
             }
         }
 
@@ -143,7 +144,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             {
                                 dest.NumberLocal(locInfo.Count + 1);
 
-                                info = new LocalInfo(dest.Type, UsesCount(dest));
+                                info = new LocalInfo(dest.Type);
 
                                 locInfo.Add(info);
                             }
