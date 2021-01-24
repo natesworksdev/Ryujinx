@@ -1032,6 +1032,11 @@ namespace Ryujinx.Ui
                         thread.Start();
                     }
                 }
+                catch (LibHac.MissingKeyException ex)
+                {
+                    Logger.Error?.Print(LogClass.Application, ex.ToString());
+                    UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
+                }
                 catch (Exception ex)
                 {
                     GtkDialog.CreateErrorDialog(ex.Message);
