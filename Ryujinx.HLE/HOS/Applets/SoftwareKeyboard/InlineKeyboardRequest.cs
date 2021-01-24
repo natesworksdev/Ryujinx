@@ -5,7 +5,6 @@
     /// </summary>
     enum InlineKeyboardRequest : uint
     {
-        Unknown0                    = 0x0,
         Finalize                    = 0x4,
         SetUserWordInfo             = 0x6,
         SetCustomizeDic             = 0x7,

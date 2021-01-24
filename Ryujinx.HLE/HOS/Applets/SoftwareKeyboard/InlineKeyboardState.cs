@@ -6,9 +6,9 @@
     enum InlineKeyboardState : uint
     {
         Uninitialized = 0x0,
-        Initializing  = 0x1,
+        Initialized   = 0x1,
         Ready         = 0x2,
         DataAvailable = 0x3,
-        Completed     = 0x4
+        Complete      = 0x4
     }
 }
