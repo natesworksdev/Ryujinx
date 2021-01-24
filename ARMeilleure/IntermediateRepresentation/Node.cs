@@ -101,10 +101,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void SetSource(int index, Operand source)
         {
-            RemoveUse(_sources[index]);
-
-            AddUse(source);
-
             _sources[index] = source;
         }
 
@@ -156,18 +152,8 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        private void RemoveOldSources()
-        {
-            for (int index = 0; index < _sources.Count; index++)
-            {
-                RemoveUse(_sources[index]);
-            }
-        }
-
         public void SetSource(Operand source)
         {
-            RemoveOldSources();
-
             if (source == null)
             {
                 _sources.Clear();
@@ -177,24 +163,16 @@ namespace ARMeilleure.IntermediateRepresentation
                 Resize(_sources, 1);
 
                 _sources[0] = source;
-
-                AddUse(source);
             }
         }
 
         public void SetSources(Operand[] sources)
         {
-            RemoveOldSources();
-
             Resize(_sources, sources.Length);
 
             for (int index = 0; index < sources.Length; index++)
             {
-                Operand newOp = sources[index];
-
-                _sources[index] = newOp;
-
-                AddUse(newOp);
+                _sources[index] = sources[index];
             }
         }
 
@@ -248,60 +226,6 @@ namespace ARMeilleure.IntermediateRepresentation
                 if (memOp.Index != null)
                 {
                     memOp.Index.Assignments.Remove(this);
-                }
-            }
-        }
-
-        private void AddUse(Operand op)
-        {
-            if (op == null)
-            {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Uses.Add(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = (MemoryOperand)op;
-
-                if (memOp.BaseAddress != null)
-                {
-                    memOp.BaseAddress.Uses.Add(this);
-                }
-
-                if (memOp.Index != null)
-                {
-                    memOp.Index.Uses.Add(this);
-                }
-            }
-        }
-
-        private void RemoveUse(Operand op)
-        {
-            if (op == null)
-            {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Uses.Remove(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = (MemoryOperand)op;
-
-                if (memOp.BaseAddress != null)
-                {
-                    memOp.BaseAddress.Uses.Remove(this);
-                }
-
-                if (memOp.Index != null)
-                {
-                    memOp.Index.Uses.Remove(this);
                 }
             }
         }

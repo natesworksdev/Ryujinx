@@ -116,12 +116,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             MemoryOperand memOp = (MemoryOperand)source;
 
-                            if (memOp.BaseAddress != null)
+                            if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
                             {
                                 locInfo[memOp.BaseAddress.AsInt32() - 1].SetBlockIndex(block.Index);
                             }
 
-                            if (memOp.Index != null)
+                            if (memOp.Index != null && memOp.Index.Kind == OperandKind.LocalVariable)
                             {
                                 locInfo[memOp.Index.AsInt32() - 1].SetBlockIndex(block.Index);
                             }
@@ -422,11 +422,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             useMask |= 1 << selectedReg;
 
             return Register(selectedReg, local.Type.ToRegisterType(), local.Type);
-        }
-
-        private static int UsesCount(Operand local)
-        {
-            return local.Assignments.Count + local.Uses.Count;
         }
     }
 }

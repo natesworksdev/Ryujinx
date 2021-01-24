@@ -19,7 +19,7 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     nextNode = node.ListNext;
 
-                    if (!(node is Operation operation))
+                    if (node is not Operation operation)
                     {
                         continue;
                     }

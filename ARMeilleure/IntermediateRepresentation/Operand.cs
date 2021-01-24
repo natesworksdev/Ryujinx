@@ -14,12 +14,10 @@ namespace ARMeilleure.IntermediateRepresentation
         public int? PtcIndex    { get; private set; }
 
         public List<Node> Assignments { get; }
-        public List<Node> Uses        { get; }
 
         public Operand()
         {
             Assignments = new List<Node>();
-            Uses        = new List<Node>();
         }
 
         public Operand(OperandKind kind, OperandType type = OperandType.None) : this()
@@ -44,7 +42,6 @@ namespace ARMeilleure.IntermediateRepresentation
             PtcIndex    = index;
 
             Assignments.Clear();
-            Uses.Clear();
 
             return this;
         }
