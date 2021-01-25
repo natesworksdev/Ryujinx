@@ -1,7 +1,9 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Tamper;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -28,6 +30,7 @@ namespace Ryujinx.HLE.HOS
         private Switch _device;
         private Thread _tamperThread = null;
         private ConcurrentQueue<Tampering> _tamperings = new ConcurrentQueue<Tampering>();
+        private long _pressedKeys = 0;
 
         public TamperMachine(Switch device)
         {
@@ -109,8 +112,11 @@ namespace Ryujinx.HLE.HOS
 
                         try
                         {
+                            long pressedKeys = Thread.VolatileRead(ref _pressedKeys);
+
                             // TODO: Mechanism to abort execution if the process exits?
                             tampering.Program.Memory.Value = process.CpuMemory;
+                            tampering.Program.PressedKeys.Value = pressedKeys;
                             tampering.Program.EntryPoint.Execute();
                         }
                         catch
@@ -128,6 +134,23 @@ namespace Ryujinx.HLE.HOS
                     return;
                 }
             }
+        }
+
+        public void UpdateInput(List<GamepadInput> gamepadInputs)
+        {
+            // Look for the input of the player one.
+            foreach (GamepadInput input in gamepadInputs)
+            {
+                if (input.PlayerId == PlayerIndex.Player1)
+                {
+                    Thread.VolatileWrite(ref _pressedKeys, (long)input.Buttons);
+                    return;
+                }
+            }
+
+            // Clear the input because player one is not conected.
+            // TODO: Fallback to another?
+            Thread.VolatileWrite(ref _pressedKeys, 0);
         }
     }
 }

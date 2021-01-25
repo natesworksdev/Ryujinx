@@ -19,6 +19,7 @@ namespace Ryujinx.HLE.HOS.Tamper
         const byte OpCodeLoad        = 0x5;
         const byte OpCodeStoreRegA   = 0x6;
         const byte OpCodeArithmetic1 = 0x7;
+        const byte OpCodeInputCond   = 0x8;
         const byte OpCodeArithmetic2 = 0x9;
 
         /////////////////////////////////////////////
@@ -158,6 +159,12 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         /////////////////////////////////////////////
 
+        const int InputMaskIndex = 1;
+
+        const int InputMaskSize = 7;
+
+        /////////////////////////////////////////////
+
         struct CompilationBlock
         {
             public byte[] BaseInstruction;
@@ -176,6 +183,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             public List<IOperation> CurrentOperations { get { return CurrentBlock.Operations; } }
 
             public Parameter<IVirtualMemoryManager> Memory;
+            public Parameter<long> PressedKeys;
             public Stack<CompilationBlock> BlockStack;
             public Dictionary<byte, Register> Registers;
             public ulong ExeAddress;
@@ -184,6 +192,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             public CompilationData(ulong exeAddress, ulong heapAddress)
             {
                 Memory = new Parameter<IVirtualMemoryManager>(null);
+                PressedKeys = new Parameter<long>(0);
                 BlockStack = new Stack<CompilationBlock>();
                 Registers = new Dictionary<byte, Register>();
                 ExeAddress = exeAddress;
@@ -236,6 +245,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                     case OpCodeLoad:        EmitLoad       (instruction, ref data); break;
                     case OpCodeStoreRegA:   EmitStoreRegA  (instruction, ref data); break;
                     case OpCodeArithmetic1: EmitArithmetic1(instruction, ref data); break;
+                    case OpCodeInputCond  : EmitBeginCond  (instruction, ref data); break;
                     case OpCodeArithmetic2: EmitArithmetic2(instruction, ref data); break;
                     default:
                         throw new TamperCompilationException($"Opcode {opcode} not implemented in Atmosphere cheat");
@@ -255,7 +265,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             // TODO check block stack size
 
-            return new TamperProgram(data.Memory, new Block(data.CurrentOperations));
+            return new TamperProgram(data.Memory, data.PressedKeys, new Block(data.CurrentOperations));
         }
 
         private void EmitSet(byte[] instruction, ref CompilationData data)
@@ -456,6 +466,11 @@ namespace Ryujinx.HLE.HOS.Tamper
             // A: Immediate offset to use from memory region base.
             // V: Value to compare to.
 
+            // 8kkkkkkk
+            // k: Keypad mask to check against, see below.
+            // Note that for multiple button combinations, the bitmasks should be ORd together.
+            // The Keypad Values are the direct output of hidKeysDown().
+
             // 20000000
 
             // Use the conditional begin instruction stored in the stack.
@@ -463,34 +478,18 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             byte opcode = instruction[OpCodeIndex];
 
-            if (opcode != OpCodeBeginCond)
+            ICondition condOp;
+
+            switch (opcode)
             {
-                throw new TamperCompilationException($"Conditional end does not match opcode {opcode} in Atmosphere cheat");
-            }
-
-            byte width = instruction[IfWidthIndex];
-            byte source = instruction[IfMemIndex];
-            byte condition = instruction[IfCondTypeIndex];
-
-            ulong address = GetImmediate(instruction, IfOffImmIndex, IfOffImmSize);
-            address += GetAddressShift(source, ref data);
-
-            Value<ulong> loadAddr = new Value<ulong>(address);
-            Pointer srcMem = new Pointer(loadAddr, data.Memory);
-
-            ulong value = GetImmediate(instruction, IfValueIndex, width > 4 ? IfValueSize4 : IfValueSize8);
-            Value<ulong> compValue = new Value<ulong>(address);
-
-            ICondition condOp = null;
-
-            switch (condition)
-            {
-                case CmpCondGT: condOp = (ICondition)Create(typeof(CondGT<>), width, srcMem, compValue); break;
-                case CmpCondGE: condOp = (ICondition)Create(typeof(CondGE<>), width, srcMem, compValue); break;
-                case CmpCondLT: condOp = (ICondition)Create(typeof(CondLT<>), width, srcMem, compValue); break;
-                case CmpCondLE: condOp = (ICondition)Create(typeof(CondLE<>), width, srcMem, compValue); break;
-                case CmpCondEQ: condOp = (ICondition)Create(typeof(CondEQ<>), width, srcMem, compValue); break;
-                case CmpCondNE: condOp = (ICondition)Create(typeof(CondNE<>), width, srcMem, compValue); break;
+                case OpCodeBeginCond:
+                    condOp = GetIfCondition(instruction, ref data);
+                    break;
+                case OpCodeInputCond:
+                    condOp = GetInputCondition(instruction, ref data);
+                    break;
+                default:
+                    throw new TamperCompilationException($"Conditional end does not match opcode {opcode} in Atmosphere cheat");
             }
 
             // Create a conditional block with the current operations and nest it in the upper
@@ -571,6 +570,40 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
 
             return Activator.CreateInstance(realType, operands);
+        }
+
+        private ICondition GetIfCondition(byte[] instruction, ref CompilationData data)
+        {
+            byte width = instruction[IfWidthIndex];
+            byte source = instruction[IfMemIndex];
+            byte condition = instruction[IfCondTypeIndex];
+
+            ulong address = GetImmediate(instruction, IfOffImmIndex, IfOffImmSize);
+            address += GetAddressShift(source, ref data);
+
+            Value<ulong> loadAddr = new Value<ulong>(address);
+            Pointer srcMem = new Pointer(loadAddr, data.Memory);
+
+            ulong value = GetImmediate(instruction, IfValueIndex, width > 4 ? IfValueSize4 : IfValueSize8);
+            Value<ulong> compValue = new Value<ulong>(address);
+
+            switch (condition)
+            {
+                case CmpCondGT: return (ICondition)Create(typeof(CondGT<>), width, srcMem, compValue);
+                case CmpCondGE: return (ICondition)Create(typeof(CondGE<>), width, srcMem, compValue);
+                case CmpCondLT: return (ICondition)Create(typeof(CondLT<>), width, srcMem, compValue);
+                case CmpCondLE: return (ICondition)Create(typeof(CondLE<>), width, srcMem, compValue);
+                case CmpCondEQ: return (ICondition)Create(typeof(CondEQ<>), width, srcMem, compValue);
+                case CmpCondNE: return (ICondition)Create(typeof(CondNE<>), width, srcMem, compValue);
+                default:
+                    throw new TamperCompilationException($"Invalid condition {condition} in Atmosphere cheat");
+            }
+        }
+
+        private ICondition GetInputCondition(byte[] instruction, ref CompilationData data)
+        {
+            ulong mask = GetImmediate(instruction, InputMaskIndex, InputMaskSize);
+            return new InputMask((long)mask, data.PressedKeys);
         }
 
         private ulong GetImmediate(byte[] instruction, int index, int quartetCount)
