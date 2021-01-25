@@ -29,6 +29,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private bool _isBackground = false;
         private bool _alreadyShown = false;
+        private volatile bool _useChangedStringV2 = false;
 
         private AppletSession _normalSession;
         private AppletSession _interactiveSession;
@@ -65,6 +66,7 @@ namespace Ryujinx.HLE.HOS.Applets
             _interactiveSession.DataAvailable += OnInteractiveData;
 
             _alreadyShown = false;
+            _useChangedStringV2 = false;
 
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
@@ -272,10 +274,10 @@ namespace Ryujinx.HLE.HOS.Applets
                 switch (request)
                 {
                     case InlineKeyboardRequest.UseChangedStringV2:
-                        // Not used because we only send the entire string after confirmation.
+                        _useChangedStringV2 = true;
                         break;
                     case InlineKeyboardRequest.UseMovedCursorV2:
-                        // Not used because we only send the entire string after confirmation.
+                        // Not used because we do not have a cursor to move.
                         break;
                     case InlineKeyboardRequest.SetUserWordInfo:
                         remaining = stream.Length - stream.Position;
@@ -380,6 +382,11 @@ namespace Ryujinx.HLE.HOS.Applets
             long currentMillis = PerformanceCounter.ElapsedMilliseconds;
             long inputElapsedMillis = currentMillis - _lastTextSetMillis;
 
+            // Reset the input text.
+            InlineKeyboardState newState = InlineKeyboardState.DataAvailable;
+            SetInlineState(newState);
+            ChangedString("", newState);
+
             if (inputElapsedMillis < DebounceTimeMillis)
             {
                 // Debounce a fast Calc request by repeating the last submission, either a value or a cancel.
@@ -419,25 +426,17 @@ namespace Ryujinx.HLE.HOS.Applets
             }
 
             // Change state to complete once data is available.
-            InlineKeyboardState newState = InlineKeyboardState.Complete;
+            newState = InlineKeyboardState.Complete;
 
             if (submit)
             {
                 Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard OK");
-
-                if (_encoding == Encoding.UTF8)
-                {
-                    _interactiveSession.Push(InlineResponses.DecidedEnterUtf8(inputText, newState));
-                }
-                else
-                {
-                    _interactiveSession.Push(InlineResponses.DecidedEnter(inputText, newState));
-                }
+                DecidedEnter(inputText, newState);
             }
             else
             {
                 Logger.Debug?.Print(LogClass.ServiceAm, "Sending keyboard Cancel");
-                _interactiveSession.Push(InlineResponses.DecidedCancel(newState));
+                DecidedCancel(newState);
             }
 
             _interactiveSession.Push(InlineResponses.Default(newState));
@@ -453,6 +452,49 @@ namespace Ryujinx.HLE.HOS.Applets
             _interactiveSession.Push(InlineResponses.Default(newState));
             _textValue = inputText;
             _lastTextSetMillis = PerformanceCounter.ElapsedMilliseconds;
+        }
+
+        private void ChangedString(string text, InlineKeyboardState state)
+        {
+            if (_encoding == Encoding.UTF8)
+            {
+                if (_useChangedStringV2)
+                {
+                    _interactiveSession.Push(InlineResponses.ChangedStringUtf8V2(text, state));
+                }
+                else
+                {
+                    _interactiveSession.Push(InlineResponses.ChangedStringUtf8(text, state));
+                }
+            }
+            else
+            {
+                if (_useChangedStringV2)
+                {
+                    _interactiveSession.Push(InlineResponses.ChangedStringV2(text, state));
+                }
+                else
+                {
+                    _interactiveSession.Push(InlineResponses.ChangedString(text, state));
+                }
+            }
+        }
+
+        private void DecidedEnter(string text, InlineKeyboardState state)
+        {
+            if (_encoding == Encoding.UTF8)
+            {
+                _interactiveSession.Push(InlineResponses.DecidedEnterUtf8(text, state));
+            }
+            else
+            {
+                _interactiveSession.Push(InlineResponses.DecidedEnter(text, state));
+            }
+        }
+
+        private void DecidedCancel(InlineKeyboardState state)
+        {
+            _interactiveSession.Push(InlineResponses.DecidedCancel(state));
         }
 
         private byte[] BuildResponse(string text, bool interactive)

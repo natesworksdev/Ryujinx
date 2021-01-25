@@ -74,7 +74,7 @@ namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 
         public static byte[] ChangedString(string text, InlineKeyboardState state)
         {
-            uint resSize = 4 * sizeof(uint) + MaxStrLenUTF16;
+            uint resSize = 6 * sizeof(uint) + MaxStrLenUTF16;
 
             using (MemoryStream stream = new MemoryStream(new byte[resSize]))
             using (BinaryWriter writer = new BinaryWriter(stream))
