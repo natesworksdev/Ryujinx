@@ -35,10 +35,11 @@ namespace Ryujinx.HLE.HOS.Applets
         private AppletSession _interactiveSession;
 
         // Configuration for foreground mode
-        private SoftwareKeyboardConfig     _keyboardFgConfig;
-        private SoftwareKeyboardCalc       _keyboardBgCalc;
-        private SoftwareKeyboardDictSet    _keyboardBgDict;
-        private SoftwareKeyboardUserWord[] _keyboardBgUserWords;
+        private SoftwareKeyboardConfig       _keyboardFgConfig;
+        private SoftwareKeyboardCalc         _keyboardBgCalc;
+        private SoftwareKeyboardCustomizeDic _keyboardBgDic;
+        private SoftwareKeyboardDictSet      _keyboardBgDictSet;
+        private SoftwareKeyboardUserWord[]   _keyboardBgUserWords;
 
         // Configuration for background mode
         private SoftwareKeyboardInitialize _keyboardBgInitialize;
@@ -297,7 +298,7 @@ namespace Ryujinx.HLE.HOS.Applets
                             }
                             else if (wordsCount * wordSize != remaining)
                             {
-                                Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard User Word Info data of {remaining} bytes for {wordsCount}");
+                                Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard User Word Info data of {remaining} bytes for {wordsCount} words");
                             }
                             else
                             {
@@ -314,6 +315,19 @@ namespace Ryujinx.HLE.HOS.Applets
                         break;
                     case InlineKeyboardRequest.SetCustomizeDic:
                         remaining = stream.Length - stream.Position;
+                        if (remaining != Marshal.SizeOf<SoftwareKeyboardCustomizeDic>())
+                        {
+                            Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard Customize Dic of {remaining} bytes");
+                        }
+                        else
+                        {
+                            var keyboardDicData = reader.ReadBytes((int)remaining);
+                            _keyboardBgDic = ReadStruct<SoftwareKeyboardCustomizeDic>(keyboardDicData);
+                        }
+                        _interactiveSession.Push(InlineResponses.UnsetCustomizeDic(state));
+                        break;
+                    case InlineKeyboardRequest.SetCustomizedDictionaries:
+                        remaining = stream.Length - stream.Position;
                         if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
                         {
                             Logger.Warning?.Print(LogClass.ServiceAm, $"Received invalid Software Keyboard DictSet of {remaining} bytes");
@@ -321,9 +335,9 @@ namespace Ryujinx.HLE.HOS.Applets
                         else
                         {
                             var keyboardDictData = reader.ReadBytes((int)remaining);
-                            _keyboardBgDict = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
+                            _keyboardBgDictSet = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
                         }
-                        _interactiveSession.Push(InlineResponses.FinishedInitialize(InlineKeyboardState.Initialized));
+                        _interactiveSession.Push(InlineResponses.UnsetCustomizedDictionaries(state));
                         break;
                     case InlineKeyboardRequest.Calc:
                         // Always show the keyboard if it is already shown before.
