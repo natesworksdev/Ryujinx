@@ -21,6 +21,7 @@ namespace Ryujinx.HLE.HOS.Tamper
         const byte OpCodeArithmetic1 = 0x7;
         const byte OpCodeInputCond   = 0x8;
         const byte OpCodeArithmetic2 = 0x9;
+        const byte OpCodeStoreImRgA  = 0xA;
 
         /////////////////////////////////////////////
 
@@ -239,14 +240,15 @@ namespace Ryujinx.HLE.HOS.Tamper
                 {
                     case OpCodeStoreImmA:   EmitStoreImmA  (instruction, ref data); break;
                     case OpCodeBeginCond:   EmitBeginCond  (instruction, ref data); break;
-                    case OpCodeFor:         EmitFor        (instruction, ref data); break;
                     case OpCodeEndCond:     EmitEndCond    (instruction, ref data); break;
+                    case OpCodeFor:         EmitFor        (instruction, ref data); break;
                     case OpCodeSet:         EmitSet        (instruction, ref data); break;
                     case OpCodeLoad:        EmitLoad       (instruction, ref data); break;
                     case OpCodeStoreRegA:   EmitStoreRegA  (instruction, ref data); break;
                     case OpCodeArithmetic1: EmitArithmetic1(instruction, ref data); break;
                     case OpCodeInputCond  : EmitBeginCond  (instruction, ref data); break;
                     case OpCodeArithmetic2: EmitArithmetic2(instruction, ref data); break;
+                    case OpCodeStoreImRgA:  EmitStoreImRgA (instruction, ref data); break;
                     default:
                         throw new TamperCompilationException($"Opcode {opcode} not implemented in Atmosphere cheat");
                 }
@@ -348,7 +350,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                     data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, srcReg, offsetReg));
                     break;
                 default:
-                    throw new TamperCompilationException($"Invalid offset mode {doIncrement} in Atmosphere cheat");
+                    throw new TamperCompilationException($"Invalid offset mode {doOffset} in Atmosphere cheat");
             }
 
             Pointer dstMem = new Pointer(storeAddr, data.Memory);
@@ -364,6 +366,104 @@ namespace Ryujinx.HLE.HOS.Tamper
                     // Increment the address register by width.
                     IOperand increment = new Value<ulong>(width);
                     data.CurrentOperations.Add(new OpAdd<ulong>(srcReg, srcReg, increment));
+                    break;
+                default:
+                    throw new TamperCompilationException($"Invalid increment mode {doIncrement} in Atmosphere cheat");
+            }
+        }
+
+        private void EmitStoreImRgA(byte[] instruction, ref CompilationData data)
+        {
+            // ATSRIOxa (aaaaaaaa)
+            // T: Width of memory write (1, 2, 4, or 8 bytes).
+            // S: Register to write to memory.
+            // R: Register to use as base address.
+            // I: Increment register flag (0 = do not increment R, 1 = increment R by T).
+            // O: Offset type, see below.
+            // x: Register used as offset when O is 1, Memory type when O is 3, 4 or 5.
+            // a: Value used as offset when O is 2, 4 or 5.
+
+            /* const int StAWidthIndex   = 1;
+               const int StASrcRegIndex  = 2;
+               const int StAAddrRegIndex = 3;
+               const int StADoIncIndex   = 4;
+               const int StAOffTypeIndex = 5;
+               const int StAOffRegIndex  = 6;
+               const int StAOffImmIndex  = 7;
+
+               const int StANoOff           = 0;
+               const int StARegOff          = 1;
+               const int StAImmOff          = 2;
+               const int StAMRWithBaseReg   = 3;
+               const int StAMRWithImmOff    = 4;
+               const int StAMRWithImmRegOff = 5;
+
+               const int StAValueSize1  = 1;
+               const int StAValueSize8  = 9;*/
+
+            byte width = instruction[StAWidthIndex];
+            Register srcReg = GetRegister(instruction[StASrcRegIndex], ref data);
+            Register addrReg = GetRegister(instruction[StAAddrRegIndex], ref data);
+            byte doIncrement = instruction[StADoIncIndex];
+            byte offsetType = instruction[StAOffTypeIndex];
+            byte offRegOrMem = instruction[StAOffRegIndex];
+            Register offReg = GetRegister(offRegOrMem, ref data);
+            ulong offImm = GetImmediate(instruction, StAOffImmIndex, instruction.Length <= 8 ? StAValueSize1 : StAValueSize8);
+
+            Value<ulong> offImmValue;
+            IOperand storeAddr;
+
+            switch (offsetType)
+            {
+                case StANoOff:
+                    // *($R) = $S
+                    storeAddr = addrReg;
+                    break;
+                case StARegOff:
+                    // *($R + $x) = $S
+                    storeAddr = new Value<ulong>(0);
+                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offReg));
+                    break;
+                case StAImmOff:
+                    // *(#a) = $S
+                    storeAddr = new Value<ulong>(offImm);
+                    break;
+                case StAMRWithBaseReg:
+                    // *(?x + $R) = $S
+                    offImm = GetAddressShift(offRegOrMem, ref data);
+                    offImmValue = new Value<ulong>(offImm);
+                    storeAddr = new Value<ulong>(0);
+                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offImmValue));
+                    break;
+                case StAMRWithImmOff:
+                    // *(?x + #a) = $S
+                    offImm += GetAddressShift(offRegOrMem, ref data);
+                    storeAddr = new Value<ulong>(offImm);
+                    break;
+                case StAMRWithImmRegOff:
+                    // *(?x + #a + $R) = $S
+                    offImm += GetAddressShift(offRegOrMem, ref data);
+                    offImmValue = new Value<ulong>(offImm);
+                    storeAddr = new Value<ulong>(0);
+                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offImmValue));
+                    break;
+                default:
+                    throw new TamperCompilationException($"Invalid offset type {offsetType} in Atmosphere cheat");
+            }
+
+            Pointer dstMem = new Pointer(storeAddr, data.Memory);
+
+            Emit(typeof(OpMov<>), width, ref data, dstMem, srcReg);
+
+            switch (doIncrement)
+            {
+                case 0:
+                    // Don't increment the address register by width.
+                    break;
+                case 1:
+                    // Increment the address register by width.
+                    IOperand increment = new Value<ulong>(width);
+                    data.CurrentOperations.Add(new OpAdd<ulong>(addrReg, addrReg, increment));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid increment mode {doIncrement} in Atmosphere cheat");
