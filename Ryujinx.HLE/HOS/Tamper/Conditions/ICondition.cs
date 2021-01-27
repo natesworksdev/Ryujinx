@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Conditions
 {
-    public interface ICondition
+    internal interface ICondition
     {
         bool Evaluate();
     }

@@ -1,27 +1,26 @@
 using Ryujinx.HLE.HOS.Tamper.Operations;
-using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    public class Pointer : IOperand
+    internal class Pointer : IOperand
     {
         private IOperand _position;
-        private Parameter<IVirtualMemoryManager> _memory;
+        private ITamperedProcess _process;
 
-        public Pointer(IOperand position, Parameter<IVirtualMemoryManager> memory)
+        public Pointer(IOperand position, ITamperedProcess process)
         {
             _position = position;
-            _memory = memory;
+            _process = process;
         }
 
         public T Get<T>() where T : unmanaged
         {
-            return _memory.Value.Read<T>(_position.Get<ulong>());
+            return _process.ReadMemory<T>(_position.Get<ulong>());
         }
 
         public void Set<T>(T value) where T : unmanaged
         {
-            _memory.Value.Write(_position.Get<ulong>(), value);
+            _process.WriteMemory(_position.Get<ulong>(), value);
         }
     }
 }

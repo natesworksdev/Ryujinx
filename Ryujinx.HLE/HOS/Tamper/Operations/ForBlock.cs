@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper.Operations
 {
-    public class ForBlock : IOperation
+    internal class ForBlock : IOperation
     {
         private ulong _count;
         private Register _register;
@@ -27,7 +27,7 @@ namespace Ryujinx.HLE.HOS.Tamper.Operations
         {
             for (ulong i = 0; i < _count; i++)
             {
-                // Set the register and execute the operations so that changing the 
+                // Set the register and execute the operations so that changing the
                 // register during runtime does not break iteration.
 
                 _register.Set<ulong>(i);

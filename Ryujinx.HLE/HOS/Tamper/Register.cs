@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    public class Register : IOperand
+    internal class Register : IOperand
     {
         private ulong _register = 0;
 

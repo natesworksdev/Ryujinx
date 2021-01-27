@@ -2,14 +2,13 @@ using Ryujinx.Common.Logging;
 using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Tamper.Conditions;
 using Ryujinx.HLE.HOS.Tamper.Operations;
-using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    public class AtmosphereCompiler
+    internal class AtmosphereCompiler
     {
         const byte OpCodeStoreImmA   = 0x0;
         const byte OpCodeBeginCond   = 0x1;
@@ -23,9 +22,12 @@ namespace Ryujinx.HLE.HOS.Tamper
         const byte OpCodeArithmetic2 = 0x9;
         const byte OpCodeStoreImRgA  = 0xA;
 
+        const ushort Ex3OpCodePause  = 0xFF0;
+        const ushort Ex3OpCodeResume = 0xFF1;
+
         /////////////////////////////////////////////
 
-        const int OpCodeIndex  = 0;
+        const int OpCodeIndex = 0;
 
         /////////////////////////////////////////////
 
@@ -178,21 +180,21 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
         }
 
-        struct CompilationData
+        class CompilationData
         {
             public CompilationBlock CurrentBlock { get { return BlockStack.Peek(); } }
             public List<IOperation> CurrentOperations { get { return CurrentBlock.Operations; } }
 
-            public Parameter<IVirtualMemoryManager> Memory;
-            public Parameter<long> PressedKeys;
-            public Stack<CompilationBlock> BlockStack;
-            public Dictionary<byte, Register> Registers;
-            public ulong ExeAddress;
-            public ulong HeapAddress;
+            public ITamperedProcess Process { get; }
+            public Parameter<long> PressedKeys { get; }
+            public Stack<CompilationBlock> BlockStack { get; }
+            public Dictionary<byte, Register> Registers { get; }
+            public ulong ExeAddress { get; }
+            public ulong HeapAddress { get; }
 
-            public CompilationData(ulong exeAddress, ulong heapAddress)
+            public CompilationData(ulong exeAddress, ulong heapAddress, ITamperedProcess process)
             {
-                Memory = new Parameter<IVirtualMemoryManager>(null);
+                Process = process;
                 PressedKeys = new Parameter<long>(0);
                 BlockStack = new Stack<CompilationBlock>();
                 Registers = new Dictionary<byte, Register>();
@@ -201,11 +203,11 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
         }
 
-        public TamperProgram Compile(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress)
+        public TamperProgram Compile(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
         {
             try
             {
-                return CompileImpl(rawInstructions, exeAddress, heapAddress);
+                return CompileImpl(rawInstructions, exeAddress, heapAddress, process);
             }
             catch(TamperCompilationException exception)
             {
@@ -222,10 +224,10 @@ namespace Ryujinx.HLE.HOS.Tamper
             return null;
         }
 
-        private TamperProgram CompileImpl(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress)
+        private TamperProgram CompileImpl(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
         {
-            CompilationData data = new CompilationData(exeAddress, heapAddress);
-            data.BlockStack.Push(new CompilationBlock(null));
+            CompilationData cData = new CompilationData(exeAddress, heapAddress, process);
+            cData.BlockStack.Push(new CompilationBlock(null));
 
             // Parse the instructions.
 
@@ -234,21 +236,23 @@ namespace Ryujinx.HLE.HOS.Tamper
                 Logger.Debug?.Print(LogClass.TamperMachine, $"Compiling instruction {rawInstruction}");
 
                 byte[] instruction = ParseRawInstruction(rawInstruction);
-                byte opcode = instruction[OpCodeIndex];
+                ushort opcode = GetExtendedOpcode(instruction);
 
                 switch (opcode)
                 {
-                    case OpCodeStoreImmA:   EmitStoreImmA  (instruction, ref data); break;
-                    case OpCodeBeginCond:   EmitBeginCond  (instruction, ref data); break;
-                    case OpCodeEndCond:     EmitEndCond    (instruction, ref data); break;
-                    case OpCodeFor:         EmitFor        (instruction, ref data); break;
-                    case OpCodeSet:         EmitSet        (instruction, ref data); break;
-                    case OpCodeLoad:        EmitLoad       (instruction, ref data); break;
-                    case OpCodeStoreRegA:   EmitStoreRegA  (instruction, ref data); break;
-                    case OpCodeArithmetic1: EmitArithmetic1(instruction, ref data); break;
-                    case OpCodeInputCond  : EmitBeginCond  (instruction, ref data); break;
-                    case OpCodeArithmetic2: EmitArithmetic2(instruction, ref data); break;
-                    case OpCodeStoreImRgA:  EmitStoreImRgA (instruction, ref data); break;
+                    case OpCodeStoreImmA:   EmitStoreImmA  (instruction, cData); break;
+                    case OpCodeBeginCond:   EmitBeginCond  (instruction, cData); break;
+                    case OpCodeEndCond:     EmitEndCond    (instruction, cData); break;
+                    case OpCodeFor:         EmitFor        (instruction, cData); break;
+                    case OpCodeSet:         EmitSet        (instruction, cData); break;
+                    case OpCodeLoad:        EmitLoad       (instruction, cData); break;
+                    case OpCodeStoreRegA:   EmitStoreRegA  (instruction, cData); break;
+                    case OpCodeArithmetic1: EmitArithmetic1(instruction, cData); break;
+                    case OpCodeInputCond  : EmitBeginCond  (instruction, cData); break;
+                    case OpCodeArithmetic2: EmitArithmetic2(instruction, cData); break;
+                    case OpCodeStoreImRgA:  EmitStoreImRgA (instruction, cData); break;
+                    case Ex3OpCodePause:    EmitPause      (instruction, cData); break;
+                    case Ex3OpCodeResume:   EmitResume     (instruction, cData); break;
                     default:
                         throw new TamperCompilationException($"Opcode {opcode} not implemented in Atmosphere cheat");
                 }
@@ -259,41 +263,41 @@ namespace Ryujinx.HLE.HOS.Tamper
             Value<ulong> zero = new Value<ulong>(0UL);
             int position = 0;
 
-            foreach (Register register in data.Registers.Values)
+            foreach (Register register in cData.Registers.Values)
             {
-                data.CurrentOperations.Insert(position, new OpMov<ulong>(register, zero));
+                cData.CurrentOperations.Insert(position, new OpMov<ulong>(register, zero));
                 position++;
             }
 
             // TODO check block stack size
 
-            return new TamperProgram(data.Memory, data.PressedKeys, new Block(data.CurrentOperations));
+            return new TamperProgram(process, cData.PressedKeys, new Block(cData.CurrentOperations));
         }
 
-        private void EmitSet(byte[] instruction, ref CompilationData data)
+        private void EmitSet(byte[] instruction, CompilationData cData)
         {
-            Register srcReg = GetRegister(instruction[SetRegIndex], ref data);
+            Register srcReg = GetRegister(instruction[SetRegIndex], cData);
             ulong value = GetImmediate(instruction, SetValueIndex, SetValueSize);
             Value<ulong> dstValue = new Value<ulong>(value);
 
-            data.CurrentOperations.Add(new OpMov<ulong>(srcReg, dstValue));
+            cData.CurrentOperations.Add(new OpMov<ulong>(srcReg, dstValue));
         }
 
-        private void EmitLoad(byte[] instruction, ref CompilationData data)
+        private void EmitLoad(byte[] instruction, CompilationData cData)
         {
             byte width = instruction[LdWidthIndex];
             byte source = instruction[LdMemIndex];
-            Register dstReg = GetRegister(instruction[LdRegIndex], ref data);
+            Register dstReg = GetRegister(instruction[LdRegIndex], cData);
             ulong address = GetImmediate(instruction, LdAddrIndex, LdAddrSize);
-            address += GetAddressShift(source, ref data);
+            address += GetAddressShift(source, cData);
 
             Value<ulong> loadAddr = new Value<ulong>(address);
-            Pointer srcMem = new Pointer(loadAddr, data.Memory);
+            Pointer srcMem = new Pointer(loadAddr, cData.Process);
 
-            Emit(typeof(OpMov<>), width, ref data, dstReg, srcMem);
+            Emit(typeof(OpMov<>), width, cData, dstReg, srcMem);
         }
 
-        private void EmitStoreImmA(byte[] instruction, ref CompilationData data)
+        private void EmitStoreImmA(byte[] instruction, CompilationData cData)
         {
             // 0TMR00AA AAAAAAAA VVVVVVVV (VVVVVVVV)
             // T: Width of memory write(1, 2, 4, or 8 bytes).
@@ -304,23 +308,23 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             byte width = instruction[StIWidthIndex];
             byte source = instruction[StIMemIndex];
-            Register offReg = GetRegister(instruction[StIOffRegIndex], ref data);
+            Register offReg = GetRegister(instruction[StIOffRegIndex], cData);
             ulong offImm = GetImmediate(instruction, StIOffImmIndex, StIOffImmSize);
-            offImm += GetAddressShift(source, ref data);
+            offImm += GetAddressShift(source, cData);
 
             ulong value = GetImmediate(instruction, StIValueIndex, width > 4 ? StIValueSize8 : StIValueSize4);
             Value<ulong> storeValue = new Value<ulong>(value);
 
             Value<ulong> storeAddr = new Value<ulong>(0);
             Value<ulong> offImmValue = new Value<ulong>(offImm);
-            data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, offReg, offImmValue));
+            cData.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, offReg, offImmValue));
 
-            Pointer dstMem = new Pointer(storeAddr, data.Memory);
+            Pointer dstMem = new Pointer(storeAddr, cData.Process);
 
-            Emit(typeof(OpMov<>), width, ref data, dstMem, storeValue);
+            Emit(typeof(OpMov<>), width, cData, dstMem, storeValue);
         }
 
-        private void EmitStoreRegA(byte[] instruction, ref CompilationData data)
+        private void EmitStoreRegA(byte[] instruction, CompilationData cData)
         {
             // 6T0RIor0 VVVVVVVV VVVVVVVV
             // T: Width of memory write(1, 2, 4, or 8 bytes).
@@ -331,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             // V: Value to write to memory.
 
             byte width = instruction[StRWidthIndex];
-            IOperand srcReg = GetRegister(instruction[StRAddrRegIndex], ref data);
+            IOperand srcReg = GetRegister(instruction[StRAddrRegIndex], cData);
             IOperand storeAddr = srcReg;
             byte doIncrement = instruction[StRDoIncIndex];
             byte doOffset = instruction[StRDoOffIndex];
@@ -346,16 +350,16 @@ namespace Ryujinx.HLE.HOS.Tamper
                 case 1:
                     // Replace the source address by the sum of the base and offset registers.
                     storeAddr = new Value<ulong>(0);
-                    IOperand offsetReg = GetRegister(instruction[StROffRegIndex], ref data);
-                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, srcReg, offsetReg));
+                    IOperand offsetReg = GetRegister(instruction[StROffRegIndex], cData);
+                    cData.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, srcReg, offsetReg));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid offset mode {doOffset} in Atmosphere cheat");
             }
 
-            Pointer dstMem = new Pointer(storeAddr, data.Memory);
+            Pointer dstMem = new Pointer(storeAddr, cData.Process);
 
-            Emit(typeof(OpMov<>), width, ref data, dstMem, storeValue);
+            Emit(typeof(OpMov<>), width, cData, dstMem, storeValue);
 
             switch (doIncrement)
             {
@@ -365,14 +369,14 @@ namespace Ryujinx.HLE.HOS.Tamper
                 case 1:
                     // Increment the address register by width.
                     IOperand increment = new Value<ulong>(width);
-                    data.CurrentOperations.Add(new OpAdd<ulong>(srcReg, srcReg, increment));
+                    cData.CurrentOperations.Add(new OpAdd<ulong>(srcReg, srcReg, increment));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid increment mode {doIncrement} in Atmosphere cheat");
             }
         }
 
-        private void EmitStoreImRgA(byte[] instruction, ref CompilationData data)
+        private void EmitStoreImRgA(byte[] instruction, CompilationData cData)
         {
             // ATSRIOxa (aaaaaaaa)
             // T: Width of memory write (1, 2, 4, or 8 bytes).
@@ -402,12 +406,12 @@ namespace Ryujinx.HLE.HOS.Tamper
                const int StAValueSize8  = 9;*/
 
             byte width = instruction[StAWidthIndex];
-            Register srcReg = GetRegister(instruction[StASrcRegIndex], ref data);
-            Register addrReg = GetRegister(instruction[StAAddrRegIndex], ref data);
+            Register srcReg = GetRegister(instruction[StASrcRegIndex], cData);
+            Register addrReg = GetRegister(instruction[StAAddrRegIndex], cData);
             byte doIncrement = instruction[StADoIncIndex];
             byte offsetType = instruction[StAOffTypeIndex];
             byte offRegOrMem = instruction[StAOffRegIndex];
-            Register offReg = GetRegister(offRegOrMem, ref data);
+            Register offReg = GetRegister(offRegOrMem, cData);
             ulong offImm = GetImmediate(instruction, StAOffImmIndex, instruction.Length <= 8 ? StAValueSize1 : StAValueSize8);
 
             Value<ulong> offImmValue;
@@ -422,7 +426,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                 case StARegOff:
                     // *($R + $x) = $S
                     storeAddr = new Value<ulong>(0);
-                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offReg));
+                    cData.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offReg));
                     break;
                 case StAImmOff:
                     // *(#a) = $S
@@ -430,30 +434,30 @@ namespace Ryujinx.HLE.HOS.Tamper
                     break;
                 case StAMRWithBaseReg:
                     // *(?x + $R) = $S
-                    offImm = GetAddressShift(offRegOrMem, ref data);
+                    offImm = GetAddressShift(offRegOrMem, cData);
                     offImmValue = new Value<ulong>(offImm);
                     storeAddr = new Value<ulong>(0);
-                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offImmValue));
+                    cData.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offImmValue));
                     break;
                 case StAMRWithImmOff:
                     // *(?x + #a) = $S
-                    offImm += GetAddressShift(offRegOrMem, ref data);
+                    offImm += GetAddressShift(offRegOrMem, cData);
                     storeAddr = new Value<ulong>(offImm);
                     break;
                 case StAMRWithImmRegOff:
                     // *(?x + #a + $R) = $S
-                    offImm += GetAddressShift(offRegOrMem, ref data);
+                    offImm += GetAddressShift(offRegOrMem, cData);
                     offImmValue = new Value<ulong>(offImm);
                     storeAddr = new Value<ulong>(0);
-                    data.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offImmValue));
+                    cData.CurrentOperations.Add(new OpAdd<ulong>(storeAddr, addrReg, offImmValue));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid offset type {offsetType} in Atmosphere cheat");
             }
 
-            Pointer dstMem = new Pointer(storeAddr, data.Memory);
+            Pointer dstMem = new Pointer(storeAddr, cData.Process);
 
-            Emit(typeof(OpMov<>), width, ref data, dstMem, srcReg);
+            Emit(typeof(OpMov<>), width, cData, dstMem, srcReg);
 
             switch (doIncrement)
             {
@@ -463,14 +467,14 @@ namespace Ryujinx.HLE.HOS.Tamper
                 case 1:
                     // Increment the address register by width.
                     IOperand increment = new Value<ulong>(width);
-                    data.CurrentOperations.Add(new OpAdd<ulong>(addrReg, addrReg, increment));
+                    cData.CurrentOperations.Add(new OpAdd<ulong>(addrReg, addrReg, increment));
                     break;
                 default:
                     throw new TamperCompilationException($"Invalid increment mode {doIncrement} in Atmosphere cheat");
             }
         }
 
-        private void EmitArithmetic1(byte[] instruction, ref CompilationData data)
+        private void EmitArithmetic1(byte[] instruction, CompilationData cData)
         {
             // 7T0RC000 VVVVVVVV
             // T: Width of arithmetic operation(1, 2, 4, or 8 bytes).
@@ -479,24 +483,24 @@ namespace Ryujinx.HLE.HOS.Tamper
             // V: Value to use for arithmetic operation.
 
             byte width = instruction[Ar1WidthIndex];
-            Register register = GetRegister(instruction[Ar1DstRegIndex], ref data);
+            Register register = GetRegister(instruction[Ar1DstRegIndex], cData);
             byte operation = instruction[Ar1OpTypeIndex];
             ulong value = GetImmediate(instruction, Ar1ValueIndex, Ar1ValueSize); // TODO: Optimize to 'width'?
             Value<ulong> opValue = new Value<ulong>(value);
 
             switch (operation)
             {
-                case ArOpAdd: Emit(typeof(OpAdd<>), width, ref data, register, register, opValue); break;
-                case ArOpSub: Emit(typeof(OpSub<>), width, ref data, register, register, opValue); break;
-                case ArOpMul: Emit(typeof(OpMul<>), width, ref data, register, register, opValue); break;
-                case ArOpLsh: Emit(typeof(OpLsh<>), width, ref data, register, register, opValue); break;
-                case ArOpRsh: Emit(typeof(OpRsh<>), width, ref data, register, register, opValue); break;
+                case ArOpAdd: Emit(typeof(OpAdd<>), width, cData, register, register, opValue); break;
+                case ArOpSub: Emit(typeof(OpSub<>), width, cData, register, register, opValue); break;
+                case ArOpMul: Emit(typeof(OpMul<>), width, cData, register, register, opValue); break;
+                case ArOpLsh: Emit(typeof(OpLsh<>), width, cData, register, register, opValue); break;
+                case ArOpRsh: Emit(typeof(OpRsh<>), width, cData, register, register, opValue); break;
                 default:
                     throw new TamperCompilationException($"Invalid arithmetic operation {operation} in Atmosphere cheat");
             }
         }
 
-        private void EmitArithmetic2(byte[] instruction, ref CompilationData data)
+        private void EmitArithmetic2(byte[] instruction, CompilationData cData)
         {
             // 9TCRS0s0
             // T: Width of arithmetic operation(1, 2, 4, or 8 bytes).
@@ -514,8 +518,8 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             byte width = instruction[Ar2WidthIndex];
             byte operation = instruction[Ar2OpTypeIndex];
-            Register dstReg = GetRegister(instruction[Ar2DstRegIndex], ref data);
-            Register lhsReg = GetRegister(instruction[Ar2LhsRegIndex], ref data);
+            Register dstReg = GetRegister(instruction[Ar2DstRegIndex], cData);
+            Register lhsReg = GetRegister(instruction[Ar2LhsRegIndex], cData);
             byte useValue = instruction[Ar2UseValIndex];
             IOperand rhsOperand;
 
@@ -523,7 +527,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             {
                 case 0:
                     // Use a register as right-hand side.
-                    rhsOperand = GetRegister(instruction[Ar2RhsRegIndex], ref data);
+                    rhsOperand = GetRegister(instruction[Ar2RhsRegIndex], cData);
                     break;
                 case 1:
                     // Use an immediate as right-hand side.
@@ -536,28 +540,28 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             switch (operation)
             {
-                case ArOpAdd: Emit(typeof(OpAdd<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpSub: Emit(typeof(OpSub<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpMul: Emit(typeof(OpMul<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpLsh: Emit(typeof(OpLsh<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpRsh: Emit(typeof(OpRsh<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpAnd: Emit(typeof(OpAnd<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpOr : Emit(typeof(OpOr <>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpNot: Emit(typeof(OpNot<>), width, ref data, dstReg, lhsReg            ); break;
-                case ArOpXor: Emit(typeof(OpXor<>), width, ref data, dstReg, lhsReg, rhsOperand); break;
-                case ArOpMov: Emit(typeof(OpMov<>), width, ref data, dstReg, lhsReg            ); break;
+                case ArOpAdd: Emit(typeof(OpAdd<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpSub: Emit(typeof(OpSub<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpMul: Emit(typeof(OpMul<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpLsh: Emit(typeof(OpLsh<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpRsh: Emit(typeof(OpRsh<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpAnd: Emit(typeof(OpAnd<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpOr : Emit(typeof(OpOr <>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpNot: Emit(typeof(OpNot<>), width, cData, dstReg, lhsReg            ); break;
+                case ArOpXor: Emit(typeof(OpXor<>), width, cData, dstReg, lhsReg, rhsOperand); break;
+                case ArOpMov: Emit(typeof(OpMov<>), width, cData, dstReg, lhsReg            ); break;
                 default:
                     throw new TamperCompilationException($"Invalid arithmetic operation {operation} in Atmosphere cheat");
             }
         }
 
-        private void EmitBeginCond(byte[] instruction, ref CompilationData data)
+        private void EmitBeginCond(byte[] instruction, CompilationData cData)
         {
             // Just start a new compilation block and parse the instruction itself at the end.
-            data.BlockStack.Push(new CompilationBlock(instruction));
+            cData.BlockStack.Push(new CompilationBlock(instruction));
         }
 
-        private void EmitEndCond(byte[] instruction, ref CompilationData data)
+        private void EmitEndCond(byte[] instruction, CompilationData cData)
         {
             // 1TMC00AA AAAAAAAA VVVVVVVV (VVVVVVVV)
             // T: Width of memory write (1, 2, 4, or 8 bytes).
@@ -574,7 +578,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             // 20000000
 
             // Use the conditional begin instruction stored in the stack.
-            instruction = data.CurrentBlock.BaseInstruction;
+            instruction = cData.CurrentBlock.BaseInstruction;
 
             byte opcode = instruction[OpCodeIndex];
 
@@ -583,10 +587,10 @@ namespace Ryujinx.HLE.HOS.Tamper
             switch (opcode)
             {
                 case OpCodeBeginCond:
-                    condOp = GetIfCondition(instruction, ref data);
+                    condOp = GetIfCondition(instruction, cData);
                     break;
                 case OpCodeInputCond:
-                    condOp = GetInputCondition(instruction, ref data);
+                    condOp = GetInputCondition(instruction, cData);
                     break;
                 default:
                     throw new TamperCompilationException($"Conditional end does not match opcode {opcode} in Atmosphere cheat");
@@ -595,12 +599,12 @@ namespace Ryujinx.HLE.HOS.Tamper
             // Create a conditional block with the current operations and nest it in the upper
             // block of the stack.
 
-            IfBlock block = new IfBlock(condOp, data.CurrentOperations);
-            data.BlockStack.Pop();
-            data.CurrentOperations.Add(block);
+            IfBlock block = new IfBlock(condOp, cData.CurrentOperations);
+            cData.BlockStack.Pop();
+            cData.CurrentOperations.Add(block);
         }
 
-        private void EmitFor(byte[] instruction, ref CompilationData data)
+        private void EmitFor(byte[] instruction, CompilationData cData)
         {
             // 300R0000 VVVVVVVV
             // R: Register to use as loop counter.
@@ -615,7 +619,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             {
                 case ForModeBegin:
                     // Just start a new compilation block and parse the instruction itself at the end.
-                    data.BlockStack.Push(new CompilationBlock(instruction));
+                    cData.BlockStack.Push(new CompilationBlock(instruction));
                     return;
                 case ForModeEnd:
                     break;
@@ -624,7 +628,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
 
             // Use the loop begin instruction stored in the stack.
-            instruction = data.CurrentBlock.BaseInstruction;
+            instruction = cData.CurrentBlock.BaseInstruction;
 
             byte opcode = instruction[OpCodeIndex];
 
@@ -634,7 +638,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
 
             byte newCountRegIndex = instruction[ForRegIndex];
-            Register countReg = GetRegister(countRegIndex, ref data);
+            Register countReg = GetRegister(countRegIndex, cData);
             ulong countImm = GetImmediate(instruction, ForItersIndex, ForItersSize);
 
             if (countRegIndex != newCountRegIndex)
@@ -645,14 +649,24 @@ namespace Ryujinx.HLE.HOS.Tamper
             // Create a loop block with the current operations and nest it in the upper
             // block of the stack.
 
-            ForBlock block = new ForBlock(countImm, countReg, data.CurrentOperations);
-            data.BlockStack.Pop();
-            data.CurrentOperations.Add(block);
+            ForBlock block = new ForBlock(countImm, countReg, cData.CurrentOperations);
+            cData.BlockStack.Pop();
+            cData.CurrentOperations.Add(block);
         }
 
-        private void Emit(Type instruction, byte width, ref CompilationData data, params IOperand[] operands)
+        private void EmitPause(byte[] instruction, CompilationData cData)
         {
-            data.CurrentOperations.Add((IOperation)Create(instruction, width, operands));
+            cData.CurrentOperations.Add(new OpProcCtrl(true));
+        }
+
+        private void EmitResume(byte[] instruction, CompilationData cData)
+        {
+            cData.CurrentOperations.Add(new OpProcCtrl(false));
+        }
+
+        private void Emit(Type instruction, byte width, CompilationData cData, params IOperand[] operands)
+        {
+            cData.CurrentOperations.Add((IOperation)Create(instruction, width, operands));
         }
 
         private Object Create(Type instruction, byte width, params IOperand[] operands)
@@ -672,17 +686,17 @@ namespace Ryujinx.HLE.HOS.Tamper
             return Activator.CreateInstance(realType, operands);
         }
 
-        private ICondition GetIfCondition(byte[] instruction, ref CompilationData data)
+        private ICondition GetIfCondition(byte[] instruction, CompilationData cData)
         {
             byte width = instruction[IfWidthIndex];
             byte source = instruction[IfMemIndex];
             byte condition = instruction[IfCondTypeIndex];
 
             ulong address = GetImmediate(instruction, IfOffImmIndex, IfOffImmSize);
-            address += GetAddressShift(source, ref data);
+            address += GetAddressShift(source, cData);
 
             Value<ulong> loadAddr = new Value<ulong>(address);
-            Pointer srcMem = new Pointer(loadAddr, data.Memory);
+            Pointer srcMem = new Pointer(loadAddr, cData.Process);
 
             ulong value = GetImmediate(instruction, IfValueIndex, width > 4 ? IfValueSize4 : IfValueSize8);
             Value<ulong> compValue = new Value<ulong>(address);
@@ -700,10 +714,10 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
         }
 
-        private ICondition GetInputCondition(byte[] instruction, ref CompilationData data)
+        private ICondition GetInputCondition(byte[] instruction, CompilationData cData)
         {
             ulong mask = GetImmediate(instruction, InputMaskIndex, InputMaskSize);
-            return new InputMask((long)mask, data.PressedKeys);
+            return new InputMask((long)mask, cData.PressedKeys);
         }
 
         private ulong GetImmediate(byte[] instruction, int index, int quartetCount)
@@ -719,32 +733,51 @@ namespace Ryujinx.HLE.HOS.Tamper
             return value;
         }
 
-        private ulong GetAddressShift(byte source, ref CompilationData data) // TODO address -> position?
+        private ulong GetAddressShift(byte source, CompilationData cData) // TODO address -> position?
         {
             switch (source)
             {
                 case MemOffExe:
                     // Memory address is relative to the code start.
-                    return data.ExeAddress;
+                    return cData.ExeAddress;
                 case MemOffHeap:
                     // Memory address is relative to the heap.
-                    return data.HeapAddress;
+                    return cData.HeapAddress;
                 default:
                     throw new TamperCompilationException($"Invalid memory source {source} in Atmosphere cheat");
             }
         }
 
-        private Register GetRegister(byte index, ref CompilationData data)
+        private Register GetRegister(byte index, CompilationData cData)
         {
-            if (data.Registers.TryGetValue(index, out Register register))
+            if (cData.Registers.TryGetValue(index, out Register register))
             {
                 return register;
             }
 
             register = new Register();
-            data.Registers.Add(index, register);
+            cData.Registers.Add(index, register);
 
             return register;
+        }
+
+        private ushort GetExtendedOpcode(byte[] instruction)
+        {
+            int opcode = instruction[OpCodeIndex];
+
+            if (opcode >= 0xC)
+            {
+                byte extension = instruction[OpCodeIndex + 1];
+                opcode = (opcode << 4) | extension;
+
+                if (extension == 0xF)
+                {
+                    extension = instruction[OpCodeIndex + 2];
+                    opcode = (opcode << 4) | extension;
+                }
+            }
+
+            return (ushort)opcode;
         }
 
         private byte[] ParseRawInstruction(string rawInstruction)

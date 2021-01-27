@@ -132,8 +132,6 @@ namespace Ryujinx.HLE.HOS
             ulong codeStart = metaData.Is64Bit ? 0x8000000UL : 0x200000UL;
             uint  codeSize  = 0;
 
-            tamperInfo = new ProcessTamperInfo(0, null, null);
-
             var buildIds = executables.Select(e => (e switch
             {
                 NsoExecutable nso => BitConverter.ToString(nso.BuildId.Bytes.ToArray()),
@@ -212,6 +210,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization failed setting resource limit values.");
 
+                tamperInfo = null;
                 return false;
             }
 
@@ -223,6 +222,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization failed due to invalid ACID flags.");
 
+                tamperInfo = null;
                 return false;
             }
 
@@ -239,6 +239,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
+                tamperInfo = null;
                 return false;
             }
 
@@ -252,6 +253,7 @@ namespace Ryujinx.HLE.HOS
                 {
                     Logger.Error?.Print(LogClass.Loader, $"Process initialization returned error \"{result}\".");
 
+                    tamperInfo = null;
                     return false;
                 }
             }
@@ -264,6 +266,7 @@ namespace Ryujinx.HLE.HOS
             {
                 Logger.Error?.Print(LogClass.Loader, $"Process start returned error \"{result}\".");
 
+                tamperInfo = null;
                 return false;
             }
 
@@ -272,7 +275,7 @@ namespace Ryujinx.HLE.HOS
             // Keep the build ids because the tamper machine uses them to know which process to associate a
             // tamper to and also keep the starting address of each executable inside a process because some
             // memory modifications are relative to this address.
-            tamperInfo = new ProcessTamperInfo(process.Pid, buildIds, nsoBase);
+            tamperInfo = new ProcessTamperInfo(process, buildIds, nsoBase, process.MemoryManager.HeapRegionStart);
 
             return true;
         }

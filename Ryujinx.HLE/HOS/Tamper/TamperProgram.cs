@@ -1,17 +1,19 @@
+using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Tamper.Operations;
 using Ryujinx.Memory;
+using System;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    public class TamperProgram
+    internal class TamperProgram
     {
-        public Parameter<IVirtualMemoryManager> Memory { get; private set; }
-        public Parameter<long> PressedKeys { get; private set; }
-        public IOperation EntryPoint { get; private set; }
+        public ITamperedProcess Process { get; }
+        public Parameter<long> PressedKeys { get; }
+        public IOperation EntryPoint { get; }
 
-        public TamperProgram(Parameter<IVirtualMemoryManager> memory, Parameter<long> pressedKeys, IOperation entryPoint)
+        public TamperProgram(ITamperedProcess process, Parameter<long> pressedKeys, IOperation entryPoint)
         {
-            Memory = memory;
+            Process = process;
             PressedKeys = pressedKeys;
             EntryPoint = entryPoint;
         }

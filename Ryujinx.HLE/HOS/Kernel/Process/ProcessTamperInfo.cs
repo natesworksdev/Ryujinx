@@ -2,21 +2,19 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Kernel.Process
 {
-    struct ProcessTamperInfo
+    internal class ProcessTamperInfo
     {
-        public long Pid { get; }
-
+        public KProcess Process { get; }
         public IEnumerable<string> BuildIds { get; }
         public IEnumerable<ulong> CodeAddresses { get; }
+        public ulong HeapAddress { get; }
 
-        public ProcessTamperInfo(
-            long pid,
-            IEnumerable<string> buildIds,
-            IEnumerable<ulong> codeAddresses)
+        public ProcessTamperInfo(KProcess process, IEnumerable<string> buildIds, IEnumerable<ulong> codeAddresses, ulong heapAddress)
         {
-            Pid = pid;
+            Process = process;
             BuildIds = buildIds;
             CodeAddresses = codeAddresses;
+            HeapAddress = heapAddress;
         }
     }
 }

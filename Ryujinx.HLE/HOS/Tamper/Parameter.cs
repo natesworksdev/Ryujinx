@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    public class Parameter<T>
+    internal class Parameter<T>
     {
         public T Value { get; set; }
 

@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
-    public class Value<P> : IOperand where P : unmanaged
+    internal class Value<P> : IOperand where P : unmanaged
     {
         private P _value;
 

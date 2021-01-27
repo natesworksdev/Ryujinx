@@ -109,7 +109,7 @@ namespace Ryujinx.HLE
 
             Application = new ApplicationLoader(this, fileSystem, contentManager);
 
-            TamperMachine = new TamperMachine(this);
+            TamperMachine = new TamperMachine();
         }
 
         public void Initialize()

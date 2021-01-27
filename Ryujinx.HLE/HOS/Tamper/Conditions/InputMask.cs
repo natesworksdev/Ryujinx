@@ -2,7 +2,7 @@ using Ryujinx.HLE.HOS.Tamper.Operations;
 
 namespace Ryujinx.HLE.HOS.Tamper.Conditions
 {
-    public class InputMask : ICondition
+    internal class InputMask : ICondition
     {
         private long _mask;
         private Parameter<long> _input;

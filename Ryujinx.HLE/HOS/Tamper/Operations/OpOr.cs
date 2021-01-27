@@ -1,6 +1,6 @@
 namespace Ryujinx.HLE.HOS.Tamper.Operations
 {
-    public class OpOr<T> : IOperation where T : unmanaged
+    internal class OpOr<T> : IOperation where T : unmanaged
     {
         IOperand _destination;
         IOperand _lhs;

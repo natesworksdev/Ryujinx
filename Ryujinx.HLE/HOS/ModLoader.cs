@@ -614,6 +614,11 @@ namespace Ryujinx.HLE.HOS
 
         internal void LoadCheats(ulong titleId, ProcessTamperInfo tamperInfo, TamperMachine tamperMachine)
         {
+            if (tamperInfo == null || tamperInfo.BuildIds == null || tamperInfo.CodeAddresses == null)
+            {
+                Logger.Error?.Print(LogClass.ModLoader, $"Unable to install cheat because the associated process is invalid");
+            }
+
             if (!AppMods.TryGetValue(titleId, out ModCache mods) || mods.Cheats.Count == 0)
             {
                 return;
@@ -636,7 +641,7 @@ namespace Ryujinx.HLE.HOS
 
                 Logger.Info?.Print(LogClass.ModLoader, $"Installing cheat '{cheat.Name}'");
 
-                tamperMachine.InstallAtmosphereCheat(cheat.Instructions, exeAddress, tamperInfo.Pid);
+                tamperMachine.InstallAtmosphereCheat(cheat.Instructions, tamperInfo, exeAddress);
             }
         }
 

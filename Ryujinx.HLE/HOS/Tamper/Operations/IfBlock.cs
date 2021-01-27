@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Ryujinx.HLE.HOS.Tamper.Operations
 {
-    public class IfBlock : IOperation
+    internal class IfBlock : IOperation
     {
         private ICondition _condition;
         private IEnumerable<IOperation> _operations;

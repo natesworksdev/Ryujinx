@@ -15,26 +15,12 @@ namespace Ryujinx.HLE.HOS
 
     public class TamperMachine
     {
-        class Tampering
-        {
-            public long Pid { get; private set; }
-            public TamperProgram Program { get; private set; }
-
-            public Tampering(long pid, TamperProgram program)
-            {
-                Pid = pid;
-                Program = program;
-            }
-        }
-
-        private Switch _device;
         private Thread _tamperThread = null;
-        private ConcurrentQueue<Tampering> _tamperings = new ConcurrentQueue<Tampering>();
+        private ConcurrentQueue<TamperProgram> _programs = new ConcurrentQueue<TamperProgram>();
         private long _pressedKeys = 0;
 
-        public TamperMachine(Switch device)
+        public TamperMachine()
         {
-            _device = device;
         }
 
         private void Activate()
@@ -45,19 +31,20 @@ namespace Ryujinx.HLE.HOS
             }
         }
 
-        internal void InstallAtmosphereCheat(IEnumerable<string> rawInstructions, ulong exeAddress, long pid)
+        internal void InstallAtmosphereCheat(IEnumerable<string> rawInstructions, ProcessTamperInfo info, ulong exeAddress)
         {
-            if (!CanInstallOnPid(pid))
+            if (!CanInstallOnPid(info.Process.Pid))
             {
                 return;
             }
 
+            ITamperedProcess tamperedProcess = new TamperedKProcess(info.Process);
             AtmosphereCompiler compiler = new AtmosphereCompiler();
-            TamperProgram program = compiler.Compile(rawInstructions, exeAddress, exeAddress /* TODO */);
+            TamperProgram program = compiler.Compile(rawInstructions, exeAddress, info.HeapAddress, tamperedProcess);
 
             if (program != null)
             {
-                _tamperings.Enqueue(new Tampering(pid, program));
+                _programs.Enqueue(program);
             }
 
             Activate();
@@ -76,7 +63,7 @@ namespace Ryujinx.HLE.HOS
             return true;
         }
 
-        private bool IsProcessValid(KProcess process)
+        private bool IsProcessValid(ITamperedProcess process)
         {
             return process.State != ProcessState.Crashed && process.State != ProcessState.Exiting && process.State != ProcessState.Exited;
         }
@@ -92,7 +79,7 @@ namespace Ryujinx.HLE.HOS
                 // Sleep to not consume too much CPU.
                 if (sleepCounter == 0)
                 {
-                    sleepCounter = _tamperings.Count;
+                    sleepCounter = _programs.Count;
                     Thread.Sleep(1);
                 }
                 else
@@ -100,32 +87,7 @@ namespace Ryujinx.HLE.HOS
                     sleepCounter--;
                 }
 
-                if (_tamperings.TryDequeue(out Tampering tampering))
-                {
-                    // Get the process associated with the tampering and execute it.
-                    if (_device.System.KernelContext.Processes.TryGetValue(tampering.Pid, out KProcess process) && IsProcessValid(process))
-                    {
-                        // Re-enqueue the tampering because the process is still valid.
-                        _tamperings.Enqueue(tampering);
-
-                        Logger.Debug?.Print(LogClass.TamperMachine, $"Running tampering program on process {tampering.Pid}");
-
-                        try
-                        {
-                            long pressedKeys = Thread.VolatileRead(ref _pressedKeys);
-
-                            // TODO: Mechanism to abort execution if the process exits?
-                            tampering.Program.Memory.Value = process.CpuMemory;
-                            tampering.Program.PressedKeys.Value = pressedKeys;
-                            tampering.Program.EntryPoint.Execute();
-                        }
-                        catch
-                        {
-                            Logger.Debug?.Print(LogClass.TamperMachine, $"The tampering program crashed, this can happen during while the game is starting");
-                        }
-                    }
-                }
-                else
+                if (!AdvanceTamperingsQueue())
                 {
                     // No more work to be done.
 
@@ -134,6 +96,42 @@ namespace Ryujinx.HLE.HOS
                     return;
                 }
             }
+        }
+
+        private bool AdvanceTamperingsQueue()
+        {
+            if (!_programs.TryDequeue(out TamperProgram program))
+            {
+                // No more programs in the queue.
+                return false;
+            }
+
+            // Check if the process is still suitable for running the tamper program.
+            if (!IsProcessValid(program.Process))
+            {
+                // Exit without re-enqueuing the program because the process is no longer valid.
+                return true;
+            }
+
+            // Re-enqueue the tampering program because the process is still valid.
+            _programs.Enqueue(program);
+
+            Logger.Debug?.Print(LogClass.TamperMachine, "Running tampering program");
+
+            try
+            {
+                long pressedKeys = Thread.VolatileRead(ref _pressedKeys);
+
+                // TODO: Mechanism to abort execution if the process exits?
+                program.PressedKeys.Value = pressedKeys;
+                program.EntryPoint.Execute();
+            }
+            catch
+            {
+                Logger.Debug?.Print(LogClass.TamperMachine, $"The tampering program crashed, this can happen during while the game is starting");
+            }
+
+            return true;
         }
 
         public void UpdateInput(List<GamepadInput> gamepadInputs)
