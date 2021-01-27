@@ -1,4 +1,5 @@
 ﻿using System;
+using OpenTK;
 using OpenTK.Input;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Configuration;
@@ -46,7 +47,7 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)_config.LeftJoycon.ButtonL])     buttons |= ControllerKeys.L;
             if (keyboard[(Key)_config.LeftJoycon.ButtonZl])    buttons |= ControllerKeys.Zl;
             if (keyboard[(Key)_config.LeftJoycon.ButtonSl])    buttons |= ControllerKeys.SlLeft;
-            if (keyboard[(Key)_config.LeftJoycon.ButtonSr])    buttons |= ControllerKeys.SlRight;
+            if (keyboard[(Key)_config.LeftJoycon.ButtonSr])    buttons |= ControllerKeys.SrLeft;
             
             if (keyboard[(Key)_config.RightJoycon.StickButton]) buttons |= ControllerKeys.RStick;
             if (keyboard[(Key)_config.RightJoycon.ButtonA])     buttons |= ControllerKeys.A;
@@ -56,7 +57,7 @@ namespace Ryujinx.Ui
             if (keyboard[(Key)_config.RightJoycon.ButtonPlus])  buttons |= ControllerKeys.Plus;
             if (keyboard[(Key)_config.RightJoycon.ButtonR])     buttons |= ControllerKeys.R;
             if (keyboard[(Key)_config.RightJoycon.ButtonZr])    buttons |= ControllerKeys.Zr;
-            if (keyboard[(Key)_config.RightJoycon.ButtonSl])    buttons |= ControllerKeys.SrLeft;
+            if (keyboard[(Key)_config.RightJoycon.ButtonSl])    buttons |= ControllerKeys.SlRight;
             if (keyboard[(Key)_config.RightJoycon.ButtonSr])    buttons |= ControllerKeys.SrRight;
 
             return buttons;
@@ -68,13 +69,16 @@ namespace Ryujinx.Ui
 
             short dx = 0;
             short dy = 0;
-            
-            if (keyboard[(Key)_config.LeftJoycon.StickUp])    dy =  short.MaxValue;
-            if (keyboard[(Key)_config.LeftJoycon.StickDown])  dy = -short.MaxValue;
-            if (keyboard[(Key)_config.LeftJoycon.StickLeft])  dx = -short.MaxValue;
-            if (keyboard[(Key)_config.LeftJoycon.StickRight]) dx =  short.MaxValue;
 
-            return (dx, dy);
+            if (keyboard[(Key)_config.LeftJoycon.StickUp])    dy +=  1;
+            if (keyboard[(Key)_config.LeftJoycon.StickDown])  dy += -1;
+            if (keyboard[(Key)_config.LeftJoycon.StickLeft])  dx += -1;
+            if (keyboard[(Key)_config.LeftJoycon.StickRight]) dx +=  1;
+
+            Vector2 stick = new Vector2(dx, dy);
+            stick.NormalizeFast();
+
+            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
         }
 
         public (short, short) GetRightStick()
@@ -84,12 +88,15 @@ namespace Ryujinx.Ui
             short dx = 0;
             short dy = 0;
 
-            if (keyboard[(Key)_config.RightJoycon.StickUp])    dy =  short.MaxValue;
-            if (keyboard[(Key)_config.RightJoycon.StickDown])  dy = -short.MaxValue;
-            if (keyboard[(Key)_config.RightJoycon.StickLeft])  dx = -short.MaxValue;
-            if (keyboard[(Key)_config.RightJoycon.StickRight]) dx =  short.MaxValue;
+            if (keyboard[(Key)_config.RightJoycon.StickUp])    dy +=  1;
+            if (keyboard[(Key)_config.RightJoycon.StickDown])  dy += -1;
+            if (keyboard[(Key)_config.RightJoycon.StickLeft])  dx += -1;
+            if (keyboard[(Key)_config.RightJoycon.StickRight]) dx +=  1;
 
-            return (dx, dy);
+            Vector2 stick = new Vector2(dx, dy);
+            stick.NormalizeFast();
+
+            return ((short)(stick.X * short.MaxValue), (short)(stick.Y * short.MaxValue));
         }
 
         public static HotkeyButtons GetHotkeyButtons(KeyboardState keyboard)

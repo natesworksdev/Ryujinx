@@ -22,6 +22,7 @@ using Ryujinx.Ui.Windows;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -110,6 +111,7 @@ namespace Ryujinx.Ui
             DefaultWidth  = monitorWidth  < 1280 ? monitorWidth  : 1280;
             DefaultHeight = monitorHeight < 760  ? monitorHeight : 760;
 
+            Icon  = new Gdk.Pixbuf(Assembly.GetExecutingAssembly(), "Ryujinx.Ui.Resources.Logo_Ryujinx.png");
             Title = $"Ryujinx {Program.Version}";
 
             // Hide emulation context status bar.
@@ -552,6 +554,8 @@ namespace Ryujinx.Ui
                 _windowsMultimediaTimerResolution = new WindowsMultimediaTimerResolution(1);
             }
 
+            DisplaySleep.Prevent();
+
             GlRendererWidget = new GlRenderer(_emulationContext, ConfigurationState.Instance.Logger.GraphicsDebugLevel);
 
             Application.Invoke(delegate
@@ -591,7 +595,6 @@ namespace Ryujinx.Ui
                     ToggleExtraWidgets(true);
                 }
 
-                _viewBox.Remove(GlRendererWidget);
                 GlRendererWidget.Exit();
 
                 if(GlRendererWidget.Window != Window && GlRendererWidget.Window != null)
@@ -603,7 +606,9 @@ namespace Ryujinx.Ui
 
                 _windowsMultimediaTimerResolution?.Dispose();
                 _windowsMultimediaTimerResolution = null;
+                DisplaySleep.Restore();
 
+                _viewBox.Remove(GlRendererWidget);
                 _viewBox.Add(_gameTableWindow);
 
                 _gameTableWindow.Expand = true;
@@ -711,6 +716,7 @@ namespace Ryujinx.Ui
 
                     // Wait for the other thread to dispose the HLE context before exiting.
                     _deviceExitStatus.WaitOne();
+                    GlRendererWidget.Dispose();
                 }
             }
 
@@ -1028,6 +1034,11 @@ namespace Ryujinx.Ui
                         thread.Name = "GUI.FirmwareInstallerThread";
                         thread.Start();
                     }
+                }
+                catch (LibHac.MissingKeyException ex)
+                {
+                    Logger.Error?.Print(LogClass.Application, ex.ToString());
+                    UserErrorDialog.CreateUserErrorDialog(UserError.NoKeys);
                 }
                 catch (Exception ex)
                 {

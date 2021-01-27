@@ -120,22 +120,153 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimd op = (OpCodeSimd)context.CurrOp;
 
-            Operand res = context.VectorZero();
-
-            int elems = op.GetBytesCount() >> op.Size;
-
             int eSize = 8 << op.Size;
 
-            for (int index = 0; index < elems; index++)
+            Operand res = eSize switch {
+                8  => Clz_V_I8 (context, GetVec(op.Rn)),
+                16 => Clz_V_I16(context, GetVec(op.Rn)),
+                32 => Clz_V_I32(context, GetVec(op.Rn)),
+                _  => null
+            };
+
+            if (res != null)
             {
-                Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
+                if (op.RegisterSize == RegisterSize.Simd64)
+                {
+                    res = context.VectorZeroUpper64(res);
+                }
+            }
+            else
+            {
+                int elems = op.GetBytesCount() >> op.Size;
 
-                Operand de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingZeros)), ne, Const(eSize));
+                res = context.VectorZero();
 
-                res = EmitVectorInsert(context, res, de, index, op.Size);
+                for (int index = 0; index < elems; index++)
+                {
+                    Operand ne = EmitVectorExtractZx(context, op.Rn, index, op.Size);
+
+                    Operand de = context.Call(typeof(SoftFallback).GetMethod(nameof(SoftFallback.CountLeadingZeros)), ne, Const(eSize));
+
+                    res = EmitVectorInsert(context, res, de, index, op.Size);
+                }
             }
 
             context.Copy(GetVec(op.Rd), res);
+        }
+
+        private static Operand Clz_V_I8(ArmEmitterContext context, Operand arg)
+        {
+            if (!Optimizations.UseSsse3)
+            {
+                return null;
+            }
+
+            // CLZ nibble table.
+            Operand clzTable = X86GetScalar(context, 0x01_01_01_01_02_02_03_04);
+
+            Operand maskLow = X86GetAllElements(context, 0x0f_0f_0f_0f);
+            Operand c04     = X86GetAllElements(context, 0x04_04_04_04);
+
+            // CLZ of low 4 bits of elements in arg.
+            Operand loClz = context.AddIntrinsic(Intrinsic.X86Pshufb, clzTable, arg);
+
+            // Get the high 4 bits of elements in arg.
+            Operand hiArg = context.AddIntrinsic(Intrinsic.X86Psrlw, arg, Const(4));
+                    hiArg = context.AddIntrinsic(Intrinsic.X86Pand, hiArg, maskLow);
+
+            // CLZ of high 4 bits of elements in arg.
+            Operand hiClz = context.AddIntrinsic(Intrinsic.X86Pshufb, clzTable, hiArg);
+
+            // If high 4 bits are not all zero, we discard the CLZ of the low 4 bits.
+            Operand mask = context.AddIntrinsic(Intrinsic.X86Pcmpeqb, hiClz, c04);
+            loClz = context.AddIntrinsic(Intrinsic.X86Pand, loClz, mask);
+
+            return context.AddIntrinsic(Intrinsic.X86Paddb, loClz, hiClz);
+        }
+
+        private static Operand Clz_V_I16(ArmEmitterContext context, Operand arg)
+        {
+            if (!Optimizations.UseSsse3)
+            {
+                return null;
+            }
+
+            Operand maskSwap = X86GetElements(context, 0x80_0f_80_0d_80_0b_80_09, 0x80_07_80_05_80_03_80_01);
+            Operand maskLow  = X86GetAllElements(context, 0x00ff_00ff);
+            Operand c0008    = X86GetAllElements(context, 0x0008_0008);
+
+            // CLZ pair of high 8 and low 8 bits of elements in arg.
+            Operand hiloClz = Clz_V_I8(context, arg);
+            // Get CLZ of low 8 bits in each pair.
+            Operand loClz = context.AddIntrinsic(Intrinsic.X86Pand, hiloClz, maskLow);
+            // Get CLZ of high 8 bits in each pair.
+            Operand hiClz = context.AddIntrinsic(Intrinsic.X86Pshufb, hiloClz, maskSwap);
+
+            // If high 8 bits are not all zero, we discard the CLZ of the low 8 bits.
+            Operand mask = context.AddIntrinsic(Intrinsic.X86Pcmpeqw, hiClz, c0008);
+            loClz = context.AddIntrinsic(Intrinsic.X86Pand, loClz, mask);
+
+            return context.AddIntrinsic(Intrinsic.X86Paddw, loClz, hiClz);
+        }
+
+        private static Operand Clz_V_I32(ArmEmitterContext context, Operand arg)
+        {
+            // TODO: Use vplzcntd when AVX-512 is supported.
+            if (!Optimizations.UseSse2)
+            {
+                return null;
+            }
+
+            Operand AddVectorI32(Operand op0, Operand op1)      => context.AddIntrinsic(Intrinsic.X86Paddd, op0, op1);
+            Operand SubVectorI32(Operand op0, Operand op1)      => context.AddIntrinsic(Intrinsic.X86Psubd, op0, op1);
+            Operand ShiftRightVectorUI32(Operand op0, int imm8) => context.AddIntrinsic(Intrinsic.X86Psrld, op0, Const(imm8));
+            Operand OrVector(Operand op0, Operand op1)          => context.AddIntrinsic(Intrinsic.X86Por, op0, op1);
+            Operand AndVector(Operand op0, Operand op1)         => context.AddIntrinsic(Intrinsic.X86Pand, op0, op1);
+            Operand NotVector(Operand op0)                      => context.AddIntrinsic(Intrinsic.X86Pandn, op0, context.VectorOne());
+
+            Operand c55555555 = X86GetAllElements(context, 0x55555555);
+            Operand c33333333 = X86GetAllElements(context, 0x33333333);
+            Operand c0f0f0f0f = X86GetAllElements(context, 0x0f0f0f0f);
+            Operand c0000003f = X86GetAllElements(context, 0x0000003f);
+
+            Operand tmp0;
+            Operand tmp1;
+            Operand res;
+
+            // Set all bits after highest set bit to 1.
+            res = OrVector(ShiftRightVectorUI32(arg, 1), arg);
+            res = OrVector(ShiftRightVectorUI32(res, 2), res);
+            res = OrVector(ShiftRightVectorUI32(res, 4), res);
+            res = OrVector(ShiftRightVectorUI32(res, 8), res);
+            res = OrVector(ShiftRightVectorUI32(res, 16), res);
+
+            // Make leading 0s into leading 1s.
+            res = NotVector(res);
+
+            // Count leading 1s, which is the population count.
+            tmp0 = ShiftRightVectorUI32(res, 1);
+            tmp0 = AndVector(tmp0, c55555555);
+            res  = SubVectorI32(res, tmp0);
+
+            tmp0 = ShiftRightVectorUI32(res, 2);
+            tmp0 = AndVector(tmp0, c33333333);
+            tmp1 = AndVector(res, c33333333);
+            res  = AddVectorI32(tmp0, tmp1);
+
+            tmp0 = ShiftRightVectorUI32(res, 4);
+            tmp0 = AddVectorI32(tmp0, res);
+            res  = AndVector(tmp0, c0f0f0f0f);
+
+            tmp0 = ShiftRightVectorUI32(res, 8);
+            res  = AddVectorI32(tmp0, res);
+
+            tmp0 = ShiftRightVectorUI32(res, 16);
+            res  = AddVectorI32(tmp0, res);
+
+            res  = AndVector(res, c0000003f);
+
+            return res;
         }
 
         public static void Cnt_V(ArmEmitterContext context)
@@ -347,19 +478,17 @@ namespace ARMeilleure.Instructions
 
         public static void Faddp_S(ArmEmitterContext context)
         {
-            OpCodeSimd op = (OpCodeSimd)context.CurrOp;
-
-            int sizeF = op.Size & 1;
-
             if (Optimizations.FastFP && Optimizations.UseSse3)
             {
-                if (sizeF == 0)
+                OpCodeSimd op = (OpCodeSimd)context.CurrOp;
+
+                if ((op.Size & 1) == 0)
                 {
                     Operand res = context.AddIntrinsic(Intrinsic.X86Haddps, GetVec(op.Rn), GetVec(op.Rn));
 
                     context.Copy(GetVec(op.Rd), context.VectorZeroUpper96(res));
                 }
-                else /* if (sizeF == 1) */
+                else /* if ((op.Size & 1) == 1) */
                 {
                     Operand res = context.AddIntrinsic(Intrinsic.X86Haddpd, GetVec(op.Rn), GetVec(op.Rn));
 
@@ -368,14 +497,10 @@ namespace ARMeilleure.Instructions
             }
             else
             {
-                OperandType type = sizeF != 0 ? OperandType.FP64 : OperandType.FP32;
-
-                Operand ne0 = context.VectorExtract(type, GetVec(op.Rn), 0);
-                Operand ne1 = context.VectorExtract(type, GetVec(op.Rn), 1);
-
-                Operand res = EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), ne0, ne1);
-
-                context.Copy(GetVec(op.Rd), context.VectorInsert(context.VectorZero(), res, 0));
+                EmitScalarPairwiseOpF(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPAdd), op1, op2);
+                });
             }
         }
 
@@ -552,6 +677,24 @@ namespace ARMeilleure.Instructions
             }
         }
 
+        public static void Fmaxnmp_S(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseSse41)
+            {
+                EmitSse2ScalarPairwiseOpF(context, (op1, op2) =>
+                {
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: true, op1, op2);
+                });
+            }
+            else
+            {
+                EmitScalarPairwiseOpF(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMaxNum), op1, op2);
+                });
+            }
+        }
+
         public static void Fmaxnmp_V(ArmEmitterContext context)
         {
             if (Optimizations.FastFP && Optimizations.UseSse41)
@@ -702,6 +845,24 @@ namespace ARMeilleure.Instructions
             else
             {
                 EmitVectorBinaryOpF(context, (op1, op2) =>
+                {
+                    return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
+                });
+            }
+        }
+
+        public static void Fminnmp_S(ArmEmitterContext context)
+        {
+            if (Optimizations.FastFP && Optimizations.UseSse41)
+            {
+                EmitSse2ScalarPairwiseOpF(context, (op1, op2) =>
+                {
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: true, op1, op2);
+                });
+            }
+            else
+            {
+                EmitScalarPairwiseOpF(context, (op1, op2) =>
                 {
                     return EmitSoftFloatCall(context, nameof(SoftFloat32.FPMinNum), op1, op2);
                 });
