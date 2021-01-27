@@ -2,6 +2,7 @@ using ARMeilleure.CodeGen.RegisterAllocators;
 using ARMeilleure.Common;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation.PTC;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -301,7 +302,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Assembler assembler = new Assembler(codeStream, _ptcInfo);
 
-                byte[] buffer;
+                Span<byte> buffer;
 
                 for (int index = 0; index < _jumps.Count; index++)
                 {
@@ -309,7 +310,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     buffer = new byte[jump.JumpPosition - _stream.Position];
 
-                    _stream.Read(buffer, 0, buffer.Length);
+                    _stream.Read(buffer);
                     _stream.Seek(_ptcDisabled ? ReservedBytesForJump : jump.InstSize, SeekOrigin.Current);
 
                     codeStream.Write(buffer);
@@ -326,7 +327,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 buffer = new byte[_stream.Length - _stream.Position];
 
-                _stream.Read(buffer, 0, buffer.Length);
+                _stream.Read(buffer);
 
                 codeStream.Write(buffer);
 

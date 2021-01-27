@@ -29,6 +29,8 @@ namespace ARMeilleure.Translation.PTC
 
         private static bool _disposed;
 
+        private static byte[] _lastHash;
+
         internal static Dictionary<ulong, (ExecutionMode mode, bool highCq)> ProfiledFuncs { get; private set; }
 
         internal static bool Enabled { get; private set; }
@@ -105,10 +107,13 @@ namespace ARMeilleure.Translation.PTC
         internal static void ClearEntries()
         {
             ProfiledFuncs.Clear();
+            ProfiledFuncs.TrimExcess();
         }
 
         internal static void PreLoad()
         {
+            _lastHash = Array.Empty<byte>();
+
             string fileNameActual = String.Concat(Ptc.CachePathActual, ".info");
             string fileNameBackup = String.Concat(Ptc.CachePathBackup, ".info");
 
@@ -138,8 +143,6 @@ namespace ARMeilleure.Translation.PTC
             using (MemoryStream stream = new MemoryStream())
             using (MD5 md5 = MD5.Create())
             {
-                int hashSize = md5.HashSize / 8;
-
                 try
                 {
                     deflateStream.CopyTo(stream);
@@ -150,6 +153,8 @@ namespace ARMeilleure.Translation.PTC
 
                     return false;
                 }
+
+                int hashSize = md5.HashSize / 8;
 
                 stream.Seek(0L, SeekOrigin.Begin);
 
@@ -195,6 +200,8 @@ namespace ARMeilleure.Translation.PTC
 
                     return false;
                 }
+
+                _lastHash = expectedHash;
             }
 
             long fileSize = new FileInfo(fileName).Length;
@@ -209,7 +216,7 @@ namespace ARMeilleure.Translation.PTC
             return currentHash.SequenceEqual(expectedHash);
         }
 
-        private static Header ReadHeader(MemoryStream stream)
+        private static Header ReadHeader(Stream stream)
         {
             using (BinaryReader headerReader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -223,7 +230,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static Dictionary<ulong, (ExecutionMode, bool)> Deserialize(MemoryStream stream)
+        private static Dictionary<ulong, (ExecutionMode, bool)> Deserialize(Stream stream)
         {
             using (BinaryReader reader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -295,16 +302,25 @@ namespace ARMeilleure.Translation.PTC
                 stream.Seek(0L, SeekOrigin.Begin);
                 stream.Write(hash, 0, hashSize);
 
+                if (CompareHash(hash, _lastHash))
+                {
+                    return;
+                }
+
                 using (FileStream compressedStream = new FileStream(fileName, FileMode.OpenOrCreate))
                 using (DeflateStream deflateStream = new DeflateStream(compressedStream, SaveCompressionLevel, true))
                 {
                     try
                     {
                         stream.WriteTo(deflateStream);
+
+                        _lastHash = hash;
                     }
                     catch
                     {
                         compressedStream.Position = 0L;
+
+                        _lastHash = Array.Empty<byte>();
                     }
 
                     if (compressedStream.Position < compressedStream.Length)
@@ -316,10 +332,13 @@ namespace ARMeilleure.Translation.PTC
 
             long fileSize = new FileInfo(fileName).Length;
 
-            Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize} bytes, profiled functions: {profiledFuncsCount}).");
+            if (fileSize != 0L)
+            {
+                Logger.Info?.Print(LogClass.Ptc, $"Saved Profiling Info (size: {fileSize} bytes, profiled functions: {profiledFuncsCount}).");
+            }
         }
 
-        private static void WriteHeader(MemoryStream stream)
+        private static void WriteHeader(Stream stream)
         {
             using (BinaryWriter headerWriter = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -329,7 +348,7 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        private static void Serialize(MemoryStream stream, Dictionary<ulong, (ExecutionMode mode, bool highCq)> profiledFuncs)
+        private static void Serialize(Stream stream, Dictionary<ulong, (ExecutionMode mode, bool highCq)> profiledFuncs)
         {
             using (BinaryWriter writer = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
             {

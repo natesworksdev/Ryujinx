@@ -12,9 +12,11 @@ namespace ARMeilleure.Translation.PTC
     {
         public struct TableEntry<TAddress>
         {
+            public const int Stride = 16; // Bytes.
+
             public int EntryIndex;
             public long GuestAddress;
-            public TAddress HostAddress;
+            public TAddress HostAddress; // int
 
             public TableEntry(int entryIndex, long guestAddress, TAddress hostAddress)
             {
@@ -24,14 +26,14 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        public enum DirectHostAddress
+        public enum DirectHostAddress : int
         {
             CallStub = 0,
             TailCallStub = 1,
             Host = 2
         }
 
-        public enum IndirectHostAddress
+        public enum IndirectHostAddress : int
         {
             CallStub = 0,
             TailCallStub = 1
@@ -66,7 +68,7 @@ namespace ARMeilleure.Translation.PTC
             Owners = owners;
         }
 
-        public static PtcJumpTable Deserialize(MemoryStream stream)
+        public static PtcJumpTable Deserialize(Stream stream)
         {
             using (BinaryReader reader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -155,7 +157,36 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
-        public static void Serialize(MemoryStream stream, PtcJumpTable ptcJumpTable)
+        public static int GetSerializeSize(PtcJumpTable ptcJumpTable)
+        {
+            const int CountSize = 4; // Bytes.
+
+            int size = 0;
+
+            size += CountSize + ptcJumpTable._jumpTable.Count * TableEntry<DirectHostAddress>.Stride;
+
+            size += CountSize + ptcJumpTable._dynamicTable.Count * TableEntry<IndirectHostAddress>.Stride;
+
+            size += CountSize + ptcJumpTable.Targets.Count * 8;
+
+            size += CountSize;
+            foreach (var kv in ptcJumpTable.Dependants)
+            {
+                size += 8; // kv.Key (address)
+                size += CountSize + kv.Value.Count * 4;
+            }
+
+            size += CountSize;
+            foreach (var kv in ptcJumpTable.Owners)
+            {
+                size += 8; // kv.Key (address)
+                size += CountSize + kv.Value.Count * 4;
+            }
+
+            return size;
+        }
+
+        public static void Serialize(Stream stream, PtcJumpTable ptcJumpTable)
         {
             using (BinaryWriter writer = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
             {
@@ -270,14 +301,25 @@ namespace ARMeilleure.Translation.PTC
             Owners.Remove(guestAddress);
         }
 
-        public void Clear()
+        public void ClearIfNeeded()
         {
+            if (_jumpTable.Count == 0 && _dynamicTable.Count == 0 &&
+                Targets.Count == 0 && Dependants.Count == 0 && Owners.Count == 0)
+            {
+                return;
+            }
+
             _jumpTable.Clear();
+            _jumpTable.TrimExcess();
             _dynamicTable.Clear();
+            _dynamicTable.TrimExcess();
 
             Targets.Clear();
+            Targets.TrimExcess();
             Dependants.Clear();
+            Dependants.TrimExcess();
             Owners.Clear();
+            Owners.TrimExcess();
         }
 
         public void WriteJumpTable(JumpTable jumpTable, ConcurrentDictionary<ulong, TranslatedFunction> funcs)
