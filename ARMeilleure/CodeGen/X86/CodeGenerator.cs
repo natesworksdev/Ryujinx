@@ -521,13 +521,6 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     ValidateBinOp(dest, src1, src2);
 
-            if (dest.Type.IsInteger())
-            {
-                // If Destination and Source 1 Operands are the same, perform a standard add as there are no benefits to using LEA.
-                if (dest.Kind == src1.Kind && dest.Value == src1.Value)
-                {
-                    ValidateBinOp(dest, src1, src2);
-
                     context.Assembler.Add(dest, src2, dest.Type);
                 }
                 else
