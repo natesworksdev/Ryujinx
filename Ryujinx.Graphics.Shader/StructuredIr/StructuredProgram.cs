@@ -53,7 +53,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                         }
                         else
                         {
-                            AddOperation(context, opNode);
+                            AddOperation(context, operation);
                         }
                     }
                 }
@@ -68,10 +68,8 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return context.Info;
         }
 
-        private static void AddOperation(StructuredProgramContext context, LinkedListNode<INode> opNode)
+        private static void AddOperation(StructuredProgramContext context, Operation operation)
         {
-            Operation operation = (Operation)opNode.Value;
-
             Instruction inst = operation.Inst;
 
             int sourcesCount = operation.SourcesCount;
