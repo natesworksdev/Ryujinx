@@ -51,7 +51,7 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                         {
                             context.LeaveBlock(block, operation);
                         }
-                        else if (operation.Inst != Instruction.CallOutArgument)
+                        else
                         {
                             AddOperation(context, opNode);
                         }
@@ -74,41 +74,14 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
 
             Instruction inst = operation.Inst;
 
-            bool isCall = inst == Instruction.Call;
-
             int sourcesCount = operation.SourcesCount;
             int outDestsCount = operation.DestsCount != 0 ? operation.DestsCount - 1 : 0;
-
-            List<Operand> callOutOperands = new List<Operand>();
-
-            if (isCall)
-            {
-                LinkedListNode<INode> scan = opNode.Next;
-
-                while (scan != null && scan.Value is Operation nextOp && nextOp.Inst == Instruction.CallOutArgument)
-                {
-                    callOutOperands.Add(nextOp.Dest);
-                    scan = scan.Next;
-                }
-
-                sourcesCount += callOutOperands.Count;
-            }
 
             IAstNode[] sources = new IAstNode[sourcesCount + outDestsCount];
 
             for (int index = 0; index < operation.SourcesCount; index++)
             {
                 sources[index] = context.GetOperandUse(operation.GetSource(index));
-            }
-
-            if (isCall)
-            {
-                for (int index = 0; index < callOutOperands.Count; index++)
-                {
-                    sources[operation.SourcesCount + index] = context.GetOperandDef(callOutOperands[index]);
-                }
-
-                callOutOperands.Clear();
             }
 
             for (int index = 0; index < outDestsCount; index++)
