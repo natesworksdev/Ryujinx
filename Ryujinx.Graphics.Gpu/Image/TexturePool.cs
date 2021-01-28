@@ -1,6 +1,5 @@
 using Ryujinx.Common.Logging;
 using Ryujinx.Graphics.GAL;
-using Ryujinx.Graphics.Gpu.Memory;
 using Ryujinx.Graphics.Texture;
 using System;
 using System.Collections.Generic;
@@ -114,7 +113,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     // If the descriptors are the same, the texture is the same,
                     // we don't need to remove as it was not modified. Just continue.
-                    if (descriptor.Equals(DescriptorCache[id]))
+                    if (descriptor.Equals(ref DescriptorCache[id]))
                     {
                         continue;
                     }

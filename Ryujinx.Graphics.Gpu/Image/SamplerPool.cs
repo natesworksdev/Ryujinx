@@ -70,7 +70,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     SamplerDescriptor descriptor = GetDescriptor(id);
 
                     // If the descriptors are the same, the sampler is still valid.
-                    if (descriptor.Equals(DescriptorCache[id]))
+                    if (descriptor.Equals(ref DescriptorCache[id]))
                     {
                         continue;
                     }
