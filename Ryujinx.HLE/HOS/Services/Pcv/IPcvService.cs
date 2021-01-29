@@ -9,13 +9,17 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
     [Service("pcv")]
     class IPcvService : IpcService
     {
+        private bool isInitialized;
         private readonly IDictionary<Module, ModuleState> moduleStates;
         private readonly IDictionary<PowerDomain, PowerDomainState> powerDomainStates;
+        private readonly IDictionary<PowerControlTarget, (bool isPoweredOn, int microVolt)> powerControlTargetPoweredOnStatus;
 
         public IPcvService(ServiceCtx context)
         {
+            isInitialized = false;
             moduleStates = new Dictionary<Module, ModuleState>();
             powerDomainStates = new Dictionary<PowerDomain, PowerDomainState>();
+            powerControlTargetPoweredOnStatus = new Dictionary<PowerControlTarget, (bool, int)>();
         }
 
         [Command(0)]
@@ -122,6 +126,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         public ResultCode GetState(ServiceCtx context)
         {
             Module moduleId = (Module)context.RequestData.ReadUInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { moduleId });
 
             ModuleState moduleState;
@@ -140,15 +145,13 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
             return ResultCode.Success;
         }
 
-        // [Command(5)]
-        // GetPossibleClockRates(u32, u32) -> (u32, u32, buffer<u32, 0xa>)
-
         [Command(6)]
         // SetMinVClockRate(u32, u32)
         public ResultCode SetMinVClockRate(ServiceCtx context)
         {
             Module moduleId = (Module)context.RequestData.ReadUInt32();
             uint clockRateHz = context.RequestData.ReadUInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { moduleId, clockRateHz });
 
             if (moduleStates.TryGetValue(moduleId, out ModuleState moduleState))
@@ -162,6 +165,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                     MinVClockRate = clockRateHz
                 };
             }
+
             moduleStates[moduleId] = moduleState;
 
             return ResultCode.Success;
@@ -173,6 +177,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         {
             Module moduleId = (Module)context.RequestData.ReadUInt32();
             bool asserted = context.RequestData.ReadByte() != 0;
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { moduleId, asserted });
 
             if (moduleStates.TryGetValue(moduleId, out ModuleState moduleState))
@@ -186,6 +191,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                     ResetAsserted = asserted
                 };
             }
+
             moduleStates[moduleId] = moduleState;
 
             return ResultCode.Success;
@@ -211,6 +217,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                     Enabled = enabled
                 };
             }
+
             powerDomainStates[powerDomain] = powerDomainState;
 
             return ResultCode.Success;
@@ -235,13 +242,11 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                 // Enabled state has not been set before, just give false.
                 enabled = false;
             }
+
             context.ResponseData.Write(enabled);
 
             return ResultCode.Success;
         }
-
-        // [Command(10)]
-        // GetVoltageRange(u32) -> (u32, u32, u32)
 
         [Command(11)]
         // SetVoltageValue(u32, u32)
@@ -263,6 +268,7 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                     Voltage = microVolt
                 };
             }
+
             powerDomainStates[powerDomain] = powerDomainState;
 
             return ResultCode.Success;
@@ -287,22 +293,20 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                 // Voltage has not been set before, just give 0.
                 microVolt = 0;
             }
+
             context.ResponseData.Write(microVolt);
 
             return ResultCode.Success;
         }
-
-        // [Command(13)]
-        // GetTemperatureThresholds(u32) -> (u32, buffer<nn::pcv::TemperatureThreshold, 0xa>)
-
-        // [Command(14)]
-        // SetTemperature(u32)
 
         [Command(15)]
         // Initialize()
         public ResultCode Initialize(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServicePcv);
+
+            isInitialized = true;
+
             return ResultCode.Success;
         }
 
@@ -311,7 +315,9 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         public ResultCode IsInitialized(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServicePcv);
-            context.ResponseData.Write(true);
+
+            context.ResponseData.Write(isInitialized);
+
             return ResultCode.Success;
         }
 
@@ -320,6 +326,12 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         public ResultCode Finalize(ServiceCtx context)
         {
             Logger.Stub?.PrintStub(LogClass.ServicePcv);
+
+            moduleStates.Clear();
+            powerDomainStates.Clear();
+            powerControlTargetPoweredOnStatus.Clear();
+            isInitialized = false;
+
             return ResultCode.Success;
         }
 
@@ -329,7 +341,20 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         {
             PowerControlTarget powerControlTarget = (PowerControlTarget)context.RequestData.ReadUInt32();
             int microVolt = context.RequestData.ReadInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { powerControlTarget, microVolt });
+
+            if (powerControlTargetPoweredOnStatus.TryGetValue(powerControlTarget, out (bool isPoweredOn, int microVolt) t))
+            {
+                t.isPoweredOn = true;
+            }
+            else
+            {
+                t = (true, default);
+            }
+
+            powerControlTargetPoweredOnStatus[powerControlTarget] = t;
+
             return ResultCode.Success;
         }
 
@@ -338,7 +363,20 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         public ResultCode PowerOff(ServiceCtx context)
         {
             PowerControlTarget powerControlTarget = (PowerControlTarget)context.RequestData.ReadUInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { powerControlTarget });
+
+            if (powerControlTargetPoweredOnStatus.TryGetValue(powerControlTarget, out (bool isPoweredOn, int microVolt) t))
+            {
+                t.isPoweredOn = false;
+            }
+            else
+            {
+                t = (false, default);
+            }
+
+            powerControlTargetPoweredOnStatus[powerControlTarget] = t;
+
             return ResultCode.Success;
         }
 
@@ -348,39 +386,42 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
         {
             PowerControlTarget powerControlTarget = (PowerControlTarget)context.RequestData.ReadUInt32();
             int microVolt = context.RequestData.ReadInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { powerControlTarget, microVolt });
+
+            if (powerControlTargetPoweredOnStatus.TryGetValue(powerControlTarget, out (bool isPoweredOn, int microVolt) t))
+            {
+                t.microVolt = microVolt;
+            }
+            else
+            {
+                t = (default, microVolt);
+            }
+
+            powerControlTargetPoweredOnStatus[powerControlTarget] = t;
+
             return ResultCode.Success;
         }
 
-        // [Command(21)]
-        // GetPowerClockInfoEvent() -> handle<copy>
-
-        // [Command(22)]
-        // GetOscillatorClock() -> u32
-
-        // [Command(23)]
-        // GetDvfsTable(u32, u32) -> (u32, buffer<u32, 0xa>, buffer<u32, 0xa>)
-
         [Command(24)]
         // GetModuleStateTable(u32) -> (u32, buffer<nn::pcv::ModuleState, 0xa>)
-        public unsafe ResultCode GetModuleStateTable(ServiceCtx context)
+        public ResultCode GetModuleStateTable(ServiceCtx context)
         {
             int maxCount = context.RequestData.ReadInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { maxCount });
 
             // [7.0.0+] The type-0xA output buffer was replaced with a type-0x22 output buffer.
-            (long position, long size) = context.Response.GetBufferType0x22(0);
-            byte[] outputBuffer = new byte[size];
-            Span<byte> outputBufferSpan = outputBuffer;
+            (long bufferPosition, long bufferSize) = context.Response.GetBufferType0x22(0);
 
             int outCount = 0;
             foreach ((_, ModuleState moduleState) in moduleStates)
             {
                 int structSize = Marshal.SizeOf(moduleState);
 
-                if (size < outCount * structSize)
+                if (bufferSize < outCount * structSize)
                 {
-                    Logger.Error?.Print(LogClass.ServicePcv, $"Output buffer size {size} too small!");
+                    Logger.Error?.Print(LogClass.ServicePcv, $"Output buffer size {bufferSize} too small!");
                     break;
                 }
 
@@ -389,39 +430,36 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                     break;
                 }
 
-                fixed (byte* ptr = outputBufferSpan.Slice(outCount * structSize, structSize))
-                {
-                    Marshal.StructureToPtr(moduleState, (IntPtr)ptr, false);
-                }
+                context.Memory.Write((ulong)bufferPosition, moduleState);
+                bufferPosition += structSize;
 
                 outCount++;
             }
+
             context.ResponseData.Write(outCount);
-            context.Memory.Write((ulong)position, outputBuffer);
 
             return ResultCode.Success;
         }
 
         [Command(25)]
         // GetPowerDomainStateTable(u32) -> (u32, buffer<nn::pcv::PowerDomainState, 0xa>)
-        public unsafe ResultCode GetPowerDomainStateTable(ServiceCtx context)
+        public ResultCode GetPowerDomainStateTable(ServiceCtx context)
         {
             int maxCount = context.RequestData.ReadInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { maxCount });
 
             // [7.0.0+] The type-0xA output buffer was replaced with a type-0x22 output buffer.
-            (long position, long size) = context.Response.GetBufferType0x22(0);
-            byte[] outputBuffer = new byte[size];
-            Span<byte> outputBufferSpan = outputBuffer;
+            (long bufferPosition, long bufferSize) = context.Response.GetBufferType0x22(0);
 
             int outCount = 0;
             foreach ((_, PowerDomainState powerDomainState) in powerDomainStates)
             {
                 int structSize = Marshal.SizeOf(powerDomainState);
 
-                if (size < outCount * structSize)
+                if (bufferSize < outCount * structSize)
                 {
-                    Logger.Error?.Print(LogClass.ServicePcv, $"Output buffer size {size} too small!");
+                    Logger.Error?.Print(LogClass.ServicePcv, $"Output buffer size {bufferSize} too small!");
                     break;
                 }
 
@@ -430,38 +468,40 @@ namespace Ryujinx.HLE.HOS.Services.Pcv
                     break;
                 }
 
-                fixed (byte* ptr = outputBufferSpan.Slice(outCount * structSize, structSize))
-                {
-                    Marshal.StructureToPtr(powerDomainState, (IntPtr)ptr, false);
-                }
+                context.Memory.Write((ulong)bufferPosition, powerDomainState);
+                bufferPosition += structSize;
 
                 outCount++;
             }
+
             context.ResponseData.Write(outCount);
-            context.Memory.Write((ulong)position, outputBuffer);
 
             return ResultCode.Success;
         }
 
-        // [Command(26)]
-        // GetFuseInfo(u32) -> (u32, buffer<u32, 0xa>)
-
-        // [Command(27)]
-        // GetDramId()
-
         [Command(28)]
-        // Takes an input PowerControlTarget. Returns an output bool.
+        // IsPoweredOn(nn::pcv::PowerControlTarget) -> b8
         public ResultCode IsPoweredOn(ServiceCtx context)
         {
             PowerControlTarget powerControlTarget = (PowerControlTarget)context.RequestData.ReadUInt32();
+
             Logger.Stub?.PrintStub(LogClass.ServicePcv, new { powerControlTarget });
 
-            context.ResponseData.Write(true);
+            bool isPoweredOn;
+            if (powerControlTargetPoweredOnStatus.TryGetValue(powerControlTarget, out (bool isPoweredOn, int microVolt) t))
+            {
+                // Able to get the power on status.
+                isPoweredOn = t.isPoweredOn;
+            }
+            else
+            {
+                // Power on status has not been set before, just give false.
+                isPoweredOn = false;
+            }
+
+            context.ResponseData.Write(isPoweredOn);
 
             return ResultCode.Success;
         }
-
-        // [Command(29)]
-        // GetVoltage()
     }
 }
