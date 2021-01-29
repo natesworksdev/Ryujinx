@@ -9,7 +9,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public int Displacement { get; private set; }
 
-        public MemoryOperand() { }
+        public MemoryOperand()
+        {
+        }
 
         public MemoryOperand With(
             OperandType type,

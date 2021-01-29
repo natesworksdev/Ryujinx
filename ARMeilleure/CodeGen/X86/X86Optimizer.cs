@@ -1,7 +1,7 @@
 ﻿using ARMeilleure.CodeGen.Optimizations;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-
+using System.Collections.Generic;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
@@ -11,6 +11,32 @@ namespace ARMeilleure.CodeGen.X86
     {
         public static void RunPass(ControlFlowGraph cfg)
         {
+            var hasAssignment = new HashSet<Operand>();
+            var singleAssignments = new Dictionary<Operand, Node>();
+
+            for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
+            {
+                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                {
+                    for (int index = 0; index < node.DestinationsCount; index++)
+                    {
+                        Operand dest = node.GetDestination(index);
+
+                        if (dest.Kind == OperandKind.LocalVariable)
+                        {
+                            if (hasAssignment.Add(dest))
+                            {
+                                singleAssignments.Add(dest, node);
+                            }
+                            else
+                            {
+                                singleAssignments.Remove(dest);
+                            }
+                        }
+                    }
+                }
+            }
+
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
                 Node nextNode;
@@ -74,7 +100,7 @@ namespace ARMeilleure.CodeGen.X86
                             type = operation.GetSource(1).Type;
                         }
 
-                        MemoryOperand memOp = GetMemoryOperandOrNull(operation.GetSource(0), type);
+                        MemoryOperand memOp = GetMemoryOperandOrNull(singleAssignments, operation.GetSource(0), type);
 
                         if (memOp != null)
                         {
@@ -87,14 +113,14 @@ namespace ARMeilleure.CodeGen.X86
             Optimizer.RemoveUnusedNodes(cfg);
         }
 
-        private static MemoryOperand GetMemoryOperandOrNull(Operand addr, OperandType type)
+        private static MemoryOperand GetMemoryOperandOrNull(Dictionary<Operand, Node> singleAssignments, Operand addr, OperandType type)
         {
             Operand baseOp = addr;
 
             // First we check if the address is the result of a local X with 32-bits immediate
             // addition. If that is the case, then the baseOp is X, and the memory operand immediate
             // becomes the addition immediate. Otherwise baseOp keeps being the address.
-            int imm = GetConstOp(ref baseOp);
+            int imm = GetConstOp(singleAssignments, ref baseOp);
 
             // Now we check if the baseOp is the result of a local Y with a local Z addition.
             // If that is the case, we now set baseOp to Y and indexOp to Z. We further check
@@ -103,7 +129,7 @@ namespace ARMeilleure.CodeGen.X86
             // to match that of the left shift.
             // There is one missed case, which is the address being a shift result, but this is
             // probably not worth optimizing as it should never happen.
-            (Operand indexOp, Multiplier scale) = GetIndexOp(ref baseOp);
+            (Operand indexOp, Multiplier scale) = GetIndexOp(singleAssignments, ref baseOp);
 
             // If baseOp is still equal to address, then there's nothing that can be optimized.
             if (baseOp == addr)
@@ -114,9 +140,9 @@ namespace ARMeilleure.CodeGen.X86
             return MemoryOp(type, baseOp, indexOp, scale, imm);
         }
 
-        private static int GetConstOp(ref Operand baseOp)
+        private static int GetConstOp(Dictionary<Operand, Node> singleAssignments, ref Operand baseOp)
         {
-            Operation operation = GetAsgOpWithInst(baseOp, Instruction.Add);
+            Operation operation = GetAsgOpWithInst(singleAssignments, baseOp, Instruction.Add);
 
             if (operation == null)
             {
@@ -156,13 +182,13 @@ namespace ARMeilleure.CodeGen.X86
             return constOp.AsInt32();
         }
 
-        private static (Operand, Multiplier) GetIndexOp(ref Operand baseOp)
+        private static (Operand, Multiplier) GetIndexOp(Dictionary<Operand, Node> singleAssignments, ref Operand baseOp)
         {
             Operand indexOp = null;
 
             Multiplier scale = Multiplier.x1;
 
-            Operation addOp = GetAsgOpWithInst(baseOp, Instruction.Add);
+            Operation addOp = GetAsgOpWithInst(singleAssignments, baseOp, Instruction.Add);
 
             if (addOp == null)
             {
@@ -180,13 +206,13 @@ namespace ARMeilleure.CodeGen.X86
             baseOp = src1;
             indexOp = src2;
 
-            Operation shlOp = GetAsgOpWithInst(src1, Instruction.ShiftLeft);
+            Operation shlOp = GetAsgOpWithInst(singleAssignments, src1, Instruction.ShiftLeft);
 
             bool indexOnSrc2 = false;
 
             if (shlOp == null)
             {
-                shlOp = GetAsgOpWithInst(src2, Instruction.ShiftLeft);
+                shlOp = GetAsgOpWithInst(singleAssignments, src2, Instruction.ShiftLeft);
 
                 indexOnSrc2 = true;
             }
@@ -214,19 +240,17 @@ namespace ARMeilleure.CodeGen.X86
             return (indexOp, scale);
         }
 
-        private static Operation GetAsgOpWithInst(Operand op, Instruction inst)
+        private static Operation GetAsgOpWithInst(Dictionary<Operand, Node> singleAssignments, Operand op, Instruction inst)
         {
             // If we have multiple assignments, folding is not safe
             // as the value may be different depending on the
             // control flow path.
-            if (op.Assignments.Count != 1)
+            if (!singleAssignments.TryGetValue(op, out Node asgOp))
             {
                 return null;
             }
 
-            Node asgOp = op.Assignments[0];
-
-            if (!(asgOp is Operation operation))
+            if (asgOp is not Operation operation)
             {
                 return null;
             }

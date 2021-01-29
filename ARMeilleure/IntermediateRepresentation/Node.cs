@@ -16,7 +16,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private readonly List<Operand> _destinations;
         private readonly List<Operand> _sources;
-        private bool _clearedDest;
 
         public int DestinationsCount => _destinations.Count;
         public int SourcesCount      => _sources.Count;
@@ -51,7 +50,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
         private void Reset(int sourcesCount)
         {
-            _clearedDest = true;
             _sources.Clear();
             ListPrevious = null;
             ListNext = null;
@@ -87,15 +85,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void SetDestination(int index, Operand destination)
         {
-            if (!_clearedDest) 
-            {
-                RemoveAssignment(_destinations[index]);
-            }
-
-            AddAssignment(destination);
-
-            _clearedDest = false;
-
             _destinations[index] = destination;
         }
 
@@ -104,42 +93,22 @@ namespace ARMeilleure.IntermediateRepresentation
             _sources[index] = source;
         }
 
-        private void RemoveOldDestinations()
-        {
-            if (!_clearedDest)
-            {
-                for (int index = 0; index < _destinations.Count; index++)
-                {
-                    RemoveAssignment(_destinations[index]);
-                }
-            }
-
-            _clearedDest = false;
-        }
-
         public void SetDestination(Operand destination)
         {
-            RemoveOldDestinations();
-
             if (destination == null)
             {
                 _destinations.Clear();
-                _clearedDest = true;
             }
             else
             {
                 Resize(_destinations, 1);
 
                 _destinations[0] = destination;
-
-                AddAssignment(destination);
             }
         }
 
         public void SetDestinations(Operand[] destinations)
         {
-            RemoveOldDestinations();
-
             Resize(_destinations, destinations.Length);
 
             for (int index = 0; index < destinations.Length; index++)
@@ -147,8 +116,6 @@ namespace ARMeilleure.IntermediateRepresentation
                 Operand newOp = destinations[index];
 
                 _destinations[index] = newOp;
-
-                AddAssignment(newOp);
             }
         }
 
@@ -173,60 +140,6 @@ namespace ARMeilleure.IntermediateRepresentation
             for (int index = 0; index < sources.Length; index++)
             {
                 _sources[index] = sources[index];
-            }
-        }
-
-        private void AddAssignment(Operand op)
-        {
-            if (op == null)
-            {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Assignments.Add(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = (MemoryOperand)op;
-
-                if (memOp.BaseAddress != null)
-                {
-                    memOp.BaseAddress.Assignments.Add(this);
-                }
-                
-                if (memOp.Index != null)
-                {
-                    memOp.Index.Assignments.Add(this);
-                }
-            }
-        }
-
-        private void RemoveAssignment(Operand op)
-        {
-            if (op == null)
-            {
-                return;
-            }
-
-            if (op.Kind == OperandKind.LocalVariable)
-            {
-                op.Assignments.Remove(this);
-            }
-            else if (op.Kind == OperandKind.Memory)
-            {
-                MemoryOperand memOp = (MemoryOperand)op;
-
-                if (memOp.BaseAddress != null)
-                {
-                    memOp.BaseAddress.Assignments.Remove(this);
-                }
-
-                if (memOp.Index != null)
-                {
-                    memOp.Index.Assignments.Remove(this);
-                }
             }
         }
     }

@@ -13,14 +13,11 @@ namespace ARMeilleure.IntermediateRepresentation
         public bool Relocatable { get; private set; }
         public int? PtcIndex    { get; private set; }
 
-        public List<Node> Assignments { get; }
-
         public Operand()
         {
-            Assignments = new List<Node>();
         }
 
-        public Operand(OperandKind kind, OperandType type = OperandType.None) : this()
+        public Operand(OperandKind kind, OperandType type = OperandType.None)
         {
             Kind = kind;
             Type = type;
@@ -40,8 +37,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
             Relocatable = relocatable;
             PtcIndex    = index;
-
-            Assignments.Clear();
 
             return this;
         }
