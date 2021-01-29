@@ -22,6 +22,8 @@ namespace ARMeilleure.Translation
         private bool _needsNewBlock;
         private BasicBlockFrequency _nextBlockFreq;
 
+        private int _localsCount;
+
         public EmitterContext()
         {
             _irLabels = new Dictionary<Operand, BasicBlock>();
@@ -33,27 +35,27 @@ namespace ARMeilleure.Translation
 
         public Operand Add(Operand op1, Operand op2)
         {
-            return Add(Instruction.Add, Local(op1.Type), op1, op2);
+            return Add(Instruction.Add, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand BitwiseAnd(Operand op1, Operand op2)
         {
-            return Add(Instruction.BitwiseAnd, Local(op1.Type), op1, op2);
+            return Add(Instruction.BitwiseAnd, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand BitwiseExclusiveOr(Operand op1, Operand op2)
         {
-            return Add(Instruction.BitwiseExclusiveOr, Local(op1.Type), op1, op2);
+            return Add(Instruction.BitwiseExclusiveOr, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand BitwiseNot(Operand op1)
         {
-            return Add(Instruction.BitwiseNot, Local(op1.Type), op1);
+            return Add(Instruction.BitwiseNot, AllocateLocal(op1.Type), op1);
         }
 
         public Operand BitwiseOr(Operand op1, Operand op2)
         {
-            return Add(Instruction.BitwiseOr, Local(op1.Type), op1, op2);
+            return Add(Instruction.BitwiseOr, AllocateLocal(op1.Type), op1, op2);
         }
 
         public void Branch(Operand label)
@@ -82,7 +84,7 @@ namespace ARMeilleure.Translation
 
         public Operand ByteSwap(Operand op1)
         {
-            return Add(Instruction.ByteSwap, Local(op1.Type), op1);
+            return Add(Instruction.ByteSwap, AllocateLocal(op1.Type), op1);
         }
 
         public Operand Call(MethodInfo info, params Operand[] callArgs)
@@ -156,7 +158,7 @@ namespace ARMeilleure.Translation
 
             if (returnType != OperandType.None)
             {
-                return Add(Instruction.Call, Local(returnType), args);
+                return Add(Instruction.Call, AllocateLocal(returnType), args);
             }
             else
             {
@@ -179,22 +181,22 @@ namespace ARMeilleure.Translation
 
         public Operand CompareAndSwap(Operand address, Operand expected, Operand desired)
         {
-            return Add(Instruction.CompareAndSwap, Local(desired.Type), address, expected, desired);
+            return Add(Instruction.CompareAndSwap, AllocateLocal(desired.Type), address, expected, desired);
         }
 
         public Operand CompareAndSwap16(Operand address, Operand expected, Operand desired)
         {
-            return Add(Instruction.CompareAndSwap16, Local(OperandType.I32), address, expected, desired);
+            return Add(Instruction.CompareAndSwap16, AllocateLocal(OperandType.I32), address, expected, desired);
         }
 
         public Operand CompareAndSwap8(Operand address, Operand expected, Operand desired)
         {
-            return Add(Instruction.CompareAndSwap8, Local(OperandType.I32), address, expected, desired);
+            return Add(Instruction.CompareAndSwap8, AllocateLocal(OperandType.I32), address, expected, desired);
         }
 
         public Operand ConditionalSelect(Operand op1, Operand op2, Operand op3)
         {
-            return Add(Instruction.ConditionalSelect, Local(op2.Type), op1, op2, op3);
+            return Add(Instruction.ConditionalSelect, AllocateLocal(op2.Type), op1, op2, op3);
         }
 
         public Operand ConvertI64ToI32(Operand op1)
@@ -204,22 +206,22 @@ namespace ARMeilleure.Translation
                 throw new ArgumentException($"Invalid operand type \"{op1.Type}\".");
             }
 
-            return Add(Instruction.ConvertI64ToI32, Local(OperandType.I32), op1);
+            return Add(Instruction.ConvertI64ToI32, AllocateLocal(OperandType.I32), op1);
         }
 
         public Operand ConvertToFP(OperandType type, Operand op1)
         {
-            return Add(Instruction.ConvertToFP, Local(type), op1);
+            return Add(Instruction.ConvertToFP, AllocateLocal(type), op1);
         }
 
         public Operand ConvertToFPUI(OperandType type, Operand op1)
         {
-            return Add(Instruction.ConvertToFPUI, Local(type), op1);
+            return Add(Instruction.ConvertToFPUI, AllocateLocal(type), op1);
         }
 
         public Operand Copy(Operand op1)
         {
-            return Add(Instruction.Copy, Local(op1.Type), op1);
+            return Add(Instruction.Copy, AllocateLocal(op1.Type), op1);
         }
 
         public Operand Copy(Operand dest, Operand op1)
@@ -234,22 +236,22 @@ namespace ARMeilleure.Translation
 
         public Operand CountLeadingZeros(Operand op1)
         {
-            return Add(Instruction.CountLeadingZeros, Local(op1.Type), op1);
+            return Add(Instruction.CountLeadingZeros, AllocateLocal(op1.Type), op1);
         }
 
         public Operand Divide(Operand op1, Operand op2)
         {
-            return Add(Instruction.Divide, Local(op1.Type), op1, op2);
+            return Add(Instruction.Divide, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand DivideUI(Operand op1, Operand op2)
         {
-            return Add(Instruction.DivideUI, Local(op1.Type), op1, op2);
+            return Add(Instruction.DivideUI, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand ICompare(Operand op1, Operand op2, Comparison comp)
         {
-            return Add(Instruction.Compare, Local(OperandType.I32), op1, op2, Const((int)comp));
+            return Add(Instruction.Compare, AllocateLocal(OperandType.I32), op1, op2, Const((int)comp));
         }
 
         public Operand ICompareEqual(Operand op1, Operand op2)
@@ -304,22 +306,22 @@ namespace ARMeilleure.Translation
 
         public Operand Load(OperandType type, Operand address)
         {
-            return Add(Instruction.Load, Local(type), address);
+            return Add(Instruction.Load, AllocateLocal(type), address);
         }
 
         public Operand Load16(Operand address)
         {
-            return Add(Instruction.Load16, Local(OperandType.I32), address);
+            return Add(Instruction.Load16, AllocateLocal(OperandType.I32), address);
         }
 
         public Operand Load8(Operand address)
         {
-            return Add(Instruction.Load8, Local(OperandType.I32), address);
+            return Add(Instruction.Load8, AllocateLocal(OperandType.I32), address);
         }
 
         public Operand LoadArgument(OperandType type, int index)
         {
-            return Add(Instruction.LoadArgument, Local(type), Const(index));
+            return Add(Instruction.LoadArgument, AllocateLocal(type), Const(index));
         }
 
         public void LoadFromContext()
@@ -331,22 +333,22 @@ namespace ARMeilleure.Translation
 
         public Operand Multiply(Operand op1, Operand op2)
         {
-            return Add(Instruction.Multiply, Local(op1.Type), op1, op2);
+            return Add(Instruction.Multiply, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand Multiply64HighSI(Operand op1, Operand op2)
         {
-            return Add(Instruction.Multiply64HighSI, Local(OperandType.I64), op1, op2);
+            return Add(Instruction.Multiply64HighSI, AllocateLocal(OperandType.I64), op1, op2);
         }
 
         public Operand Multiply64HighUI(Operand op1, Operand op2)
         {
-            return Add(Instruction.Multiply64HighUI, Local(OperandType.I64), op1, op2);
+            return Add(Instruction.Multiply64HighUI, AllocateLocal(OperandType.I64), op1, op2);
         }
 
         public Operand Negate(Operand op1)
         {
-            return Add(Instruction.Negate, Local(op1.Type), op1);
+            return Add(Instruction.Negate, AllocateLocal(op1.Type), op1);
         }
 
         public void Return()
@@ -365,37 +367,37 @@ namespace ARMeilleure.Translation
 
         public Operand RotateRight(Operand op1, Operand op2)
         {
-            return Add(Instruction.RotateRight, Local(op1.Type), op1, op2);
+            return Add(Instruction.RotateRight, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand ShiftLeft(Operand op1, Operand op2)
         {
-            return Add(Instruction.ShiftLeft, Local(op1.Type), op1, op2);
+            return Add(Instruction.ShiftLeft, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand ShiftRightSI(Operand op1, Operand op2)
         {
-            return Add(Instruction.ShiftRightSI, Local(op1.Type), op1, op2);
+            return Add(Instruction.ShiftRightSI, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand ShiftRightUI(Operand op1, Operand op2)
         {
-            return Add(Instruction.ShiftRightUI, Local(op1.Type), op1, op2);
+            return Add(Instruction.ShiftRightUI, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand SignExtend16(OperandType type, Operand op1)
         {
-            return Add(Instruction.SignExtend16, Local(type), op1);
+            return Add(Instruction.SignExtend16, AllocateLocal(type), op1);
         }
 
         public Operand SignExtend32(OperandType type, Operand op1)
         {
-            return Add(Instruction.SignExtend32, Local(type), op1);
+            return Add(Instruction.SignExtend32, AllocateLocal(type), op1);
         }
 
         public Operand SignExtend8(OperandType type, Operand op1)
         {
-            return Add(Instruction.SignExtend8, Local(type), op1);
+            return Add(Instruction.SignExtend8, AllocateLocal(type), op1);
         }
 
         public void Store(Operand address, Operand value)
@@ -422,77 +424,77 @@ namespace ARMeilleure.Translation
 
         public Operand Subtract(Operand op1, Operand op2)
         {
-            return Add(Instruction.Subtract, Local(op1.Type), op1, op2);
+            return Add(Instruction.Subtract, AllocateLocal(op1.Type), op1, op2);
         }
 
         public Operand VectorCreateScalar(Operand value)
         {
-            return Add(Instruction.VectorCreateScalar, Local(OperandType.V128), value);
+            return Add(Instruction.VectorCreateScalar, AllocateLocal(OperandType.V128), value);
         }
 
         public Operand VectorExtract(OperandType type, Operand vector, int index)
         {
-            return Add(Instruction.VectorExtract, Local(type), vector, Const(index));
+            return Add(Instruction.VectorExtract, AllocateLocal(type), vector, Const(index));
         }
 
         public Operand VectorExtract16(Operand vector, int index)
         {
-            return Add(Instruction.VectorExtract16, Local(OperandType.I32), vector, Const(index));
+            return Add(Instruction.VectorExtract16, AllocateLocal(OperandType.I32), vector, Const(index));
         }
 
         public Operand VectorExtract8(Operand vector, int index)
         {
-            return Add(Instruction.VectorExtract8, Local(OperandType.I32), vector, Const(index));
+            return Add(Instruction.VectorExtract8, AllocateLocal(OperandType.I32), vector, Const(index));
         }
 
         public Operand VectorInsert(Operand vector, Operand value, int index)
         {
-            return Add(Instruction.VectorInsert, Local(OperandType.V128), vector, value, Const(index));
+            return Add(Instruction.VectorInsert, AllocateLocal(OperandType.V128), vector, value, Const(index));
         }
 
         public Operand VectorInsert16(Operand vector, Operand value, int index)
         {
-            return Add(Instruction.VectorInsert16, Local(OperandType.V128), vector, value, Const(index));
+            return Add(Instruction.VectorInsert16, AllocateLocal(OperandType.V128), vector, value, Const(index));
         }
 
         public Operand VectorInsert8(Operand vector, Operand value, int index)
         {
-            return Add(Instruction.VectorInsert8, Local(OperandType.V128), vector, value, Const(index));
+            return Add(Instruction.VectorInsert8, AllocateLocal(OperandType.V128), vector, value, Const(index));
         }
 
         public Operand VectorOne()
         {
-            return Add(Instruction.VectorOne, Local(OperandType.V128));
+            return Add(Instruction.VectorOne, AllocateLocal(OperandType.V128));
         }
 
         public Operand VectorZero()
         {
-            return Add(Instruction.VectorZero, Local(OperandType.V128));
+            return Add(Instruction.VectorZero, AllocateLocal(OperandType.V128));
         }
 
         public Operand VectorZeroUpper64(Operand vector)
         {
-            return Add(Instruction.VectorZeroUpper64, Local(OperandType.V128), vector);
+            return Add(Instruction.VectorZeroUpper64, AllocateLocal(OperandType.V128), vector);
         }
 
         public Operand VectorZeroUpper96(Operand vector)
         {
-            return Add(Instruction.VectorZeroUpper96, Local(OperandType.V128), vector);
+            return Add(Instruction.VectorZeroUpper96, AllocateLocal(OperandType.V128), vector);
         }
 
         public Operand ZeroExtend16(OperandType type, Operand op1)
         {
-            return Add(Instruction.ZeroExtend16, Local(type), op1);
+            return Add(Instruction.ZeroExtend16, AllocateLocal(type), op1);
         }
 
         public Operand ZeroExtend32(OperandType type, Operand op1)
         {
-            return Add(Instruction.ZeroExtend32, Local(type), op1);
+            return Add(Instruction.ZeroExtend32, AllocateLocal(type), op1);
         }
 
         public Operand ZeroExtend8(OperandType type, Operand op1)
         {
-            return Add(Instruction.ZeroExtend8, Local(type), op1);
+            return Add(Instruction.ZeroExtend8, AllocateLocal(type), op1);
         }
 
         private void NewNextBlockIfNeeded()
@@ -560,22 +562,27 @@ namespace ARMeilleure.Translation
 
         public Operand AddIntrinsic(Intrinsic intrin, params Operand[] args)
         {
-            return Add(intrin, Local(OperandType.V128), args);
+            return Add(intrin, AllocateLocal(OperandType.V128), args);
         }
 
         public Operand AddIntrinsicInt(Intrinsic intrin, params Operand[] args)
         {
-            return Add(intrin, Local(OperandType.I32), args);
+            return Add(intrin, AllocateLocal(OperandType.I32), args);
         }
 
         public Operand AddIntrinsicLong(Intrinsic intrin, params Operand[] args)
         {
-            return Add(intrin, Local(OperandType.I64), args);
+            return Add(intrin, AllocateLocal(OperandType.I64), args);
         }
 
         public void AddIntrinsicNoRet(Intrinsic intrin, params Operand[] args)
         {
             Add(intrin, null, args);
+        }
+
+        private Operand AllocateLocal(OperandType type)
+        {
+            return Local(type, _localsCount++);
         }
 
         private Operand Add(Intrinsic intrin, Operand dest, params Operand[] sources)
@@ -671,7 +678,7 @@ namespace ARMeilleure.Translation
 
         public ControlFlowGraph GetControlFlowGraph()
         {
-            return new ControlFlowGraph(_irBlocks.First, _irBlocks);
+            return new ControlFlowGraph(_irBlocks.First, _irBlocks, _localsCount);
         }
     }
 }

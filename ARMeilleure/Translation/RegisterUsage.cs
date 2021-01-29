@@ -196,8 +196,8 @@ namespace ARMeilleure.Translation
                 // It always needs a context load as it is the first block to run.
                 if (block.Predecessors.Count == 0 || hasContextLoad)
                 {
-                    LoadLocals(block, globalInputs[block.Index].VecMask, RegisterType.Vector,  mode);
-                    LoadLocals(block, globalInputs[block.Index].IntMask, RegisterType.Integer, mode);
+                    LoadLocals(cfg, block, globalInputs[block.Index].VecMask, RegisterType.Vector,  mode);
+                    LoadLocals(cfg, block, globalInputs[block.Index].IntMask, RegisterType.Integer, mode);
                 }
 
                 bool hasContextStore = HasContextStore(block);
@@ -209,8 +209,8 @@ namespace ARMeilleure.Translation
 
                 if (EndsWithReturn(block) || hasContextStore)
                 {
-                    StoreLocals(block, globalOutputs[block.Index].IntMask, RegisterType.Integer, mode);
-                    StoreLocals(block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  mode);
+                    StoreLocals(cfg, block, globalOutputs[block.Index].IntMask, RegisterType.Integer, mode);
+                    StoreLocals(cfg, block, globalOutputs[block.Index].VecMask, RegisterType.Vector,  mode);
                 }
             }
         }
@@ -270,9 +270,9 @@ namespace ARMeilleure.Translation
             return oldValue != value;
         }
 
-        private static void LoadLocals(BasicBlock block, long inputs, RegisterType baseType, ExecutionMode mode)
+        private static void LoadLocals(ControlFlowGraph cfg, BasicBlock block, long inputs, RegisterType baseType, ExecutionMode mode)
         {
-            Operand arg0 = Local(OperandType.I64);
+            Operand arg0 = cfg.AllocateLocal(OperandType.I64);
 
             for (int bit = 63; bit >= 0; bit--)
             {
@@ -287,7 +287,7 @@ namespace ARMeilleure.Translation
 
                 long offset = NativeContext.GetRegisterOffset(dest.GetRegister());
 
-                Operand addr = Local(OperandType.I64);
+                Operand addr = cfg.AllocateLocal(OperandType.I64);
 
                 Operation loadOp = Operation(Instruction.Load, dest, addr);
 
@@ -303,9 +303,9 @@ namespace ARMeilleure.Translation
             block.Operations.AddFirst(loadArg0);
         }
 
-        private static void StoreLocals(BasicBlock block, long outputs, RegisterType baseType, ExecutionMode mode)
+        private static void StoreLocals(ControlFlowGraph cfg, BasicBlock block, long outputs, RegisterType baseType, ExecutionMode mode)
         {
-            Operand arg0 = Local(OperandType.I64);
+            Operand arg0 = cfg.AllocateLocal(OperandType.I64);
 
             Operation loadArg0 = Operation(Instruction.LoadArgument, arg0, Const(0));
 
@@ -324,7 +324,7 @@ namespace ARMeilleure.Translation
 
                 long offset = NativeContext.GetRegisterOffset(source.GetRegister());
 
-                Operand addr = Local(OperandType.I64);
+                Operand addr = cfg.AllocateLocal(OperandType.I64);
 
                 Operation calcOffsOp = Operation(Instruction.Add, addr, arg0, Const(offset));
 
@@ -340,15 +340,15 @@ namespace ARMeilleure.Translation
         {
             if (bit < RegsCount)
             {
-                return OperandHelper.Register(bit, baseType, GetOperandType(baseType, mode));
+                return Register(bit, baseType, GetOperandType(baseType, mode));
             }
             else if (baseType == RegisterType.Integer)
             {
-                return OperandHelper.Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
+                return Register(bit & RegsMask, RegisterType.Flag, OperandType.I32);
             }
             else if (baseType == RegisterType.Vector)
             {
-                return OperandHelper.Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
+                return Register(bit & RegsMask, RegisterType.FpFlag, OperandType.I32);
             }
             else
             {

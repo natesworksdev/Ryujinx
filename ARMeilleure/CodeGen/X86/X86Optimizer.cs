@@ -59,7 +59,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         if (src1.Kind == OperandKind.Constant && (src1.Relocatable || CodeGenCommon.IsLongConst(src1)))
                         {
-                            Operand temp = Local(src1.Type);
+                            Operand temp = cfg.AllocateLocal(src1.Type);
 
                             Operation copyOp = Operation(Instruction.Copy, temp, src1);
 
@@ -70,7 +70,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         if (src2.Kind == OperandKind.Constant && (src2.Relocatable || CodeGenCommon.IsLongConst(src2)))
                         {
-                            Operand temp = Local(src2.Type);
+                            Operand temp = cfg.AllocateLocal(src2.Type);
 
                             Operation copyOp = Operation(Instruction.Copy, temp, src2);
 

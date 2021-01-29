@@ -86,7 +86,7 @@ namespace ARMeilleure.Translation
 
                         if (dest != null && dest.Kind == OperandKind.Register)
                         {
-                            Operand local = Local(dest.Type);
+                            Operand local = cfg.AllocateLocal(dest.Type);
 
                             localDefs[GetIdFromRegister(dest.GetRegister())] = local;
 
@@ -142,7 +142,7 @@ namespace ARMeilleure.Translation
 
                         if (local == null)
                         {
-                            local = FindDef(globalDefs, block, operand);
+                            local = FindDef(cfg, globalDefs, block, operand);
 
                             localDefs[key] = local;
                         }
@@ -168,22 +168,22 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private static Operand FindDef(DefMap[] globalDefs, BasicBlock current, Operand operand)
+        private static Operand FindDef(ControlFlowGraph cfg, DefMap[] globalDefs, BasicBlock current, Operand operand)
         {
             if (globalDefs[current.Index].HasPhi(operand.GetRegister()))
             {
-                return InsertPhi(globalDefs, current, operand);
+                return InsertPhi(cfg, globalDefs, current, operand);
             }
 
             if (current != current.ImmediateDominator)
             {
-                return FindDefOnPred(globalDefs, current.ImmediateDominator, operand);
+                return FindDefOnPred(cfg, globalDefs, current.ImmediateDominator, operand);
             }
 
             return Undef();
         }
 
-        private static Operand FindDefOnPred(DefMap[] globalDefs, BasicBlock current, Operand operand)
+        private static Operand FindDefOnPred(ControlFlowGraph cfg, DefMap[] globalDefs, BasicBlock current, Operand operand)
         {
             BasicBlock previous;
 
@@ -200,7 +200,7 @@ namespace ARMeilleure.Translation
 
                 if (defMap.HasPhi(reg))
                 {
-                    return InsertPhi(globalDefs, current, operand);
+                    return InsertPhi(cfg, globalDefs, current, operand);
                 }
 
                 previous = current;
@@ -211,13 +211,13 @@ namespace ARMeilleure.Translation
             return Undef();
         }
 
-        private static Operand InsertPhi(DefMap[] globalDefs, BasicBlock block, Operand operand)
+        private static Operand InsertPhi(ControlFlowGraph cfg, DefMap[] globalDefs, BasicBlock block, Operand operand)
         {
             // This block has a Phi that has not been materialized yet, but that
             // would define a new version of the variable we're looking for. We need
             // to materialize the Phi, add all the block/operand pairs into the Phi, and
             // then use the definition from that Phi.
-            Operand local = Local(operand.Type);
+            Operand local = cfg.AllocateLocal(operand.Type);
 
             PhiNode phi = new PhiNode(local, block.Predecessors.Count);
 
@@ -230,7 +230,7 @@ namespace ARMeilleure.Translation
                 BasicBlock predecessor = block.Predecessors[index];
 
                 phi.SetBlock(index, predecessor);
-                phi.SetSource(index, FindDefOnPred(globalDefs, predecessor, operand));
+                phi.SetSource(index, FindDefOnPred(cfg, globalDefs, predecessor, operand));
             }
 
             return local;

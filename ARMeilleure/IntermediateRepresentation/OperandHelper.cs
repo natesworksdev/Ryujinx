@@ -59,9 +59,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operand().With(OperandKind.Label);
         }
 
-        public static Operand Local(OperandType type)
+        public static Operand Local(OperandType type, int number)
         {
-            return Operand().With(OperandKind.LocalVariable, type);
+            return Operand().With(OperandKind.LocalVariable, type, (ulong)number);
         }
 
         public static Operand Register(int index, RegisterType regType, OperandType type)

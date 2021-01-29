@@ -17,7 +17,7 @@ namespace ARMeilleure.Translation
                 {
                     Node nextNode = node.ListNext;
 
-                    Operand local = Local(phi.Destination.Type);
+                    Operand local = cfg.AllocateLocal(phi.Destination.Type);
 
                     for (int index = 0; index < phi.SourcesCount; index++)
                     {

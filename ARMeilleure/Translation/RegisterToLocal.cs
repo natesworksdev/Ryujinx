@@ -17,7 +17,7 @@ namespace ARMeilleure.Translation
 
                 if (!registerToLocalMap.TryGetValue(register, out Operand local))
                 {
-                    local = Local(op.Type);
+                    local = cfg.AllocateLocal(op.Type);
 
                     registerToLocalMap.Add(register, local);
                 }

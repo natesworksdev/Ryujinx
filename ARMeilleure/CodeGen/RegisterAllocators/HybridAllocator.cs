@@ -44,14 +44,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             public OperandType Type { get; }
 
+            public Operand Operand { get; }
+
             private int _first;
             private int _last;
 
             public bool IsBlockLocal => _first == _last;
 
-            public LocalInfo(OperandType type)
+            public LocalInfo(OperandType type, Operand operand)
             {
-                Type = type;
+                Type    = type;
+                Operand = operand;
 
                 _first = -1;
                 _last  = -1;
@@ -110,7 +113,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (source.Kind == OperandKind.LocalVariable)
                         {
-                            locInfo[source.AsInt32() - 1].SetBlockIndex(block.Index);
+                            locInfo[source.AsInt32()].SetBlockIndex(block.Index);
                         }
                         else if (source.Kind == OperandKind.Memory)
                         {
@@ -118,12 +121,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
                             {
-                                locInfo[memOp.BaseAddress.AsInt32() - 1].SetBlockIndex(block.Index);
+                                locInfo[memOp.BaseAddress.AsInt32()].SetBlockIndex(block.Index);
                             }
 
                             if (memOp.Index != null && memOp.Index.Kind == OperandKind.LocalVariable)
                             {
-                                locInfo[memOp.Index.AsInt32() - 1].SetBlockIndex(block.Index);
+                                locInfo[memOp.Index.AsInt32()].SetBlockIndex(block.Index);
                             }
                         }
                     }
@@ -136,15 +139,15 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             LocalInfo info;
 
-                            if (dest.Value != 0)
+                            if (dest.AsInt32() < locInfo.Count && locInfo[dest.AsInt32()].Operand == dest)
                             {
-                                info = locInfo[dest.AsInt32() - 1];
+                                info = locInfo[dest.AsInt32()];
                             }
                             else
                             {
-                                dest.NumberLocal(locInfo.Count + 1);
+                                dest.NumberLocal(locInfo.Count);
 
-                                info = new LocalInfo(dest.Type);
+                                info = new LocalInfo(dest.Type, dest);
 
                                 locInfo.Add(info);
                             }
@@ -199,7 +202,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     void AllocateRegister(Operand source, MemoryOperand memOp, int srcIndex)
                     {
-                        LocalInfo info = locInfo[source.AsInt32() - 1];
+                        LocalInfo info = locInfo[source.AsInt32()];
 
                         info.UseCount++;
 
@@ -309,7 +312,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             continue;
                         }
 
-                        LocalInfo info = locInfo[dest.AsInt32() - 1];
+                        LocalInfo info = locInfo[dest.AsInt32()];
 
                         if (info.UseCount == 0 && !info.PreAllocated)
                         {
