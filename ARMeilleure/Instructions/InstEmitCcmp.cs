@@ -19,8 +19,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeCcmp op = (OpCodeCcmp)context.CurrOp;
 
-            Operand lblTrue = Label();
-            Operand lblEnd  = Label();
+            Operand lblTrue = context.AllocateLabel();
+            Operand lblEnd  = context.AllocateLabel();
 
             EmitCondBranch(context, lblTrue, op.Cond);
 

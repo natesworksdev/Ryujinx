@@ -255,8 +255,8 @@ namespace ARMeilleure.Instructions
         {
             // Loop over elements of the dynamic table. Unrolled loop.
 
-            Operand endLabel = Label();
-            Operand fallbackLabel = Label();
+            Operand endLabel = context.AllocateLabel();
+            Operand fallbackLabel = context.AllocateLabel();
 
             void EmitTableEntry(Operand entrySkipLabel)
             {
@@ -292,7 +292,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    Operand nextLabel = Label();
+                    Operand nextLabel = context.AllocateLabel();
 
                     EmitTableEntry(nextLabel);
 

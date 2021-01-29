@@ -1245,7 +1245,7 @@ namespace ARMeilleure.Instructions
         {
             isTrue = context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpcrFz)));
 
-            Operand lblTrue = Label();
+            Operand lblTrue = context.AllocateLabel();
             context.BranchIfFalse(lblTrue, isTrue);
 
             context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrmb, Const((int)(Mxcsr.Ftz | Mxcsr.Um | Mxcsr.Dm | Mxcsr.Daz)));
@@ -1257,7 +1257,7 @@ namespace ARMeilleure.Instructions
         {
             isTrue ??= context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.GetFpcrFz)));
 
-            Operand lblTrue = Label();
+            Operand lblTrue = context.AllocateLabel();
             context.BranchIfFalse(lblTrue, isTrue);
 
             context.AddIntrinsicNoRet(Intrinsic.X86Mxcsrub, Const((int)(Mxcsr.Ftz | Mxcsr.Daz)));

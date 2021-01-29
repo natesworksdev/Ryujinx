@@ -331,7 +331,7 @@ namespace ARMeilleure.Instructions
         {
             Debug.Assert(boolValue.Type == OperandType.I32);
 
-            Operand endLabel = Label();
+            Operand endLabel = context.AllocateLabel();
 
             if (expected)
             {

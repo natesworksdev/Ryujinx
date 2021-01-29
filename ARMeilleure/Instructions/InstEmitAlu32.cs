@@ -599,8 +599,8 @@ namespace ARMeilleure.Instructions
 
             Operand divisorIsZero = context.ICompareEqual(m, zero);
 
-            Operand lblBadDiv = Label();
-            Operand lblEnd = Label();
+            Operand lblBadDiv = context.AllocateLabel();
+            Operand lblEnd = context.AllocateLabel();
 
             context.BranchIfTrue(lblBadDiv, divisorIsZero);
 
@@ -615,7 +615,7 @@ namespace ARMeilleure.Instructions
                 Operand nIsIntMin = context.ICompareEqual(n, intMin);
                 Operand mIsMinus1 = context.ICompareEqual(m, minus1);
 
-                Operand lblGoodDiv = Label();
+                Operand lblGoodDiv = context.AllocateLabel();
 
                 context.BranchIfFalse(lblGoodDiv, context.BitwiseAnd(nIsIntMin, mIsMinus1));
 
@@ -673,9 +673,9 @@ namespace ARMeilleure.Instructions
                     break;
             }
 
-            Operand lblCheckLtIntMin = Label();
-            Operand lblNoSat = Label();
-            Operand lblEnd = Label();
+            Operand lblCheckLtIntMin = context.AllocateLabel();
+            Operand lblNoSat = context.AllocateLabel();
+            Operand lblEnd = context.AllocateLabel();
 
             context.BranchIfFalse(lblCheckLtIntMin, context.ICompareGreater(n, Const(intMax)));
 
@@ -722,9 +722,9 @@ namespace ARMeilleure.Instructions
             {
                 Operand nPart = part == 0 ? nLow : nHigh;
 
-                Operand lblCheckLtIntMin = Label();
-                Operand lblNoSat = Label();
-                Operand lblEnd = Label();
+                Operand lblCheckLtIntMin = context.AllocateLabel();
+                Operand lblNoSat = context.AllocateLabel();
+                Operand lblEnd = context.AllocateLabel();
 
                 context.BranchIfFalse(lblCheckLtIntMin, context.ICompareGreater(nPart, Const(intMax)));
 

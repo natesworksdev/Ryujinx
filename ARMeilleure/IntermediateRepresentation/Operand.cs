@@ -2,7 +2,7 @@ using System;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class Operand
+    class Operand : IEquatable<Operand>
     {
         public OperandKind Kind { get; private set; }
         public OperandType Type { get; private set; }
@@ -120,16 +120,24 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = (ulong)number;
         }
 
+        public override bool Equals(object obj)
+        {
+            return obj is Operand other && Equals(other);
+        }
+
+        public bool Equals(Operand other)
+        {
+            return Kind == other.Kind && Type == other.Type && Value == other.Value && Relocatable == other.Relocatable && PtcIndex == other.PtcIndex;
+        }
+
+        public int GetBaseHashCode()
+        {
+            return base.GetHashCode();
+        }
+
         public override int GetHashCode()
         {
-            if (Kind == OperandKind.LocalVariable)
-            {
-                return base.GetHashCode();
-            }
-            else
-            {
-                return (int)Value ^ ((int)Kind << 16) ^ ((int)Type << 20);
-            }
+            return (int)Value ^ ((int)Kind << 16) ^ ((int)Type << 20);
         }
     }
 }

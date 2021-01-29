@@ -478,8 +478,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
-            Operand lblTrue = Label();
-            Operand lblEnd  = Label();
+            Operand lblTrue = context.AllocateLabel();
+            Operand lblEnd  = context.AllocateLabel();
 
             context.BranchIfTrue(lblTrue, InstEmitFlowHelper.GetCondTrue(context, op.Cond));
 
@@ -527,8 +527,8 @@ namespace ARMeilleure.Instructions
 
                 CmpCondition cmpOrdered = signalNaNs ? CmpCondition.OrderedS : CmpCondition.OrderedQ;
 
-                Operand lblNaN = Label();
-                Operand lblEnd = Label();
+                Operand lblNaN = context.AllocateLabel();
+                Operand lblEnd = context.AllocateLabel();
 
                 if (op.Size == 0)
                 {

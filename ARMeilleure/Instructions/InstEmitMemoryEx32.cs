@@ -161,8 +161,8 @@ namespace ARMeilleure.Instructions
 
                     Operand valueHigh = context.ShiftRightUI(value, Const(32));
 
-                    Operand lblBigEndian = Label();
-                    Operand lblEnd = Label();
+                    Operand lblBigEndian = context.AllocateLabel();
+                    Operand lblEnd = context.AllocateLabel();
 
                     context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 
@@ -192,8 +192,8 @@ namespace ARMeilleure.Instructions
                     Operand lo = context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt));
                     Operand hi = context.ZeroExtend32(OperandType.I64, GetIntA32(context, op.Rt | 1));
 
-                    Operand lblBigEndian = Label();
-                    Operand lblEnd = Label();
+                    Operand lblBigEndian = context.AllocateLabel();
+                    Operand lblEnd = context.AllocateLabel();
 
                     context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 

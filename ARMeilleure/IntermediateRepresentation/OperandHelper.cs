@@ -54,9 +54,9 @@ namespace ARMeilleure.IntermediateRepresentation
             return Operand().With(value);
         }
 
-        public static Operand Label()
+        public static Operand Label(int number)
         {
-            return Operand().With(OperandKind.Label);
+            return Operand().With(OperandKind.Label, OperandType.None, (ulong)number);
         }
 
         public static Operand Local(OperandType type, int number)

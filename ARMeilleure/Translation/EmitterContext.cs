@@ -22,6 +22,7 @@ namespace ARMeilleure.Translation
         private bool _needsNewBlock;
         private BasicBlockFrequency _nextBlockFreq;
 
+        private int _labelsCount;
         private int _localsCount;
 
         public EmitterContext()
@@ -578,6 +579,11 @@ namespace ARMeilleure.Translation
         public void AddIntrinsicNoRet(Intrinsic intrin, params Operand[] args)
         {
             Add(intrin, null, args);
+        }
+
+        public Operand AllocateLabel()
+        {
+            return Label(_labelsCount++);
         }
 
         private Operand AllocateLocal(OperandType type)

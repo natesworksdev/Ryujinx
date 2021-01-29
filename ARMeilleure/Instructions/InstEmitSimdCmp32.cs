@@ -292,8 +292,8 @@ namespace ARMeilleure.Instructions
                 n = EmitSwapScalar(context, n, op.Vd, doubleSize);
                 m = cmpWithZero ? context.VectorZero() : EmitSwapScalar(context, m, op.Vm, doubleSize);
 
-                Operand lblNaN = Label();
-                Operand lblEnd = Label();
+                Operand lblNaN = context.AllocateLabel();
+                Operand lblEnd = context.AllocateLabel();
 
                 if (!doubleSize)
                 {

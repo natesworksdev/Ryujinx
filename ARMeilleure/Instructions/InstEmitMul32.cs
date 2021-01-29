@@ -367,7 +367,7 @@ namespace ARMeilleure.Instructions
 
         private static void UpdateQFlag(ArmEmitterContext context, Operand q)
         {
-            Operand lblSkipSetQ = Label();
+            Operand lblSkipSetQ = context.AllocateLabel();
 
             context.BranchIfFalse(lblSkipSetQ, q);
 

@@ -269,8 +269,8 @@ namespace ARMeilleure.Instructions
         {
             int vecQ = vecD >> 1;
             int vecSElem = (vecD & 1) << 1;
-            Operand lblBigEndian = Label();
-            Operand lblEnd = Label();
+            Operand lblBigEndian = context.AllocateLabel();
+            Operand lblEnd = context.AllocateLabel();
 
             context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 
@@ -293,8 +293,8 @@ namespace ARMeilleure.Instructions
             int vecSElem = (vecD & 1) << 1;
             Operand vec = GetVecA32(vecQ);
 
-            Operand lblBigEndian = Label();
-            Operand lblEnd = Label();
+            Operand lblBigEndian = context.AllocateLabel();
+            Operand lblEnd = context.AllocateLabel();
 
             context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 

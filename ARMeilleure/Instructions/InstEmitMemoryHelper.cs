@@ -124,8 +124,8 @@ namespace ARMeilleure.Instructions
 
         private static void EmitReadInt(ArmEmitterContext context, Operand address, int rt, int size)
         {
-            Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblSlowPath = context.AllocateLabel();
+            Operand lblEnd      = context.AllocateLabel();
 
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
@@ -163,7 +163,7 @@ namespace ARMeilleure.Instructions
 
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
-            Operand lblFastPath = Label();
+            Operand lblFastPath = context.AllocateLabel();
 
             context.BranchIfFalse(lblFastPath, isUnalignedAddr, BasicBlockFrequency.Cold);
 
@@ -192,8 +192,8 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblSlowPath = context.AllocateLabel();
+            Operand lblEnd      = context.AllocateLabel();
 
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
@@ -230,8 +230,8 @@ namespace ARMeilleure.Instructions
 
         private static void EmitWriteInt(ArmEmitterContext context, Operand address, int rt, int size)
         {
-            Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblSlowPath = context.AllocateLabel();
+            Operand lblEnd      = context.AllocateLabel();
 
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
@@ -272,7 +272,7 @@ namespace ARMeilleure.Instructions
 
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
-            Operand lblFastPath = Label();
+            Operand lblFastPath = context.AllocateLabel();
 
             context.BranchIfFalse(lblFastPath, isUnalignedAddr, BasicBlockFrequency.Cold);
 
@@ -309,8 +309,8 @@ namespace ARMeilleure.Instructions
             int elem,
             int size)
         {
-            Operand lblSlowPath = Label();
-            Operand lblEnd      = Label();
+            Operand lblSlowPath = context.AllocateLabel();
+            Operand lblEnd      = context.AllocateLabel();
 
             Operand isUnalignedAddr = EmitAddressCheck(context, address, size);
 
@@ -399,7 +399,7 @@ namespace ARMeilleure.Instructions
                 // When no label is provided to jump to a slow path if the address is invalid,
                 // we do the validation ourselves, and throw if needed.
 
-                Operand lblNotWatched = Label();
+                Operand lblNotWatched = context.AllocateLabel();
 
                 // Is the page currently being tracked for read/write? If so we need to call MarkRegionAsModified.
                 context.BranchIf(lblNotWatched, pte, Const(0L), Comparison.GreaterOrEqual, BasicBlockFrequency.Cold);
@@ -408,7 +408,7 @@ namespace ARMeilleure.Instructions
                 context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SignalMemoryTracking)), address, Const(1UL), Const(write ? 1 : 0));
                 context.MarkLabel(lblNotWatched);
 
-                Operand lblNonNull = Label();
+                Operand lblNonNull = context.AllocateLabel();
 
                 // Skip exception if the PTE address is non-null (not zero).
                 context.BranchIfTrue(lblNonNull, pte, BasicBlockFrequency.Cold);

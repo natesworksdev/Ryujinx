@@ -208,8 +208,8 @@ namespace ARMeilleure.Instructions
         {
             OpCodeSimdFcond op = (OpCodeSimdFcond)context.CurrOp;
 
-            Operand lblTrue = Label();
-            Operand lblEnd  = Label();
+            Operand lblTrue = context.AllocateLabel();
+            Operand lblEnd  = context.AllocateLabel();
 
             Operand isTrue = InstEmitFlowHelper.GetCondTrue(context, op.Cond);
 

@@ -199,8 +199,8 @@ namespace ARMeilleure.Instructions
 
                 if (size == DWordSizeLog2)
                 {
-                    Operand lblBigEndian = Label();
-                    Operand lblEnd       = Label();
+                    Operand lblBigEndian = context.AllocateLabel();
+                    Operand lblEnd       = context.AllocateLabel();
 
                     context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 
@@ -232,8 +232,8 @@ namespace ARMeilleure.Instructions
 
                 if (size == DWordSizeLog2)
                 {
-                    Operand lblBigEndian = Label();
-                    Operand lblEnd       = Label();
+                    Operand lblBigEndian = context.AllocateLabel();
+                    Operand lblEnd       = context.AllocateLabel();
 
                     context.BranchIfTrue(lblBigEndian, GetFlag(PState.EFlag));
 

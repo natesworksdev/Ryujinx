@@ -326,7 +326,7 @@ namespace ARMeilleure.Instructions
             value = context.ConditionalSelect(gt, Const(value.Type, intMax), value);
             value = context.ConditionalSelect(lt, Const(value.Type, intMin), value);
 
-            Operand lblNoSat = Label();
+            Operand lblNoSat = context.AllocateLabel();
 
             context.BranchIfFalse(lblNoSat, context.BitwiseOr(gt, lt));
 

@@ -22,8 +22,8 @@ namespace ARMeilleure.Instructions
 
             Operand divisorIsZero = context.ICompareEqual(m, Const(m.Type, 0));
 
-            Operand lblBadDiv = Label();
-            Operand lblEnd    = Label();
+            Operand lblBadDiv = context.AllocateLabel();
+            Operand lblEnd    = context.AllocateLabel();
 
             context.BranchIfTrue(lblBadDiv, divisorIsZero);
 
@@ -38,7 +38,7 @@ namespace ARMeilleure.Instructions
                 Operand nIsIntMin = context.ICompareEqual(n, intMin);
                 Operand mIsMinus1 = context.ICompareEqual(m, minus1);
 
-                Operand lblGoodDiv = Label();
+                Operand lblGoodDiv = context.AllocateLabel();
 
                 context.BranchIfFalse(lblGoodDiv, context.BitwiseAnd(nIsIntMin, mIsMinus1));
 

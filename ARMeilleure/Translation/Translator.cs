@@ -333,7 +333,7 @@ namespace ARMeilleure.Translation
 
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
                         {
-                            lblPredicateSkip = Label();
+                            lblPredicateSkip = context.AllocateLabel();
 
                             InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, op.Cond.Invert());
                         }
@@ -368,8 +368,8 @@ namespace ARMeilleure.Translation
 
             Operand count = context.Load(OperandType.I32, countAddr);
 
-            Operand lblNonZero = Label();
-            Operand lblExit    = Label();
+            Operand lblNonZero = context.AllocateLabel();
+            Operand lblExit    = context.AllocateLabel();
 
             context.BranchIfTrue(lblNonZero, count, BasicBlockFrequency.Cold);
 

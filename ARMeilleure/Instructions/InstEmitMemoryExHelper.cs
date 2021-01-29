@@ -21,7 +21,7 @@ namespace ARMeilleure.Instructions
                 {
                     Operand isUnalignedAddr = InstEmitMemoryHelper.EmitAddressCheck(context, address, size);
 
-                    Operand lblFastPath = Label();
+                    Operand lblFastPath = context.AllocateLabel();
 
                     context.BranchIfFalse(lblFastPath, isUnalignedAddr);
 
@@ -113,7 +113,7 @@ namespace ARMeilleure.Instructions
 
                 Operand exFailed = context.ICompareNotEqual(exAddr, maskedAddress);
 
-                Operand lblExit = Label();
+                Operand lblExit = context.AllocateLabel();
 
                 SetRs(Const(1));
 
@@ -122,7 +122,7 @@ namespace ARMeilleure.Instructions
                 // STEP 2: We have exclusive access, make sure that the address is valid.
                 Operand isUnalignedAddr = InstEmitMemoryHelper.EmitAddressCheck(context, address, size);
 
-                Operand lblFastPath = Label();
+                Operand lblFastPath = context.AllocateLabel();
 
                 context.BranchIfFalse(lblFastPath, isUnalignedAddr);
 

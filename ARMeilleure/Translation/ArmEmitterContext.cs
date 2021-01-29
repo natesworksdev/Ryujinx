@@ -61,7 +61,7 @@ namespace ARMeilleure.Translation
         {
             if (!_labels.TryGetValue(address, out Operand label))
             {
-                label = Label();
+                label = AllocateLabel();
 
                 _labels.Add(address, label);
             }
