@@ -1,4 +1,5 @@
 using Ryujinx.Common.Logging;
+using Ryujinx.Memory;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -166,40 +167,49 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             };
         }
 
-        private long SerializeAddrInfo(ServiceCtx context, long offset, AddrInfo hints, IPAddress address)
+        private long SerializeAddrInfo(ServiceCtx context, long offset, AddrInfo hintsAddrInfo, IPAddress address)
         {
             long originalBufferPosition = context.Request.ReceiveBuff[0].Position + offset;
             long bufferPosition         = originalBufferPosition;
             long bufferSize             = context.Request.ReceiveBuff[0].Size;
 
             // Magic
-            unchecked
-            {
-                context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder((int)0xBEEFCAFE));
-            }
+            WritableRegion wr = context.Memory.GetWritableRegion((ulong)bufferPosition, 4);
+            BinaryPrimitives.WriteUInt32BigEndian(wr.Memory.Span, 0xBEEFCAFE);
+            wr.Dispose();
             bufferPosition += 4;
 
             // ai_flags
-            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(hints.Flags));
+            wr = context.Memory.GetWritableRegion((ulong)bufferPosition, 4);
+            BinaryPrimitives.WriteInt32BigEndian(wr.Memory.Span, hintsAddrInfo.Flags);
+            wr.Dispose();
             bufferPosition += 4;
 
             // ai_family
-            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder((int)address.AddressFamily));
+            wr = context.Memory.GetWritableRegion((ulong)bufferPosition, 4);
+            BinaryPrimitives.WriteInt32BigEndian(wr.Memory.Span, (int)address.AddressFamily);
+            wr.Dispose();
             bufferPosition += 4;
 
             // ai_socktype
-            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(hints.SocketType));
+            wr = context.Memory.GetWritableRegion((ulong)bufferPosition, 4);
+            BinaryPrimitives.WriteInt32BigEndian(wr.Memory.Span, hintsAddrInfo.SocketType);
+            wr.Dispose();
             bufferPosition += 4;
 
             // ai_protocol
-            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(hints.Protocol));
+            wr = context.Memory.GetWritableRegion((ulong)bufferPosition, 4);
+            BinaryPrimitives.WriteInt32BigEndian(wr.Memory.Span, hintsAddrInfo.Protocol);
+            wr.Dispose();
             bufferPosition += 4;
 
             // Use the fact that IPAddress.Any = 0.0.0.0 as a helper to fill 0s, if address is empty.
-            byte[] ipBytes = (address ?? IPAddress.Any).GetAddressBytes();
+            ReadOnlySpan<byte> ipBytes = (address ?? IPAddress.Any).GetAddressBytes();
 
             // ai_addrlen
-            context.Memory.Write((ulong)bufferPosition, IPAddress.HostToNetworkOrder(ipBytes.Length));
+            wr = context.Memory.GetWritableRegion((ulong)bufferPosition, 4);
+            BinaryPrimitives.WriteInt32BigEndian(wr.Memory.Span, ipBytes.Length);
+            wr.Dispose();
             bufferPosition += 4;
 
             // ai_addr
@@ -208,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             bufferPosition += 4;
 
             // ai_canonname
-            byte[] canonName = Encoding.ASCII.GetBytes("" + '\0');
+            ReadOnlySpan<byte> canonName = Encoding.ASCII.GetBytes("" + '\0');
             context.Memory.Write((ulong)bufferPosition, canonName);
             bufferPosition += canonName.Length;
 

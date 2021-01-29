@@ -1,3 +1,5 @@
+using System.Net.Sockets;
+
 namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
 {
     // C definition
@@ -15,7 +17,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
     {
         public int Magic;
         public int Flags;
-        public System.Net.Sockets.AddressFamily Family;
+        public AddressFamily Family;
         public int SocketType;
         public int Protocol;
         // public int AddrLen;
