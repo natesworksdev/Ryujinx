@@ -24,8 +24,8 @@ namespace Ryujinx.HLE.HOS.Applets
         private const int InteractiveBufferSize = 0x7D4;
         private const int MaxUserWords          = 0x1388;
 
-        private SoftwareKeyboardState _stateFg = SoftwareKeyboardState.Uninitialized;
-        private volatile InlineKeyboardState _stateBg = InlineKeyboardState.Uninitialized;
+        private SoftwareKeyboardState _foregroundState = SoftwareKeyboardState.Uninitialized;
+        private volatile InlineKeyboardState _backgroundState = InlineKeyboardState.Uninitialized;
 
         private bool _isBackground = false;
         private bool _alreadyShown = false;
@@ -35,14 +35,14 @@ namespace Ryujinx.HLE.HOS.Applets
         private AppletSession _interactiveSession;
 
         // Configuration for foreground mode
-        private SoftwareKeyboardConfig       _keyboardFgConfig;
-        private SoftwareKeyboardCalc         _keyboardBgCalc;
-        private SoftwareKeyboardCustomizeDic _keyboardBgDic;
-        private SoftwareKeyboardDictSet      _keyboardBgDictSet;
-        private SoftwareKeyboardUserWord[]   _keyboardBgUserWords;
+        private SoftwareKeyboardConfig       _keyboardForegroundConfig;
 
         // Configuration for background mode
-        private SoftwareKeyboardInitialize _keyboardBgInitialize;
+        private SoftwareKeyboardInitialize _keyboardBackgroundInitialize;
+        private SoftwareKeyboardCalc         _keyboardBackgroundCalc;
+        private SoftwareKeyboardCustomizeDic _keyboardBackgroundDic;
+        private SoftwareKeyboardDictSet      _keyboardBackgroundDictSet;
+        private SoftwareKeyboardUserWord[]   _keyboardBackgroundUserWords;
 
         private byte[] _transferMemory;
 
@@ -78,8 +78,8 @@ namespace Ryujinx.HLE.HOS.Applets
             {
                 _isBackground = true;
 
-                _keyboardBgInitialize = ReadStruct<SoftwareKeyboardInitialize>(keyboardConfig);
-                _stateBg = InlineKeyboardState.Uninitialized;
+                _keyboardBackgroundInitialize = ReadStruct<SoftwareKeyboardInitialize>(keyboardConfig);
+                _backgroundState = InlineKeyboardState.Uninitialized;
 
                 return ResultCode.Success;
             }
@@ -93,7 +93,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 }
                 else
                 {
-                    _keyboardFgConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
+                    _keyboardForegroundConfig = ReadStruct<SoftwareKeyboardConfig>(keyboardConfig);
                 }
 
                 if (!_normalSession.TryPop(out _transferMemory))
@@ -101,12 +101,12 @@ namespace Ryujinx.HLE.HOS.Applets
                     Logger.Error?.Print(LogClass.ServiceAm, "SwKbd Transfer Memory is null");
                 }
 
-                if (_keyboardFgConfig.UseUtf8)
+                if (_keyboardForegroundConfig.UseUtf8)
                 {
                     _encoding = Encoding.UTF8;
                 }
 
-                _stateFg = SoftwareKeyboardState.Ready;
+                _foregroundState = SoftwareKeyboardState.Ready;
 
                 ExecuteForegroundKeyboard();
 
@@ -121,12 +121,12 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private InlineKeyboardState GetInlineState()
         {
-            return _stateBg;
+            return _backgroundState;
         }
 
         private void SetInlineState(InlineKeyboardState state)
         {
-            _stateBg = state;
+            _backgroundState = state;
         }
 
         private void ExecuteForegroundKeyboard()
@@ -135,26 +135,26 @@ namespace Ryujinx.HLE.HOS.Applets
 
             // Initial Text is always encoded as a UTF-16 string in the work buffer (passed as transfer memory)
             // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
-            if (_transferMemory != null && _keyboardFgConfig.InitialStringLength > 0)
+            if (_transferMemory != null && _keyboardForegroundConfig.InitialStringLength > 0)
             {
-                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardFgConfig.InitialStringOffset, 2 * _keyboardFgConfig.InitialStringLength);
+                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardForegroundConfig.InitialStringOffset, 2 * _keyboardForegroundConfig.InitialStringLength);
             }
 
             // If the max string length is 0, we set it to a large default
             // length.
-            if (_keyboardFgConfig.StringLengthMax == 0)
+            if (_keyboardForegroundConfig.StringLengthMax == 0)
             {
-                _keyboardFgConfig.StringLengthMax = 100;
+                _keyboardForegroundConfig.StringLengthMax = 100;
             }
 
             var args = new SoftwareKeyboardUiArgs
             {
-                HeaderText = _keyboardFgConfig.HeaderText,
-                SubtitleText = _keyboardFgConfig.SubtitleText,
-                GuideText = _keyboardFgConfig.GuideText,
-                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardFgConfig.SubmitText) ? _keyboardFgConfig.SubmitText : "OK"),
-                StringLengthMin = _keyboardFgConfig.StringLengthMin,
-                StringLengthMax = _keyboardFgConfig.StringLengthMax,
+                HeaderText = _keyboardForegroundConfig.HeaderText,
+                SubtitleText = _keyboardForegroundConfig.SubtitleText,
+                GuideText = _keyboardForegroundConfig.GuideText,
+                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardForegroundConfig.SubmitText) ? _keyboardForegroundConfig.SubmitText : "OK"),
+                StringLengthMin = _keyboardForegroundConfig.StringLengthMin,
+                StringLengthMax = _keyboardForegroundConfig.StringLengthMax,
                 InitialText = initialText
             };
 
@@ -175,26 +175,26 @@ namespace Ryujinx.HLE.HOS.Applets
             // than our default text, repeat our default text until we meet
             // the minimum length requirement.
             // This should always be done before the text truncation step.
-            while (_textValue.Length < _keyboardFgConfig.StringLengthMin)
+            while (_textValue.Length < _keyboardForegroundConfig.StringLengthMin)
             {
                 _textValue = String.Join(" ", _textValue, _textValue);
             }
 
             // If our default text is longer than the allowed length,
             // we truncate it.
-            if (_textValue.Length > _keyboardFgConfig.StringLengthMax)
+            if (_textValue.Length > _keyboardForegroundConfig.StringLengthMax)
             {
-                _textValue = _textValue.Substring(0, (int)_keyboardFgConfig.StringLengthMax);
+                _textValue = _textValue.Substring(0, (int)_keyboardForegroundConfig.StringLengthMax);
             }
 
             // Does the application want to validate the text itself?
-            if (_keyboardFgConfig.CheckText)
+            if (_keyboardForegroundConfig.CheckText)
             {
                 // The application needs to validate the response, so we
                 // submit it to the interactive output buffer, and poll it
                 // for validation. Once validated, the application will submit
                 // back a validation status, which is handled in OnInteractiveDataPushIn.
-                _stateFg = SoftwareKeyboardState.ValidationPending;
+                _foregroundState = SoftwareKeyboardState.ValidationPending;
 
                 _interactiveSession.Push(BuildResponse(_textValue, true));
             }
@@ -203,7 +203,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 // If the application doesn't need to validate the response,
                 // we push the data to the non-interactive output buffer
                 // and poll it for completion.
-                _stateFg = SoftwareKeyboardState.Complete;
+                _foregroundState = SoftwareKeyboardState.Complete;
 
                 _normalSession.Push(BuildResponse(_textValue, false));
 
@@ -228,7 +228,7 @@ namespace Ryujinx.HLE.HOS.Applets
 
         private void OnForegroundInteractiveData(byte[] data)
         {
-            if (_stateFg == SoftwareKeyboardState.ValidationPending)
+            if (_foregroundState == SoftwareKeyboardState.ValidationPending)
             {
                 // TODO(jduncantor):
                 // If application rejects our "attempt", submit another attempt,
@@ -240,9 +240,9 @@ namespace Ryujinx.HLE.HOS.Applets
 
                 AppletStateChanged?.Invoke(this, null);
 
-                _stateFg = SoftwareKeyboardState.Complete;
+                _foregroundState = SoftwareKeyboardState.Complete;
             }
-            else if(_stateFg == SoftwareKeyboardState.Complete)
+            else if(_foregroundState == SoftwareKeyboardState.Complete)
             {
                 // If we have already completed, we push the result text
                 // back on the output buffer and poll the application.
@@ -302,12 +302,12 @@ namespace Ryujinx.HLE.HOS.Applets
                             }
                             else
                             {
-                                _keyboardBgUserWords = new SoftwareKeyboardUserWord[wordsCount];
+                                _keyboardBackgroundUserWords = new SoftwareKeyboardUserWord[wordsCount];
 
                                 for (int word = 0; word < wordsCount; word++)
                                 {
                                     byte[] wordData = reader.ReadBytes(wordSize);
-                                    _keyboardBgUserWords[word] = ReadStruct<SoftwareKeyboardUserWord>(wordData);
+                                    _keyboardBackgroundUserWords[word] = ReadStruct<SoftwareKeyboardUserWord>(wordData);
                                 }
                             }
                         }
@@ -322,7 +322,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         else
                         {
                             var keyboardDicData = reader.ReadBytes((int)remaining);
-                            _keyboardBgDic = ReadStruct<SoftwareKeyboardCustomizeDic>(keyboardDicData);
+                            _keyboardBackgroundDic = ReadStruct<SoftwareKeyboardCustomizeDic>(keyboardDicData);
                         }
                         _interactiveSession.Push(InlineResponses.UnsetCustomizeDic(state));
                         break;
@@ -335,7 +335,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         else
                         {
                             var keyboardDictData = reader.ReadBytes((int)remaining);
-                            _keyboardBgDictSet = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
+                            _keyboardBackgroundDictSet = ReadStruct<SoftwareKeyboardDictSet>(keyboardDictData);
                         }
                         _interactiveSession.Push(InlineResponses.UnsetCustomizedDictionaries(state));
                         break;
@@ -352,16 +352,16 @@ namespace Ryujinx.HLE.HOS.Applets
                         else
                         {
                             var keyboardCalcData = reader.ReadBytes((int)remaining);
-                            _keyboardBgCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
+                            _keyboardBackgroundCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
 
-                            if (_keyboardBgCalc.Utf8Mode == 0x1)
+                            if (_keyboardBackgroundCalc.Utf8Mode == 0x1)
                             {
                                 _encoding = Encoding.UTF8;
                             }
 
                             // Force showing the keyboard regardless of the state, an unwanted
                             // input dialog may show, but it is better than a soft lock.
-                            if (_keyboardBgCalc.Appear.ShouldBeHidden == 0)
+                            if (_keyboardBackgroundCalc.Appear.ShouldBeHidden == 0)
                             {
                                 forceShowKeyboard = true;
                             }
@@ -375,12 +375,12 @@ namespace Ryujinx.HLE.HOS.Applets
                         break;
                     case InlineKeyboardRequest.Finalize:
                         // The game wants to close the keyboard applet and will wait for a state change.
-                        _stateBg = InlineKeyboardState.Uninitialized;
+                        _backgroundState = InlineKeyboardState.Uninitialized;
                         AppletStateChanged?.Invoke(this, null);
                         break;
                     default:
                         // We shouldn't be able to get here through standard swkbd execution.
-                        Logger.Warning?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_stateBg}");
+                        Logger.Warning?.Print(LogClass.ServiceAm, $"Invalid Software Keyboard request {request} during state {_backgroundState}");
                         _interactiveSession.Push(InlineResponses.Default(state));
                         break;
                 }
@@ -390,7 +390,7 @@ namespace Ryujinx.HLE.HOS.Applets
         private void GetInputTextAndSend(bool forceShowKeyboard, InlineKeyboardState oldState)
         {
             bool submit = true;
-            string inputText = (!string.IsNullOrWhiteSpace(_keyboardBgCalc.InputText) ? _keyboardBgCalc.InputText : DefaultText);
+            string inputText = (!string.IsNullOrWhiteSpace(_keyboardBackgroundCalc.InputText) ? _keyboardBackgroundCalc.InputText : DefaultText);
 
             // Compute the elapsed time for the debouncing algorithm.
             long currentMillis = PerformanceCounter.ElapsedMilliseconds;
@@ -429,7 +429,7 @@ namespace Ryujinx.HLE.HOS.Applets
                     HeaderText = "", // The inline keyboard lacks these texts
                     SubtitleText = "",
                     GuideText = "",
-                    SubmitText = (!string.IsNullOrWhiteSpace(_keyboardBgCalc.Appear.OkText) ? _keyboardBgCalc.Appear.OkText : "OK"),
+                    SubmitText = (!string.IsNullOrWhiteSpace(_keyboardBackgroundCalc.Appear.OkText) ? _keyboardBackgroundCalc.Appear.OkText : "OK"),
                     StringLengthMin = 0,
                     StringLengthMax = 100,
                     InitialText = inputText
