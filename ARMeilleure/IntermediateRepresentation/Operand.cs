@@ -110,16 +110,6 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
-        internal void NumberLocal(int number)
-        {
-            if (Kind != OperandKind.LocalVariable)
-            {
-                throw new InvalidOperationException("The operand is not a local variable.");
-            }
-
-            Value = (ulong)number;
-        }
-
         /* public static bool operator ==(Operand x, Operand y)
         {
             return x.Equals(y);

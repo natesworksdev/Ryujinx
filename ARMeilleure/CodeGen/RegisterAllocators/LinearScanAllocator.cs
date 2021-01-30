@@ -33,6 +33,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         private int _operationsCount;
 
+        private int[] _localNumberToId;
+
         private class AllocationContext : IDisposable
         {
             public RegisterMasks Masks { get; }
@@ -77,11 +79,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public AllocationResult RunPass(
-            ControlFlowGraph cfg,
-            StackAllocator stackAlloc,
-            RegisterMasks regMasks)
+        public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
+            _localNumberToId = new int[cfg.LocalsCount];
+
             NumberLocals(cfg);
 
             AllocationContext context = new AllocationContext(stackAlloc, regMasks, _intervals.Count);
@@ -795,9 +796,10 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     for (int i = 0; i < node.DestinationsCount; i++)
                     {
                         Operand dest = node.GetDestination(i);
+
                         if (dest.Kind == OperandKind.LocalVariable && visited.Add(dest))
                         {
-                            dest.NumberLocal(_intervals.Count);
+                            _localNumberToId[dest.AsInt32()] = _intervals.Count;
 
                             _intervals.Add(new LiveInterval(dest));
                         }
@@ -977,11 +979,11 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        private static int GetOperandId(Operand operand)
+        private int GetOperandId(Operand operand)
         {
             if (operand.Kind == OperandKind.LocalVariable)
             {
-                return operand.AsInt32();
+                return _localNumberToId[operand.AsInt32()];
             }
             else if (operand.Kind == OperandKind.Register)
             {

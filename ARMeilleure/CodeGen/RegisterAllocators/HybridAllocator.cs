@@ -76,10 +76,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             }
         }
 
-        public AllocationResult RunPass(
-            ControlFlowGraph cfg,
-            StackAllocator stackAlloc,
-            RegisterMasks regMasks)
+        public AllocationResult RunPass(ControlFlowGraph cfg, StackAllocator stackAlloc, RegisterMasks regMasks)
         {
             int intUsedRegisters = 0;
             int vecUsedRegisters = 0;
@@ -89,7 +86,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             BlockInfo[] blockInfo = new BlockInfo[cfg.Blocks.Count];
 
-            List<LocalInfo> locInfo = new List<LocalInfo>();
+            LocalInfo[] locInfo = new LocalInfo[cfg.LocalsCount];
 
             for (int index = cfg.PostOrderBlocks.Length - 1; index >= 0; index--)
             {
@@ -137,19 +134,13 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (dest.Kind == OperandKind.LocalVariable)
                         {
-                            LocalInfo info;
+                            LocalInfo info = locInfo[dest.AsInt32()];
 
-                            if (dest.AsInt32() < locInfo.Count && locInfo[dest.AsInt32()].Operand == dest)
+                            if (info == null)
                             {
-                                info = locInfo[dest.AsInt32()];
-                            }
-                            else
-                            {
-                                dest.NumberLocal(locInfo.Count);
-
                                 info = new LocalInfo(dest.Type, dest);
 
-                                locInfo.Add(info);
+                                locInfo[dest.AsInt32()] = info;
                             }
 
                             info.SetBlockIndex(block.Index);
