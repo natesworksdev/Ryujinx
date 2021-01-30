@@ -198,31 +198,31 @@ namespace ARMeilleure.Translation.PTC
             using (FileStream compressedStream = new FileStream(fileName, FileMode.Open))
             using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
             {
+                using MD5 md5 = MD5.Create();
+
+                int hashSize = md5.HashSize / 8;
+
+                byte[] currentSizeHash = new byte[hashSize];
+                compressedStream.Read(currentSizeHash, 0, hashSize);
+
+                byte[] sizeBytes = new byte[sizeof(int)];
+                compressedStream.Read(sizeBytes, 0, sizeBytes.Length);
+
+                byte[] expectedSizeHash = md5.ComputeHash(sizeBytes);
+
+                if (!CompareHash(currentSizeHash, expectedSizeHash))
+                {
+                    InvalidateCompressedStream(compressedStream);
+
+                    return false;
+                }
+
+                int size = BitConverter.ToInt32(sizeBytes, 0);
+
                 IntPtr intPtr = IntPtr.Zero;
 
                 try
                 {
-                    MD5 md5 = MD5.Create();
-
-                    int hashSize = md5.HashSize / 8;
-
-                    byte[] currentSizeHash = new byte[hashSize];
-                    compressedStream.Read(currentSizeHash, 0, hashSize);
-
-                    byte[] sizeBytes = new byte[sizeof(int)];
-                    compressedStream.Read(sizeBytes, 0, sizeBytes.Length);
-
-                    byte[] expectedSizeHash = md5.ComputeHash(sizeBytes);
-
-                    if (!CompareHash(currentSizeHash, expectedSizeHash))
-                    {
-                        InvalidateCompressedStream(compressedStream);
-
-                        return false;
-                    }
-
-                    int size = BitConverter.ToInt32(sizeBytes, 0);
-
                     intPtr = Marshal.AllocHGlobal(size);
 
                     using (UnmanagedMemoryStream stream = new UnmanagedMemoryStream((byte*)intPtr.ToPointer(), size, size, FileAccess.ReadWrite))
@@ -244,8 +244,6 @@ namespace ARMeilleure.Translation.PTC
                         stream.Read(currentHash, 0, hashSize);
 
                         byte[] expectedHash = md5.ComputeHash(stream);
-
-                        md5.Dispose();
 
                         if (!CompareHash(currentHash, expectedHash))
                         {
@@ -413,20 +411,20 @@ namespace ARMeilleure.Translation.PTC
         {
             int translatedFuncsCount;
 
+            using MD5 md5 = MD5.Create();
+
+            int hashSize = md5.HashSize / 8;
+
+            int size = hashSize + Header.Size + GetMemoryStreamsLength() + PtcJumpTable.GetSerializeSize(PtcJumpTable);
+
+            byte[] sizeBytes = BitConverter.GetBytes(size);
+            Debug.Assert(sizeBytes.Length == sizeof(int));
+            byte[] sizeHash = md5.ComputeHash(sizeBytes);
+
             IntPtr intPtr = IntPtr.Zero;
 
             try
             {
-                MD5 md5 = MD5.Create();
-
-                int hashSize = md5.HashSize / 8;
-
-                int size = hashSize + Header.Size + GetMemoryStreamsLength() + PtcJumpTable.GetSerializeSize(PtcJumpTable);
-
-                byte[] sizeBytes = BitConverter.GetBytes(size);
-                Debug.Assert(sizeBytes.Length == sizeof(int));
-                byte[] sizeHash = md5.ComputeHash(sizeBytes);
-
                 intPtr = Marshal.AllocHGlobal(size);
 
                 using (UnmanagedMemoryStream stream = new UnmanagedMemoryStream((byte*)intPtr.ToPointer(), size, size, FileAccess.ReadWrite))
@@ -444,8 +442,6 @@ namespace ARMeilleure.Translation.PTC
 
                     stream.Seek((long)hashSize, SeekOrigin.Begin);
                     byte[] hash = md5.ComputeHash(stream);
-
-                    md5.Dispose();
 
                     stream.Seek(0L, SeekOrigin.Begin);
                     stream.Write(hash, 0, hashSize);
@@ -860,11 +856,11 @@ namespace ARMeilleure.Translation.PTC
                 _infosWriter.Write((ulong)guestSize); // InfoEntry.GuestSize
                 _infosWriter.Write((bool)highCq); // InfoEntry.HighCq
                 _infosWriter.Write((bool)false); // InfoEntry.Stubbed
-                _infosWriter.Write((int)ptcInfo.CodeStream.Length); // InfoEntry.CodeLen
+                _infosWriter.Write((int)ptcInfo.Code.Length); // InfoEntry.CodeLen
                 _infosWriter.Write((int)ptcInfo.RelocEntriesCount); // InfoEntry.RelocEntriesCount
 
                 // WriteCode.
-                ptcInfo.CodeStream.WriteTo(_codesStream);
+                _codesStream.Write(ptcInfo.Code, 0, ptcInfo.Code.Length);
 
                 // WriteReloc.
                 ptcInfo.RelocStream.WriteTo(_relocsStream);

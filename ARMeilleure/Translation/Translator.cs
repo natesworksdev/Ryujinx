@@ -246,8 +246,10 @@ namespace ARMeilleure.Translation
 
                 ResetPool(highCq ? 1 : 0);
             }
-            else using (PtcInfo ptcInfo = new PtcInfo())
+            else
             {
+                using PtcInfo ptcInfo = new PtcInfo();
+
                 func = Compiler.Compile<GuestFunction>(cfg, argTypes, OperandType.I64, options, ptcInfo);
 
                 ResetPool(highCq ? 1 : 0);

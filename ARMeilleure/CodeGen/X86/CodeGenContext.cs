@@ -302,13 +302,11 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Assembler assembler = new Assembler(codeStream, _ptcInfo);
 
-                Span<byte> buffer;
-
                 for (int index = 0; index < _jumps.Count; index++)
                 {
                     Jump jump = _jumps[index];
 
-                    buffer = new byte[jump.JumpPosition - _stream.Position];
+                    Span<byte> buffer = new byte[jump.JumpPosition - _stream.Position];
 
                     _stream.Read(buffer);
                     _stream.Seek(_ptcDisabled ? ReservedBytesForJump : jump.InstSize, SeekOrigin.Current);
@@ -325,13 +323,7 @@ namespace ARMeilleure.CodeGen.X86
                     }
                 }
 
-                buffer = new byte[_stream.Length - _stream.Position];
-
-                _stream.Read(buffer);
-
-                codeStream.Write(buffer);
-
-                _ptcInfo?.WriteCode(codeStream);
+                _stream.CopyTo(codeStream);
 
                 return codeStream.ToArray();
             }

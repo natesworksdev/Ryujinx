@@ -86,51 +86,50 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             NumberLocals(cfg);
 
-            using (AllocationContext context = new AllocationContext(stackAlloc, regMasks, _intervals.Count))
+            using AllocationContext context = new AllocationContext(stackAlloc, regMasks, _intervals.Count);
+
+            BuildIntervals(cfg, context);
+
+            for (int index = 0; index < _intervals.Count; index++)
             {
-                BuildIntervals(cfg, context);
+                LiveInterval current = _intervals[index];
 
-                for (int index = 0; index < _intervals.Count; index++)
+                if (current.IsEmpty)
                 {
-                    LiveInterval current = _intervals[index];
-
-                    if (current.IsEmpty)
-                    {
-                        continue;
-                    }
-
-                    if (current.IsFixed)
-                    {
-                        context.Active.Set(index);
-
-                        if (current.Register.Type == RegisterType.Integer)
-                        {
-                            context.IntUsedRegisters |= 1 << current.Register.Index;
-                        }
-                        else /* if (interval.Register.Type == RegisterType.Vector) */
-                        {
-                            context.VecUsedRegisters |= 1 << current.Register.Index;
-                        }
-
-                        continue;
-                    }
-
-                    AllocateInterval(context, current, index);
+                    continue;
                 }
 
-                for (int index = RegistersCount * 2; index < _intervals.Count; index++)
+                if (current.IsFixed)
                 {
-                    if (!_intervals[index].IsSpilled)
+                    context.Active.Set(index);
+
+                    if (current.Register.Type == RegisterType.Integer)
                     {
-                        ReplaceLocalWithRegister(_intervals[index]);
+                        context.IntUsedRegisters |= 1 << current.Register.Index;
                     }
+                    else /* if (interval.Register.Type == RegisterType.Vector) */
+                    {
+                        context.VecUsedRegisters |= 1 << current.Register.Index;
+                    }
+
+                    continue;
                 }
 
-                InsertSplitCopies();
-                InsertSplitCopiesAtEdges(cfg);
-
-                return new AllocationResult(context.IntUsedRegisters, context.VecUsedRegisters, context.StackAlloc.TotalSize);
+                AllocateInterval(context, current, index);
             }
+
+            for (int index = RegistersCount * 2; index < _intervals.Count; index++)
+            {
+                if (!_intervals[index].IsSpilled)
+                {
+                    ReplaceLocalWithRegister(_intervals[index]);
+                }
+            }
+
+            InsertSplitCopies();
+            InsertSplitCopiesAtEdges(cfg);
+
+            return new AllocationResult(context.IntUsedRegisters, context.VecUsedRegisters, context.StackAlloc.TotalSize);
         }
 
         private void AllocateInterval(AllocationContext context, LiveInterval current, int cIndex)
