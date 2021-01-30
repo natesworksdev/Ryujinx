@@ -34,11 +34,11 @@ namespace Ryujinx.HLE.HOS.Applets
         private AppletSession _normalSession;
         private AppletSession _interactiveSession;
 
-        // Configuration for foreground mode
-        private SoftwareKeyboardConfig       _keyboardForegroundConfig;
+        // Configuration for foreground mode.
+        private SoftwareKeyboardConfig _keyboardForegroundConfig;
 
-        // Configuration for background mode
-        private SoftwareKeyboardInitialize _keyboardBackgroundInitialize;
+        // Configuration for background (inline) mode.
+        private SoftwareKeyboardInitialize   _keyboardBackgroundInitialize;
         private SoftwareKeyboardCalc         _keyboardBackgroundCalc;
         private SoftwareKeyboardCustomizeDic _keyboardBackgroundDic;
         private SoftwareKeyboardDictSet      _keyboardBackgroundDictSet;
@@ -72,10 +72,10 @@ namespace Ryujinx.HLE.HOS.Applets
             var launchParams   = _normalSession.Pop();
             var keyboardConfig = _normalSession.Pop();
 
-            // TODO: A better way would be handling the background creation properly
-            // in LibraryAppleCreator / Acessor instead of guessing by size.
             if (keyboardConfig.Length == Marshal.SizeOf<SoftwareKeyboardInitialize>())
             {
+                // Initialize the keyboard applet in background mode.
+
                 _isBackground = true;
 
                 _keyboardBackgroundInitialize = ReadStruct<SoftwareKeyboardInitialize>(keyboardConfig);
@@ -85,6 +85,8 @@ namespace Ryujinx.HLE.HOS.Applets
             }
             else
             {
+                // Initialize the keyboard applet in foreground mode.
+
                 _isBackground = false;
 
                 if (keyboardConfig.Length < Marshal.SizeOf<SoftwareKeyboardConfig>())
@@ -137,7 +139,8 @@ namespace Ryujinx.HLE.HOS.Applets
             // InitialStringOffset points to the memory offset and InitialStringLength is the number of UTF-16 characters
             if (_transferMemory != null && _keyboardForegroundConfig.InitialStringLength > 0)
             {
-                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardForegroundConfig.InitialStringOffset, 2 * _keyboardForegroundConfig.InitialStringLength);
+                initialText = Encoding.Unicode.GetString(_transferMemory, _keyboardForegroundConfig.InitialStringOffset,
+                    2 * _keyboardForegroundConfig.InitialStringLength);
             }
 
             // If the max string length is 0, we set it to a large default
@@ -152,7 +155,8 @@ namespace Ryujinx.HLE.HOS.Applets
                 HeaderText = _keyboardForegroundConfig.HeaderText,
                 SubtitleText = _keyboardForegroundConfig.SubtitleText,
                 GuideText = _keyboardForegroundConfig.GuideText,
-                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardForegroundConfig.SubmitText) ? _keyboardForegroundConfig.SubmitText : "OK"),
+                SubmitText = (!string.IsNullOrWhiteSpace(_keyboardForegroundConfig.SubmitText) ?
+                    _keyboardForegroundConfig.SubmitText : "OK"),
                 StringLengthMin = _keyboardForegroundConfig.StringLengthMin,
                 StringLengthMax = _keyboardForegroundConfig.StringLengthMax,
                 InitialText = initialText
@@ -278,9 +282,10 @@ namespace Ryujinx.HLE.HOS.Applets
                         _useChangedStringV2 = true;
                         break;
                     case InlineKeyboardRequest.UseMovedCursorV2:
-                        // Not used because we do not have a cursor to move.
+                        // Not used because we only reply with the final string.
                         break;
                     case InlineKeyboardRequest.SetUserWordInfo:
+                        // Read the user word info data.
                         remaining = stream.Length - stream.Position;
                         if (remaining < sizeof(int))
                         {
@@ -314,6 +319,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         _interactiveSession.Push(InlineResponses.ReleasedUserWordInfo(state));
                         break;
                     case InlineKeyboardRequest.SetCustomizeDic:
+                        // Read the custom dic data.
                         remaining = stream.Length - stream.Position;
                         if (remaining != Marshal.SizeOf<SoftwareKeyboardCustomizeDic>())
                         {
@@ -327,6 +333,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         _interactiveSession.Push(InlineResponses.UnsetCustomizeDic(state));
                         break;
                     case InlineKeyboardRequest.SetCustomizedDictionaries:
+                        // Read the custom dictionaries data.
                         remaining = stream.Length - stream.Position;
                         if (remaining != Marshal.SizeOf<SoftwareKeyboardDictSet>())
                         {
@@ -340,9 +347,17 @@ namespace Ryujinx.HLE.HOS.Applets
                         _interactiveSession.Push(InlineResponses.UnsetCustomizedDictionaries(state));
                         break;
                     case InlineKeyboardRequest.Calc:
-                        // Always show the keyboard if it is already shown before.
+                        // The Calc request tells the Applet to enter the main input handling loop, which will end
+                        // with either a text being submitted or a cancel request from the user.
+
+                        // NOTE: Some Calc requests happen early in the process and are not meant to be shown. This possibly
+                        // happens because the game has complete control over when the inline keyboard is drawn, but here it
+                        // would cause a dialog to pop in the emulator, which is inconvenient. An algorithm is applied to
+                        // decide whether it is a dummy Calc or not, but regardless of the result, the dummy Calc appears to
+                        // never happen twice, so the keyboard will always show if it has already been shown before.
                         bool forceShowKeyboard = _alreadyShown;
                         _alreadyShown = true;
+
                         // Read the Calc data.
                         remaining = stream.Length - stream.Position;
                         if (remaining != Marshal.SizeOf<SoftwareKeyboardCalc>())
@@ -354,7 +369,8 @@ namespace Ryujinx.HLE.HOS.Applets
                             var keyboardCalcData = reader.ReadBytes((int)remaining);
                             _keyboardBackgroundCalc = ReadStruct<SoftwareKeyboardCalc>(keyboardCalcData);
 
-                            if (_keyboardBackgroundCalc.Utf8Mode == 0x1)
+                            // Check if the application expects UTF8 encoding instead of UTF16.
+                            if (_keyboardBackgroundCalc.UseUtf8)
                             {
                                 _encoding = Encoding.UTF8;
                             }
@@ -374,7 +390,7 @@ namespace Ryujinx.HLE.HOS.Applets
                         new Task(() => { GetInputTextAndSend(forceShowKeyboard, state); }).Start();
                         break;
                     case InlineKeyboardRequest.Finalize:
-                        // The game wants to close the keyboard applet and will wait for a state change.
+                        // The calling process wants to close the keyboard applet and will wait for a state change.
                         _backgroundState = InlineKeyboardState.Uninitialized;
                         AppletStateChanged?.Invoke(this, null);
                         break;
@@ -390,20 +406,27 @@ namespace Ryujinx.HLE.HOS.Applets
         private void GetInputTextAndSend(bool forceShowKeyboard, InlineKeyboardState oldState)
         {
             bool submit = true;
-            string inputText = (!string.IsNullOrWhiteSpace(_keyboardBackgroundCalc.InputText) ? _keyboardBackgroundCalc.InputText : DefaultText);
+
+            // Use the text specified by the Calc if it is available, otherwise use the default one.
+            string inputText = (!string.IsNullOrWhiteSpace(_keyboardBackgroundCalc.InputText) ?
+                _keyboardBackgroundCalc.InputText : DefaultText);
 
             // Compute the elapsed time for the debouncing algorithm.
             long currentMillis = PerformanceCounter.ElapsedMilliseconds;
             long inputElapsedMillis = currentMillis - _lastTextSetMillis;
 
-            // Reset the input text.
+            // Reset the input text before submitting the final result, that's because some games do not expect
+            // consecutive submissions to abruptly shrink and they will crash if it happens. Changing the string
+            // before the final submission prevents that.
             InlineKeyboardState newState = InlineKeyboardState.DataAvailable;
             SetInlineState(newState);
             ChangedString("", newState);
 
             if (inputElapsedMillis < DebounceTimeMillis)
             {
-                // Debounce a fast Calc request by repeating the last submission, either a value or a cancel.
+                // A repeated Calc request has been received without player interaction, after the input has been
+                // sent. This behavior happens in some games, so instead of showing another dialog, just apply a
+                // time-based debouncing algorithm and repeat the last submission, either a value or a cancel.
                 inputText = _textValue;
                 submit = _textValue != null;
 
@@ -429,7 +452,8 @@ namespace Ryujinx.HLE.HOS.Applets
                     HeaderText = "", // The inline keyboard lacks these texts
                     SubtitleText = "",
                     GuideText = "",
-                    SubmitText = (!string.IsNullOrWhiteSpace(_keyboardBackgroundCalc.Appear.OkText) ? _keyboardBackgroundCalc.Appear.OkText : "OK"),
+                    SubmitText = (!string.IsNullOrWhiteSpace(_keyboardBackgroundCalc.Appear.OkText) ?
+                        _keyboardBackgroundCalc.Appear.OkText : "OK"),
                     StringLengthMin = 0,
                     StringLengthMax = 100,
                     InitialText = inputText
@@ -439,7 +463,7 @@ namespace Ryujinx.HLE.HOS.Applets
                 inputText = submit ? inputText : null;
             }
 
-            // Change state to complete once data is available.
+            // The 'Complete' state indicates the Calc request has been fulfilled by the applet.
             newState = InlineKeyboardState.Complete;
 
             if (submit)
@@ -455,15 +479,22 @@ namespace Ryujinx.HLE.HOS.Applets
 
             _interactiveSession.Push(InlineResponses.Default(newState));
 
-            // TODO: Why is this necessary? Does the software expect a constant stream of responses?
+            // The constant calls to PopInteractiveData suggest that the keyboard applet continuously reports
+            // data back to the application and this can also be time-sensitive. Pushing a state reset right
+            // after the data has been sent does not work properly and the application will soft-lock. This
+            // delay gives time for the application to catch up with the data and properly process the state
+            // reset.
             Thread.Sleep(ResetDelayMillis);
 
+            // 'Initialized' is the only known state so far that does not soft-lock the keyboard after use.
             newState = InlineKeyboardState.Initialized;
 
             Logger.Debug?.Print(LogClass.ServiceAm, $"Resetting state of the keyboard to {newState}");
 
             SetInlineState(newState);
             _interactiveSession.Push(InlineResponses.Default(newState));
+
+            // Keep the text and the timestamp of the input for the debouncing algorithm.
             _textValue = inputText;
             _lastTextSetMillis = PerformanceCounter.ElapsedMilliseconds;
         }

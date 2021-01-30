@@ -2,6 +2,9 @@
 
 namespace Ryujinx.HLE.HOS.Applets.SoftwareKeyboard
 {
+    /// <summary>
+    /// A structure used by SetCustomizeDic request to software keyboard.
+    /// </summary>
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     struct SoftwareKeyboardCustomizeDic
     {
