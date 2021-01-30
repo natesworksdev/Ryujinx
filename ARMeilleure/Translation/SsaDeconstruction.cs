@@ -1,6 +1,5 @@
 using ARMeilleure.IntermediateRepresentation;
 
-using static ARMeilleure.IntermediateRepresentation.OperandHelper;
 using static ARMeilleure.IntermediateRepresentation.OperationHelper;
 
 namespace ARMeilleure.Translation
@@ -13,17 +12,17 @@ namespace ARMeilleure.Translation
             {
                 Node node = block.Operations.First;
 
-                while (node is PhiNode phi)
+                while (node is Operation phi && phi.Instruction == Instruction.Phi)
                 {
                     Node nextNode = node.ListNext;
 
                     Operand local = cfg.AllocateLocal(phi.Destination.Type);
 
-                    for (int index = 0; index < phi.SourcesCount; index++)
+                    for (int index = 0; index < phi.SourcesCount / 2; index++)
                     {
-                        BasicBlock predecessor = phi.GetBlock(index);
+                        BasicBlock predecessor = phi.GetPhiIncomingBlock(cfg, index);
 
-                        Operand source = phi.GetSource(index);
+                        Operand source = phi.GetPhiIncomingValue(index);
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
                     }

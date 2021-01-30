@@ -1009,7 +1009,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         {
             Node node = block.Operations.Last;
 
-            while (node != null && !(node is PhiNode))
+            while (node != null && !(node is Operation operation && operation.Instruction == Instruction.Phi))
             {
                 yield return node;
 

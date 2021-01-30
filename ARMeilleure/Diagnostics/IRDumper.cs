@@ -188,28 +188,6 @@ namespace ARMeilleure.Diagnostics
 
             switch (node)
             {
-                case PhiNode phi:
-                    _builder.Append("Phi ");
-
-                    for (int index = 0; index < phi.SourcesCount; index++)
-                    {
-                        _builder.Append('(');
-
-                        DumpBlockName(phi.GetBlock(index));
-
-                        _builder.Append(": ");
-
-                        DumpOperand(phi.GetSource(index));
-
-                        _builder.Append(')');
-
-                        if (index < phi.SourcesCount - 1)
-                        {
-                            _builder.Append(", ");
-                        }
-                    }
-                    break;
-
                 case Operation operation:
                     bool comparison = false;
 

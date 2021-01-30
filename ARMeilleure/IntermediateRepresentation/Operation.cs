@@ -1,3 +1,5 @@
+using ARMeilleure.Translation;
+
 namespace ARMeilleure.IntermediateRepresentation
 {
     class Operation : Node
@@ -6,10 +8,12 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operation() : base() { }
 
-        public Operation(
-            Instruction instruction,
-            Operand? destination,
-            Operand[] sources) : base(destination, sources.Length)
+        public Operation(Instruction instruction, Operand? destination, int sourcesCount) : base(destination, sourcesCount)
+        {
+            Instruction = instruction;
+        }
+
+        public Operation(Instruction instruction, Operand? destination, Operand[] sources) : base(destination, sources.Length)
         {
             Instruction = instruction;
 
@@ -84,6 +88,16 @@ namespace ARMeilleure.IntermediateRepresentation
                 SetSource(index, sources[index]);
             }
             return this;
+        }
+
+        public BasicBlock GetPhiIncomingBlock(ControlFlowGraph cfg, int index)
+        {
+            return cfg.PostOrderBlocks[cfg.PostOrderMap[GetSource(index * 2).AsInt32()]];
+        }
+
+        public Operand GetPhiIncomingValue(int index)
+        {
+            return GetSource(index * 2 + 1);
         }
 
         public void TurnIntoCopy(Operand source)

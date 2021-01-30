@@ -30,6 +30,7 @@ namespace ARMeilleure.IntermediateRepresentation
         Multiply64HighSI,
         Multiply64HighUI,
         Negate,
+        Phi,
         Return,
         RotateRight,
         ShiftLeft,

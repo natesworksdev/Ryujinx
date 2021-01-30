@@ -219,7 +219,7 @@ namespace ARMeilleure.Translation
             // then use the definition from that Phi.
             Operand local = cfg.AllocateLocal(operand.Type);
 
-            PhiNode phi = new PhiNode(local, block.Predecessors.Count);
+            Operation phi = new Operation(Instruction.Phi, local, block.Predecessors.Count * 2);
 
             AddPhi(block, phi);
 
@@ -229,26 +229,26 @@ namespace ARMeilleure.Translation
             {
                 BasicBlock predecessor = block.Predecessors[index];
 
-                phi.SetBlock(index, predecessor);
-                phi.SetSource(index, FindDefOnPred(cfg, globalDefs, predecessor, operand));
+                phi.SetSource(index * 2, Const(predecessor.Index));
+                phi.SetSource(index * 2 + 1, FindDefOnPred(cfg, globalDefs, predecessor, operand));
             }
 
             return local;
         }
 
-        private static void AddPhi(BasicBlock block, PhiNode phi)
+        private static void AddPhi(BasicBlock block, Operation phi)
         {
             Node node = block.Operations.First;
 
             if (node != null)
             {
-                while (node.ListNext is PhiNode)
+                while (node.ListNext is Operation operation && operation.Instruction == Instruction.Phi)
                 {
                     node = node.ListNext;
                 }
             }
 
-            if (node is PhiNode)
+            if (node is Operation operation1 && operation1.Instruction == Instruction.Phi)
             {
                 block.Operations.AddAfter(node, phi);
             }
