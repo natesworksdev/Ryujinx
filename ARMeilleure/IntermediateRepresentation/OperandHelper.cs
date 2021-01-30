@@ -1,5 +1,3 @@
-using ARMeilleure.Common;
-
 namespace ARMeilleure.IntermediateRepresentation
 {
     static class OperandHelper
@@ -64,14 +62,14 @@ namespace ARMeilleure.IntermediateRepresentation
             return new Operand(OperandKind.Undefined, OperandType.None);
         }
 
-        public static MemoryOperand MemoryOp(
+        public static Operand MemoryOp(
             OperandType type,
             Operand baseAddress,
             Operand index = null,
             Multiplier scale = Multiplier.x1,
             int displacement = 0)
         {
-            return new MemoryOperand(type, baseAddress, index, scale, displacement);
+            return new Operand(type, new MemoryOperand(baseAddress, index, scale, displacement));
         }
     }
 }

@@ -9,6 +9,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public ulong Value { get; }
 
+        private int _memOpDisp;
+        private byte _memOpExtra;
+
         public bool Relocatable { get; }
         public int? PtcIndex { get; }
 
@@ -20,6 +23,27 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             Kind = kind;
             Type = type;
+        }
+
+        public Operand(OperandType type, MemoryOperand memOp)
+        {
+            Kind = OperandKind.Memory;
+            Type = type;
+
+            if (memOp.BaseAddress != null)
+            {
+                Value = memOp.BaseAddress.Value & uint.MaxValue;
+                _memOpExtra = (byte)CompactKind(memOp.BaseAddress.Kind);
+            }
+
+            if (memOp.Index != null)
+            {
+                Value |= memOp.Index.Value << 32;
+                _memOpExtra |= (byte)(CompactKind(memOp.Index.Kind) << 2);
+            }
+
+            _memOpExtra |= (byte)((int)memOp.Scale << 4);
+            _memOpDisp = memOp.Displacement;
         }
 
         public Operand(
@@ -71,6 +95,51 @@ namespace ARMeilleure.IntermediateRepresentation
             return new Register((int)Value & 0xffffff, (RegisterType)(Value >> 24));
         }
 
+        public MemoryOperand GetMemoryOperand()
+        {
+            OperandKind baseAddressKind = DecompactKind(_memOpExtra & 3);
+            OperandKind indexKind = DecompactKind((_memOpExtra >> 2) & 3);
+
+            Operand baseAddress = null;
+            Operand index = null;
+
+            if (baseAddressKind != OperandKind.Undefined)
+            {
+                baseAddress = new Operand(baseAddressKind, OperandType.I64, Value & uint.MaxValue);
+            }
+
+            if (indexKind != OperandKind.Undefined)
+            {
+                index = new Operand(indexKind, OperandType.I64, Value >> 32);
+            }
+
+            Multiplier scale = (Multiplier)(_memOpExtra >> 4);
+
+            return new MemoryOperand(baseAddress, index, scale, _memOpDisp);
+        }
+
+        private static int CompactKind(OperandKind kind)
+        {
+            return kind switch
+            {
+                OperandKind.Undefined => 0,
+                OperandKind.LocalVariable => 1,
+                OperandKind.Register => 2,
+                _ => throw new ArgumentException($"Unexpected kind {kind}.")
+            };
+        }
+
+        private static OperandKind DecompactKind(int compactKind)
+        {
+            return compactKind switch
+            {
+                0 => OperandKind.Undefined,
+                1 => OperandKind.LocalVariable,
+                2 => OperandKind.Register,
+                _ => throw new ArgumentOutOfRangeException(nameof(compactKind))
+            };
+        }
+
         public byte AsByte()
         {
             return (byte)Value;
@@ -101,15 +170,27 @@ namespace ARMeilleure.IntermediateRepresentation
             return BitConverter.Int64BitsToDouble((long)Value);
         }
 
-        /* public static bool operator ==(Operand x, Operand y)
+        public static bool operator ==(Operand x, Operand y)
         {
+            if (ReferenceEquals(x, y))
+            {
+                return true;
+            }
+            if (ReferenceEquals(x, null))
+            {
+                return false;
+            }
+            if (ReferenceEquals(y, null))
+            {
+                return false;
+            }
             return x.Equals(y);
         }
 
         public static bool operator !=(Operand x, Operand y)
         {
             return !(x == y);
-        } */
+        }
 
         public override bool Equals(object obj)
         {

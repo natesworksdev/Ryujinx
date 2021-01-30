@@ -728,17 +728,22 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     }
                     else if (source.Kind == OperandKind.Memory)
                     {
-                        MemoryOperand memOp = (MemoryOperand)source;
+                        MemoryOperand memOp = source.GetMemoryOperand();
+
+                        Operand baseAddress = memOp.BaseAddress;
+                        Operand indexOp     = memOp.Index;
 
                         if (memOp.BaseAddress == current.Local)
                         {
-                            memOp.BaseAddress = register;
+                            baseAddress = register;
                         }
 
                         if (memOp.Index == current.Local)
                         {
-                            memOp.Index = register;
+                            indexOp = register;
                         }
+
+                        operation.SetSource(index, new Operand(source.Type, new MemoryOperand(baseAddress, indexOp, memOp.Scale, memOp.Displacement)));
                     }
                 }
 
@@ -1024,7 +1029,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                 }
                 else if (source.Kind == OperandKind.Memory)
                 {
-                    MemoryOperand memOp = (MemoryOperand)source;
+                    MemoryOperand memOp = source.GetMemoryOperand();
 
                     if (memOp.BaseAddress != null)
                     {

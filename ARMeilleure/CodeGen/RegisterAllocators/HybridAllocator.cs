@@ -114,7 +114,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                         else if (source.Kind == OperandKind.Memory)
                         {
-                            MemoryOperand memOp = (MemoryOperand)source;
+                            MemoryOperand memOp = source.GetMemoryOperand();
 
                             if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
                             {
@@ -191,7 +191,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     int intLocalUse = 0;
                     int vecLocalUse = 0;
 
-                    void AllocateRegister(Operand source, MemoryOperand memOp, int srcIndex)
+                    Operand AllocateRegister(Operand source, bool isMemOp, int srcIndex)
                     {
                         LocalInfo info = locInfo[source.AsInt32()];
 
@@ -203,18 +203,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             Operand reg = Register(info.Register, source.Type.ToRegisterType(), source.Type);
 
-                            if (memOp != null)
-                            {
-                                if (srcIndex == 0)
-                                {
-                                    memOp.BaseAddress = reg;
-                                }
-                                else /* if (srcIndex == 1) */
-                                {
-                                    memOp.Index = reg;
-                                }
-                            }
-                            else
+                            if (!isMemOp)
                             {
                                 node.SetSource(srcIndex, reg);
                             }
@@ -230,6 +219,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                     vecLocalFreeRegisters |= 1 << info.Register;
                                 }
                             }
+
+                            return reg;
                         }
                         else
                         {
@@ -245,18 +236,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 info.Temp = temp;
                             }
 
-                            if (memOp != null)
-                            {
-                                if (srcIndex == 0)
-                                {
-                                    memOp.BaseAddress = temp;
-                                }
-                                else /* if (srcIndex == 1) */
-                                {
-                                    memOp.Index = temp;
-                                }
-                            }
-                            else
+                            if (!isMemOp)
                             {
                                 node.SetSource(srcIndex, temp);
                             }
@@ -264,6 +244,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                             Operation fillOp = Operation(Instruction.Fill, temp, Const(info.SpillOffset));
 
                             block.Operations.AddBefore(node, fillOp);
+
+                            return temp;
                         }
                     }
 
@@ -273,21 +255,26 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                         if (source.Kind == OperandKind.LocalVariable)
                         {
-                            AllocateRegister(source, null, srcIndex);
+                            AllocateRegister(source, false, srcIndex);
                         }
                         else if (source.Kind == OperandKind.Memory)
                         {
-                            MemoryOperand memOp = (MemoryOperand)source;
+                            MemoryOperand memOp = source.GetMemoryOperand();
+
+                            Operand baseAddress = memOp.BaseAddress;
+                            Operand indexOp     = memOp.Index;
 
                             if (memOp.BaseAddress != null)
                             {
-                                AllocateRegister(memOp.BaseAddress, memOp, 0);
+                                baseAddress = AllocateRegister(memOp.BaseAddress, true, 0);
                             }
 
                             if (memOp.Index != null)
                             {
-                                AllocateRegister(memOp.Index, memOp, 1);
+                                indexOp = AllocateRegister(memOp.Index, true, 1);
                             }
+
+                            node.SetSource(srcIndex, new Operand(source.Type, new MemoryOperand(baseAddress, indexOp, memOp.Scale, memOp.Displacement)));
                         }
                     }
 

@@ -262,7 +262,7 @@ namespace ARMeilleure.CodeGen.X86
 
                         Operand rsp = Register(X86Register.Rsp);
 
-                        MemoryOperand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, offs);
+                        Operand memOp = MemoryOp(OperandType.I32, rsp, null, Multiplier.x1, offs);
 
                         Debug.Assert(HardwareCapabilities.SupportsSse || HardwareCapabilities.SupportsVexEncoding);
 
@@ -684,7 +684,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (operation.SourcesCount == 5) // CompareAndSwap128 has 5 sources, compared to CompareAndSwap64/32's 3.
             {
-                MemoryOperand memOp = MemoryOp(OperandType.I64, src1);
+                Operand memOp = MemoryOp(OperandType.I64, src1);
 
                 context.Assembler.Cmpxchg16b(memOp);
             }
@@ -695,7 +695,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 EnsureSameType(src2, src3);
 
-                MemoryOperand memOp = MemoryOp(src3.Type, src1);
+                Operand memOp = MemoryOp(src3.Type, src1);
 
                 context.Assembler.Cmpxchg(memOp, src3);
             }
@@ -709,7 +709,7 @@ namespace ARMeilleure.CodeGen.X86
 
             EnsureSameType(src2, src3);
 
-            MemoryOperand memOp = MemoryOp(src3.Type, src1);
+            Operand memOp = MemoryOp(src3.Type, src1);
 
             context.Assembler.Cmpxchg16(memOp, src3);
         }
@@ -722,7 +722,7 @@ namespace ARMeilleure.CodeGen.X86
 
             EnsureSameType(src2, src3);
 
-            MemoryOperand memOp = MemoryOp(src3.Type, src1);
+            Operand memOp = MemoryOp(src3.Type, src1);
 
             context.Assembler.Cmpxchg8(memOp, src3);
         }
@@ -918,7 +918,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            MemoryOperand memOp = MemoryOp(dest.Type, rsp, null, Multiplier.x1, offs);
+            Operand memOp = MemoryOp(dest.Type, rsp, null, Multiplier.x1, offs);
 
             GenerateLoad(context, memOp, dest);
         }
@@ -1117,7 +1117,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            MemoryOperand memOp = MemoryOp(source.Type, rsp, null, Multiplier.x1, offs);
+            Operand memOp = MemoryOp(source.Type, rsp, null, Multiplier.x1, offs);
 
             GenerateStore(context, memOp, source);
         }
@@ -1133,7 +1133,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Operand rsp = Register(X86Register.Rsp);
 
-            MemoryOperand memOp = MemoryOp(OperandType.I64, rsp, null, Multiplier.x1, offs);
+            Operand memOp = MemoryOp(OperandType.I64, rsp, null, Multiplier.x1, offs);
 
             context.Assembler.Lea(dest, memOp, OperandType.I64);
         }
@@ -1725,7 +1725,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 offset -= 16;
 
-                MemoryOperand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
+                Operand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
 
                 context.Assembler.Movdqu(memOp, Xmm((X86Register)bit));
 
@@ -1755,7 +1755,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 offset -= 16;
 
-                MemoryOperand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
+                Operand memOp = MemoryOp(OperandType.V128, rsp, null, Multiplier.x1, offset);
 
                 context.Assembler.Movdqu(Xmm((X86Register)bit), memOp);
 
@@ -1802,11 +1802,11 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static MemoryOperand Memory(Operand operand, OperandType type)
+        private static Operand Memory(Operand operand, OperandType type)
         {
             if (operand.Kind == OperandKind.Memory)
             {
-                return operand as MemoryOperand;
+                return operand;
             }
 
             return MemoryOp(type, operand);

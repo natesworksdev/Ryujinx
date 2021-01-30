@@ -360,14 +360,14 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte(0x99);
         }
 
-        public void Cmpxchg(MemoryOperand memOp, Operand src)
+        public void Cmpxchg(Operand memOp, Operand src)
         {
             WriteByte(LockPrefix);
 
             WriteInstruction(memOp, src, src.Type, X86Instruction.Cmpxchg);
         }
 
-        public void Cmpxchg16(MemoryOperand memOp, Operand src)
+        public void Cmpxchg16(Operand memOp, Operand src)
         {
             WriteByte(LockPrefix);
             WriteByte(0x66);
@@ -375,14 +375,14 @@ namespace ARMeilleure.CodeGen.X86
             WriteInstruction(memOp, src, src.Type, X86Instruction.Cmpxchg);
         }
 
-        public void Cmpxchg16b(MemoryOperand memOp)
+        public void Cmpxchg16b(Operand memOp)
         {
             WriteByte(LockPrefix);
 
             WriteInstruction(memOp, null, OperandType.None, X86Instruction.Cmpxchg16b);
         }
 
-        public void Cmpxchg8(MemoryOperand memOp, Operand src)
+        public void Cmpxchg8(Operand memOp, Operand src)
         {
             WriteByte(LockPrefix);
 
@@ -1084,7 +1084,8 @@ namespace ARMeilleure.CodeGen.X86
 
             int modRM = (opCode >> OpModRMBits) << 3;
 
-            MemoryOperand memOp = null;
+            bool hasMemOp = false;
+            MemoryOperand memOp = default;
 
             if (dest != null)
             {
@@ -1101,7 +1102,8 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else if (dest.Kind == OperandKind.Memory)
                 {
-                    memOp = dest as MemoryOperand;
+                    memOp = dest.GetMemoryOperand();
+                    hasMemOp = true;
                 }
                 else
                 {
@@ -1122,9 +1124,10 @@ namespace ARMeilleure.CodeGen.X86
                         rexPrefix |= RexPrefix;
                     }
                 }
-                else if (src2.Kind == OperandKind.Memory && memOp == null)
+                else if (src2.Kind == OperandKind.Memory && !hasMemOp)
                 {
-                    memOp = src2 as MemoryOperand;
+                    memOp = src2.GetMemoryOperand();
+                    hasMemOp = true;
                 }
                 else
                 {
@@ -1137,7 +1140,7 @@ namespace ARMeilleure.CodeGen.X86
 
             int sib = 0;
 
-            if (memOp != null)
+            if (hasMemOp)
             {
                 // Either source or destination is a memory operand.
                 Register baseReg = memOp.BaseAddress.GetRegister();

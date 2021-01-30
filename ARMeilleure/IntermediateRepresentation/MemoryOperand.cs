@@ -1,20 +1,19 @@
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class MemoryOperand : Operand
+    struct MemoryOperand
     {
-        public Operand BaseAddress { get; set; }
-        public Operand Index       { get; set; }
+        public Operand BaseAddress { get; }
+        public Operand Index       { get; }
 
         public Multiplier Scale { get; }
 
         public int Displacement { get; }
 
         public MemoryOperand(
-            OperandType type,
             Operand     baseAddress,
             Operand     index        = null,
             Multiplier  scale        = Multiplier.x1,
-            int         displacement = 0) : base(OperandKind.Memory, type)
+            int         displacement = 0)
         {
             BaseAddress  = baseAddress;
             Index        = index;

@@ -151,7 +151,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                         }
                         else if (source.Kind == OperandKind.Memory)
                         {
-                            MemoryOperand memOp = (MemoryOperand)source;
+                            MemoryOperand memOp = source.GetMemoryOperand();
 
                             if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
                             {
@@ -312,7 +312,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 }
                 else if (source.Kind == OperandKind.Memory)
                 {
-                    MemoryOperand memOp = (MemoryOperand)source;
+                    MemoryOperand memOp = source.GetMemoryOperand();
 
                     if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
                     {
