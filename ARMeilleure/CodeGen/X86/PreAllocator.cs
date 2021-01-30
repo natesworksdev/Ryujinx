@@ -375,7 +375,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleDestructiveRegCopy(ControlFlowGraph cfg, IntrusiveList<Node> nodes, Node node, Operation operation)
         {
-            if (operation.Destination == null || operation.SourcesCount == 0)
+            if (operation.DestinationsCount == 0 || operation.SourcesCount == 0)
             {
                 return;
             }

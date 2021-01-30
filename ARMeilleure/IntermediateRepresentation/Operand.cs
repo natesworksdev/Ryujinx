@@ -10,7 +10,7 @@ namespace ARMeilleure.IntermediateRepresentation
         public ulong Value { get; private set; }
 
         public bool Relocatable { get; private set; }
-        public int? PtcIndex    { get; private set; }
+        public int? PtcIndex { get; private set; }
 
         public Operand()
         {
@@ -35,7 +35,7 @@ namespace ARMeilleure.IntermediateRepresentation
             Value = value;
 
             Relocatable = relocatable;
-            PtcIndex    = index;
+            PtcIndex = index;
 
             return this;
         }
@@ -119,6 +119,16 @@ namespace ARMeilleure.IntermediateRepresentation
 
             Value = (ulong)number;
         }
+
+        /* public static bool operator ==(Operand x, Operand y)
+        {
+            return x.Equals(y);
+        }
+
+        public static bool operator !=(Operand x, Operand y)
+        {
+            return !(x == y);
+        } */
 
         public override bool Equals(object obj)
         {

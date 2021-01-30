@@ -295,7 +295,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 node.SetSource(index, null);
             }
 
-            Debug.Assert(node.Destination == null || !uses.ContainsKey(node.Destination));
+            Debug.Assert(node.DestinationsCount == 0 || !uses.ContainsKey(node.Destination));
 
             node.Destination = null;
         }

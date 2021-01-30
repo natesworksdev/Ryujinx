@@ -9,7 +9,7 @@ namespace ARMeilleure.CodeGen.Optimizations
     {
         public static Operand RunPass(Operation operation)
         {
-            if (operation.Destination == null || operation.SourcesCount == 0)
+            if (operation.DestinationsCount == 0 || operation.SourcesCount == 0)
             {
                 return null;
             }

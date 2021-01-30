@@ -84,7 +84,7 @@ namespace ARMeilleure.Translation
 
                         Operand dest = operation.Destination;
 
-                        if (dest != null && dest.Kind == OperandKind.Register)
+                        if (operation.DestinationsCount != 0 && dest.Kind == OperandKind.Register)
                         {
                             Operand local = cfg.AllocateLocal(dest.Type);
 
