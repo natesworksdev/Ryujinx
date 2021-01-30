@@ -1,7 +1,7 @@
 using ARMeilleure.Decoders;
 using ARMeilleure.IntermediateRepresentation;
 using ARMeilleure.Translation;
-
+using System;
 using static ARMeilleure.Instructions.InstEmitHelper;
 using static ARMeilleure.Instructions.InstEmitMemoryHelper;
 using static ARMeilleure.IntermediateRepresentation.OperandHelper;
@@ -102,7 +102,7 @@ namespace ARMeilleure.Instructions
 
             Operand address = GetAddress(context);
 
-            InstEmitMemoryHelper.EmitStore(context, address, op.Rt, op.Size);
+            EmitStore(context, address, op.Rt, op.Size);
 
             EmitWBackIfNeeded(context, address);
         }
@@ -115,15 +115,15 @@ namespace ARMeilleure.Instructions
 
             Operand address2 = context.Add(address, Const(1L << op.Size));
 
-            InstEmitMemoryHelper.EmitStore(context, address,  op.Rt,  op.Size);
-            InstEmitMemoryHelper.EmitStore(context, address2, op.Rt2, op.Size);
+            EmitStore(context, address,  op.Rt,  op.Size);
+            EmitStore(context, address2, op.Rt2, op.Size);
 
             EmitWBackIfNeeded(context, address);
         }
 
         private static Operand GetAddress(ArmEmitterContext context)
         {
-            Operand address = null;
+            Operand address;
 
             switch (context.CurrOp)
             {
@@ -155,6 +155,9 @@ namespace ARMeilleure.Instructions
 
                     break;
                 }
+
+                default:
+                    throw new InvalidOperationException($"Invalid OpCode type \"{context.CurrOp.GetType().Name}\".");
             }
 
             return address;

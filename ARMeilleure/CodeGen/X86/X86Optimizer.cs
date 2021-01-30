@@ -91,7 +91,7 @@ namespace ARMeilleure.CodeGen.X86
                     {
                         OperandType type;
 
-                        if (operation.Destination != null)
+                        if (operation.DestinationsCount != 0)
                         {
                             type = operation.Destination.Type;
                         }
@@ -100,11 +100,11 @@ namespace ARMeilleure.CodeGen.X86
                             type = operation.GetSource(1).Type;
                         }
 
-                        Operand memOp = GetMemoryOperandOrNull(singleAssignments, operation.GetSource(0), type);
+                        Operand? memOp = GetMemoryOperandOrNull(singleAssignments, operation.GetSource(0), type);
 
                         if (memOp != null)
                         {
-                            operation.SetSource(0, memOp);
+                            operation.SetSource(0, memOp.Value);
                         }
                     }
                 }
@@ -113,7 +113,7 @@ namespace ARMeilleure.CodeGen.X86
             Optimizer.RemoveUnusedNodes(cfg);
         }
 
-        private static Operand GetMemoryOperandOrNull(Dictionary<Operand, Node> singleAssignments, Operand addr, OperandType type)
+        private static Operand? GetMemoryOperandOrNull(Dictionary<Operand, Node> singleAssignments, Operand addr, OperandType type)
         {
             Operand baseOp = addr;
 
@@ -129,7 +129,7 @@ namespace ARMeilleure.CodeGen.X86
             // to match that of the left shift.
             // There is one missed case, which is the address being a shift result, but this is
             // probably not worth optimizing as it should never happen.
-            (Operand indexOp, Multiplier scale) = GetIndexOp(singleAssignments, ref baseOp);
+            (Operand? indexOp, Multiplier scale) = GetIndexOp(singleAssignments, ref baseOp);
 
             // If baseOp is still equal to address, then there's nothing that can be optimized.
             if (baseOp == addr)
@@ -182,17 +182,13 @@ namespace ARMeilleure.CodeGen.X86
             return constOp.AsInt32();
         }
 
-        private static (Operand, Multiplier) GetIndexOp(Dictionary<Operand, Node> singleAssignments, ref Operand baseOp)
+        private static (Operand?, Multiplier) GetIndexOp(Dictionary<Operand, Node> singleAssignments, ref Operand baseOp)
         {
-            Operand indexOp = null;
-
-            Multiplier scale = Multiplier.x1;
-
             Operation addOp = GetAsgOpWithInst(singleAssignments, baseOp, Instruction.Add);
 
             if (addOp == null)
             {
-                return (indexOp, scale);
+                return (null, Multiplier.x1);
             }
 
             Operand src1 = addOp.GetSource(0);
@@ -200,11 +196,11 @@ namespace ARMeilleure.CodeGen.X86
 
             if (src1.Kind != OperandKind.LocalVariable || src2.Kind != OperandKind.LocalVariable)
             {
-                return (indexOp, scale);
+                return (null, Multiplier.x1);
             }
 
             baseOp = src1;
-            indexOp = src2;
+            Operand indexOp = src2;
 
             Operation shlOp = GetAsgOpWithInst(singleAssignments, src1, Instruction.ShiftLeft);
 
@@ -216,6 +212,8 @@ namespace ARMeilleure.CodeGen.X86
 
                 indexOnSrc2 = true;
             }
+
+            Multiplier scale = Multiplier.x1;
 
             if (shlOp != null)
             {

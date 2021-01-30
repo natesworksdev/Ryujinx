@@ -90,7 +90,7 @@ namespace ARMeilleure.Translation
                         localInputs[block.Index] |= GetMask(register) & ~localOutputs[block.Index];
                     }
 
-                    if (operation.Destination != null && operation.Destination.Kind == OperandKind.Register)
+                    if (operation.DestinationsCount != 0 && operation.Destination.Kind == OperandKind.Register)
                     {
                         localOutputs[block.Index] |= GetMask(operation.Destination.GetRegister());
                     }

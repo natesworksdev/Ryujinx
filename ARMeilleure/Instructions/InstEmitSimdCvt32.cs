@@ -391,7 +391,7 @@ namespace ARMeilleure.Instructions
                 Operand zero = context.VectorZero();
 
                 Operand nCmp;
-                Operand nIntOrLong2 = null;
+                Operand? nIntOrLong2 = null;
                 if (!signed)
                 {
                     nCmp = context.AddIntrinsic(Intrinsic.X86Cmpss, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
@@ -425,7 +425,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    dRes = context.BitwiseExclusiveOr(nIntOrLong2, nInt);
+                    dRes = context.BitwiseExclusiveOr(nIntOrLong2.Value, nInt);
                     dRes = context.Add(dRes, nIntOrLong);
                 }
 
@@ -441,7 +441,7 @@ namespace ARMeilleure.Instructions
                 Operand zero = context.VectorZero();
 
                 Operand nCmp;
-                Operand nIntOrLong2 = null;
+                Operand? nIntOrLong2 = null;
                 if (!signed)
                 {
                     nCmp = context.AddIntrinsic(Intrinsic.X86Cmpsd, nRes, zero, Const((int)CmpCondition.NotLessThanOrEqual));
@@ -476,7 +476,7 @@ namespace ARMeilleure.Instructions
                 }
                 else
                 {
-                    dRes = context.BitwiseExclusiveOr(nIntOrLong2, nLong);
+                    dRes = context.BitwiseExclusiveOr(nIntOrLong2.Value, nLong);
                     dRes = context.Add(dRes, nIntOrLong);
                 }
 
@@ -510,7 +510,7 @@ namespace ARMeilleure.Instructions
                     Operand fpMaxValMask = X86GetAllElements(context, 0x4F000000); // 2.14748365E9f (2147483648)
 
                     Operand nInt = context.AddIntrinsic(Intrinsic.X86Cvtps2dq, nRes);
-                    Operand nInt2 = null;
+                    Operand? nInt2 = null;
                     if (!signed)
                     {
                         nRes = context.AddIntrinsic(Intrinsic.X86Subps, nRes, fpMaxValMask);
@@ -529,7 +529,7 @@ namespace ARMeilleure.Instructions
                     }
                     else
                     {
-                        Operand dRes = context.AddIntrinsic(Intrinsic.X86Pxor, nInt2, nRes);
+                        Operand dRes = context.AddIntrinsic(Intrinsic.X86Pxor, nInt2.Value, nRes);
                         return context.AddIntrinsic(Intrinsic.X86Paddd, dRes, nInt);
                     }
                 }
@@ -551,7 +551,7 @@ namespace ARMeilleure.Instructions
                     Operand fpMaxValMask = X86GetAllElements(context, 0x43E0000000000000L); // 9.2233720368547760E18d (9223372036854775808)
 
                     Operand nLong = InstEmit.EmitSse2CvtDoubleToInt64OpF(context, nRes, false);
-                    Operand nLong2 = null;
+                    Operand? nLong2 = null;
                     if (!signed)
                     {
                         nRes = context.AddIntrinsic(Intrinsic.X86Subpd, nRes, fpMaxValMask);
@@ -570,7 +570,7 @@ namespace ARMeilleure.Instructions
                     }
                     else
                     {
-                        Operand dRes = context.AddIntrinsic(Intrinsic.X86Pxor, nLong2, nRes);
+                        Operand dRes = context.AddIntrinsic(Intrinsic.X86Pxor, nLong2.Value, nRes);
                         return context.AddIntrinsic(Intrinsic.X86Paddq, dRes, nLong);
                     }
                 }

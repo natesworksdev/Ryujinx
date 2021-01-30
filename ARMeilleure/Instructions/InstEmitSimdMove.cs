@@ -639,7 +639,7 @@ namespace ARMeilleure.Instructions
 
             if (Optimizations.UseSsse3)
             {
-                Operand mask = null;
+                Operand? mask = null;
 
                 if (op.Size < 3)
                 {
@@ -648,21 +648,21 @@ namespace ARMeilleure.Instructions
 
                     mask = X86GetScalar(context, maskE0);
 
-                    mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
+                    mask = EmitVectorInsert(context, mask.Value, Const(maskE1), 1, 3);
                 }
 
                 Operand n = GetVec(op.Rn);
 
                 if (op.Size < 3)
                 {
-                    n = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask);
+                    n = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask.Value);
                 }
 
                 Operand m = GetVec(op.Rm);
 
                 if (op.Size < 3)
                 {
-                    m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask);
+                    m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask.Value);
                 }
 
                 Intrinsic punpckInst = part == 0
@@ -707,7 +707,7 @@ namespace ARMeilleure.Instructions
             {
                 if (op.RegisterSize == RegisterSize.Simd128)
                 {
-                    Operand mask = null;
+                    Operand? mask = null;
 
                     if (op.Size < 3)
                     {
@@ -716,21 +716,21 @@ namespace ARMeilleure.Instructions
 
                         mask = X86GetScalar(context, maskE0);
 
-                        mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
+                        mask = EmitVectorInsert(context, mask.Value, Const(maskE1), 1, 3);
                     }
 
                     Operand n = GetVec(op.Rn);
 
                     if (op.Size < 3)
                     {
-                        n = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask);
+                        n = context.AddIntrinsic(Intrinsic.X86Pshufb, n, mask.Value);
                     }
 
                     Operand m = GetVec(op.Rm);
 
                     if (op.Size < 3)
                     {
-                        m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask);
+                        m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask.Value);
                     }
 
                     Intrinsic punpckInst = part == 0

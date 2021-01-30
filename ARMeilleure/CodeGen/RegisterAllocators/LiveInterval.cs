@@ -3,7 +3,6 @@ using ARMeilleure.IntermediateRepresentation;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 
 namespace ARMeilleure.CodeGen.RegisterAllocators
 {
@@ -34,11 +33,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
         public bool IsEmpty => _ranges.Count == 0;
 
-        public LiveInterval(Operand local = null, LiveInterval parent = null)
+        private LiveInterval()
         {
-            Local   = local;
-            _parent = parent ?? this;
-
             _usePositions = new SortedIntegerList();
 
             _ranges = new List<LiveRange>();
@@ -46,6 +42,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
             _childs = new SortedList<int, LiveInterval>();
 
             SpillOffset = -1;
+        }
+
+        public LiveInterval(Operand local, LiveInterval parent = null) : this()
+        {
+            Local   = local;
+            _parent = parent ?? this;
         }
 
         public LiveInterval(Register register) : this()

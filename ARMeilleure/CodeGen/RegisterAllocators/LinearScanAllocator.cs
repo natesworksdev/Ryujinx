@@ -730,8 +730,8 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     {
                         MemoryOperand memOp = source.GetMemoryOperand();
 
-                        Operand baseAddress = memOp.BaseAddress;
-                        Operand indexOp     = memOp.Index;
+                        Operand? baseAddress = memOp.BaseAddress;
+                        Operand? indexOp     = memOp.Index;
 
                         if (memOp.BaseAddress == current.Local)
                         {
@@ -1033,12 +1033,12 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                     if (memOp.BaseAddress != null)
                     {
-                        action(memOp.BaseAddress);
+                        action(memOp.BaseAddress.Value);
                     }
 
                     if (memOp.Index != null)
                     {
-                        action(memOp.Index);
+                        action(memOp.Index.Value);
                     }
                 }
             }

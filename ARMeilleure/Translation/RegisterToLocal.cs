@@ -29,11 +29,9 @@ namespace ARMeilleure.Translation
             {
                 for (Node node = block.Operations.First; node != null; node = node.ListNext)
                 {
-                    Operand dest = node.Destination;
-
-                    if (dest != null && dest.Kind == OperandKind.Register)
+                    if (node.DestinationsCount != 0 && node.Destination.Kind == OperandKind.Register)
                     {
-                        node.Destination = GetLocal(dest);
+                        node.Destination = GetLocal(node.Destination);
                     }
 
                     for (int index = 0; index < node.SourcesCount; index++)

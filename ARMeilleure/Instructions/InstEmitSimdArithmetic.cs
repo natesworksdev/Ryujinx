@@ -388,8 +388,8 @@ namespace ARMeilleure.Instructions
                             Intrinsic addInst = (op.Size & 1) == 0 ? Intrinsic.X86Addps : Intrinsic.X86Addpd;
 
                             return context.AddIntrinsic(addInst, op1, op2);
-                        }, scalar: false, op1, op2);
-                    }, scalar: false, op1, op2);
+                        }, scalar: false, op1, op2).Value;
+                    }, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -483,7 +483,7 @@ namespace ARMeilleure.Instructions
                     return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                     {
                         return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: true);
-                    }, scalar: true, op1, op2);
+                    }, scalar: true, op1, op2).Value;
                 }, scalar: true);
             }
             else
@@ -504,7 +504,7 @@ namespace ARMeilleure.Instructions
                     return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                     {
                         return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: true);
-                    }, scalar: false, op1, op2);
+                    }, scalar: false, op1, op2).Value;
                 }, scalar: false);
             }
             else
@@ -552,7 +552,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitSse2ScalarPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: true, op1, op2);
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: true, op1, op2).Value;
                 });
             }
             else
@@ -570,7 +570,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitSse2VectorPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: false, op1, op2);
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -588,7 +588,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitSse2VectorAcrossVectorOpF(context, (op1, op2) =>
                 {
-                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: false, op1, op2);
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: true, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -611,8 +611,8 @@ namespace ARMeilleure.Instructions
                         return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                         {
                             return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: true);
-                        }, scalar: false, op1, op2);
-                    }, scalar: false, op1, op2);
+                        }, scalar: false, op1, op2).Value;
+                    }, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -635,8 +635,8 @@ namespace ARMeilleure.Instructions
                         return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                         {
                             return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: true);
-                        }, scalar: false, op1, op2);
-                    }, scalar: false, op1, op2);
+                        }, scalar: false, op1, op2).Value;
+                    }, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -657,7 +657,7 @@ namespace ARMeilleure.Instructions
                     return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                     {
                         return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: false);
-                    }, scalar: true, op1, op2);
+                    }, scalar: true, op1, op2).Value;
                 }, scalar: true);
             }
             else
@@ -678,7 +678,7 @@ namespace ARMeilleure.Instructions
                     return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                     {
                         return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: false);
-                    }, scalar: false, op1, op2);
+                    }, scalar: false, op1, op2).Value;
                 }, scalar: false);
             }
             else
@@ -726,7 +726,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitSse2ScalarPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: true, op1, op2);
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: true, op1, op2).Value;
                 });
             }
             else
@@ -744,7 +744,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitSse2VectorPairwiseOpF(context, (op1, op2) =>
                 {
-                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: false, op1, op2);
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -762,7 +762,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitSse2VectorAcrossVectorOpF(context, (op1, op2) =>
                 {
-                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: false, op1, op2);
+                    return EmitSse41MaxMinNumOpF(context, isMaxNum: false, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -785,8 +785,8 @@ namespace ARMeilleure.Instructions
                         return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                         {
                             return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: false);
-                        }, scalar: false, op1, op2);
-                    }, scalar: false, op1, op2);
+                        }, scalar: false, op1, op2).Value;
+                    }, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -809,8 +809,8 @@ namespace ARMeilleure.Instructions
                         return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                         {
                             return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: false);
-                        }, scalar: false, op1, op2);
-                    }, scalar: false, op1, op2);
+                        }, scalar: false, op1, op2).Value;
+                    }, scalar: false, op1, op2).Value;
                 });
             }
             else
@@ -3410,8 +3410,8 @@ namespace ARMeilleure.Instructions
         public static void EmitSse2VectorIsNaNOpF(
             ArmEmitterContext context,
             Operand opF,
-            out Operand qNaNMask,
-            out Operand sNaNMask,
+            out Operand? qNaNMask,
+            out Operand? sNaNMask,
             bool? isQNaN = null)
         {
             IOpCodeSimd op = (IOpCodeSimd)context.CurrOp;
@@ -3446,18 +3446,18 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand EmitSse41ProcessNaNsOpF(
+        public static Operand? EmitSse41ProcessNaNsOpF(
             ArmEmitterContext context,
             Func2I emit,
             bool scalar,
-            Operand n = null,
-            Operand m = null)
+            Operand? n = null,
+            Operand? m = null)
         {
             Operand nCopy = n ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn));
             Operand mCopy = m ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm));
 
-            EmitSse2VectorIsNaNOpF(context, nCopy, out Operand nQNaNMask, out Operand nSNaNMask);
-            EmitSse2VectorIsNaNOpF(context, mCopy, out _, out Operand mSNaNMask, isQNaN: false);
+            EmitSse2VectorIsNaNOpF(context, nCopy, out Operand? nQNaNMask, out Operand? nSNaNMask);
+            EmitSse2VectorIsNaNOpF(context, mCopy, out _, out Operand? mSNaNMask, isQNaN: false);
 
             int sizeF = ((IOpCodeSimd)context.CurrOp).Size & 1;
 
@@ -3467,8 +3467,8 @@ namespace ARMeilleure.Instructions
 
                 Operand qMask = scalar ? X86GetScalar(context, 1 << QBit) : X86GetAllElements(context, 1 << QBit);
 
-                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask,  nQNaNMask);
-                        resNaNMask = context.AddIntrinsic(Intrinsic.X86Por,   resNaNMask, nSNaNMask);
+                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask.Value, nQNaNMask.Value);
+                        resNaNMask = context.AddIntrinsic(Intrinsic.X86Por, resNaNMask, nSNaNMask.Value);
 
                 Operand resNaN = context.AddIntrinsic(Intrinsic.X86Blendvps, mCopy, nCopy, resNaNMask);
                         resNaN = context.AddIntrinsic(Intrinsic.X86Por, resNaN, qMask);
@@ -3501,8 +3501,8 @@ namespace ARMeilleure.Instructions
 
                 Operand qMask = scalar ? X86GetScalar(context, 1L << QBit) : X86GetAllElements(context, 1L << QBit);
 
-                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask,  nQNaNMask);
-                        resNaNMask = context.AddIntrinsic(Intrinsic.X86Por,   resNaNMask, nSNaNMask);
+                Operand resNaNMask = context.AddIntrinsic(Intrinsic.X86Pandn, mSNaNMask.Value, nQNaNMask.Value);
+                        resNaNMask = context.AddIntrinsic(Intrinsic.X86Por, resNaNMask, nSNaNMask.Value);
 
                 Operand resNaN = context.AddIntrinsic(Intrinsic.X86Blendvpd, mCopy, nCopy, resNaNMask);
                         resNaN = context.AddIntrinsic(Intrinsic.X86Por, resNaN, qMask);
@@ -3527,12 +3527,12 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        public static Operand EmitSseOrAvxHandleFzModeOpF(
+        public static Operand? EmitSseOrAvxHandleFzModeOpF(
             ArmEmitterContext context,
             Func2I emit,
             bool scalar,
-            Operand n = null,
-            Operand m = null)
+            Operand? n = null,
+            Operand? m = null)
         {
             Operand nCopy = n ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn));
             Operand mCopy = m ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm));
@@ -3604,18 +3604,18 @@ namespace ARMeilleure.Instructions
             }
         }
 
-        private static Operand EmitSse41MaxMinNumOpF(
+        private static Operand? EmitSse41MaxMinNumOpF(
             ArmEmitterContext context,
             bool isMaxNum,
             bool scalar,
-            Operand n = null,
-            Operand m = null)
+            Operand? n = null,
+            Operand? m = null)
         {
             Operand nCopy = n ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rn));
             Operand mCopy = m ?? context.Copy(GetVec(((OpCodeSimdReg)context.CurrOp).Rm));
 
-            EmitSse2VectorIsNaNOpF(context, nCopy, out Operand nQNaNMask, out _, isQNaN: true);
-            EmitSse2VectorIsNaNOpF(context, mCopy, out Operand mQNaNMask, out _, isQNaN: true);
+            EmitSse2VectorIsNaNOpF(context, nCopy, out Operand? nQNaNMask, out _, isQNaN: true);
+            EmitSse2VectorIsNaNOpF(context, mCopy, out Operand? mQNaNMask, out _, isQNaN: true);
 
             int sizeF = ((IOpCodeSimd)context.CurrOp).Size & 1;
 
@@ -3625,8 +3625,8 @@ namespace ARMeilleure.Instructions
                     ? X86GetScalar     (context, isMaxNum ? float.NegativeInfinity : float.PositiveInfinity)
                     : X86GetAllElements(context, isMaxNum ? float.NegativeInfinity : float.PositiveInfinity);
 
-                Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnps, mQNaNMask, nQNaNMask);
-                Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnps, nQNaNMask, mQNaNMask);
+                Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnps, mQNaNMask.Value, nQNaNMask.Value);
+                Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnps, nQNaNMask.Value, mQNaNMask.Value);
 
                 nCopy = context.AddIntrinsic(Intrinsic.X86Blendvps, nCopy, negInfMask, nMask);
                 mCopy = context.AddIntrinsic(Intrinsic.X86Blendvps, mCopy, negInfMask, mMask);
@@ -3636,8 +3636,8 @@ namespace ARMeilleure.Instructions
                     return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                     {
                         return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: isMaxNum);
-                    }, scalar: scalar, op1, op2);
-                }, scalar: scalar, nCopy, mCopy);
+                    }, scalar: scalar, op1, op2).Value;
+                }, scalar: scalar, nCopy, mCopy).Value;
 
                 if (n != null || m != null)
                 {
@@ -3663,8 +3663,8 @@ namespace ARMeilleure.Instructions
                     ? X86GetScalar     (context, isMaxNum ? double.NegativeInfinity : double.PositiveInfinity)
                     : X86GetAllElements(context, isMaxNum ? double.NegativeInfinity : double.PositiveInfinity);
 
-                Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnpd, mQNaNMask, nQNaNMask);
-                Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnpd, nQNaNMask, mQNaNMask);
+                Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnpd, mQNaNMask.Value, nQNaNMask.Value);
+                Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnpd, nQNaNMask.Value, mQNaNMask.Value);
 
                 nCopy = context.AddIntrinsic(Intrinsic.X86Blendvpd, nCopy, negInfMask, nMask);
                 mCopy = context.AddIntrinsic(Intrinsic.X86Blendvpd, mCopy, negInfMask, mMask);
@@ -3674,8 +3674,8 @@ namespace ARMeilleure.Instructions
                     return EmitSseOrAvxHandleFzModeOpF(context, (op1, op2) =>
                     {
                         return EmitSse2VectorMaxMinOpF(context, op1, op2, isMax: isMaxNum);
-                    }, scalar: scalar, op1, op2);
-                }, scalar: scalar, nCopy, mCopy);
+                    }, scalar: scalar, op1, op2).Value;
+                }, scalar: scalar, nCopy, mCopy).Value;
 
                 if (n != null || m != null)
                 {

@@ -57,15 +57,15 @@ namespace ARMeilleure.Translation
             // First pass, get all defs and locals uses.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Operand[] localDefs = new Operand[RegisterConsts.TotalCount];
+                Operand?[] localDefs = new Operand?[RegisterConsts.TotalCount];
 
                 Node node = block.Operations.First;
 
                 Operand RenameLocal(Operand operand)
                 {
-                    if (operand != null && operand.Kind == OperandKind.Register)
+                    if (operand.Kind == OperandKind.Register)
                     {
-                        Operand local = localDefs[GetIdFromRegister(operand.GetRegister())];
+                        Operand? local = localDefs[GetIdFromRegister(operand.GetRegister())];
 
                         operand = local ?? operand;
                     }
@@ -99,7 +99,7 @@ namespace ARMeilleure.Translation
 
                 for (int index = 0; index < RegisterConsts.TotalCount; index++)
                 {
-                    Operand local = localDefs[index];
+                    Operand? local = localDefs[index];
 
                     if (local == null)
                     {
@@ -108,7 +108,7 @@ namespace ARMeilleure.Translation
 
                     Register reg = GetRegisterFromId(index);
 
-                    globalDefs[block.Index].TryAddOperand(reg, local);
+                    globalDefs[block.Index].TryAddOperand(reg, local.Value);
 
                     dfPhiBlocks.Enqueue(block);
 
@@ -128,17 +128,17 @@ namespace ARMeilleure.Translation
             // Second pass, rename variables with definitions on different blocks.
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Operand[] localDefs = new Operand[RegisterConsts.TotalCount];
+                Operand?[] localDefs = new Operand?[RegisterConsts.TotalCount];
 
                 Node node = block.Operations.First;
 
                 Operand RenameGlobal(Operand operand)
                 {
-                    if (operand != null && operand.Kind == OperandKind.Register)
+                    if (operand.Kind == OperandKind.Register)
                     {
                         int key = GetIdFromRegister(operand.GetRegister());
 
-                        Operand local = localDefs[key];
+                        Operand? local = localDefs[key];
 
                         if (local == null)
                         {
@@ -147,7 +147,7 @@ namespace ARMeilleure.Translation
                             localDefs[key] = local;
                         }
 
-                        operand = local;
+                        operand = local.Value;
                     }
 
                     return operand;

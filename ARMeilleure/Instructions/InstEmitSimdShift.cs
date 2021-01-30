@@ -39,14 +39,13 @@ namespace ARMeilleure.Instructions
 
                 Operand dLow = context.VectorZeroUpper64(d);
 
-                Operand mask = null;
-
-                switch (op.Size + 1)
+                var mask = (op.Size + 1) switch
                 {
-                    case 1: mask = X86GetAllElements(context, (int)roundConst * 0x00010001); break;
-                    case 2: mask = X86GetAllElements(context, (int)roundConst); break;
-                    case 3: mask = X86GetAllElements(context,      roundConst); break;
-                }
+                    1 => X86GetAllElements(context, (int)roundConst * 0x00010001),
+                    2 => X86GetAllElements(context, (int)roundConst),
+                    3 => X86GetAllElements(context, roundConst),
+                    _ => throw new InvalidOperationException($"Invalid size {op.Size}.")
+                };
 
                 Intrinsic addInst = X86PaddInstruction[op.Size + 1];
 

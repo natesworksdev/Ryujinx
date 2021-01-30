@@ -2,7 +2,7 @@ using System;
 
 namespace ARMeilleure.IntermediateRepresentation
 {
-    class Operand : IEquatable<Operand>
+    struct Operand : IEquatable<Operand>
     {
         public OperandKind Kind { get; }
         public OperandType Type { get; }
@@ -15,35 +15,40 @@ namespace ARMeilleure.IntermediateRepresentation
         public bool Relocatable { get; }
         public int? PtcIndex { get; }
 
-        public Operand()
-        {
-        }
-
         public Operand(OperandKind kind, OperandType type = OperandType.None)
         {
             Kind = kind;
             Type = type;
+            Value = 0UL;
+            _memOpDisp = 0;
+            _memOpExtra = 0;
+            Relocatable = false;
+            PtcIndex = null;
         }
 
         public Operand(OperandType type, MemoryOperand memOp)
         {
             Kind = OperandKind.Memory;
             Type = type;
+            Value = 0UL;
+            _memOpExtra = 0;
 
             if (memOp.BaseAddress != null)
             {
-                Value = memOp.BaseAddress.Value & uint.MaxValue;
-                _memOpExtra = (byte)CompactKind(memOp.BaseAddress.Kind);
+                Value = memOp.BaseAddress.Value.Value & uint.MaxValue;
+                _memOpExtra = (byte)CompactKind(memOp.BaseAddress.Value.Kind);
             }
 
             if (memOp.Index != null)
             {
-                Value |= memOp.Index.Value << 32;
-                _memOpExtra |= (byte)(CompactKind(memOp.Index.Kind) << 2);
+                Value |= memOp.Index.Value.Value << 32;
+                _memOpExtra |= (byte)(CompactKind(memOp.Index.Value.Kind) << 2);
             }
 
             _memOpExtra |= (byte)((int)memOp.Scale << 4);
             _memOpDisp = memOp.Displacement;
+            Relocatable = false;
+            PtcIndex = null;
         }
 
         public Operand(
@@ -55,9 +60,9 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             Kind = kind;
             Type = type;
-
             Value = value;
-
+            _memOpDisp = 0;
+            _memOpExtra = 0;
             Relocatable = relocatable;
             PtcIndex = index;
         }
@@ -100,8 +105,8 @@ namespace ARMeilleure.IntermediateRepresentation
             OperandKind baseAddressKind = DecompactKind(_memOpExtra & 3);
             OperandKind indexKind = DecompactKind((_memOpExtra >> 2) & 3);
 
-            Operand baseAddress = null;
-            Operand index = null;
+            Operand? baseAddress = null;
+            Operand? index = null;
 
             if (baseAddressKind != OperandKind.Undefined)
             {
@@ -172,18 +177,6 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static bool operator ==(Operand x, Operand y)
         {
-            if (ReferenceEquals(x, y))
-            {
-                return true;
-            }
-            if (ReferenceEquals(x, null))
-            {
-                return false;
-            }
-            if (ReferenceEquals(y, null))
-            {
-                return false;
-            }
             return x.Equals(y);
         }
 

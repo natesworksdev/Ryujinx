@@ -1127,26 +1127,14 @@ namespace ARMeilleure.Instructions
         {
             ThrowIfInvalid(index, size);
 
-            Operand res = null;
-
-            switch (size)
+            var res = size switch
             {
-                case 0:
-                    res = context.VectorExtract8(GetVec(reg), index);
-                    break;
-
-                case 1:
-                    res = context.VectorExtract16(GetVec(reg), index);
-                    break;
-
-                case 2:
-                    res = context.VectorExtract(OperandType.I32, GetVec(reg), index);
-                    break;
-
-                case 3:
-                    res = context.VectorExtract(OperandType.I64, GetVec(reg), index);
-                    break;
-            }
+                0 => context.VectorExtract8(GetVec(reg), index),
+                1 => context.VectorExtract16(GetVec(reg), index),
+                2 => context.VectorExtract(OperandType.I32, GetVec(reg), index),
+                3 => context.VectorExtract(OperandType.I64, GetVec(reg), index),
+                _ => throw new ArgumentOutOfRangeException(nameof(size))
+            };
 
             if (signed)
             {

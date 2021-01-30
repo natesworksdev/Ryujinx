@@ -82,7 +82,7 @@ namespace ARMeilleure.Diagnostics
             _builder.Append(':');
         }
 
-        private void DumpOperand(Operand operand)
+        private void DumpOperand(Operand? operand)
         {
             if (operand == null)
             {
@@ -90,6 +90,11 @@ namespace ARMeilleure.Diagnostics
                 return;
             }
 
+            DumpOperand(operand.Value);
+        }
+
+        private void DumpOperand(Operand operand)
+        {
             _builder.Append(GetTypeName(operand.Type)).Append(' ');
 
             switch (operand.Kind)

@@ -1247,22 +1247,14 @@ namespace ARMeilleure.Instructions
         {
             OpCode32SimdSel op = (OpCode32SimdSel)context.CurrOp;
 
-            Operand condition = null;
-            switch (op.Cc)
+            var condition = op.Cc switch
             {
-                case OpCode32SimdSelMode.Eq:
-                    condition = GetCondTrue(context, Condition.Eq);
-                    break;
-                case OpCode32SimdSelMode.Ge:
-                    condition = GetCondTrue(context, Condition.Ge);
-                    break;
-                case OpCode32SimdSelMode.Gt:
-                    condition = GetCondTrue(context, Condition.Gt);
-                    break;
-                case OpCode32SimdSelMode.Vs:
-                    condition = GetCondTrue(context, Condition.Vs);
-                    break;
-            }
+                OpCode32SimdSelMode.Eq => GetCondTrue(context, Condition.Eq),
+                OpCode32SimdSelMode.Vs => GetCondTrue(context, Condition.Vs),
+                OpCode32SimdSelMode.Ge => GetCondTrue(context, Condition.Ge),
+                OpCode32SimdSelMode.Gt => GetCondTrue(context, Condition.Gt),
+                _ => throw new InvalidOperationException($"Invalid VSEL condition {op.Cc}.")
+            };
 
             EmitScalarBinaryOpI32(context, (op1, op2) =>
             {
@@ -1338,8 +1330,8 @@ namespace ARMeilleure.Instructions
                 Operand nNum = context.Copy(n);
                 Operand mNum = context.Copy(m);
 
-                InstEmit.EmitSse2VectorIsNaNOpF(context, nNum, out Operand nQNaNMask, out _, isQNaN: true);
-                InstEmit.EmitSse2VectorIsNaNOpF(context, mNum, out Operand mQNaNMask, out _, isQNaN: true);
+                InstEmit.EmitSse2VectorIsNaNOpF(context, nNum, out Operand? nQNaNMask, out _, isQNaN: true);
+                InstEmit.EmitSse2VectorIsNaNOpF(context, mNum, out Operand? mQNaNMask, out _, isQNaN: true);
 
                 int sizeF = op.Size & 1;
 
@@ -1347,8 +1339,8 @@ namespace ARMeilleure.Instructions
                 {
                     Operand negInfMask = X86GetAllElements(context, isMaxNum ? float.NegativeInfinity : float.PositiveInfinity);
 
-                    Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnps, mQNaNMask, nQNaNMask);
-                    Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnps, nQNaNMask, mQNaNMask);
+                    Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnps, mQNaNMask.Value, nQNaNMask.Value);
+                    Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnps, nQNaNMask.Value, mQNaNMask.Value);
 
                     nNum = context.AddIntrinsic(Intrinsic.X86Blendvps, nNum, negInfMask, nMask);
                     mNum = context.AddIntrinsic(Intrinsic.X86Blendvps, mNum, negInfMask, mMask);
@@ -1359,8 +1351,8 @@ namespace ARMeilleure.Instructions
                 {
                     Operand negInfMask = X86GetAllElements(context, isMaxNum ? double.NegativeInfinity : double.PositiveInfinity);
 
-                    Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnpd, mQNaNMask, nQNaNMask);
-                    Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnpd, nQNaNMask, mQNaNMask);
+                    Operand nMask = context.AddIntrinsic(Intrinsic.X86Andnpd, mQNaNMask.Value, nQNaNMask.Value);
+                    Operand mMask = context.AddIntrinsic(Intrinsic.X86Andnpd, nQNaNMask.Value, mQNaNMask.Value);
 
                     nNum = context.AddIntrinsic(Intrinsic.X86Blendvpd, nNum, negInfMask, nMask);
                     mNum = context.AddIntrinsic(Intrinsic.X86Blendvpd, mNum, negInfMask, mMask);

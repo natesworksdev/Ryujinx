@@ -8,7 +8,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operation(
             Instruction instruction,
-            Operand destination,
+            Operand? destination,
             Operand[] sources) : base(destination, sources.Length)
         {
             Instruction = instruction;
@@ -19,14 +19,14 @@ namespace ARMeilleure.IntermediateRepresentation
             }
         }
 
-        public Operation With(Instruction instruction, Operand destination)
+        public Operation With(Instruction instruction, Operand? destination)
         {
             With(destination, 0);
             Instruction = instruction;
             return this;
         }
 
-        public Operation With(Instruction instruction, Operand destination, Operand[] sources)
+        public Operation With(Instruction instruction, Operand? destination, Operand[] sources)
         {
             With(destination, sources.Length);
             Instruction = instruction;
@@ -38,7 +38,7 @@ namespace ARMeilleure.IntermediateRepresentation
             return this;
         }
 
-        public Operation With(Instruction instruction, Operand destination, 
+        public Operation With(Instruction instruction, Operand? destination, 
             Operand source0)
         {
             With(destination, 1);
@@ -48,7 +48,7 @@ namespace ARMeilleure.IntermediateRepresentation
             return this;
         }
 
-        public Operation With(Instruction instruction, Operand destination,
+        public Operation With(Instruction instruction, Operand? destination,
             Operand source0, Operand source1)
         {
             With(destination, 2);
@@ -59,7 +59,7 @@ namespace ARMeilleure.IntermediateRepresentation
             return this;
         }
 
-        public Operation With(Instruction instruction, Operand destination, 
+        public Operation With(Instruction instruction, Operand? destination, 
             Operand source0, Operand source1, Operand source2)
         {
             With(destination, 3);

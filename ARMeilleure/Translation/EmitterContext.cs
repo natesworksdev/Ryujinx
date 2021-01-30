@@ -506,59 +506,59 @@ namespace ARMeilleure.Translation
             }
         }
 
-        private Operand Add(Instruction inst, Operand dest = null)
+        private Operand Add(Instruction inst, Operand? destination = null)
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest);
+            Operation operation = OperationHelper.Operation(inst, destination);
 
             _irBlock.Operations.AddLast(operation);
 
-            return dest;
+            return destination != null ? destination.Value : default;
         }
 
-        private Operand Add(Instruction inst, Operand dest, Operand[] sources)
+        private Operand Add(Instruction inst, Operand? destination, Operand[] sources)
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, sources);
+            Operation operation = OperationHelper.Operation(inst, destination, sources);
 
             _irBlock.Operations.AddLast(operation);
 
-            return dest;
+            return destination != null ? destination.Value : default;
         }
 
-        private Operand Add(Instruction inst, Operand dest, Operand source0)
+        private Operand Add(Instruction inst, Operand? destination, Operand source0)
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, source0);
+            Operation operation = OperationHelper.Operation(inst, destination, source0);
 
             _irBlock.Operations.AddLast(operation);
 
-            return dest;
+            return destination != null ? destination.Value : default;
         }
 
-        private Operand Add(Instruction inst, Operand dest, Operand source0, Operand source1)
+        private Operand Add(Instruction inst, Operand? destination, Operand source0, Operand source1)
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, source0, source1);
+            Operation operation = OperationHelper.Operation(inst, destination, source0, source1);
 
             _irBlock.Operations.AddLast(operation);
 
-            return dest;
+            return destination != null ? destination.Value : default;
         }
 
-        private Operand Add(Instruction inst, Operand dest, Operand source0, Operand source1, Operand source2)
+        private Operand Add(Instruction inst, Operand? destination, Operand source0, Operand source1, Operand source2)
         {
             NewNextBlockIfNeeded();
 
-            Operation operation = OperationHelper.Operation(inst, dest, source0, source1, source2);
+            Operation operation = OperationHelper.Operation(inst, destination, source0, source1, source2);
 
             _irBlock.Operations.AddLast(operation);
 
-            return dest;
+            return destination != null ? destination.Value : default;
         }
 
         public Operand AddIntrinsic(Intrinsic intrin, params Operand[] args)
@@ -591,15 +591,15 @@ namespace ARMeilleure.Translation
             return Local(type, _localsCount++);
         }
 
-        private Operand Add(Intrinsic intrin, Operand dest, params Operand[] sources)
+        private Operand Add(Intrinsic intrin, Operand? destination, params Operand[] sources)
         {
             NewNextBlockIfNeeded();
 
-            IntrinsicOperation operation = new IntrinsicOperation(intrin, dest, sources);
+            IntrinsicOperation operation = new IntrinsicOperation(intrin, destination, sources);
 
             _irBlock.Operations.AddLast(operation);
 
-            return dest;
+            return destination != null ? destination.Value : default;
         }
 
         private void BranchToLabel(Operand label, bool uncond, BasicBlockFrequency nextFreq)

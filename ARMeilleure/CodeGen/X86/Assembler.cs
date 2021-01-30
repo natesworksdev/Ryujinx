@@ -917,25 +917,25 @@ namespace ARMeilleure.CodeGen.X86
 
                 Debug.Assert(shiftReg == X86Register.Rcx, $"Invalid shift register \"{shiftReg}\".");
 
-                source = null;
+                WriteInstruction(dest, null, type, inst);
             }
             else if (source.Kind == OperandKind.Constant)
             {
                 source = new Operand((int)source.Value & (dest.Type == OperandType.I32 ? 0x1f : 0x3f));
-            }
 
-            WriteInstruction(dest, source, type, inst);
+                WriteInstruction(dest, source, type, inst);
+            }
         }
 
-        private void WriteInstruction(Operand dest, Operand source, OperandType type, X86Instruction inst)
+        private void WriteInstruction(Operand? dest, Operand? source, OperandType type, X86Instruction inst)
         {
             InstructionInfo info = _instTable[(int)inst];
 
             if (source != null)
             {
-                if (source.Kind == OperandKind.Constant)
+                if (source.Value.Kind == OperandKind.Constant)
                 {
-                    ulong imm = source.Value;
+                    ulong imm = source.Value.Value;
 
                     if (inst == X86Instruction.Mov8)
                     {
@@ -955,15 +955,15 @@ namespace ARMeilleure.CodeGen.X86
 
                         WriteByte((byte)imm);
                     }
-                    else if (!source.Relocatable && IsImm32(imm, type) && info.OpRMImm32 != BadOp)
+                    else if (!source.Value.Relocatable && IsImm32(imm, type) && info.OpRMImm32 != BadOp)
                     {
                         WriteOpCode(dest, null, null, type, info.Flags, info.OpRMImm32);
 
                         WriteInt32((int)imm);
                     }
-                    else if (dest != null && dest.Kind == OperandKind.Register && info.OpRImm64 != BadOp)
+                    else if (dest != null && dest.Value.Kind == OperandKind.Register && info.OpRImm64 != BadOp)
                     {
-                        int? index = source.PtcIndex;
+                        int? index = source.Value.PtcIndex;
 
                         int rexPrefix = GetRexPrefix(dest, source, type, rrm: false);
 
@@ -972,7 +972,7 @@ namespace ARMeilleure.CodeGen.X86
                             WriteByte((byte)rexPrefix);
                         }
 
-                        WriteByte((byte)(info.OpRImm64 + (dest.GetRegister().Index & 0b111)));
+                        WriteByte((byte)(info.OpRImm64 + (dest.Value.GetRegister().Index & 0b111)));
 
                         if (_ptcInfo != null && index != null)
                         {
@@ -986,7 +986,7 @@ namespace ARMeilleure.CodeGen.X86
                         throw new ArgumentException($"Failed to encode constant 0x{imm:X}.");
                     }
                 }
-                else if (source.Kind == OperandKind.Register && info.OpRMR != BadOp)
+                else if (source.Value.Kind == OperandKind.Register && info.OpRMR != BadOp)
                 {
                     WriteOpCode(dest, null, source, type, info.Flags, info.OpRMR);
                 }
@@ -996,7 +996,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid source operand kind \"{source.Kind}\".");
+                    throw new ArgumentException($"Invalid source operand kind \"{source.Value.Kind}\".");
                 }
             }
             else if (info.OpRRM != BadOp)
@@ -1015,8 +1015,8 @@ namespace ARMeilleure.CodeGen.X86
 
         private void WriteInstruction(
             Operand dest,
-            Operand src1,
-            Operand src2,
+            Operand? src1,
+            Operand? src2,
             X86Instruction inst,
             OperandType type = OperandType.None)
         {
@@ -1024,9 +1024,9 @@ namespace ARMeilleure.CodeGen.X86
 
             if (src2 != null)
             {
-                if (src2.Kind == OperandKind.Constant)
+                if (src2.Value.Kind == OperandKind.Constant)
                 {
-                    ulong imm = src2.Value;
+                    ulong imm = src2.Value.Value;
 
                     if ((byte)imm == imm && info.OpRMImm8 != BadOp)
                     {
@@ -1039,7 +1039,7 @@ namespace ARMeilleure.CodeGen.X86
                         throw new ArgumentException($"Failed to encode constant 0x{imm:X}.");
                     }
                 }
-                else if (src2.Kind == OperandKind.Register && info.OpRMR != BadOp)
+                else if (src2.Value.Kind == OperandKind.Register && info.OpRMR != BadOp)
                 {
                     WriteOpCode(dest, src1, src2, type, info.Flags, info.OpRMR);
                 }
@@ -1049,7 +1049,7 @@ namespace ARMeilleure.CodeGen.X86
                 }
                 else
                 {
-                    throw new ArgumentException($"Invalid source operand kind \"{src2.Kind}\".");
+                    throw new ArgumentException($"Invalid source operand kind \"{src2.Value.Kind}\".");
                 }
             }
             else if (info.OpRRM != BadOp)
@@ -1067,9 +1067,9 @@ namespace ARMeilleure.CodeGen.X86
         }
 
         private void WriteOpCode(
-            Operand dest,
-            Operand src1,
-            Operand src2,
+            Operand? dest,
+            Operand? src1,
+            Operand? src2,
             OperandType type,
             InstructionFlags flags,
             int opCode,
@@ -1089,9 +1089,9 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest != null)
             {
-                if (dest.Kind == OperandKind.Register)
+                if (dest.Value.Kind == OperandKind.Register)
                 {
-                    int regIndex = dest.GetRegister().Index;
+                    int regIndex = dest.Value.GetRegister().Index;
 
                     modRM |= (regIndex & 0b111) << (rrm ? 3 : 0);
 
@@ -1100,22 +1100,22 @@ namespace ARMeilleure.CodeGen.X86
                         rexPrefix |= RexPrefix;
                     }
                 }
-                else if (dest.Kind == OperandKind.Memory)
+                else if (dest.Value.Kind == OperandKind.Memory)
                 {
-                    memOp = dest.GetMemoryOperand();
+                    memOp = dest.Value.GetMemoryOperand();
                     hasMemOp = true;
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid destination operand kind \"" + dest.Kind + "\".");
+                    throw new ArgumentException("Invalid destination operand kind \"" + dest.Value.Kind + "\".");
                 }
             }
 
             if (src2 != null)
             {
-                if (src2.Kind == OperandKind.Register)
+                if (src2.Value.Kind == OperandKind.Register)
                 {
-                    int regIndex = src2.GetRegister().Index;
+                    int regIndex = src2.Value.GetRegister().Index;
 
                     modRM |= (regIndex & 0b111) << (rrm ? 0 : 3);
 
@@ -1124,14 +1124,14 @@ namespace ARMeilleure.CodeGen.X86
                         rexPrefix |= RexPrefix;
                     }
                 }
-                else if (src2.Kind == OperandKind.Memory && !hasMemOp)
+                else if (src2.Value.Kind == OperandKind.Memory && !hasMemOp)
                 {
-                    memOp = src2.GetMemoryOperand();
+                    memOp = src2.Value.GetMemoryOperand();
                     hasMemOp = true;
                 }
                 else
                 {
-                    throw new ArgumentException("Invalid source operand kind \"" + src2.Kind + "\".");
+                    throw new ArgumentException("Invalid source operand kind \"" + src2.Value.Kind + "\".");
                 }
             }
 
@@ -1143,7 +1143,7 @@ namespace ARMeilleure.CodeGen.X86
             if (hasMemOp)
             {
                 // Either source or destination is a memory operand.
-                Register baseReg = memOp.BaseAddress.GetRegister();
+                Register baseReg = memOp.BaseAddress.Value.GetRegister();
 
                 X86Register baseRegLow = (X86Register)(baseReg.Index & 0b111);
 
@@ -1175,7 +1175,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     if (memOp.Index != null)
                     {
-                        int indexReg = memOp.Index.GetRegister().Index;
+                        int indexReg = memOp.Index.Value.GetRegister().Index;
 
                         Debug.Assert(indexReg != (int)X86Register.Rsp, "Using RSP as index register on the memory operand is not allowed.");
 
@@ -1224,7 +1224,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 if (src1 != null)
                 {
-                    vexByte2 |= (src1.GetRegister().Index ^ 0xf) << 3;
+                    vexByte2 |= (src1.Value.GetRegister().Index ^ 0xf) << 3;
                 }
                 else
                 {
@@ -1291,7 +1291,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (dest != null && (flags & InstructionFlags.RegOnly) != 0)
             {
-                opCode += dest.GetRegister().Index & 7;
+                opCode += dest.Value.GetRegister().Index & 7;
             }
 
             if ((opCode & 0xff0000) != 0)
@@ -1341,7 +1341,7 @@ namespace ARMeilleure.CodeGen.X86
             WriteByte((byte)(opCode + (regIndex & 0b111)));
         }
 
-        private static int GetRexPrefix(Operand dest, Operand source, OperandType type, bool rrm)
+        private static int GetRexPrefix(Operand? dest, Operand? source, OperandType type, bool rrm)
         {
             int rexPrefix = 0;
 
@@ -1358,14 +1358,14 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            if (dest != null && dest.Kind == OperandKind.Register)
+            if (dest != null && dest.Value.Kind == OperandKind.Register)
             {
-                SetRegisterHighBit(dest.GetRegister(), rrm ? 2 : 0);
+                SetRegisterHighBit(dest.Value.GetRegister(), rrm ? 2 : 0);
             }
 
-            if (source != null && source.Kind == OperandKind.Register)
+            if (source != null && source.Value.Kind == OperandKind.Register)
             {
-                SetRegisterHighBit(source.GetRegister(), rrm ? 0 : 2);
+                SetRegisterHighBit(source.Value.GetRegister(), rrm ? 0 : 2);
             }
 
             return rexPrefix;

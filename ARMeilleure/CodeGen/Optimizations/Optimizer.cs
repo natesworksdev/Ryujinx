@@ -43,12 +43,12 @@ namespace ARMeilleure.CodeGen.Optimizations
                             continue;
                         }
 
-                        Operand op = ConstantFolding.RunPass(operation);
+                        Operand? op = ConstantFolding.RunPass(operation);
 
                         if (op != null)
                         {
                             RemoveAllUses(uses, node);
-                            operation.TurnIntoCopy(op);
+                            operation.TurnIntoCopy(op.Value);
                         }
 
                         op = Simplification.RunPass(operation);
@@ -56,7 +56,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                         if (op != null)
                         {
                             RemoveAllUses(uses, node);
-                            operation.TurnIntoCopy(op);
+                            operation.TurnIntoCopy(op.Value);
                         }
 
                         if (DestIsLocalVar(operation))
@@ -153,14 +153,14 @@ namespace ARMeilleure.CodeGen.Optimizations
                         {
                             MemoryOperand memOp = source.GetMemoryOperand();
 
-                            if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
+                            if (memOp.BaseAddress != null && memOp.BaseAddress.Value.Kind == OperandKind.LocalVariable)
                             {
-                                AddUse(node, memOp.BaseAddress);
+                                AddUse(node, memOp.BaseAddress.Value);
                             }
 
-                            if (memOp.Index != null && memOp.Index.Kind == OperandKind.LocalVariable)
+                            if (memOp.Index != null && memOp.Index.Value.Kind == OperandKind.LocalVariable)
                             {
-                                AddUse(node, memOp.Index);
+                                AddUse(node, memOp.Index.Value);
                             }
                         }
                     }
@@ -289,15 +289,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             // from all the use lists on the operands that this node uses.
             block.Operations.Remove(node);
             RemoveAllUses(uses, node);
-
-            for (int index = 0; index < node.SourcesCount; index++)
-            {
-                node.SetSource(index, null);
-            }
-
             Debug.Assert(node.DestinationsCount == 0 || !uses.ContainsKey(node.Destination));
-
-            node.Destination = null;
         }
 
         private static void RemoveAllUses(Dictionary<Operand, List<Node>> uses, Node node)
@@ -314,14 +306,14 @@ namespace ARMeilleure.CodeGen.Optimizations
                 {
                     MemoryOperand memOp = source.GetMemoryOperand();
 
-                    if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
+                    if (memOp.BaseAddress != null && memOp.BaseAddress.Value.Kind == OperandKind.LocalVariable)
                     {
-                        RemoveUse(uses, node, memOp.BaseAddress);
+                        RemoveUse(uses, node, memOp.BaseAddress.Value);
                     }
 
-                    if (memOp.Index != null && memOp.Index.Kind == OperandKind.LocalVariable)
+                    if (memOp.Index != null && memOp.Index.Value.Kind == OperandKind.LocalVariable)
                     {
-                        RemoveUse(uses, node, memOp.Index);
+                        RemoveUse(uses, node, memOp.Index.Value);
                     }
                 }
             }
@@ -349,7 +341,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static bool DestIsLocalVar(Node node)
         {
-            return node.Destination != null && node.Destination.Kind == OperandKind.LocalVariable;
+            return node.DestinationsCount != 0 && node.Destination.Kind == OperandKind.LocalVariable;
         }
 
         private static bool HasSideEffects(Node node)

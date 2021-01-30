@@ -26,11 +26,11 @@ namespace ARMeilleure.Instructions
 
         public static Operand GetCondTrue(ArmEmitterContext context, Condition condition)
         {
-            Operand cmpResult = context.TryGetComparisonResult(condition);
+            Operand? cmpResult = context.TryGetComparisonResult(condition);
 
             if (cmpResult != null)
             {
-                return cmpResult;
+                return cmpResult.Value;
             }
 
             Operand value = Const(1);

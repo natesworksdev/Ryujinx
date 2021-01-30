@@ -26,15 +26,11 @@ namespace ARMeilleure.Translation
                         Operand source = phi.GetSource(index);
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
-
-                        phi.SetSource(index, null);
                     }
 
                     Operation copyOp = Operation(Instruction.Copy, phi.Destination, local);
 
                     block.Operations.AddBefore(node, copyOp);
-
-                    phi.Destination = null;
 
                     block.Operations.Remove(node);
 

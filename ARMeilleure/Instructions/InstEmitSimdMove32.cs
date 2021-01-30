@@ -267,7 +267,7 @@ namespace ARMeilleure.Instructions
                     Operand selectedIndex = context.ZeroExtend8(OperandType.I32, context.VectorExtract8(m, index + op.Im));
 
                     Operand inRange = context.ICompareLess(selectedIndex, Const(byteLength));
-                    Operand elemRes = null; // Note: This is I64 for ease of calculation.
+                    Operand? elemRes = null; // Note: This is I64 for ease of calculation.
 
                     // TODO: Branching rather than conditional select.
 
@@ -304,13 +304,13 @@ namespace ARMeilleure.Instructions
                         else
                         {
                             Operand isThisElem = context.ICompareEqual(vecIndex, Const(i));
-                            elemRes = context.ConditionalSelect(isThisElem, lookupResult, elemRes);
+                            elemRes = context.ConditionalSelect(isThisElem, lookupResult, elemRes.Value);
                         }
                     }
 
                     Operand fallback = (extension) ? context.ZeroExtend32(OperandType.I64, EmitVectorExtract32(context, op.Qd, index + op.Id, 0, false)) : Const(0L);
 
-                    res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes, fallback), index + op.Id, 0);
+                    res = EmitVectorInsert(context, res, context.ConditionalSelect(inRange, elemRes.Value, fallback), index + op.Id, 0);
                 }
 
                 context.Copy(GetVecA32(op.Qd), res);
@@ -325,7 +325,7 @@ namespace ARMeilleure.Instructions
             {
                 EmitVectorShuffleOpSimd32(context, (m, d) =>
                 {
-                    Operand mask = null;
+                    Operand? mask = null;
 
                     if (op.Size < 3)
                     {
@@ -334,13 +334,13 @@ namespace ARMeilleure.Instructions
 
                         mask = X86GetScalar(context, maskE0);
 
-                        mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
+                        mask = EmitVectorInsert(context, mask.Value, Const(maskE1), 1, 3);
                     }
 
                     if (op.Size < 3)
                     {
-                        d = context.AddIntrinsic(Intrinsic.X86Pshufb, d, mask);
-                        m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask);
+                        d = context.AddIntrinsic(Intrinsic.X86Pshufb, d, mask.Value);
+                        m = context.AddIntrinsic(Intrinsic.X86Pshufb, m, mask.Value);
                     }
 
                     Operand resD = context.AddIntrinsic(X86PunpcklInstruction[op.Size], d, m);
@@ -467,14 +467,12 @@ namespace ARMeilleure.Instructions
                 {
                     if (op.RegisterSize == RegisterSize.Simd128)
                     {
-                        Operand mask = null;
-
                         if (op.Size < 3)
                         {
                             long maskE0 = EvenMasks[op.Size];
                             long maskE1 = OddMasks[op.Size];
 
-                            mask = X86GetScalar(context, maskE0);
+                            Operand mask = X86GetScalar(context, maskE0);
                             mask = EmitVectorInsert(context, mask, Const(maskE1), 1, 3);
 
                             d = context.AddIntrinsic(Intrinsic.X86Pshufb, d, mask);

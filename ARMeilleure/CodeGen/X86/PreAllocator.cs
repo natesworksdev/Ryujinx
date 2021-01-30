@@ -18,7 +18,7 @@ namespace ARMeilleure.CodeGen.X86
 
             CallConvName callConv = CallingConvention.GetCurrentCallConv();
 
-            Operand[] preservedArgs = new Operand[CallingConvention.GetArgumentsOnRegsCount()];
+            Operand?[] preservedArgs = new Operand?[CallingConvention.GetArgumentsOnRegsCount()];
 
             for (BasicBlock block = cctx.Cfg.Blocks.First; block != null; block = block.ListNext)
             {
@@ -46,7 +46,7 @@ namespace ARMeilleure.CodeGen.X86
                             // should be written on the first argument.
                             int argsCount = operation.SourcesCount - 1;
 
-                            if (operation.Destination != null && operation.Destination.Type == OperandType.V128)
+                            if (operation.DestinationsCount != 0 && operation.Destination.Type == OperandType.V128)
                             {
                                 argsCount++;
                             }
@@ -590,8 +590,6 @@ namespace ARMeilleure.CodeGen.X86
             Node node,
             Operation operation)
         {
-            Operand dest = operation.Destination;
-
             // Handle struct arguments.
             int retArgs = 0;
 
@@ -615,10 +613,12 @@ namespace ARMeilleure.CodeGen.X86
                 return offset;
             }
 
-            Operand arg0Reg = null;
+            Operand? arg0Reg = null;
 
-            if (dest != null && dest.Type == OperandType.V128)
+            if (operation.DestinationsCount != 0 && operation.Destination.Type == OperandType.V128)
             {
+                Operand dest = operation.Destination;
+
                 int stackOffset = AllocateOnStack(dest.Type.GetSizeInBytes());
 
                 arg0Reg = Gpr(CallingConvention.GetIntArgumentRegister(0), OperandType.I64);
@@ -645,7 +645,7 @@ namespace ARMeilleure.CodeGen.X86
 
             if (arg0Reg != null)
             {
-                sources[1] = arg0Reg;
+                sources[1] = arg0Reg.Value;
             }
 
             for (int index = 1; index < operation.SourcesCount; index++)
@@ -706,19 +706,21 @@ namespace ARMeilleure.CodeGen.X86
                 HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(node, spillOp), spillOp);
             }
 
-            if (dest != null)
+            if (operation.DestinationsCount != 0)
             {
+                Operand dest = operation.Destination;
+
                 if (dest.Type == OperandType.V128)
                 {
                     Operand retValueAddr = cfg.AllocateLocal(OperandType.I64);
 
-                    nodes.AddBefore(node, Operation(Instruction.Copy, retValueAddr, arg0Reg));
+                    nodes.AddBefore(node, Operation(Instruction.Copy, retValueAddr, arg0Reg.Value));
 
                     Operation loadOp = Operation(Instruction.Load, dest, retValueAddr);
 
                     nodes.AddAfter(node, loadOp);
 
-                    operation.Destination = null;
+                    operation.SetDestinations(Array.Empty<Operand>());
                 }
                 else
                 {
@@ -739,8 +741,6 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void HandleCallSystemVAbi(ControlFlowGraph cfg, IntrusiveList<Node> nodes, Node node, Operation operation)
         {
-            Operand dest = operation.Destination;
-
             List<Operand> sources = new List<Operand>
             {
                 operation.GetSource(0)
@@ -811,8 +811,10 @@ namespace ARMeilleure.CodeGen.X86
                 }
             }
 
-            if (dest != null)
+            if (operation.DestinationsCount != 0)
             {
+                Operand dest = operation.Destination;
+
                 if (dest.Type == OperandType.V128)
                 {
                     Operand retLReg = Gpr(CallingConvention.GetIntReturnRegister(),     OperandType.I64);
@@ -821,7 +823,7 @@ namespace ARMeilleure.CodeGen.X86
                     node = nodes.AddAfter(node, Operation(Instruction.VectorCreateScalar, dest, retLReg));
                     nodes.AddAfter(node, Operation(Instruction.VectorInsert, dest, dest, retHReg, Const(1)));
 
-                    operation.Destination = null;
+                    operation.SetDestinations(Array.Empty<Operand>());
                 }
                 else
                 {
@@ -967,7 +969,7 @@ namespace ARMeilleure.CodeGen.X86
             CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
-            Operand[] preservedArgs,
+            Operand?[] preservedArgs,
             Operation operation)
         {
             Operand source = operation.GetSource(0);
@@ -1014,7 +1016,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation argCopyOp = Operation(dest.Type == OperandType.V128
                     ? Instruction.Load
-                    : Instruction.Copy, dest, preservedArgs[index]);
+                    : Instruction.Copy, dest, preservedArgs[index].Value);
 
                 Node newNode = nodes.AddBefore(node, argCopyOp);
 
@@ -1033,7 +1035,7 @@ namespace ARMeilleure.CodeGen.X86
             CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
-            Operand[] preservedArgs,
+            Operand?[] preservedArgs,
             Operation operation)
         {
             Operand source = operation.GetSource(0);
@@ -1116,7 +1118,7 @@ namespace ARMeilleure.CodeGen.X86
                     }
                 }
 
-                Operation argCopyOp = Operation(Instruction.Copy, dest, preservedArgs[index]);
+                Operation argCopyOp = Operation(Instruction.Copy, dest, preservedArgs[index].Value);
 
                 Node newNode = nodes.AddBefore(node, argCopyOp);
 
@@ -1135,7 +1137,7 @@ namespace ARMeilleure.CodeGen.X86
             CompilerContext cctx,
             IntrusiveList<Node> nodes,
             Node node,
-            Operand[] preservedArgs,
+            Operand?[] preservedArgs,
             Operation operation)
         {
             if (operation.SourcesCount == 0)
@@ -1166,7 +1168,7 @@ namespace ARMeilleure.CodeGen.X86
                     preservedArgs[0] = preservedArg;
                 }
 
-                retReg = preservedArgs[0];
+                retReg = preservedArgs[0].Value;
             }
             else
             {
@@ -1258,13 +1260,6 @@ namespace ARMeilleure.CodeGen.X86
 
         private static void Delete(IntrusiveList<Node> nodes, Node node, Operation operation)
         {
-            operation.Destination = null;
-
-            for (int index = 0; index < operation.SourcesCount; index++)
-            {
-                operation.SetSource(index, null);
-            }
-
             nodes.Remove(node);
         }
 
@@ -1328,7 +1323,7 @@ namespace ARMeilleure.CodeGen.X86
             {
                 bool isUnary = operation.SourcesCount < 2;
 
-                bool hasVecDest = operation.Destination != null && operation.Destination.Type == OperandType.V128;
+                bool hasVecDest = operation.DestinationsCount != 0 && operation.Destination.Type == OperandType.V128;
 
                 return !HardwareCapabilities.SupportsVexEncoding && !isUnary && hasVecDest;
             }

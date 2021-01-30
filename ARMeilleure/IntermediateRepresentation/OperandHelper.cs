@@ -64,8 +64,8 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public static Operand MemoryOp(
             OperandType type,
-            Operand baseAddress,
-            Operand index = null,
+            Operand? baseAddress,
+            Operand? index = null,
             Multiplier scale = Multiplier.x1,
             int displacement = 0)
         {

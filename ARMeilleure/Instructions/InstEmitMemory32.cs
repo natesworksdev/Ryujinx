@@ -156,25 +156,23 @@ namespace ARMeilleure.Instructions
             Operand n = context.Copy(GetIntA32(context, op.Rn));
             Operand m = GetMemM(context, setCarry: false);
 
-            Operand temp = null;
+            Operand? temp = null;
 
             if (op.Index || op.WBack)
             {
-                temp = op.Add
-                    ? context.Add     (n, m)
-                    : context.Subtract(n, m);
+                temp = op.Add ? context.Add(n, m) : context.Subtract(n, m);
             }
 
             if (op.WBack)
             {
-                SetIntA32(context, op.Rn, temp);
+                SetIntA32(context, op.Rn, temp.Value);
             }
 
             Operand address;
 
             if (op.Index)
             {
-                address = temp;
+                address = temp.Value;
             }
             else
             {

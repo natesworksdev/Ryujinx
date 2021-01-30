@@ -133,15 +133,14 @@ namespace ARMeilleure.Instructions
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false);
 
-            Operand value = null;
-
-            switch (size)
+            var value = size switch
             {
-                case 0: value = context.Load8 (physAddr);                  break;
-                case 1: value = context.Load16(physAddr);                  break;
-                case 2: value = context.Load  (OperandType.I32, physAddr); break;
-                case 3: value = context.Load  (OperandType.I64, physAddr); break;
-            }
+                0 => context.Load8(physAddr),
+                1 => context.Load16(physAddr),
+                2 => context.Load(OperandType.I32, physAddr),
+                3 => context.Load(OperandType.I64, physAddr),
+                _ => throw new ArgumentOutOfRangeException(nameof(size))
+            };
 
             SetInt(context, rt, value);
 
@@ -201,16 +200,15 @@ namespace ARMeilleure.Instructions
 
             Operand physAddr = EmitPtPointerLoad(context, address, lblSlowPath, write: false);
 
-            Operand value = null;
-
-            switch (size)
+            var value = size switch
             {
-                case 0: value = context.VectorInsert8 (vector, context.Load8(physAddr), elem);                 break;
-                case 1: value = context.VectorInsert16(vector, context.Load16(physAddr), elem);                break;
-                case 2: value = context.VectorInsert  (vector, context.Load(OperandType.I32, physAddr), elem); break;
-                case 3: value = context.VectorInsert  (vector, context.Load(OperandType.I64, physAddr), elem); break;
-                case 4: value = context.Load          (OperandType.V128, physAddr);                            break;
-            }
+                0 => context.VectorInsert8(vector, context.Load8(physAddr), elem),
+                1 => context.VectorInsert16(vector, context.Load16(physAddr), elem),
+                2 => context.VectorInsert(vector, context.Load(OperandType.I32, physAddr), elem),
+                3 => context.VectorInsert(vector, context.Load(OperandType.I64, physAddr), elem),
+                4 => context.Load(OperandType.V128, physAddr),
+                _ => throw new ArgumentOutOfRangeException(nameof(size))
+            };
 
             context.Copy(GetVec(rt), value);
 
@@ -347,7 +345,7 @@ namespace ARMeilleure.Instructions
             return context.BitwiseAnd(address, Const(address.Type, (long)addressCheckMask));
         }
 
-        public static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand lblSlowPath, bool write)
+        public static Operand EmitPtPointerLoad(ArmEmitterContext context, Operand address, Operand? lblSlowPath, bool write)
         {
             int ptLevelBits = context.Memory.AddressSpaceBits - 12; // 12 = Number of page bits.
             int ptLevelSize = 1 << ptLevelBits;
@@ -392,7 +390,7 @@ namespace ARMeilleure.Instructions
             if (lblSlowPath != null)
             {
                 ulong protection = (write ? 3UL : 1UL) << 48;
-                context.BranchIfTrue(lblSlowPath, context.BitwiseAnd(pte, Const(protection)));
+                context.BranchIfTrue(lblSlowPath.Value, context.BitwiseAnd(pte, Const(protection)));
             }
             else
             {
@@ -517,22 +515,15 @@ namespace ARMeilleure.Instructions
                 case 4: info = typeof(NativeInterface).GetMethod(nameof(NativeInterface.WriteVector128)); break;
             }
 
-            Operand value = null;
-
-            if (size < 4)
+            var value = size switch
             {
-                switch (size)
-                {
-                    case 0: value = context.VectorExtract8 (GetVec(rt), elem);                  break;
-                    case 1: value = context.VectorExtract16(GetVec(rt), elem);                  break;
-                    case 2: value = context.VectorExtract  (OperandType.I32, GetVec(rt), elem); break;
-                    case 3: value = context.VectorExtract  (OperandType.I64, GetVec(rt), elem); break;
-                }
-            }
-            else
-            {
-                value = GetVec(rt);
-            }
+                0 => context.VectorExtract8(GetVec(rt), elem),
+                1 => context.VectorExtract16(GetVec(rt), elem),
+                2 => context.VectorExtract(OperandType.I32, GetVec(rt), elem),
+                3 => context.VectorExtract(OperandType.I64, GetVec(rt), elem),
+                4 => GetVec(rt),
+                _ => throw new ArgumentOutOfRangeException(nameof(size))
+            };
 
             context.Call(info, address, value);
         }

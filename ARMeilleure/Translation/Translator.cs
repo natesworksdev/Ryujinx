@@ -326,13 +326,13 @@ namespace ARMeilleure.Translation
                             EmitSynchronization(context);
                         }
 
-                        Operand lblPredicateSkip = null;
+                        Operand? lblPredicateSkip = null;
 
                         if (opCode is OpCode32 op && op.Cond < Condition.Al)
                         {
                             lblPredicateSkip = context.AllocateLabel();
 
-                            InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip, op.Cond.Invert());
+                            InstEmitFlowHelper.EmitCondBranch(context, lblPredicateSkip.Value, op.Cond.Invert());
                         }
 
                         if (opCode.Instruction.Emitter != null)
@@ -346,7 +346,7 @@ namespace ARMeilleure.Translation
 
                         if (lblPredicateSkip != null)
                         {
-                            context.MarkLabel(lblPredicateSkip);
+                            context.MarkLabel(lblPredicateSkip.Value);
                         }
                     }
                 }

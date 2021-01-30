@@ -4,7 +4,7 @@ namespace ARMeilleure.IntermediateRepresentation
     {
         public Intrinsic Intrinsic { get; }
 
-        public IntrinsicOperation(Intrinsic intrin, Operand dest, params Operand[] sources) : base(Instruction.Extended, dest, sources)
+        public IntrinsicOperation(Intrinsic intrin, Operand? destination, params Operand[] sources) : base(Instruction.Extended, destination, sources)
         {
             Intrinsic = intrin;
         }

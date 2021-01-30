@@ -7,7 +7,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 {
     static class Simplification
     {
-        public static Operand RunPass(Operation operation)
+        public static Operand? RunPass(Operation operation)
         {
             return operation.Instruction switch
             {
@@ -23,7 +23,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             };
         }
 
-        private static Operand TryEliminateBitwiseAnd(Operation operation)
+        private static Operand? TryEliminateBitwiseAnd(Operation operation)
         {
             // Try to recognize and optimize those 3 patterns (in order):
             // x & 0xFFFFFFFF == x,          0xFFFFFFFF & y == y,
@@ -47,7 +47,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             return null;
         }
 
-        private static Operand TryEliminateBitwiseOr(Operation operation)
+        private static Operand? TryEliminateBitwiseOr(Operation operation)
         {
             // Try to recognize and optimize those 3 patterns (in order):
             // x | 0x00000000 == x,          0x00000000 | y == y,
@@ -71,7 +71,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             return null;
         }
 
-        private static Operand TryEliminateBitwiseExclusiveOr(Operation operation)
+        private static Operand? TryEliminateBitwiseExclusiveOr(Operation operation)
         {
             // Try to recognize and optimize those 2 patterns (in order):
             // x ^ y == 0x00000000 when x == y
@@ -89,7 +89,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static Operand TryEliminateBinaryOpY(Operation operation, ulong comparand)
+        private static Operand? TryEliminateBinaryOpY(Operation operation, ulong comparand)
         {
             Operand x = operation.GetSource(0);
             Operand y = operation.GetSource(1);
@@ -102,7 +102,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             return null;
         }
 
-        private static Operand TryEliminateBinaryOpComutative(Operation operation, ulong comparand)
+        private static Operand? TryEliminateBinaryOpComutative(Operation operation, ulong comparand)
         {
             Operand x = operation.GetSource(0);
             Operand y = operation.GetSource(1);
@@ -119,7 +119,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             return null;
         }
 
-        private static Operand TryEliminateConditionalSelect(Operation operation)
+        private static Operand? TryEliminateConditionalSelect(Operation operation)
         {
             Operand cond = operation.GetSource(0);
 

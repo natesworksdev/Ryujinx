@@ -96,7 +96,7 @@ namespace ARMeilleure.Translation
             _optOpLastFlagSet = null;
         }
 
-        public Operand TryGetComparisonResult(Condition condition)
+        public Operand? TryGetComparisonResult(Condition condition)
         {
             if (_optOpLastCompare == null || _optOpLastCompare != _optOpLastFlagSet)
             {

@@ -7,7 +7,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 {
     static class ConstantFolding
     {
-        public static Operand RunPass(Operation operation)
+        public static Operand? RunPass(Operation operation)
         {
             if (operation.DestinationsCount == 0 || operation.SourcesCount == 0)
             {

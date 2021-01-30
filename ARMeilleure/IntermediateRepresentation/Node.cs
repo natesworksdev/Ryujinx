@@ -10,7 +10,7 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public Operand Destination
         {
-            get => _destinations.Count != 0 ? GetDestination(0) : null;
+            get => _destinations.Count != 0 ? GetDestination(0) : default;
             set => SetDestination(value);
         }
 
@@ -30,7 +30,7 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 while (list.Count < size)
                 {
-                    list.Add(null);
+                    list.Add(default);
                 }
             }
         }
@@ -41,9 +41,12 @@ namespace ARMeilleure.IntermediateRepresentation
             _sources = new List<Operand>();
         }
 
-        public Node(Operand destination, int sourcesCount) : this()
+        public Node(Operand? destination, int sourcesCount) : this()
         {
-            Destination = destination;
+            if (destination != null)
+            {
+                Destination = destination.Value;
+            }
 
             Resize(_sources, sourcesCount);
         }
@@ -57,10 +60,17 @@ namespace ARMeilleure.IntermediateRepresentation
             Resize(_sources, sourcesCount);
         }
 
-        public Node With(Operand destination, int sourcesCount)
+        public Node With(Operand? destination, int sourcesCount)
         {
             Reset(sourcesCount);
-            Destination = destination;
+            if (destination != null)
+            {
+                Destination = destination.Value;
+            }
+            else
+            {
+                _destinations.Clear();
+            }
 
             return this;
         }
@@ -93,7 +103,7 @@ namespace ARMeilleure.IntermediateRepresentation
             _sources[index] = source;
         }
 
-        public void SetDestination(Operand destination)
+        public void SetDestination(Operand? destination)
         {
             if (destination == null)
             {
@@ -103,7 +113,7 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 Resize(_destinations, 1);
 
-                _destinations[0] = destination;
+                _destinations[0] = destination.Value;
             }
         }
 
@@ -121,16 +131,9 @@ namespace ARMeilleure.IntermediateRepresentation
 
         public void SetSource(Operand source)
         {
-            if (source == null)
-            {
-                _sources.Clear();
-            }
-            else
-            {
-                Resize(_sources, 1);
+            Resize(_sources, 1);
 
-                _sources[0] = source;
-            }
+            _sources[0] = source;
         }
 
         public void SetSources(Operand[] sources)

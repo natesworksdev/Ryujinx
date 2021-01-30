@@ -40,7 +40,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
             public int Sequence { get; set; }
 
-            public Operand Temp { get; set; }
+            public Operand? Temp { get; set; }
 
             public OperandType Type { get; }
 
@@ -116,14 +116,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             MemoryOperand memOp = source.GetMemoryOperand();
 
-                            if (memOp.BaseAddress != null && memOp.BaseAddress.Kind == OperandKind.LocalVariable)
+                            if (memOp.BaseAddress != null && memOp.BaseAddress.Value.Kind == OperandKind.LocalVariable)
                             {
-                                locInfo[memOp.BaseAddress.AsInt32()].SetBlockIndex(block.Index);
+                                locInfo[memOp.BaseAddress.Value.AsInt32()].SetBlockIndex(block.Index);
                             }
 
-                            if (memOp.Index != null && memOp.Index.Kind == OperandKind.LocalVariable)
+                            if (memOp.Index != null && memOp.Index.Value.Kind == OperandKind.LocalVariable)
                             {
-                                locInfo[memOp.Index.AsInt32()].SetBlockIndex(block.Index);
+                                locInfo[memOp.Index.Value.AsInt32()].SetBlockIndex(block.Index);
                             }
                         }
                     }
@@ -224,7 +224,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                         else
                         {
-                            Operand temp = info.Temp;
+                            Operand? temp = info.Temp;
 
                             if (temp == null || info.Sequence != sequence)
                             {
@@ -238,14 +238,14 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
 
                             if (!isMemOp)
                             {
-                                node.SetSource(srcIndex, temp);
+                                node.SetSource(srcIndex, temp.Value);
                             }
 
                             Operation fillOp = Operation(Instruction.Fill, temp, Const(info.SpillOffset));
 
                             block.Operations.AddBefore(node, fillOp);
 
-                            return temp;
+                            return temp.Value;
                         }
                     }
 
@@ -261,17 +261,17 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         {
                             MemoryOperand memOp = source.GetMemoryOperand();
 
-                            Operand baseAddress = memOp.BaseAddress;
-                            Operand indexOp     = memOp.Index;
+                            Operand? baseAddress = memOp.BaseAddress;
+                            Operand? indexOp     = memOp.Index;
 
                             if (memOp.BaseAddress != null)
                             {
-                                baseAddress = AllocateRegister(memOp.BaseAddress, true, 0);
+                                baseAddress = AllocateRegister(memOp.BaseAddress.Value, true, 0);
                             }
 
                             if (memOp.Index != null)
                             {
-                                indexOp = AllocateRegister(memOp.Index, true, 1);
+                                indexOp = AllocateRegister(memOp.Index.Value, true, 1);
                             }
 
                             node.SetSource(srcIndex, new Operand(source.Type, new MemoryOperand(baseAddress, indexOp, memOp.Scale, memOp.Displacement)));
@@ -332,7 +332,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                         }
                         else
                         {
-                            Operand temp = info.Temp;
+                            Operand? temp = info.Temp;
 
                             if (temp == null || info.Sequence != sequence)
                             {
@@ -344,9 +344,9 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                                 info.Temp     = temp;
                             }
 
-                            node.SetDestination(dstIndex, temp);
+                            node.SetDestination(dstIndex, temp.Value);
 
-                            Operation spillOp = Operation(Instruction.Spill, null, Const(info.SpillOffset), temp);
+                            Operation spillOp = Operation(Instruction.Spill, null, Const(info.SpillOffset), temp.Value);
 
                             block.Operations.AddAfter(node, spillOp);
 
