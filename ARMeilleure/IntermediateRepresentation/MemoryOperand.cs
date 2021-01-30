@@ -5,27 +5,21 @@ namespace ARMeilleure.IntermediateRepresentation
         public Operand BaseAddress { get; set; }
         public Operand Index       { get; set; }
 
-        public Multiplier Scale { get; private set; }
+        public Multiplier Scale { get; }
 
-        public int Displacement { get; private set; }
+        public int Displacement { get; }
 
-        public MemoryOperand()
-        {
-        }
-
-        public MemoryOperand With(
+        public MemoryOperand(
             OperandType type,
             Operand     baseAddress,
             Operand     index        = null,
             Multiplier  scale        = Multiplier.x1,
-            int         displacement = 0)
+            int         displacement = 0) : base(OperandKind.Memory, type)
         {
-            With(OperandKind.Memory, type);
             BaseAddress  = baseAddress;
             Index        = index;
             Scale        = scale;
             Displacement = displacement;
-            return this;
         }
     }
 }

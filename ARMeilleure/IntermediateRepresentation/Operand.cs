@@ -4,13 +4,13 @@ namespace ARMeilleure.IntermediateRepresentation
 {
     class Operand : IEquatable<Operand>
     {
-        public OperandKind Kind { get; private set; }
-        public OperandType Type { get; private set; }
+        public OperandKind Kind { get; }
+        public OperandType Type { get; }
 
-        public ulong Value { get; private set; }
+        public ulong Value { get; }
 
-        public bool Relocatable { get; private set; }
-        public int? PtcIndex { get; private set; }
+        public bool Relocatable { get; }
+        public int? PtcIndex { get; }
 
         public Operand()
         {
@@ -22,7 +22,7 @@ namespace ARMeilleure.IntermediateRepresentation
             Type = type;
         }
 
-        public Operand With(
+        public Operand(
             OperandKind kind,
             OperandType type = OperandType.None,
             ulong value = 0,
@@ -36,43 +36,34 @@ namespace ARMeilleure.IntermediateRepresentation
 
             Relocatable = relocatable;
             PtcIndex = index;
-
-            return this;
         }
 
-        public Operand With(int value)
+        public Operand(int value) : this(OperandKind.Constant, OperandType.I32, (uint)value)
         {
-            return With(OperandKind.Constant, OperandType.I32, (uint)value);
         }
 
-        public Operand With(uint value)
+        public Operand(uint value) : this(OperandKind.Constant, OperandType.I32, value)
         {
-            return With(OperandKind.Constant, OperandType.I32, value);
         }
 
-        public Operand With(long value, bool relocatable = false, int? index = null)
+        public Operand(long value, bool relocatable = false, int? index = null) : this(OperandKind.Constant, OperandType.I64, (ulong)value, relocatable, index)
         {
-            return With(OperandKind.Constant, OperandType.I64, (ulong)value, relocatable, index);
         }
 
-        public Operand With(ulong value)
+        public Operand(ulong value) : this(OperandKind.Constant, OperandType.I64, value)
         {
-            return With(OperandKind.Constant, OperandType.I64, value);
         }
 
-        public Operand With(float value)
+        public Operand(float value) : this(OperandKind.Constant, OperandType.FP32, (ulong)BitConverter.SingleToInt32Bits(value))
         {
-            return With(OperandKind.Constant, OperandType.FP32, (ulong)BitConverter.SingleToInt32Bits(value));
         }
 
-        public Operand With(double value)
+        public Operand(double value) : this(OperandKind.Constant, OperandType.FP64, (ulong)BitConverter.DoubleToInt64Bits(value))
         {
-            return With(OperandKind.Constant, OperandType.FP64, (ulong)BitConverter.DoubleToInt64Bits(value));
         }
 
-        public Operand With(int index, RegisterType regType, OperandType type)
+        public Operand(int index, RegisterType regType, OperandType type) : this(OperandKind.Register, type, (ulong)((int)regType << 24 | index))
         {
-            return With(OperandKind.Register, type, (ulong)((int)regType << 24 | index));
         }
 
         public Register GetRegister()

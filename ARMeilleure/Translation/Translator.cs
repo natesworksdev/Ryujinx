@@ -256,19 +256,16 @@ namespace ARMeilleure.Translation
 
         internal static void PreparePool(bool highCq)
         {
-            PrepareOperandPool(highCq);
             PrepareOperationPool(highCq);
         }
 
         internal static void ReturnPool(bool highCq)
         {
-            ReturnOperandPool(highCq);
             ReturnOperationPool(highCq);
         }
 
         internal static void ResetPools()
         {
-            ResetOperandPools();
             ResetOperationPools();
         }
 
