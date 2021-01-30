@@ -5,6 +5,7 @@ namespace ARMeilleure.IntermediateRepresentation
     class Operation : Node
     {
         public Instruction Instruction { get; private set; }
+        public Intrinsic Intrinsic { get; }
 
         public Operation() : base() { }
 
@@ -21,6 +22,35 @@ namespace ARMeilleure.IntermediateRepresentation
             {
                 SetSource(index, sources[index]);
             }
+        }
+
+        public Operation(Intrinsic intrinsic, Operand? destination, Operand source) : base(destination, 1)
+        {
+            Instruction = Instruction.Extended;
+            Intrinsic = intrinsic;
+            SetSource(0, source);
+        }
+
+        public Operation(Intrinsic intrinsic, Operand? destination, Operand source0, Operand source1) : base(destination, 2)
+        {
+            Instruction = Instruction.Extended;
+            Intrinsic = intrinsic;
+            SetSource(0, source0);
+            SetSource(1, source1);
+        }
+
+        public Operation(
+            Intrinsic intrinsic,
+            Operand? destination,
+            Operand source0,
+            Operand source1,
+            Operand source2) : base(destination, 3)
+        {
+            Instruction = Instruction.Extended;
+            Intrinsic = intrinsic;
+            SetSource(0, source0);
+            SetSource(1, source1);
+            SetSource(2, source2);
         }
 
         public Operation With(Instruction instruction, Operand? destination)

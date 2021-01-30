@@ -561,24 +561,44 @@ namespace ARMeilleure.Translation
             return destination != null ? destination.Value : default;
         }
 
-        public Operand AddIntrinsic(Intrinsic intrin, params Operand[] args)
+        public Operand AddIntrinsic(Intrinsic intrin, Operand source)
         {
-            return Add(intrin, AllocateLocal(OperandType.V128), args);
+            return Add(intrin, AllocateLocal(OperandType.V128), source);
         }
 
-        public Operand AddIntrinsicInt(Intrinsic intrin, params Operand[] args)
+        public Operand AddIntrinsic(Intrinsic intrin, Operand source0, Operand source1)
         {
-            return Add(intrin, AllocateLocal(OperandType.I32), args);
+            return Add(intrin, AllocateLocal(OperandType.V128), source0, source1);
         }
 
-        public Operand AddIntrinsicLong(Intrinsic intrin, params Operand[] args)
+        public Operand AddIntrinsic(Intrinsic intrin, Operand source0, Operand source1, Operand source2)
         {
-            return Add(intrin, AllocateLocal(OperandType.I64), args);
+            return Add(intrin, AllocateLocal(OperandType.V128), source0, source1, source2);
         }
 
-        public void AddIntrinsicNoRet(Intrinsic intrin, params Operand[] args)
+        public Operand AddIntrinsicInt(Intrinsic intrin, Operand source)
         {
-            Add(intrin, null, args);
+            return Add(intrin, AllocateLocal(OperandType.I32), source);
+        }
+
+        public Operand AddIntrinsicInt(Intrinsic intrin, Operand source0, Operand source1)
+        {
+            return Add(intrin, AllocateLocal(OperandType.I32), source0, source1);
+        }
+
+        public Operand AddIntrinsicLong(Intrinsic intrin, Operand source)
+        {
+            return Add(intrin, AllocateLocal(OperandType.I64), source);
+        }
+
+        public Operand AddIntrinsicLong(Intrinsic intrin, Operand source0, Operand source1)
+        {
+            return Add(intrin, AllocateLocal(OperandType.I64), source0, source1);
+        }
+
+        public void AddIntrinsicNoRet(Intrinsic intrin, Operand source)
+        {
+            Add(intrin, null, source);
         }
 
         public Operand AllocateLabel()
@@ -591,11 +611,33 @@ namespace ARMeilleure.Translation
             return Local(type, _localsCount++);
         }
 
-        private Operand Add(Intrinsic intrin, Operand? destination, params Operand[] sources)
+        private Operand Add(Intrinsic intrin, Operand? destination, Operand source)
         {
             NewNextBlockIfNeeded();
 
-            IntrinsicOperation operation = new IntrinsicOperation(intrin, destination, sources);
+            Operation operation = new Operation(intrin, destination, source);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return destination != null ? destination.Value : default;
+        }
+
+        private Operand Add(Intrinsic intrin, Operand? destination, Operand source0, Operand source1)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = new Operation(intrin, destination, source0, source1);
+
+            _irBlock.Operations.AddLast(operation);
+
+            return destination != null ? destination.Value : default;
+        }
+
+        private Operand Add(Intrinsic intrin, Operand? destination, Operand source0, Operand source1, Operand source2)
+        {
+            NewNextBlockIfNeeded();
+
+            Operation operation = new Operation(intrin, destination, source0, source1, source2);
 
             _irBlock.Operations.AddLast(operation);
 
