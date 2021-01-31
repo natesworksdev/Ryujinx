@@ -1,4 +1,3 @@
-using Ryujinx.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -16,8 +15,6 @@ namespace Ryujinx.Common.Logging
         private static readonly List<ILogTarget> m_LogTargets;
 
         public static event EventHandler<LogEventArgs> Updated;
-
-        
 
         public struct Log
         {

@@ -89,7 +89,7 @@ namespace Ryujinx.Ui
         [GUI] public readonly Label _status;
         [GUI] Label           _progressLabel;
         [GUI] Label           _firmwareVersionLabel;
-        [GUI] ProgressBar        _progressBar;
+        [GUI] ProgressBar      _progressBar;
         [GUI] public readonly ProgressBar _statusProgressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
@@ -118,6 +118,7 @@ namespace Ryujinx.Ui
 
             // Hide emulation context status bar.
             _statusBar.Hide();
+
             // Instanciate HLE objects.
             _virtualFileSystem      = VirtualFileSystem.CreateInstance();
             _contentManager         = new ContentManager(_virtualFileSystem);
@@ -138,7 +139,6 @@ namespace Ryujinx.Ui
             _fullScreen.Activated         += FullScreen_Toggled;
 
             GlRenderer.StatusUpdatedEvent += Update_StatusBar;
-
             
             if (ConfigurationState.Instance.Ui.StartFullscreen)
             {
@@ -319,7 +319,7 @@ namespace Ryujinx.Ui
 
             _emulationContext.Initialize();
         }
-        
+
         public void UpdateGameTable()
         {
             if (_updatingGameTable || _gameLoaded)
@@ -634,7 +634,6 @@ namespace Ryujinx.Ui
                 _firmwareInstallFile.Sensitive      = true;
                 _firmwareInstallDirectory.Sensitive = true;
             });
-            
         }
 
         private void RecreateFooterForMenu()
@@ -780,6 +779,7 @@ namespace Ryujinx.Ui
                 _gpuName.Text     = args.GpuName;
                 _dockedMode.Text  = args.DockedMode;
                 _aspectRatio.Text = args.AspectRatio;
+
                 if (args.VSyncEnabled)
                 {
                     _vSyncStatus.Attributes = new Pango.AttrList();

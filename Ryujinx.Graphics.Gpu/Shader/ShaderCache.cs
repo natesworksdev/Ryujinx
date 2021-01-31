@@ -314,6 +314,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                     _cacheManager.FlushToArchive();
                     _cacheManager.Synchronize();
                 }
+
                 Common.Status.StatusChanged.DisableStatus();
                 Logger.Info?.Print(LogClass.Gpu, "Shader cache loaded.");
             }
