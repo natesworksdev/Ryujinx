@@ -1605,7 +1605,7 @@ namespace ARMeilleure.CodeGen.X86
 
         private static bool MatchOperation(Operation operation, Instruction inst, OperandType destType, Register destReg)
         {
-            if (operation.DestinationsCount == 0)
+            if (operation == null || operation.DestinationsCount == 0)
             {
                 return false;
             }

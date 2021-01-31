@@ -28,6 +28,11 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     nextNode = operation.ListNext;
 
+                    if (operation.Instruction == Instruction.Phi)
+                    {
+                        continue;
+                    }
+
                     HandleConstantRegCopy(cctx.Cfg, block.Operations, operation);
                     HandleDestructiveRegCopy(cctx.Cfg, block.Operations, operation);
                     HandleConstrainedRegCopy(cctx.Cfg, block.Operations, operation);

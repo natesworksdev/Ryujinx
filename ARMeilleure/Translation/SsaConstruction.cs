@@ -234,7 +234,7 @@ namespace ARMeilleure.Translation
             {
             }
 
-            if (operation.Instruction == Instruction.Phi)
+            if (operation != null && operation.Instruction == Instruction.Phi)
             {
                 block.Operations.AddAfter(operation, phi);
             }

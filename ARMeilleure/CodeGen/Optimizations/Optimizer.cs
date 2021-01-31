@@ -44,7 +44,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         if (op != null)
                         {
-                            RemoveAllUses(uses, operation);
+                            RemoveAllUsesExcept(uses, operation, op);
                             operation.TurnIntoCopy(op.Value);
                         }
 
@@ -52,7 +52,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         if (op != null)
                         {
-                            RemoveAllUses(uses, operation);
+                            RemoveAllUsesExcept(uses, operation, op);
                             operation.TurnIntoCopy(op.Value);
                         }
 
@@ -205,8 +205,6 @@ namespace ARMeilleure.CodeGen.Optimizations
                        (src2.Kind == OperandKind.Constant && src2.Value == 0);
             }
 
-            bool modified = false;
-
             Operand dest = compOp.Destination;
             Operand src1 = compOp.GetSource(0);
             Operand src2 = compOp.GetSource(1);
@@ -219,8 +217,15 @@ namespace ARMeilleure.CodeGen.Optimizations
                 return false;
             }
 
-            foreach (var operation in usesList)
+            var src1UsesList = src1.Kind == OperandKind.LocalVariable ? uses[src1] : null;
+            var src2UsesList = src2.Kind == OperandKind.LocalVariable ? uses[src2] : null;
+
+            bool modified = false;
+
+            for (int i = 0; i < usesList.Count; i++)
             {
+                var operation = usesList[i];
+
                 // If operation is a BranchIf and has a constant value 0 in its RHS or LHS source operands.
                 if (IsZeroBranch(operation, out Comparison otherCompType))
                 {
@@ -243,8 +248,18 @@ namespace ARMeilleure.CodeGen.Optimizations
                     operation.SetSource(1, src2);
                     operation.SetSource(2, Const((int)propCompType));
 
+                    src1UsesList?.Add(operation);
+                    src2UsesList?.Add(operation);
+
+                    usesList.RemoveAt(i--);
+
                     modified = true;
                 }
+            }
+
+            if (usesList.Count == 0)
+            {
+                uses.Remove(dest);
             }
 
             return modified;
@@ -261,13 +276,16 @@ namespace ARMeilleure.CodeGen.Optimizations
                 return;
             }
 
-            foreach (var use in usesList)
+            var sourceUsesList = source.Kind == OperandKind.LocalVariable ? uses[source] : null;
+
+            foreach (var operation in usesList)
             {
-                for (int index = 0; index < use.SourcesCount; index++)
+                for (int index = 0; index < operation.SourcesCount; index++)
                 {
-                    if (use.GetSource(index) == dest)
+                    if (operation.GetSource(index) == dest)
                     {
-                        use.SetSource(index, source);
+                        operation.SetSource(index, source);
+                        sourceUsesList?.Add(operation);
                     }
                 }
             }
@@ -286,9 +304,19 @@ namespace ARMeilleure.CodeGen.Optimizations
 
         private static void RemoveAllUses(Dictionary<Operand, List<Operation>> uses, Operation node)
         {
+            RemoveAllUsesExcept(uses, node, null);
+        }
+
+        private static void RemoveAllUsesExcept(Dictionary<Operand, List<Operation>> uses, Operation node, Operand? exception)
+        {
             for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
             {
                 Operand source = node.GetSource(srcIndex);
+
+                if (source == exception)
+                {
+                    continue;
+                }
 
                 if (source.Kind == OperandKind.LocalVariable)
                 {

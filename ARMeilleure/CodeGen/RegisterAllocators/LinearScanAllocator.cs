@@ -938,7 +938,7 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
                     continue;
                 }
 
-                foreach (var node in BottomOperations(block))
+                for (var node = block.Operations.Last; node != null; node = node.ListPrevious)
                 {
                     operationPos -= InstructionGap;
 
@@ -1003,18 +1003,6 @@ namespace ARMeilleure.CodeGen.RegisterAllocators
         private static int GetRegisterId(Register register)
         {
             return (register.Index << 1) | (register.Type == RegisterType.Vector ? 1 : 0);
-        }
-
-        private static IEnumerable<Operation> BottomOperations(BasicBlock block)
-        {
-            var node = block.Operations.Last;
-
-            while (node != null && node.Instruction != Instruction.Phi)
-            {
-                yield return node;
-
-                node = node.ListPrevious;
-            }
         }
 
         private static void Sources(Operation node, Action<Operand> action)
