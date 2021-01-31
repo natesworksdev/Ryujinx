@@ -28,9 +28,9 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     nextNode = operation.ListNext;
 
-                    HandleConstantRegCopy(cctx.Cfg, block.Operations, operation, operation);
-                    HandleDestructiveRegCopy(cctx.Cfg, block.Operations, operation, operation);
-                    HandleConstrainedRegCopy(cctx.Cfg, block.Operations, operation, operation);
+                    HandleConstantRegCopy(cctx.Cfg, block.Operations, operation);
+                    HandleDestructiveRegCopy(cctx.Cfg, block.Operations, operation);
+                    HandleConstrainedRegCopy(cctx.Cfg, block.Operations, operation);
 
                     switch (operation.Instruction)
                     {
@@ -55,44 +55,44 @@ namespace ARMeilleure.CodeGen.X86
                             // being called, as mandated by the ABI.
                             if (callConv == CallConvName.Windows)
                             {
-                                HandleCallWindowsAbi(cctx.Cfg, block.Operations, stackAlloc, operation, operation);
+                                HandleCallWindowsAbi(cctx.Cfg, block.Operations, stackAlloc, operation);
                             }
                             else /* if (callConv == CallConvName.SystemV) */
                             {
-                                HandleCallSystemVAbi(cctx.Cfg, block.Operations, operation, operation);
+                                HandleCallSystemVAbi(cctx.Cfg, block.Operations, operation);
                             }
                             break;
 
                         case Instruction.ConvertToFPUI:
-                            HandleConvertToFPUI(cctx.Cfg, block.Operations, operation, operation);
+                            HandleConvertToFPUI(cctx.Cfg, block.Operations, operation);
                             break;
 
                         case Instruction.LoadArgument:
                             if (callConv == CallConvName.Windows)
                             {
-                                nextNode = HandleLoadArgumentWindowsAbi(cctx, block.Operations, operation, preservedArgs, operation);
+                                nextNode = HandleLoadArgumentWindowsAbi(cctx, block.Operations, operation, preservedArgs);
                             }
                             else /* if (callConv == CallConvName.SystemV) */
                             {
-                                nextNode = HandleLoadArgumentSystemVAbi(cctx, block.Operations, operation, preservedArgs, operation);
+                                nextNode = HandleLoadArgumentSystemVAbi(cctx, block.Operations, operation, preservedArgs);
                             }
                             break;
 
                         case Instruction.Negate:
                             if (!operation.GetSource(0).Type.IsInteger())
                             {
-                                HandleNegate(cctx.Cfg, block.Operations, operation, operation);
+                                HandleNegate(cctx.Cfg, block.Operations, operation);
                             }
                             break;
 
                         case Instruction.Return:
                             if (callConv == CallConvName.Windows)
                             {
-                                HandleReturnWindowsAbi(cctx, block.Operations, operation, preservedArgs, operation);
+                                HandleReturnWindowsAbi(cctx, block.Operations, operation, preservedArgs);
                             }
                             else /* if (callConv == CallConvName.SystemV) */
                             {
-                                HandleReturnSystemVAbi(block.Operations, operation, operation);
+                                HandleReturnSystemVAbi(block.Operations, operation);
                             }
                             break;
 
@@ -110,7 +110,7 @@ namespace ARMeilleure.CodeGen.X86
                         case Instruction.VectorInsert8:
                             if (!HardwareCapabilities.SupportsSse41)
                             {
-                                HandleVectorInsert8(cctx.Cfg, block.Operations, operation, operation);
+                                HandleVectorInsert8(cctx.Cfg, block.Operations, operation);
                             }
                             break;
 
@@ -126,7 +126,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static void HandleConstantRegCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleConstantRegCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             if (operation.SourcesCount == 0 || IsIntrinsic(operation.Instruction))
             {
@@ -147,7 +147,7 @@ namespace ARMeilleure.CodeGen.X86
                     // - Insert a copy with the constant value (as integer) to a GPR.
                     // - Insert a copy from the GPR to a XMM register.
                     // - Replace the constant use with the XMM register.
-                    src1 = AddXmmCopy(cfg, nodes, node, src1);
+                    src1 = AddXmmCopy(cfg, nodes, operation, src1);
 
                     operation.SetSource(0, src1);
                 }
@@ -176,7 +176,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     if (src1.Kind == OperandKind.Constant)
                     {
-                        src1 = AddCopy(cfg, nodes, node, src1);
+                        src1 = AddCopy(cfg, nodes, operation, src1);
 
                         operation.SetSource(0, src1);
                     }
@@ -194,20 +194,20 @@ namespace ARMeilleure.CodeGen.X86
             {
                 if (!src2.Type.IsInteger())
                 {
-                    src2 = AddXmmCopy(cfg, nodes, node, src2);
+                    src2 = AddXmmCopy(cfg, nodes, operation, src2);
 
                     operation.SetSource(1, src2);
                 }
                 else if (!HasConstSrc2(inst) || CodeGenCommon.IsLongConst(src2))
                 {
-                    src2 = AddCopy(cfg, nodes, node, src2);
+                    src2 = AddCopy(cfg, nodes, operation, src2);
 
                     operation.SetSource(1, src2);
                 }
             }
         }
 
-        private static void HandleConstrainedRegCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleConstrainedRegCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             Operand dest = operation.Destination;
 
@@ -227,8 +227,8 @@ namespace ARMeilleure.CodeGen.X86
                         // - The value at the memory location is loaded to RDX:RAX.
                         void SplitOperand(Operand source, Operand lr, Operand hr)
                         {
-                            nodes.AddBefore(node, Operation(Instruction.VectorExtract, lr, source, Const(0)));
-                            nodes.AddBefore(node, Operation(Instruction.VectorExtract, hr, source, Const(1)));
+                            nodes.AddBefore(operation, Operation(Instruction.VectorExtract, lr, source, Const(0)));
+                            nodes.AddBefore(operation, Operation(Instruction.VectorExtract, hr, source, Const(1)));
                         }
 
                         Operand rax = Gpr(X86Register.Rax, OperandType.I64);
@@ -239,8 +239,8 @@ namespace ARMeilleure.CodeGen.X86
                         SplitOperand(operation.GetSource(1), rax, rdx);
                         SplitOperand(operation.GetSource(2), rbx, rcx);
 
-                        node = nodes.AddAfter(node, Operation(Instruction.VectorCreateScalar, dest, rax));
-                        nodes.AddAfter(node, Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1)));
+                        operation = nodes.AddAfter(operation, Operation(Instruction.VectorCreateScalar, dest, rax));
+                        nodes.AddAfter(operation, Operation(Instruction.VectorInsert, dest, dest, rdx, Const(1)));
 
                         operation.SetDestinations(new Operand[] { rdx, rax });
 
@@ -256,17 +256,17 @@ namespace ARMeilleure.CodeGen.X86
 
                         Operand rax = Gpr(X86Register.Rax, expected.Type);
 
-                        nodes.AddBefore(node, Operation(Instruction.Copy, rax, expected));
+                        nodes.AddBefore(operation, Operation(Instruction.Copy, rax, expected));
 
                         // We need to store the new value into a temp, since it may
                         // be a constant, and this instruction does not support immediate operands.
                         Operand temp = cfg.AllocateLocal(newValue.Type);
 
-                        nodes.AddBefore(node, Operation(Instruction.Copy, temp, newValue));
+                        nodes.AddBefore(operation, Operation(Instruction.Copy, temp, newValue));
 
                         operation.SetSources(new Operand[] { operation.GetSource(0), rax, temp });
 
-                        nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
+                        nodes.AddAfter(operation, Operation(Instruction.Copy, dest, rax));
 
                         operation.Destination = rax;
                     }
@@ -288,10 +288,10 @@ namespace ARMeilleure.CodeGen.X86
                         Operand rax = Gpr(X86Register.Rax, src1.Type);
                         Operand rdx = Gpr(X86Register.Rdx, src1.Type);
 
-                        nodes.AddBefore(node, Operation(Instruction.Copy,    rax, src1));
-                        nodes.AddBefore(node, Operation(Instruction.Clobber, rdx));
+                        nodes.AddBefore(operation, Operation(Instruction.Copy,    rax, src1));
+                        nodes.AddBefore(operation, Operation(Instruction.Clobber, rdx));
 
-                        nodes.AddAfter(node, Operation(Instruction.Copy, dest, rax));
+                        nodes.AddAfter(operation, Operation(Instruction.Copy, dest, rax));
 
                         operation.SetDestinations(new Operand[] { rdx, rax });
 
@@ -313,7 +313,7 @@ namespace ARMeilleure.CodeGen.X86
                     {
                         Operand xmm0 = Xmm(X86Register.Xmm0, OperandType.V128);
 
-                        nodes.AddBefore(node, Operation(Instruction.Copy, xmm0, operation.GetSource(2)));
+                        nodes.AddBefore(operation, Operation(Instruction.Copy, xmm0, operation.GetSource(2)));
 
                         operation.SetSource(2, xmm0);
                     }
@@ -333,11 +333,11 @@ namespace ARMeilleure.CodeGen.X86
                     Operand rax = Gpr(X86Register.Rax, src1.Type);
                     Operand rdx = Gpr(X86Register.Rdx, src1.Type);
 
-                    nodes.AddBefore(node, Operation(Instruction.Copy, rax, src1));
+                    nodes.AddBefore(operation, Operation(Instruction.Copy, rax, src1));
 
                     operation.SetSource(0, rax);
 
-                    nodes.AddAfter(node, Operation(Instruction.Copy, dest, rdx));
+                    nodes.AddAfter(operation, Operation(Instruction.Copy, dest, rdx));
 
                     operation.SetDestinations(new Operand[] { rdx, rax });
 
@@ -354,7 +354,7 @@ namespace ARMeilleure.CodeGen.X86
                     {
                         Operand rcx = Gpr(X86Register.Rcx, OperandType.I32);
 
-                        nodes.AddBefore(node, Operation(Instruction.Copy, rcx, operation.GetSource(1)));
+                        nodes.AddBefore(operation, Operation(Instruction.Copy, rcx, operation.GetSource(1)));
 
                         operation.SetSource(1, rcx);
                     }
@@ -364,7 +364,7 @@ namespace ARMeilleure.CodeGen.X86
             }
         }
 
-        private static void HandleDestructiveRegCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleDestructiveRegCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             if (operation.DestinationsCount == 0 || operation.SourcesCount == 0)
             {
@@ -401,17 +401,17 @@ namespace ARMeilleure.CodeGen.X86
                     // local would be overwritten.
                     Operand temp = cfg.AllocateLocal(dest.Type);
 
-                    nodes.AddBefore(node, Operation(Instruction.Copy, temp, src1));
+                    nodes.AddBefore(operation, Operation(Instruction.Copy, temp, src1));
 
                     operation.SetSource(0, temp);
 
-                    nodes.AddAfter(node, Operation(Instruction.Copy, dest, temp));
+                    nodes.AddAfter(operation, Operation(Instruction.Copy, dest, temp));
 
                     operation.Destination = temp;
                 }
                 else
                 {
-                    nodes.AddBefore(node, Operation(Instruction.Copy, dest, src1));
+                    nodes.AddBefore(operation, Operation(Instruction.Copy, dest, src1));
 
                     operation.SetSource(0, dest);
                 }
@@ -425,24 +425,24 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     Operand temp = cfg.AllocateLocal(dest.Type);
 
-                    nodes.AddBefore(node, Operation(Instruction.Copy, temp, src3));
+                    nodes.AddBefore(operation, Operation(Instruction.Copy, temp, src3));
 
                     operation.SetSource(2, temp);
 
-                    nodes.AddAfter(node, Operation(Instruction.Copy, dest, temp));
+                    nodes.AddAfter(operation, Operation(Instruction.Copy, dest, temp));
 
                     operation.Destination = temp;
                 }
                 else
                 {
-                    nodes.AddBefore(node, Operation(Instruction.Copy, dest, src3));
+                    nodes.AddBefore(operation, Operation(Instruction.Copy, dest, src3));
 
                     operation.SetSource(2, dest);
                 }
             }
         }
 
-        private static void HandleConvertToFPUI(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleConvertToFPUI(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             // Unsigned integer to FP conversions are not supported on X86.
             // We need to turn them into signed integer to FP conversions, and
@@ -452,7 +452,7 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(source.Type.IsInteger(), $"Invalid source type \"{source.Type}\".");
 
-            var currentNode = node;
+            var currentOperation = operation;
 
             if (source.Type == OperandType.I32)
             {
@@ -460,8 +460,8 @@ namespace ARMeilleure.CodeGen.X86
                 // and then use the 64-bits signed conversion instructions.
                 Operand zex = cfg.AllocateLocal(OperandType.I64);
 
-                node = nodes.AddAfter(node, Operation(Instruction.ZeroExtend32, zex,  source));
-                node = nodes.AddAfter(node, Operation(Instruction.ConvertToFP,  dest, zex));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ZeroExtend32, zex,  source));
+                nodes.AddAfter(operation, Operation(Instruction.ConvertToFP,  dest, zex));
             }
             else /* if (source.Type == OperandType.I64) */
             {
@@ -480,23 +480,23 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operand lsbF = cfg.AllocateLocal(dest.Type);
 
-                node = nodes.AddAfter(node, Operation(Instruction.Copy, lsb,  source));
-                node = nodes.AddAfter(node, Operation(Instruction.Copy, half, source));
+                operation = nodes.AddAfter(operation, Operation(Instruction.Copy, lsb,  source));
+                operation = nodes.AddAfter(operation, Operation(Instruction.Copy, half, source));
 
-                node = nodes.AddAfter(node, Operation(Instruction.BitwiseAnd,   lsb,  lsb,  Const(1L)));
-                node = nodes.AddAfter(node, Operation(Instruction.ShiftRightUI, half, half, Const(1)));
+                operation = nodes.AddAfter(operation, Operation(Instruction.BitwiseAnd,   lsb,  lsb,  Const(1L)));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ShiftRightUI, half, half, Const(1)));
 
-                node = nodes.AddAfter(node, Operation(Instruction.ConvertToFP, lsbF, lsb));
-                node = nodes.AddAfter(node, Operation(Instruction.ConvertToFP, dest, half));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ConvertToFP, lsbF, lsb));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ConvertToFP, dest, half));
 
-                node = nodes.AddAfter(node, Operation(Instruction.Add, dest, dest, dest));
-                nodes.AddAfter(node, Operation(Instruction.Add, dest, dest, lsbF));
+                operation = nodes.AddAfter(operation, Operation(Instruction.Add, dest, dest, dest));
+                nodes.AddAfter(operation, Operation(Instruction.Add, dest, dest, lsbF));
             }
 
-            Delete(nodes, currentNode);
+            Delete(nodes, currentOperation);
         }
 
-        private static void HandleNegate(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleNegate(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             // There's no SSE FP negate instruction, so we need to transform that into
             // a XOR of the value to be negated with a mask with the highest bit set.
@@ -507,29 +507,29 @@ namespace ARMeilleure.CodeGen.X86
             Debug.Assert(dest.Type == OperandType.FP32 ||
                          dest.Type == OperandType.FP64, $"Invalid destination type \"{dest.Type}\".");
 
-            var currentNode = node;
+            var currentOperation = operation;
 
             Operand res = cfg.AllocateLocal(dest.Type);
 
-            node = nodes.AddAfter(node, Operation(Instruction.VectorOne, res));
+            operation = nodes.AddAfter(operation, Operation(Instruction.VectorOne, res));
 
             if (dest.Type == OperandType.FP32)
             {
-                node = nodes.AddAfter(node, new Operation(Intrinsic.X86Pslld, res, res, Const(31)));
+                operation = nodes.AddAfter(operation, new Operation(Intrinsic.X86Pslld, res, res, Const(31)));
             }
             else /* if (dest.Type == OperandType.FP64) */
             {
-                node = nodes.AddAfter(node, new Operation(Intrinsic.X86Psllq, res, res, Const(63)));
+                operation = nodes.AddAfter(operation, new Operation(Intrinsic.X86Psllq, res, res, Const(63)));
             }
 
-            node = nodes.AddAfter(node, new Operation(Intrinsic.X86Xorps, res, res, source));
+            operation = nodes.AddAfter(operation, new Operation(Intrinsic.X86Xorps, res, res, source));
 
-            nodes.AddAfter(node, Operation(Instruction.Copy, dest, res));
+            nodes.AddAfter(operation, Operation(Instruction.Copy, dest, res));
 
-            Delete(nodes, currentNode);
+            Delete(nodes, currentOperation);
         }
 
-        private static void HandleVectorInsert8(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleVectorInsert8(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             // Handle vector insertion, when SSE 4.1 is not supported.
             Operand dest = operation.Destination;
@@ -543,42 +543,41 @@ namespace ARMeilleure.CodeGen.X86
 
             Debug.Assert(index < 16);
 
-            var currentNode = node;
+            var currentOperation = operation;
 
             Operand temp1 = cfg.AllocateLocal(OperandType.I32);
             Operand temp2 = cfg.AllocateLocal(OperandType.I32);
 
-            node = nodes.AddAfter(node, Operation(Instruction.Copy, temp2, src2));
+            operation = nodes.AddAfter(operation, Operation(Instruction.Copy, temp2, src2));
 
             Operation vextOp = Operation(Instruction.VectorExtract16, temp1, src1, Const(index >> 1));
 
-            node = nodes.AddAfter(node, vextOp);
+            operation = nodes.AddAfter(operation, vextOp);
 
             if ((index & 1) != 0)
             {
-                node = nodes.AddAfter(node, Operation(Instruction.ZeroExtend8, temp1, temp1));
-                node = nodes.AddAfter(node, Operation(Instruction.ShiftLeft,   temp2, temp2, Const(8)));
-                node = nodes.AddAfter(node, Operation(Instruction.BitwiseOr,   temp1, temp1, temp2));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ZeroExtend8, temp1, temp1));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ShiftLeft,   temp2, temp2, Const(8)));
+                operation = nodes.AddAfter(operation, Operation(Instruction.BitwiseOr,   temp1, temp1, temp2));
             }
             else
             {
-                node = nodes.AddAfter(node, Operation(Instruction.ZeroExtend8, temp2, temp2));
-                node = nodes.AddAfter(node, Operation(Instruction.BitwiseAnd,  temp1, temp1, Const(0xff00)));
-                node = nodes.AddAfter(node, Operation(Instruction.BitwiseOr,   temp1, temp1, temp2));
+                operation = nodes.AddAfter(operation, Operation(Instruction.ZeroExtend8, temp2, temp2));
+                operation = nodes.AddAfter(operation, Operation(Instruction.BitwiseAnd,  temp1, temp1, Const(0xff00)));
+                operation = nodes.AddAfter(operation, Operation(Instruction.BitwiseOr,   temp1, temp1, temp2));
             }
 
             Operation vinsOp = Operation(Instruction.VectorInsert16, dest, src1, temp1, Const(index >> 1));
 
-            nodes.AddAfter(node, vinsOp);
+            nodes.AddAfter(operation, vinsOp);
 
-            Delete(nodes, currentNode);
+            Delete(nodes, currentOperation);
         }
 
         private static void HandleCallWindowsAbi(
             ControlFlowGraph cfg,
             IntrusiveList<Operation> nodes,
             StackAllocator stackAlloc,
-            Operation node,
             Operation operation)
         {
             // Handle struct arguments.
@@ -616,7 +615,7 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation allocOp = Operation(Instruction.StackAlloc, arg0Reg, Const(stackOffset));
 
-                nodes.AddBefore(node, allocOp);
+                nodes.AddBefore(operation, allocOp);
 
                 retArgs = 1;
             }
@@ -649,11 +648,13 @@ namespace ARMeilleure.CodeGen.X86
 
                     int stackOffset = AllocateOnStack(source.Type.GetSizeInBytes());
 
-                    nodes.AddBefore(node, Operation(Instruction.StackAlloc, stackAddr, Const(stackOffset)));
+                    nodes.AddBefore(operation, Operation(Instruction.StackAlloc, stackAddr, Const(stackOffset)));
 
                     Operation storeOp = Operation(Instruction.Store, null, stackAddr, source);
 
-                    HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(node, storeOp), storeOp);
+                    nodes.AddBefore(operation, storeOp);
+
+                    HandleConstantRegCopy(cfg, nodes, storeOp);
 
                     operation.SetSource(index, stackAddr);
                 }
@@ -679,7 +680,9 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(node, copyOp), copyOp);
+                nodes.AddBefore(operation, copyOp);
+
+                HandleConstantRegCopy(cfg, nodes, copyOp);
 
                 sources[1 + retArgs + index] = argReg;
             }
@@ -694,7 +697,9 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation spillOp = Operation(Instruction.SpillArg, null, offset, source);
 
-                HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(node, spillOp), spillOp);
+                nodes.AddBefore(operation, spillOp);
+
+                HandleConstantRegCopy(cfg, nodes, spillOp);
             }
 
             if (operation.DestinationsCount != 0)
@@ -705,11 +710,11 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     Operand retValueAddr = cfg.AllocateLocal(OperandType.I64);
 
-                    nodes.AddBefore(node, Operation(Instruction.Copy, retValueAddr, arg0Reg.Value));
+                    nodes.AddBefore(operation, Operation(Instruction.Copy, retValueAddr, arg0Reg.Value));
 
                     Operation loadOp = Operation(Instruction.Load, dest, retValueAddr);
 
-                    nodes.AddAfter(node, loadOp);
+                    nodes.AddAfter(operation, loadOp);
 
                     operation.SetDestinations(Array.Empty<Operand>());
                 }
@@ -721,7 +726,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation copyOp = Operation(Instruction.Copy, dest, retReg);
 
-                    nodes.AddAfter(node, copyOp);
+                    nodes.AddAfter(operation, copyOp);
 
                     operation.Destination = retReg;
                 }
@@ -730,7 +735,7 @@ namespace ARMeilleure.CodeGen.X86
             operation.SetSources(sources);
         }
 
-        private static void HandleCallSystemVAbi(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleCallSystemVAbi(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation)
         {
             List<Operand> sources = new List<Operand>
             {
@@ -772,8 +777,8 @@ namespace ARMeilleure.CodeGen.X86
                     Operand argReg  = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
                     Operand argReg2 = Gpr(CallingConvention.GetIntArgumentRegister(intCount++), OperandType.I64);
 
-                    nodes.AddBefore(node, Operation(Instruction.VectorExtract, argReg,  source, Const(0)));
-                    nodes.AddBefore(node, Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
+                    nodes.AddBefore(operation, Operation(Instruction.VectorExtract, argReg,  source, Const(0)));
+                    nodes.AddBefore(operation, Operation(Instruction.VectorExtract, argReg2, source, Const(1)));
 
                     continue;
                 }
@@ -786,7 +791,9 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(node, copyOp), copyOp);
+                    nodes.AddBefore(operation, copyOp);
+
+                    HandleConstantRegCopy(cfg, nodes, copyOp);
 
                     sources.Add(argReg);
                 }
@@ -796,7 +803,9 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation spillOp = Operation(Instruction.SpillArg, null, offset, source);
 
-                    HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(node, spillOp), spillOp);
+                    nodes.AddBefore(operation, spillOp);
+
+                    HandleConstantRegCopy(cfg, nodes, spillOp);
 
                     stackOffset += source.Type.GetSizeInBytes();
                 }
@@ -811,8 +820,8 @@ namespace ARMeilleure.CodeGen.X86
                     Operand retLReg = Gpr(CallingConvention.GetIntReturnRegister(),     OperandType.I64);
                     Operand retHReg = Gpr(CallingConvention.GetIntReturnRegisterHigh(), OperandType.I64);
 
-                    node = nodes.AddAfter(node, Operation(Instruction.VectorCreateScalar, dest, retLReg));
-                    nodes.AddAfter(node, Operation(Instruction.VectorInsert, dest, dest, retHReg, Const(1)));
+                    operation = nodes.AddAfter(operation, Operation(Instruction.VectorCreateScalar, dest, retLReg));
+                    nodes.AddAfter(operation, Operation(Instruction.VectorInsert, dest, dest, retHReg, Const(1)));
 
                     operation.SetDestinations(Array.Empty<Operand>());
                 }
@@ -824,7 +833,7 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation copyOp = Operation(Instruction.Copy, dest, retReg);
 
-                    nodes.AddAfter(node, copyOp);
+                    nodes.AddAfter(operation, copyOp);
 
                     operation.Destination = retReg;
                 }
@@ -884,7 +893,9 @@ namespace ARMeilleure.CodeGen.X86
 
                     Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                    HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(operation, copyOp), copyOp);
+                    nodes.AddBefore(operation, copyOp);
+
+                    HandleConstantRegCopy(cfg, nodes, copyOp);
 
                     sources.Add(argReg);
                 }
@@ -932,7 +943,9 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation copyOp = Operation(Instruction.Copy, argReg, source);
 
-                HandleConstantRegCopy(cfg, nodes, nodes.AddBefore(operation, copyOp), copyOp);
+                nodes.AddBefore(operation, copyOp);
+
+                HandleConstantRegCopy(cfg, nodes, copyOp);
 
                 sources[1 + index] = argReg;
             }
@@ -954,9 +967,8 @@ namespace ARMeilleure.CodeGen.X86
         private static Operation HandleLoadArgumentWindowsAbi(
             CompilerContext cctx,
             IntrusiveList<Operation> nodes,
-            Operation node,
-            Operand?[] preservedArgs,
-            Operation operation)
+            Operation operation,
+            Operand?[] preservedArgs)
         {
             Operand source = operation.GetSource(0);
 
@@ -1004,25 +1016,24 @@ namespace ARMeilleure.CodeGen.X86
                     ? Instruction.Load
                     : Instruction.Copy, dest, preservedArgs[index].Value);
 
-                var newNode = nodes.AddBefore(node, argCopyOp);
+                var newOperation = nodes.AddBefore(operation, argCopyOp);
 
-                Delete(nodes, node);
+                Delete(nodes, operation);
 
-                return newNode;
+                return newOperation;
             }
             else
             {
                 // TODO: Pass on stack.
-                return node;
+                return operation;
             }
         }
 
         private static Operation HandleLoadArgumentSystemVAbi(
             CompilerContext cctx,
             IntrusiveList<Operation> nodes,
-            Operation node,
-            Operand?[] preservedArgs,
-            Operation operation)
+            Operation operation,
+            Operand?[] preservedArgs)
         {
             Operand source = operation.GetSource(0);
 
@@ -1106,25 +1117,24 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation argCopyOp = Operation(Instruction.Copy, dest, preservedArgs[index].Value);
 
-                var newNode = nodes.AddBefore(node, argCopyOp);
+                var newOperation = nodes.AddBefore(operation, argCopyOp);
 
-                Delete(nodes, node);
+                Delete(nodes, operation);
 
-                return newNode;
+                return newOperation;
             }
             else
             {
                 // TODO: Pass on stack.
-                return node;
+                return operation;
             }
         }
 
         private static void HandleReturnWindowsAbi(
             CompilerContext cctx,
             IntrusiveList<Operation> nodes,
-            Operation node,
-            Operand?[] preservedArgs,
-            Operation operation)
+            Operation operation,
+            Operand?[] preservedArgs)
         {
             if (operation.SourcesCount == 0)
             {
@@ -1165,19 +1175,19 @@ namespace ARMeilleure.CodeGen.X86
             {
                 Operation retStoreOp = Operation(Instruction.Store, null, retReg, source);
 
-                nodes.AddBefore(node, retStoreOp);
+                nodes.AddBefore(operation, retStoreOp);
             }
             else
             {
                 Operation retCopyOp = Operation(Instruction.Copy, retReg, source);
 
-                nodes.AddBefore(node, retCopyOp);
+                nodes.AddBefore(operation, retCopyOp);
             }
 
             operation.SetSources(Array.Empty<Operand>());
         }
 
-        private static void HandleReturnSystemVAbi(IntrusiveList<Operation> nodes, Operation node, Operation operation)
+        private static void HandleReturnSystemVAbi(IntrusiveList<Operation> nodes, Operation operation)
         {
             if (operation.SourcesCount == 0)
             {
@@ -1191,8 +1201,8 @@ namespace ARMeilleure.CodeGen.X86
                 Operand retLReg = Gpr(CallingConvention.GetIntReturnRegister(),     OperandType.I64);
                 Operand retHReg = Gpr(CallingConvention.GetIntReturnRegisterHigh(), OperandType.I64);
 
-                nodes.AddBefore(node, Operation(Instruction.VectorExtract, retLReg, source, Const(0)));
-                nodes.AddBefore(node, Operation(Instruction.VectorExtract, retHReg, source, Const(1)));
+                nodes.AddBefore(operation, Operation(Instruction.VectorExtract, retLReg, source, Const(0)));
+                nodes.AddBefore(operation, Operation(Instruction.VectorExtract, retHReg, source, Const(1)));
             }
             else
             {
@@ -1202,30 +1212,30 @@ namespace ARMeilleure.CodeGen.X86
 
                 Operation retCopyOp = Operation(Instruction.Copy, retReg, source);
 
-                nodes.AddBefore(node, retCopyOp);
+                nodes.AddBefore(operation, retCopyOp);
             }
         }
 
-        private static Operand AddXmmCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operand source)
+        private static Operand AddXmmCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation, Operand source)
         {
             Operand temp = cfg.AllocateLocal(source.Type);
 
-            Operand intConst = AddCopy(cfg, nodes, node, GetIntConst(source));
+            Operand intConst = AddCopy(cfg, nodes, operation, GetIntConst(source));
 
             Operation copyOp = Operation(Instruction.VectorCreateScalar, temp, intConst);
 
-            nodes.AddBefore(node, copyOp);
+            nodes.AddBefore(operation, copyOp);
 
             return temp;
         }
 
-        private static Operand AddCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation node, Operand source)
+        private static Operand AddCopy(ControlFlowGraph cfg, IntrusiveList<Operation> nodes, Operation operation, Operand source)
         {
             Operand temp = cfg.AllocateLocal(source.Type);
 
             Operation copyOp = Operation(Instruction.Copy, temp, source);
 
-            nodes.AddBefore(node, copyOp);
+            nodes.AddBefore(operation, copyOp);
 
             return temp;
         }
