@@ -21,24 +21,21 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
-                    Node node = block.Operations.First;
+                    var operation = block.Operations.First;
 
-                    while (node != null)
+                    while (operation != null)
                     {
-                        Node nextNode = node.ListNext;
+                        var nextNode = operation.ListNext;
 
-                        bool isUnused = IsUnused(uses, node);
+                        bool isUnused = IsUnused(uses, operation);
 
-                        if (node is not Operation operation || isUnused)
+                        if (isUnused)
                         {
-                            if (isUnused)
-                            {
-                                RemoveNode(block, uses, node);
+                            RemoveNode(block, uses, operation);
 
-                                modified = true;
-                            }
+                            modified = true;
 
-                            node = nextNode;
+                            operation = nextNode;
 
                             continue;
                         }
@@ -47,7 +44,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         if (op != null)
                         {
-                            RemoveAllUses(uses, node);
+                            RemoveAllUses(uses, operation);
                             operation.TurnIntoCopy(op.Value);
                         }
 
@@ -55,7 +52,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                         if (op != null)
                         {
-                            RemoveAllUses(uses, node);
+                            RemoveAllUses(uses, operation);
                             operation.TurnIntoCopy(op.Value);
                         }
 
@@ -67,20 +64,20 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                                 if (modified && IsUnused(uses, operation))
                                 {
-                                    RemoveNode(block, uses, node);
+                                    RemoveNode(block, uses, operation);
                                 }
                             }
                             else if (IsPropagableCopy(operation))
                             {
                                 PropagateCopy(uses, operation);
 
-                                RemoveNode(block, uses, node);
+                                RemoveNode(block, uses, operation);
 
                                 modified = true;
                             }
                         }
 
-                        node = nextNode;
+                        operation = nextNode;
                     }
                 }
             }
@@ -99,11 +96,11 @@ namespace ARMeilleure.CodeGen.Optimizations
 
                 for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
                 {
-                    Node node = block.Operations.First;
+                    var node = block.Operations.First;
 
                     while (node != null)
                     {
-                        Node nextNode = node.ListNext;
+                        var nextNode = node.ListNext;
 
                         if (IsUnused(uses, node))
                         {
@@ -119,17 +116,17 @@ namespace ARMeilleure.CodeGen.Optimizations
             while (modified);
         }
 
-        private static Dictionary<Operand, List<Node>> BuildUses(ControlFlowGraph cfg)
+        private static Dictionary<Operand, List<Operation>> BuildUses(ControlFlowGraph cfg)
         {
-            var uses = new Dictionary<Operand, List<Node>>();
+            var uses = new Dictionary<Operand, List<Operation>>();
 
-            void AddUse(Node node, Operand source)
+            void AddUse(Operation node, Operand source)
             {
                 if (source.Kind == OperandKind.LocalVariable)
                 {
                     if (!uses.TryGetValue(source, out var list))
                     {
-                        list = new List<Node>();
+                        list = new List<Operation>();
                         uses.Add(source, list);
                     }
 
@@ -139,7 +136,7 @@ namespace ARMeilleure.CodeGen.Optimizations
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (var node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
                     {
@@ -170,7 +167,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             return uses;
         }
 
-        private static bool PropagateCompare(Dictionary<Operand, List<Node>> uses, Operation compOp)
+        private static bool PropagateCompare(Dictionary<Operand, List<Operation>> uses, Operation compOp)
         {
             // Try to propagate Compare operations into their BranchIf uses, when these BranchIf uses are in the form
             // of:
@@ -222,13 +219,8 @@ namespace ARMeilleure.CodeGen.Optimizations
                 return false;
             }
 
-            foreach (Node use in usesList)
+            foreach (var operation in usesList)
             {
-                if (use is not Operation operation)
-                {
-                    continue;
-                }
-
                 // If operation is a BranchIf and has a constant value 0 in its RHS or LHS source operands.
                 if (IsZeroBranch(operation, out Comparison otherCompType))
                 {
@@ -258,7 +250,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             return modified;
         }
 
-        private static void PropagateCopy(Dictionary<Operand, List<Node>> uses, Operation copyOp)
+        private static void PropagateCopy(Dictionary<Operand, List<Operation>> uses, Operation copyOp)
         {
             // Propagate copy source operand to all uses of the destination operand.
             Operand dest   = copyOp.Destination;
@@ -269,7 +261,7 @@ namespace ARMeilleure.CodeGen.Optimizations
                 return;
             }
 
-            foreach (Node use in usesList)
+            foreach (var use in usesList)
             {
                 for (int index = 0; index < use.SourcesCount; index++)
                 {
@@ -283,7 +275,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             uses.Remove(dest);
         }
 
-        private static void RemoveNode(BasicBlock block, Dictionary<Operand, List<Node>> uses, Node node)
+        private static void RemoveNode(BasicBlock block, Dictionary<Operand, List<Operation>> uses, Operation node)
         {
             // Remove a node from the nodes list, and also remove itself
             // from all the use lists on the operands that this node uses.
@@ -292,7 +284,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             Debug.Assert(node.DestinationsCount == 0 || !uses.ContainsKey(node.Destination));
         }
 
-        private static void RemoveAllUses(Dictionary<Operand, List<Node>> uses, Node node)
+        private static void RemoveAllUses(Dictionary<Operand, List<Operation>> uses, Operation node)
         {
             for (int srcIndex = 0; srcIndex < node.SourcesCount; srcIndex++)
             {
@@ -319,7 +311,7 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static void RemoveUse(Dictionary<Operand, List<Node>> uses, Node node, Operand source)
+        private static void RemoveUse(Dictionary<Operand, List<Operation>> uses, Operation node, Operand source)
         {
             if (uses.TryGetValue(source, out var list))
             {
@@ -334,23 +326,23 @@ namespace ARMeilleure.CodeGen.Optimizations
             }
         }
 
-        private static bool IsUnused(Dictionary<Operand, List<Node>> uses, Node node)
+        private static bool IsUnused(Dictionary<Operand, List<Operation>> uses, Operation node)
         {
             return DestIsLocalVar(node) && !uses.ContainsKey(node.Destination) && !HasSideEffects(node);
         }
 
-        private static bool DestIsLocalVar(Node node)
+        private static bool DestIsLocalVar(Operation operation)
         {
-            return node.DestinationsCount != 0 && node.Destination.Kind == OperandKind.LocalVariable;
+            return operation.DestinationsCount != 0 && operation.Destination.Kind == OperandKind.LocalVariable;
         }
 
-        private static bool HasSideEffects(Node node)
+        private static bool HasSideEffects(Operation operation)
         {
-            return (node is Operation operation) && (operation.Instruction == Instruction.Call
+            return operation.Instruction == Instruction.Call
                 || operation.Instruction == Instruction.Tailcall
                 || operation.Instruction == Instruction.CompareAndSwap
                 || operation.Instruction == Instruction.CompareAndSwap16
-                || operation.Instruction == Instruction.CompareAndSwap8);
+                || operation.Instruction == Instruction.CompareAndSwap8;
         }
 
         private static bool IsPropagableCompare(Operation operation)

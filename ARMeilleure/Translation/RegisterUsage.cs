@@ -72,10 +72,8 @@ namespace ARMeilleure.Translation
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (var operation = block.Operations.First; operation != null; operation = operation.ListNext)
                 {
-                    Operation operation = node as Operation;
-
                     for (int srcIndex = 0; srcIndex < operation.SourcesCount; srcIndex++)
                     {
                         Operand source = operation.GetSource(srcIndex);

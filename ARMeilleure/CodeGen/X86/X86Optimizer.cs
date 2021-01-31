@@ -12,11 +12,11 @@ namespace ARMeilleure.CodeGen.X86
         public static void RunPass(ControlFlowGraph cfg)
         {
             var hasAssignment = new HashSet<Operand>();
-            var singleAssignments = new Dictionary<Operand, Node>();
+            var singleAssignments = new Dictionary<Operand, Operation>();
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (var node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     for (int index = 0; index < node.DestinationsCount; index++)
                     {
@@ -39,16 +39,11 @@ namespace ARMeilleure.CodeGen.X86
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Node nextNode;
+                Operation nextNode;
 
-                for (Node node = block.Operations.First; node != null; node = nextNode)
+                for (var operation = block.Operations.First; operation != null; operation = nextNode)
                 {
-                    nextNode = node.ListNext;
-
-                    if (node is not Operation operation)
-                    {
-                        continue;
-                    }
+                    nextNode = operation.ListNext;
 
                     // Insert copies for constants that can't fit on a 32-bits immediate.
                     // Doing this early unblocks a few optimizations.
@@ -113,7 +108,7 @@ namespace ARMeilleure.CodeGen.X86
             Optimizer.RemoveUnusedNodes(cfg);
         }
 
-        private static Operand? GetMemoryOperandOrNull(Dictionary<Operand, Node> singleAssignments, Operand addr, OperandType type)
+        private static Operand? GetMemoryOperandOrNull(Dictionary<Operand, Operation> singleAssignments, Operand addr, OperandType type)
         {
             Operand baseOp = addr;
 
@@ -140,7 +135,7 @@ namespace ARMeilleure.CodeGen.X86
             return MemoryOp(type, baseOp, indexOp, scale, imm);
         }
 
-        private static int GetConstOp(Dictionary<Operand, Node> singleAssignments, ref Operand baseOp)
+        private static int GetConstOp(Dictionary<Operand, Operation> singleAssignments, ref Operand baseOp)
         {
             Operation operation = GetAsgOpWithInst(singleAssignments, baseOp, Instruction.Add);
 
@@ -182,7 +177,7 @@ namespace ARMeilleure.CodeGen.X86
             return constOp.AsInt32();
         }
 
-        private static (Operand?, Multiplier) GetIndexOp(Dictionary<Operand, Node> singleAssignments, ref Operand baseOp)
+        private static (Operand?, Multiplier) GetIndexOp(Dictionary<Operand, Operation> singleAssignments, ref Operand baseOp)
         {
             Operation addOp = GetAsgOpWithInst(singleAssignments, baseOp, Instruction.Add);
 
@@ -238,27 +233,22 @@ namespace ARMeilleure.CodeGen.X86
             return (indexOp, scale);
         }
 
-        private static Operation GetAsgOpWithInst(Dictionary<Operand, Node> singleAssignments, Operand op, Instruction inst)
+        private static Operation GetAsgOpWithInst(Dictionary<Operand, Operation> singleAssignments, Operand op, Instruction inst)
         {
             // If we have multiple assignments, folding is not safe
             // as the value may be different depending on the
             // control flow path.
-            if (!singleAssignments.TryGetValue(op, out Node asgOp))
+            if (!singleAssignments.TryGetValue(op, out Operation asgOp))
             {
                 return null;
             }
 
-            if (asgOp is not Operation operation)
+            if (asgOp.Instruction != inst)
             {
                 return null;
             }
 
-            if (operation.Instruction != inst)
-            {
-                return null;
-            }
-
-            return operation;
+            return asgOp;
         }
 
         private static bool IsMemoryLoadOrStore(Instruction inst)

@@ -59,8 +59,6 @@ namespace ARMeilleure.Translation
             {
                 Operand?[] localDefs = new Operand?[RegisterConsts.TotalCount];
 
-                Node node = block.Operations.First;
-
                 Operand RenameLocal(Operand operand)
                 {
                     if (operand.Kind == OperandKind.Register)
@@ -73,28 +71,23 @@ namespace ARMeilleure.Translation
                     return operand;
                 }
 
-                while (node != null)
+                for (var operation = block.Operations.First; operation != null; operation = operation.ListNext)
                 {
-                    if (node is Operation operation)
+                    for (int index = 0; index < operation.SourcesCount; index++)
                     {
-                        for (int index = 0; index < operation.SourcesCount; index++)
-                        {
-                            operation.SetSource(index, RenameLocal(operation.GetSource(index)));
-                        }
-
-                        Operand dest = operation.Destination;
-
-                        if (operation.DestinationsCount != 0 && dest.Kind == OperandKind.Register)
-                        {
-                            Operand local = cfg.AllocateLocal(dest.Type);
-
-                            localDefs[GetIdFromRegister(dest.GetRegister())] = local;
-
-                            operation.Destination = local;
-                        }
+                        operation.SetSource(index, RenameLocal(operation.GetSource(index)));
                     }
 
-                    node = node.ListNext;
+                    Operand dest = operation.Destination;
+
+                    if (operation.DestinationsCount != 0 && dest.Kind == OperandKind.Register)
+                    {
+                        Operand local = cfg.AllocateLocal(dest.Type);
+
+                        localDefs[GetIdFromRegister(dest.GetRegister())] = local;
+
+                        operation.Destination = local;
+                    }
                 }
 
                 for (int index = 0; index < RegisterConsts.TotalCount; index++)
@@ -130,7 +123,7 @@ namespace ARMeilleure.Translation
             {
                 Operand?[] localDefs = new Operand?[RegisterConsts.TotalCount];
 
-                Node node = block.Operations.First;
+                var node = block.Operations.First;
 
                 Operand RenameGlobal(Operand operand)
                 {
@@ -153,17 +146,12 @@ namespace ARMeilleure.Translation
                     return operand;
                 }
 
-                while (node != null)
+                for (var operation = block.Operations.First; operation != null; operation = operation.ListNext)
                 {
-                    if (node is Operation operation)
+                    for (int index = 0; index < operation.SourcesCount; index++)
                     {
-                        for (int index = 0; index < operation.SourcesCount; index++)
-                        {
-                            operation.SetSource(index, RenameGlobal(operation.GetSource(index)));
-                        }
+                        operation.SetSource(index, RenameGlobal(operation.GetSource(index)));
                     }
-
-                    node = node.ListNext;
                 }
             }
         }
@@ -238,19 +226,17 @@ namespace ARMeilleure.Translation
 
         private static void AddPhi(BasicBlock block, Operation phi)
         {
-            Node node = block.Operations.First;
+            Operation operation;
 
-            if (node != null)
+            for (operation = block.Operations.First;
+                operation != null && operation.Instruction == Instruction.Phi;
+                operation = operation.ListNext)
             {
-                while (node.ListNext is Operation operation && operation.Instruction == Instruction.Phi)
-                {
-                    node = node.ListNext;
-                }
             }
 
-            if (node is Operation operation1 && operation1.Instruction == Instruction.Phi)
+            if (operation.Instruction == Instruction.Phi)
             {
-                block.Operations.AddAfter(node, phi);
+                block.Operations.AddAfter(operation, phi);
             }
             else
             {

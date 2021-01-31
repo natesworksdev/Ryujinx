@@ -170,7 +170,7 @@ namespace ARMeilleure.Diagnostics
             }
         }
 
-        private void DumpNode(Node node)
+        private void DumpNode(Operation node)
         {
             for (int index = 0; index < node.DestinationsCount; index++)
             {
@@ -258,7 +258,7 @@ namespace ARMeilleure.Diagnostics
 
                 dumper.IncreaseIndentation();
 
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (var node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     dumper.Indent();
                     dumper.DumpNode(node);

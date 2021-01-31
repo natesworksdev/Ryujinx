@@ -14,7 +14,7 @@ namespace ARMeilleure.IntermediateRepresentation
         public BasicBlock ListPrevious { get; set; }
         public BasicBlock ListNext { get; set; }
 
-        public IntrusiveList<Node> Operations { get; }
+        public IntrusiveList<Operation> Operations { get; }
 
         public List<BasicBlock> Predecessors { get; }
 
@@ -29,7 +29,7 @@ namespace ARMeilleure.IntermediateRepresentation
         {
             _successors = new List<BasicBlock>();
 
-            Operations = new IntrusiveList<Node>();
+            Operations = new IntrusiveList<Operation>();
             Predecessors = new List<BasicBlock>();
             DominanceFrontiers = new HashSet<BasicBlock>();
 
@@ -77,9 +77,9 @@ namespace ARMeilleure.IntermediateRepresentation
             _successors[index] = block;
         }
 
-        public void Append(Node node)
+        public void Append(Operation operation)
         {
-            var lastOp = Operations.Last as Operation;
+            var lastOp = Operations.Last;
 
             // Append node before terminal or to end if no terminal.
             switch (lastOp?.Instruction)
@@ -87,16 +87,16 @@ namespace ARMeilleure.IntermediateRepresentation
                 case Instruction.Return:
                 case Instruction.Tailcall:
                 case Instruction.BranchIf:
-                    Operations.AddBefore(lastOp, node);
+                    Operations.AddBefore(lastOp, operation);
                     break;
 
                 default:
-                    Operations.AddLast(node);
+                    Operations.AddLast(operation);
                     break;
             }
         }
 
-        public Node GetLastOp()
+        public Operation GetLastOp()
         {
             return Operations.Last;
         }

@@ -27,7 +27,7 @@ namespace ARMeilleure.Translation
 
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                for (var node = block.Operations.First; node != null; node = node.ListNext)
                 {
                     if (node.DestinationsCount != 0 && node.Destination.Kind == OperandKind.Register)
                     {

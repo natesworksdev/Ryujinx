@@ -162,12 +162,9 @@ namespace ARMeilleure.CodeGen.X86
                 {
                     context.EnterBlock(block);
 
-                    for (Node node = block.Operations.First; node != null; node = node.ListNext)
+                    for (var node = block.Operations.First; node != null; node = node.ListNext)
                     {
-                        if (node is Operation operation)
-                        {
-                            GenerateOperation(context, operation);
-                        }
+                        GenerateOperation(context, node);
                     }
 
                     if (block.SuccessorCount == 0)
@@ -1606,9 +1603,9 @@ namespace ARMeilleure.CodeGen.X86
             context.Assembler.Pshufd(dest, dest, 0xfc);
         }
 
-        private static bool MatchOperation(Node node, Instruction inst, OperandType destType, Register destReg)
+        private static bool MatchOperation(Operation operation, Instruction inst, OperandType destType, Register destReg)
         {
-            if (!(node is Operation operation) || node.DestinationsCount == 0)
+            if (operation.DestinationsCount == 0)
             {
                 return false;
             }

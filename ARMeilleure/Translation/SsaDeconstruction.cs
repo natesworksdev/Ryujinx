@@ -10,30 +10,30 @@ namespace ARMeilleure.Translation
         {
             for (BasicBlock block = cfg.Blocks.First; block != null; block = block.ListNext)
             {
-                Node node = block.Operations.First;
+                var operation = block.Operations.First;
 
-                while (node is Operation phi && phi.Instruction == Instruction.Phi)
+                while (operation != null && operation.Instruction == Instruction.Phi)
                 {
-                    Node nextNode = node.ListNext;
+                    var nextNode = operation.ListNext;
 
-                    Operand local = cfg.AllocateLocal(phi.Destination.Type);
+                    Operand local = cfg.AllocateLocal(operation.Destination.Type);
 
-                    for (int index = 0; index < phi.SourcesCount / 2; index++)
+                    for (int index = 0; index < operation.SourcesCount / 2; index++)
                     {
-                        BasicBlock predecessor = phi.GetPhiIncomingBlock(cfg, index);
+                        BasicBlock predecessor = operation.GetPhiIncomingBlock(cfg, index);
 
-                        Operand source = phi.GetPhiIncomingValue(index);
+                        Operand source = operation.GetPhiIncomingValue(index);
 
                         predecessor.Append(Operation(Instruction.Copy, local, source));
                     }
 
-                    Operation copyOp = Operation(Instruction.Copy, phi.Destination, local);
+                    Operation copyOp = Operation(Instruction.Copy, operation.Destination, local);
 
-                    block.Operations.AddBefore(node, copyOp);
+                    block.Operations.AddBefore(operation, copyOp);
 
-                    block.Operations.Remove(node);
+                    block.Operations.Remove(operation);
 
-                    node = nextNode;
+                    operation = nextNode;
                 }
             }
         }
