@@ -736,12 +736,11 @@ namespace ARMeilleure.Translation.PTC
             do
             {
                 Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
-                Logger.UpdateStatus(_translateCount, profiledFuncsToTranslateCount, "PPTC", false);
+                Ryujinx.Common.Status.StatusChanged.ChangeStatus(_translateCount, profiledFuncsToTranslateCount, "PPTC");
             }
             while (!_loggerEvent.WaitOne(refreshRate * 1000));
-
+            Ryujinx.Common.Status.StatusChanged.DisableStatus();
             Logger.Info?.Print(LogClass.Ptc, $"{_translateCount} of {profiledFuncsToTranslateCount} functions translated");
-            Logger.UpdateStatus(_translateCount, profiledFuncsToTranslateCount, "PPTC", true);
         }
 
         internal static void WriteInfoCodeRelocUnwindInfo(ulong address, ulong guestSize, bool highCq, PtcInfo ptcInfo)

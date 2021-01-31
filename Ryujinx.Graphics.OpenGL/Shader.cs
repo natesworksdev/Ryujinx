@@ -11,7 +11,6 @@ namespace Ryujinx.Graphics.OpenGL
 
         public Shader(ShaderStage stage, string code)
         {
-            Logger.UpdateStatus(0, 0, "Compiling shader...", false, true);
             ShaderType type = stage switch
             {
                 ShaderStage.Compute => ShaderType.ComputeShader,
@@ -27,7 +26,6 @@ namespace Ryujinx.Graphics.OpenGL
 
             GL.ShaderSource(Handle, code);
             GL.CompileShader(Handle);
-            Logger.UpdateStatus(0, 0, "Compiling shader...", true, true);
         }
 
         public void Dispose()

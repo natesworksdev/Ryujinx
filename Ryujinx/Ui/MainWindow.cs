@@ -86,11 +86,11 @@ namespace Ryujinx.Ui
         [GUI] TreeSelection   _gameTableSelection;
         [GUI] ScrolledWindow  _gameTableWindow;
         [GUI] Label           _gpuName;
-        [GUI] Label           _status;
+        [GUI] public readonly Label _status;
         [GUI] Label           _progressLabel;
         [GUI] Label           _firmwareVersionLabel;
         [GUI] ProgressBar        _progressBar;
-        [GUI] ProgressBar        _statusProgressBar;
+        [GUI] public readonly ProgressBar _statusProgressBar;
         [GUI] Box             _viewBox;
         [GUI] Label           _vSyncStatus;
         [GUI] Box             _listStatusBox;
@@ -130,8 +130,6 @@ namespace Ryujinx.Ui
 
             WindowStateEvent += WindowStateEvent_Changed;
             DeleteEvent      += Window_Close;
-
-            Logger.StatusChanged += shaderCacheStatusChanged;
 
             _applicationLibrary.ApplicationAdded        += Application_Added;
             _applicationLibrary.ApplicationCountUpdated += ApplicationCount_Updated;
@@ -198,51 +196,6 @@ namespace Ryujinx.Ui
             };
 
             Task.Run(RefreshFirmwareLabel);
-        }
-
-        private void shaderCacheStatusChanged(object o, StatusChangedEventArgs args)
-        {
-            if (args.ShaderUpdate)
-            {
-                Application.Invoke(delegate
-                {
-                    if (!_statusProgressBar.Visible)
-                    {
-                        if (args.ShouldDisable)
-                        {
-                            _status.Visible = false;
-                        }
-
-                        else
-                        {
-                            Console.WriteLine("Compiling Shader");
-                            _status.Visible = true;
-                            _status.Text = "Compiling Shader...";
-                        }
-                    }
-                });
-            }
-
-            else
-            {
-                Application.Invoke(delegate
-                {
-                    _status.Text = args.ClassName + ": " + args.Current.ToString() + " / " + args.Total.ToString();
-                    _statusProgressBar.Fraction = ((double)((double)args.Current / (double)args.Total));
-                    
-                    if (args.ShouldDisable)
-                    {
-                        _statusProgressBar.Visible = false;
-                        _status.Visible = false;
-                    }
-
-                    else if (_status.Visible == false)
-                    {
-                        _statusProgressBar.Visible = true;
-                        _status.Visible = true;
-                    }
-                });
-            }
         }
 
         private void WindowStateEvent_Changed(object o, WindowStateEventArgs args)

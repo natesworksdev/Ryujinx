@@ -36,5 +36,13 @@ namespace Ryujinx.HLE
         /// </summary>
         /// <returns>False when OK is pressed, True when another button (Details) is pressed.</returns>
         bool DisplayErrorAppletDialog(string title, string message, string[] buttonsText);
+
+        /// Shows and changes the status
+        /// </summary>
+        void ShowStatus(object o, Common.Status.StatusChangedEventArgs args);
+
+        /// Disable the Status
+        /// </summary>
+        void DisableStatus(object o, System.EventArgs args);
     }
 }

@@ -1,4 +1,5 @@
 using Gtk;
+using Ryujinx.Common.Status;
 using Ryujinx.HLE;
 using Ryujinx.HLE.HOS.Applets;
 using Ryujinx.HLE.HOS.Services.Am.AppletOE.ApplicationProxyService.ApplicationProxy.Types;
@@ -15,6 +16,8 @@ namespace Ryujinx.Ui.Applet
         public GtkHostUiHandler(Window parent)
         {
             _parent = parent;
+            StatusChanged.StatusChangedEvent += ShowStatus;
+            StatusChanged.StatusDisableEvent += DisableStatus;
         }
 
         public bool DisplayMessageDialog(ControllerAppletUiArgs args)
@@ -185,6 +188,28 @@ namespace Ryujinx.Ui.Applet
             dialogCloseEvent.WaitOne();
 
             return showDetails;
+        }
+
+        public void ShowStatus(object o, StatusChangedEventArgs args)
+        {
+            MainWindow window = ((MainWindow)_parent);
+            Application.Invoke(delegate
+            {
+                window._statusProgressBar.Visible = true;
+                window._statusProgressBar.Fraction = ((double)((double)args.Current / (double)args.Total));
+                window._status.Visible = true;
+                window._status.Text =  args.ClassName+": "+ args.Current.ToString()+ " / "+args.Total.ToString();
+            });
+        }
+
+        public void DisableStatus(object o,EventArgs args)
+        {
+            MainWindow window = ((MainWindow)_parent);
+            Application.Invoke(delegate
+            {
+                window._statusProgressBar.Visible = false;
+                window._status.Visible = false;
+            });
         }
     }
 }
