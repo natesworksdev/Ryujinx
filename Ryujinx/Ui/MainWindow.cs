@@ -850,7 +850,7 @@ namespace Ryujinx.Ui
         private void DockedMode_Clicked(object sender, ButtonReleaseEventArgs args)
         {
             ConfigurationState.Instance.System.EnableDockedMode.Value = !ConfigurationState.Instance.System.EnableDockedMode.Value;
-            Logger.Notice.Print(LogClass.Application, $"IsDocked changed to: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
+            Logger.Notice.Print(LogClass.Application, $"IsDocked toggled to: {ConfigurationState.Instance.System.EnableDockedMode.Value}");
         }
 
         private void AspectRatio_Clicked(object sender, ButtonReleaseEventArgs args)
