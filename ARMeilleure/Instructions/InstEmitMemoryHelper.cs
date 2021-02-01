@@ -358,6 +358,8 @@ namespace ARMeilleure.Instructions
                 context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.SignalMemoryTracking)), address, Const(1UL), Const(write ? 1 : 0));
                 context.MarkLabel(lblNotWatched);
 
+                pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by C# memory access)
+
                 Operand lblNonNull = Label();
 
                 // Skip exception if the PTE address is non-null (not zero).
@@ -366,8 +368,6 @@ namespace ARMeilleure.Instructions
                 // The call is not expected to return (it should throw).
                 context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)), address);
                 context.MarkLabel(lblNonNull);
-
-                pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by C# memory access)
             }
 
             Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, PageMask));
