@@ -1,6 +1,6 @@
 using Ryujinx.Common.Configuration.Hid;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.Ui.Input
 {
     interface ButtonAssigner
     {

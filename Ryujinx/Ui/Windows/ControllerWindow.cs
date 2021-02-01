@@ -4,6 +4,7 @@ using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Configuration.Hid;
 using Ryujinx.Common.Utilities;
 using Ryujinx.Configuration;
+using Ryujinx.Ui.Input;
 using Ryujinx.Ui.Widgets;
 using System;
 using System.Collections.Generic;

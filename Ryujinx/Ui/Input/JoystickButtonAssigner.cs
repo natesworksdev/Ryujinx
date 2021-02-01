@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System;
 using System.IO;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.Ui.Input
 {
     class JoystickButtonAssigner : ButtonAssigner
     {

@@ -2,7 +2,7 @@ using OpenTK.Input;
 using System;
 using Key = Ryujinx.Configuration.Hid.Key;
 
-namespace Ryujinx.Ui
+namespace Ryujinx.Ui.Input
 {
     class KeyboardKeyAssigner : ButtonAssigner
     {
