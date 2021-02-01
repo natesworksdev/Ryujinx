@@ -50,7 +50,7 @@ namespace Ryujinx.Ui.Input
 
         public string GetPressedButton()
         {
-            var pressedButtons = _detector.GetPressedButtons();
+            List<ControllerInputId> pressedButtons = _detector.GetPressedButtons();
 
             // Reverse list so axis button take precedence when more than one button is recognized
             pressedButtons.Reverse();
@@ -60,7 +60,7 @@ namespace Ryujinx.Ui.Input
 
         private void CollectButtonStats()
         {
-            var capabilities = Joystick.GetCapabilities(_index);
+            JoystickCapabilities capabilities = Joystick.GetCapabilities(_index);
 
             ControllerInputId pressedButton;
 
@@ -147,7 +147,7 @@ namespace Ryujinx.Ui.Input
 
             public List<ControllerInputId> GetPressedButtons()
             {
-                var pressedButtons = new List<ControllerInputId>();
+                List<ControllerInputId> pressedButtons = new List<ControllerInputId>();
 
                 foreach (var kvp in _stats)
                 {
@@ -176,7 +176,7 @@ namespace Ryujinx.Ui.Input
 
             public override string ToString()
             {
-                var writer = new StringWriter();
+                TextWriter writer = new StringWriter();
 
                 foreach (var kvp in _stats)
                 {
@@ -188,7 +188,7 @@ namespace Ryujinx.Ui.Input
 
             private bool checkButtonPressed(InputSummary sequence)
             {
-                var distance = Math.Abs(sequence.Min - sequence.Avg) + Math.Abs(sequence.Max - sequence.Avg);
+                float distance = Math.Abs(sequence.Min - sequence.Avg) + Math.Abs(sequence.Max - sequence.Avg);
                 return distance > 1.5; // distance range [0, 2]
             }
         }

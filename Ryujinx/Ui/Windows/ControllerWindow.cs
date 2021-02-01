@@ -656,7 +656,7 @@ namespace Ryujinx.Ui.Windows
                 return;
             }
 
-            var assigner = CreateButtonAssigner();
+            ButtonAssigner assigner = CreateButtonAssigner();
 
             _isWaitingForInput = true;
 
@@ -675,7 +675,7 @@ namespace Ryujinx.Ui.Windows
                     }
                 }
 
-                var pressedButton = assigner.GetPressedButton();
+                string pressedButton = assigner.GetPressedButton();
 
                 ToggleButton button = (ToggleButton) sender;
 
