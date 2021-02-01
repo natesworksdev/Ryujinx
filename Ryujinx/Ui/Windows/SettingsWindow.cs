@@ -564,7 +564,6 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-
             using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
             {
                 var window = new ControllerWindow(playerIndex);
