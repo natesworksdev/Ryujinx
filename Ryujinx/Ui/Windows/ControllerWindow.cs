@@ -629,16 +629,19 @@ namespace Ryujinx.Ui.Windows
 
             ButtonAssigner assigner;
 
-            if (_inputDevice.ActiveId.StartsWith("keyboard")) {
+            if (_inputDevice.ActiveId.StartsWith("keyboard"))
+            {
                 assigner = new KeyboardKeyAssigner(index);
             }
-            else if (_inputDevice.ActiveId.StartsWith("controller")) {
+            else if (_inputDevice.ActiveId.StartsWith("controller"))
+            {
                 // TODO: triggerThresold is passed but not used by JoystickButtonAssigner. Should it be used for key binding?.
                 // Note that, like left and right sticks, ZL and ZR triggers are treated as axis.
                 // The problem is then how to decide which axis should use triggerThresold.
                 assigner = new JoystickButtonAssigner(index, _controllerTriggerThreshold.Value);
             }
-            else {
+            else
+            {
                 throw new Exception("Controller not supported");
             }
             
@@ -664,7 +667,9 @@ namespace Ryujinx.Ui.Windows
                 {
                     Thread.Sleep(10);
                     assigner.ReadInput();
-                    if (assigner.HasAnyButtonPressed() || assigner.ShouldCancel()) {
+
+                    if (assigner.HasAnyButtonPressed() || assigner.ShouldCancel())
+                    {
                         break;
                     }
                 }
@@ -675,9 +680,11 @@ namespace Ryujinx.Ui.Windows
 
                 Application.Invoke(delegate
                 {
-                    if (pressedButton != "") {
+                    if (pressedButton != "")
+                    {
                         button.Label = pressedButton;
                     }
+                    
                     button.Active = false;
                     _isWaitingForInput = false;   
                 });

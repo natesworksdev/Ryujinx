@@ -141,6 +141,7 @@ namespace Ryujinx.Ui
                         return true;
                     }
                 }
+                
                 return false;
             }
 
