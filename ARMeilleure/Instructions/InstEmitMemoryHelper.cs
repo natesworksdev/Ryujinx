@@ -366,6 +366,8 @@ namespace ARMeilleure.Instructions
                 // The call is not expected to return (it should throw).
                 context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)), address);
                 context.MarkLabel(lblNonNull);
+
+                pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by C# memory access)
             }
 
             Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, PageMask));
