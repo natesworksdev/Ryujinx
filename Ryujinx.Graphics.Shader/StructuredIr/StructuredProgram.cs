@@ -51,9 +51,9 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
                         {
                             context.LeaveBlock(block, operation);
                         }
-                        else if (operation.Inst != Instruction.CallOutArgument)
+                        else
                         {
-                            AddOperation(context, opNode);
+                            AddOperation(context, operation);
                         }
                     }
                 }
@@ -68,46 +68,27 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             return context.Info;
         }
 
-        private static void AddOperation(StructuredProgramContext context, LinkedListNode<INode> opNode)
+        private static void AddOperation(StructuredProgramContext context, Operation operation)
         {
-            Operation operation = (Operation)opNode.Value;
-
             Instruction inst = operation.Inst;
 
-            bool isCall = inst == Instruction.Call;
-
             int sourcesCount = operation.SourcesCount;
+            int outDestsCount = operation.DestsCount != 0 ? operation.DestsCount - 1 : 0;
 
-            List<Operand> callOutOperands = new List<Operand>();
-
-            if (isCall)
-            {
-                LinkedListNode<INode> scan = opNode.Next;
-
-                while (scan != null && scan.Value is Operation nextOp && nextOp.Inst == Instruction.CallOutArgument)
-                {
-                    callOutOperands.Add(nextOp.Dest);
-                    scan = scan.Next;
-                }
-
-                sourcesCount += callOutOperands.Count;
-            }
-
-            IAstNode[] sources = new IAstNode[sourcesCount];
+            IAstNode[] sources = new IAstNode[sourcesCount + outDestsCount];
 
             for (int index = 0; index < operation.SourcesCount; index++)
             {
                 sources[index] = context.GetOperandUse(operation.GetSource(index));
             }
 
-            if (isCall)
+            for (int index = 0; index < outDestsCount; index++)
             {
-                for (int index = 0; index < callOutOperands.Count; index++)
-                {
-                    sources[operation.SourcesCount + index] = context.GetOperandDef(callOutOperands[index]);
-                }
+                AstOperand oper = context.GetOperandDef(operation.GetDest(1 + index));
 
-                callOutOperands.Clear();
+                oper.VarType = InstructionInfo.GetSrcVarType(inst, sourcesCount + index);
+
+                sources[sourcesCount + index] = oper;
             }
 
             AstTextureOperation GetAstTextureOperation(TextureOperation texOp)
@@ -244,6 +225,14 @@ namespace Ryujinx.Graphics.Shader.StructuredIr
             // decide which helper functions are needed on the final generated code.
             switch (operation.Inst)
             {
+                case Instruction.AtomicMaxS32 | Instruction.MrShared:
+                case Instruction.AtomicMinS32 | Instruction.MrShared:
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.AtomicMinMaxS32Shared;
+                    break;
+                case Instruction.AtomicMaxS32 | Instruction.MrStorage:
+                case Instruction.AtomicMinS32 | Instruction.MrStorage:
+                    context.Info.HelperFunctionsMask |= HelperFunctionsMask.AtomicMinMaxS32Storage;
+                    break;
                 case Instruction.MultiplyHighS32:
                     context.Info.HelperFunctionsMask |= HelperFunctionsMask.MultiplyHighS32;
                     break;
