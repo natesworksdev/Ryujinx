@@ -391,8 +391,17 @@ namespace ARMeilleure.Instructions
 
             if (lblSlowPath != null)
             {
-                ulong protection = (write ? 3UL : 1UL) << 48;
-                context.BranchIfTrue(lblSlowPath, context.BitwiseAnd(pte, Const(protection)));
+                if (write)
+                {
+                    pte = context.ShiftLeft(pte, Const(1));
+                    context.BranchIf(lblSlowPath, pte, Const(0L), Comparison.LessOrEqual);
+                    pte = context.ShiftRightUI(pte, Const(1));
+                }
+                else
+                {
+                    context.BranchIf(lblSlowPath, pte, Const(0L), Comparison.LessOrEqual);
+                    pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by C# memory access)
+                }
             }
             else
             {
@@ -417,8 +426,6 @@ namespace ARMeilleure.Instructions
                 context.Call(typeof(NativeInterface).GetMethod(nameof(NativeInterface.ThrowInvalidMemoryAccess)), address);
                 context.MarkLabel(lblNonNull);
             }
-
-            pte = context.BitwiseAnd(pte, Const(0xffffffffffffUL)); // Ignore any software protection bits. (they are still used by c# memory access)
 
             Operand pageOffset = context.BitwiseAnd(address, Const(address.Type, PageMask));
 
