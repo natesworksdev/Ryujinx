@@ -9,6 +9,7 @@ using Ryujinx.HLE.HOS.Services.Time.TimeZone;
 using Ryujinx.Ui.Helper;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Reflection;
@@ -563,7 +564,15 @@ namespace Ryujinx.Ui.Windows
         {
             ((ToggleButton)sender).SetStateFlags(StateFlags.Normal, true);
 
-            new ControllerWindow(playerIndex).Show();
+
+            using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+            {
+                var window = new ControllerWindow(playerIndex);
+                double scaleFactor = Math.Min(graphics.DpiX / 96.0, 1.25);
+                window.SetSizeRequest((int)(window.DefaultWidth * scaleFactor), (int)(window.DefaultHeight * scaleFactor));
+
+                window.Show();
+            }
         }
 
         private void SaveToggle_Activated(object sender, EventArgs args)

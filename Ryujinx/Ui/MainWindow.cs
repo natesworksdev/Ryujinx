@@ -1102,7 +1102,14 @@ namespace Ryujinx.Ui
 
         private void Settings_Pressed(object sender, EventArgs args)
         {
-            new SettingsWindow(this, _virtualFileSystem, _contentManager).Show();
+            using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+            {
+                var window = new SettingsWindow(this, _virtualFileSystem, _contentManager);
+                double scaleFactor = Math.Min(graphics.DpiX / 96.0, 1.25);
+                window.SetSizeRequest((int)(window.DefaultWidth * scaleFactor), (int)(window.DefaultHeight * scaleFactor));
+
+                window.Show();
+            }
         }
 
         private void Simulate_WakeUp_Message_Pressed(object sender, EventArgs args)
@@ -1123,7 +1130,14 @@ namespace Ryujinx.Ui
 
         private void About_Pressed(object sender, EventArgs args)
         {
-            new AboutWindow().Show();
+            using (System.Drawing.Graphics graphics = System.Drawing.Graphics.FromHwnd(IntPtr.Zero))
+            {
+                var window = new AboutWindow();
+                double scaleFactor = Math.Min(graphics.DpiX / 96.0, 1.25);
+                window.SetSizeRequest((int)(window.DefaultWidth * scaleFactor), (int)(window.DefaultHeight * scaleFactor));
+
+                window.Show();
+            }
         }
 
         private void Fav_Toggled(object sender, EventArgs args)
