@@ -21,7 +21,7 @@ namespace Ryujinx.HLE.HOS.Tamper
         const byte OpCodeInputCond   = 0x8;
         const byte OpCodeArithmetic2 = 0x9;
         const byte OpCodeStoreImRgA  = 0xA;
-
+        const ushort Ex2OpCodeCond2  = 0xC0;
         const ushort Ex3OpCodePause  = 0xFF0;
         const ushort Ex3OpCodeResume = 0xFF1;
         const ushort Ex3OpCodeLog    = 0xFFF;
@@ -113,7 +113,7 @@ namespace Ryujinx.HLE.HOS.Tamper
         const int Ar2RhsRegIndex = 6;
         const int Ar2ValueIndex  = 8;
 
-        const int Ar2ValueSize4  = 8;
+        const int Ar2ValueSize4  = 8; // TODO fix space
         const int Ar2ValueSize8  = 16;
 
         /////////////////////////////////////////////
@@ -182,6 +182,27 @@ namespace Ryujinx.HLE.HOS.Tamper
         const int LogAddrReg           = 4;
 
         const int LogOffImmSize = 9;
+
+        /////////////////////////////////////////////
+
+        const int If2WidthIndex = 2;
+        const int If2CondIndex = 3;
+        const int If2SrcRegIndex = 4;
+        const int If2OpTypeIndex = 5;
+        const int If2SourceIndex = 6;
+        const int If2OffsetIndex = 7;
+        const int If2ValueIndex = 8;
+
+        const int If2ModeWithImmOff = 0;
+        const int If2ModeWithRegOff = 1;
+        const int If2AddrRegWithImmOff = 2;
+        const int If2AddrRegWithRegOff = 3;
+        const int If2ImmValue = 4;
+        const int If2AddrReg = 5;
+
+        const int If2OffImmSize = 9;
+        const int If2ValueSize8 = 8;
+        const int If2ValueSize16 = 16;
 
         /////////////////////////////////////////////
 
@@ -268,6 +289,7 @@ namespace Ryujinx.HLE.HOS.Tamper
                     case OpCodeInputCond  : EmitBeginCond  (instruction, cData); break;
                     case OpCodeArithmetic2: EmitArithmetic2(instruction, cData); break;
                     case OpCodeStoreImRgA:  EmitStoreImRgA (instruction, cData); break;
+                    case Ex2OpCodeCond2:    EmitBeginCond  (instruction, cData); break;
                     case Ex3OpCodePause:    EmitPause      (instruction, cData); break;
                     case Ex3OpCodeResume:   EmitResume     (instruction, cData); break;
                     case Ex3OpCodeLog:      EmitLog        (instruction, cData); break;
@@ -543,24 +565,16 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         private void EmitEndCond(byte[] instruction, CompilationData cData)
         {
-            // 1TMC00AA AAAAAAAA VVVVVVVV (VVVVVVVV)
-            // T: Width of memory write (1, 2, 4, or 8 bytes).
-            // M: Memory region to write to (0 = Main NSO, 1 = Heap).
-            // C: Condition to use, see below.
-            // A: Immediate offset to use from memory region base.
-            // V: Value to compare to.
-
-            // 8kkkkkkk
-            // k: Keypad mask to check against, see below.
-            // Note that for multiple button combinations, the bitmasks should be ORd together.
-            // The Keypad Values are the direct output of hidKeysDown().
-
             // 20000000
 
             // Use the conditional begin instruction stored in the stack.
             instruction = cData.CurrentBlock.BaseInstruction;
+            ushort opcode = GetExtendedOpcode(instruction);
 
-            byte opcode = instruction[OpCodeIndex];
+            // Pop the current block of operations from the stack so control instructions
+            // for the conditional can be emitted in the upper block.
+            IEnumerable<IOperation> operations = cData.CurrentOperations;
+            cData.BlockStack.Pop();
 
             ICondition condOp;
 
@@ -572,6 +586,9 @@ namespace Ryujinx.HLE.HOS.Tamper
                 case OpCodeInputCond:
                     condOp = GetInputCondition(instruction, cData);
                     break;
+                case Ex2OpCodeCond2:
+                    condOp = GetIf2Condition(instruction, cData);
+                    break;
                 default:
                     throw new TamperCompilationException($"Conditional end does not match opcode {opcode} in Atmosphere cheat");
             }
@@ -579,8 +596,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             // Create a conditional block with the current operations and nest it in the upper
             // block of the stack.
 
-            IfBlock block = new IfBlock(condOp, cData.CurrentOperations);
-            cData.BlockStack.Pop();
+            IfBlock block = new IfBlock(condOp, operations);
             cData.CurrentOperations.Add(block);
         }
 
@@ -784,40 +800,121 @@ namespace Ryujinx.HLE.HOS.Tamper
 
         private ICondition GetIfCondition(byte[] instruction, CompilationData cData)
         {
-            // WARNING: Do not use EmitPointer because this method is not supposed to emit new instructions!
+            // 1TMC00AA AAAAAAAA VVVVVVVV (VVVVVVVV)
+            // T: Width of memory write (1, 2, 4, or 8 bytes).
+            // M: Memory region to write to (0 = Main NSO, 1 = Heap).
+            // C: Condition to use, see below.
+            // A: Immediate offset to use from memory region base.
+            // V: Value to compare to.
 
             byte width = instruction[IfWidthIndex];
             byte source = instruction[IfMemIndex];
             byte condition = instruction[IfCondTypeIndex];
 
             ulong address = GetImmediate(instruction, IfOffImmIndex, IfOffImmSize);
-            address += GetAddressShift(source, cData);
-
-            Value<ulong> loadAddr = new Value<ulong>(address);
-            Pointer srcMem = new Pointer(loadAddr, cData.Process);
+            Pointer srcMem = EmitPointer(source, address, cData);
 
             ulong value = GetImmediate(instruction, IfValueIndex, width > 4 ? IfValueSize4 : IfValueSize8);
             Value<ulong> compValue = new Value<ulong>(address);
 
-            switch (condition)
-            {
-                case CmpCondGT: return (ICondition)Create(typeof(CondGT<>), width, srcMem, compValue);
-                case CmpCondGE: return (ICondition)Create(typeof(CondGE<>), width, srcMem, compValue);
-                case CmpCondLT: return (ICondition)Create(typeof(CondLT<>), width, srcMem, compValue);
-                case CmpCondLE: return (ICondition)Create(typeof(CondLE<>), width, srcMem, compValue);
-                case CmpCondEQ: return (ICondition)Create(typeof(CondEQ<>), width, srcMem, compValue);
-                case CmpCondNE: return (ICondition)Create(typeof(CondNE<>), width, srcMem, compValue);
-                default:
-                    throw new TamperCompilationException($"Invalid condition {condition} in Atmosphere cheat");
-            }
+            return GetCondition(condition, width, srcMem, compValue);
         }
 
         private ICondition GetInputCondition(byte[] instruction, CompilationData cData)
         {
-            // WARNING: Do not use EmitPointer because this method is not supposed to emit new instructions!
+            // 8kkkkkkk
+            // k: Keypad mask to check against, see below.
+            // Note that for multiple button combinations, the bitmasks should be ORd together.
+            // The Keypad Values are the direct output of hidKeysDown().
 
             ulong mask = GetImmediate(instruction, InputMaskIndex, InputMaskSize);
             return new InputMask((long)mask, cData.PressedKeys);
+        }
+
+        private ICondition GetIf2Condition(byte[] instruction, CompilationData cData)
+        {
+            // C0TcSX##
+            // C0TcS0Ma aaaaaaaa
+            // C0TcS1Mr
+            // C0TcS2Ra aaaaaaaa
+            // C0TcS3Rr
+            // C0TcS400 VVVVVVVV(VVVVVVVV)
+            // C0TcS5X0
+            // T: Width of memory write(1, 2, 4, or 8 bytes).
+            // c: Condition to use, see below.
+            // S: Source Register.
+            // X: Operand Type, see below.
+            // M: Memory Type(operand types 0 and 1).
+            // R: Address Register(operand types 2 and 3).
+            // a: Relative Address(operand types 0 and 2).
+            // r: Offset Register(operand types 1 and 3).
+            // X: Other Register(operand type 5).
+            // V: Value to compare to(operand type 4).
+
+            byte width = instruction[If2WidthIndex];
+            byte condition = instruction[If2CondIndex];
+            Register srcReg = GetRegister(instruction[If2SrcRegIndex], cData);
+            byte opType = instruction[If2OpTypeIndex];
+            byte addrRegOrMem = instruction[If2SourceIndex];
+            byte offRegOrImm = instruction[If2OffsetIndex];
+            ulong offImm;
+            ulong valueImm;
+            Register addrReg;
+            Register offReg;
+            IOperand srcOp;
+
+            switch (condition)
+            {
+                case If2ModeWithImmOff:
+                    // *(?x + #a)
+                    offImm = GetImmediate(instruction, If2OffsetIndex, If2OffImmSize);
+                    srcOp = EmitPointer(addrRegOrMem, offImm, cData);
+                    break;
+                case If2ModeWithRegOff:
+                    // *(?x + $r)
+                    offReg = GetRegister(instruction[offRegOrImm], cData);
+                    srcOp = EmitPointer(addrRegOrMem, offReg, cData);
+                    break;
+                case If2AddrRegWithImmOff:
+                    // *($R + #a)
+                    addrReg = GetRegister(instruction[addrRegOrMem], cData);
+                    offImm = GetImmediate(instruction, If2OffsetIndex, If2OffImmSize);
+                    srcOp = EmitPointer(addrReg, offImm, cData);
+                    break;
+                case If2AddrRegWithRegOff:
+                    // *($R + $r)
+                    addrReg = GetRegister(instruction[addrRegOrMem], cData);
+                    offReg = GetRegister(instruction[offRegOrImm], cData);
+                    srcOp = EmitPointer(addrReg, offReg, cData);
+                    break;
+                case If2ImmValue:
+                    valueImm = GetImmediate(instruction, If2ValueIndex, width > 4 ? If2ValueSize8 : If2ValueSize16);
+                    srcOp = new Value<ulong>(valueImm);
+                    break;
+                case If2AddrReg:
+                    // $V
+                    srcOp = GetRegister(instruction[addrRegOrMem], cData);
+                    break;
+                default:
+                    throw new TamperCompilationException($"Invalid operand type {opType} in Atmosphere cheat");
+            }
+
+            return GetCondition(condition, width, srcReg, srcOp);
+        }
+
+        private ICondition GetCondition(byte condition, byte width, IOperand lhs, IOperand rhs)
+        {
+            switch (condition)
+            {
+                case CmpCondGT: return (ICondition)Create(typeof(CondGT<>), width, lhs, rhs);
+                case CmpCondGE: return (ICondition)Create(typeof(CondGE<>), width, lhs, rhs);
+                case CmpCondLT: return (ICondition)Create(typeof(CondLT<>), width, lhs, rhs);
+                case CmpCondLE: return (ICondition)Create(typeof(CondLE<>), width, lhs, rhs);
+                case CmpCondEQ: return (ICondition)Create(typeof(CondEQ<>), width, lhs, rhs);
+                case CmpCondNE: return (ICondition)Create(typeof(CondNE<>), width, lhs, rhs);
+                default:
+                    throw new TamperCompilationException($"Invalid condition {condition} in Atmosphere cheat");
+            }
         }
 
         private ulong GetImmediate(byte[] instruction, int index, int quartetCount)
