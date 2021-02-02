@@ -43,6 +43,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] CheckButton     _discordToggle;
         [GUI] CheckButton     _checkUpdatesToggle;
         [GUI] CheckButton     _showConfirmExitToggle;
+        [GUI] CheckButton     _hideCursorOnIdleToggle;
         [GUI] CheckButton     _vSyncToggle;
         [GUI] CheckButton     _shaderCacheToggle;
         [GUI] CheckButton     _ptcToggle;
@@ -184,6 +185,12 @@ namespace Ryujinx.Ui.Windows
             {
                 _showConfirmExitToggle.Click();
             }
+
+            if (ConfigurationState.Instance.HideCursorOnIdle)
+            {
+                _hideCursorOnIdleToggle.Click();
+            }
+
 
             if (ConfigurationState.Instance.Graphics.EnableVsync)
             {
@@ -403,6 +410,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
             ConfigurationState.Instance.CheckUpdatesOnStart.Value              = _checkUpdatesToggle.Active;
             ConfigurationState.Instance.ShowConfirmExit.Value                  = _showConfirmExitToggle.Active;
+            ConfigurationState.Instance.HideCursorOnIdle.Value                 = _hideCursorOnIdleToggle.Active;
             ConfigurationState.Instance.Graphics.EnableVsync.Value             = _vSyncToggle.Active;
             ConfigurationState.Instance.Graphics.EnableShaderCache.Value       = _shaderCacheToggle.Active;
             ConfigurationState.Instance.System.EnablePtc.Value                 = _ptcToggle.Active;

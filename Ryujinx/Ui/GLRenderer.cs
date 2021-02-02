@@ -41,6 +41,7 @@ namespace Ryujinx.Ui
         private double _mouseX;
         private double _mouseY;
         private bool   _mousePressed;
+        private bool   _cursorHidden;
 
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
@@ -62,6 +63,8 @@ namespace Ryujinx.Ui
         private GraphicsDebugLevel _glLogLevel;
 
         private readonly ManualResetEvent _exitEvent;
+
+        public static System.Timers.Timer idleTimer = new System.Timers.Timer();
 
         public GlRenderer(Switch device, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
@@ -97,6 +100,36 @@ namespace Ryujinx.Ui
             _glLogLevel = glLogLevel;
 
             _exitEvent = new ManualResetEvent(false);
+
+            TimingIdle();
+        }
+
+        public void TimingIdle()
+        {
+            idleTimer = new System.Timers.Timer();
+            idleTimer.Interval = 8000;
+            idleTimer.Elapsed += OnTimedEvent;
+            idleTimer.AutoReset = false;
+            idleTimer.Enabled = true;
+        }
+
+        private void ResetPtr()
+        {
+           if (ConfigurationState.Instance.HideCursorOnIdle)
+           {
+               idleTimer.Stop();
+               idleTimer.Start();
+           }
+           else
+           {
+               idleTimer.Stop();
+           }
+
+           if (_cursorHidden)
+           {
+               _cursorHidden = false;
+               Window.Cursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.LeftPtr);
+           }
         }
 
         private static GraphicsMode GetGraphicsMode()
@@ -304,7 +337,17 @@ namespace Ryujinx.Ui
                 _mouseY = evnt.Y;
             }
 
+            ResetPtr();
             return false;
+        }
+
+        private void OnTimedEvent(Object source, System.Timers.ElapsedEventArgs e)
+        {
+           if (ConfigurationState.Instance.HideCursorOnIdle)
+           {
+               Window.Cursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.BlankCursor);
+               _cursorHidden = true;
+           }
         }
 
         protected override void OnGetPreferredHeight(out int minimumHeight, out int naturalHeight)
