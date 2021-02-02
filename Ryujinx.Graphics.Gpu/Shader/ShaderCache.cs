@@ -82,7 +82,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
 
                     Logger.Info?.Print(LogClass.Gpu, $"Compiling shader {key} ({programIndex + 1} / {guestProgramList.Length})");
                     
-                    if ((programIndex+1) % 50==0) { 
+                    if ((programIndex+1) % 5==0) { 
                         Common.Status.StatusChanged.ChangeStatus(programIndex + 1, guestProgramList.Length, "ShaderCache");
                     }
                     
