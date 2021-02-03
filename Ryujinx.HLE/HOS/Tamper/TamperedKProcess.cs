@@ -1,6 +1,5 @@
 ﻿using Ryujinx.Common.Logging;
 using Ryujinx.HLE.HOS.Kernel.Process;
-using Ryujinx.Memory;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {

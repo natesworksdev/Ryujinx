@@ -3,7 +3,7 @@ using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Tamper;
-using System;
+using Ryujinx.HLE.HOS.Tamper.Atmosphere;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
