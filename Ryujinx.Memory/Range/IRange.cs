@@ -32,15 +32,12 @@ namespace Ryujinx.Memory.Range
 
         public int CompareTo(IRange obj)
         {
-            int cmp = this.Address.CompareTo(obj.Address);
-            if (cmp == 0)
-            {
-                return this.EndAddress.CompareTo(obj.EndAddress);
+            if (this.Address < obj.Address) return -1;
+            else if (this.Address == obj.Address)
+            { 
+                return this.EndAddress <= obj.EndAddress ? -1 : 1;
             }
-            else
-            {
-                return cmp;
-            }
+            return 1;
         }
     }
 }
