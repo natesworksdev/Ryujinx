@@ -13,10 +13,12 @@ namespace Ryujinx.Memory
     /// <typeparam name="V">Value</typeparam>
     public class IntervalTree<T> where T : IRange
     {
-        private const bool Black = true;
-        private const bool Red = false;
-        private IntervalNode<T> _root = null;
-        private int _count = 0;
+        private const int       ArrayGrowthSize = 32;
+        private const bool      Black           = true;
+        private const bool      Red             = false;
+
+        private IntervalNode<T> _root           = null;
+        private int             _count          = 0;
 
         public IntervalTree() { }
 
@@ -42,7 +44,7 @@ namespace Ryujinx.Memory
                 return default;
             }
 
-            return node.Value;
+            return node.EndAddress;
         }
 
         /// <summary>
@@ -53,14 +55,14 @@ namespace Ryujinx.Memory
         /// <param name="key">Key of the node to add</param>
         /// <param name="value">Value of the node to add</param>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> or <paramref name="value"/> are null</exception>
-        public void Add(T key, ulong value)
+        public void Add(T key)
         {
             if (key == null)
             {
                 throw new ArgumentNullException(nameof(key));
             }
 
-            Insert(key, value);
+            Insert(key);
         }
 
         /// <summary>
@@ -149,7 +151,7 @@ namespace Ryujinx.Memory
             return default;
         }
 
-        public int OverlapsOf(ulong Address, ulong EndAddress, ref T[] arr)
+        public int OverlapsOf(ulong Address, ulong EndAddress, ref T[] arr, int overlapsToFind = -1)
         {
             int insertionPoint = 0;
 
@@ -162,34 +164,40 @@ namespace Ryujinx.Memory
                 }
             }
 
-            return Intersect(_root, new Interval(Address, EndAddress), ref insertionPoint, ref arr);
+            return Intersect(_root, new Interval(Address, EndAddress), ref insertionPoint, ref arr, overlapsToFind);
         }
 
-        private int Intersect(IntervalNode<T> node, Interval point, ref int insertionPoint, ref T[] arr)
+        private int Intersect(IntervalNode<T> node, Interval point, ref int insertionPoint, ref T[] arr, int overlapsToFind = -1)
         {
+            if (overlapsToFind > -1 && arr.Length == overlapsToFind)
+            {
+                return insertionPoint;
+            }
             if (node == null)
             {
                 return insertionPoint;
             }
 
+            if (point.Address > node.MaxEndAddress) return insertionPoint;
+
             T range = node.Key;
 
-            if (!((range.Address > point.EndAddress) || (range.EndAddress < point.Address)))
+            IntervalNode<T> left = LeftOf(node);
+            if ((left != null) && (left.MaxEndAddress >= point.Address))
             {
+                Intersect(left, point, ref insertionPoint, ref arr);
+            }
 
+            if (range.Address <= point.EndAddress && range.EndAddress >= point.Address)
+            {
                 if (insertionPoint == arr.Length)
                 {
-                    Array.Resize<T>(ref arr, arr.Length + 32);
+                    Array.Resize<T>(ref arr, arr.Length + ArrayGrowthSize);
                 }
                 arr[insertionPoint++] = range;
             }
 
-            IntervalNode<T> left = LeftOf(node);
-
-            if ((left != null) && (left.MaxInterval >= point.Address))
-            {
-                Intersect(left, point, ref insertionPoint, ref arr);
-            }
+            if (point.Address < node.Address) return insertionPoint;
 
             Intersect(RightOf(node), point, ref insertionPoint, ref arr);
 
@@ -239,9 +247,9 @@ namespace Ryujinx.Memory
         /// </summary>
         /// <param name="key">Key of the node to insert</param>
         /// <param name="value">Value of the node to insert</param>
-        private void Insert(T key, ulong value)
+        private void Insert(T key)
         {
-            IntervalNode<T> node = BSTInsert(key, value);
+            IntervalNode<T> node = BSTInsert(key);
             RestoreBalanceAfterInsertion(node);
         }
 
@@ -255,7 +263,7 @@ namespace Ryujinx.Memory
         /// <param name="key">Key of the node to insert</param>
         /// <param name="value">Value of the node to insert</param>
         /// <returns>The inserted IntervalNode<T></returns>
-        private IntervalNode<T> BSTInsert(T key, ulong value)
+        private IntervalNode<T> BSTInsert(T key)
         {
             IntervalNode<T> parent = null;
             IntervalNode<T> node = _root;
@@ -264,9 +272,9 @@ namespace Ryujinx.Memory
             {
                 parent = node;
 
-                if (value > node.MaxInterval)
+                if (key.EndAddress > node.MaxEndAddress)
                 {
-                    node.MaxInterval = value;
+                    node.MaxEndAddress = key.EndAddress;
                 }
                 int cmp = key.CompareTo(node.Key);
                 if (cmp < 0)
@@ -279,11 +287,11 @@ namespace Ryujinx.Memory
                 }
                 else
                 {
-                    node.Value = value;
+                    node.EndAddress = key.EndAddress;
                     return node;
                 }
             }
-            IntervalNode<T> newNode = new IntervalNode<T>(key, value, parent);
+            IntervalNode<T> newNode = new IntervalNode<T>(key, parent);
             if (newNode.Parent == null)
             {
                 _root = newNode;
@@ -347,7 +355,7 @@ namespace Ryujinx.Memory
             if (replacement != nodeToDelete)
             {
                 nodeToDelete.Key = replacement.Key;
-                nodeToDelete.Value = replacement.Value;
+                nodeToDelete.EndAddress = replacement.EndAddress;
             }
 
             if (tmp != null && ColorOf(replacement) == Black)
@@ -824,7 +832,7 @@ namespace Ryujinx.Memory
             while (queue.Count > 0)
             {
                 IntervalNode<T> node = queue.Dequeue();
-                set.Add(node.Key, node.Value);
+                set.Add(node.Key, node.EndAddress);
                 if (null != node.Left)
                 {
                     queue.Enqueue(node.Left);
@@ -868,14 +876,16 @@ namespace Ryujinx.Memory
         internal IntervalNode<T> Right = null;
         internal IntervalNode<T> Parent = null;
         internal T Key;
-        internal ulong Value;
-        internal ulong MaxInterval;
+        internal ulong Address;
+        internal ulong EndAddress;
+        internal ulong MaxEndAddress;
 
-        public IntervalNode(T key, ulong value, IntervalNode<T> parent)
+        public IntervalNode(T key, IntervalNode<T> parent)
         {
             this.Key = key;
-            this.Value = value;
-            this.MaxInterval = value;
+            this.Address = key.Address;
+            this.EndAddress = key.EndAddress;
+            this.MaxEndAddress = key.EndAddress;
             this.Parent = parent;
         }
     }
