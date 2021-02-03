@@ -10,13 +10,22 @@ namespace Ryujinx.Common.Collections
     /// </summary>
     /// <typeparam name="K">Key</typeparam>
     /// <typeparam name="V">Value</typeparam>
-    public class TreeDictionary<K, V> : IDictionary<K, V> where K : IComparable<K>
+    public class TreeDictionary<K, V> : IDictionary<K, V> where K : notnull
     {
         private const bool Black = true;
         private const bool Red = false;
         private Node<K, V> _root = null;
         private int _count = 0;
-        public TreeDictionary() { }
+        private Comparer<K> _comparer;
+
+        public TreeDictionary() {
+            _comparer = Comparer<K>.Default;
+        }
+
+        public TreeDictionary(Comparer<K> comparer)
+        {
+            _comparer = comparer;
+        }
 
         #region Public Methods
 
@@ -69,8 +78,9 @@ namespace Ryujinx.Common.Collections
         /// Removes the node whose key is <paramref name="key"/> from the tree.
         /// </summary>
         /// <param name="key">Key of the node to remove</param>
+        /// <returns>Boolean true if an item was removed, false otherwise</returns>
         /// <exception cref="ArgumentNullException"><paramref name="key"/> is null</exception>
-        public void Remove(K key)
+        public bool Remove(K key)
         {
             if (key == null)
             {
@@ -79,7 +89,9 @@ namespace Ryujinx.Common.Collections
             if (Delete(key) != null)
             {
                 _count--;
+                return true;
             }
+            return false;
         }
 
         /// <summary>
@@ -230,7 +242,7 @@ namespace Ryujinx.Common.Collections
             Node<K, V> node = _root;
             while (node != null)
             {
-                int cmp = key.CompareTo(node.Key);
+                int cmp = _comparer.Compare(key, node.Key);
                 if (cmp < 0)
                 {
                     node = node.Left;
@@ -278,7 +290,7 @@ namespace Ryujinx.Common.Collections
             while (node != null)
             {
                 parent = node;
-                int cmp = key.CompareTo(node.Key);
+                int cmp = _comparer.Compare(key, node.Key);
                 if (cmp < 0)
                 {
                     node = node.Left;
@@ -298,7 +310,7 @@ namespace Ryujinx.Common.Collections
             {
                 _root = newNode;
             }
-            else if (key.CompareTo(parent.Key) < 0)
+            else if (_comparer.Compare(key, parent.Key) < 0)
             {
                 parent.Left = newNode;
             }
@@ -426,7 +438,7 @@ namespace Ryujinx.Common.Collections
 
             while (tmp != null)
             {
-                int cmp = key.CompareTo(tmp.Key);
+                int cmp = _comparer.Compare(key, tmp.Key); ;
                 if (cmp > 0)
                 {
                     if (tmp.Right != null)
@@ -480,7 +492,7 @@ namespace Ryujinx.Common.Collections
 
             while (tmp != null)
             {
-                int cmp = key.CompareTo(tmp.Key);
+                int cmp = _comparer.Compare(key, tmp.Key); ;
                 if (cmp < 0)
                 {
                     if (tmp.Left != null)
