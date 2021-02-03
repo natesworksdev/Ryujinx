@@ -652,12 +652,12 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 
         private void EmitPause(byte[] instruction, CompilationData cData)
         {
-            cData.CurrentOperations.Add(new OpProcCtrl(true));
+            cData.CurrentOperations.Add(new OpProcCtrl(cData.Process, true));
         }
 
         private void EmitResume(byte[] instruction, CompilationData cData)
         {
-            cData.CurrentOperations.Add(new OpProcCtrl(false));
+            cData.CurrentOperations.Add(new OpProcCtrl(cData.Process, false));
         }
 
         private void EmitLog(byte[] instruction, CompilationData cData)

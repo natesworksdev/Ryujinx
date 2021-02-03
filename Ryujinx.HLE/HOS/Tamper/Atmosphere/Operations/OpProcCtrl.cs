@@ -2,11 +2,12 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere.Operations
 {
     internal class OpProcCtrl : IOperation
     {
-        ITamperedProcess _process;
-        bool _pause;
+        private ITamperedProcess _process;
+        private bool _pause;
 
-        public OpProcCtrl(bool pause)
+        public OpProcCtrl(ITamperedProcess process, bool pause)
         {
+            _process = process;
             _pause = pause;
         }
 
