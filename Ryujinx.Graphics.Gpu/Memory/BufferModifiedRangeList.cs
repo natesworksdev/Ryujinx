@@ -87,7 +87,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_lock)
             {
                 // Slices a given region using the modified regions in the list. Calls the action for the new slices.
-                int count = FindOverlapsNonOverlapping(address, size, ref _foregroundOverlaps);
+                int count = FindOverlaps(address, size, ref _foregroundOverlaps);
 
                 for (int i = 0; i < count; i++)
                 {
@@ -124,7 +124,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             lock (_lock)
             {
                 // We may overlap with some existing modified regions. They must be cut into by the new entry.
-                int count = FindOverlapsNonOverlapping(address, size, ref _foregroundOverlaps);
+                int count = FindOverlaps(address, size, ref _foregroundOverlaps);
 
                 ulong endAddress = address + size;
                 ulong syncNumber = _context.SyncNumber;
@@ -177,7 +177,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Range list must be consistent for this operation.
             lock (_lock)
             {
-                count = FindOverlapsNonOverlapping(address, size, ref _foregroundOverlaps);
+                count = FindOverlaps(address, size, ref _foregroundOverlaps);
             }
 
             for (int i = 0; i < count; i++)
@@ -198,7 +198,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Range list must be consistent for this operation.
             lock (_lock)
             {
-                return FindOverlapsNonOverlapping(address, size, ref _foregroundOverlaps) > 0;
+                return FindOverlaps(address, size, ref _foregroundOverlaps) > 0;
             }
         }
 
@@ -224,7 +224,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             // Range list must be consistent for this operation
             lock (_lock)
             {
-                rangeCount = FindOverlapsNonOverlapping(address, size, ref _backgroundOverlaps);
+                rangeCount = FindOverlaps(address, size, ref _backgroundOverlaps);
             }
 
             if (rangeCount == 0)
@@ -340,7 +340,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
                 // This function can be called from any thread, so it cannot use the arrays for background or foreground.
                 BufferModifiedRange[] toClear = new BufferModifiedRange[1];
 
-                int rangeCount = FindOverlapsNonOverlapping(address, size, ref toClear);
+                int rangeCount = FindOverlaps(address, size, ref toClear);
 
                 ulong endAddress = address + size;
 

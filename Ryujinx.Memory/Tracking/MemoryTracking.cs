@@ -69,7 +69,7 @@ namespace Ryujinx.Memory.Tracking
             lock (TrackingLock)
             {
                 var results = _virtualResults;
-                int count = _virtualRegions.FindOverlapsNonOverlapping(va, size, ref results);
+                int count = _virtualRegions.FindOverlaps(va, size, ref results);
 
                 for (int i = 0; i < count; i++)
                 {
@@ -94,7 +94,7 @@ namespace Ryujinx.Memory.Tracking
             lock (TrackingLock)
             {
                 var results = _virtualResults;
-                int count = _virtualRegions.FindOverlapsNonOverlapping(va, size, ref results);
+                int count = _virtualRegions.FindOverlaps(va, size, ref results);
 
                 for (int i = 0; i < count; i++)
                 {
@@ -221,7 +221,7 @@ namespace Ryujinx.Memory.Tracking
             lock (TrackingLock)
             {
                 var results = _physicalResults;
-                int count = _physicalRegions.FindOverlapsNonOverlapping(address, 1, ref results); // TODO: get/use the actual access size?
+                int count = _physicalRegions.FindOverlaps(address, 1, ref results); // TODO: get/use the actual access size?
 
                 if (count == 0)
                 {
@@ -265,7 +265,7 @@ namespace Ryujinx.Memory.Tracking
             lock (TrackingLock)
             {
                 var results = _virtualResults;
-                int count = _virtualRegions.FindOverlapsNonOverlapping(address, size, ref results);
+                int count = _virtualRegions.FindOverlaps(address, size, ref results);
 
                 if (count == 0)
                 {

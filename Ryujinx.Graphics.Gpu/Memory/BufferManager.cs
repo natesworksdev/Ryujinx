@@ -474,7 +474,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
 
             lock (_buffers)
             {
-                overlapsCount = _buffers.FindOverlapsNonOverlapping(address, size, ref _bufferOverlaps);
+                overlapsCount = _buffers.FindOverlaps(address, size, ref _bufferOverlaps);
             }
 
             if (overlapsCount != 0)

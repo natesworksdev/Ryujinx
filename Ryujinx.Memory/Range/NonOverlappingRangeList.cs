@@ -27,7 +27,7 @@ namespace Ryujinx.Memory.Range
             // So we need to return both the split 0-1 and 1-2 ranges.
 
             var results = new T[1];
-            int count = FindOverlapsNonOverlapping(address, size, ref results);
+            int count = FindOverlaps(address, size, ref results);
 
             if (count == 0)
             {
