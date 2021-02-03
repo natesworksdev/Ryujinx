@@ -10,8 +10,6 @@ namespace Ryujinx.Memory.Range
     /// <typeparam name="T">Type of the range.</typeparam>
     public class RangeList<T> : IEnumerable<T> where T : IRange
     {
-        private const int ArrayGrowthSize = 32;
-
         protected readonly IntervalTree<T> Items;
 
         public int Count => Items.Count;
@@ -30,7 +28,7 @@ namespace Ryujinx.Memory.Range
         /// <param name="item">The item to be added</param>
         public void Add(T item)
         {
-            Items.Add(item, item.EndAddress);
+            Items.Add(item);
         }
 
         /// <summary>
@@ -69,18 +67,13 @@ namespace Ryujinx.Memory.Range
         /// <returns>The overlapping item, or the default value for the type if none found</returns>
         public T FindFirstOverlap(ulong address, ulong size)
         {
-            /*   int index = BinarySearch(address, size);
+            T[] arr = Array.Empty<T>();
 
-               if (index < 0)
-               {
-                   return default(T);
-               }
-            */
-            T[] arr = new T[0];
+            Console.WriteLine($"Finding first overlap for: {address}");
+            int overlaps = Items.OverlapsOf(address, address + size, ref arr, 1);
+            Console.WriteLine($"Found {overlaps} overlaps");
 
-            int overlapCount = Items.OverlapsOf(address, address + size, ref arr);
-
-            if(overlapCount == 0)
+            if(overlaps == 0)
             {
                 return default(T);
             }
@@ -96,7 +89,6 @@ namespace Ryujinx.Memory.Range
         public int FindOverlaps(T item, ref T[] output)
         {
             return Items.OverlapsOf(item.Address, item.EndAddress, ref output);
-            //return FindOverlaps(item.Address, item.Size, ref output);
         }
 
         /// <summary>
@@ -109,31 +101,9 @@ namespace Ryujinx.Memory.Range
         public int FindOverlaps(ulong address, ulong size, ref T[] output)
         {
             Console.WriteLine($"Finding overlaps for: {address}");
-            return Items.OverlapsOf(address, address + size, ref output);
-            /*
-            int outputIndex = 0;
-
-            ulong endAddress = address + size;
-
-            foreach (T item in Items)
-            {
-                if (item.Address >= endAddress)
-                {
-                    break;
-                }
-
-                if (item.OverlapsWith(address, size))
-                {
-                    if (outputIndex == output.Length)
-                    {
-                        Array.Resize(ref output, outputIndex + ArrayGrowthSize);
-                    }
-
-                    output[outputIndex++] = item;
-                }
-            }
-
-            return outputIndex;*/
+            int overlaps =  Items.OverlapsOf(address, address + size, ref output);
+            Console.WriteLine($"Found {overlaps} overlaps");
+            return overlaps;
         }
 
         public IEnumerator<T> GetEnumerator()
