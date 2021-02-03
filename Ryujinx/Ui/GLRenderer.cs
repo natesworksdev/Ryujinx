@@ -128,7 +128,8 @@ namespace Ryujinx.Ui
            if (_cursorHidden)
            {
                _cursorHidden = false;
-               Window.Cursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.LeftPtr);
+               Window.Cursor.Dispose();
+               Window.Cursor = null;
            }
         }
 
@@ -345,7 +346,7 @@ namespace Ryujinx.Ui
         {
            if (ConfigurationState.Instance.HideCursorOnIdle)
            {
-               Window.Cursor = new Gdk.Cursor(Gdk.Display.Default, Gdk.CursorType.BlankCursor);
+               Gtk.Application.Invoke(delegate { Window.Cursor = new Gdk.Cursor(Gdk.CursorType.BlankCursor); });
                _cursorHidden = true;
            }
         }
