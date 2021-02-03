@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS
     public class TamperMachine
     {
         private Thread _tamperThread = null;
-        private ConcurrentQueue<TamperProgram> _programs = new ConcurrentQueue<TamperProgram>();
+        private ConcurrentQueue<ITamperProgram> _programs = new ConcurrentQueue<ITamperProgram>();
         private long _pressedKeys = 0;
 
         public TamperMachine()
@@ -26,7 +26,8 @@ namespace Ryujinx.HLE.HOS
         private void Activate()
         {
             if (_tamperThread == null || !_tamperThread.IsAlive)
-            {                _tamperThread = new Thread(this.TamperRunner);
+            {
+                _tamperThread = new Thread(this.TamperRunner);
                 _tamperThread.Start();
             }
         }
@@ -40,7 +41,7 @@ namespace Ryujinx.HLE.HOS
 
             ITamperedProcess tamperedProcess = new TamperedKProcess(info.Process);
             AtmosphereCompiler compiler = new AtmosphereCompiler();
-            TamperProgram program = compiler.Compile(rawInstructions, exeAddress, info.HeapAddress, tamperedProcess);
+            ITamperProgram program = compiler.Compile(rawInstructions, exeAddress, info.HeapAddress, tamperedProcess);
 
             if (program != null)
             {
@@ -100,7 +101,7 @@ namespace Ryujinx.HLE.HOS
 
         private bool AdvanceTamperingsQueue()
         {
-            if (!_programs.TryDequeue(out TamperProgram program))
+            if (!_programs.TryDequeue(out ITamperProgram program))
             {
                 // No more programs in the queue.
                 return false;
@@ -120,11 +121,9 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                long pressedKeys = Thread.VolatileRead(ref _pressedKeys);
-
-                // TODO: Mechanism to abort execution if the process exits?
-                program.PressedKeys.Value = pressedKeys;
-                program.EntryPoint.Execute();
+                // TODO: Mechanism to abort loops and execution if the process exits?
+                ControllerKeys pressedKeys = (ControllerKeys)Thread.VolatileRead(ref _pressedKeys);
+                program.Execute(pressedKeys);
             }
             catch
             {

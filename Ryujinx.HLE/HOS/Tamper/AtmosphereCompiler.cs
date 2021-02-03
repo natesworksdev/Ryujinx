@@ -241,7 +241,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             }
         }
 
-        public TamperProgram Compile(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
+        public ITamperProgram Compile(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
         {
             try
             {
@@ -262,7 +262,7 @@ namespace Ryujinx.HLE.HOS.Tamper
             return null;
         }
 
-        private TamperProgram CompileImpl(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
+        private ITamperProgram CompileImpl(IEnumerable<string> rawInstructions, ulong exeAddress, ulong heapAddress, ITamperedProcess process)
         {
             CompilationData cData = new CompilationData(exeAddress, heapAddress, process);
             cData.BlockStack.Push(new CompilationBlock(null));
@@ -311,7 +311,7 @@ namespace Ryujinx.HLE.HOS.Tamper
 
             // TODO check block stack size
 
-            return new TamperProgram(process, cData.PressedKeys, new Block(cData.CurrentOperations));
+            return new AtmosphereProgram(process, cData.PressedKeys, new Block(cData.CurrentOperations));
         }
 
         private void EmitSet(byte[] instruction, CompilationData cData)
