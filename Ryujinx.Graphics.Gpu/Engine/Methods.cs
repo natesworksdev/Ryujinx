@@ -61,6 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
             context.MemoryManager.MemoryUnmapped += _counterCache.MemoryUnmappedHandler;
             context.MemoryManager.MemoryUnmapped += TextureManager.MemoryUnmappedHandler;
+            context.MemoryManager.MemoryUnmapped += BufferManager.MemoryUnmappedHandler;
         }
 
         /// <summary>
@@ -333,7 +334,7 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                     SbDescriptor sbDescriptor = _context.PhysicalMemory.Read<SbDescriptor>(sbDescAddress);
 
-                    BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size);
+                    BufferManager.SetGraphicsStorageBuffer(stage, sb.Slot, sbDescriptor.PackAddress(), (uint)sbDescriptor.Size, sb.Flags);
                 }
             }
         }
@@ -435,8 +436,6 @@ namespace Ryujinx.Graphics.Gpu.Engine
 
                 bool enable = scissor.Enable && (scissor.X1 != 0 || scissor.Y1 != 0 || scissor.X2 != 0xffff || scissor.Y2 != 0xffff);
 
-                _context.Renderer.Pipeline.SetScissorEnable(index, enable);
-
                 if (enable)
                 {
                     int x = scissor.X1;
@@ -453,7 +452,11 @@ namespace Ryujinx.Graphics.Gpu.Engine
                         height = (int)Math.Ceiling(height * scale);
                     }
 
-                    _context.Renderer.Pipeline.SetScissor(index, x, y, width, height);
+                    _context.Renderer.Pipeline.SetScissor(index, true, x, y, width, height);
+                }
+                else
+                {
+                    _context.Renderer.Pipeline.SetScissor(index, false, 0, 0, 0, 0);
                 }
             }
         }

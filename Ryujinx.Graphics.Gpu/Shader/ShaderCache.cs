@@ -34,7 +34,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
         /// <summary>
         /// Version of the codegen (to be changed when codegen or guest format change).
         /// </summary>
-        private const ulong ShaderCodeGenVersion = 1910;
+        private const ulong ShaderCodeGenVersion = 1961;
 
         /// <summary>
         /// Creates a new instance of the shader cache.
@@ -759,7 +759,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
             {
                 byte[] code = _context.MemoryManager.GetSpan(translatorContext.Address, translatorContext.Size).ToArray();
 
-                _dumper.Dump(code, compute: false, out string fullPath, out string codePath);
+                _dumper.Dump(code, translatorContext.Stage == ShaderStage.Compute, out string fullPath, out string codePath);
 
                 ShaderProgram program = translatorContext.Translate(out ShaderProgramInfo shaderProgramInfo);
 

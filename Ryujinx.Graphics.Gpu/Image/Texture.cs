@@ -646,7 +646,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             // - BC4/BC5 is not supported on 3D textures.
             if (!_context.Capabilities.SupportsAstcCompression && Info.FormatInfo.Format.IsAstc())
             {
-                if (!AstcDecoder.TryDecodeToRgba8(
+                if (!AstcDecoder.TryDecodeToRgba8P(
                     data.ToArray(),
                     Info.FormatInfo.BlockWidth,
                     Info.FormatInfo.BlockHeight,
@@ -721,6 +721,12 @@ namespace Ryujinx.Graphics.Gpu.Image
                 if (TextureCompatibility.IsFormatHostIncompatible(Info, _context.Capabilities))
                 {
                     return; // Flushing this format is not supported, as it may have been converted to another host format.
+                }
+
+                if (Info.Target == Target.Texture2DMultisample ||
+                    Info.Target == Target.Texture2DMultisampleArray)
+                {
+                    return; // Flushing multisample textures is not supported, the host does not allow getting their data.
                 }
 
                 ITexture texture = HostTexture;

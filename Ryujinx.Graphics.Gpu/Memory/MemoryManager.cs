@@ -61,6 +61,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         /// </summary>
         /// <param name="va">GPU virtual address where the data is located</param>
         /// <param name="size">Size of the data</param>
+        /// <param name="tracked">True if read tracking is triggered on the span</param>
         /// <returns>The span of the data at the specified memory location</returns>
         public ReadOnlySpan<byte> GetSpan(ulong va, int size, bool tracked = false)
         {
@@ -340,6 +341,39 @@ namespace Ryujinx.Graphics.Gpu.Memory
             regions.Add(new MemoryRange(regionStart, regionSize));
 
             return new MultiRange(regions.ToArray());
+        }
+
+        /// <summary>
+        /// Checks if a given GPU virtual memory range is mapped to the same physical regions
+        /// as the specified physical memory multi-range.
+        /// </summary>
+        /// <param name="range">Physical memory multi-range</param>
+        /// <param name="va">GPU virtual memory address</param>
+        /// <returns>True if the virtual memory region is mapped into the specified physical one, false otherwise</returns>
+        public bool CompareRange(MultiRange range, ulong va)
+        {
+            va &= ~PageMask;
+
+            for (int i = 0; i < range.Count; i++)
+            {
+                MemoryRange currentRange = range.GetSubRange(i);
+
+                ulong address = currentRange.Address & ~PageMask;
+                ulong endAddress = (currentRange.EndAddress + PageMask) & ~PageMask;
+
+                while (address < endAddress)
+                {
+                    if (Translate(va) != address)
+                    {
+                        return false;
+                    }
+
+                    va += PageSize;
+                    address += PageSize;
+                }
+            }
+
+            return true;
         }
 
         /// <summary>
