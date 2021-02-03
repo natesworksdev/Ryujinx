@@ -64,7 +64,9 @@ namespace Ryujinx.Ui
 
         private readonly ManualResetEvent _exitEvent;
 
-        public static System.Timers.Timer idleTimer = new System.Timers.Timer();
+        private static System.Timers.Timer _idleTimer = new System.Timers.Timer();
+        
+        private Gdk.Cursor _invisibleCursor = new Gdk.Cursor (Gdk.CursorType.BlankCursor);
 
         public GlRenderer(Switch device, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
@@ -106,29 +108,28 @@ namespace Ryujinx.Ui
 
         public void TimingIdle()
         {
-            idleTimer = new System.Timers.Timer();
-            idleTimer.Interval = 8000;
-            idleTimer.Elapsed += OnTimedEvent;
-            idleTimer.AutoReset = false;
-            idleTimer.Enabled = true;
+            _idleTimer = new System.Timers.Timer();
+            _idleTimer.Interval = 8000;
+            _idleTimer.Elapsed += OnTimedEvent;
+            _idleTimer.AutoReset = false;
+            _idleTimer.Enabled = true;
         }
 
         private void ResetPtr()
         {
            if (ConfigurationState.Instance.HideCursorOnIdle)
            {
-               idleTimer.Stop();
-               idleTimer.Start();
+               _idleTimer.Stop();
+               _idleTimer.Start();
            }
            else
            {
-               idleTimer.Stop();
+               _idleTimer.Stop();
            }
 
            if (_cursorHidden)
            {
                _cursorHidden = false;
-               Window.Cursor.Dispose();
                Window.Cursor = null;
            }
         }
@@ -346,7 +347,7 @@ namespace Ryujinx.Ui
         {
            if (ConfigurationState.Instance.HideCursorOnIdle)
            {
-               Gtk.Application.Invoke(delegate { Window.Cursor = new Gdk.Cursor(Gdk.CursorType.BlankCursor); });
+               Gtk.Application.Invoke(delegate { Window.Cursor = _invisibleCursor; });
                _cursorHidden = true;
            }
         }
