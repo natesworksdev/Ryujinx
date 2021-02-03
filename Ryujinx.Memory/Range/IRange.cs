@@ -1,3 +1,5 @@
+using System;
+
 namespace Ryujinx.Memory.Range
 {
     /// <summary>
@@ -27,5 +29,18 @@ namespace Ryujinx.Memory.Range
         /// <param name="size">Size of the range</param>
         /// <returns>True if overlapping, false otherwise</returns>
         bool OverlapsWith(ulong address, ulong size);
+
+        public int CompareTo(IRange obj)
+        {
+            int cmp = this.Address.CompareTo(obj.Address);
+            if (cmp == 0)
+            {
+                return this.EndAddress.CompareTo(obj.EndAddress);
+            }
+            else
+            {
+                return cmp;
+            }
+        }
     }
 }
