@@ -66,7 +66,7 @@ namespace Ryujinx.Ui
 
         private static System.Timers.Timer _idleTimer = new System.Timers.Timer();
         
-        private Gdk.Cursor _invisibleCursor = new Gdk.Cursor (Gdk.CursorType.BlankCursor);
+        private Gdk.Cursor _invisibleCursor = new Gdk.Cursor (Gdk.Display.Default, Gdk.CursorType.BlankCursor);
 
         public GlRenderer(Switch device, GraphicsDebugLevel glLogLevel)
             : base (GetGraphicsMode(),
