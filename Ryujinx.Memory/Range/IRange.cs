@@ -34,8 +34,8 @@ namespace Ryujinx.Memory.Range
         {
             if (this.Address < obj.Address) return -1;
             else if (this.Address == obj.Address)
-            { 
-                return this.EndAddress <= obj.EndAddress ? -1 : 1;
+            {
+                return this.EndAddress.CompareTo(obj.EndAddress);
             }
             return 1;
         }
