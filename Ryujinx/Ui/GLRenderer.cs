@@ -190,6 +190,8 @@ namespace Ryujinx.Ui
             GraphicsContext.MakeCurrent(null);
 
             WaitEvent.Set();
+            
+            Thread.Sleep(1);
         }
 
         protected override bool OnConfigureEvent(EventConfigure evnt)
