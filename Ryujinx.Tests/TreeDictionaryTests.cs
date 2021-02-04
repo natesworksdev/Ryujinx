@@ -1,5 +1,7 @@
 ﻿using NUnit.Framework;
 using Ryujinx.Common.Collections;
+using Ryujinx.Memory;
+using Ryujinx.Memory.Range;
 using System;
 using System.Collections.Generic;
 
@@ -239,6 +241,50 @@ namespace Ryujinx.Tests.Collections
             Assert.AreEqual(list[10].Key, 24);
             Assert.AreEqual(list[11].Key, 6);
             Assert.AreEqual(list[12].Key, 8);
+        }
+
+   /*     [Test]
+        public void TestIntervalTree()
+        {
+            IntervalTree<TempRange> tree = new IntervalTree<TempRange>();
+
+            tree.Add(new TempRange(0, 10));
+            tree.Add(new TempRange(5, 15));
+            tree.Add(new TempRange(2, 5));
+            tree.Add(new TempRange(20, 30));
+            tree.Remove(new TempRange(5, 15));
+            TempRange[] arr = new TempRange[0];
+
+            tree.OverlapsOf(5, 10, ref arr);
+
+            foreach(TempRange i in arr)
+            {
+                if(i != null)
+                {
+                    Console.WriteLine($"{i.Address} -> {i.EndAddress}");
+                }
+               
+            }
+            
+        }
+   */
+
+        internal class TempRange : IRange
+        {
+            public ulong Address { get; set; }
+            public ulong Size { get; set; }
+            public ulong EndAddress { get; set; }
+
+            public TempRange(ulong a, ulong b)
+            {
+                Address = a;
+                Size = b;
+                EndAddress = a + b;
+            }
+            public bool OverlapsWith(ulong address, ulong size)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
