@@ -987,7 +987,7 @@ namespace Ryujinx.Ui.Windows
             }
         }
 
-        private void SaveToggle_Activated(object sender, EventArgs args)
+        private void SaveSettings()
         {
             InputConfig inputConfig = GetValues();
 
@@ -1017,7 +1017,16 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Hid.InputConfig.Value = newConfig;
 
             ConfigurationState.Instance.ToFileFormat().SaveConfig(Program.ConfigurationPath);
+        }
 
+        private void ApplyToggle_Activated(object sender, EventArgs args)
+        {
+            SaveSettings();
+        }
+
+        private void SaveToggle_Activated(object sender, EventArgs args)
+        {
+            SaveSettings();
             Dispose();
         }
 
