@@ -69,9 +69,12 @@ namespace Ryujinx.Memory.Range
         {
             T[] arr = Array.Empty<T>();
 
-            Console.WriteLine($"Finding first overlap for: {address}");
-            int overlaps = Items.OverlapsOf(address, address + size, ref arr, 1);
-            Console.WriteLine($"Found {overlaps} overlaps");
+            ulong EndAddress = address + size;
+            if (EndAddress < address)
+            {
+                EndAddress = ulong.MaxValue;
+            }
+            int overlaps = Items.OverlapsOf(address, EndAddress, ref arr, 1);
 
             if(overlaps == 0)
             {
@@ -100,9 +103,12 @@ namespace Ryujinx.Memory.Range
         /// <returns>The number of overlapping items found</returns>
         public int FindOverlaps(ulong address, ulong size, ref T[] output)
         {
-            Console.WriteLine($"Finding overlaps for: {address}");
-            int overlaps =  Items.OverlapsOf(address, address + size, ref output);
-            Console.WriteLine($"Found {overlaps} overlaps");
+            ulong EndAddress = address + size;
+            if(EndAddress < address)
+            {
+                EndAddress = ulong.MaxValue;
+            }
+            int overlaps =  Items.OverlapsOf(address, EndAddress, ref output);
             return overlaps;
         }
 
