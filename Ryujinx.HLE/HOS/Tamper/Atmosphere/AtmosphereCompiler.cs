@@ -10,21 +10,24 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 {
     internal class AtmosphereCompiler
     {
-        const byte OpCodeStoreImmA   = 0x0;
-        const byte OpCodeBeginCond   = 0x1;
-        const byte OpCodeEndCond     = 0x2;
-        const byte OpCodeFor         = 0x3;
-        const byte OpCodeSet         = 0x4;
-        const byte OpCodeLoad        = 0x5;
-        const byte OpCodeStoreRegA   = 0x6;
-        const byte OpCodeArithmetic1 = 0x7;
-        const byte OpCodeInputCond   = 0x8;
-        const byte OpCodeArithmetic2 = 0x9;
-        const byte OpCodeStoreImRgA  = 0xA;
-        const ushort Ex2OpCodeCond2  = 0xC0;
-        const ushort Ex3OpCodePause  = 0xFF0;
-        const ushort Ex3OpCodeResume = 0xFF1;
-        const ushort Ex3OpCodeLog    = 0xFFF;
+        const byte OpCodeStoreImmA    = 0x0;
+        const byte OpCodeBeginCond    = 0x1;
+        const byte OpCodeEndCond      = 0x2;
+        const byte OpCodeFor          = 0x3;
+        const byte OpCodeSet          = 0x4;
+        const byte OpCodeLoad         = 0x5;
+        const byte OpCodeStoreRegA    = 0x6;
+        const byte OpCodeArithmetic1  = 0x7;
+        const byte OpCodeInputCond    = 0x8;
+        const byte OpCodeArithmetic2  = 0x9;
+        const byte OpCodeStoreImRgA   = 0xA;
+        const ushort Ex2OpCodeCond2   = 0xC0;
+        const ushort Ex2OpCodeRegSR   = 0xC1;
+        const ushort Ex2OpCodeRegSRM  = 0xC2;
+        const ushort Ex2OpCodeRegRWS  = 0xC3;
+        const ushort Ex3OpCodePause   = 0xFF0;
+        const ushort Ex3OpCodeResume  = 0xFF1;
+        const ushort Ex3OpCodeLog     = 0xFFF;
 
         /////////////////////////////////////////////
 
@@ -206,6 +209,35 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 
         /////////////////////////////////////////////
 
+        const int SRDstRegIndex = 3;
+        const int SRSrcRegIndex = 5;
+        const int SROpTypeIndex = 6;
+
+        /////////////////////////////////////////////
+
+        const int SRMOpTypeIndex  = 2;
+        const int SRMRegMaskIndex = 4;
+
+        const int SRMRegMaskSize = 4;
+
+        /////////////////////////////////////////////
+
+        const int RWSStaticRegIndex  = 5;
+        const int RWSRegIndex        = 7;
+
+        const byte RWSFirstWriteReg = 0x80;
+
+        const int RWSStaticRegSize = 2;
+
+        /////////////////////////////////////////////
+
+        const int RegOpRestore    = 0;
+        const int RegOpSave       = 1;
+        const int RegOpClearSaved = 2;
+        const int RegOpClear      = 3;
+
+        /////////////////////////////////////////////
+
         struct CompilationBlock
         {
             public byte[] BaseInstruction;
@@ -227,6 +259,8 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
             public Parameter<long> PressedKeys { get; }
             public Stack<CompilationBlock> BlockStack { get; }
             public Dictionary<byte, Register> Registers { get; }
+            public Dictionary<byte, Register> SavedRegisters { get; }
+            public Dictionary<byte, Register> StaticRegisters { get; }
             public ulong ExeAddress { get; }
             public ulong HeapAddress { get; }
 
@@ -236,6 +270,8 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
                 PressedKeys = new Parameter<long>(0);
                 BlockStack = new Stack<CompilationBlock>();
                 Registers = new Dictionary<byte, Register>();
+                SavedRegisters = new Dictionary<byte, Register>();
+                StaticRegisters = new Dictionary<byte, Register>();
                 ExeAddress = exeAddress;
                 HeapAddress = heapAddress;
             }
@@ -286,10 +322,13 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
                     case OpCodeLoad:        EmitLoad       (instruction, cData); break;
                     case OpCodeStoreRegA:   EmitStoreRegA  (instruction, cData); break;
                     case OpCodeArithmetic1: EmitArithmetic1(instruction, cData); break;
-                    case OpCodeInputCond  : EmitBeginCond  (instruction, cData); break;
+                    case OpCodeInputCond:   EmitBeginCond  (instruction, cData); break;
                     case OpCodeArithmetic2: EmitArithmetic2(instruction, cData); break;
                     case OpCodeStoreImRgA:  EmitStoreImRgA (instruction, cData); break;
                     case Ex2OpCodeCond2:    EmitBeginCond  (instruction, cData); break;
+                    case Ex2OpCodeRegSR:    EmitRegSR      (instruction, cData); break;
+                    case Ex2OpCodeRegSRM:   EmitRegSRM     (instruction, cData); break;
+                    case Ex2OpCodeRegRWS:   EmitRegRWS     (instruction, cData); break;
                     case Ex3OpCodePause:    EmitPause      (instruction, cData); break;
                     case Ex3OpCodeResume:   EmitResume     (instruction, cData); break;
                     case Ex3OpCodeLog:      EmitLog        (instruction, cData); break;
@@ -650,6 +689,95 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
             cData.CurrentOperations.Add(block);
         }
 
+        private void EmitRegSR(byte[] instruction, CompilationData cData)
+        {
+            // C10D0Sx0
+            // D: Destination index.
+            // S: Source index.
+            // x: Operand Type, see below.
+
+            byte opType = instruction[SROpTypeIndex];
+            byte dstRegIndex = instruction[SRDstRegIndex];
+            byte srcRegIndex = instruction[SRSrcRegIndex];
+            EmitRegSR(opType, dstRegIndex, srcRegIndex, cData);
+        }
+
+        private void EmitRegSR(byte opType, byte dstRegIndex, byte srcRegIndex, CompilationData cData)
+        {
+            IOperand dstOp;
+            IOperand srcOp;
+
+            switch (opType)
+            {
+                case RegOpRestore:
+                    dstOp = GetRegister(dstRegIndex, cData);
+                    srcOp = GetSavedRegister(srcRegIndex, cData);
+                    break;
+                case RegOpSave:
+                    dstOp = GetSavedRegister(dstRegIndex, cData);
+                    srcOp = GetRegister(srcRegIndex, cData);
+                    break;
+                case RegOpClearSaved:
+                    dstOp = new Value<ulong>(0);
+                    srcOp = GetSavedRegister(srcRegIndex, cData);
+                    break;
+                case RegOpClear:
+                    dstOp = new Value<ulong>(0);
+                    srcOp = GetRegister(srcRegIndex, cData);
+                    break;
+                default:
+                    throw new TamperCompilationException($"Invalid register operation type {opType} in Atmosphere cheat");
+            }
+
+            cData.CurrentOperations.Add(new OpMov<ulong>(dstOp, srcOp));
+        }
+
+        private void EmitRegSRM(byte[] instruction, CompilationData cData)
+        {
+            // C2x0XXXX
+            // x: Operand Type, see below.
+            // X: 16-bit bitmask, bit i == save or restore register i.
+
+            byte opType = instruction[SRMOpTypeIndex];
+            ulong mask = GetImmediate(instruction, SRMRegMaskIndex, SRMRegMaskSize);
+
+            for (byte regIndex = 0; mask != 0; mask >>= 1, regIndex++)
+            {
+                if ((mask & 0x1) != 0)
+                {
+                    EmitRegSR(opType, regIndex, regIndex, cData);
+                }
+            }
+        }
+
+        private void EmitRegRWS(byte[] instruction, CompilationData cData)
+        {
+            // C3000XXx
+            // XX: Static register index, 0x00 to 0x7F for reading or 0x80 to 0xFF for writing.
+            // x: Register index.
+
+            ulong staticRegIndex = GetImmediate(instruction, RWSStaticRegIndex, RWSStaticRegSize);
+            Register register = GetRegister(instruction[RWSRegIndex], cData);
+
+            IOperand srcReg;
+            IOperand dstReg;
+
+            if (staticRegIndex < RWSFirstWriteReg)
+            {
+                // Read from static register.
+                srcReg = GetStaticRegister((byte)staticRegIndex, cData);
+                dstReg = register;
+            }
+            else
+            {
+                // Write to static register.
+                srcReg = register;
+                dstReg = GetStaticRegister((byte)(staticRegIndex - RWSFirstWriteReg), cData);
+            }
+
+            cData.CurrentOperations.Add(new OpMov<ulong>(dstReg, srcReg));
+        }
+
         private void EmitPause(byte[] instruction, CompilationData cData)
         {
             cData.CurrentOperations.Add(new OpProcCtrl(cData.Process, true));
@@ -954,6 +1082,32 @@ namespace Ryujinx.HLE.HOS.Tamper.Atmosphere
 
             register = new Register();
             cData.Registers.Add(index, register);
+
+            return register;
+        }
+
+        private Register GetSavedRegister(byte index, CompilationData cData)
+        {
+            if (cData.SavedRegisters.TryGetValue(index, out Register register))
+            {
+                return register;
+            }
+
+            register = new Register();
+            cData.SavedRegisters.Add(index, register);
+
+            return register;
+        }
+
+        private Register GetStaticRegister(byte index, CompilationData cData)
+        {
+            if (cData.SavedRegisters.TryGetValue(index, out Register register))
+            {
+                return register;
+            }
+
+            register = new Register();
+            cData.SavedRegisters.Add(index, register);
 
             return register;
         }
