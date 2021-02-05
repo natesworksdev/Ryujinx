@@ -376,9 +376,11 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <returns>Guest shader cahe entries from the runtime contexts</returns>
         public static GuestShaderCacheEntry[] CreateShaderCacheEntries(MemoryManager memoryManager, ReadOnlySpan<TranslatorContext> shaderContexts)
         {
-            GuestShaderCacheEntry[] entries = new GuestShaderCacheEntry[shaderContexts.Length];
+            int startIndex = shaderContexts.Length > 1 ? 1 : 0;
 
-            for (int i = 0; i < shaderContexts.Length; i++)
+            GuestShaderCacheEntry[] entries = new GuestShaderCacheEntry[shaderContexts.Length - startIndex];
+
+            for (int i = startIndex; i < shaderContexts.Length; i++)
             {
                 TranslatorContext context = shaderContexts[i];
 
@@ -387,15 +389,17 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     continue;
                 }
 
-                int sizeA = context.AddressA == 0 ? 0 : context.SizeA;
+                TranslatorContext translatorContext2 = i == 1 ? shaderContexts[0] : null;
+
+                int sizeA = translatorContext2 != null ? translatorContext2.Size : 0;
 
                 byte[] code = new byte[context.Size + sizeA];
 
                 memoryManager.GetSpan(context.Address, context.Size).CopyTo(code);
 
-                if (context.AddressA != 0)
+                if (translatorContext2 != null)
                 {
-                    memoryManager.GetSpan(context.AddressA, context.SizeA).CopyTo(code.AsSpan().Slice(context.Size, context.SizeA));
+                    memoryManager.GetSpan(translatorContext2.Address, sizeA).CopyTo(code.AsSpan().Slice(context.Size, sizeA));
                 }
 
                 GuestGpuAccessorHeader gpuAccessorHeader = CreateGuestGpuAccessorCache(context.GpuAccessor);
@@ -421,7 +425,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     }
                 }
 
-                entries[i] = entry;
+                entries[i - startIndex] = entry;
             }
 
             return entries;
