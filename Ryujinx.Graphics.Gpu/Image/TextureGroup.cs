@@ -7,86 +7,6 @@ using System.Collections.Generic;
 namespace Ryujinx.Graphics.Gpu.Image
 {
     /// <summary>
-    /// A tracking handle for a texture group, which represents a range of views in a storage texture.
-    /// Retains a list of overlapping texture views, a modified flag, and tracking for each
-    /// CPU VA range that the views cover.
-    /// </summary>
-    class TextureGroupHandle
-    {
-        /// <summary>
-        /// The byte offset from the start of the storage of this handle.
-        /// </summary>
-        public int Offset { get; }
-
-        /// <summary>
-        /// The size in bytes covered by this handle.
-        /// </summary>
-        public int Size { get; }
-
-        /// <summary>
-        /// The textures which this handle overlaps with.
-        /// </summary>
-        public List<Texture> Overlaps { get; }
-
-        /// <summary>
-        /// The CPU memory tracking handles that cover this handle.
-        /// </summary>
-        public CpuRegionHandle[] Handles { get; }
-
-        /// <summary>
-        /// True if a texture overlapping this handle has been modified. Is set false when the flush action is called.
-        /// </summary>
-        public bool Modified { get; set; }
-
-        /// <summary>
-        /// Create a new texture group handle, representing a range of views in a storage texture.
-        /// </summary>
-        /// <param name="group">The TextureGroup that the handle belongs to</param>
-        /// <param name="offset">The byte offset from the start of the storage of the handle</param>
-        /// <param name="size">The size in bytes covered by the handle</param>
-        /// <param name="views">All views of the storage texture, used to calculate overlaps</param>
-        /// <param name="handles">The memory tracking handles that represent cover the handle</param>
-        public TextureGroupHandle(TextureGroup group, int offset, ulong size, List<Texture> views, CpuRegionHandle[] handles)
-        {
-            Offset = offset;
-            Size = (int)size;
-            Overlaps = new List<Texture>();
-
-            if (views != null)
-            {
-                RecalculateOverlaps(group, views);
-            }
-
-            Handles = handles;
-        }
-
-        /// <summary>
-        /// Calculate a list of which views overlap this handle.
-        /// </summary>
-        /// <param name="group">The parent texture group, used to find a view's base CPU VA offset</param>
-        /// <param name="views">The list of views to search for overlaps</param>
-        public void RecalculateOverlaps(TextureGroup group, List<Texture> views)
-        {
-            // Overlaps can be accessed from the memory tracking signal handler, so access must be atomic.
-            lock (Overlaps)
-            {
-                int endOffset = Offset + Size;
-
-                Overlaps.Clear();
-
-                foreach (Texture view in views)
-                {
-                    int viewOffset = group.FindOffset(view);
-                    if (viewOffset < endOffset && Offset < viewOffset + (int)view.Size)
-                    {
-                        Overlaps.Add(view);
-                    }
-                }
-            }
-        }
-    }
-
-    /// <summary>
     /// A texture group represents a group of textures that belong to the same storage.
     /// When views are created, this class will track memory accesses for them separately.
     /// The group iteratively adds more granular tracking as views of different kinds are added.
@@ -140,6 +60,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Initialize(ref SizeInfo size, bool hasLayerViews, bool hasMipViews)
         {
             _allOffsets = size.AllOffsets;
+
             _hasLayerViews = hasLayerViews;
             _hasMipViews = hasMipViews;
 
@@ -182,12 +103,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             (int baseHandle, int regionCount) = EvaluateRelevantHandles(texture);
 
-            // TODO: Partial reload. Right now it will reload the entire texture that was requested.
-            // We want to only reload parts of the texture that have not been modified.
-
             bool dirty = false;
             bool anyModified = false;
-            bool notDirty = false;
             for (int i = 0; i < regionCount; i++)
             {
                 TextureGroupHandle group = _handles[baseHandle + i];
@@ -207,7 +124,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                     else
                     {
                         anyModified |= modified;
-                        notDirty |= true;
                     }
                 }
 
@@ -308,18 +224,58 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_is3D)
             {
-                // Mipmaps come after all layers.
-                int layerHandles = _hasLayerViews ? _layers : 1;
+                // Future mip levels come after all layers of the last mip level. Each mipmap has less layers (depth) than the last.
+                
+                if (!_hasLayerViews)
+                {
+                    // When there are no layer views, the mips are at a consistent offset.
 
-                return (texture.FirstLayer + (texture.FirstLevel) * layerHandles, targetLayerHandles + (targetLevelHandles - 1) * layerHandles);
+                    return (texture.FirstLevel, targetLevelHandles);
+                }
+                else
+                {
+                    // NOTE: Will also have mip views, or only one level in storage.
+
+                    (int levelIndex, int layerCount) = Get3DLevelRange(texture.FirstLevel);
+
+                    int totalSize = Math.Min(layerCount, texture.Info.DepthOrLayers);
+                    int levels = texture.Info.Levels;
+
+                    while (levels-- > 1)
+                    {
+                        layerCount = Math.Max(layerCount >> 1, 1);
+                        totalSize += layerCount;
+                    }
+
+                    return (texture.FirstLayer + levelIndex, totalSize);
+                }
             }
             else
             {
-                // Layers come after all mipmaps.
+                // Future layers come after all mipmaps of the last.
                 int levelHandles = _hasMipViews ? _levels : 1;
 
                 return (texture.FirstLevel + (texture.FirstLayer) * levelHandles, targetLevelHandles + (targetLayerHandles - 1) * levelHandles);
             }
+        }
+
+        /// <summary>
+        /// Get the range of offsets for a given mip level of a 3D texture.
+        /// </summary>
+        /// <param name="level">The level to return</param>
+        /// <returns>Start index and count of offsets for the given level</returns>
+        private (int index, int count) Get3DLevelRange(int level)
+        {
+            int index = 0;
+            int count = _layers; // Depth. Halves with each mip level.
+
+            while (level-- > 0)
+            {
+                index += count;
+                count = Math.Max(count >> 1, 1);
+            }
+
+            return (index, count);
         }
 
         /// <summary>
@@ -337,9 +293,31 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_is3D)
             {
-                baseLayer = _hasLayerViews ? handleIndex % _layers : 0;
-                baseLevel = _hasLayerViews ? handleIndex / _layers : handleIndex;
-                index = baseLayer + baseLevel * _layers;
+                if (_hasLayerViews)
+                {
+                    // NOTE: Will also have mip views, or only one level in storage.
+
+                    index = handleIndex;
+                    baseLevel = 0;
+
+                    int layerLevels = _levels;
+
+                    while (handleIndex >= layerLevels)
+                    {
+                        handleIndex -= layerLevels;
+                        baseLevel++;
+                        layerLevels = Math.Max(layerLevels >> 1, 1);
+                    }
+
+                    baseLayer = handleIndex;
+                } 
+                else
+                {
+                    baseLayer = 0;
+                    baseLevel = handleIndex;
+
+                    (index, _) = Get3DLevelRange(baseLevel);
+                }
             }
             else
             {
@@ -360,11 +338,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             if (_is3D)
             {
-                return _allOffsets[texture.FirstLevel + texture.FirstLayer * _levels];
+                return _allOffsets[texture.FirstLayer + Get3DLevelRange(texture.FirstLevel).index];
             }
             else
             {
-                return _allOffsets[texture.FirstLayer + texture.FirstLevel * _layers];
+                return _allOffsets[texture.FirstLevel + texture.FirstLayer * _levels];
             }
         }
 
@@ -485,6 +463,8 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (!regionsRebuilt)
             {
+                // Must update the overlapping views on all handles, but only if they were not just recreated.
+
                 foreach (TextureGroupHandle handle in _handles)
                 {
                     handle.RecalculateOverlaps(this, views);
@@ -608,7 +588,10 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else
             {
-                // Get mips for the host texture.
+                // Get views for the host texture.
+                // It's worth noting that either the texture has layer views or mip views when getting to this point, which simplifies the logic a little.
+                // Depending on if the texture is 3d, either the mip views imply that layer views are present (2d) or the other way around (3d).
+                // This is enforced by the way the texture matched as a view, so we don't need to check.
 
                 int layerHandles = _hasLayerViews ? _layers : 1;
                 int levelHandles = _hasMipViews ? _levels : 1;
@@ -622,8 +605,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                     {
                         for (int j = 0; j < layerHandles; j++)
                         {
-                            int viewStart = j + i * _layers;
-                            int views = (_hasLayerViews ? 1 : _layers) * (_hasMipViews ? 1 : _levels);
+                            (int viewStart, int views) = Get3DLevelRange(i);
+                            viewStart += j;
+                            views = _hasLayerViews ? 1 : views; // A layer view is also a mip view.
 
                             handles[handleIndex++] = GenerateHandles(viewStart, views);
                         }
@@ -636,7 +620,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                         for (int j = 0; j < levelHandles; j++)
                         {
                             int viewStart = j + i * _levels;
-                            int views = (_hasLayerViews ? 1 : _layers) * (_hasMipViews ? 1 : _levels);
+                            int views = _hasMipViews ? 1 : _levels; // A mip view is also a layer view.
 
                             handles[handleIndex++] = GenerateHandles(viewStart, views);
                         }
