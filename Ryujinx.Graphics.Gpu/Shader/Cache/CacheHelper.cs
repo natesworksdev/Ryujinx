@@ -280,7 +280,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
                     }
                 }
 
-                // Transformation feedback
+                // Transform feedback
                 if (tfd != null)
                 {
                     foreach (TransformFeedbackDescriptor transform in tfd)
@@ -311,7 +311,7 @@ namespace Ryujinx.Graphics.Gpu.Shader.Cache
         /// <param name="data">The raw guest transform feedback descriptors</param>
         /// <param name="header">The guest shader program header</param>
         /// <returns>The transform feedback descriptors read from guest</returns>
-        public static TransformFeedbackDescriptor[] ReadTransformationFeedbackInformations(ref ReadOnlySpan<byte> data, GuestShaderCacheHeader header)
+        public static TransformFeedbackDescriptor[] ReadTransformFeedbackInformation(ref ReadOnlySpan<byte> data, GuestShaderCacheHeader header)
         {
             if (header.TransformFeedbackCount != 0)
             {

@@ -176,7 +176,7 @@ namespace Ryujinx.Graphics.Gpu.Shader
                         ShaderCodeHolder[] shaders = new ShaderCodeHolder[cachedShaderEntries.Length];
                         List<ShaderProgram> shaderPrograms = new List<ShaderProgram>();
 
-                        TransformFeedbackDescriptor[] tfd = CacheHelper.ReadTransformationFeedbackInformations(ref guestProgramReadOnlySpan, fileHeader);
+                        TransformFeedbackDescriptor[] tfd = CacheHelper.ReadTransformFeedbackInformation(ref guestProgramReadOnlySpan, fileHeader);
 
                         TranslationFlags flags = DefaultFlags;
 
