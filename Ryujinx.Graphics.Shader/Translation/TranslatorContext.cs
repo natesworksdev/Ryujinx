@@ -131,6 +131,7 @@ namespace Ryujinx.Graphics.Shader.Translation
             if (other != null)
             {
                 _config.SetUsedFeature(other._config.UsedFeatures);
+                TextureHandlesForCache.UnionWith(other.TextureHandlesForCache);
 
                 code = Combine(EmitShader(other._cfg, other._config), code);
             }
