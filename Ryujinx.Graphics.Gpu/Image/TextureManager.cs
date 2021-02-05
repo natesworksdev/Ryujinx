@@ -770,10 +770,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     texture = overlap.CreateView(oInfo, sizeInfo, range.Value, firstLayer, firstLevel);
 
-                    if (overlap.IsModified)
-                    {
-                        texture.SignalModified();
-                    }
+                    texture.SynchronizeMemory();
 
                     ChangeSizeIfNeeded(info, texture, isSamplerTexture, sizeHint);
 
@@ -797,6 +794,9 @@ namespace Ryujinx.Graphics.Gpu.Image
                 int viewCompatible = 0;
                 bool setData = isSamplerTexture || overlapsCount == 0 || flags.HasFlag(TextureSearchFlags.ForCopy);
 
+                bool hasLayerViews = false;
+                bool hasMipViews = false;
+
                 for (int index = 0; index < overlapsCount; index++)
                 {
                     Texture overlap = _textureOverlaps[index];
@@ -813,6 +813,9 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                         _overlapInfo[viewCompatible] = new OverlapInfo(compatibility, firstLayer, firstLevel);
                         _textureOverlaps[viewCompatible++] = overlap;
+
+                        hasLayerViews |= overlap.Info.GetSlices() < texture.Info.GetSlices();
+                        hasMipViews |= overlap.Info.Levels < texture.Info.Levels;
                     }
                     else if (overlapInCache || !setData)
                     {
@@ -840,6 +843,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                         }
                     }
                 }
+
+                texture.InitializeGroup(hasLayerViews, hasMipViews);
 
                 // We need to synchronize before copying the old view data to the texture,
                 // otherwise the copied data would be overwritten by a future synchronization.
@@ -871,15 +876,10 @@ namespace Ryujinx.Graphics.Gpu.Image
 
                     overlap.HostTexture.CopyTo(newView, 0, 0);
 
-                    // Inherit modification from overlapping texture, do that before replacing
-                    // the view since the replacement operation removes it from the list.
-                    if (overlap.IsModified)
-                    {
-                        texture.SignalModified();
-                    }
-
                     overlap.ReplaceView(texture, overlapInfo, newView, oInfo.FirstLayer, oInfo.FirstLevel);
                 }
+
+                texture.SynchronizeMemory();
 
                 // If the texture is a 3D texture, we need to additionally copy any slice
                 // of the 3D texture to the newly created 3D texture.
@@ -900,11 +900,6 @@ namespace Ryujinx.Graphics.Gpu.Image
                             overlap.BlacklistScale();
 
                             overlap.HostTexture.CopyTo(texture.HostTexture, oInfo.FirstLayer, oInfo.FirstLevel);
-
-                            if (overlap.IsModified)
-                            {
-                                texture.SignalModified();
-                            }
                         }
                     }
                 }

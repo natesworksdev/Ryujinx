@@ -308,6 +308,20 @@ namespace Ryujinx.Graphics.OpenGL.Image
             }
         }
 
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        {
+            unsafe
+            {
+                fixed (byte* ptr = data)
+                {
+                    int width = Math.Max(Info.Width >> level, 1);
+                    int height = Math.Max(Info.Height >> level, 1);
+
+                    ReadFrom2D((IntPtr)ptr, layer, level, width, height);
+                }
+            }
+        }
+
         public void ReadFromPbo(int offset, int size)
         {
             ReadFrom(IntPtr.Zero + offset, size);

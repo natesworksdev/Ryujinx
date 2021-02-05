@@ -38,6 +38,11 @@ namespace Ryujinx.Graphics.OpenGL.Image
             Buffer.SetData(_buffer, _bufferOffset, data.Slice(0, Math.Min(data.Length, _bufferSize)));
         }
 
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        {
+            throw new NotSupportedException();
+        }
+
         public void SetStorage(BufferRange buffer)
         {
             if (buffer.Handle == _buffer &&

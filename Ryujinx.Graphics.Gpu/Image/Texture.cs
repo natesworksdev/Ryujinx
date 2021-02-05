@@ -51,6 +51,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         public TextureScaleMode ScaleMode { get; private set; }
 
         /// <summary>
+        /// Group that this texture belongs to. Manages read/write memory tracking.
+        /// </summary>
+        public TextureGroup Group { get; private set; }
+
+        /// <summary>
         /// Set when a texture has been modified by the Host GPU since it was last flushed.
         /// </summary>
         public bool IsModified { get; internal set; }
@@ -63,10 +68,12 @@ namespace Ryujinx.Graphics.Gpu.Image
 
         private int _depth;
         private int _layers;
-        private int _firstLayer;
-        private int _firstLevel;
+        public int FirstLayer { get; private set; }
+        public int FirstLevel { get; private set; }
 
         private bool _hasData;
+        private bool _trackingEnabled = true;
+        private bool _dirty = true;
         private int _updateCount;
         private byte[] _currentData;
 
@@ -104,8 +111,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public ulong Size => (ulong)_sizeInfo.TotalSize;
 
-        private GpuRegionHandle _memoryTracking;
-
         private int _referenceCount;
 
         /// <summary>
@@ -131,8 +136,8 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             InitializeTexture(context, info, sizeInfo, range);
 
-            _firstLayer = firstLayer;
-            _firstLevel = firstLevel;
+            FirstLayer = firstLayer;
+            FirstLevel = firstLevel;
 
             ScaleFactor = scaleFactor;
             ScaleMode = scaleMode;
@@ -186,8 +191,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="withData">True if the texture is to be initialized with data</param>
         public void InitializeData(bool isView, bool withData = false)
         {
-            _memoryTracking = _context.PhysicalMemory.BeginTracking(Range);
-
             if (withData)
             {
                 Debug.Assert(!isView);
@@ -205,6 +208,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 // Don't update this texture the next time we synchronize.
                 ConsumeModified();
+
                 _hasData = true;
 
                 if (!isView)
@@ -219,6 +223,18 @@ namespace Ryujinx.Graphics.Gpu.Image
                     HostTexture = _context.Renderer.CreateTexture(createInfo, ScaleFactor);
                 }
             }
+        }
+
+        /// <summary>
+        /// Initialize a new texture group with this texture as storage.
+        /// </summary>
+        /// <param name="hasLayerViews">True if the texture will have layer views</param>
+        /// <param name="hasMipViews">True if the texture will have mip views</param>
+        public void InitializeGroup(bool hasLayerViews, bool hasMipViews)
+        {
+            Group = new TextureGroup(_context, this);
+
+            Group.Initialize(ref _sizeInfo, hasLayerViews, hasMipViews);
         }
 
         /// <summary>
@@ -240,8 +256,8 @@ namespace Ryujinx.Graphics.Gpu.Image
                 info,
                 sizeInfo,
                 range,
-                _firstLayer + firstLayer,
-                _firstLevel + firstLevel,
+                FirstLayer + firstLayer,
+                FirstLevel + firstLevel,
                 ScaleFactor,
                 ScaleMode);
 
@@ -259,11 +275,24 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="texture">The child texture</param>
         private void AddView(Texture texture)
         {
-            DisableMemoryTracking();
-
             _views.Add(texture);
 
             texture._viewStorage = this;
+
+            Group.UpdateViews(_views);
+
+            if (texture.Group != null && texture.Group != Group)
+            {
+                Group.Inherit(texture.Group);
+
+                if (texture.Group.Storage == texture)
+                {
+                    // This texture's group is no longer used.
+                    texture.Group.Dispose();
+                }
+            }
+
+            texture.Group = Group;
         }
 
         /// <summary>
@@ -294,12 +323,12 @@ namespace Ryujinx.Graphics.Gpu.Image
             int blockWidth = Info.FormatInfo.BlockWidth;
             int blockHeight = Info.FormatInfo.BlockHeight;
 
-            width  <<= _firstLevel;
-            height <<= _firstLevel;
+            width  <<= FirstLevel;
+            height <<= FirstLevel;
 
             if (Target == Target.Texture3D)
             {
-                depthOrLayers <<= _firstLevel;
+                depthOrLayers <<= FirstLevel;
             }
             else
             {
@@ -310,14 +339,14 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             foreach (Texture view in _viewStorage._views)
             {
-                int viewWidth  = Math.Max(1, width  >> view._firstLevel);
-                int viewHeight = Math.Max(1, height >> view._firstLevel);
+                int viewWidth  = Math.Max(1, width  >> view.FirstLevel);
+                int viewHeight = Math.Max(1, height >> view.FirstLevel);
 
                 int viewDepthOrLayers;
 
                 if (view.Info.Target == Target.Texture3D)
                 {
-                    viewDepthOrLayers = Math.Max(1, depthOrLayers >> view._firstLevel);
+                    viewDepthOrLayers = Math.Max(1, depthOrLayers >> view.FirstLevel);
                 }
                 else
                 {
@@ -334,8 +363,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void DisableMemoryTracking()
         {
-            _memoryTracking?.Dispose();
-            _memoryTracking = null;
+            _trackingEnabled = false;
         }
 
         /// <summary>
@@ -393,7 +421,7 @@ namespace Ryujinx.Graphics.Gpu.Image
 
             if (_viewStorage != this)
             {
-                ReplaceStorage(_viewStorage.HostTexture.CreateView(createInfo, _firstLayer, _firstLevel));
+                ReplaceStorage(_viewStorage.HostTexture.CreateView(createInfo, FirstLayer, FirstLevel));
             }
             else
             {
@@ -495,7 +523,7 @@ namespace Ryujinx.Graphics.Gpu.Image
                     view.ScaleFactor = scale;
 
                     TextureCreateInfo viewCreateInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities, scale);
-                    ITexture newView = HostTexture.CreateView(viewCreateInfo, view._firstLayer - _firstLayer, view._firstLevel - _firstLevel);
+                    ITexture newView = HostTexture.CreateView(viewCreateInfo, view.FirstLayer - FirstLayer, view.FirstLevel - FirstLevel);
 
                     view.ReplaceStorage(newView);
                     view.ScaleMode = newScaleMode;
@@ -523,11 +551,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <returns>True if the texture was modified, false otherwise.</returns>
         public bool ConsumeModified()
         {
-            bool wasDirty = _memoryTracking?.Dirty ?? true;
-
-            _memoryTracking?.Reprotect();
-
-            return wasDirty;
+            return Group?.ConsumeDirty(this) != false;
         }
 
         /// <summary>
@@ -544,17 +568,45 @@ namespace Ryujinx.Graphics.Gpu.Image
                 return;
             }
 
-            if (_hasData)
+            if (!_dirty)
             {
-                if (_memoryTracking?.Dirty != true)
-                {
-                    return;
-                }
-
-                BlacklistScale();
+                return;
             }
 
-            _memoryTracking?.Reprotect();
+            _dirty = false;
+
+            if (_hasData)
+            {
+                if (_trackingEnabled && Group != null)
+                {
+                    Group.SynchronizeMemory(this);
+                }
+            }
+            else
+            {
+                Group.ConsumeDirty(this);
+                SynchronizeFull();
+            }
+        }
+
+        /// <summary>
+        /// Signal that this texture is dirty, indicating that the texture group must be checked.
+        /// </summary>
+        public void SignalGroupDirty()
+        {
+            _dirty = true;
+        }
+
+        /// <summary>
+        /// Fully synchronizes guest and host memory. 
+        /// This will replace the entire texture with the data present in guest memory.
+        /// </summary>
+        public void SynchronizeFull()
+        {
+            if (_hasData)
+            {
+                BlacklistScale();
+            }
 
             ReadOnlySpan<byte> data = _context.PhysicalMemory.GetSpan(Range);
 
@@ -596,7 +648,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         {
             BlacklistScale();
 
-            _memoryTracking?.Reprotect();
+            Group.ConsumeDirty(this);
 
             IsModified = false;
 
@@ -606,17 +658,45 @@ namespace Ryujinx.Graphics.Gpu.Image
         }
 
         /// <summary>
+        /// Uploads new texture data to the host GPU for a specific layer/level.
+        /// </summary>
+        /// <param name="data">New data</param>
+        /// <param name="layer">Target layer</param>
+        /// <param name="level">Target level</param>
+        public void SetData(ReadOnlySpan<byte> data, int layer, int level)
+        {
+            BlacklistScale();
+
+            HostTexture.SetData(data, layer, level);
+
+            _currentData = null;
+
+            _hasData = true;
+        }
+
+        /// <summary>
         /// Converts texture data to a format and layout that is supported by the host GPU.
         /// </summary>
         /// <param name="data">Data to be converted</param>
         /// <returns>Converted data</returns>
-        private ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data)
+        public ReadOnlySpan<byte> ConvertToHostCompatibleFormat(ReadOnlySpan<byte> data, int level = 0, bool single = false)
         {
+            int width = Info.Width;
+            int height = Info.Height;
+
+            int depth = single ? 1 : _depth;
+            int layers = single ? 1 : _layers;
+            int levels = single ? 1 : Info.Levels;
+
+            width = Math.Max(width >> level, 1);
+            height = Math.Max(height >> level, 1);
+            depth = Math.Max(depth >> level, 1);
+
             if (Info.IsLinear)
             {
                 data = LayoutConverter.ConvertLinearStridedToLinear(
-                    Info.Width,
-                    Info.Height,
+                    width,
+                    height,
                     Info.FormatInfo.BlockWidth,
                     Info.FormatInfo.BlockHeight,
                     Info.Stride,
@@ -626,11 +706,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             else
             {
                 data = LayoutConverter.ConvertBlockLinearToLinear(
-                    Info.Width,
-                    Info.Height,
-                    _depth,
-                    Info.Levels,
-                    _layers,
+                    width,
+                    height,
+                    depth,
+                    levels,
+                    layers,
                     Info.FormatInfo.BlockWidth,
                     Info.FormatInfo.BlockHeight,
                     Info.FormatInfo.BytesPerPixel,
@@ -650,11 +730,11 @@ namespace Ryujinx.Graphics.Gpu.Image
                     data.ToArray(),
                     Info.FormatInfo.BlockWidth,
                     Info.FormatInfo.BlockHeight,
-                    Info.Width,
-                    Info.Height,
-                    _depth,
-                    Info.Levels,
-                    _layers,
+                    width,
+                    height,
+                    depth,
+                    levels,
+                    layers,
                     out Span<byte> decoded))
                 {
                     string texInfo = $"{Info.Target} {Info.FormatInfo.Format} {Info.Width}x{Info.Height}x{Info.DepthOrLayers} levels {Info.Levels}";
@@ -666,11 +746,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc4())
             {
-                data = BCnDecoder.DecodeBC4(data, Info.Width, Info.Height, _depth, Info.Levels, _layers, Info.FormatInfo.Format == Format.Bc4Snorm);
+                data = BCnDecoder.DecodeBC4(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc4Snorm);
             }
             else if (Target == Target.Texture3D && Info.FormatInfo.Format.IsBc5())
             {
-                data = BCnDecoder.DecodeBC5(data, Info.Width, Info.Height, _depth, Info.Levels, _layers, Info.FormatInfo.Format == Format.Bc5Snorm);
+                data = BCnDecoder.DecodeBC5(data, width, height, depth, levels, layers, Info.FormatInfo.Format == Format.Bc5Snorm);
             }
 
             return data;
@@ -710,7 +790,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void ExternalFlush(ulong address, ulong size)
         {
-            if (!IsModified || _memoryTracking == null)
+            if (!IsModified || !_trackingEnabled)
             {
                 return;
             }
@@ -1004,10 +1084,33 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void ReplaceView(Texture parent, TextureInfo info, ITexture hostTexture, int firstLayer, int firstLevel)
         {
             parent._viewStorage.SynchronizeMemory();
+
+            // If this texture has views, they must be given to the new parent.
+            if (_views.Count > 0)
+            {
+                Texture[] viewCopy = _views.ToArray();
+
+                foreach (Texture view in viewCopy)
+                {
+                    TextureCreateInfo createInfo = TextureManager.GetCreateInfo(view.Info, _context.Capabilities, ScaleFactor);
+
+                    ITexture newView = parent.HostTexture.CreateView(createInfo, view.FirstLayer + firstLayer, view.FirstLevel + firstLevel);
+
+                    view.HostTexture.CopyTo(newView, 0, 0);
+
+                    view.ReplaceView(parent, view.Info, newView, view.FirstLayer + firstLayer, view.FirstLevel + firstLevel);
+                }
+            }
+
             ReplaceStorage(hostTexture);
 
-            _firstLayer = parent._firstLayer + firstLayer;
-            _firstLevel = parent._firstLevel + firstLevel;
+            if (_viewStorage != this)
+            {
+                _viewStorage.RemoveView(this);
+            }
+
+            FirstLayer = parent.FirstLayer + firstLayer;
+            FirstLevel = parent.FirstLevel + firstLevel;
             parent._viewStorage.AddView(this);
 
             SetInfo(info);
@@ -1031,14 +1134,11 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void SignalModified()
         {
-            IsModified = true;
-
-            if (_viewStorage != this)
+            if (!IsModified)
             {
-                _viewStorage.SignalModified();
+                IsModified = true;
+                Group.SignalModified(this);
             }
-
-            _memoryTracking?.RegisterAction(ExternalFlush);
         }
 
         /// <summary>
@@ -1148,10 +1248,6 @@ namespace Ryujinx.Graphics.Gpu.Image
         public void Unmapped()
         {
             IsModified = false; // We shouldn't flush this texture, as its memory is no longer mapped.
-
-            var tracking = _memoryTracking;
-            tracking?.Reprotect();
-            tracking?.RegisterAction(null);
         }
 
         /// <summary>
@@ -1162,7 +1258,11 @@ namespace Ryujinx.Graphics.Gpu.Image
             DisposeTextures();
 
             Disposed?.Invoke(this);
-            _memoryTracking?.Dispose();
+
+            if (Group.Storage == this)
+            {
+                Group.Dispose();
+            }
         }
     }
 }

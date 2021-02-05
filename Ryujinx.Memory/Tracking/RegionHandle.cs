@@ -1,4 +1,5 @@
 ﻿using Ryujinx.Memory.Range;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -18,6 +19,8 @@ namespace Ryujinx.Memory.Tracking
 
         internal IMultiRegionHandle Parent { get; set; }
         internal int SequenceNumber { get; set; }
+
+        private event Action _onDirty;
 
         private RegionSignal _preAction; // Action to perform before a read or write. This will block the memory access.
         private readonly List<VirtualRegion> _regions;
@@ -60,7 +63,12 @@ namespace Ryujinx.Memory.Tracking
 
             if (write)
             {
+                bool oldDirty = Dirty;
                 Dirty = true;
+                if (!oldDirty)
+                {
+                    _onDirty?.Invoke();
+                }
                 Parent?.SignalWrite();
             }
         }
@@ -68,9 +76,9 @@ namespace Ryujinx.Memory.Tracking
         /// <summary>
         /// Consume the dirty flag for this handle, and reprotect so it can be set on the next write.
         /// </summary>
-        public void Reprotect()
+        public void Reprotect(bool asDirty = false)
         {
-            Dirty = false;
+            Dirty = asDirty;
             lock (_tracking.TrackingLock)
             {
                 foreach (VirtualRegion region in _regions)
@@ -101,6 +109,16 @@ namespace Ryujinx.Memory.Tracking
         }
 
         /// <summary>
+        /// Register an action to perform when the region is written to.
+        /// This action will not be removed when it is called - it is called each time the dirty flag is set.
+        /// </summary>
+        /// <param name="action">Action to call on dirty</param>
+        public void RegisterDirtyEvent(Action action)
+        {
+            _onDirty += action;
+        }
+
+        /// <summary>
         /// Add a child virtual region to this handle.
         /// </summary>
         /// <param name="region">Virtual region to add as a child</param>
@@ -120,11 +138,22 @@ namespace Ryujinx.Memory.Tracking
             return Address < address + size && address < EndAddress;
         }
 
+        bool disposed;
+
         /// <summary>
         /// Dispose the handle. Within the tracking lock, this removes references from virtual and physical regions.
         /// </summary>
         public void Dispose()
         {
+            if (disposed)
+            {
+                throw new Exception("Double Dispose!");
+            }
+            else
+            {
+                disposed = true;
+            }
+
             lock (_tracking.TrackingLock)
             {
                 foreach (VirtualRegion region in _regions)
