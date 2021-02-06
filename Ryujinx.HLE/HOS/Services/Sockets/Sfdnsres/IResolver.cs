@@ -218,7 +218,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             bufferPosition += 4;
 
             // ai_canonname
-            ReadOnlySpan<byte> canonName = Encoding.ASCII.GetBytes("" + '\0');
+            ReadOnlySpan<byte> canonName = Encoding.ASCII.GetBytes("" + "\0");
             context.Memory.Write((ulong)bufferPosition, canonName);
             bufferPosition += canonName.Length;
 
@@ -466,7 +466,7 @@ namespace Ryujinx.HLE.HOS.Services.Sockets.Sfdnsres
             try
             {
                 hintsAddrInfo = ParseAddrInfoFromBytes(hints);
-                addresses = Dns.GetHostAddresses(Encoding.ASCII.GetString(host));
+                addresses = Dns.GetHostAddresses(Encoding.ASCII.GetString(host).TrimEnd('\0'));
                 addresses = addresses.Where(a => a.AddressFamily == hintsAddrInfo.Family).ToArray();
             }
             catch (SocketException exception)
