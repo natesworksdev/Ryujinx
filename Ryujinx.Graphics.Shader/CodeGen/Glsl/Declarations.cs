@@ -349,7 +349,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
                 string samplerName = OperandManager.GetSamplerName(context.Config.Stage, texOp);
 
-                if ((texOp.Flags & TextureFlags.Bindless) != 0 || !samplers.Add(samplerName))
+                if (!samplers.Add(samplerName))
                 {
                     continue;
                 }
@@ -372,9 +372,15 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl
 
             foreach (AstTextureOperation texOp in info.Images.OrderBy(x => x.Handle))
             {
+                // We don't need to declare a image for bindless textures.
+                if ((texOp.Flags & TextureFlags.Bindless) != 0)
+                {
+                    continue;
+                }
+
                 string imageName = OperandManager.GetImageName(context.Config.Stage, texOp);
 
-                if ((texOp.Flags & TextureFlags.Bindless) != 0 || !images.Add(imageName))
+                if (!images.Add(imageName))
                 {
                     continue;
                 }

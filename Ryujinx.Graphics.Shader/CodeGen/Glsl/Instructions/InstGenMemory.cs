@@ -63,7 +63,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
 
                     if (isBindless && pCount == 3 && isArray)
                     {
-                        vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + bindlessHandle + "), (" + vector + ").z)";
+                        vector = "ivec3(Helper_TexelFetchScaleBindless((" + vector + ").xy, " + bindlessHandle + "), (" + vector + ").z)";
                     }
                     else if (isBindless && pCount == 2 && !isArray)
                     {
@@ -450,7 +450,7 @@ namespace Ryujinx.Graphics.Shader.CodeGen.Glsl.Instructions
                     {
                         if (isBindless && pCount == 3 && isArray)
                         {
-                            vector = "ivec3(Helper_TexelFetchScale((" + vector + ").xy, " + bindlessHandle + "), (" + vector + ").z)";
+                            vector = "ivec3(Helper_TexelFetchScaleBindless((" + vector + ").xy, " + bindlessHandle + "), (" + vector + ").z)";
                         }
                         else if (isBindless && pCount == 2 && !isArray)
                         {
