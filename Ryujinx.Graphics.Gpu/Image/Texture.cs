@@ -1047,7 +1047,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <param name="hostTexture">The new host texture</param>
         private void ReplaceStorage(ITexture hostTexture)
         {
-            DisposeTextures();
+            DeleteHostTextures();
 
             HostTexture = hostTexture;
         }
@@ -1129,7 +1129,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// <summary>
         /// Performs texture disposal, deleting the texture.
         /// </summary>
-        private void DisposeTextures()
+        public void DeleteHostTextures()
         {
             _currentData = null;
             HostTexture.Release();
@@ -1159,7 +1159,7 @@ namespace Ryujinx.Graphics.Gpu.Image
         /// </summary>
         public void Dispose()
         {
-            DisposeTextures();
+            DeleteHostTextures();
 
             Disposed?.Invoke(this);
             _memoryTracking?.Dispose();

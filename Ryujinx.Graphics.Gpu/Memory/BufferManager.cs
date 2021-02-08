@@ -993,7 +993,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
             {
                 foreach (Buffer buffer in _buffers)
                 {
-                    buffer.Dispose();
+                    buffer.DeleteHostBuffer();
                 }
             }
         }

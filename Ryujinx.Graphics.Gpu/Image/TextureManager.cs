@@ -1205,7 +1205,7 @@ namespace Ryujinx.Graphics.Gpu.Image
             {
                 foreach (Texture texture in _textures)
                 {
-                    texture.Dispose();
+                    texture.DeleteHostTextures();
                 }
             }
         }

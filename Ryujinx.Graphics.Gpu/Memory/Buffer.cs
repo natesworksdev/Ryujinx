@@ -397,6 +397,11 @@ namespace Ryujinx.Graphics.Gpu.Memory
             _memoryTrackingGranular?.Dispose();
             _memoryTracking?.Dispose();
 
+            DeleteHostBuffer();
+        }
+
+        public void DeleteHostBuffer()
+        {
             _context.Renderer.DeleteBuffer(Handle);
         }
     }
