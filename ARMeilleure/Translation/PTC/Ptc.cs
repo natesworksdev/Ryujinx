@@ -3,6 +3,7 @@ using ARMeilleure.CodeGen.Unwinding;
 using ARMeilleure.CodeGen.X86;
 using ARMeilleure.Memory;
 using ARMeilleure.Translation.Cache;
+using Ryujinx.Common;
 using Ryujinx.Common.Configuration;
 using Ryujinx.Common.Logging;
 using System;
@@ -13,8 +14,8 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Runtime;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
 using System.Threading;
 
 namespace ARMeilleure.Translation.PTC
@@ -69,14 +70,9 @@ namespace ARMeilleure.Translation.PTC
 
         static Ptc()
         {
-            _infosStream = new MemoryStream();
-            _codesStream = new MemoryStream();
-            _relocsStream = new MemoryStream();
-            _unwindInfosStream = new MemoryStream();
+            InitializeMemoryStreams();
 
-            _infosWriter = new BinaryWriter(_infosStream, EncodingCache.UTF8NoBOM, true);
-
-            _headerMagic = BitConverter.ToUInt64(EncodingCache.UTF8NoBOM.GetBytes(HeaderMagicString), 0);
+            _headerMagic = BinaryPrimitives.ReadUInt64LittleEndian(EncodingCache.UTF8NoBOM.GetBytes(HeaderMagicString).AsSpan());
 
             _waitEvent = new ManualResetEvent(true);
 
@@ -106,7 +102,7 @@ namespace ARMeilleure.Translation.PTC
 
             Logger.Info?.Print(LogClass.Ptc, $"Initializing Profiled Persistent Translation Cache (enabled: {enabled}).");
 
-            if (!enabled || String.IsNullOrEmpty(titleIdText) || titleIdText == TitleIdTextDefault)
+            if (!enabled || string.IsNullOrEmpty(titleIdText) || titleIdText == TitleIdTextDefault)
             {
                 TitleIdText = TitleIdTextDefault;
                 DisplayVersion = DisplayVersionDefault;
@@ -120,7 +116,7 @@ namespace ARMeilleure.Translation.PTC
             }
 
             TitleIdText = titleIdText;
-            DisplayVersion = !String.IsNullOrEmpty(displayVersion) ? displayVersion : DisplayVersionDefault;
+            DisplayVersion = !string.IsNullOrEmpty(displayVersion) ? displayVersion : DisplayVersionDefault;
 
             string workPathActual = Path.Combine(AppDataManager.GamesDirPath, TitleIdText, "cache", "cpu", ActualDir);
             string workPathBackup = Path.Combine(AppDataManager.GamesDirPath, TitleIdText, "cache", "cpu", BackupDir);
@@ -144,23 +140,8 @@ namespace ARMeilleure.Translation.PTC
             Enable();
         }
 
-        private static void ResetMemoryStreamsIfNeeded()
+        private static void InitializeMemoryStreams()
         {
-            if (_infosStream.Length == 0L &&
-                _codesStream.Length == 0L &&
-                _relocsStream.Length == 0L &&
-                _unwindInfosStream.Length == 0L)
-            {
-                return;
-            }
-
-            _infosWriter.Dispose();
-
-            _infosStream.Dispose();
-            _codesStream.Dispose();
-            _relocsStream.Dispose();
-            _unwindInfosStream.Dispose();
-
             _infosStream = new MemoryStream();
             _codesStream = new MemoryStream();
             _relocsStream = new MemoryStream();
@@ -169,10 +150,37 @@ namespace ARMeilleure.Translation.PTC
             _infosWriter = new BinaryWriter(_infosStream, EncodingCache.UTF8NoBOM, true);
         }
 
+        private static void DisposeMemoryStreams()
+        {
+            _infosWriter.Dispose();
+
+            _infosStream.Dispose();
+            _codesStream.Dispose();
+            _relocsStream.Dispose();
+            _unwindInfosStream.Dispose();
+        }
+
+        private static bool AreMemoryStreamsEmpty()
+        {
+            return _infosStream.Length == 0L && _codesStream.Length == 0L && _relocsStream.Length == 0L && _unwindInfosStream.Length == 0L;
+        }
+
+        private static void ResetMemoryStreamsIfNeeded()
+        {
+            if (AreMemoryStreamsEmpty())
+            {
+                return;
+            }
+
+            DisposeMemoryStreams();
+
+            InitializeMemoryStreams();
+        }
+
         private static void PreLoad()
         {
-            string fileNameActual = String.Concat(CachePathActual, ".cache");
-            string fileNameBackup = String.Concat(CachePathBackup, ".cache");
+            string fileNameActual = string.Concat(CachePathActual, ".cache");
+            string fileNameBackup = string.Concat(CachePathBackup, ".cache");
 
             FileInfo fileInfoActual = new FileInfo(fileNameActual);
             FileInfo fileInfoBackup = new FileInfo(fileNameBackup);
@@ -195,29 +203,27 @@ namespace ARMeilleure.Translation.PTC
 
         private static unsafe bool Load(string fileName, bool isBackup)
         {
-            using (FileStream compressedStream = new FileStream(fileName, FileMode.Open))
-            using (DeflateStream deflateStream = new DeflateStream(compressedStream, CompressionMode.Decompress, true))
+            using (FileStream compressedStream = new(fileName, FileMode.Open))
+            using (DeflateStream deflateStream = new(compressedStream, CompressionMode.Decompress, true))
             {
-                using MD5 md5 = MD5.Create();
+                int hashSize = Unsafe.SizeOf<Hash128>();
 
-                int hashSize = md5.HashSize / 8;
+                Span<byte> currentSizeHashBytes = new byte[hashSize];
+                compressedStream.Read(currentSizeHashBytes);
+                Hash128 currentSizeHash = MemoryMarshal.Read<Hash128>(currentSizeHashBytes);
 
-                byte[] currentSizeHash = new byte[hashSize];
-                compressedStream.Read(currentSizeHash, 0, hashSize);
+                Span<byte> sizeBytes = new byte[sizeof(int)];
+                compressedStream.Read(sizeBytes);
+                Hash128 expectedSizeHash = XXHash128.ComputeHash(sizeBytes);
 
-                byte[] sizeBytes = new byte[sizeof(int)];
-                compressedStream.Read(sizeBytes, 0, sizeBytes.Length);
-
-                byte[] expectedSizeHash = md5.ComputeHash(sizeBytes);
-
-                if (!CompareHash(currentSizeHash, expectedSizeHash))
+                if (currentSizeHash != expectedSizeHash)
                 {
                     InvalidateCompressedStream(compressedStream);
 
                     return false;
                 }
 
-                int size = BitConverter.ToInt32(sizeBytes, 0);
+                int size = BinaryPrimitives.ReadInt32LittleEndian(sizeBytes);
 
                 IntPtr intPtr = IntPtr.Zero;
 
@@ -225,7 +231,7 @@ namespace ARMeilleure.Translation.PTC
                 {
                     intPtr = Marshal.AllocHGlobal(size);
 
-                    using (UnmanagedMemoryStream stream = new UnmanagedMemoryStream((byte*)intPtr.ToPointer(), size, size, FileAccess.ReadWrite))
+                    using (UnmanagedMemoryStream stream = new((byte*)intPtr.ToPointer(), size, size, FileAccess.ReadWrite))
                     {
                         try
                         {
@@ -240,12 +246,14 @@ namespace ARMeilleure.Translation.PTC
 
                         stream.Seek(0L, SeekOrigin.Begin);
 
-                        byte[] currentHash = new byte[hashSize];
-                        stream.Read(currentHash, 0, hashSize);
+                        Span<byte> currentHashBytes = new byte[hashSize];
+                        stream.Read(currentHashBytes);
+                        Hash128 currentHash = MemoryMarshal.Read<Hash128>(currentHashBytes);
 
-                        byte[] expectedHash = md5.ComputeHash(stream);
+                        ReadOnlySpan<byte> streamBytes = new(stream.PositionPointer, (int)(stream.Length - stream.Position));
+                        Hash128 expectedHash = XXHash128.ComputeHash(streamBytes);
 
-                        if (!CompareHash(currentHash, expectedHash))
+                        if (currentHash != expectedHash)
                         {
                             InvalidateCompressedStream(compressedStream);
 
@@ -264,6 +272,13 @@ namespace ARMeilleure.Translation.PTC
                         }
 
                         if (header.CacheFileVersion != InternalVersion)
+                        {
+                            InvalidateCompressedStream(compressedStream);
+
+                            return false;
+                        }
+
+                        if (header.Endianness != GetEndianness())
                         {
                             InvalidateCompressedStream(compressedStream);
 
@@ -291,9 +306,17 @@ namespace ARMeilleure.Translation.PTC
                             return false;
                         }
 
-                        long here = stream.Position;
+                        ReadOnlySpan<byte> infosBuf = new(stream.PositionPointer, header.InfosLen);
+                        stream.Seek(header.InfosLen, SeekOrigin.Current);
 
-                        stream.Seek(header.InfosLen + header.CodesLen + header.RelocsLen + header.UnwindInfosLen, SeekOrigin.Current);
+                        ReadOnlySpan<byte> codesBuf = new(stream.PositionPointer, header.CodesLen);
+                        stream.Seek(header.CodesLen, SeekOrigin.Current);
+
+                        ReadOnlySpan<byte> relocsBuf = new(stream.PositionPointer, header.RelocsLen);
+                        stream.Seek(header.RelocsLen, SeekOrigin.Current);
+
+                        ReadOnlySpan<byte> unwindInfosBuf = new(stream.PositionPointer, header.UnwindInfosLen);
+                        stream.Seek(header.UnwindInfosLen, SeekOrigin.Current);
 
                         try
                         {
@@ -308,26 +331,9 @@ namespace ARMeilleure.Translation.PTC
                             return false;
                         }
 
-                        stream.Seek(here, SeekOrigin.Begin);
-
-                        int maxLength = Math.Max(Math.Max(header.InfosLen, header.CodesLen), Math.Max(header.RelocsLen, header.UnwindInfosLen));
-
-                        Span<byte> buffer = new byte[maxLength];
-
-                        Span<byte> infosBuf = buffer.Slice(0, header.InfosLen);
-                        stream.Read(infosBuf);
                         _infosStream.Write(infosBuf);
-
-                        Span<byte> codesBuf = buffer.Slice(0, header.CodesLen);
-                        stream.Read(codesBuf);
                         _codesStream.Write(codesBuf);
-
-                        Span<byte> relocsBuf = buffer.Slice(0, header.RelocsLen);
-                        stream.Read(relocsBuf);
                         _relocsStream.Write(relocsBuf);
-
-                        Span<byte> unwindInfosBuf = buffer.Slice(0, header.UnwindInfosLen);
-                        stream.Read(unwindInfosBuf);
                         _unwindInfosStream.Write(unwindInfosBuf);
                     }
                 }
@@ -347,20 +353,16 @@ namespace ARMeilleure.Translation.PTC
             return true;
         }
 
-        private static bool CompareHash(ReadOnlySpan<byte> currentHash, ReadOnlySpan<byte> expectedHash)
-        {
-            return currentHash.SequenceEqual(expectedHash);
-        }
-
         private static Header ReadHeader(Stream stream)
         {
-            using (BinaryReader headerReader = new BinaryReader(stream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader headerReader = new(stream, EncodingCache.UTF8NoBOM, true))
             {
                 Header header = new Header();
 
                 header.Magic = headerReader.ReadUInt64();
 
                 header.CacheFileVersion = headerReader.ReadUInt32();
+                header.Endianness = headerReader.ReadBoolean();
                 header.FeatureInfo = headerReader.ReadUInt64();
                 header.OSPlatform = headerReader.ReadUInt32();
 
@@ -384,8 +386,8 @@ namespace ARMeilleure.Translation.PTC
 
             try
             {
-                string fileNameActual = String.Concat(CachePathActual, ".cache");
-                string fileNameBackup = String.Concat(CachePathBackup, ".cache");
+                string fileNameActual = string.Concat(CachePathActual, ".cache");
+                string fileNameBackup = string.Concat(CachePathBackup, ".cache");
 
                 FileInfo fileInfoActual = new FileInfo(fileNameActual);
 
@@ -411,15 +413,16 @@ namespace ARMeilleure.Translation.PTC
         {
             int translatedFuncsCount;
 
-            using MD5 md5 = MD5.Create();
-
-            int hashSize = md5.HashSize / 8;
+            int hashSize = Unsafe.SizeOf<Hash128>();
 
             int size = hashSize + Header.Size + GetMemoryStreamsLength() + PtcJumpTable.GetSerializeSize(PtcJumpTable);
 
-            byte[] sizeBytes = BitConverter.GetBytes(size);
-            Debug.Assert(sizeBytes.Length == sizeof(int));
-            byte[] sizeHash = md5.ComputeHash(sizeBytes);
+            Span<byte> sizeBytes = new byte[sizeof(int)];
+            BinaryPrimitives.WriteInt32LittleEndian(sizeBytes, size);
+            Hash128 sizeHash = XXHash128.ComputeHash(sizeBytes);
+
+            Span<byte> sizeHashBytes = new byte[hashSize];
+            MemoryMarshal.Write<Hash128>(sizeHashBytes, ref sizeHash);
 
             IntPtr intPtr = IntPtr.Zero;
 
@@ -427,7 +430,7 @@ namespace ARMeilleure.Translation.PTC
             {
                 intPtr = Marshal.AllocHGlobal(size);
 
-                using (UnmanagedMemoryStream stream = new UnmanagedMemoryStream((byte*)intPtr.ToPointer(), size, size, FileAccess.ReadWrite))
+                using (UnmanagedMemoryStream stream = new((byte*)intPtr.ToPointer(), size, size, FileAccess.ReadWrite))
                 {
                     stream.Seek((long)hashSize, SeekOrigin.Begin);
 
@@ -441,24 +444,28 @@ namespace ARMeilleure.Translation.PTC
                     PtcJumpTable.Serialize(stream, PtcJumpTable);
 
                     stream.Seek((long)hashSize, SeekOrigin.Begin);
-                    byte[] hash = md5.ComputeHash(stream);
+                    ReadOnlySpan<byte> streamBytes = new(stream.PositionPointer, (int)(stream.Length - stream.Position));
+                    Hash128 hash = XXHash128.ComputeHash(streamBytes);
+
+                    Span<byte> hashBytes = new byte[hashSize];
+                    MemoryMarshal.Write<Hash128>(hashBytes, ref hash);
 
                     stream.Seek(0L, SeekOrigin.Begin);
-                    stream.Write(hash, 0, hashSize);
+                    stream.Write(hashBytes);
 
                     translatedFuncsCount = GetInfosEntriesCount();
 
                     ResetMemoryStreamsIfNeeded();
                     PtcJumpTable.ClearIfNeeded();
 
-                    using (FileStream compressedStream = new FileStream(fileName, FileMode.OpenOrCreate))
-                    using (DeflateStream deflateStream = new DeflateStream(compressedStream, SaveCompressionLevel, true))
+                    using (FileStream compressedStream = new(fileName, FileMode.OpenOrCreate))
+                    using (DeflateStream deflateStream = new(compressedStream, SaveCompressionLevel, true))
                     {
-                        compressedStream.Write(sizeHash, 0, hashSize);
-                        compressedStream.Write(sizeBytes, 0, sizeBytes.Length);
-
                         try
                         {
+                            compressedStream.Write(sizeHashBytes);
+                            compressedStream.Write(sizeBytes);
+
                             stream.Seek(0L, SeekOrigin.Begin);
                             stream.CopyTo(deflateStream);
                         }
@@ -497,11 +504,12 @@ namespace ARMeilleure.Translation.PTC
 
         private static void WriteHeader(Stream stream)
         {
-            using (BinaryWriter headerWriter = new BinaryWriter(stream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryWriter headerWriter = new(stream, EncodingCache.UTF8NoBOM, true))
             {
                 headerWriter.Write((ulong)_headerMagic); // Header.Magic
 
                 headerWriter.Write((uint)InternalVersion); // Header.CacheFileVersion
+                headerWriter.Write((bool)GetEndianness()); // Header.Endianness
                 headerWriter.Write((ulong)GetFeatureInfo()); // Header.FeatureInfo
                 headerWriter.Write((uint)GetOSPlatform()); // Header.OSPlatform
 
@@ -514,10 +522,7 @@ namespace ARMeilleure.Translation.PTC
 
         internal static void LoadTranslations(ConcurrentDictionary<ulong, TranslatedFunction> funcs, IMemoryManager memory, JumpTable jumpTable)
         {
-            if (_infosStream.Length == 0L &&
-                _codesStream.Length == 0L &&
-                _relocsStream.Length == 0L &&
-                _unwindInfosStream.Length == 0L)
+            if (AreMemoryStreamsEmpty())
             {
                 return;
             }
@@ -529,10 +534,10 @@ namespace ARMeilleure.Translation.PTC
             _relocsStream.Seek(0L, SeekOrigin.Begin);
             _unwindInfosStream.Seek(0L, SeekOrigin.Begin);
 
-            using (BinaryReader infosReader = new BinaryReader(_infosStream, EncodingCache.UTF8NoBOM, true))
-            using (BinaryReader codesReader = new BinaryReader(_codesStream, EncodingCache.UTF8NoBOM, true))
-            using (BinaryReader relocsReader = new BinaryReader(_relocsStream, EncodingCache.UTF8NoBOM, true))
-            using (BinaryReader unwindInfosReader = new BinaryReader(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader infosReader = new(_infosStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader codesReader = new(_codesStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader relocsReader = new(_relocsStream, EncodingCache.UTF8NoBOM, true))
+            using (BinaryReader unwindInfosReader = new(_unwindInfosStream, EncodingCache.UTF8NoBOM, true))
             {
                 for (int i = 0; i < GetInfosEntriesCount(); i++)
                 {
@@ -870,6 +875,11 @@ namespace ARMeilleure.Translation.PTC
             }
         }
 
+        private static bool GetEndianness()
+        {
+            return BitConverter.IsLittleEndian;
+        }
+
         private static ulong GetFeatureInfo()
         {
             return (ulong)HardwareCapabilities.FeatureInfoEdx << 32 | (uint)HardwareCapabilities.FeatureInfoEcx;
@@ -889,11 +899,12 @@ namespace ARMeilleure.Translation.PTC
 
         private struct Header
         {
-            public const int Size = 40; // Bytes.
+            public const int Size = 41; // Bytes.
 
             public ulong Magic;
 
             public uint CacheFileVersion;
+            public bool Endianness;
             public ulong FeatureInfo;
             public uint OSPlatform;
 
@@ -958,12 +969,7 @@ namespace ARMeilleure.Translation.PTC
 
                 _loggerEvent.Dispose();
 
-                _infosWriter.Dispose();
-
-                _infosStream.Dispose();
-                _codesStream.Dispose();
-                _relocsStream.Dispose();
-                _unwindInfosStream.Dispose();
+                DisposeMemoryStreams();
             }
         }
     }
