@@ -865,7 +865,7 @@ namespace ARMeilleure.Translation.PTC
                 _infosWriter.Write((int)ptcInfo.RelocEntriesCount); // InfoEntry.RelocEntriesCount
 
                 // WriteCode.
-                _codesStream.Write(ptcInfo.Code, 0, ptcInfo.Code.Length);
+                _codesStream.Write(ptcInfo.Code.AsSpan());
 
                 // WriteReloc.
                 ptcInfo.RelocStream.WriteTo(_relocsStream);
