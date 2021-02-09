@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Ryujinx.Audio\Ryujinx.Audio.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ContentWithTargetPath Include="Native\libsoundio\libs\libsoundio.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.dll</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="Native\libsoundio\libs\libsoundio.dylib">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.dylib</TargetPath>
+    </ContentWithTargetPath>
+    <ContentWithTargetPath Include="Native\libsoundio\libs\libsoundio.so">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>libsoundio.so</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
+
+</Project>
