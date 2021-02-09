@@ -1,7 +1,6 @@
 ﻿using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Input;
 using Ryujinx.Audio.Integration;
-using Ryujinx.Audio.Renderer.Parameter;
 using Ryujinx.HLE.HOS.Kernel;
 using Ryujinx.HLE.HOS.Kernel.Threading;
 using Ryujinx.HLE.HOS.Services.Audio.AudioRenderer;
@@ -27,9 +26,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
             return (ResultCode)_system.AppendBuffer(bufferTag, ref buffer);
         }
 
-        public ResultCode AppendBufferBroken(ulong bufferTag, ref AudioUserBuffer buffer, uint handle)
+        public ResultCode AppendUacBuffer(ulong bufferTag, ref AudioUserBuffer buffer, uint handle)
         {
-            return (ResultCode)_system.AppendBufferBroken(bufferTag, ref buffer, handle);
+            return (ResultCode)_system.AppendUacBuffer(bufferTag, ref buffer, handle);
         }
 
         public bool ContainsBuffer(ulong bufferTag)
@@ -62,9 +61,9 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
             return _system.GetBufferCount();
         }
 
-        public ResultCode GetReleasedBuffer(Span<ulong> releasedBuffers, out uint releasedCount)
+        public ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount)
         {
-            return (ResultCode)_system.GetReleasedBuffer(releasedBuffers, out releasedCount);
+            return (ResultCode)_system.GetReleasedBuffers(releasedBuffers, out releasedCount);
         }
 
         public AudioDeviceState GetState()

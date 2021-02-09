@@ -28,14 +28,14 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         }
 
         [Command(1)]
-        // StartAudioIn()
-        public ResultCode StartAudioIn(ServiceCtx context)
+        // Start()
+        public ResultCode Start(ServiceCtx context)
         {
             return _impl.Start();
         }
 
         [Command(2)]
-        // StopAudioIn()
+        // Stop()
         public ResultCode StopAudioIn(ServiceCtx context)
         {
             return _impl.Stop();
@@ -71,15 +71,15 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         }
 
         [Command(5)]
-        // GetReleasedAudioInBuffer() -> (u32 count, buffer<u64, 6> tags)
-        public ResultCode GetReleasedAudioInBuffer(ServiceCtx context)
+        // GetReleasedAudioInBuffers() -> (u32 count, buffer<u64, 6> tags)
+        public ResultCode GetReleasedAudioInBuffers(ServiceCtx context)
         {
             long position = context.Request.ReceiveBuff[0].Position;
             long size = context.Request.ReceiveBuff[0].Size;
 
             using (WritableRegion outputRegion = context.Memory.GetWritableRegion((ulong)position, (int)size))
             {
-                ResultCode result = _impl.GetReleasedBuffer(MemoryMarshal.Cast<byte, ulong>(outputRegion.Memory.Span), out uint releasedCount);
+                ResultCode result = _impl.GetReleasedBuffers(MemoryMarshal.Cast<byte, ulong>(outputRegion.Memory.Span), out uint releasedCount);
 
                 context.ResponseData.Write(releasedCount);
 
@@ -99,8 +99,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         }
 
         [Command(7)] // 3.0.0+
-        // AppendAudioInBufferWithUserEvent(u64 tag, handle<copy, unknown>, buffer<nn::audio::AudioInBuffer, 5>)
-        public ResultCode AppendAudioInBufferBroken(ServiceCtx context)
+        // AppendUacInBuffer(u64 tag, handle<copy, unknown>, buffer<nn::audio::AudioInBuffer, 5>)
+        public ResultCode AppendUacInBuffer(ServiceCtx context)
         {
             long position = context.Request.SendBuff[0].Position;
 
@@ -109,7 +109,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 
             AudioUserBuffer data = MemoryHelper.Read<AudioUserBuffer>(context.Memory, position);
 
-            return _impl.AppendBufferBroken(bufferTag, ref data, handle);
+            return _impl.AppendUacBuffer(bufferTag, ref data, handle);
         }
 
         [Command(8)] // 3.0.0+
@@ -126,14 +126,14 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         }
 
         [Command(9)] // 3.0.0+
-        // GetReleasedAudioInBufferAuto() -> (u32 count, buffer<u64, 0x22> tags)
-        public ResultCode GetReleasedAudioInBufferAuto(ServiceCtx context)
+        // GetReleasedAudioInBuffersAuto() -> (u32 count, buffer<u64, 0x22> tags)
+        public ResultCode GetReleasedAudioInBuffersAuto(ServiceCtx context)
         {
             (long position, long size) = context.Request.GetBufferType0x22();
 
             using (WritableRegion outputRegion = context.Memory.GetWritableRegion((ulong)position, (int)size))
             {
-                ResultCode result = _impl.GetReleasedBuffer(MemoryMarshal.Cast<byte, ulong>(outputRegion.Memory.Span), out uint releasedCount);
+                ResultCode result = _impl.GetReleasedBuffers(MemoryMarshal.Cast<byte, ulong>(outputRegion.Memory.Span), out uint releasedCount);
 
                 context.ResponseData.Write(releasedCount);
 
@@ -142,8 +142,8 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         }
 
         [Command(10)] // 3.0.0+
-        // AppendAudioInBufferBrokenAuto(u64 tag, handle<copy, event>, buffer<nn::audio::AudioInBuffer, 0x21>)
-        public ResultCode AppendAudioInBufferBrokenAuto(ServiceCtx context)
+        // AppendUacInBufferAuto(u64 tag, handle<copy, event>, buffer<nn::audio::AudioInBuffer, 0x21>)
+        public ResultCode AppendUacInBufferAuto(ServiceCtx context)
         {
             (long position, _) = context.Request.GetBufferType0x21();
 
@@ -152,7 +152,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
 
             AudioUserBuffer data = MemoryHelper.Read<AudioUserBuffer>(context.Memory, position);
 
-            return _impl.AppendBufferBroken(bufferTag, ref data, handle);
+            return _impl.AppendUacBuffer(bufferTag, ref data, handle);
         }
 
         [Command(11)] // 4.0.0+

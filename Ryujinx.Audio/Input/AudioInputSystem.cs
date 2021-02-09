@@ -220,7 +220,7 @@ namespace Ryujinx.Audio.Input
         /// <param name="userBuffer">The buffer informations.</param>
         /// <param name="handle">Some unknown handle.</param>
         /// <returns>A <see cref="ResultCode"/> reporting an error or a success.</returns>
-        public ResultCode AppendBufferBroken(ulong bufferTag, ref AudioUserBuffer userBuffer, uint handle)
+        public ResultCode AppendUacBuffer(ulong bufferTag, ref AudioUserBuffer userBuffer, uint handle)
         {
             lock (_parentLock)
             {
@@ -246,7 +246,7 @@ namespace Ryujinx.Audio.Input
         /// <param name="releasedBuffers">The buffer to write the release buffers</param>
         /// <param name="releasedCount">The count of released buffers</param>
         /// <returns>A <see cref="ResultCode"/> reporting an error or a success.</returns>
-        public ResultCode GetReleasedBuffer(Span<ulong> releasedBuffers, out uint releasedCount)
+        public ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount)
         {
             releasedCount = 0;
 

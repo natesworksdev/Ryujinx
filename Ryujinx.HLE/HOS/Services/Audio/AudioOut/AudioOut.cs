@@ -61,7 +61,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOut
             return _system.GetPlayedSampleCount();
         }
 
-        public ResultCode GetReleasedBuffer(Span<ulong> releasedBuffers, out uint releasedCount)
+        public ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount)
         {
             return (ResultCode)_system.GetReleasedBuffer(releasedBuffers, out releasedCount);
         }

@@ -15,11 +15,11 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioIn
         public ResultCode AppendBuffer(ulong bufferTag, ref AudioUserBuffer buffer);
 
         // NOTE: This is broken by design... not quite sure what it's used for (if anything in production).
-        public ResultCode AppendBufferBroken(ulong bufferTag, ref AudioUserBuffer buffer, uint handle);
+        public ResultCode AppendUacBuffer(ulong bufferTag, ref AudioUserBuffer buffer, uint handle);
 
         public KEvent RegisterBufferEvent();
 
-        public ResultCode GetReleasedBuffer(Span<ulong> releasedBuffers, out uint releasedCount);
+        public ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount);
 
         public bool ContainsBuffer(ulong bufferTag);
 

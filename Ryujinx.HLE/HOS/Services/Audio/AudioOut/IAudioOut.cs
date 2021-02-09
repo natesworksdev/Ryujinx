@@ -16,7 +16,7 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOut
 
         public KEvent RegisterBufferEvent();
 
-        public ResultCode GetReleasedBuffer(Span<ulong> releasedBuffers, out uint releasedCount);
+        public ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount);
 
         public bool ContainsBuffer(ulong bufferTag);
 
