@@ -191,7 +191,6 @@ namespace Ryujinx.Ui.Windows
                 _hideCursorOnIdleToggle.Click();
             }
 
-
             if (ConfigurationState.Instance.Graphics.EnableVsync)
             {
                 _vSyncToggle.Click();

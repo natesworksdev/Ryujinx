@@ -795,9 +795,9 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
-            if (configurationFileFormat.Version < 21)
+            if (configurationFileFormat.Version < 22)
             {
-                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 22.");
 
                 configurationFileFormat.HideCursorOnIdle = true;
 

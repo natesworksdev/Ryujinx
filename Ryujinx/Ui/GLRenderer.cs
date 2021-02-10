@@ -64,7 +64,7 @@ namespace Ryujinx.Ui
 
         private readonly ManualResetEvent _exitEvent;
 
-        private static System.Timers.Timer _idleTimer = new System.Timers.Timer();
+        private System.Timers.Timer _idleCursorTimer = new System.Timers.Timer();
         
         private Gdk.Cursor _invisibleCursor = new Gdk.Cursor (Gdk.Display.Default, Gdk.CursorType.BlankCursor);
 
@@ -108,23 +108,22 @@ namespace Ryujinx.Ui
 
         public void TimingIdle()
         {
-            _idleTimer = new System.Timers.Timer();
-            _idleTimer.Interval = 8000;
-            _idleTimer.Elapsed += OnTimedEvent;
-            _idleTimer.AutoReset = false;
-            _idleTimer.Enabled = true;
+            _idleCursorTimer.Interval = 8000;
+            _idleCursorTimer.Elapsed += OnTimedEvent;
+            _idleCursorTimer.AutoReset = false;
+            _idleCursorTimer.Enabled = true;
         }
 
-        private void ResetPtr()
+        private void ResetCursor()
         {
            if (ConfigurationState.Instance.HideCursorOnIdle)
            {
-               _idleTimer.Stop();
-               _idleTimer.Start();
+               _idleCursorTimer.Stop();
+               _idleCursorTimer.Start();
            }
            else
            {
-               _idleTimer.Stop();
+               _idleCursorTimer.Stop();
            }
 
            if (_cursorHidden)
@@ -339,7 +338,7 @@ namespace Ryujinx.Ui
                 _mouseY = evnt.Y;
             }
 
-            ResetPtr();
+            ResetCursor();
             return false;
         }
 
