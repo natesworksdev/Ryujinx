@@ -95,7 +95,9 @@ namespace Ryujinx.Graphics.Nvdec.Vp9
             int tileCols = 1 << pictureInfo.Log2TileCols;
             int tileRows = 1 << pictureInfo.Log2TileRows;
 
-            int maxThreads = 4;
+            // Video usually have only 4 columns, so more threads won't make a difference for those.
+            // Try to not take all CPU cores for video decoding.
+            int maxThreads = Math.Min(4, Environment.ProcessorCount / 2);
 
             cm.AllocTileWorkerData(_allocator, tileCols, tileRows, maxThreads);
             cm.AllocContextBuffers(_allocator, output.Width, output.Height);
