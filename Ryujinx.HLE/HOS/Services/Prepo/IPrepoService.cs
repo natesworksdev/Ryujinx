@@ -10,16 +10,17 @@ using System.Text;
 
 namespace Ryujinx.HLE.HOS.Services.Prepo
 {
-    [Service("prepo:a",  -1)] // 1.0.0-5.1.0
-    [Service("prepo:a2", -1)] // 6.0.0+
-    [Service("prepo:m",   6)]
-    [Service("prepo:u",   1)]
-    [Service("prepo:s",   2)]
+    [Service("prepo:a",  PrepoServicePermissionLevel.Admin)] // 1.0.0-5.1.0
+    [Service("prepo:a2", PrepoServicePermissionLevel.Admin)] // 6.0.0+
+    [Service("prepo:m",  PrepoServicePermissionLevel.Manager)]
+    [Service("prepo:u",  PrepoServicePermissionLevel.User)]
+    [Service("prepo:s",  PrepoServicePermissionLevel.System)]
     class IPrepoService : IpcService
     {
-        private long _permission;
+        private PrepoServicePermissionLevel _permission;
+        private ulong _systemSessionId;
 
-        public IPrepoService(ServiceCtx context, long permission)
+        public IPrepoService(ServiceCtx context, PrepoServicePermissionLevel permission)
         {
             _permission = permission;
         }
@@ -30,7 +31,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // SaveReport(u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReport(ServiceCtx context)
         {
-            if ((_permission & 1) == 0)
+            if (((int)_permission & 1) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -45,7 +46,7 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // SaveReportWithUser(nn::account::Uid, u64, pid, buffer<u8, 9>, buffer<bytes, 5>)
         public ResultCode SaveReportWithUser(ServiceCtx context)
         {
-            if ((_permission & 1) == 0)
+            if (((int)_permission & 1) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
@@ -79,18 +80,21 @@ namespace Ryujinx.HLE.HOS.Services.Prepo
         // GetSystemSessionId() -> u64
         public ResultCode GetSystemSessionId(ServiceCtx context)
         {
-            if ((_permission & 1) == 0)
+            if (((int)_permission & 1) == 0)
             {
                 return ResultCode.PermissionDenied;
             }
 
-            byte[] randomBuffer = new byte[8];
+            if (_systemSessionId == 0)
+            {
+                byte[] randomBuffer = new byte[8];
 
-            new Random().NextBytes(randomBuffer);
+                new Random().NextBytes(randomBuffer);
 
-            ulong systemSessionId = BitConverter.ToUInt64(randomBuffer, 0);
+                _systemSessionId = BitConverter.ToUInt64(randomBuffer, 0);
+            }
 
-            context.ResponseData.Write(systemSessionId);
+            context.ResponseData.Write(_systemSessionId);
 
             return ResultCode.Success;
         }
