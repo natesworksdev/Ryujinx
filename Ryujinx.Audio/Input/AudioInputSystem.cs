@@ -105,7 +105,7 @@ namespace Ryujinx.Audio.Input
             {
                 return ResultCode.UnsupportedSampleRate;
             }
-            else if (configuration.ChannelCount != 0 && configuration.ChannelCount != 2 && configuration.ChannelCount != 6)
+            else if (configuration.ChannelCount != 0 && configuration.ChannelCount != 1 && configuration.ChannelCount != 2 && configuration.ChannelCount != 6)
             {
                 return ResultCode.UnsupportedChannelConfiguration;
             }
@@ -231,7 +231,7 @@ namespace Ryujinx.Audio.Input
                     DataSize = userBuffer.DataSize
                 };
 
-                if (_session.AppendBufferBroken(buffer, handle))
+                if (_session.AppendUacBuffer(buffer, handle))
                 {
                     return ResultCode.Success;
                 }
@@ -276,7 +276,7 @@ namespace Ryujinx.Audio.Input
         /// <summary>
         /// Get the current state of the <see cref="AudioInputSystem"/>.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Return the curent sta\te of the <see cref="AudioInputSystem"/></returns>
         public AudioDeviceState GetState()
         {
             lock (_parentLock)

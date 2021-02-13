@@ -52,7 +52,7 @@ namespace Ryujinx.Audio.Input
         private IWritableEvent[] _sessionsBufferEvents;
 
         /// <summary>
-        /// The <see cref="AudioInputSystem"/> sessions instances.
+        /// The <see cref="AudioInputSystem"/> session instances.
         /// </summary>
         private AudioInputSystem[] _sessions;
 
@@ -79,10 +79,9 @@ namespace Ryujinx.Audio.Input
         /// <summary>
         /// Initialize the <see cref="AudioInputManager"/>.
         /// </summary>
-        /// <param name="manager">The audio manager instance.</param>
         /// <param name="deviceDriver">The device driver.</param>
         /// <param name="sessionRegisterEvents">The events associated to each session.</param>
-        public void Initialize(AudioManager manager, HardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
+        public void Initialize(HardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
         {
             _deviceDriver = deviceDriver;
             _sessionsBufferEvents = sessionRegisterEvents;
@@ -173,7 +172,7 @@ namespace Ryujinx.Audio.Input
         }
 
         /// <summary>
-        /// Get the list of all audio inputs name.
+        /// Get the list of all audio inputs names.
         /// </summary>
         /// <param name="filtered">If true, filter disconnected devices</param>
         /// <returns>The list of all audio inputs name</returns>
@@ -181,7 +180,7 @@ namespace Ryujinx.Audio.Input
         {
             if (filtered)
             {
-                // TODO: detect if the driver supports audio input
+                // TODO: Detect if the driver supports audio input
             }
 
             return new string[] { "BuiltInHeadset" };
@@ -197,10 +196,18 @@ namespace Ryujinx.Audio.Input
         /// <param name="inputDeviceName">The input device name wanted by the user</param>
         /// <param name="sampleFormat">The sample format to use</param>
         /// <param name="parameter">The user configuration</param>
-        /// <param name="appletResourceUserId">The applet resource user id of the application.</param>
-        /// <param name="processHandle">The process handle of the application.</param>
-        /// <returns>A <see cref="ResultCode"/> reporting an error or a success.</returns>
-        public ResultCode OpenAudioIn(out string outputDeviceName, out AudioOutputConfiguration outputConfiguration, out AudioInputSystem obj, IVirtualMemoryManager memoryManager, string inputDeviceName, SampleFormat sampleFormat, ref AudioInputConfiguration parameter, ulong appletResourceUserId, uint processHandle)
+        /// <param name="appletResourceUserId">The applet resource user id of the application</param>
+        /// <param name="processHandle">The process handle of the application</param>
+        /// <returns>A <see cref="ResultCode"/> reporting an error or a success</returns>
+        public ResultCode OpenAudioIn(out string outputDeviceName,
+                                      out AudioOutputConfiguration outputConfiguration,
+                                      out AudioInputSystem obj,
+                                      IVirtualMemoryManager memoryManager,
+                                      string inputDeviceName,
+                                      SampleFormat sampleFormat,
+                                      ref AudioInputConfiguration parameter,
+                                      ulong appletResourceUserId,
+                                      uint processHandle)
         {
             int sessionId = AcquireSessionId();
 

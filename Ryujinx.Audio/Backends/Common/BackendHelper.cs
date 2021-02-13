@@ -24,21 +24,15 @@ namespace Ryujinx.Audio.Backends.Common
     {
         public static int GetSampleSize(SampleFormat format)
         {
-            switch (format)
+            return format switch
             {
-                case SampleFormat.PcmInt8:
-                    return sizeof(byte);
-                case SampleFormat.PcmInt16:
-                    return sizeof(ushort);
-                case SampleFormat.PcmInt24:
-                    return 3;
-                case SampleFormat.PcmInt32:
-                    return sizeof(int);
-                case SampleFormat.PcmFloat:
-                    return sizeof(float);
-                default:
-                    throw new NotImplementedException($"{format}");
-            }
+                SampleFormat.PcmInt8 => sizeof(byte),
+                SampleFormat.PcmInt16 => sizeof(ushort),
+                SampleFormat.PcmInt24 => 3,
+                SampleFormat.PcmInt32 => sizeof(int),
+                SampleFormat.PcmFloat => sizeof(float),
+                _ => throw new ArgumentException($"{format}"),
+            };
         }
 
         public static int GetSampleCount(SampleFormat format, int channelCount, int bufferSize)

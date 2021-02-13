@@ -45,7 +45,8 @@ namespace Ryujinx.Audio.Backends.SoundIo
             {
                 context = new SoundIO();
 
-                context.OnBackendDisconnect = (i) => {
+                context.OnBackendDisconnect = (i) =>
+                {
                     backendDisconnected = true;
                 };
 
@@ -125,15 +126,19 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
         public HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
-            if (direction != Direction.Output)
-            {
-                // TODO
-                throw new NotImplementedException();
-            }
-
             if (channelCount == 0)
             {
                 channelCount = 2;
+            }
+
+            if (sampleRate == 0)
+            {
+                sampleRate = Constants.TargetSampleRate;
+            }
+
+            if (direction != Direction.Output)
+            {
+                throw new NotImplementedException("Input direction is currently not implemented on SoundIO backend!");
             }
 
             lock (_lock)
@@ -179,17 +184,17 @@ namespace Ryujinx.Audio.Backends.SoundIo
 
             if (!_audioDevice.SupportsSampleRate((int)requestedSampleRate))
             {
-                throw new InvalidOperationException($"This sound device does not support a sample rate of {requestedSampleRate}Hz");
+                throw new ArgumentException($"This sound device does not support a sample rate of {requestedSampleRate}Hz");
             }
 
             if (!_audioDevice.SupportsFormat(driverSampleFormat))
             {
-                throw new InvalidOperationException($"This sound device does not support SampleFormat.{requestedSampleFormat}");
+                throw new ArgumentException($"This sound device does not support {requestedSampleFormat}");
             }
 
             if (!_audioDevice.SupportsChannelCount((int)requestedChannelCount))
             {
-                throw new InvalidOperationException($"This sound device does not support channel count {requestedChannelCount}");
+                throw new ArgumentException($"This sound device does not support channel count {requestedChannelCount}");
             }
 
             SoundIOOutStream result = _audioDevice.CreateOutStream();

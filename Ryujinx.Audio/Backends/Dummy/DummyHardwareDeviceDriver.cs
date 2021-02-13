@@ -69,7 +69,7 @@ namespace Ryujinx.Audio.Backends.Dummy
         {
             if (disposing)
             {
-                // NOTE: The _updateRequiredEvent will be dispose somewhere else.
+                // NOTE: The _updateRequiredEvent will be disposed somewhere else.
             }
         }
 

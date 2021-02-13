@@ -42,17 +42,17 @@ namespace Ryujinx.Audio.Common
         private AudioBuffer[] _buffers;
 
         /// <summary>
-        /// The server index inside <see cref="_buffers"/> (Appended but not queued to device driver).
+        /// The server index inside <see cref="_buffers"/> (appended but not queued to device driver).
         /// </summary>
         private uint _serverBufferIndex;
 
         /// <summary>
-        /// The hardware index inside <see cref="_buffers"/> (Queued to device driver).
+        /// The hardware index inside <see cref="_buffers"/> (queued to device driver).
         /// </summary>
         private uint _hardwareBufferIndex;
 
         /// <summary>
-        /// The released index inside <see cref="_buffers"/> (Released by the device driver).
+        /// The released index inside <see cref="_buffers"/> (released by the device driver).
         /// </summary>
         private uint _releasedBufferIndex;
 
@@ -133,7 +133,7 @@ namespace Ryujinx.Audio.Common
         /// <summary>
         /// Get the total buffer count (server + driver + released).
         /// </summary>
-        /// <returns></returns>
+        /// <returns>Return the total buffer count</returns>
         private uint GetTotalBufferCount()
         {
             uint bufferCount = _bufferAppendedCount + _bufferRegisteredCount + _bufferReleasedCount;
@@ -327,7 +327,7 @@ namespace Ryujinx.Audio.Common
             return false;
         }
 
-        public bool AppendBufferBroken(AudioBuffer buffer, uint handle)
+        public bool AppendUacBuffer(AudioBuffer buffer, uint handle)
         {
             // NOTE: On hardware, there is another RegisterBuffer method taking an handle.
             // This variant of the call always return false (stubbed?) as a result this logic will never succeed.
@@ -357,8 +357,6 @@ namespace Ryujinx.Audio.Common
                 return ResultCode.OperationFailed;
             }
 
-            // FIXME: Here Nintendo seems to be start session partially (update callbacks ect). Do we need that?
-
             _hardwareDeviceSession.Start();
 
             _state = AudioDeviceState.Started;
@@ -379,8 +377,6 @@ namespace Ryujinx.Audio.Common
             if (_state == AudioDeviceState.Started)
             {
                 _hardwareDeviceSession.Stop();
-
-                // FIXME: Here Nintendo seems to be ending session partially (buffers management still up but nothing else). Do we need that?
 
                 UpdateReleaseBuffers(true);
 
@@ -463,7 +459,7 @@ namespace Ryujinx.Audio.Common
         /// <summary>
         /// Flush all buffers to the initial state.
         /// </summary>
-        /// <returns>True if any buffers was flushed</returns>
+        /// <returns>True if any buffer was flushed</returns>
         public bool FlushBuffers()
         {
             if (_state == AudioDeviceState.Stopped)

@@ -33,17 +33,17 @@ namespace Ryujinx.Audio
         public const int VoiceChannelCountMax = ChannelCountMax;
 
         /// <summary>
-        /// The max count of mix buffer supported per operations (volumes, mix effect, ...)
+        /// The maximum count of mix buffer supported per operations (volumes, mix effect, ...)
         /// </summary>
         public const int MixBufferCountMax = 24;
 
         /// <summary>
-        /// The max count of wavebuffer per voice.
+        /// The maximum count of wavebuffer per voice.
         /// </summary>
         public const int VoiceWaveBufferCount = 4;
 
         /// <summary>
-        /// The max count of biquad filter per voice.
+        /// The maximum count of biquad filter per voice.
         /// </summary>
         public const int VoiceBiquadFilterCount = 2;
 
@@ -59,7 +59,7 @@ namespace Ryujinx.Audio
         public const int VoiceHighestPriority = 0;
 
         /// <summary>
-        /// Max <see cref="Common.BehaviourParameter.ErrorInfo"/> that can be returned by <see cref="Parameter.BehaviourErrorInfoOutStatus"/>.
+        /// Maximum <see cref="Common.BehaviourParameter.ErrorInfo"/> that can be returned by <see cref="Parameter.BehaviourErrorInfoOutStatus"/>.
         /// </summary>
         public const int MaxErrorInfos = 10;
 
@@ -109,22 +109,22 @@ namespace Ryujinx.Audio
         public const int InvalidProcessingOrder = -1;
 
         /// <summary>
-        /// The max number of audio renderer sessions allowed to be created system wide.
+        /// The maximum number of audio renderer sessions allowed to be created system wide.
         /// </summary>
         public const int AudioRendererSessionCountMax = 2;
 
         /// <summary>
-        /// The max number of audio output sessions allowed to be created system wide.
+        /// The maximum number of audio output sessions allowed to be created system wide.
         /// </summary>
         public const int AudioOutSessionCountMax = 12;
 
         /// <summary>
-        /// The max number of audio input sessions allowed to be created system wide.
+        /// The maximum number of audio input sessions allowed to be created system wide.
         /// </summary>
         public const int AudioInSessionCountMax = 4;
 
         /// <summary>
-        /// Max buffers supported by one audio device session.
+        /// Maximum buffers supported by one audio device session.
         /// </summary>
         public const int AudioDeviceBufferCountMax = 32;
 
@@ -154,12 +154,12 @@ namespace Ryujinx.Audio
         public const int AudioProcessorMaxUpdateTimeTarget = 1000000000 / ((int)TargetSampleRate / TargetSampleCount); // 5.00 ms
 
         /// <summary>
-        /// The max update time of the DSP on original hardware.
+        /// The maximum update time of the DSP on original hardware.
         /// </summary>
         public const int AudioProcessorMaxUpdateTime = 5760000; // 5.76 ms
 
         /// <summary>
-        /// The max update time per audio renderer session.
+        /// The maximum update time per audio renderer session.
         /// </summary>
         public const int AudioProcessorMaxUpdateTimePerSessions = AudioProcessorMaxUpdateTime / AudioRendererSessionCountMax;
 

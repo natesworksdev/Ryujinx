@@ -6,28 +6,28 @@ namespace Ryujinx.HLE.HOS.Services.Audio.AudioOut
 {
     interface IAudioOut : IDisposable
     {
-        public AudioDeviceState GetState();
+        AudioDeviceState GetState();
 
-        public ResultCode Start();
+        ResultCode Start();
 
-        public ResultCode Stop();
+        ResultCode Stop();
 
-        public ResultCode AppendBuffer(ulong bufferTag, ref AudioUserBuffer buffer);
+        ResultCode AppendBuffer(ulong bufferTag, ref AudioUserBuffer buffer);
 
-        public KEvent RegisterBufferEvent();
+        KEvent RegisterBufferEvent();
 
-        public ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount);
+        ResultCode GetReleasedBuffers(Span<ulong> releasedBuffers, out uint releasedCount);
 
-        public bool ContainsBuffer(ulong bufferTag);
+        bool ContainsBuffer(ulong bufferTag);
 
-        public uint GetBufferCount();
+        uint GetBufferCount();
 
-        public ulong GetPlayedSampleCount();
+        ulong GetPlayedSampleCount();
 
-        public bool FlushBuffers();
+        bool FlushBuffers();
 
-        public void SetVolume(float volume);
+        void SetVolume(float volume);
 
-        public float GetVolume();
+        float GetVolume();
     }
 }

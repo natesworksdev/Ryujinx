@@ -62,7 +62,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
         {
             if (RequestedSampleFormat != SampleFormat.PcmInt16)
             {
-                throw new NotImplementedException("Downmixing formats other than PCM16 is not supported!");
+                throw new NotImplementedException("Downmixing formats other than PCM16 is not supported.");
             }
 
             if (samples == null)
@@ -83,7 +83,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                     downmixedBufferPCM16 = Downmixing.DownMixStereoToMono(downmixedBufferPCM16);
                 }
             }
-            else if (_userChannelCount == 2)
+            else if (_userChannelCount == 2 && _realSession.RequestedChannelCount == 1)
             {
                 downmixedBufferPCM16 = Downmixing.DownMixStereoToMono(samplesPCM16);
             }

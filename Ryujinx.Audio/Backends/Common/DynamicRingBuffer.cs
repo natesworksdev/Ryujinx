@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 //
 
+using Ryujinx.Common;
 using System;
 
 namespace Ryujinx.Audio.Backends.Common
@@ -24,6 +25,10 @@ namespace Ryujinx.Audio.Backends.Common
     /// </summary>
     public class DynamicRingBuffer
     {
+        private const int RingBufferAlignment = 2048;
+
+        private object _lock = new object();
+
         private byte[] _buffer;
         private int _size;
         private int _headOffset;
@@ -31,7 +36,7 @@ namespace Ryujinx.Audio.Backends.Common
 
         public int Length => _size;
 
-        public DynamicRingBuffer(int initialCapacity = 2048)
+        public DynamicRingBuffer(int initialCapacity = RingBufferAlignment)
         {
             _buffer = new byte[initialCapacity];
         }
@@ -45,7 +50,7 @@ namespace Ryujinx.Audio.Backends.Common
 
         public void Clear(int size)
         {
-            lock (this)
+            lock (_lock)
             {
                 if (size > _size)
                 {
@@ -65,8 +70,6 @@ namespace Ryujinx.Audio.Backends.Common
                     _headOffset = 0;
                     _tailOffset = 0;
                 }
-
-                return;
             }
         }
 
@@ -100,11 +103,11 @@ namespace Ryujinx.Audio.Backends.Common
                 return;
             }
 
-            lock (this)
+            lock (_lock)
             {
                 if ((_size + count) > _buffer.Length)
                 {
-                    SetCapacityLocked((_size + count + 2047) & ~2047);
+                    SetCapacityLocked(BitUtils.AlignUp(_size + count, RingBufferAlignment));
                 }
 
                 if (_headOffset < _tailOffset)
@@ -133,7 +136,7 @@ namespace Ryujinx.Audio.Backends.Common
 
         public int Read<T>(T[] buffer, int index, int count)
         {
-            lock (this)
+            lock (_lock)
             {
                 if (count > _size)
                 {

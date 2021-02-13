@@ -4,6 +4,7 @@ using Ryujinx.Audio.Common;
 using Ryujinx.Memory;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace Ryujinx.Audio.Backends.OpenAL
 {
@@ -175,10 +176,7 @@ namespace Ryujinx.Audio.Backends.OpenAL
                             }
                         }
 
-                        if (i < bufferIds.Length)
-                        {
-                            throw new InvalidOperationException("Unknown buffer ids????????");
-                        }
+                        Debug.Assert(i < bufferIds.Length, "Unknown buffer id");
 
                         AL.DeleteBuffers(bufferIds);
                     }

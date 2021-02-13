@@ -45,6 +45,8 @@ namespace Ryujinx.Audio
         /// </summary>
         private Thread _workerThread;
 
+        private bool _workerThreadStarted;
+
         /// <summary>
         /// Create a new <see cref="AudioManager"/>.
         /// </summary>
@@ -67,19 +69,25 @@ namespace Ryujinx.Audio
         /// </summary>
         public void Start()
         {
+            if (_workerThread.IsAlive)
+            {
+                throw new InvalidOperationException();
+            }
+
             _workerThread.Start();
         }
 
         /// <summary>
         /// Initialize update handlers.
         /// </summary>
-        /// <param name="evnt">The driver event that will get signaled by the device driver when an audio buffer finished playing/being captured</param>
-        /// <param name="outputCallback">The callback to call  when an audio buffer finished playing</param>
-        public void Initialize(ManualResetEvent evnt, Action outputCallback, Action inputCallback)
+        /// <param name="updatedRequiredEvent ">The driver event that will get signaled by the device driver when an audio buffer finished playing/being captured</param>
+        /// <param name="outputCallback">The callback to call when an audio buffer finished playing</param>
+        /// <param name="inputCallback">The callback to call when an audio buffer was captured</param>
+        public void Initialize(ManualResetEvent updatedRequiredEvent, Action outputCallback, Action inputCallback)
         {
             lock (_lock)
             {
-                _updateRequiredEvents[0] = evnt;
+                _updateRequiredEvents[0] = updatedRequiredEvent;
                 _actions[0] = outputCallback;
                 _actions[1] = inputCallback;
             }

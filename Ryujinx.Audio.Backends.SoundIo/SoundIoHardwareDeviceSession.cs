@@ -456,7 +456,6 @@ namespace Ryujinx.Audio.Backends.SoundIo
         public override void Dispose()
         {
             Dispose(true);
-            GC.SuppressFinalize(this);
         }
     }
 }

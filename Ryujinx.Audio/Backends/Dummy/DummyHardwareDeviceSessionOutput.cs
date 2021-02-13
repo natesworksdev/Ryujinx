@@ -19,6 +19,7 @@ using Ryujinx.Audio.Backends.Common;
 using Ryujinx.Audio.Common;
 using Ryujinx.Audio.Integration;
 using Ryujinx.Memory;
+using System.Threading;
 
 namespace Ryujinx.Audio.Backends.Dummy
 {
@@ -28,8 +29,6 @@ namespace Ryujinx.Audio.Backends.Dummy
         private HardwareDeviceDriver _manager;
 
         private ulong _playedSampleCount;
-
-        private object _lock = new object();
 
         public DummyHardwareDeviceSessionOutput(HardwareDeviceDriver manager, IVirtualMemoryManager memoryManager, SampleFormat requestedSampleFormat, uint requestedSampleRate, uint requestedChannelCount) : base(memoryManager, requestedSampleFormat, requestedSampleRate, requestedChannelCount)
         {
@@ -44,10 +43,7 @@ namespace Ryujinx.Audio.Backends.Dummy
 
         public override ulong GetPlayedSampleCount()
         {
-            lock (_lock)
-            {
-                return _playedSampleCount;
-            }
+            return Interlocked.Read(ref _playedSampleCount);
         }
 
         public override float GetVolume()
@@ -59,10 +55,7 @@ namespace Ryujinx.Audio.Backends.Dummy
 
         public override void QueueBuffer(AudioBuffer buffer)
         {
-            lock (_lock)
-            {
-                _playedSampleCount += GetSampleCount(buffer);
-            }
+            Interlocked.Add(ref _playedSampleCount, GetSampleCount(buffer));
 
             _manager.GetUpdateRequiredEvent().Set();
         }

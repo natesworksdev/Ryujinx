@@ -226,7 +226,7 @@ namespace Ryujinx.HLE.HOS
                 audioOutputRegisterBufferEvents[i] = new AudioKernelEvent(registerBufferEvent);
             }
 
-            AudioOutputManager.Initialize(AudioManager, Device.AudioDeviceDriver, audioOutputRegisterBufferEvents);
+            AudioOutputManager.Initialize(Device.AudioDeviceDriver, audioOutputRegisterBufferEvents);
 
             IWritableEvent[] audioInputRegisterBufferEvents = new IWritableEvent[Constants.AudioInSessionCountMax];
 
@@ -237,7 +237,7 @@ namespace Ryujinx.HLE.HOS
                 audioInputRegisterBufferEvents[i] = new AudioKernelEvent(registerBufferEvent);
             }
 
-            AudioInputManager.Initialize(AudioManager, Device.AudioDeviceDriver, audioInputRegisterBufferEvents);
+            AudioInputManager.Initialize(Device.AudioDeviceDriver, audioInputRegisterBufferEvents);
 
             IWritableEvent[] systemEvents = new IWritableEvent[Constants.AudioRendererSessionCountMax];
 

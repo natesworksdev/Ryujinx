@@ -40,9 +40,9 @@ namespace Ryujinx.Audio.Common
         public ulong DataSize;
 
         /// <summary>
-        /// Played at witch the buffer was played.
+        ///  The timestamp at which the buffer was played.
         /// </summary>
-        /// <remarks>Not used but useful for debugging.</remarks>
+        /// <remarks>Not used but useful for debugging</remarks>
         public ulong PlayedTimestamp;
 
         /// <summary>

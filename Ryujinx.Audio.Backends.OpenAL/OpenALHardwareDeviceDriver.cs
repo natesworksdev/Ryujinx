@@ -51,23 +51,27 @@ namespace Ryujinx.Audio.Backends.OpenAL
 
         public HardwareDeviceSession OpenDeviceSession(Direction direction, IVirtualMemoryManager memoryManager, SampleFormat sampleFormat, uint sampleRate, uint channelCount)
         {
+            if (channelCount == 0)
+            {
+                channelCount = 2;
+            }
+
+            if (sampleRate == 0)
+            {
+                sampleRate = Constants.TargetSampleRate;
+            }
+
             if (direction != Direction.Output)
             {
-                throw new NotImplementedException();
+                throw new ArgumentException($"{direction}");
+            }
+            else if (SupportsChannelCount(channelCount))
+            {
+                throw new ArgumentException($"{channelCount}");
             }
 
             lock (_lock)
             {
-                if (sampleRate == 0)
-                {
-                    sampleRate = 48000;
-                }
-
-                if (channelCount == 0)
-                {
-                    channelCount = 2;
-                }
-
                 OpenALHardwareDeviceSession session = new OpenALHardwareDeviceSession(this, memoryManager, sampleFormat, sampleRate, channelCount);
 
                 _sessions.Add(session);
@@ -130,9 +134,10 @@ namespace Ryujinx.Audio.Backends.OpenAL
                     _stillRunning = false;
                     _updaterThread.Join();
 
+                    // Loop against all sessions to dispose them (they will unregister themself)
                     while (_sessions.Count > 0)
                     {
-                        OpenALHardwareDeviceSession session = _sessions[_sessions.Count - 1];
+                        OpenALHardwareDeviceSession session = _sessions[0];
 
                         session.Dispose();
                     }

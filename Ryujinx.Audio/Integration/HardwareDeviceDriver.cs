@@ -23,7 +23,7 @@ using System.Threading;
 namespace Ryujinx.Audio.Integration
 {
     /// <summary>
-    /// Represent an hardware device drier used in <see cref="Output.AudioOutputSystem"/>
+    /// Represent an hardware device driver used in <see cref="Output.AudioOutputSystem"/>.
     /// </summary>
     public interface HardwareDeviceDriver : IDisposable
     {

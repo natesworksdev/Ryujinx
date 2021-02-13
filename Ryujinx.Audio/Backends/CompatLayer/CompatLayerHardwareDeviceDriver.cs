@@ -59,7 +59,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
                 6 => SelectHardwareChannelCount(2),
                 2 => SelectHardwareChannelCount(1),
                 1 => throw new ArgumentException("No valid channel configuration found!"),
-                _ => throw new ArgumentException($"Invalid targetChannelCount {targetChannelCount}"),
+                _ => throw new ArgumentException($"Invalid targetChannelCount {targetChannelCount}")
             };
         }
 
@@ -79,7 +79,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
             {
                 if (direction == Direction.Input)
                 {
-                    Logger.Warning?.Print(LogClass.Audio, $"The selected audio backend doesn't support audio input, fallback to dummy...");
+                    Logger.Warning?.Print(LogClass.Audio, "The selected audio backend doesn't support audio input, fallback to dummy...");
 
                     return new DummyHardwareDeviceSessionInput(this, memoryManager, sampleFormat, sampleRate, channelCount);
                 }
@@ -98,22 +98,22 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
             if (direction == Direction.Input)
             {
-                Logger.Warning?.Print(LogClass.Audio, $"The selected audio backend doesn't support the audio input configuration asked by the application, fallback to dummy...");
+                Logger.Warning?.Print(LogClass.Audio, $"The selected audio backend doesn't support the requested audio input configuration, fallback to dummy...");
 
-                // TODO: we currently don't support audio input upsampling/downsampling, implement this.
+                // TODO: We currently don't support audio input upsampling/downsampling, implement this.
                 realSession.Dispose();
 
                 return new DummyHardwareDeviceSessionInput(this, memoryManager, sampleFormat, sampleRate, channelCount);
             }
 
             // It must be a HardwareDeviceSessionOutputBase.
-            if (realSession is not HardwareDeviceSessionOutputBase)
+            if (realSession is not HardwareDeviceSessionOutputBase realSessionOutputBase)
             {
-                throw new InvalidOperationException();
+                throw new InvalidOperationException($"Real driver session class type isn't based on {typeof(HardwareDeviceSessionOutputBase).Name}.");
             }
 
             // If we need to do post processing before sending to the hardware device, wrap around it.
-            return new CompatLayerHardwareDeviceSession((HardwareDeviceSessionOutputBase)realSession, channelCount);
+            return new CompatLayerHardwareDeviceSession(realSessionOutputBase, channelCount);
         }
 
         public bool SupportsChannelCount(uint channelCount)
@@ -129,7 +129,7 @@ namespace Ryujinx.Audio.Backends.CompatLayer
 
         public bool SupportsSampleRate(uint sampleRate)
         {
-            // TODO: More sample rate.
+            // TODO: More sample rates.
             return sampleRate == Constants.TargetSampleRate;
         }
 

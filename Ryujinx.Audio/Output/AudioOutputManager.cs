@@ -52,7 +52,7 @@ namespace Ryujinx.Audio.Output
         private IWritableEvent[] _sessionsBufferEvents;
 
         /// <summary>
-        /// The <see cref="AudioOutputSystem"/> sessions instances.
+        /// The <see cref="AudioOutputSystem"/> session instances.
         /// </summary>
         private AudioOutputSystem[] _sessions;
 
@@ -79,10 +79,9 @@ namespace Ryujinx.Audio.Output
         /// <summary>
         /// Initialize the <see cref="AudioOutputManager"/>.
         /// </summary>
-        /// <param name="manager">The audio manager instance.</param>
         /// <param name="deviceDriver">The device driver.</param>
         /// <param name="sessionRegisterEvents">The events associated to each session.</param>
-        public void Initialize(AudioManager manager, HardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
+        public void Initialize(HardwareDeviceDriver deviceDriver, IWritableEvent[] sessionRegisterEvents)
         {
             _deviceDriver = deviceDriver;
             _sessionsBufferEvents = sessionRegisterEvents;
@@ -191,10 +190,18 @@ namespace Ryujinx.Audio.Output
         /// <param name="inputDeviceName">The input device name wanted by the user</param>
         /// <param name="sampleFormat">The sample format to use</param>
         /// <param name="parameter">The user configuration</param>
-        /// <param name="appletResourceUserId">The applet resource user id of the application.</param>
-        /// <param name="processHandle">The process handle of the application.</param>
-        /// <returns>A <see cref="ResultCode"/> reporting an error or a success.</returns>
-        public ResultCode OpenAudioOut(out string outputDeviceName, out AudioOutputConfiguration outputConfiguration, out AudioOutputSystem obj, IVirtualMemoryManager memoryManager, string inputDeviceName, SampleFormat sampleFormat, ref AudioInputConfiguration parameter, ulong appletResourceUserId, uint processHandle)
+        /// <param name="appletResourceUserId">The applet resource user id of the application</param>
+        /// <param name="processHandle">The process handle of the application</param>
+        /// <returns>A <see cref="ResultCode"/> reporting an error or a success</returns>
+        public ResultCode OpenAudioOut(out string outputDeviceName,
+                                       out AudioOutputConfiguration outputConfiguration,
+                                       out AudioOutputSystem obj,
+                                       IVirtualMemoryManager memoryManager,
+                                       string inputDeviceName,
+                                       SampleFormat sampleFormat,
+                                       ref AudioInputConfiguration parameter,
+                                       ulong appletResourceUserId,
+                                       uint processHandle)
         {
             int sessionId = AcquireSessionId();
 
