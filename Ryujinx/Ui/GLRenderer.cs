@@ -42,7 +42,7 @@ namespace Ryujinx.Ui
         private double _mouseY;
         private bool   _mousePressed;
 
-        private TimeSpan _lastCursorMove = (DateTime.UtcNow - new DateTime(1970, 1, 1));
+        private DateTime _lastCursorMoveTime = DateTime.Now;
 
         private bool _toggleFullscreen;
         private bool _toggleDockedMode;
@@ -101,7 +101,6 @@ namespace Ryujinx.Ui
             _glLogLevel = glLogLevel;
 
             _exitEvent = new ManualResetEvent(false);
-
         }
 
         private static GraphicsMode GetGraphicsMode()
@@ -309,15 +308,16 @@ namespace Ryujinx.Ui
                 _mouseY = evnt.Y;
             }
 
-            ResetCursor();
+            ResetCursorIdle();
+
             return false;
         }
 
-        private void ResetCursor()
+        private void ResetCursorIdle()
         {
            if (ConfigurationState.Instance.HideCursorOnIdle)
            {
-               _lastCursorMove=(DateTime.UtcNow - new DateTime(1970, 1, 1));
+               _lastCursorMoveTime = DateTime.Now;
            }
 
            if (Window.Cursor != null)
@@ -326,11 +326,11 @@ namespace Ryujinx.Ui
            }
         }
 
-        private void HideCursorOnIdle()
+        private void HideCursorIdle()
         {
-           TimeSpan _currentTime=(DateTime.UtcNow - new DateTime(1970, 1, 1));
-           TimeSpan difference = _currentTime.Subtract(_lastCursorMove);
-           if (ConfigurationState.Instance.HideCursorOnIdle && difference.TotalSeconds > 8)
+           TimeSpan elapsedTime = DateTime.Now.Subtract(_lastCursorMoveTime);
+
+           if (ConfigurationState.Instance.HideCursorOnIdle && elapsedTime.TotalSeconds > 8)
            {
                Gtk.Application.Invoke(delegate { Window.Cursor = _invisibleCursor; });
            }
@@ -481,7 +481,6 @@ namespace Ryujinx.Ui
 
         private bool UpdateFrame()
         {
-            
             if (!_isActive)
             {
                 return true;
@@ -515,7 +514,7 @@ namespace Ryujinx.Ui
 
             MotionDevice motionDevice = new MotionDevice(_dsuClient);
 
-            HideCursorOnIdle();
+            HideCursorIdle();
 
             foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
