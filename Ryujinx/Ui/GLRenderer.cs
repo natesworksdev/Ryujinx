@@ -330,7 +330,7 @@ namespace Ryujinx.Ui
         {
            TimeSpan elapsedTime = DateTime.Now.Subtract(_lastCursorMoveTime);
 
-           if (ConfigurationState.Instance.HideCursorOnIdle && elapsedTime.TotalSeconds > 8)
+           if (elapsedTime.TotalSeconds > 8)
            {
                Gtk.Application.Invoke(delegate { Window.Cursor = _invisibleCursor; });
            }
@@ -514,7 +514,10 @@ namespace Ryujinx.Ui
 
             MotionDevice motionDevice = new MotionDevice(_dsuClient);
 
-            HideCursorIdle();
+            if (ConfigurationState.Instance.HideCursorOnIdle)
+            {
+                HideCursorIdle();
+            }
 
             foreach (InputConfig inputConfig in ConfigurationState.Instance.Hid.InputConfig.Value)
             {
