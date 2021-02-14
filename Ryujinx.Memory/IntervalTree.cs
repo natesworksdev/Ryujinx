@@ -384,13 +384,14 @@ namespace Ryujinx.Memory
             if (node == null) yield break;
             if (node.Left != null)
             {
-                yield return (TypeValue) InOrderTraverse(node.Left);
+                InOrderTraverse(node.Left);
             }
+
             yield return node.Value;
 
             if(node.Right != null)
             {
-                yield return (TypeValue) InOrderTraverse(node.Right);
+                InOrderTraverse(node.Right);
             }
         }
         /// <summary>
