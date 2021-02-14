@@ -26,6 +26,7 @@ namespace Ryujinx.Ui
                 large_magnitude = 0,
             },
         };
+        private int _effectIndex = -1;
         public HidVibrationValue LastVibrationValue { get; private set; } = new HidVibrationValue();
 
         public RumbleDevice(int index, ConcurrentQueue<Queue<HidVibrationValue>> vibrationQueue)
@@ -58,15 +59,29 @@ namespace Ryujinx.Ui
                 _dllLoaded = false;
             }
             _vibrationQueue = vibrationQueue;
+            if (_rumbleSupported)
+            {
+                // Create and upload first effect
+                _effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
+                if (_effectIndex < 0)
+                {
+                    Logger.PrintError(LogClass.ServiceHid, "Failed to upload effect, error = " + SDL.SDL_GetError());
+                    _rumbleSupported = false;
+                } else
+                {
+                    // Run the effect, we can dynamically update it
+                    // (according to SDL2 docs)
+                    if (SDL.SDL_HapticRunEffect(_haptic, _effectIndex, SDL.SDL_HAPTIC_INFINITY) < 0)
+                    {
+                        Logger.PrintError(LogClass.ServiceHid, "Failed to run effect, error = " + SDL.SDL_GetError());
+                        _rumbleSupported = false;
+                    }
+                }
+            }
         }
 
         public void ThreadProc()
         {
-            while (_vibrationQueue.Count <= 0)
-            {
-                // yield until we start getting values
-                Thread.Yield();
-            }
             while (true)
             {
                 Queue<HidVibrationValue> value;
@@ -74,21 +89,42 @@ namespace Ryujinx.Ui
                 {
                     foreach (HidVibrationValue value2 in value)
                     {
-                        _effect.leftright.small_magnitude = EaseOutQuadratic(value2.AmplitudeLow);
-                        _effect.leftright.large_magnitude = EaseOutQuadratic(value2.AmplitudeHigh);
-                        int effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
-                        SDL.SDL_HapticRunEffect(_haptic, effectIndex, SDL.SDL_HAPTIC_INFINITY);
-                        SDL.SDL_HapticDestroyEffect(_haptic, effectIndex);
-                        LastVibrationValue = value2;
+                        if (!SignificantDifference(LastVibrationValue, value2)) continue;
+                        _effect.leftright.small_magnitude = Linear(value2.AmplitudeLow);
+                        _effect.leftright.large_magnitude = Linear(value2.AmplitudeHigh);
+                        if (SDL.SDL_HapticUpdateEffect(_haptic, _effectIndex, ref _effect) < 0)
+                        {
+                            Logger.PrintWarning(LogClass.ServiceHid, "Failed to update effect, error = " + SDL.SDL_GetError());
+                        } else
+                        {
+                            Logger.PrintDebug(LogClass.ServiceHid, "Updated effect with values lA = " + value2.AmplitudeLow + " hA = " + value2.AmplitudeHigh);
+                            LastVibrationValue = value2;
+                        }
                     }
                 }
+                Thread.Yield();
             }
+        }
+
+        private static bool SignificantDifference(HidVibrationValue oldValue, HidVibrationValue newValue)
+        {
+            ushort oLA = Linear(oldValue.AmplitudeLow);
+            ushort nLA = Linear(newValue.AmplitudeLow);
+            ushort oHA = Linear(oldValue.AmplitudeHigh);
+            ushort nHA = Linear(newValue.AmplitudeHigh);
+            return (oLA >> 3) != (nLA >> 3) || (oHA >> 3) != (nHA >> 3);
         }
 
         private static ushort EaseOutQuadratic(float x)
         {
             // 32768(1-(1-x)^2)
             return (ushort)(short.MaxValue * (1 - (1 - x) * (1 - x)));
+        }
+
+        private static ushort Linear(float x)
+        {
+            // 32768x
+            return (ushort)(short.MaxValue * x);
         }
 
         public void Start()
@@ -104,6 +140,10 @@ namespace Ryujinx.Ui
             if (_thread != null) _thread.Join(500);
             if (_dllLoaded)
             {
+                if (_effectIndex >= 0)
+                {
+                    SDL.SDL_HapticDestroyEffect(_haptic, _effectIndex);
+                }
                 if (_haptic != IntPtr.Zero)
                 {
                     SDL.SDL_HapticClose(_haptic);
