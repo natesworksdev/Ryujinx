@@ -228,6 +228,21 @@ namespace Ryujinx.Memory
         /// If multiple intervals starting at the same time/value are found to overlap the specified interval, they are returned in decreasing order of their End values.
         /// </summary>
         /// <param name="toFind">To find.</param>
+        /// <param name="list">The list.</param>
+        public int GetIntervalsOverlappingWith(Interval<T> toFind, ref TypeValue[] list)
+        {
+            if (this.Root != null)
+            {
+                return this.Root.GetIntervalsOverlappingWith(toFind, ref list);
+            }
+            return 0;
+        }
+
+        /// <summary>
+        /// Searches for all intervals overlapping the one specified.
+        /// If multiple intervals starting at the same time/value are found to overlap the specified interval, they are returned in decreasing order of their End values.
+        /// </summary>
+        /// <param name="toFind">To find.</param>
         /// <returns></returns>
         public IEnumerable<KeyValuePair<Interval<T>, TypeValue>> GetIntervalsOverlappingWith(Interval<T> toFind)
         {
@@ -246,6 +261,7 @@ namespace Ryujinx.Memory
         }
 
 #if TREE_WITH_PARENT_POINTERS
+
 
             /// <summary>
             /// Gets the collection of intervals (in ascending order of their Start values).
@@ -327,8 +343,9 @@ namespace Ryujinx.Memory
                     }
                 }
             }
-
 #endif
+
+
 
         /// <summary>
         /// Tries to the get the value associated with the interval.
@@ -389,11 +406,12 @@ namespace Ryujinx.Memory
 
             yield return node.Value;
 
-            if(node.Right != null)
+            if (node.Right != null)
             {
                 InOrderTraverse(node.Right);
             }
         }
+
         /// <summary>
         /// Searches for interval starting at.
         /// </summary>
@@ -448,9 +466,9 @@ namespace Ryujinx.Memory
             }
         }
 
-        #endregion
+#endregion
 
-        #region Nested Classes
+#region Nested Classes
 
         /// <summary>
         /// IntervalNode class. 
@@ -461,6 +479,7 @@ namespace Ryujinx.Memory
             #region Fields
 
 #if TREE_WITH_PARENT_POINTERS
+
                 private IntervalNode Parent;
 #endif
             #endregion
@@ -475,9 +494,9 @@ namespace Ryujinx.Memory
             public List<KeyValuePair<T, TypeValue>> Range { get; private set; }
             public T Max { get; private set; }
 
-            #endregion
+#endregion
 
-            #region C'tor
+#region C'tor
 
             public IntervalNode(Interval<T> interval, TypeValue value)
             {
@@ -489,9 +508,9 @@ namespace Ryujinx.Memory
                 this.Max = interval.End;
             }
 
-            #endregion
+#endregion
 
-            #region Methods
+#region Methods
 
             /// <summary>
             /// Adds the specified elem.
@@ -518,8 +537,10 @@ namespace Ryujinx.Memory
                         {
                             elem.Left = newChild;
 #if TREE_WITH_PARENT_POINTERS
+
                                 newChild.Parent = elem;
 #endif
+
                         }
 
                         if (wasAdded)
@@ -560,6 +581,7 @@ namespace Ryujinx.Memory
                         {
                             elem.Right = newChild;
 #if TREE_WITH_PARENT_POINTERS
+
                                 newChild.Parent = elem;
 #endif
                         }
@@ -719,6 +741,7 @@ namespace Ryujinx.Memory
                 }
             }
 
+
 #if TREE_WITH_PARENT_POINTERS
 
                 /// <summary>
@@ -819,6 +842,7 @@ namespace Ryujinx.Memory
                             wasSuccessful = true;
 
 #if TREE_WITH_PARENT_POINTERS
+
                                 if (node.Right != null)
                                 {
                                     node.Right.Parent = node.Parent;
@@ -1090,6 +1114,81 @@ namespace Ryujinx.Memory
                         this.Right.GetIntervalsOverlappingWith(toFind, ref list);
                     }
                 }
+            }
+
+            /// <summary>
+            /// Searches for all intervals in this subtree that are overlapping the argument interval.
+            /// If multiple intervals starting at the same time/value are found to overlap, they are returned in decreasing order of their End values.
+            /// </summary>
+            /// <param name="toFind">To find.</param>
+            /// <param name="list">The list.</param>
+            public int GetIntervalsOverlappingWith(Interval<T> toFind, ref TypeValue[] list, int outputIndex = 0)
+            {
+                if (toFind.End.CompareTo(this.Interval.Start) <= 0)
+                {
+                    ////toFind ends before subtree.Data begins, prune the right subtree
+                    if (this.Left != null)
+                    {
+                        return this.Left.GetIntervalsOverlappingWith(toFind, ref list, outputIndex);
+                    }
+                }
+                else if (toFind.Start.CompareTo(this.Max) >= 0)
+                {
+                    ////toFind begins after the subtree.Max ends, prune the left subtree
+                    if (this.Right != null)
+                    {
+                        return this.Right.GetIntervalsOverlappingWith(toFind, ref list, outputIndex);
+                    }
+                }
+                else
+                {
+                    //// search the left subtree
+                    if (this.Left != null)
+                    {
+                        outputIndex = this.Left.GetIntervalsOverlappingWith(toFind, ref list, outputIndex);
+                    }
+
+                    if (this.Interval.OverlapsWith(toFind))
+                    {
+                        if (list == null)
+                        {
+                            list = new TypeValue[10];
+                        }
+                        if(outputIndex == list.Length)
+                        {
+                            Array.Resize(ref list, list.Length + 32);
+                        }
+                        list[outputIndex++] = this.Value;
+
+                        ////the max value is stored in the node, if the node doesn't overlap then neither are the nodes in its range 
+                        if (this.Range != null && this.Range.Count > 0)
+                        {
+                            foreach (var kvp in this.GetRange())
+                            {
+                                if (kvp.Key.OverlapsWith(toFind))
+                                {
+                                    if (outputIndex == list.Length)
+                                    {
+                                        Array.Resize(ref list, list.Length + 32);
+                                    }
+                                    list[outputIndex++] = kvp.Value;
+                                }
+                                else
+                                {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+
+                    //// search the right subtree
+                    if (this.Right != null)
+                    {
+                        outputIndex = this.Right.GetIntervalsOverlappingWith(toFind, ref list, outputIndex);
+                    }
+                    return outputIndex;
+                }
+                return outputIndex;
             }
 
             /// <summary>
@@ -1380,7 +1479,7 @@ namespace Ryujinx.Memory
                 }
             }
 
-            #endregion
+#endregion
         }
 
         private class KeyValueComparer<TKey, TValue> : IComparer<KeyValuePair<TKey, TValue>>
@@ -1455,7 +1554,7 @@ namespace Ryujinx.Memory
             }
         }
 
-        #endregion
+#endregion
     }
 
 }

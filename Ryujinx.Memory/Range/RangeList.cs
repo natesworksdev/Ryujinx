@@ -131,9 +131,7 @@ namespace Ryujinx.Memory.Range
         /// <returns>The number of overlapping items found</returns>
         public int FindOverlaps(T item, ref T[] output)
         {
-            List<KeyValuePair<Interval<ulong>, T>> list = new List<KeyValuePair<Interval<ulong>, T>>();
-            Items.GetIntervalsOverlappingWith(new Interval<ulong>(item.Address, item.EndAddress), ref list);
-            return list.Count;
+            return Items.GetIntervalsOverlappingWith(new Interval<ulong>(item.Address, item.EndAddress), ref output);
             //return FindOverlaps(item.Address, item.Size, ref output);
         }
 
@@ -170,22 +168,11 @@ namespace Ryujinx.Memory.Range
 
             //return outputIndex;
 
-            List<KeyValuePair<Interval<ulong>, T>> list = new List<KeyValuePair<Interval<ulong>, T>>();
 
             ulong endAddress = address + size;
             if (address >= endAddress) return 0;
 
-            Items.GetIntervalsOverlappingWith(new Interval<ulong>(address, endAddress), ref list);
-            
-            for (int i = 0; i < list.Count; i++)
-            {
-                if(i == output.Length)
-                {
-                    Array.Resize(ref output, i + ArrayGrowthSize);
-                }
-                output[i] = list[i].Value;
-            }
-            return list.Count;
+            return Items.GetIntervalsOverlappingWith(new Interval<ulong>(address, endAddress), ref output);
         }
 
         /// <summary>
