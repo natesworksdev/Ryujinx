@@ -11,11 +11,11 @@ namespace Ryujinx.Memory.Range
     public class RangeList<T> : IEnumerable<T> where T : IRange
     {
         private const int ArrayGrowthSize = 32;
-        private readonly bool UsesOverlappingRanges = !typeof(T).IsAssignableFrom(typeof(INonOverlappingRange));
+        protected readonly bool UsesOverlappingRanges = !(typeof(T).GetInterface(nameof(INonOverlappingRange)) != null);
         protected readonly List<T> Items;
         protected readonly IntervalTree<ulong, T> Tree;
 
-        public int Count => Tree.Count;
+        public int Count => UsesOverlappingRanges ? Tree.Count: Items.Count;
 
         /// <summary>
         /// Creates a new range list.
@@ -45,11 +45,11 @@ namespace Ryujinx.Memory.Range
             else
             {
                 int index = BinarySearch(item.Address);
-
                 if (index < 0)
                 {
                     index = ~index;
                 }
+                Items.Insert(index, item);
             }
             
         }

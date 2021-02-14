@@ -360,7 +360,14 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_lock)
             {
-                Tree.Clear();
+                if (UsesOverlappingRanges)
+                {
+                    Tree.Clear();
+                }
+                else
+                {
+                    Items.Clear();
+                }
             }
         }
     }
