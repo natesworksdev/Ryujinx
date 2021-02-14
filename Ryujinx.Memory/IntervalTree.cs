@@ -376,17 +376,21 @@ namespace Ryujinx.Memory
 
         internal IEnumerator<TypeValue> GetEnumerator()
         {
-            Queue<TypeValue> queue = new Queue<TypeValue>();
-            InOrderTraverse(Root, queue);
-            return queue.GetEnumerator();
+            if (Root != null) yield return (TypeValue)InOrderTraverse(Root);
         }
 
-        private void InOrderTraverse(IntervalNode node, Queue<TypeValue> queue)
+        private IEnumerable<TypeValue> InOrderTraverse(IntervalNode node)
         {
-            if (node == null) return;
-            InOrderTraverse(node.Left, queue);
-            queue.Enqueue(node.Value);
-            InOrderTraverse(node.Right, queue);
+            if (node.Left != null)
+            {
+                yield return (TypeValue) InOrderTraverse(node.Left);
+            }
+            yield return node.Value;
+
+            if(node.Right != null)
+            {
+                yield return (TypeValue) InOrderTraverse(node.Right);
+            }
         }
         /// <summary>
         /// Searches for interval starting at.
