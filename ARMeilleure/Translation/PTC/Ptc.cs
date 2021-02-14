@@ -549,7 +549,7 @@ namespace ARMeilleure.Translation.PTC
                         SkipReloc(infoEntry.RelocEntriesCount);
                         SkipUnwindInfo(unwindInfosReader);
                     }
-                    else if (infoEntry.HighCq || !PtcProfiler.ProfiledFuncs.TryGetValue(infoEntry.Address, out var value) || !value.highCq)
+                    else if (infoEntry.HighCq || !PtcProfiler.ProfiledFuncs.TryGetValue(infoEntry.Address, out var value) || !value.HighCq)
                     {
                         Span<byte> code = ReadCode(codesReader, infoEntry.CodeLen);
 
@@ -808,7 +808,7 @@ namespace ARMeilleure.Translation.PTC
                 Translator.DisposePools();
             }
 
-            int maxDegreeOfParallelism = Environment.ProcessorCount;
+            int maxDegreeOfParallelism = (Environment.ProcessorCount * 3) / 4;
 
             List<Thread> threads = new List<Thread>();
 
