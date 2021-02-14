@@ -1210,7 +1210,7 @@
         false
       ]
     },
-        "hide_cursor_on_idle": {
+      "hide_cursor_on_idle": {
       "$id": "#/properties/hide_cursor_on_idle",
       "type": "boolean",
       "title": "Hide Cursor On Idle",
