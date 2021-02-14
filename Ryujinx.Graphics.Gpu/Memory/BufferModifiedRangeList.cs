@@ -360,7 +360,7 @@ namespace Ryujinx.Graphics.Gpu.Memory
         {
             lock (_lock)
             {
-                Items.Clear();
+                Tree.Clear();
             }
         }
     }
