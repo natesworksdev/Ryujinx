@@ -376,11 +376,12 @@ namespace Ryujinx.Memory
 
         internal IEnumerator<TypeValue> GetEnumerator()
         {
-            if (Root != null) yield return (TypeValue)InOrderTraverse(Root);
+            return InOrderTraverse(Root).GetEnumerator();
         }
 
         private IEnumerable<TypeValue> InOrderTraverse(IntervalNode node)
         {
+            if (node == null) yield break;
             if (node.Left != null)
             {
                 yield return (TypeValue) InOrderTraverse(node.Left);
