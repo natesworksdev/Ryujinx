@@ -194,6 +194,22 @@ namespace Ryujinx.Memory
         }
 
         /// <summary>
+        /// Searches for the first interval overlapping the one specified.
+        /// If multiple intervals starting at the same time/value are found to overlap the specified interval, they are returned in decreasing order of their End values.
+        /// </summary>
+        /// <param name="toFind">To find.</param>
+        /// <param name="list">The list.</param>
+        public void GetFirstIntervalOverlappingWith(Interval<T> toFind, out TypeValue value)
+        {
+            if (this.Root != null)
+            {
+                this.Root.GetFirstIntervalOverlappingWith(toFind, out value);
+                return;
+            }
+            value = default(TypeValue);
+        }
+
+        /// <summary>
         /// Searches for all intervals overlapping the one specified.
         /// If multiple intervals starting at the same time/value are found to overlap the specified interval, they are returned in decreasing order of their End values.
         /// </summary>
@@ -946,6 +962,57 @@ namespace Ryujinx.Memory
                 {
                     return null;
                 }
+            }
+
+            /// <summary>
+            /// Searches for the first interval in this subtree that is overlapping the argument interval.
+            /// If multiple intervals starting at the same time/value are found to overlap, they are returned in decreasing order of their End values.
+            /// </summary>
+            /// <param name="toFind">To find.</param>
+            /// <param name="list">The list.</param>
+            public void GetFirstIntervalOverlappingWith(Interval<T> toFind, out TypeValue value)
+            {
+                if (toFind.End.CompareTo(this.Interval.Start) <= 0)
+                {
+                    ////toFind ends before subtree.Data begins, prune the right subtree
+                    if (this.Left != null)
+                    {
+                        this.Left.GetFirstIntervalOverlappingWith(toFind, out value);
+                        return;
+                    }
+                }
+                else if (toFind.Start.CompareTo(this.Max) >= 0)
+                {
+                    ////toFind begins after the subtree.Max ends, prune the left subtree
+                    if (this.Right != null)
+                    {
+                        this.Right.GetFirstIntervalOverlappingWith(toFind, out value);
+                        return;
+                    }
+                }
+                else
+                {
+                    //// search the left subtree
+                    if (this.Left != null)
+                    {
+                        this.Left.GetFirstIntervalOverlappingWith(toFind, out value);
+                        if (value != null) return;
+                    }
+
+                    if (this.Interval.OverlapsWith(toFind))
+                    {
+                        value = this.Value;
+                        if (value != null) return;
+                    }
+
+                    //// search the right subtree
+                    if (this.Right != null)
+                    {
+                        this.Right.GetFirstIntervalOverlappingWith(toFind, out value);
+                        if (value != null) return;
+                    }
+                }
+                value = default(TypeValue);
             }
 
             /// <summary>

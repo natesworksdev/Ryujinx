@@ -92,11 +92,8 @@ namespace Ryujinx.Memory.Range
         public T FindFirstOverlap(T item)
         {
             //return FindFirstOverlap(item.Address, item.Size);
-
-            List<KeyValuePair<Interval<ulong>, T>> list = new List<KeyValuePair<Interval<ulong>, T>>();
-            Items.GetIntervalsOverlappingWith(new Interval<ulong>(item.Address, item.EndAddress), ref list);
-            if (list.Count == 0) return default(T);
-            return list[0].Value;
+            Items.GetFirstIntervalOverlappingWith(new Interval<ulong>(item.Address, item.EndAddress), out T value);
+            return value;
         }
 
         /// <summary>
@@ -122,10 +119,8 @@ namespace Ryujinx.Memory.Range
             ulong endAddress = address + size;
             if (address >= endAddress) return default(T);
 
-            List<KeyValuePair<Interval<ulong>, T>> list = new List<KeyValuePair<Interval<ulong>, T>>();
-            Items.GetIntervalsOverlappingWith(new Interval<ulong>(address, endAddress), ref list);
-            if (list.Count == 0) return default(T);
-            return list[0].Value;
+            Items.GetFirstIntervalOverlappingWith(new Interval<ulong>(address, endAddress), out T value);
+            return value;
         }
 
         /// <summary>
