@@ -490,7 +490,7 @@ namespace Ryujinx.Configuration
             EnableDiscordIntegration.Value         = true;
             CheckUpdatesOnStart.Value              = true;
             ShowConfirmExit.Value                  = true;
-            HideCursorOnIdle.Value                 = true;
+            HideCursorOnIdle.Value                 = false;
             Graphics.EnableVsync.Value             = true;
             Graphics.EnableShaderCache.Value       = true;
             System.EnablePtc.Value                 = true;
@@ -799,7 +799,7 @@ namespace Ryujinx.Configuration
             {
                 Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 22.");
 
-                configurationFileFormat.HideCursorOnIdle = true;
+                configurationFileFormat.HideCursorOnIdle = false;
 
                 configurationFileUpdated = true;
             }
