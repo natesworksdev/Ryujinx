@@ -35,27 +35,27 @@ namespace Ryujinx.Ui
             {
                 if (SDL.SDL_Init(SDL.SDL_INIT_HAPTIC) != 0)
                 {
-                    Logger.PrintError(LogClass.ServiceHid, "Failed to initialize SDL, error = " + SDL.SDL_GetError());
+                    Logger.Error?.Print(LogClass.ServiceHid, "Failed to initialize SDL, error = " + SDL.SDL_GetError());
                 }
                 _haptic = SDL.SDL_HapticOpen(index);
                 if (_haptic == IntPtr.Zero)
                 {
-                    Logger.PrintInfo(LogClass.ServiceHid, "Haptic device is null!");
-                    Logger.PrintInfo(LogClass.ServiceHid, "SDL error = " + SDL.SDL_GetError());
+                    Logger.Info?.Print(LogClass.ServiceHid, "Haptic device is null!");
+                    Logger.Info?.Print(LogClass.ServiceHid, "SDL error = " + SDL.SDL_GetError());
                 }
                 if (_haptic == IntPtr.Zero || SDL.SDL_HapticEffectSupported(_haptic, ref _effect) == 0)
                 {
-                    if (SDL.SDL_HapticEffectSupported(_haptic, ref _effect) == 0) Logger.PrintInfo(LogClass.ServiceHid, "Haptic effect leftright not supported!");
+                    if (SDL.SDL_HapticEffectSupported(_haptic, ref _effect) == 0) Logger.Info?.Print(LogClass.ServiceHid, "Haptic effect leftright not supported!");
                     _rumbleSupported = false;
                 }
                 else
                 {
                     _rumbleSupported = true;
                 }
-                Logger.PrintInfo(LogClass.ServiceHid, "Initialized rumble device, actual support = " + _rumbleSupported);
+                Logger.Info?.Print(LogClass.ServiceHid, "Initialized rumble device, actual support = " + _rumbleSupported);
             } catch (DllNotFoundException)
             {
-                Logger.PrintInfo(LogClass.ServiceHid, "SDL2 DLL not found, silently stubbing");
+                Logger.Info?.Print(LogClass.ServiceHid, "SDL2 DLL not found, silently stubbing");
                 _dllLoaded = false;
             }
             _vibrationQueue = vibrationQueue;
@@ -65,7 +65,7 @@ namespace Ryujinx.Ui
                 _effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
                 if (_effectIndex < 0)
                 {
-                    Logger.PrintError(LogClass.ServiceHid, "Failed to upload effect, error = " + SDL.SDL_GetError());
+                    Logger.Error?.Print(LogClass.ServiceHid, "Failed to upload effect, error = " + SDL.SDL_GetError());
                     _rumbleSupported = false;
                 } else
                 {
@@ -73,7 +73,7 @@ namespace Ryujinx.Ui
                     // (according to SDL2 docs)
                     if (SDL.SDL_HapticRunEffect(_haptic, _effectIndex, SDL.SDL_HAPTIC_INFINITY) < 0)
                     {
-                        Logger.PrintError(LogClass.ServiceHid, "Failed to run effect, error = " + SDL.SDL_GetError());
+                        Logger.Error?.Print(LogClass.ServiceHid, "Failed to run effect, error = " + SDL.SDL_GetError());
                         _rumbleSupported = false;
                     }
                 }
@@ -94,10 +94,10 @@ namespace Ryujinx.Ui
                         _effect.leftright.large_magnitude = Linear(value2.AmplitudeHigh);
                         if (SDL.SDL_HapticUpdateEffect(_haptic, _effectIndex, ref _effect) < 0)
                         {
-                            Logger.PrintWarning(LogClass.ServiceHid, "Failed to update effect, error = " + SDL.SDL_GetError());
+                            Logger.Warning?.Print(LogClass.ServiceHid, "Failed to update effect, error = " + SDL.SDL_GetError());
                         } else
                         {
-                            Logger.PrintDebug(LogClass.ServiceHid, "Updated effect with values lA = " + value2.AmplitudeLow + " hA = " + value2.AmplitudeHigh);
+                            Logger.Debug?.Print(LogClass.ServiceHid, "Updated effect with values lA = " + value2.AmplitudeLow + " hA = " + value2.AmplitudeHigh);
                             LastVibrationValue = value2;
                         }
                     }

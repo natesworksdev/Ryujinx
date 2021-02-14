@@ -797,7 +797,7 @@ namespace Ryujinx.Configuration
 
             if (configurationFileFormat.Version < 21)
             {
-                Common.Logging.Logger.PrintWarning(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 12.");
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 21.");
 
                 for (int i = 0; i < configurationFileFormat.ControllerConfig.Count; i++)
                 {

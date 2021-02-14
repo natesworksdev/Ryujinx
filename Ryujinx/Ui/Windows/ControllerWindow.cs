@@ -234,7 +234,7 @@ namespace Ryujinx.Ui.Windows
                 int res = SDL.SDL_Init(SDL.SDL_INIT_HAPTIC);
                 if (res != 0)
                 {
-                    Logger.PrintInfo(LogClass.Application, "Failed to initialize SDL2, skipping rumble config");
+                    Logger.Info?.Print(LogClass.Application, "Failed to initialize SDL2, skipping rumble config");
                     return;
                 }
                 int num_haptics = SDL.SDL_NumHaptics();
@@ -254,7 +254,7 @@ namespace Ryujinx.Ui.Windows
                 }
             } catch (DllNotFoundException)
             {
-                Logger.PrintInfo(LogClass.Application, "SDL2 DLL not found, skipping rumble config");
+                Logger.Info?.Print(LogClass.Application, "SDL2 DLL not found, skipping rumble config");
                 return;
             }
         }
