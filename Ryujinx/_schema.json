@@ -902,6 +902,28 @@
             "127.0.0.1",
             "example.host.com"
           ]
+        },
+        "rumble_index": {
+          "$id": "#/definitions/controller_config/properties/rumble_index",
+          "type": "integer",
+          "title": "Rumble Device Index",
+          "description": "Index of the rumble device to use",
+          "default": 0,
+          "examples": [
+            0,
+            1
+          ]
+        },
+        "enable_rumble": {
+          "$id": "#/definitions/controller_config/properties/enable_rumble",
+          "type": "boolean",
+          "title": "Enable Rumble",
+          "description": "Whether to enable rumble for this controller",
+          "default": false,
+          "examples": [
+            false,
+            true
+          ]
         }
       }
     }
@@ -1210,7 +1232,7 @@
         false
       ]
     },
-      "hide_cursor_on_idle": {
+    "hide_cursor_on_idle": {
       "$id": "#/properties/hide_cursor_on_idle",
       "type": "boolean",
       "title": "Hide Cursor On Idle",
