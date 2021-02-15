@@ -87,9 +87,10 @@ namespace Ryujinx.Ui
                     if ((DateTime.Now - _lastUpdate).Milliseconds < 2) continue;
                     foreach (HidVibrationValue value2 in value)
                     {
-                        if (!SignificantDifference(LastVibrationValue, value2)) continue;
-                        _effect.leftright.small_magnitude = Curve(value2.AmplitudeLow);
-                        _effect.leftright.large_magnitude = Curve(value2.AmplitudeHigh);
+                        (bool isDifference, ushort small_magnitude, ushort large_magnitude) = SignificantDifference(LastVibrationValue, value2);
+                        if (!isDifference) continue;
+                        _effect.leftright.small_magnitude = small_magnitude;
+                        _effect.leftright.large_magnitude = large_magnitude;
                         if (SDL.SDL_HapticUpdateEffect(_haptic, _effectIndex, ref _effect) != 0)
                         {
                             Logger.Warning?.Print(LogClass.ServiceHid, "Failed to update effect, error = " + SDL.SDL_GetError());
@@ -114,28 +115,17 @@ namespace Ryujinx.Ui
             }
         }
 
-        private static bool SignificantDifference(HidVibrationValue oldValue, HidVibrationValue newValue)
+        // Returns the new amplitude low & high values as well
+        private static ValueTuple<bool, ushort, ushort> SignificantDifference(HidVibrationValue oldValue, HidVibrationValue newValue)
         {
-            ushort oLA = Curve(oldValue.AmplitudeLow);
-            ushort nLA = Curve(newValue.AmplitudeLow);
-            ushort oHA = Curve(oldValue.AmplitudeHigh);
-            ushort nHA = Curve(newValue.AmplitudeHigh);
-            return (oLA >> 3) != (nLA >> 3) || (oHA >> 3) != (nHA >> 3);
+            ushort oLA = Scale(oldValue.AmplitudeLow);
+            ushort nLA = Scale(newValue.AmplitudeLow);
+            ushort oHA = Scale(oldValue.AmplitudeHigh);
+            ushort nHA = Scale(newValue.AmplitudeHigh);
+            return ((oLA >> 3) != (nLA >> 3) || (oHA >> 3) != (nHA >> 3), nLA, nHA);
         }
 
-        private static ushort EaseOutQuadratic(float x)
-        {
-            // 32768(1-(1-x)^2)
-            return (ushort)(ushort.MaxValue * (1 - (1 - x) * (1 - x)));
-        }
-
-        private static ushort Linear(float x)
-        {
-            // 32768x
-            return (ushort)(ushort.MaxValue * x);
-        }
-
-        private static ushort Curve(float x)
+        private static ushort Scale(float x)
         {
             // cubic-bezier(0, 1, 0.85, 1)
             // = 1.45x^3 - 3.45x^2 + 3x
