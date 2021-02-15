@@ -78,6 +78,7 @@ namespace Ryujinx.Ui
                         if (!SignificantDifference(LastVibrationValue, value2)) continue;
                         _effect.leftright.small_magnitude = Linear(value2.AmplitudeLow);
                         _effect.leftright.large_magnitude = Linear(value2.AmplitudeHigh);
+                        SDL.SDL_HapticStopAll(_haptic);
                         int effectIndex = SDL.SDL_HapticNewEffect(_haptic, ref _effect);
                         if (SDL.SDL_HapticRunEffect(_haptic, effectIndex, 1) < 0)
                         {
@@ -133,6 +134,7 @@ namespace Ryujinx.Ui
             {
                 if (_haptic != IntPtr.Zero)
                 {
+                    SDL.SDL_HapticStopAll(_haptic);
                     SDL.SDL_HapticClose(_haptic);
                 }
             }
