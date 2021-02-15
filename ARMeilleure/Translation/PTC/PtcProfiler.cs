@@ -336,7 +336,7 @@ namespace ARMeilleure.Translation.PTC
 
         private static void Serialize(Stream stream, Dictionary<ulong, FuncProfile> profiledFuncs)
         {
-            SerializeDictionary<ulong, FuncProfile>(stream, profiledFuncs, (stream, structure) => SerializeStructure<FuncProfile>(stream, ref structure));
+            SerializeDictionary(stream, profiledFuncs, (stream, structure) => SerializeStructure(stream, structure));
         }
 
         private struct Header

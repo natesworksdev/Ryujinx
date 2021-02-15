@@ -90,11 +90,11 @@ namespace ARMeilleure.Translation.PTC
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SerializeDictionary<TKey, TValue>(Stream stream, Dictionary<TKey, TValue> dictionary, Action<Stream, TValue> valueAction) where TKey : unmanaged
         {
-            SerializeStructure<int>(stream, ref Unsafe.AsRef(dictionary.Count));
+            SerializeStructure<int>(stream, dictionary.Count);
 
             foreach ((TKey key, TValue value) in dictionary)
             {
-                SerializeStructure<TKey>(stream, ref Unsafe.AsRef(key));
+                SerializeStructure<TKey>(stream, key);
                 valueAction(stream, value);
             }
         }
@@ -102,16 +102,16 @@ namespace ARMeilleure.Translation.PTC
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static void SerializeList<T>(Stream stream, List<T> list) where T : unmanaged
         {
-            SerializeStructure<int>(stream, ref Unsafe.AsRef(list.Count));
+            SerializeStructure<int>(stream, list.Count);
 
             foreach (T item in list)
             {
-                SerializeStructure<T>(stream, ref Unsafe.AsRef(item));
+                SerializeStructure<T>(stream, item);
             }
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static void SerializeStructure<T>(Stream stream, ref T structure) where T : unmanaged
+        public static void SerializeStructure<T>(Stream stream, T structure) where T : unmanaged
         {
             Span<T> spanT = MemoryMarshal.CreateSpan(ref structure, 1);
             stream.Write(MemoryMarshal.AsBytes(spanT));

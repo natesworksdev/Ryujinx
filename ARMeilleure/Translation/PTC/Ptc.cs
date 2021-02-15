@@ -18,6 +18,8 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
+using static ARMeilleure.Translation.PTC.PtcFormatter;
+
 namespace ARMeilleure.Translation.PTC
 {
     public static class Ptc
@@ -206,11 +208,7 @@ namespace ARMeilleure.Translation.PTC
             using (FileStream compressedStream = new(fileName, FileMode.Open))
             using (DeflateStream deflateStream = new(compressedStream, CompressionMode.Decompress, true))
             {
-                int hashSize = Unsafe.SizeOf<Hash128>();
-
-                Span<byte> currentSizeHashBytes = new byte[hashSize];
-                compressedStream.Read(currentSizeHashBytes);
-                Hash128 currentSizeHash = MemoryMarshal.Read<Hash128>(currentSizeHashBytes);
+                Hash128 currentSizeHash = DeserializeStructure<Hash128>(compressedStream);
 
                 Span<byte> sizeBytes = new byte[sizeof(int)];
                 compressedStream.Read(sizeBytes);
@@ -244,11 +242,10 @@ namespace ARMeilleure.Translation.PTC
                             return false;
                         }
 
-                        stream.Seek(0L, SeekOrigin.Begin);
+                        int hashSize = Unsafe.SizeOf<Hash128>();
 
-                        Span<byte> currentHashBytes = new byte[hashSize];
-                        stream.Read(currentHashBytes);
-                        Hash128 currentHash = MemoryMarshal.Read<Hash128>(currentHashBytes);
+                        stream.Seek(0L, SeekOrigin.Begin);
+                        Hash128 currentHash = DeserializeStructure<Hash128>(stream);
 
                         ReadOnlySpan<byte> streamBytes = new(stream.PositionPointer, (int)(stream.Length - stream.Position));
                         Hash128 expectedHash = XXHash128.ComputeHash(streamBytes);
@@ -447,11 +444,8 @@ namespace ARMeilleure.Translation.PTC
                     ReadOnlySpan<byte> streamBytes = new(stream.PositionPointer, (int)(stream.Length - stream.Position));
                     Hash128 hash = XXHash128.ComputeHash(streamBytes);
 
-                    Span<byte> hashBytes = new byte[hashSize];
-                    MemoryMarshal.Write<Hash128>(hashBytes, ref hash);
-
                     stream.Seek(0L, SeekOrigin.Begin);
-                    stream.Write(hashBytes);
+                    SerializeStructure(stream, hash);
 
                     translatedFuncsCount = GetInfosEntriesCount();
 

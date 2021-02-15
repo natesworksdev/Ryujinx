@@ -85,24 +85,24 @@ namespace ARMeilleure.Translation.PTC
         {
             int size = 0;
 
-            size += GetSerializeSizeList<TableEntry<DirectHostAddress>>(ptcJumpTable._jumpTable);
-            size += GetSerializeSizeList<TableEntry<IndirectHostAddress>>(ptcJumpTable._dynamicTable);
+            size += GetSerializeSizeList(ptcJumpTable._jumpTable);
+            size += GetSerializeSizeList(ptcJumpTable._dynamicTable);
 
-            size += GetSerializeSizeList<ulong>(ptcJumpTable.Targets);
-            size += GetSerializeSizeDictionary<ulong, List<int>>(ptcJumpTable.Dependants, (list) => GetSerializeSizeList<int>(list));
-            size += GetSerializeSizeDictionary<ulong, List<int>>(ptcJumpTable.Owners, (list) => GetSerializeSizeList<int>(list));
+            size += GetSerializeSizeList(ptcJumpTable.Targets);
+            size += GetSerializeSizeDictionary(ptcJumpTable.Dependants, (list) => GetSerializeSizeList(list));
+            size += GetSerializeSizeDictionary(ptcJumpTable.Owners, (list) => GetSerializeSizeList(list));
 
             return size;
         }
 
         public static void Serialize(Stream stream, PtcJumpTable ptcJumpTable)
         {
-            SerializeList<TableEntry<DirectHostAddress>>(stream, ptcJumpTable._jumpTable);
-            SerializeList<TableEntry<IndirectHostAddress>>(stream, ptcJumpTable._dynamicTable);
+            SerializeList(stream, ptcJumpTable._jumpTable);
+            SerializeList(stream, ptcJumpTable._dynamicTable);
 
-            SerializeList<ulong>(stream, ptcJumpTable.Targets);
-            SerializeDictionary<ulong, List<int>>(stream, ptcJumpTable.Dependants, (stream, list) => SerializeList<int>(stream, list));
-            SerializeDictionary<ulong, List<int>>(stream, ptcJumpTable.Owners, (stream, list) => SerializeList<int>(stream, list));
+            SerializeList(stream, ptcJumpTable.Targets);
+            SerializeDictionary(stream, ptcJumpTable.Dependants, (stream, list) => SerializeList(stream, list));
+            SerializeDictionary(stream, ptcJumpTable.Owners, (stream, list) => SerializeList(stream, list));
         }
 
         public void Initialize(JumpTable jumpTable)
