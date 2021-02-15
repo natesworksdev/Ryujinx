@@ -382,6 +382,11 @@ namespace Ryujinx.Ui
         {
             _dsuClient?.Dispose();
 
+            foreach (RumbleDevice device in _rumbleDevices.Values)
+            {
+                device.Dispose();
+            }
+
             if (_isStopped)
             {
                 return;

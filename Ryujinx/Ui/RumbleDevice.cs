@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace Ryujinx.Ui
 {
-    class RumbleDevice
+    class RumbleDevice: IDisposable
     {
         private readonly bool _dllLoaded = true;
         private Thread _thread;
@@ -153,7 +153,7 @@ namespace Ryujinx.Ui
             _thread.Start();
         }
 
-        ~RumbleDevice()
+        public void Dispose()
         {
             _source.Cancel();
             if (_thread != null) _thread.Join(500);
