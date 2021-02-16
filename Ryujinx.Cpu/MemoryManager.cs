@@ -21,8 +21,6 @@ namespace Ryujinx.Cpu
 
         private const int PteSize = 8;
 
-        private const int PointerTagBit = 62;
-
         private readonly InvalidAccessHandler _invalidAccessHandler;
 
         /// <summary>
@@ -558,12 +556,11 @@ namespace Ryujinx.Cpu
             // Protection is inverted on software pages, since the default value is 0.
             protection = (~protection) & MemoryPermission.ReadAndWrite;
 
-            long tag = protection switch
+            long tag = (long)protection << 48;
+            if (tag > 0)
             {
-                MemoryPermission.None => 0L,
-                MemoryPermission.Read => 2L << PointerTagBit,
-                _ => 3L << PointerTagBit
-            };
+                tag |= long.MinValue; // If any protection is present, the whole pte is negative.
+            }
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
             long invTagMask = ~(0xffffL << 48);
@@ -631,7 +628,7 @@ namespace Ryujinx.Cpu
             // tracking using host guard pages in future, but also supporting platforms where this is not possible.
 
             // Write tag includes read protection, since we don't have any read actions that aren't performed before write too.
-            long tag = (write ? 3L : 2L) << PointerTagBit;
+            long tag = (write ? 3L : 1L) << 48;
 
             ulong endVa = (va + size + PageMask) & ~(ulong)PageMask;
 
