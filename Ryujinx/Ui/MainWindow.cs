@@ -915,8 +915,15 @@ namespace Ryujinx.Ui
 
         private void OpenLogsFolder_Pressed(object sender, EventArgs args)
         {
-            string logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
-
+            string logPath;
+            if (!(ConfigurationState.Instance.Logger.CustomLogDir.Value == "" | ConfigurationState.Instance.Logger.CustomLogDir.Value == null))
+            {
+                 logPath = ConfigurationState.Instance.Logger.CustomLogDir;
+            }
+            else
+            {
+                 logPath = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs");
+            }
             new DirectoryInfo(logPath).Create();
 
             OpenHelper.OpenFolder(logPath);

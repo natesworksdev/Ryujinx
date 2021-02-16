@@ -14,7 +14,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// The current version of the file format
         /// </summary>
-        public const int CurrentVersion = 22;
+        public const int CurrentVersion = 23;
 
         public int Version { get; set; }
 
@@ -77,6 +77,11 @@ namespace Ryujinx.Configuration
         /// Enables printing FS access log messages
         /// </summary>
         public bool LoggingEnableFsAccessLog { get; set; }
+
+        /// <summary>
+        /// Sets the log dir
+        /// </summary>
+        public string CustomLogDir { get; set; }
 
         /// <summary>
         /// Controls which log messages are written to the log targets

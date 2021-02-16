@@ -77,6 +77,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ComboBoxText    _aspectRatio;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
+        [GUI] Entry           _customLogDir;
         [GUI] ToggleButton    _configureController1;
         [GUI] ToggleButton    _configureController2;
         [GUI] ToggleButton    _configureController3;
@@ -257,6 +258,8 @@ namespace Ryujinx.Ui.Windows
             _systemTimeZoneEntry.WidthChars = Math.Max(20, maxLocationLength + 1); // Ensure minimum Entry width
             _systemTimeZoneEntry.Text = _timeZoneContentManager.SanityCheckDeviceLocationName();
 
+            _customLogDir.Buffer.Text = ConfigurationState.Instance.Logger.CustomLogDir.Value.ToString();
+
             _systemTimeZoneCompletion.MatchFunc = TimeZoneMatchFunc;
 
             _systemLanguageSelect.SetActiveId(ConfigurationState.Instance.System.Language.Value.ToString());
@@ -404,6 +407,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Logger.EnableGuest.Value               = _guestLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Value         = _fsAccessLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFileLog.Value             = _fileLogToggle.Active;
+            ConfigurationState.Instance.Logger.CustomLogDir.Value              = _customLogDir.Text;
             ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value        = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
             ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;

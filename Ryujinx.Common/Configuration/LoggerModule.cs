@@ -74,11 +74,21 @@ namespace Ryujinx.Configuration
         {
             if (e.NewValue)
             {
+                if (ConfigurationState.Instance.Logger.CustomLogDir.Value == "" || ConfigurationState.Instance.Logger.CustomLogDir.Value==null) { 
                 Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(AppDomain.CurrentDomain.BaseDirectory, "file"),
+                    new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory+"Logs"), "file"),
                     1000,
                     AsyncLogTargetOverflowAction.Block
                 ));
+                }
+                else
+                {
+                    Logger.AddTarget(new AsyncLogTargetWrapper(
+                    new FileLogTarget(ConfigurationState.Instance.Logger.CustomLogDir.Value, "file"),
+                        1000,
+                        AsyncLogTargetOverflowAction.Block
+                    ));
+                }
             }
             else
             {

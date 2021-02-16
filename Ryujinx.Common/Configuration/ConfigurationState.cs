@@ -139,6 +139,11 @@ namespace Ryujinx.Configuration
             public ReactiveObject<bool> EnableFsAccessLog { get; private set; }
 
             /// <summary>
+            /// Sets a custom directory where logs get saved
+            /// </summary>
+            public ReactiveObject<string> CustomLogDir { get; private set; }
+
+            /// <summary>
             /// Controls which log messages are written to the log targets
             /// </summary>
             public ReactiveObject<LogClass[]> FilteredClasses { get; private set; }
@@ -162,6 +167,7 @@ namespace Ryujinx.Configuration
                 EnableError        = new ReactiveObject<bool>();
                 EnableGuest        = new ReactiveObject<bool>();
                 EnableFsAccessLog  = new ReactiveObject<bool>();
+                CustomLogDir       = new ReactiveObject<string>();
                 FilteredClasses    = new ReactiveObject<LogClass[]>();
                 EnableFileLog      = new ReactiveObject<bool>();
                 GraphicsDebugLevel = new ReactiveObject<GraphicsDebugLevel>();
@@ -418,6 +424,7 @@ namespace Ryujinx.Configuration
                 LoggingFilteredClasses    = Logger.FilteredClasses,
                 LoggingGraphicsDebugLevel = Logger.GraphicsDebugLevel,
                 EnableFileLog             = Logger.EnableFileLog,
+                CustomLogDir                    = Logger.CustomLogDir,         
                 SystemLanguage            = System.Language,
                 SystemRegion              = System.Region,
                 SystemTimeZone            = System.TimeZone,
@@ -479,6 +486,7 @@ namespace Ryujinx.Configuration
             Logger.EnableError.Value               = true;
             Logger.EnableGuest.Value               = true;
             Logger.EnableFsAccessLog.Value         = false;
+            Logger.CustomLogDir.Value              = "";//When set to nothing it saves into the Ryujinx application folder
             Logger.FilteredClasses.Value           = Array.Empty<LogClass>();
             Logger.GraphicsDebugLevel.Value        = GraphicsDebugLevel.None;
             Logger.EnableFileLog.Value             = true;
@@ -804,6 +812,15 @@ namespace Ryujinx.Configuration
                 configurationFileUpdated = true;
             }
 
+            if (configurationFileFormat.Version < 23)
+            {
+                Common.Logging.Logger.Warning?.Print(LogClass.Application, $"Outdated configuration version {configurationFileFormat.Version}, migrating to version 23.");
+
+                configurationFileFormat.CustomLogDir = "";
+
+                configurationFileUpdated = true;
+            }
+            
             List<InputConfig> inputConfig = new List<InputConfig>();
             inputConfig.AddRange(configurationFileFormat.ControllerConfig);
             inputConfig.AddRange(configurationFileFormat.KeyboardConfig);
@@ -823,6 +840,7 @@ namespace Ryujinx.Configuration
             Logger.FilteredClasses.Value           = configurationFileFormat.LoggingFilteredClasses;
             Logger.GraphicsDebugLevel.Value        = configurationFileFormat.LoggingGraphicsDebugLevel;
             Logger.EnableFileLog.Value             = configurationFileFormat.EnableFileLog;
+            Logger.CustomLogDir.Value              = configurationFileFormat.CustomLogDir;
             System.Language.Value                  = configurationFileFormat.SystemLanguage;
             System.Region.Value                    = configurationFileFormat.SystemRegion;
             System.TimeZone.Value                  = configurationFileFormat.SystemTimeZone;
