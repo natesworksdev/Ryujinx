@@ -77,7 +77,7 @@ namespace Ryujinx.Ui.Windows
         [GUI] ComboBoxText    _aspectRatio;
         [GUI] ComboBoxText    _resScaleCombo;
         [GUI] Entry           _resScaleText;
-        [GUI] Entry           _customLogDir;
+        [GUI] Entry           _customLogDirectory;
         [GUI] ToggleButton    _configureController1;
         [GUI] ToggleButton    _configureController2;
         [GUI] ToggleButton    _configureController3;
@@ -258,7 +258,7 @@ namespace Ryujinx.Ui.Windows
             _systemTimeZoneEntry.WidthChars = Math.Max(20, maxLocationLength + 1); // Ensure minimum Entry width
             _systemTimeZoneEntry.Text = _timeZoneContentManager.SanityCheckDeviceLocationName();
 
-            _customLogDir.Buffer.Text = ConfigurationState.Instance.Logger.CustomLogDir.Value.ToString();
+            _customLogDirectory.Buffer.Text = ConfigurationState.Instance.Logger.CustomLogDirectory.Value.ToString();
 
             _systemTimeZoneCompletion.MatchFunc = TimeZoneMatchFunc;
 
@@ -407,7 +407,7 @@ namespace Ryujinx.Ui.Windows
             ConfigurationState.Instance.Logger.EnableGuest.Value               = _guestLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Value         = _fsAccessLogToggle.Active;
             ConfigurationState.Instance.Logger.EnableFileLog.Value             = _fileLogToggle.Active;
-            ConfigurationState.Instance.Logger.CustomLogDir.Value              = _customLogDir.Text;
+            ConfigurationState.Instance.Logger.CustomLogDirectory.Value        = _customLogDirectory.Text;
             ConfigurationState.Instance.Logger.GraphicsDebugLevel.Value        = Enum.Parse<GraphicsDebugLevel>(_graphicsDebugLevel.ActiveId);
             ConfigurationState.Instance.System.EnableDockedMode.Value          = _dockedModeToggle.Active;
             ConfigurationState.Instance.EnableDiscordIntegration.Value         = _discordToggle.Active;
@@ -488,7 +488,20 @@ namespace Ryujinx.Ui.Windows
                 UpdateSystemTimeSpinners();
             }
         }
+        private void SelectCustomLogDirectory_Pressed(object sender, EventArgs args)
+        {
+            FileChooserDialog fileChooser = new FileChooserDialog("Select your Custom Log Directory", this, FileChooserAction.SelectFolder, "Cancel", ResponseType.Cancel, "Select", ResponseType.Accept)
+            {
+                SelectMultiple = false
+            };
 
+            if (fileChooser.Run() == (int)ResponseType.Accept)
+            {
+                _customLogDirectory.Text = fileChooser.Filename;
+            }
+
+            fileChooser.Dispose();
+        }
         private void AddDir_Pressed(object sender, EventArgs args)
         {
             if (Directory.Exists(_addGameDirBox.Buffer.Text))

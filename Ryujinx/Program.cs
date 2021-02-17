@@ -122,14 +122,6 @@ namespace Ryujinx
                 ConfigurationState.Instance.Ui.StartFullscreen.Value = true;
             }
 
-            if (!(ConfigurationState.Instance.Logger.CustomLogDir.Value == "" | ConfigurationState.Instance.Logger.CustomLogDir.Value == null)) {
-                Logger.AddTarget(new AsyncLogTargetWrapper(
-                new FileLogTarget(ConfigurationState.Instance.Logger.CustomLogDir.Value, "file"),
-                    1000,
-                    AsyncLogTargetOverflowAction.Block
-                ));
-            }
-
             // Logging system information.
             PrintSystemInfo();
 

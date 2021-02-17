@@ -81,7 +81,7 @@ namespace Ryujinx.Configuration
         /// <summary>
         /// Sets the log dir
         /// </summary>
-        public string CustomLogDir { get; set; }
+        public string CustomLogDirectory { get; set; }
 
         /// <summary>
         /// Controls which log messages are written to the log targets

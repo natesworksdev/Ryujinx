@@ -18,6 +18,7 @@ namespace Ryujinx.Configuration
             ConfigurationState.Instance.Logger.EnableFsAccessLog.Event += ReloadEnableFsAccessLog;
             ConfigurationState.Instance.Logger.FilteredClasses.Event   += ReloadFilteredClasses;
             ConfigurationState.Instance.Logger.EnableFileLog.Event     += ReloadFileLogger;
+            ConfigurationState.Instance.Logger.CustomLogDirectory.Event      += ReloadFileLoggerNewDirectory;
         }
 
         private static void ReloadEnableDebug(object sender, ReactiveEventArgs<bool> e)
@@ -70,29 +71,58 @@ namespace Ryujinx.Configuration
             }
         }
 
-        private static void ReloadFileLogger(object sender, ReactiveEventArgs<bool> e)
+        public static void ReloadFileLogger(object sender, ReactiveEventArgs<bool> e)
         {
             if (e.NewValue)
             {
-                if (ConfigurationState.Instance.Logger.CustomLogDir.Value == "" || ConfigurationState.Instance.Logger.CustomLogDir.Value==null) { 
-                Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory+"Logs"), "file"),
+                if (Logger.HasTarget("file"))
+                {
+                    Logger.RemoveTarget("file");
+                }
+                if (String.IsNullOrEmpty(ConfigurationState.Instance.Logger.CustomLogDirectory.Value)) {
+                    Logger.AddTarget(new AsyncLogTargetWrapper(
+                    new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"), "file"),
                     1000,
-                    AsyncLogTargetOverflowAction.Block
-                ));
+                    AsyncLogTargetOverflowAction.Block));
+ 
                 }
                 else
                 {
                     Logger.AddTarget(new AsyncLogTargetWrapper(
-                    new FileLogTarget(ConfigurationState.Instance.Logger.CustomLogDir.Value, "file"),
-                        1000,
-                        AsyncLogTargetOverflowAction.Block
-                    ));
+                    new FileLogTarget(ConfigurationState.Instance.Logger.CustomLogDirectory.Value, "file"),
+                    1000,
+                    AsyncLogTargetOverflowAction.Block));
                 }
             }
             else
             {
                 Logger.RemoveTarget("file");
+            }
+        }
+
+        public static void ReloadFileLoggerNewDirectory(object sender, ReactiveEventArgs<string> e)
+        {
+            if (e.NewValue!=e.OldValue) {
+                if (Logger.HasTarget("file"))
+                {
+                    Logger.RemoveTarget("file");
+                }
+                if (String.IsNullOrEmpty(ConfigurationState.Instance.Logger.CustomLogDirectory.Value))
+                {
+                    Logger.AddTarget(new AsyncLogTargetWrapper(
+                    new FileLogTarget(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Logs"), "file"),
+                    1000,
+                    AsyncLogTargetOverflowAction.Block));
+
+                }
+                else
+                {
+                    Logger.AddTarget(new AsyncLogTargetWrapper(
+                    new FileLogTarget(ConfigurationState.Instance.Logger.CustomLogDirectory.Value, "file"),
+                    1000,
+                    AsyncLogTargetOverflowAction.Block));
+                
+                }
             }
         }
     }

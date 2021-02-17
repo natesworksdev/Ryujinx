@@ -137,6 +137,15 @@ namespace Ryujinx.Common.Logging
             return null;
         }
 
+        public static bool HasTarget(string target)
+        {
+            if (GetTarget(target) != null)
+            {
+                return true;
+            }
+            return false;
+        }
+
         public static void AddTarget(ILogTarget target)
         {
             m_LogTargets.Add(target);

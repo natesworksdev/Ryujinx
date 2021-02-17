@@ -2048,12 +2048,12 @@
                             <packing>
                               <property name="expand">False</property>
                               <property name="fill">True</property>
-                              <property name="padding">13</property>
+                              <property name="padding">15</property>
                               <property name="position">0</property>
                             </packing>
                           </child>
                           <child>
-                            <object class="GtkEntry" id="_customLogDir">
+                            <object class="GtkEntry" id="_customLogDirectory">
                               <property name="visible">True</property>
                               <property name="can-focus">True</property>
                               <property name="tooltip-text" translatable="yes">Log Path</property>
@@ -2064,6 +2064,23 @@
                               <property name="expand">True</property>
                               <property name="fill">True</property>
                               <property name="position">1</property>
+                            </packing>
+                          </child>
+                          <child>
+                            <object class="GtkToggleButton" id="_selectCustomLogDirectory">
+                              <property name="label" translatable="yes">Select Custom Log Directory</property>
+                              <property name="width-request">80</property>
+                              <property name="visible">True</property>
+                              <property name="can-focus">True</property>
+                              <property name="receives-default">True</property>
+                              <property name="tooltip-text" translatable="yes">Select Custom Log Directory</property>
+                              <property name="margin-left">5</property>
+                              <signal name="toggled" handler="SelectCustomLogDirectory_Pressed" swapped="no"/>
+                            </object>
+                            <packing>
+                              <property name="expand">False</property>
+                              <property name="fill">True</property>
+                              <property name="position">2</property>
                             </packing>
                           </child>
                         </object>
