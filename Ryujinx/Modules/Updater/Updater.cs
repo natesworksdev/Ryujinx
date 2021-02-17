@@ -25,6 +25,7 @@ namespace Ryujinx.Modules
         private static readonly string HomeDir          = AppDomain.CurrentDomain.BaseDirectory;
         private static readonly string UpdateDir        = Path.Combine(Path.GetTempPath(), "Ryujinx", "update");
         private static readonly string UpdatePublishDir = Path.Combine(UpdateDir, "publish");
+        private static readonly int    ConnectionCount  = 8;
 
         private static string _jobId;
         private static string _buildVer;
@@ -175,17 +176,17 @@ namespace Ryujinx.Modules
             updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
-            int MaxConnections = 8;
-            long chunkSize = buildSize / MaxConnections;
-            int completedRequests = 0;
-            int[] progressPercentage = new int[MaxConnections];
-            int totalProgress = 0;
-            List<byte[]> list = new List<byte[]>(MaxConnections);
-            for(int i = 0; i < MaxConnections; i++)
+            long  chunkSize               = buildSize / ConnectionCount;
+            int   completedRequests       = 0;
+            int   totalProgressPercentage = 0;
+            int[] progressPercentage      = new int[ConnectionCount];
+            
+            List<byte[]> list = new List<byte[]>(ConnectionCount);
+            for (int i = 0; i < ConnectionCount; i++)
             {
                 list.Add(new byte[0]);
             }
-            for (int i = 0; i < MaxConnections; i++)
+            for (int i = 0; i < ConnectionCount; i++)
             {
                 using (WebClient client = new WebClient())
                 {
@@ -193,10 +194,10 @@ namespace Ryujinx.Modules
                     client.DownloadProgressChanged += (_, args) =>
                     {
                         int index = (int)args.UserState;
-                        Interlocked.Add(ref totalProgress, -1 * progressPercentage[index]);
+                        Interlocked.Add(ref totalProgressPercentage, -1 * progressPercentage[index]);
                         Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
-                        Interlocked.Add(ref totalProgress, args.ProgressPercentage);
-                        updateDialog.ProgressBar.Value = totalProgress / MaxConnections;
+                        Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
+                        updateDialog.ProgressBar.Value = totalProgressPercentage / ConnectionCount;
                     };
 
                     client.DownloadDataCompleted += (_, args) =>
@@ -205,11 +206,11 @@ namespace Ryujinx.Modules
                         list[index] = args.Result;
                         Interlocked.Increment(ref completedRequests);
 
-                        if(Interlocked.Equals(completedRequests, MaxConnections))
+                        if(Interlocked.Equals(completedRequests, ConnectionCount))
                         {
                             byte[] finalFile = new byte[buildSize];
                             int k = 0;
-                            for(int i = 0; i < MaxConnections; i++)
+                            for(int i = 0; i < ConnectionCount; i++)
                             {
                                 for(int j = 0; j < list[i].Length; j++)
                                 {
@@ -381,15 +382,15 @@ namespace Ryujinx.Modules
                 return false;
             }
 
-            if (!Program.Version.Contains("dirty"))
-            {
-                if (showWarnings)
-                {
-                    GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
-                }
+            //if (Program.Version.Contains("dirty"))
+            //{
+            //    if (showWarnings)
+            //    {
+            //        GtkDialog.CreateWarningDialog("You Cannot update a Dirty build of Ryujinx!", "Please download Ryujinx at https://ryujinx.org/ if you are looking for a supported version.");
+            //    }
 
-                return false;
-            }
+            //    return false;
+            //}
 
             return true;
         }
