@@ -41,19 +41,28 @@ namespace Ryujinx.Modules
 
             Running = true;
             mainWindow.UpdateMenuItem.Sensitive = false;
-
+            int artifactIndex = -1;
             // Detect current platform
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 _platformExt = "osx_x64.zip";
+                artifactIndex = 1;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 _platformExt = "win_x64.zip";
+                artifactIndex = 2;
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
                 _platformExt = "linux_x64.tar.gz";
+                artifactIndex = 0;
+            }
+
+            if (artifactIndex == -1)
+            {
+                GtkDialog.CreateErrorDialog("Your platform is not supported!");
+                return;
             }
 
             Version newVersion;
@@ -76,6 +85,7 @@ namespace Ryujinx.Modules
             {
                 using (WebClient jsonClient = new WebClient())
                 {
+                    // Fetch latest build information
                     string  fetchedJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/projects/gdkchan/ryujinx/branch/master");
                     JObject jsonRoot    = JObject.Parse(fetchedJson);
                     JToken  buildToken  = jsonRoot["build"];
@@ -84,30 +94,20 @@ namespace Ryujinx.Modules
                     _buildVer = (string)buildToken["version"];
                     _buildUrl = $"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts/ryujinx-{_buildVer}-{_platformExt}";
 
-                    string fetchedArtifactJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts");
-                    JArray artifactRoot = JArray.Parse(fetchedArtifactJson);
-
-                    int artifactIndex = -1;
-
-                    switch(_platformExt)
+                    // Fetch build size information
+                    try
                     {
-                        case "linux_x64.tar.gz":
-                            artifactIndex = 0;
-                            break;
-                        case "osx_x64.zip":
-                            artifactIndex = 1;
-                            break;
-                        case "win_x64.zip":
-                            artifactIndex = 2;
-                            break;
+                        string fetchedArtifactJson = await jsonClient.DownloadStringTaskAsync($"{AppveyorApiUrl}/buildjobs/{_jobId}/artifacts");
+                        JArray artifactRoot = JArray.Parse(fetchedArtifactJson);
+                    
+                        _buildSize = long.Parse((string)artifactRoot[artifactIndex]["size"]);
                     }
-
-                    if(artifactIndex == -1)
+                    catch (Exception e)
                     {
-                        GtkDialog.CreateErrorDialog("Couldn't determine platform");
+                        Logger.Warning?.Print(LogClass.Application, e.Message);
+                        Logger.Warning?.Print(LogClass.Application, "Couldn't determine build size for update, will use single-threaded updater");
+                        _buildSize = -1;
                     }
-
-                    _buildSize = long.Parse((string)artifactRoot[artifactIndex]["size"]);
 
                     // If build not done, assume no new update are availaible.
                     if ((string)buildToken["jobs"][0]["status"] != "success")
@@ -176,61 +176,83 @@ namespace Ryujinx.Modules
             updateDialog.ProgressBar.Value    = 0;
             updateDialog.ProgressBar.MaxValue = 100;
 
-            long  chunkSize               = buildSize / ConnectionCount;
-            int   completedRequests       = 0;
-            int   totalProgressPercentage = 0;
-            int[] progressPercentage      = new int[ConnectionCount];
-            
-            List<byte[]> list = new List<byte[]>(ConnectionCount);
-            for (int i = 0; i < ConnectionCount; i++)
+            if(buildSize >= 0)
             {
-                list.Add(new byte[0]);
+                // Multi-Threaded Updater
+                long chunkSize = buildSize / ConnectionCount;
+                int completedRequests = 0;
+                int totalProgressPercentage = 0;
+                int[] progressPercentage = new int[ConnectionCount];
+
+                List<byte[]> list = new List<byte[]>(ConnectionCount);
+                for (int i = 0; i < ConnectionCount; i++)
+                {
+                    list.Add(new byte[0]);
+                }
+                for (int i = 0; i < ConnectionCount; i++)
+                {
+                    using (WebClient client = new WebClient())
+                    {
+                        client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize * (i + 1) - 1}");
+                        client.DownloadProgressChanged += (_, args) =>
+                        {
+                            int index = (int)args.UserState;
+                            Interlocked.Add(ref totalProgressPercentage, -1 * progressPercentage[index]);
+                            Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
+                            Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
+                            updateDialog.ProgressBar.Value = totalProgressPercentage / ConnectionCount;
+                        };
+
+                        client.DownloadDataCompleted += (_, args) =>
+                        {
+                            int index = (int)args.UserState;
+                            list[index] = args.Result;
+                            Interlocked.Increment(ref completedRequests);
+
+                            if (Interlocked.Equals(completedRequests, ConnectionCount))
+                            {
+                                byte[] finalFile = new byte[buildSize];
+                                int k = 0;
+                                for (int i = 0; i < ConnectionCount; i++)
+                                {
+                                    for (int j = 0; j < list[i].Length; j++)
+                                    {
+                                        finalFile[k++] = list[i][j];
+                                    }
+                                }
+
+                                File.WriteAllBytes(updateFile, finalFile);
+
+                                InstallUpdate(updateDialog, updateFile);
+                            }
+                        };
+
+                        client.DownloadDataAsync(new Uri(downloadUrl), i);
+                    }
+                }
             }
-            for (int i = 0; i < ConnectionCount; i++)
+            else
             {
+                // Single-Threaded Updater
                 using (WebClient client = new WebClient())
                 {
-                    client.Headers.Add("Range", $"bytes={chunkSize * i}-{chunkSize*(i+1) - 1}");
                     client.DownloadProgressChanged += (_, args) =>
                     {
-                        int index = (int)args.UserState;
-                        Interlocked.Add(ref totalProgressPercentage, -1 * progressPercentage[index]);
-                        Interlocked.Exchange(ref progressPercentage[index], args.ProgressPercentage);
-                        Interlocked.Add(ref totalProgressPercentage, args.ProgressPercentage);
-                        updateDialog.ProgressBar.Value = totalProgressPercentage / ConnectionCount;
+                        updateDialog.ProgressBar.Value = args.ProgressPercentage;
                     };
 
                     client.DownloadDataCompleted += (_, args) =>
                     {
-                        int index = (int)args.UserState;
-                        list[index] = args.Result;
-                        Interlocked.Increment(ref completedRequests);
-
-                        if(Interlocked.Equals(completedRequests, ConnectionCount))
-                        {
-                            byte[] finalFile = new byte[buildSize];
-                            int k = 0;
-                            for(int i = 0; i < ConnectionCount; i++)
-                            {
-                                for(int j = 0; j < list[i].Length; j++)
-                                {
-                                    finalFile[k++] = list[i][j];
-                                }
-                            }
-
-                            File.WriteAllBytes(updateFile, finalFile);
-
-                            ContinueUpdate(updateDialog, updateFile);
-                        }
+                        File.WriteAllBytes(updateFile, args.Result);
+                        InstallUpdate(updateDialog, updateFile);
                     };
 
-                    client.DownloadDataAsync(new Uri(downloadUrl), i);
+                    client.DownloadDataAsync(new Uri(downloadUrl));
                 }
             }
-
         }
         
-        private static async void ContinueUpdate(UpdateDialog updateDialog, string updateFile)
+        private static async void InstallUpdate(UpdateDialog updateDialog, string updateFile)
         {
             // Extract Update
             updateDialog.MainText.Text = "Extracting Update...";
