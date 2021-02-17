@@ -1,5 +1,7 @@
 ﻿using Ryujinx.Common.Logging;
+using Ryujinx.HLE.Exceptions;
 using Ryujinx.HLE.HOS.Kernel.Process;
+using System.Runtime.CompilerServices;
 
 namespace Ryujinx.HLE.HOS.Tamper
 {
@@ -14,13 +16,24 @@ namespace Ryujinx.HLE.HOS.Tamper
             this._process = process;
         }
 
+        private void AssertMemoryRegion<T>(ulong va) where T : unmanaged
+        {
+            ulong size = (ulong)Unsafe.SizeOf<T>();
+            if (!_process.CpuMemory.IsRangeMapped(va, size))
+            {
+                throw new TamperExecutionException($"Unmapped memory access of {size} bytes of at {va:X}");
+            }
+        }
+
         public T ReadMemory<T>(ulong va) where T : unmanaged
         {
+            AssertMemoryRegion<T>(va);
             return _process.CpuMemory.Read<T>(va);
         }
 
         public void WriteMemory<T>(ulong va, T value) where T : unmanaged
         {
+            AssertMemoryRegion<T>(va);
             _process.CpuMemory.Write(va, value);
         }
 

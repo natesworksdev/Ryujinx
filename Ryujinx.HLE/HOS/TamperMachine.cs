@@ -4,6 +4,7 @@ using Ryujinx.HLE.HOS.Kernel.Process;
 using Ryujinx.HLE.HOS.Services.Hid;
 using Ryujinx.HLE.HOS.Tamper;
 using Ryujinx.HLE.HOS.Tamper.Atmosphere;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
@@ -121,13 +122,17 @@ namespace Ryujinx.HLE.HOS
 
             try
             {
-                // TODO: Mechanism to abort loops and execution if the process exits?
                 ControllerKeys pressedKeys = (ControllerKeys)Thread.VolatileRead(ref _pressedKeys);
                 program.Execute(pressedKeys);
             }
-            catch
+            catch (Exception ex)
             {
-                Logger.Debug?.Print(LogClass.TamperMachine, $"The tampering program crashed, this can happen during while the game is starting");
+                Logger.Debug?.Print(LogClass.TamperMachine, $"The tampering program crashed, this can happen while the game is starting");
+
+                if (!String.IsNullOrEmpty(ex.Message))
+                {
+                    Logger.Debug?.Print(LogClass.TamperMachine, ex.Message);
+                }
             }
 
             return true;
